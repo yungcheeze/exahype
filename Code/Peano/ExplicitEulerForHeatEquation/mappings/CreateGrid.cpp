@@ -157,7 +157,7 @@ void myproject::mappings::CreateGrid::createBoundaryVertex(
 //  if (coarseGridVerticesEnumerator.getLevel()<4) {
 //    fineGridVertex.refine();
 //  }
-  if (coarseGridVerticesEnumerator.getLevel()<5 && fineGridX(0)<1e-8 && fineGridX(1)<1e-8 && fineGridX(2)<1e-8) {
+  if (coarseGridVerticesEnumerator.getLevel()<5 && fineGridX(0)<1e-8) {
     fineGridVertex.refine();
   }
   else if (coarseGridVerticesEnumerator.getLevel()<1) {
