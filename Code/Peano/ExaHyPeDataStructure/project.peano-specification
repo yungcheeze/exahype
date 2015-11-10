@@ -1,0 +1,31 @@
+component: ExaHypeDataStructure
+
+namespace: ::exahype
+
+heap-dastgen-file: PatchDescription.def
+
+vertex:
+  dastgen-file: Vertex.def
+  read vector2PowD(int): PatchIndex
+  write vector2PowD(int): PatchIndex
+  
+cell:
+  dastgen-file: Cell.def
+
+state:
+  dastgen-file: State.def
+  
+event-mapping:
+  name: CreateGrid
+  
+event-mapping:
+  name: TimeStep
+  
+adapter:
+  name: CreateGrid
+  merge-with-user-defined-mapping: CreateGrid
+  merge-with-predefined-mapping: MultiscaleLinkedCell(PatchIndex)
+
+adapter:
+  name: TimeStep
+  merge-with-user-defined-mapping: TimeStep

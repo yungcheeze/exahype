@@ -1,0 +1,26 @@
+#include "peano/utils/Globals.h"
+
+Packed-Type: int;
+
+Constant: DIMENSIONS;
+
+class exahype::records::PatchDescription {
+  // ! volume data/space-time data
+  parallelise persistent int dof;               // The indices of the DoF belonging to this cell. Resembles also the state of the previous time step during update calculations.   Variable: u
+  parallelise persistent int updateDof;         // The indices of the update DoF belonging to this cell. All volume and updates and face fluctuations contribute to this variable. Variable: du
+  parallelise persistent int predictorDof;      // the indices of the predictor DoF belonging to this cell.                                                                        Variable: q/qA  
+  parallelise persistent int volumeFluxesDof;   // the indices of the volume fluxes DoF belonging to this cell.                                                                    Variable: F/FA  
+  // ! end of volume data
+
+  // ! face data (linear arrays holding 2*d blocks: one per face)
+  parallelise persistent int extrapolatedPredictorDof; // The indices of the predictor DoF extrapolated to the bounding faces of this cell. 
+  parallelise persistent int normalFluxes;             // The indices of the normalFluxes computed "at" the bounding faces of this cell. 
+  parallelise persistent int fluctuations;             // The indices of the normalFluxes computed "at" the bounding faces of this cell. 
+  // ! face data
+  
+  // ! grid details
+  parallelise persistent int    level;              
+  parallelise persistent double offset[DIMENSIONS]; 
+  parallelise persistent double size[DIMENSIONS];    
+  // ! end of grid information
+};
