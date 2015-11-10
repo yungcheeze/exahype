@@ -1,0 +1,7 @@
+#!/bin/bash
+export PEANO_SRC_DIR=~/dev/packages/peano/src
+export PEANO_PDT_DIR=~/dev/packages/peano/pdt
+
+export PROJECT=ExaHyPeDataStructure
+export NAMESPACE=exahype
+export PDT_EXT=$PROJECT/multiscalelinkedcell
