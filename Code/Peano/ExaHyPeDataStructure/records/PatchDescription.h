@@ -32,7 +32,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   11/11/2015 15:38
+ * @date   11/11/2015 17:13
  */
 class exahype::records::PatchDescription { 
    
@@ -855,7 +855,7 @@ class exahype::records::PatchDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   11/11/2015 15:38
+          * @date   11/11/2015 17:13
           */
          class exahype::records::PatchDescriptionPacked { 
             
