@@ -396,7 +396,6 @@ void exahype::mappings::CreateGrid::touchVertexLastTime(
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
-
 void exahype::mappings::CreateGrid::enterCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
@@ -407,7 +406,14 @@ void exahype::mappings::CreateGrid::enterCell(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
+
+  // ! Start: Required for the multiscalelinkedcell toolbox
+  fineGridCell.initCellInComputeTree(
+      fineGridVerticesEnumerator.getLevel(),
+      fineGridVerticesEnumerator.getVertexPosition(0),
+      fineGridVerticesEnumerator.getCellSize());
+  // ! End: Required for the multiscalelinkedcell toolbox
+
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
 
