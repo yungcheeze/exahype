@@ -19,3 +19,8 @@ exahype::Vertex::Vertex(const Base::PersistentVertex& argument):
   Base(argument) {
   // @todo Insert your code here
 }
+
+tarch::la::Vector<TWO_POWER_D,int>
+exahype::Vertex::getPatchIndex() {
+  return _vertexData.getPatchIndex();
+}
