@@ -81,9 +81,9 @@ void multiscalelinkedcell::HangingVertexBookkeeper::updateCellIndicesInMergeWith
 //
 //enddforx
 //
-//const tarch::la::Vector<THREE_POWER_D,int> patch = getAdjacentIndicesOfCell(fineGridCell,fineGridVertices,fineGridVerticesEnumerator);
+//const tarch::la::Vector<THREE_POWER_D,int> cellDescription = getAdjacentIndicesOfCell(fineGridCell,fineGridVertices,fineGridVerticesEnumerator);
 //
-//fineGridCell.setPARAM1( !tarch::la::oneEquals(patch,InvalidAdjacencyIndex) );
+//fineGridCell.setPARAM1( !tarch::la::oneEquals(cellDescription,InvalidAdjacencyIndex) );
 
 
 

@@ -1,5 +1,5 @@
-#ifndef _EXAHYPE_RECORDS_PATCHDESCRIPTION_H
-#define _EXAHYPE_RECORDS_PATCHDESCRIPTION_H
+#ifndef _EXAHYPE_RECORDS_CELLDESCRIPTION_H
+#define _EXAHYPE_RECORDS_CELLDESCRIPTION_H
 
 #include "peano/utils/Globals.h"
 #include "tarch/compiler/CompilerSpecificSettings.h"
@@ -19,8 +19,8 @@
 
 namespace exahype {
    namespace records {
-      class PatchDescription;
-      class PatchDescriptionPacked;
+      class CellDescription;
+      class CellDescriptionPacked;
    }
 }
 
@@ -32,24 +32,31 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   11/11/2015 17:13
+ * @date   13/11/2015 18:16
  */
-class exahype::records::PatchDescription { 
+class exahype::records::CellDescription { 
    
    public:
       
-      typedef exahype::records::PatchDescriptionPacked Packed;
+      typedef exahype::records::CellDescriptionPacked Packed;
       
       struct PersistentRecords {
-         int _spaceTimePredictorDof;
-         int _spaceTimeVolumeFluxesDof;
-         int _dof;
-         int _updateDof;
-         int _predictorDof;
-         int _volumeFluxesDof;
-         int _extrapolatedPredictorDof;
-         int _normalFluxesDof;
-         int _fluctuationsDof;
+         int _spaceTimePredictor;
+         int _spaceTimeVolumeFlux;
+         int _solution;
+         int _update;
+         int _predictor;
+         int _volumeFlux;
+         #ifdef UseManualAlignment
+         tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _extrapolatedPredictor __attribute__((aligned(VectorisationAlignment)));
+         #else
+         tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _extrapolatedPredictor;
+         #endif
+         #ifdef UseManualAlignment
+         tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _fluctuation __attribute__((aligned(VectorisationAlignment)));
+         #else
+         tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _fluctuation;
+         #endif
          int _level;
          #ifdef UseManualAlignment
          tarch::la::Vector<DIMENSIONS,double> _offset __attribute__((aligned(VectorisationAlignment)));
@@ -69,185 +76,241 @@ class exahype::records::PatchDescription {
          /**
           * Generated
           */
-         PersistentRecords(const int& spaceTimePredictorDof, const int& spaceTimeVolumeFluxesDof, const int& dof, const int& updateDof, const int& predictorDof, const int& volumeFluxesDof, const int& extrapolatedPredictorDof, const int& normalFluxesDof, const int& fluctuationsDof, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+         PersistentRecords(const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
          
          
-         inline int getSpaceTimePredictorDof() const 
+         inline int getSpaceTimePredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _spaceTimePredictorDof;
+            return _spaceTimePredictor;
          }
          
          
          
-         inline void setSpaceTimePredictorDof(const int& spaceTimePredictorDof) 
+         inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _spaceTimePredictorDof = spaceTimePredictorDof;
+            _spaceTimePredictor = spaceTimePredictor;
          }
          
          
          
-         inline int getSpaceTimeVolumeFluxesDof() const 
+         inline int getSpaceTimeVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _spaceTimeVolumeFluxesDof;
+            return _spaceTimeVolumeFlux;
          }
          
          
          
-         inline void setSpaceTimeVolumeFluxesDof(const int& spaceTimeVolumeFluxesDof) 
+         inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _spaceTimeVolumeFluxesDof = spaceTimeVolumeFluxesDof;
+            _spaceTimeVolumeFlux = spaceTimeVolumeFlux;
          }
          
          
          
-         inline int getDof() const 
+         inline int getSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _dof;
+            return _solution;
          }
          
          
          
-         inline void setDof(const int& dof) 
+         inline void setSolution(const int& solution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _dof = dof;
+            _solution = solution;
          }
          
          
          
-         inline int getUpdateDof() const 
+         inline int getUpdate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _updateDof;
+            return _update;
          }
          
          
          
-         inline void setUpdateDof(const int& updateDof) 
+         inline void setUpdate(const int& update) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _updateDof = updateDof;
+            _update = update;
          }
          
          
          
-         inline int getPredictorDof() const 
+         inline int getPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _predictorDof;
+            return _predictor;
          }
          
          
          
-         inline void setPredictorDof(const int& predictorDof) 
+         inline void setPredictor(const int& predictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _predictorDof = predictorDof;
+            _predictor = predictor;
          }
          
          
          
-         inline int getVolumeFluxesDof() const 
+         inline int getVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _volumeFluxesDof;
+            return _volumeFlux;
          }
          
          
          
-         inline void setVolumeFluxesDof(const int& volumeFluxesDof) 
+         inline void setVolumeFlux(const int& volumeFlux) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _volumeFluxesDof = volumeFluxesDof;
+            _volumeFlux = volumeFlux;
          }
          
          
          
-         inline int getExtrapolatedPredictorDof() const 
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _extrapolatedPredictorDof;
+            return _extrapolatedPredictor;
          }
          
          
          
-         inline void setExtrapolatedPredictorDof(const int& extrapolatedPredictorDof) 
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline void setExtrapolatedPredictor(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _extrapolatedPredictorDof = extrapolatedPredictorDof;
+            _extrapolatedPredictor = (extrapolatedPredictor);
          }
          
          
          
-         inline int getNormalFluxesDof() const 
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _normalFluxesDof;
+            return _fluctuation;
          }
          
          
          
-         inline void setNormalFluxesDof(const int& normalFluxesDof) 
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline void setFluctuation(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _normalFluxesDof = normalFluxesDof;
-         }
-         
-         
-         
-         inline int getFluctuationsDof() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _fluctuationsDof;
-         }
-         
-         
-         
-         inline void setFluctuationsDof(const int& fluctuationsDof) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _fluctuationsDof = fluctuationsDof;
+            _fluctuation = (fluctuation);
          }
          
          
@@ -397,200 +460,308 @@ class exahype::records::PatchDescription {
       /**
        * Generated
        */
-      PatchDescription();
+      CellDescription();
       
       /**
        * Generated
        */
-      PatchDescription(const PersistentRecords& persistentRecords);
+      CellDescription(const PersistentRecords& persistentRecords);
       
       /**
        * Generated
        */
-      PatchDescription(const int& spaceTimePredictorDof, const int& spaceTimeVolumeFluxesDof, const int& dof, const int& updateDof, const int& predictorDof, const int& volumeFluxesDof, const int& extrapolatedPredictorDof, const int& normalFluxesDof, const int& fluctuationsDof, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+      CellDescription(const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
       
       /**
        * Generated
        */
-      ~PatchDescription();
+      ~CellDescription();
       
       
-      inline int getSpaceTimePredictorDof() const 
+      inline int getSpaceTimePredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._spaceTimePredictorDof;
+         return _persistentRecords._spaceTimePredictor;
       }
       
       
       
-      inline void setSpaceTimePredictorDof(const int& spaceTimePredictorDof) 
+      inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._spaceTimePredictorDof = spaceTimePredictorDof;
+         _persistentRecords._spaceTimePredictor = spaceTimePredictor;
       }
       
       
       
-      inline int getSpaceTimeVolumeFluxesDof() const 
+      inline int getSpaceTimeVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._spaceTimeVolumeFluxesDof;
+         return _persistentRecords._spaceTimeVolumeFlux;
       }
       
       
       
-      inline void setSpaceTimeVolumeFluxesDof(const int& spaceTimeVolumeFluxesDof) 
+      inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._spaceTimeVolumeFluxesDof = spaceTimeVolumeFluxesDof;
+         _persistentRecords._spaceTimeVolumeFlux = spaceTimeVolumeFlux;
       }
       
       
       
-      inline int getDof() const 
+      inline int getSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._dof;
+         return _persistentRecords._solution;
       }
       
       
       
-      inline void setDof(const int& dof) 
+      inline void setSolution(const int& solution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._dof = dof;
+         _persistentRecords._solution = solution;
       }
       
       
       
-      inline int getUpdateDof() const 
+      inline int getUpdate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._updateDof;
+         return _persistentRecords._update;
       }
       
       
       
-      inline void setUpdateDof(const int& updateDof) 
+      inline void setUpdate(const int& update) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._updateDof = updateDof;
+         _persistentRecords._update = update;
       }
       
       
       
-      inline int getPredictorDof() const 
+      inline int getPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._predictorDof;
+         return _persistentRecords._predictor;
       }
       
       
       
-      inline void setPredictorDof(const int& predictorDof) 
+      inline void setPredictor(const int& predictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._predictorDof = predictorDof;
+         _persistentRecords._predictor = predictor;
       }
       
       
       
-      inline int getVolumeFluxesDof() const 
+      inline int getVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._volumeFluxesDof;
+         return _persistentRecords._volumeFlux;
       }
       
       
       
-      inline void setVolumeFluxesDof(const int& volumeFluxesDof) 
+      inline void setVolumeFlux(const int& volumeFlux) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._volumeFluxesDof = volumeFluxesDof;
+         _persistentRecords._volumeFlux = volumeFlux;
       }
       
       
       
-      inline int getExtrapolatedPredictorDof() const 
+      /**
+       * Generated and optimized
+       * 
+       * If you realise a for loop using exclusively arrays (vectors) and compile 
+       * with -DUseManualAlignment you may add 
+       * \code
+       #pragma vector aligned
+       #pragma simd
+       \endcode to this for loop to enforce your compiler to use SSE/AVX.
+       * 
+       * The alignment is tied to the unpacked records, i.e. for packed class
+       * variants the machine's natural alignment is switched off to recude the  
+       * memory footprint. Do not use any SSE/AVX operations or 
+       * vectorisation on the result for the packed variants, as the data is misaligned. 
+       * If you rely on vectorisation, convert the underlying record 
+       * into the unpacked version first. 
+       * 
+       * @see convert()
+       */
+      inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._extrapolatedPredictorDof;
+         return _persistentRecords._extrapolatedPredictor;
       }
       
       
       
-      inline void setExtrapolatedPredictorDof(const int& extrapolatedPredictorDof) 
+      /**
+       * Generated and optimized
+       * 
+       * If you realise a for loop using exclusively arrays (vectors) and compile 
+       * with -DUseManualAlignment you may add 
+       * \code
+       #pragma vector aligned
+       #pragma simd
+       \endcode to this for loop to enforce your compiler to use SSE/AVX.
+       * 
+       * The alignment is tied to the unpacked records, i.e. for packed class
+       * variants the machine's natural alignment is switched off to recude the  
+       * memory footprint. Do not use any SSE/AVX operations or 
+       * vectorisation on the result for the packed variants, as the data is misaligned. 
+       * If you rely on vectorisation, convert the underlying record 
+       * into the unpacked version first. 
+       * 
+       * @see convert()
+       */
+      inline void setExtrapolatedPredictor(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._extrapolatedPredictorDof = extrapolatedPredictorDof;
+         _persistentRecords._extrapolatedPredictor = (extrapolatedPredictor);
       }
       
       
       
-      inline int getNormalFluxesDof() const 
+      inline int getExtrapolatedPredictor(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._normalFluxesDof;
+         assertion(elementIndex>=0);
+         assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+         return _persistentRecords._extrapolatedPredictor[elementIndex];
+         
       }
       
       
       
-      inline void setNormalFluxesDof(const int& normalFluxesDof) 
+      inline void setExtrapolatedPredictor(int elementIndex, const int& extrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._normalFluxesDof = normalFluxesDof;
+         assertion(elementIndex>=0);
+         assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+         _persistentRecords._extrapolatedPredictor[elementIndex]= extrapolatedPredictor;
+         
       }
       
       
       
-      inline int getFluctuationsDof() const 
+      /**
+       * Generated and optimized
+       * 
+       * If you realise a for loop using exclusively arrays (vectors) and compile 
+       * with -DUseManualAlignment you may add 
+       * \code
+       #pragma vector aligned
+       #pragma simd
+       \endcode to this for loop to enforce your compiler to use SSE/AVX.
+       * 
+       * The alignment is tied to the unpacked records, i.e. for packed class
+       * variants the machine's natural alignment is switched off to recude the  
+       * memory footprint. Do not use any SSE/AVX operations or 
+       * vectorisation on the result for the packed variants, as the data is misaligned. 
+       * If you rely on vectorisation, convert the underlying record 
+       * into the unpacked version first. 
+       * 
+       * @see convert()
+       */
+      inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._fluctuationsDof;
+         return _persistentRecords._fluctuation;
       }
       
       
       
-      inline void setFluctuationsDof(const int& fluctuationsDof) 
+      /**
+       * Generated and optimized
+       * 
+       * If you realise a for loop using exclusively arrays (vectors) and compile 
+       * with -DUseManualAlignment you may add 
+       * \code
+       #pragma vector aligned
+       #pragma simd
+       \endcode to this for loop to enforce your compiler to use SSE/AVX.
+       * 
+       * The alignment is tied to the unpacked records, i.e. for packed class
+       * variants the machine's natural alignment is switched off to recude the  
+       * memory footprint. Do not use any SSE/AVX operations or 
+       * vectorisation on the result for the packed variants, as the data is misaligned. 
+       * If you rely on vectorisation, convert the underlying record 
+       * into the unpacked version first. 
+       * 
+       * @see convert()
+       */
+      inline void setFluctuation(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._fluctuationsDof = fluctuationsDof;
+         _persistentRecords._fluctuation = (fluctuation);
+      }
+      
+      
+      
+      inline int getFluctuation(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         assertion(elementIndex>=0);
+         assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+         return _persistentRecords._fluctuation[elementIndex];
+         
+      }
+      
+      
+      
+      inline void setFluctuation(int elementIndex, const int& fluctuation) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         assertion(elementIndex>=0);
+         assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+         _persistentRecords._fluctuation[elementIndex]= fluctuation;
+         
       }
       
       
@@ -797,7 +968,7 @@ class exahype::records::PatchDescription {
       /**
        * Generated
        */
-      PatchDescriptionPacked convert() const;
+      CellDescriptionPacked convert() const;
       
       
    #ifdef Parallel
@@ -855,22 +1026,21 @@ class exahype::records::PatchDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   11/11/2015 17:13
+          * @date   13/11/2015 18:16
           */
-         class exahype::records::PatchDescriptionPacked { 
+         class exahype::records::CellDescriptionPacked { 
             
             public:
                
                struct PersistentRecords {
-                  int _spaceTimePredictorDof;
-                  int _spaceTimeVolumeFluxesDof;
-                  int _dof;
-                  int _updateDof;
-                  int _predictorDof;
-                  int _volumeFluxesDof;
-                  int _extrapolatedPredictorDof;
-                  int _normalFluxesDof;
-                  int _fluctuationsDof;
+                  int _spaceTimePredictor;
+                  int _spaceTimeVolumeFlux;
+                  int _solution;
+                  int _update;
+                  int _predictor;
+                  int _volumeFlux;
+                  tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _extrapolatedPredictor;
+                  tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _fluctuation;
                   int _level;
                   tarch::la::Vector<DIMENSIONS,double> _offset;
                   tarch::la::Vector<DIMENSIONS,double> _size;
@@ -882,185 +1052,241 @@ class exahype::records::PatchDescription {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const int& spaceTimePredictorDof, const int& spaceTimeVolumeFluxesDof, const int& dof, const int& updateDof, const int& predictorDof, const int& volumeFluxesDof, const int& extrapolatedPredictorDof, const int& normalFluxesDof, const int& fluctuationsDof, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+                  PersistentRecords(const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
                   
                   
-                  inline int getSpaceTimePredictorDof() const 
+                  inline int getSpaceTimePredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _spaceTimePredictorDof;
+                     return _spaceTimePredictor;
                   }
                   
                   
                   
-                  inline void setSpaceTimePredictorDof(const int& spaceTimePredictorDof) 
+                  inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _spaceTimePredictorDof = spaceTimePredictorDof;
+                     _spaceTimePredictor = spaceTimePredictor;
                   }
                   
                   
                   
-                  inline int getSpaceTimeVolumeFluxesDof() const 
+                  inline int getSpaceTimeVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _spaceTimeVolumeFluxesDof;
+                     return _spaceTimeVolumeFlux;
                   }
                   
                   
                   
-                  inline void setSpaceTimeVolumeFluxesDof(const int& spaceTimeVolumeFluxesDof) 
+                  inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _spaceTimeVolumeFluxesDof = spaceTimeVolumeFluxesDof;
+                     _spaceTimeVolumeFlux = spaceTimeVolumeFlux;
                   }
                   
                   
                   
-                  inline int getDof() const 
+                  inline int getSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _dof;
+                     return _solution;
                   }
                   
                   
                   
-                  inline void setDof(const int& dof) 
+                  inline void setSolution(const int& solution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _dof = dof;
+                     _solution = solution;
                   }
                   
                   
                   
-                  inline int getUpdateDof() const 
+                  inline int getUpdate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _updateDof;
+                     return _update;
                   }
                   
                   
                   
-                  inline void setUpdateDof(const int& updateDof) 
+                  inline void setUpdate(const int& update) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _updateDof = updateDof;
+                     _update = update;
                   }
                   
                   
                   
-                  inline int getPredictorDof() const 
+                  inline int getPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _predictorDof;
+                     return _predictor;
                   }
                   
                   
                   
-                  inline void setPredictorDof(const int& predictorDof) 
+                  inline void setPredictor(const int& predictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _predictorDof = predictorDof;
+                     _predictor = predictor;
                   }
                   
                   
                   
-                  inline int getVolumeFluxesDof() const 
+                  inline int getVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _volumeFluxesDof;
+                     return _volumeFlux;
                   }
                   
                   
                   
-                  inline void setVolumeFluxesDof(const int& volumeFluxesDof) 
+                  inline void setVolumeFlux(const int& volumeFlux) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _volumeFluxesDof = volumeFluxesDof;
+                     _volumeFlux = volumeFlux;
                   }
                   
                   
                   
-                  inline int getExtrapolatedPredictorDof() const 
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _extrapolatedPredictorDof;
+                     return _extrapolatedPredictor;
                   }
                   
                   
                   
-                  inline void setExtrapolatedPredictorDof(const int& extrapolatedPredictorDof) 
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline void setExtrapolatedPredictor(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _extrapolatedPredictorDof = extrapolatedPredictorDof;
+                     _extrapolatedPredictor = (extrapolatedPredictor);
                   }
                   
                   
                   
-                  inline int getNormalFluxesDof() const 
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _normalFluxesDof;
+                     return _fluctuation;
                   }
                   
                   
                   
-                  inline void setNormalFluxesDof(const int& normalFluxesDof) 
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline void setFluctuation(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _normalFluxesDof = normalFluxesDof;
-                  }
-                  
-                  
-                  
-                  inline int getFluctuationsDof() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _fluctuationsDof;
-                  }
-                  
-                  
-                  
-                  inline void setFluctuationsDof(const int& fluctuationsDof) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _fluctuationsDof = fluctuationsDof;
+                     _fluctuation = (fluctuation);
                   }
                   
                   
@@ -1210,200 +1436,308 @@ class exahype::records::PatchDescription {
                /**
                 * Generated
                 */
-               PatchDescriptionPacked();
+               CellDescriptionPacked();
                
                /**
                 * Generated
                 */
-               PatchDescriptionPacked(const PersistentRecords& persistentRecords);
+               CellDescriptionPacked(const PersistentRecords& persistentRecords);
                
                /**
                 * Generated
                 */
-               PatchDescriptionPacked(const int& spaceTimePredictorDof, const int& spaceTimeVolumeFluxesDof, const int& dof, const int& updateDof, const int& predictorDof, const int& volumeFluxesDof, const int& extrapolatedPredictorDof, const int& normalFluxesDof, const int& fluctuationsDof, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+               CellDescriptionPacked(const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
                
                /**
                 * Generated
                 */
-               ~PatchDescriptionPacked();
+               ~CellDescriptionPacked();
                
                
-               inline int getSpaceTimePredictorDof() const 
+               inline int getSpaceTimePredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._spaceTimePredictorDof;
+                  return _persistentRecords._spaceTimePredictor;
                }
                
                
                
-               inline void setSpaceTimePredictorDof(const int& spaceTimePredictorDof) 
+               inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._spaceTimePredictorDof = spaceTimePredictorDof;
+                  _persistentRecords._spaceTimePredictor = spaceTimePredictor;
                }
                
                
                
-               inline int getSpaceTimeVolumeFluxesDof() const 
+               inline int getSpaceTimeVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._spaceTimeVolumeFluxesDof;
+                  return _persistentRecords._spaceTimeVolumeFlux;
                }
                
                
                
-               inline void setSpaceTimeVolumeFluxesDof(const int& spaceTimeVolumeFluxesDof) 
+               inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._spaceTimeVolumeFluxesDof = spaceTimeVolumeFluxesDof;
+                  _persistentRecords._spaceTimeVolumeFlux = spaceTimeVolumeFlux;
                }
                
                
                
-               inline int getDof() const 
+               inline int getSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._dof;
+                  return _persistentRecords._solution;
                }
                
                
                
-               inline void setDof(const int& dof) 
+               inline void setSolution(const int& solution) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._dof = dof;
+                  _persistentRecords._solution = solution;
                }
                
                
                
-               inline int getUpdateDof() const 
+               inline int getUpdate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._updateDof;
+                  return _persistentRecords._update;
                }
                
                
                
-               inline void setUpdateDof(const int& updateDof) 
+               inline void setUpdate(const int& update) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._updateDof = updateDof;
+                  _persistentRecords._update = update;
                }
                
                
                
-               inline int getPredictorDof() const 
+               inline int getPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._predictorDof;
+                  return _persistentRecords._predictor;
                }
                
                
                
-               inline void setPredictorDof(const int& predictorDof) 
+               inline void setPredictor(const int& predictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._predictorDof = predictorDof;
+                  _persistentRecords._predictor = predictor;
                }
                
                
                
-               inline int getVolumeFluxesDof() const 
+               inline int getVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._volumeFluxesDof;
+                  return _persistentRecords._volumeFlux;
                }
                
                
                
-               inline void setVolumeFluxesDof(const int& volumeFluxesDof) 
+               inline void setVolumeFlux(const int& volumeFlux) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._volumeFluxesDof = volumeFluxesDof;
+                  _persistentRecords._volumeFlux = volumeFlux;
                }
                
                
                
-               inline int getExtrapolatedPredictorDof() const 
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._extrapolatedPredictorDof;
+                  return _persistentRecords._extrapolatedPredictor;
                }
                
                
                
-               inline void setExtrapolatedPredictorDof(const int& extrapolatedPredictorDof) 
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setExtrapolatedPredictor(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._extrapolatedPredictorDof = extrapolatedPredictorDof;
+                  _persistentRecords._extrapolatedPredictor = (extrapolatedPredictor);
                }
                
                
                
-               inline int getNormalFluxesDof() const 
+               inline int getExtrapolatedPredictor(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._normalFluxesDof;
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                  return _persistentRecords._extrapolatedPredictor[elementIndex];
+                  
                }
                
                
                
-               inline void setNormalFluxesDof(const int& normalFluxesDof) 
+               inline void setExtrapolatedPredictor(int elementIndex, const int& extrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._normalFluxesDof = normalFluxesDof;
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                  _persistentRecords._extrapolatedPredictor[elementIndex]= extrapolatedPredictor;
+                  
                }
                
                
                
-               inline int getFluctuationsDof() const 
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._fluctuationsDof;
+                  return _persistentRecords._fluctuation;
                }
                
                
                
-               inline void setFluctuationsDof(const int& fluctuationsDof) 
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setFluctuation(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._fluctuationsDof = fluctuationsDof;
+                  _persistentRecords._fluctuation = (fluctuation);
+               }
+               
+               
+               
+               inline int getFluctuation(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                  return _persistentRecords._fluctuation[elementIndex];
+                  
+               }
+               
+               
+               
+               inline void setFluctuation(int elementIndex, const int& fluctuation) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                  _persistentRecords._fluctuation[elementIndex]= fluctuation;
+                  
                }
                
                
@@ -1610,7 +1944,7 @@ class exahype::records::PatchDescription {
                /**
                 * Generated
                 */
-               PatchDescription convert() const;
+               CellDescription convert() const;
                
                
             #ifdef Parallel

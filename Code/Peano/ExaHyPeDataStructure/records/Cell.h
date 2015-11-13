@@ -17,7 +17,7 @@
 #include <complex>
 #include <string>
 #include <iostream>
-#include "ExaHyPeDataStructure/PdeInfo.h"
+#include "ExaHyPeDataStructure/Constants.h"
 
 namespace exahype {
    namespace records {
@@ -35,7 +35,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   11/11/2015 17:13
+    * @date   13/11/2015 18:16
     */
    class exahype::records::Cell { 
       
@@ -49,9 +49,9 @@ namespace exahype {
          
          struct PersistentRecords {
             #ifdef UseManualAlignment
-            tarch::la::Vector<NUM_PDE,int> _patchIndex __attribute__((aligned(VectorisationAlignment)));
+            tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex __attribute__((aligned(VectorisationAlignment)));
             #else
-            tarch::la::Vector<NUM_PDE,int> _patchIndex;
+            tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
             #endif
             bool _riemannSolveNotDone;
             bool _isInside;
@@ -76,7 +76,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+            PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
             
             
             /**
@@ -98,12 +98,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+            inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _patchIndex;
+               return _cellDescriptionIndex;
             }
             
             
@@ -127,12 +127,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+            inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _patchIndex = (patchIndex);
+               _cellDescriptionIndex = (cellDescriptionIndex);
             }
             
             
@@ -372,7 +372,7 @@ namespace exahype {
          /**
           * Generated
           */
-         Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+         Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
          
          /**
           * Generated
@@ -399,12 +399,12 @@ namespace exahype {
           * 
           * @see convert()
           */
-         inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+         inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _persistentRecords._patchIndex;
+            return _persistentRecords._cellDescriptionIndex;
          }
          
          
@@ -428,37 +428,37 @@ namespace exahype {
           * 
           * @see convert()
           */
-         inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+         inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _persistentRecords._patchIndex = (patchIndex);
+            _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
          }
          
          
          
-         inline int getPatchIndex(int elementIndex) const 
+         inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
             assertion(elementIndex>=0);
             assertion(elementIndex<NUM_PDE);
-            return _persistentRecords._patchIndex[elementIndex];
+            return _persistentRecords._cellDescriptionIndex[elementIndex];
             
          }
          
          
          
-         inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+         inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
             assertion(elementIndex>=0);
             assertion(elementIndex<NUM_PDE);
-            _persistentRecords._patchIndex[elementIndex]= patchIndex;
+            _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
             
          }
          
@@ -830,7 +830,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   11/11/2015 17:13
+       * @date   13/11/2015 18:16
        */
       class exahype::records::CellPacked { 
          
@@ -839,7 +839,7 @@ namespace exahype {
             typedef exahype::records::Cell::State State;
             
             struct PersistentRecords {
-               tarch::la::Vector<NUM_PDE,int> _patchIndex;
+               tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
                bool _riemannSolveNotDone;
                tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                int _numberOfLoadsFromInputStream;
@@ -861,7 +861,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+               PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                
                
                /**
@@ -883,12 +883,12 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+               inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _patchIndex;
+                  return _cellDescriptionIndex;
                }
                
                
@@ -912,12 +912,12 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+               inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _patchIndex = (patchIndex);
+                  _cellDescriptionIndex = (cellDescriptionIndex);
                }
                
                
@@ -1177,7 +1177,7 @@ namespace exahype {
             /**
              * Generated
              */
-            CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+            CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
             
             /**
              * Generated
@@ -1204,12 +1204,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+            inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _persistentRecords._patchIndex;
+               return _persistentRecords._cellDescriptionIndex;
             }
             
             
@@ -1233,37 +1233,37 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+            inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _persistentRecords._patchIndex = (patchIndex);
+               _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
             }
             
             
             
-            inline int getPatchIndex(int elementIndex) const 
+            inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                assertion(elementIndex>=0);
                assertion(elementIndex<NUM_PDE);
-               return _persistentRecords._patchIndex[elementIndex];
+               return _persistentRecords._cellDescriptionIndex[elementIndex];
                
             }
             
             
             
-            inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+            inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                assertion(elementIndex>=0);
                assertion(elementIndex<NUM_PDE);
-               _persistentRecords._patchIndex[elementIndex]= patchIndex;
+               _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                
             }
             
@@ -1659,7 +1659,7 @@ namespace exahype {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   11/11/2015 17:13
+          * @date   13/11/2015 18:16
           */
          class exahype::records::Cell { 
             
@@ -1673,9 +1673,9 @@ namespace exahype {
                
                struct PersistentRecords {
                   #ifdef UseManualAlignment
-                  tarch::la::Vector<NUM_PDE,int> _patchIndex __attribute__((aligned(VectorisationAlignment)));
+                  tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex __attribute__((aligned(VectorisationAlignment)));
                   #else
-                  tarch::la::Vector<NUM_PDE,int> _patchIndex;
+                  tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
                   #endif
                   bool _riemannSolveNotDone;
                   bool _isInside;
@@ -1699,7 +1699,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                  PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
                   
                   
                   /**
@@ -1721,12 +1721,12 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                  inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _patchIndex;
+                     return _cellDescriptionIndex;
                   }
                   
                   
@@ -1750,12 +1750,12 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                  inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _patchIndex = (patchIndex);
+                     _cellDescriptionIndex = (cellDescriptionIndex);
                   }
                   
                   
@@ -1975,7 +1975,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+               Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
                
                /**
                 * Generated
@@ -2002,12 +2002,12 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+               inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._patchIndex;
+                  return _persistentRecords._cellDescriptionIndex;
                }
                
                
@@ -2031,37 +2031,37 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+               inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._patchIndex = (patchIndex);
+                  _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                }
                
                
                
-               inline int getPatchIndex(int elementIndex) const 
+               inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                   assertion(elementIndex>=0);
                   assertion(elementIndex<NUM_PDE);
-                  return _persistentRecords._patchIndex[elementIndex];
+                  return _persistentRecords._cellDescriptionIndex[elementIndex];
                   
                }
                
                
                
-               inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+               inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                   assertion(elementIndex>=0);
                   assertion(elementIndex<NUM_PDE);
-                  _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                  _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                   
                }
                
@@ -2413,7 +2413,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   11/11/2015 17:13
+             * @date   13/11/2015 18:16
              */
             class exahype::records::CellPacked { 
                
@@ -2422,7 +2422,7 @@ namespace exahype {
                   typedef exahype::records::Cell::State State;
                   
                   struct PersistentRecords {
-                     tarch::la::Vector<NUM_PDE,int> _patchIndex;
+                     tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
                      bool _riemannSolveNotDone;
                      int _level;
                      tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
@@ -2443,7 +2443,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                     PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
                      
                      
                      /**
@@ -2465,12 +2465,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                     inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _patchIndex;
+                        return _cellDescriptionIndex;
                      }
                      
                      
@@ -2494,12 +2494,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                     inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _patchIndex = (patchIndex);
+                        _cellDescriptionIndex = (cellDescriptionIndex);
                      }
                      
                      
@@ -2739,7 +2739,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                  CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
                   
                   /**
                    * Generated
@@ -2766,12 +2766,12 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                  inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._patchIndex;
+                     return _persistentRecords._cellDescriptionIndex;
                   }
                   
                   
@@ -2795,37 +2795,37 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                  inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._patchIndex = (patchIndex);
+                     _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                   }
                   
                   
                   
-                  inline int getPatchIndex(int elementIndex) const 
+                  inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<NUM_PDE);
-                     return _persistentRecords._patchIndex[elementIndex];
+                     return _persistentRecords._cellDescriptionIndex[elementIndex];
                      
                   }
                   
                   
                   
-                  inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                  inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<NUM_PDE);
-                     _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                     _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                      
                   }
                   
@@ -3202,7 +3202,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   11/11/2015 17:13
+             * @date   13/11/2015 18:16
              */
             class exahype::records::Cell { 
                
@@ -3216,9 +3216,9 @@ namespace exahype {
                   
                   struct PersistentRecords {
                      #ifdef UseManualAlignment
-                     tarch::la::Vector<NUM_PDE,int> _patchIndex __attribute__((aligned(VectorisationAlignment)));
+                     tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex __attribute__((aligned(VectorisationAlignment)));
                      #else
-                     tarch::la::Vector<NUM_PDE,int> _patchIndex;
+                     tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
                      #endif
                      bool _riemannSolveNotDone;
                      bool _isInside;
@@ -3249,7 +3249,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                     PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
                      
                      
                      /**
@@ -3271,12 +3271,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                     inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _patchIndex;
+                        return _cellDescriptionIndex;
                      }
                      
                      
@@ -3300,12 +3300,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                     inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _patchIndex = (patchIndex);
+                        _cellDescriptionIndex = (cellDescriptionIndex);
                      }
                      
                      
@@ -3665,7 +3665,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                  Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
                   
                   /**
                    * Generated
@@ -3692,12 +3692,12 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                  inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._patchIndex;
+                     return _persistentRecords._cellDescriptionIndex;
                   }
                   
                   
@@ -3721,37 +3721,37 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                  inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._patchIndex = (patchIndex);
+                     _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                   }
                   
                   
                   
-                  inline int getPatchIndex(int elementIndex) const 
+                  inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<NUM_PDE);
-                     return _persistentRecords._patchIndex[elementIndex];
+                     return _persistentRecords._cellDescriptionIndex[elementIndex];
                      
                   }
                   
                   
                   
-                  inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                  inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<NUM_PDE);
-                     _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                     _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                      
                   }
                   
@@ -4243,7 +4243,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   11/11/2015 17:13
+                * @date   13/11/2015 18:16
                 */
                class exahype::records::CellPacked { 
                   
@@ -4252,7 +4252,7 @@ namespace exahype {
                      typedef exahype::records::Cell::State State;
                      
                      struct PersistentRecords {
-                        tarch::la::Vector<NUM_PDE,int> _patchIndex;
+                        tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
                         bool _riemannSolveNotDone;
                         tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                         int _responsibleRank;
@@ -4280,7 +4280,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                        PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
                         
                         
                         /**
@@ -4302,12 +4302,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                        inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _patchIndex;
+                           return _cellDescriptionIndex;
                         }
                         
                         
@@ -4331,12 +4331,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                        inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           _patchIndex = (patchIndex);
+                           _cellDescriptionIndex = (cellDescriptionIndex);
                         }
                         
                         
@@ -4719,7 +4719,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                     CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
                      
                      /**
                       * Generated
@@ -4746,12 +4746,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                     inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _persistentRecords._patchIndex;
+                        return _persistentRecords._cellDescriptionIndex;
                      }
                      
                      
@@ -4775,37 +4775,37 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                     inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _persistentRecords._patchIndex = (patchIndex);
+                        _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                      }
                      
                      
                      
-                     inline int getPatchIndex(int elementIndex) const 
+                     inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                         assertion(elementIndex>=0);
                         assertion(elementIndex<NUM_PDE);
-                        return _persistentRecords._patchIndex[elementIndex];
+                        return _persistentRecords._cellDescriptionIndex[elementIndex];
                         
                      }
                      
                      
                      
-                     inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                     inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                         assertion(elementIndex>=0);
                         assertion(elementIndex<NUM_PDE);
-                        _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                        _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                         
                      }
                      
@@ -5325,7 +5325,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   11/11/2015 17:13
+                * @date   13/11/2015 18:16
                 */
                class exahype::records::Cell { 
                   
@@ -5339,9 +5339,9 @@ namespace exahype {
                      
                      struct PersistentRecords {
                         #ifdef UseManualAlignment
-                        tarch::la::Vector<NUM_PDE,int> _patchIndex __attribute__((aligned(VectorisationAlignment)));
+                        tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex __attribute__((aligned(VectorisationAlignment)));
                         #else
-                        tarch::la::Vector<NUM_PDE,int> _patchIndex;
+                        tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
                         #endif
                         bool _riemannSolveNotDone;
                         bool _isInside;
@@ -5364,7 +5364,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                        PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
                         
                         
                         /**
@@ -5386,12 +5386,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                        inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _patchIndex;
+                           return _cellDescriptionIndex;
                         }
                         
                         
@@ -5415,12 +5415,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                        inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           _patchIndex = (patchIndex);
+                           _cellDescriptionIndex = (cellDescriptionIndex);
                         }
                         
                         
@@ -5620,7 +5620,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                     Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
                      
                      /**
                       * Generated
@@ -5647,12 +5647,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                     inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _persistentRecords._patchIndex;
+                        return _persistentRecords._cellDescriptionIndex;
                      }
                      
                      
@@ -5676,37 +5676,37 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                     inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _persistentRecords._patchIndex = (patchIndex);
+                        _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                      }
                      
                      
                      
-                     inline int getPatchIndex(int elementIndex) const 
+                     inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                         assertion(elementIndex>=0);
                         assertion(elementIndex<NUM_PDE);
-                        return _persistentRecords._patchIndex[elementIndex];
+                        return _persistentRecords._cellDescriptionIndex[elementIndex];
                         
                      }
                      
                      
                      
-                     inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                     inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                         assertion(elementIndex>=0);
                         assertion(elementIndex<NUM_PDE);
-                        _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                        _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                         
                      }
                      
@@ -6038,7 +6038,7 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   11/11/2015 17:13
+                   * @date   13/11/2015 18:16
                    */
                   class exahype::records::CellPacked { 
                      
@@ -6047,7 +6047,7 @@ namespace exahype {
                         typedef exahype::records::Cell::State State;
                         
                         struct PersistentRecords {
-                           tarch::la::Vector<NUM_PDE,int> _patchIndex;
+                           tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
                            bool _riemannSolveNotDone;
                            tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                            
@@ -6067,7 +6067,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                           PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
                            
                            
                            /**
@@ -6089,12 +6089,12 @@ namespace exahype {
                             * 
                             * @see convert()
                             */
-                           inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                           inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              return _patchIndex;
+                              return _cellDescriptionIndex;
                            }
                            
                            
@@ -6118,12 +6118,12 @@ namespace exahype {
                             * 
                             * @see convert()
                             */
-                           inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                           inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              _patchIndex = (patchIndex);
+                              _cellDescriptionIndex = (cellDescriptionIndex);
                            }
                            
                            
@@ -6343,7 +6343,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                        CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
                         
                         /**
                          * Generated
@@ -6370,12 +6370,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                        inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _persistentRecords._patchIndex;
+                           return _persistentRecords._cellDescriptionIndex;
                         }
                         
                         
@@ -6399,37 +6399,37 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                        inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           _persistentRecords._patchIndex = (patchIndex);
+                           _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                         }
                         
                         
                         
-                        inline int getPatchIndex(int elementIndex) const 
+                        inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                            assertion(elementIndex>=0);
                            assertion(elementIndex<NUM_PDE);
-                           return _persistentRecords._patchIndex[elementIndex];
+                           return _persistentRecords._cellDescriptionIndex[elementIndex];
                            
                         }
                         
                         
                         
-                        inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                        inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                            assertion(elementIndex>=0);
                            assertion(elementIndex<NUM_PDE);
-                           _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                           _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                            
                         }
                         
@@ -6786,7 +6786,7 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   11/11/2015 17:13
+                   * @date   13/11/2015 18:16
                    */
                   class exahype::records::Cell { 
                      
@@ -6800,9 +6800,9 @@ namespace exahype {
                         
                         struct PersistentRecords {
                            #ifdef UseManualAlignment
-                           tarch::la::Vector<NUM_PDE,int> _patchIndex __attribute__((aligned(VectorisationAlignment)));
+                           tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex __attribute__((aligned(VectorisationAlignment)));
                            #else
-                           tarch::la::Vector<NUM_PDE,int> _patchIndex;
+                           tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
                            #endif
                            bool _riemannSolveNotDone;
                            bool _isInside;
@@ -6836,7 +6836,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                           PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                            
                            
                            /**
@@ -6858,12 +6858,12 @@ namespace exahype {
                             * 
                             * @see convert()
                             */
-                           inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                           inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              return _patchIndex;
+                              return _cellDescriptionIndex;
                            }
                            
                            
@@ -6887,12 +6887,12 @@ namespace exahype {
                             * 
                             * @see convert()
                             */
-                           inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                           inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              _patchIndex = (patchIndex);
+                              _cellDescriptionIndex = (cellDescriptionIndex);
                            }
                            
                            
@@ -7312,7 +7312,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                        Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                         
                         /**
                          * Generated
@@ -7339,12 +7339,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                        inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _persistentRecords._patchIndex;
+                           return _persistentRecords._cellDescriptionIndex;
                         }
                         
                         
@@ -7368,37 +7368,37 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                        inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           _persistentRecords._patchIndex = (patchIndex);
+                           _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                         }
                         
                         
                         
-                        inline int getPatchIndex(int elementIndex) const 
+                        inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                            assertion(elementIndex>=0);
                            assertion(elementIndex<NUM_PDE);
-                           return _persistentRecords._patchIndex[elementIndex];
+                           return _persistentRecords._cellDescriptionIndex[elementIndex];
                            
                         }
                         
                         
                         
-                        inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                        inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                            assertion(elementIndex>=0);
                            assertion(elementIndex<NUM_PDE);
-                           _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                           _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                            
                         }
                         
@@ -7950,7 +7950,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   11/11/2015 17:13
+                      * @date   13/11/2015 18:16
                       */
                      class exahype::records::CellPacked { 
                         
@@ -7959,7 +7959,7 @@ namespace exahype {
                            typedef exahype::records::Cell::State State;
                            
                            struct PersistentRecords {
-                              tarch::la::Vector<NUM_PDE,int> _patchIndex;
+                              tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
                               bool _riemannSolveNotDone;
                               int _level;
                               tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
@@ -7990,7 +7990,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                              PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                               
                               
                               /**
@@ -8012,12 +8012,12 @@ namespace exahype {
                                * 
                                * @see convert()
                                */
-                              inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                              inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 return _patchIndex;
+                                 return _cellDescriptionIndex;
                               }
                               
                               
@@ -8041,12 +8041,12 @@ namespace exahype {
                                * 
                                * @see convert()
                                */
-                              inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                              inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 _patchIndex = (patchIndex);
+                                 _cellDescriptionIndex = (cellDescriptionIndex);
                               }
                               
                               
@@ -8489,7 +8489,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                           CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                            
                            /**
                             * Generated
@@ -8516,12 +8516,12 @@ namespace exahype {
                             * 
                             * @see convert()
                             */
-                           inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                           inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              return _persistentRecords._patchIndex;
+                              return _persistentRecords._cellDescriptionIndex;
                            }
                            
                            
@@ -8545,37 +8545,37 @@ namespace exahype {
                             * 
                             * @see convert()
                             */
-                           inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                           inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              _persistentRecords._patchIndex = (patchIndex);
+                              _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                            }
                            
                            
                            
-                           inline int getPatchIndex(int elementIndex) const 
+                           inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                               assertion(elementIndex>=0);
                               assertion(elementIndex<NUM_PDE);
-                              return _persistentRecords._patchIndex[elementIndex];
+                              return _persistentRecords._cellDescriptionIndex[elementIndex];
                               
                            }
                            
                            
                            
-                           inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                           inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                               assertion(elementIndex>=0);
                               assertion(elementIndex<NUM_PDE);
-                              _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                              _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                               
                            }
                            
@@ -9155,7 +9155,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   11/11/2015 17:13
+                      * @date   13/11/2015 18:16
                       */
                      class exahype::records::Cell { 
                         
@@ -9169,9 +9169,9 @@ namespace exahype {
                            
                            struct PersistentRecords {
                               #ifdef UseManualAlignment
-                              tarch::la::Vector<NUM_PDE,int> _patchIndex __attribute__((aligned(VectorisationAlignment)));
+                              tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex __attribute__((aligned(VectorisationAlignment)));
                               #else
-                              tarch::la::Vector<NUM_PDE,int> _patchIndex;
+                              tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
                               #endif
                               bool _riemannSolveNotDone;
                               bool _isInside;
@@ -9203,7 +9203,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                              PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
                               
                               
                               /**
@@ -9225,12 +9225,12 @@ namespace exahype {
                                * 
                                * @see convert()
                                */
-                              inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                              inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 return _patchIndex;
+                                 return _cellDescriptionIndex;
                               }
                               
                               
@@ -9254,12 +9254,12 @@ namespace exahype {
                                * 
                                * @see convert()
                                */
-                              inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                              inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 _patchIndex = (patchIndex);
+                                 _cellDescriptionIndex = (cellDescriptionIndex);
                               }
                               
                               
@@ -9639,7 +9639,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                           Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
                            
                            /**
                             * Generated
@@ -9666,12 +9666,12 @@ namespace exahype {
                             * 
                             * @see convert()
                             */
-                           inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                           inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              return _persistentRecords._patchIndex;
+                              return _persistentRecords._cellDescriptionIndex;
                            }
                            
                            
@@ -9695,37 +9695,37 @@ namespace exahype {
                             * 
                             * @see convert()
                             */
-                           inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                           inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              _persistentRecords._patchIndex = (patchIndex);
+                              _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                            }
                            
                            
                            
-                           inline int getPatchIndex(int elementIndex) const 
+                           inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                               assertion(elementIndex>=0);
                               assertion(elementIndex<NUM_PDE);
-                              return _persistentRecords._patchIndex[elementIndex];
+                              return _persistentRecords._cellDescriptionIndex[elementIndex];
                               
                            }
                            
                            
                            
-                           inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                           inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                               assertion(elementIndex>=0);
                               assertion(elementIndex<NUM_PDE);
-                              _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                              _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                               
                            }
                            
@@ -10237,7 +10237,7 @@ namespace exahype {
                          *
                          * 		   build date: 09-02-2014 14:40
                          *
-                         * @date   11/11/2015 17:13
+                         * @date   13/11/2015 18:16
                          */
                         class exahype::records::CellPacked { 
                            
@@ -10246,7 +10246,7 @@ namespace exahype {
                               typedef exahype::records::Cell::State State;
                               
                               struct PersistentRecords {
-                                 tarch::la::Vector<NUM_PDE,int> _patchIndex;
+                                 tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
                                  bool _riemannSolveNotDone;
                                  int _level;
                                  tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
@@ -10275,7 +10275,7 @@ namespace exahype {
                                  /**
                                   * Generated
                                   */
-                                 PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                                 PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
                                  
                                  
                                  /**
@@ -10297,12 +10297,12 @@ namespace exahype {
                                   * 
                                   * @see convert()
                                   */
-                                 inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                                 inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                    return _patchIndex;
+                                    return _cellDescriptionIndex;
                                  }
                                  
                                  
@@ -10326,12 +10326,12 @@ namespace exahype {
                                   * 
                                   * @see convert()
                                   */
-                                 inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                                 inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                    _patchIndex = (patchIndex);
+                                    _cellDescriptionIndex = (cellDescriptionIndex);
                                  }
                                  
                                  
@@ -10734,7 +10734,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                              CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
                               
                               /**
                                * Generated
@@ -10761,12 +10761,12 @@ namespace exahype {
                                * 
                                * @see convert()
                                */
-                              inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                              inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 return _persistentRecords._patchIndex;
+                                 return _persistentRecords._cellDescriptionIndex;
                               }
                               
                               
@@ -10790,37 +10790,37 @@ namespace exahype {
                                * 
                                * @see convert()
                                */
-                              inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                              inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 _persistentRecords._patchIndex = (patchIndex);
+                                 _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                               }
                               
                               
                               
-                              inline int getPatchIndex(int elementIndex) const 
+                              inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                  assertion(elementIndex>=0);
                                  assertion(elementIndex<NUM_PDE);
-                                 return _persistentRecords._patchIndex[elementIndex];
+                                 return _persistentRecords._cellDescriptionIndex[elementIndex];
                                  
                               }
                               
                               
                               
-                              inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                              inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                  assertion(elementIndex>=0);
                                  assertion(elementIndex<NUM_PDE);
-                                 _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                                 _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                                  
                               }
                               
@@ -11360,7 +11360,7 @@ namespace exahype {
                          *
                          * 		   build date: 09-02-2014 14:40
                          *
-                         * @date   11/11/2015 17:13
+                         * @date   13/11/2015 18:16
                          */
                         class exahype::records::Cell { 
                            
@@ -11374,9 +11374,9 @@ namespace exahype {
                               
                               struct PersistentRecords {
                                  #ifdef UseManualAlignment
-                                 tarch::la::Vector<NUM_PDE,int> _patchIndex __attribute__((aligned(VectorisationAlignment)));
+                                 tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex __attribute__((aligned(VectorisationAlignment)));
                                  #else
-                                 tarch::la::Vector<NUM_PDE,int> _patchIndex;
+                                 tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
                                  #endif
                                  bool _riemannSolveNotDone;
                                  bool _isInside;
@@ -11409,7 +11409,7 @@ namespace exahype {
                                  /**
                                   * Generated
                                   */
-                                 PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                 PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                  
                                  
                                  /**
@@ -11431,12 +11431,12 @@ namespace exahype {
                                   * 
                                   * @see convert()
                                   */
-                                 inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                                 inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                    return _patchIndex;
+                                    return _cellDescriptionIndex;
                                  }
                                  
                                  
@@ -11460,12 +11460,12 @@ namespace exahype {
                                   * 
                                   * @see convert()
                                   */
-                                 inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                                 inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                    _patchIndex = (patchIndex);
+                                    _cellDescriptionIndex = (cellDescriptionIndex);
                                  }
                                  
                                  
@@ -11865,7 +11865,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                              Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                               
                               /**
                                * Generated
@@ -11892,12 +11892,12 @@ namespace exahype {
                                * 
                                * @see convert()
                                */
-                              inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                              inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 return _persistentRecords._patchIndex;
+                                 return _persistentRecords._cellDescriptionIndex;
                               }
                               
                               
@@ -11921,37 +11921,37 @@ namespace exahype {
                                * 
                                * @see convert()
                                */
-                              inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                              inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                 _persistentRecords._patchIndex = (patchIndex);
+                                 _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                               }
                               
                               
                               
-                              inline int getPatchIndex(int elementIndex) const 
+                              inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                  assertion(elementIndex>=0);
                                  assertion(elementIndex<NUM_PDE);
-                                 return _persistentRecords._patchIndex[elementIndex];
+                                 return _persistentRecords._cellDescriptionIndex[elementIndex];
                                  
                               }
                               
                               
                               
-                              inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                              inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                  assertion(elementIndex>=0);
                                  assertion(elementIndex<NUM_PDE);
-                                 _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                                 _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                                  
                               }
                               
@@ -12483,7 +12483,7 @@ namespace exahype {
                             *
                             * 		   build date: 09-02-2014 14:40
                             *
-                            * @date   11/11/2015 17:13
+                            * @date   13/11/2015 18:16
                             */
                            class exahype::records::CellPacked { 
                               
@@ -12492,7 +12492,7 @@ namespace exahype {
                                  typedef exahype::records::Cell::State State;
                                  
                                  struct PersistentRecords {
-                                    tarch::la::Vector<NUM_PDE,int> _patchIndex;
+                                    tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
                                     bool _riemannSolveNotDone;
                                     tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                                     int _responsibleRank;
@@ -12522,7 +12522,7 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                    PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                     
                                     
                                     /**
@@ -12544,12 +12544,12 @@ namespace exahype {
                                      * 
                                      * @see convert()
                                      */
-                                    inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                                    inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                       return _patchIndex;
+                                       return _cellDescriptionIndex;
                                     }
                                     
                                     
@@ -12573,12 +12573,12 @@ namespace exahype {
                                      * 
                                      * @see convert()
                                      */
-                                    inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                                    inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                       _patchIndex = (patchIndex);
+                                       _cellDescriptionIndex = (cellDescriptionIndex);
                                     }
                                     
                                     
@@ -13001,7 +13001,7 @@ namespace exahype {
                                  /**
                                   * Generated
                                   */
-                                 CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                 CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                  
                                  /**
                                   * Generated
@@ -13028,12 +13028,12 @@ namespace exahype {
                                   * 
                                   * @see convert()
                                   */
-                                 inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                                 inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                    return _persistentRecords._patchIndex;
+                                    return _persistentRecords._cellDescriptionIndex;
                                  }
                                  
                                  
@@ -13057,37 +13057,37 @@ namespace exahype {
                                   * 
                                   * @see convert()
                                   */
-                                 inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                                 inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                    _persistentRecords._patchIndex = (patchIndex);
+                                    _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                                  }
                                  
                                  
                                  
-                                 inline int getPatchIndex(int elementIndex) const 
+                                 inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                     assertion(elementIndex>=0);
                                     assertion(elementIndex<NUM_PDE);
-                                    return _persistentRecords._patchIndex[elementIndex];
+                                    return _persistentRecords._cellDescriptionIndex[elementIndex];
                                     
                                  }
                                  
                                  
                                  
-                                 inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                                 inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                     assertion(elementIndex>=0);
                                     assertion(elementIndex<NUM_PDE);
-                                    _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                                    _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                                     
                                  }
                                  
@@ -13647,7 +13647,7 @@ namespace exahype {
                             *
                             * 		   build date: 09-02-2014 14:40
                             *
-                            * @date   11/11/2015 17:13
+                            * @date   13/11/2015 18:16
                             */
                            class exahype::records::Cell { 
                               
@@ -13661,9 +13661,9 @@ namespace exahype {
                                  
                                  struct PersistentRecords {
                                     #ifdef UseManualAlignment
-                                    tarch::la::Vector<NUM_PDE,int> _patchIndex __attribute__((aligned(VectorisationAlignment)));
+                                    tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex __attribute__((aligned(VectorisationAlignment)));
                                     #else
-                                    tarch::la::Vector<NUM_PDE,int> _patchIndex;
+                                    tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
                                     #endif
                                     bool _riemannSolveNotDone;
                                     bool _isInside;
@@ -13689,7 +13689,7 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                    PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                     
                                     
                                     /**
@@ -13711,12 +13711,12 @@ namespace exahype {
                                      * 
                                      * @see convert()
                                      */
-                                    inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                                    inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                       return _patchIndex;
+                                       return _cellDescriptionIndex;
                                     }
                                     
                                     
@@ -13740,12 +13740,12 @@ namespace exahype {
                                      * 
                                      * @see convert()
                                      */
-                                    inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                                    inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                       _patchIndex = (patchIndex);
+                                       _cellDescriptionIndex = (cellDescriptionIndex);
                                     }
                                     
                                     
@@ -14005,7 +14005,7 @@ namespace exahype {
                                  /**
                                   * Generated
                                   */
-                                 Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                 Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                  
                                  /**
                                   * Generated
@@ -14032,12 +14032,12 @@ namespace exahype {
                                   * 
                                   * @see convert()
                                   */
-                                 inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                                 inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                    return _persistentRecords._patchIndex;
+                                    return _persistentRecords._cellDescriptionIndex;
                                  }
                                  
                                  
@@ -14061,37 +14061,37 @@ namespace exahype {
                                   * 
                                   * @see convert()
                                   */
-                                 inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                                 inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                    _persistentRecords._patchIndex = (patchIndex);
+                                    _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                                  }
                                  
                                  
                                  
-                                 inline int getPatchIndex(int elementIndex) const 
+                                 inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                     assertion(elementIndex>=0);
                                     assertion(elementIndex<NUM_PDE);
-                                    return _persistentRecords._patchIndex[elementIndex];
+                                    return _persistentRecords._cellDescriptionIndex[elementIndex];
                                     
                                  }
                                  
                                  
                                  
-                                 inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                                 inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                     assertion(elementIndex>=0);
                                     assertion(elementIndex<NUM_PDE);
-                                    _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                                    _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                                     
                                  }
                                  
@@ -14483,7 +14483,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   11/11/2015 17:13
+                               * @date   13/11/2015 18:16
                                */
                               class exahype::records::CellPacked { 
                                  
@@ -14492,7 +14492,7 @@ namespace exahype {
                                     typedef exahype::records::Cell::State State;
                                     
                                     struct PersistentRecords {
-                                       tarch::la::Vector<NUM_PDE,int> _patchIndex;
+                                       tarch::la::Vector<NUM_PDE,int> _cellDescriptionIndex;
                                        bool _riemannSolveNotDone;
                                        int _level;
                                        tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
@@ -14515,7 +14515,7 @@ namespace exahype {
                                        /**
                                         * Generated
                                         */
-                                       PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                       PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                        
                                        
                                        /**
@@ -14537,12 +14537,12 @@ namespace exahype {
                                         * 
                                         * @see convert()
                                         */
-                                       inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                                       inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                          return _patchIndex;
+                                          return _cellDescriptionIndex;
                                        }
                                        
                                        
@@ -14566,12 +14566,12 @@ namespace exahype {
                                         * 
                                         * @see convert()
                                         */
-                                       inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                                       inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                          _patchIndex = (patchIndex);
+                                          _cellDescriptionIndex = (cellDescriptionIndex);
                                        }
                                        
                                        
@@ -14851,7 +14851,7 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                    CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                     
                                     /**
                                      * Generated
@@ -14878,12 +14878,12 @@ namespace exahype {
                                      * 
                                      * @see convert()
                                      */
-                                    inline tarch::la::Vector<NUM_PDE,int> getPatchIndex() const 
+                                    inline tarch::la::Vector<NUM_PDE,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                       return _persistentRecords._patchIndex;
+                                       return _persistentRecords._cellDescriptionIndex;
                                     }
                                     
                                     
@@ -14907,37 +14907,37 @@ namespace exahype {
                                      * 
                                      * @see convert()
                                      */
-                                    inline void setPatchIndex(const tarch::la::Vector<NUM_PDE,int>& patchIndex) 
+                                    inline void setCellDescriptionIndex(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                                       _persistentRecords._patchIndex = (patchIndex);
+                                       _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                                     }
                                     
                                     
                                     
-                                    inline int getPatchIndex(int elementIndex) const 
+                                    inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                        assertion(elementIndex>=0);
                                        assertion(elementIndex<NUM_PDE);
-                                       return _persistentRecords._patchIndex[elementIndex];
+                                       return _persistentRecords._cellDescriptionIndex[elementIndex];
                                        
                                     }
                                     
                                     
                                     
-                                    inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                                    inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                                        assertion(elementIndex>=0);
                                        assertion(elementIndex<NUM_PDE);
-                                       _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                                       _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                                        
                                     }
                                     

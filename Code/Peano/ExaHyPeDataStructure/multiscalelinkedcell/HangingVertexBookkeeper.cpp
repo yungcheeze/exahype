@@ -239,25 +239,25 @@ tarch::la::Vector<TWO_POWER_D,int> multiscalelinkedcell::HangingVertexBookkeeper
 
 
   tarch::la::Vector<DIMENSIONS,int>   fromCoarseGridVertex;
-  tarch::la::Vector<DIMENSIONS,int>   coarseGridVertexAdjacentPatchIndex;
+  tarch::la::Vector<DIMENSIONS,int>   coarseGridVertexAdjacentCellDescriptionIndex;
 
   dfor2(k)
     for (int d=0; d<DIMENSIONS; d++) {
       if (fineGridPositionOfVertex(d)==0) {
         fromCoarseGridVertex(d)               = 0;
-        coarseGridVertexAdjacentPatchIndex(d) = k(d);
+        coarseGridVertexAdjacentCellDescriptionIndex(d) = k(d);
       }
       else if (fineGridPositionOfVertex(d)==3) {
         fromCoarseGridVertex(d)               = 1;
-        coarseGridVertexAdjacentPatchIndex(d) = k(d);
+        coarseGridVertexAdjacentCellDescriptionIndex(d) = k(d);
       }
       else if (k(d)==0) {
         fromCoarseGridVertex(d)               = 0;
-        coarseGridVertexAdjacentPatchIndex(d) = 1;
+        coarseGridVertexAdjacentCellDescriptionIndex(d) = 1;
       }
       else {
         fromCoarseGridVertex(d)               = 1;
-        coarseGridVertexAdjacentPatchIndex(d) = 0;
+        coarseGridVertexAdjacentCellDescriptionIndex(d) = 0;
       }
     }
 
@@ -268,7 +268,7 @@ tarch::la::Vector<TWO_POWER_D,int> multiscalelinkedcell::HangingVertexBookkeeper
      ) {
       _vertexMap[key].indicesOfAdjacentCells(kScalar) = adjacencyEntries(
         peano::utils::dLinearised(fromCoarseGridVertex,2) * TWO_POWER_D +
-        peano::utils::dLinearised(coarseGridVertexAdjacentPatchIndex,2)
+        peano::utils::dLinearised(coarseGridVertexAdjacentCellDescriptionIndex,2)
       );
     }
   enddforx

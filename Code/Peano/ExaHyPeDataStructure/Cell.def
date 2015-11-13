@@ -1,10 +1,10 @@
-#include "ExaHyPeDataStructure/PdeInfo.h"
+#include "ExaHyPeDataStructure/Constants.h"
 
 Packed-Type: int;
 
 Constant: NUM_PDE;  // The number of PDEs we want to run on the same grid.
 
 class exahype::dastgen::Cell {  
-  parallelise persistent int  patchIndex[NUM_PDE];    // We specify a patch for each PDE that should run on the grid.
-  parallelise persistent bool riemann_solve_not_done; // Flag indicating if the Riemann solve was performed for this cell, i.e., on all bounding faces of the cell.
+  parallelise persistent int  cellDescriptionIndex[NUM_PDE];    // We specify a cellDescription for each PDE that should run on the grid.
+  parallelise persistent bool riemannSolveNotDone; // Flag indicating if the Riemann solve was performed for this cell, i.e., on all bounding faces of the cell.
 };

@@ -74,11 +74,11 @@ void exahype::adapters::CreateGrid2MultiscaleLinkedCell_0::createHangingVertex(
 ) {
   const int level = coarseGridVerticesEnumerator.getLevel()+1;
   
-  fineGridVertex.getPatchIndex() = 
+  fineGridVertex.getCellDescriptionIndex() = 
     multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createHangingVertex(
       fineGridX,level,
       fineGridPositionOfVertex,
-      VertexOperations::readPatchIndex(coarseGridVerticesEnumerator,coarseGridVertices)
+      VertexOperations::readCellDescriptionIndex(coarseGridVerticesEnumerator,coarseGridVertices)
     );
 }
 
@@ -105,7 +105,7 @@ void exahype::adapters::CreateGrid2MultiscaleLinkedCell_0::createInnerVertex(
   exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  fineGridVertex.getPatchIndex() = multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForNewVertex();
+  fineGridVertex.getCellDescriptionIndex() = multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForNewVertex();
 }
 
 
@@ -118,7 +118,7 @@ void exahype::adapters::CreateGrid2MultiscaleLinkedCell_0::createBoundaryVertex(
   exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  fineGridVertex.getPatchIndex() = multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForBoundaryVertex();
+  fineGridVertex.getCellDescriptionIndex() = multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForBoundaryVertex();
 }
 
 
@@ -155,7 +155,7 @@ void exahype::adapters::CreateGrid2MultiscaleLinkedCell_0::destroyCell(
   exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  multiscalelinkedcell::HangingVertexBookkeeper::getInstance().destroyCell(fineGridCell.getPatchIndex());
+  multiscalelinkedcell::HangingVertexBookkeeper::getInstance().destroyCell(fineGridCell.getCellDescriptionIndex());
 }
 
 
@@ -342,10 +342,10 @@ void exahype::adapters::CreateGrid2MultiscaleLinkedCell_0::enterCell(
       multiscalelinkedcell::HangingVertexBookkeeper::getInstance().getAdjacencyEntriesOfVertex( 
         fineGridVerticesEnumerator.getVertexPosition(k),
         fineGridVerticesEnumerator.getLevel()
-      )(TWO_POWER_D-kScalar-1) = fineGridCell.getPatchIndex();
+      )(TWO_POWER_D-kScalar-1) = fineGridCell.getCellDescriptionIndex();
     }
     else {
-      fineGridVertices[fineGridVerticesEnumerator(k)].getPatchIndex()(TWO_POWER_D-kScalar-1) = fineGridCell.getPatchIndex();
+      fineGridVertices[fineGridVerticesEnumerator(k)].getCellDescriptionIndex()(TWO_POWER_D-kScalar-1) = fineGridCell.getCellDescriptionIndex();
     }
   enddforx
 }

@@ -66,9 +66,9 @@ class exahype::Vertex: public peano::grid::Vertex< exahype::records::Vertex > {
 
 
     /**
-     * Return the first patch indices of the adjacent cells.
+     * Return the first cellDescription indices of the adjacent cells.
      */
-    tarch::la::Vector<TWO_POWER_D,int> getPatchIndex();
+    tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex();
 };
 
 

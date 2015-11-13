@@ -202,7 +202,7 @@ class myproject::mappings::Inject {
      * discussion of the partial orders, please confer the page vertex 
      * lifecycle of the peano::grid component.
      *
-     * If a patch is created, you consequently don't know in which order the 
+     * If a cellDescription is created, you consequently don't know in which order the 
      * vertices are created. Neither do you know later in which order touch 
      * first or last is called. There are many reasons for this besides the 
      * fact that there is no need to expose traversal orders. The most 
@@ -219,13 +219,13 @@ class myproject::mappings::Inject {
      * been created before. Again, there are nondeterministic effects: Study
      * a @f$ 6\times 3 @f$ grid in 2d, i.e. a grid with 18 fine grid cells 
      * and two coarse cells. We refer to the coarse grid as left and right 
-     * cell. When the vertex (3,1) in the patch is created (we start to count 
+     * cell. When the vertex (3,1) in the cellDescription is created (we start to count 
      * with zero), you do not know a priori whether the corresponding coarse 
      * cell is the left one or the right one.
      *
      * However, Peano passes the integer array fineGridPositionOfVertex to 
      * the events (same holds for touch first/last and destroy). That one 
-     * tells you within the current patch the position of the vertex. If this 
+     * tells you within the current cellDescription the position of the vertex. If this 
      * argument in the previous example is (3,1), then the code currently is 
      * descending in the left coarse grid cell. If the argument is (0,1) it 
      * has been descending in the right. You can access all @f$ 2^d @f$ coarse 

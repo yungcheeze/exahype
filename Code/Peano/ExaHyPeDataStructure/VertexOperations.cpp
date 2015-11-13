@@ -68,7 +68,7 @@ exahype::VertexOperations::VertexOperations() {
 
 
 
- tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>  exahype::VertexOperations::readPatchIndex(const peano::grid::VertexEnumerator& enumerator, const Vertex* const vertices)  { tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> result; dfor2(x) tarch::la::slice(result,vertices[ enumerator(x) ]._vertexData.getPatchIndex(),xScalar*TWO_POWER_D); enddforx return result; }
+ tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>  exahype::VertexOperations::readCellDescriptionIndex(const peano::grid::VertexEnumerator& enumerator, const Vertex* const vertices)  { tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> result; dfor2(x) tarch::la::slice(result,vertices[ enumerator(x) ]._vertexData.getCellDescriptionIndex(),xScalar*TWO_POWER_D); enddforx return result; }
 
 
 
@@ -80,7 +80,7 @@ exahype::VertexOperations::VertexOperations() {
 
 
 
- tarch::la::Vector<TWO_POWER_D,int>  exahype::VertexOperations::readPatchIndex(const Vertex& vertex)  { return vertex._vertexData.getPatchIndex(); }
+ tarch::la::Vector<TWO_POWER_D,int>  exahype::VertexOperations::readCellDescriptionIndex(const Vertex& vertex)  { return vertex._vertexData.getCellDescriptionIndex(); }
 
 
 
@@ -95,7 +95,7 @@ exahype::VertexOperations::VertexOperations() {
 
 
 
- void exahype::VertexOperations::writePatchIndex(const peano::grid::VertexEnumerator& enumerator, Vertex* const vertices, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& values) { dfor2(x) tarch::la::Vector<TWO_POWER_D,int> temp = tarch::la::slice<TWO_POWER_D>(values,xScalar*TWO_POWER_D); vertices[ enumerator(x) ]._vertexData.setPatchIndex( temp ); enddforx }
+ void exahype::VertexOperations::writeCellDescriptionIndex(const peano::grid::VertexEnumerator& enumerator, Vertex* const vertices, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& values) { dfor2(x) tarch::la::Vector<TWO_POWER_D,int> temp = tarch::la::slice<TWO_POWER_D>(values,xScalar*TWO_POWER_D); vertices[ enumerator(x) ]._vertexData.setCellDescriptionIndex( temp ); enddforx }
 
 
 
@@ -107,7 +107,7 @@ exahype::VertexOperations::VertexOperations() {
 
 
 
- void exahype::VertexOperations::writePatchIndex(Vertex& vertex, const tarch::la::Vector<TWO_POWER_D,int>& values) { vertex._vertexData.setPatchIndex(values ); }
+ void exahype::VertexOperations::writeCellDescriptionIndex(Vertex& vertex, const tarch::la::Vector<TWO_POWER_D,int>& values) { vertex._vertexData.setCellDescriptionIndex(values ); }
 
 
 

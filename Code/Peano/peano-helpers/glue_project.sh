@@ -3,7 +3,7 @@
 rm -rf ${PROJECT}_bak
 mkdir ${PROJECT}_bak
 cp ${PROJECT}/*.def ${PROJECT}_bak
-cp ${PROJECT}/PdeInfo.h ${PROJECT}_bak
+cp ${PROJECT}/Constants.h ${PROJECT}_bak
 cp ${PROJECT}/project.peano-specification ${PROJECT}_bak
 cp -R ${PROJECT}/multiscalelinkedcell ${PROJECT}_bak
 

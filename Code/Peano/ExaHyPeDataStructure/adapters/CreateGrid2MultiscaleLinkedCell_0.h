@@ -26,7 +26,7 @@ namespace exahype {
 /**
  * This is an adapter providing a multiscale linked-cell data structure
  *
- * PatchIndex   Name of the index used for the cell indices within the vertex and 
+ * CellDescriptionIndex   Name of the index used for the cell indices within the vertex and 
  *          the cell
  *
  * @author Tobias Weinzierl
@@ -82,7 +82,7 @@ class exahype::adapters::CreateGrid2MultiscaleLinkedCell_0 {
      *
      * In an adaptive grid, not all of the $2^d$ adjacent cells exist for hanging
      * vertices. Since each vertex is supposed to hold the adjacent vertices in
-     * order to fill the ghostlayers of the patches appropriately, the adjacent
+     * order to fill the ghostlayers of the cellDescriptiones appropriately, the adjacent
      * indices of hanging vertices need to be filled by the data of the vertices
      * on the next coarser grid. This filling is implemented in this method.
      *
@@ -123,7 +123,7 @@ class exahype::adapters::CreateGrid2MultiscaleLinkedCell_0 {
      * vertex pointing in the direction of this neighboring coarse grid cell.
      *
      * !!! The algorithm
-     * It gets a hanging vertex and performs a loop over the $2^d$ adjacent-patch-
+     * It gets a hanging vertex and performs a loop over the $2^d$ adjacent-cellDescription-
      * indices.
      * In each loop iteration it computes the n-dimensional index of the coarse
      * grid vertex (fromCoarseGridVertex) from which the data has to be copied.
@@ -136,24 +136,24 @@ class exahype::adapters::CreateGrid2MultiscaleLinkedCell_0 {
      *    coarse grid vertex that is located on the same position.
      *  - If the fine grid position of the hanging vertex in dimension $d$ is
      *    neither 0 nor 3 then the value of $fromCoarseGridVertex(d)$ depends on
-     *    the adjacent-patch-index $k$ that has to be set currently. $k(d)$ can
+     *    the adjacent-cellDescription-index $k$ that has to be set currently. $k(d)$ can
      *    either be 0 or 1. If $k(d)$ is 0 than we want to get data from the
      *    in this dimension "lower" coarse grid vertex, so we set
      *    $fromCoarseGridVertex(d)$ to 0 as well. In the case of $k(d)=1$ we set
      *    $fromCoarseGridVertex(d)$ to 1, accordingly. This actually doesn't
-     *    matter since the appropriate adjacent-patch-indices of the to coarse
+     *    matter since the appropriate adjacent-cellDescription-indices of the to coarse
      *    grid vertices have to be the same, since they are pointing to the same
      *    adjacent cell.
-     * The determination of the correct adjacent-patch-index of the coarse grid
-     * vertex (coarseGridVertexAdjacentPatchIndex) is done in a similar way. So,
-     * for the adjacent-patch-index $k$ on the hanging vertex:
+     * The determination of the correct adjacent-cellDescription-index of the coarse grid
+     * vertex (coarseGridVertexAdjacentCellDescriptionIndex) is done in a similar way. So,
+     * for the adjacent-cellDescription-index $k$ on the hanging vertex:
      *  - As stated before, if the fine and coarse grid vertices coincide we can
-     *    just copy the adjacent-patch-index. Therefore, if the fine grid position
+     *    just copy the adjacent-cellDescription-index. Therefore, if the fine grid position
      *    of the hanging vertex in dimension $d$ is equal to 0 or to 3, we set
-     *    $coarseGridVertexAdjacentPatchIndex(d)$ to $k(d)$.
-     *  - Otherwise, we just set $coarseGridVertexAdjacentPatchIndex(d)$ to the
+     *    $coarseGridVertexAdjacentCellDescriptionIndex(d)$ to $k(d)$.
+     *  - Otherwise, we just set $coarseGridVertexAdjacentCellDescriptionIndex(d)$ to the
      *    inverted $k(d)$. I.e. if $k(d) = 0$ we set
-     *    $coarseGridVertexAdjacentPatchIndex(d)$ to 1 and the other way around.
+     *    $coarseGridVertexAdjacentCellDescriptionIndex(d)$ to 1 and the other way around.
      *
      */
     void createHangingVertex(

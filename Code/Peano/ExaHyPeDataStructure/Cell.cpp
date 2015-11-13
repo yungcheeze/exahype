@@ -1,6 +1,6 @@
 #include "ExaHyPeDataStructure/Cell.h"
 
-#include "ExaHyPeDataStructure/PdeInfo.h"
+#include "ExaHyPeDataStructure/Constants.h"
 
 exahype::Cell::Cell():
 Base() {
@@ -20,12 +20,12 @@ exahype::Cell::Cell(const Base::PersistentCell& argument):
 
 // ! Start: Required for the multiscalelinkedcell toolbox
 int
-exahype::Cell::getPatchIndex() const {
-  return _cellData.getPatchIndex(0);
+exahype::Cell::getCellDescriptionIndex() const {
+  return _cellData.getCellDescriptionIndex(0);
 }
 int
-exahype::Cell::getPatchIndex(int elementIndex) const {
-  return _cellData.getPatchIndex(elementIndex);
+exahype::Cell::getCellDescriptionIndex(int elementIndex) const {
+  return _cellData.getCellDescriptionIndex(elementIndex);
 }
 
 int power(const int base,int const exponent) {
@@ -40,39 +40,40 @@ void
 exahype::Cell::initCellInComputeTree(const int level,
     const tarch::la::Vector<DIMENSIONS,double> offset,
     const tarch::la::Vector<DIMENSIONS,double> size) {
-  const int indexOfFirstPatch = PatchDescriptionHeap::getInstance().createData(NUM_PDE);
-  assertion( indexOfFirstPatch >= 0 );
+  const int indexOfFirstCellDescription = CellDescriptionHeap::getInstance().createData(NUM_PDE);
+  assertion( indexOfFirstCellDescription >= 0 );
 
   for (int pde = 0; pde < NUM_PDE; pde++) {
     int basisSize            = exahype::order[pde]+1;
 
     int numberOfSpaceTimeDof = exahype::numberOfVariables[pde] * power(basisSize,DIMENSIONS+1);
     int numberOfDof          = exahype::numberOfVariables[pde] * power(basisSize,DIMENSIONS  );
-    int numberOfDofOnFaces   = exahype::numberOfVariables[pde] * power(basisSize,DIMENSIONS-1) * DIMENSIONS_TIMES_TWO;
+    int numberOfDofOnFace    = exahype::numberOfVariables[pde] * power(basisSize,DIMENSIONS-1);
 
-    _cellData.setPatchIndex(pde,indexOfFirstPatch+pde);
-    records::PatchDescription patchDescriptionForPde =
-        PatchDescriptionHeap::getInstance().getData(indexOfFirstPatch)[pde];
+    _cellData.setCellDescriptionIndex(pde,indexOfFirstCellDescription+pde);
+    records::CellDescription cellDescriptionForPde =
+        CellDescriptionHeap::getInstance().getData(indexOfFirstCellDescription)[pde];
 
     // Allocate space-time DoF
-    patchDescriptionForPde.setSpaceTimePredictorDof   (DataHeap::getInstance().createData(numberOfSpaceTimeDof,numberOfSpaceTimeDof));
-    patchDescriptionForPde.setSpaceTimeVolumeFluxesDof(DataHeap::getInstance().createData(numberOfSpaceTimeDof,numberOfSpaceTimeDof));
+    cellDescriptionForPde.setSpaceTimePredictor (DataHeap::getInstance().createData(numberOfSpaceTimeDof,numberOfSpaceTimeDof));
+    cellDescriptionForPde.setSpaceTimeVolumeFlux(DataHeap::getInstance().createData(DIMENSIONS*numberOfSpaceTimeDof,DIMENSIONS*numberOfSpaceTimeDof));
 
     // Allocate volume DoF
-    patchDescriptionForPde.setDof                     (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
-    patchDescriptionForPde.setUpdateDof               (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
-    patchDescriptionForPde.setPredictorDof            (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
-    patchDescriptionForPde.setVolumeFluxesDof         (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
+    cellDescriptionForPde.setSolution   (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
+    cellDescriptionForPde.setUpdate     (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
+    cellDescriptionForPde.setPredictor  (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
+    cellDescriptionForPde.setVolumeFlux (DataHeap::getInstance().createData(DIMENSIONS*numberOfDof,DIMENSIONS*numberOfDof));
 
     // Allocate face DoF
-    patchDescriptionForPde.setExtrapolatedPredictorDof(DataHeap::getInstance().createData(numberOfDofOnFaces,numberOfDofOnFaces));
-    patchDescriptionForPde.setNormalFluxesDof         (DataHeap::getInstance().createData(numberOfDofOnFaces,numberOfDofOnFaces));
-    patchDescriptionForPde.setFluctuationsDof         (DataHeap::getInstance().createData(numberOfDofOnFaces,numberOfDofOnFaces));
+    for (int face=0; face < 6; face++) {
+      cellDescriptionForPde.setExtrapolatedPredictor(face,DataHeap::getInstance().createData(numberOfDofOnFace,numberOfDofOnFace));
+      cellDescriptionForPde.setFluctuation          (face,DataHeap::getInstance().createData(numberOfDofOnFace,numberOfDofOnFace));
+    }
 
-    // Pass geometry information to the patch description
-    patchDescriptionForPde.setLevel(level);
-    patchDescriptionForPde.setOffset(offset);
-    patchDescriptionForPde.setSize(size);
+    // Pass geometry information to the cellDescription description
+    cellDescriptionForPde.setLevel(level);
+    cellDescriptionForPde.setOffset(offset);
+    cellDescriptionForPde.setSize(size);
   }
 }
 // ! End: Required for the multiscalelinkedcell toolbox

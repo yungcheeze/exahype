@@ -62,14 +62,14 @@ class exahype::VertexOperations {
 
 
 
-    static tarch::la::Vector<TWO_POWER_D,int> readPatchIndex(const Vertex& vertex);
+    static tarch::la::Vector<TWO_POWER_D,int> readCellDescriptionIndex(const Vertex& vertex);
 
 
 
 
 
 
-    static tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> readPatchIndex(const peano::grid::VertexEnumerator& enumerator, const Vertex* const vertices);
+    static tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> readCellDescriptionIndex(const peano::grid::VertexEnumerator& enumerator, const Vertex* const vertices);
 
 
 
@@ -79,14 +79,14 @@ class exahype::VertexOperations {
 
 
 
-    static void writePatchIndex(const peano::grid::VertexEnumerator& enumerator, Vertex* const vertices, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& values);
+    static void writeCellDescriptionIndex(const peano::grid::VertexEnumerator& enumerator, Vertex* const vertices, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& values);
 
 
 
 
 
 
-    static void writePatchIndex(Vertex&  vertex, const tarch::la::Vector<TWO_POWER_D,int>& values);
+    static void writeCellDescriptionIndex(Vertex&  vertex, const tarch::la::Vector<TWO_POWER_D,int>& values);
 
 
 

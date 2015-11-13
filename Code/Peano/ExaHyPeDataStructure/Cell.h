@@ -13,13 +13,13 @@
 
 // ! Start: Required by the multiscalelinkedcell toolbox
 #include "peano/heap/Heap.h"
-#include "ExaHyPeDataStructure/records/PatchDescription.h"
+#include "ExaHyPeDataStructure/records/CellDescription.h"
 // ! End: Required by the multiscalelinkedcell toolbox
 
 namespace exahype {
   class Cell;
   // ! Start: Required by the multiscalelinkedcell toolbox
-  typedef peano::heap::PlainHeap< exahype::records::PatchDescription > PatchDescriptionHeap;
+  typedef peano::heap::PlainHeap< exahype::records::CellDescription > CellDescriptionHeap;
   typedef peano::heap::PlainDoubleHeap DataHeap;
   // ! End: Required by the multiscalelinkedcell toolbox
 }
@@ -64,9 +64,9 @@ public:
   Cell(const Base::PersistentCell& argument);
 
   // ! Start: Required for the multiscalelinkedcell toolbox
-  int getPatchIndex() const;
+  int getCellDescriptionIndex() const;
 
-  int getPatchIndex(int elementIndex) const;
+  int getCellDescriptionIndex(int elementIndex) const;
 
   void initCellInComputeTree(const int level,const tarch::la::Vector<DIMENSIONS,double> offset,const tarch::la::Vector<DIMENSIONS,double> size);
   // ! End: Required for the multiscalelinkedcell toolbox

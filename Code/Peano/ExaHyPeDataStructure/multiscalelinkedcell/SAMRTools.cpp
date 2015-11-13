@@ -1,7 +1,7 @@
 #include "ExaHyPeDataStructure/multiscalelinkedcell/SAMRTools.h"
 
 
-int multiscalelinkedcell::SAMRTools::getNumberOfCellsPerPatch(
+int multiscalelinkedcell::SAMRTools::getNumberOfCellsPerCellDescription(
   const tarch::la::Vector<DIMENSIONS, int>&  cells,
   const tarch::la::Vector<DIMENSIONS, int>&  haloCells
 ) {
@@ -13,7 +13,7 @@ int multiscalelinkedcell::SAMRTools::getNumberOfCellsPerPatch(
 }
 
 
-int multiscalelinkedcell::SAMRTools::getNumberOfVerticesPerPatch(
+int multiscalelinkedcell::SAMRTools::getNumberOfVerticesPerCellDescription(
   const tarch::la::Vector<DIMENSIONS, int>&  cells,
   const tarch::la::Vector<DIMENSIONS, int>&  haloCells
 ) {
@@ -25,7 +25,7 @@ int multiscalelinkedcell::SAMRTools::getNumberOfVerticesPerPatch(
 }
 
 
-void multiscalelinkedcell::SAMRTools::computePatchOverlapWithGhostLayer(
+void multiscalelinkedcell::SAMRTools::computeCellDescriptionOverlapWithGhostLayer(
   const tarch::la::Vector<DIMENSIONS, double>&   destOffset,
   const tarch::la::Vector<DIMENSIONS, double>&   destH,
   const tarch::la::Vector<DIMENSIONS, double>&   srcOffset,
@@ -63,7 +63,7 @@ void multiscalelinkedcell::SAMRTools::computePatchOverlapWithGhostLayer(
 
 void multiscalelinkedcell::SAMRTools::computeOppositeOffsetFromRelativePositionForSourceImage(
   const tarch::la::Vector<DIMENSIONS, int>&  relativePosition,
-  const tarch::la::Vector<DIMENSIONS, int>&  patchSize,
+  const tarch::la::Vector<DIMENSIONS, int>&  cellDescriptionSize,
   const tarch::la::Vector<DIMENSIONS, int>&  haloSize,
   tarch::la::Vector<DIMENSIONS, int>&        cellOffset
 ) {
@@ -71,7 +71,7 @@ void multiscalelinkedcell::SAMRTools::computeOppositeOffsetFromRelativePositionF
 
   for (int d=0; d<DIMENSIONS; d++) {
     if (relativePosition(d)==0) {
-      cellOffset(d) = patchSize(d) + haloSize(d) - haloSize(d);
+      cellOffset(d) = cellDescriptionSize(d) + haloSize(d) - haloSize(d);
     }
     else if (relativePosition(d)==2) {
       cellOffset(d) = haloSize(d);
@@ -85,7 +85,7 @@ void multiscalelinkedcell::SAMRTools::computeOppositeOffsetFromRelativePositionF
 
 
 
-void multiscalelinkedcell::SAMRTools::computeIterationRangeFromPatchOverlap(
+void multiscalelinkedcell::SAMRTools::computeIterationRangeFromCellDescriptionOverlap(
   const tarch::la::Vector<DIMENSIONS, double>&   offset,
   const tarch::la::Vector<DIMENSIONS, double>&   dxdy,
   const tarch::la::Vector<DIMENSIONS, int>&      haloSize,
@@ -117,7 +117,7 @@ void multiscalelinkedcell::SAMRTools::computeIterationRangeFromPatchOverlap(
 }
 
 
-int multiscalelinkedcell::SAMRTools::getIndexOfFirstInnerUnknownInPatch(
+int multiscalelinkedcell::SAMRTools::getIndexOfFirstInnerUnknownInCellDescription(
   const tarch::la::Vector<DIMENSIONS, int>&  cells,
   const tarch::la::Vector<DIMENSIONS, int>&  haloCells
 ) {
@@ -134,7 +134,7 @@ int multiscalelinkedcell::SAMRTools::getIndexOfFirstInnerUnknownInPatch(
 
 
 
-int multiscalelinkedcell::SAMRTools::getIndexOfUnknownInPatch(
+int multiscalelinkedcell::SAMRTools::getIndexOfUnknownInCellDescription(
   const tarch::la::Vector<DIMENSIONS, int>&  cells,
   const tarch::la::Vector<DIMENSIONS, int>&  haloCells,
   const std::bitset<TWO_POWER_D>&            index
@@ -153,7 +153,7 @@ int multiscalelinkedcell::SAMRTools::getIndexOfUnknownInPatch(
 
 void multiscalelinkedcell::SAMRTools::computeIterationRangeFromRelativePosition(
   const tarch::la::Vector<DIMENSIONS, int>&  relativePosition,
-  const tarch::la::Vector<DIMENSIONS, int>&  patchSize,
+  const tarch::la::Vector<DIMENSIONS, int>&  cellDescriptionSize,
   const tarch::la::Vector<DIMENSIONS, int>&  haloSize,
   tarch::la::Vector<DIMENSIONS, int>&        cellOffset,
   tarch::la::Vector<DIMENSIONS, int>&        range
@@ -168,10 +168,10 @@ void multiscalelinkedcell::SAMRTools::computeIterationRangeFromRelativePosition(
     }
     else if (relativePosition(d)==1) {
       cellOffset(d) = haloSize(d);
-      range(d)      = patchSize(d);
+      range(d)      = cellDescriptionSize(d);
     }
     else {
-      cellOffset(d) = patchSize(d) + haloSize(d);
+      cellOffset(d) = cellDescriptionSize(d) + haloSize(d);
       range(d)      = haloSize(d);
     }
   }

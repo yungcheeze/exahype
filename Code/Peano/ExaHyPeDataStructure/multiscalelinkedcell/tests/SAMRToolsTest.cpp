@@ -35,7 +35,7 @@ void multiscalelinkedcell::tests::SAMRToolsTest::run() {
 
 void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeA0A1() {
   #if Dim2
-  tarch::la::Vector<DIMENSIONS, int>  patchSize( 6 );
+  tarch::la::Vector<DIMENSIONS, int>  cellDescriptionSize( 6 );
   tarch::la::Vector<DIMENSIONS, int>  haloSize( 1 );
 
   tarch::la::Vector<DIMENSIONS, int>  relativePositionOfSrcCellToDestCall;
@@ -46,7 +46,7 @@ void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeA0A1()
   tarch::la::assignList( relativePositionOfSrcCellToDestCall ) = 0,1;
   multiscalelinkedcell::SAMRTools::computeIterationRangeFromRelativePosition(
     relativePositionOfSrcCellToDestCall,
-    patchSize,
+    cellDescriptionSize,
     haloSize,
     cellOffset,
     range
@@ -67,7 +67,7 @@ void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeA0A1()
   tarch::la::assignList( leftBottom )  = 1.0/9.0 - 1.0/9.0/6.0, 0.0;
   tarch::la::assignList( rightTop   )  = 1.0/9.0,               1.0/9.0;
 
-  multiscalelinkedcell::SAMRTools::computeIterationRangeFromPatchOverlap(
+  multiscalelinkedcell::SAMRTools::computeIterationRangeFromCellDescriptionOverlap(
     offset,  dxdy,  1, leftBottom,  rightTop,  cellOffset,  range
   );
   validateEqualsWithParams2( cellOffset(0), 6, cellOffset, range );
@@ -80,7 +80,7 @@ void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeA0A1()
 
 void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeA1A0() {
   #if Dim2
-  tarch::la::Vector<DIMENSIONS, int>  patchSize( 6 );
+  tarch::la::Vector<DIMENSIONS, int>  cellDescriptionSize( 6 );
   tarch::la::Vector<DIMENSIONS, int>  haloSize( 1 );
 
   tarch::la::Vector<DIMENSIONS, int>  relativePositionOfSrcCellToDestCall;
@@ -91,7 +91,7 @@ void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeA1A0()
   tarch::la::assignList( relativePositionOfSrcCellToDestCall ) = 2,1;
   multiscalelinkedcell::SAMRTools::computeIterationRangeFromRelativePosition(
     relativePositionOfSrcCellToDestCall,
-    patchSize,
+    cellDescriptionSize,
     haloSize,
     cellOffset,
     range
@@ -112,7 +112,7 @@ void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeA1A0()
   tarch::la::assignList( leftBottom )  = 1.0/9.0,              0.0;
   tarch::la::assignList( rightTop   )  = 1.0/9.0 +1.0/9.0/6.0, 1.0/9.0;
 
-  multiscalelinkedcell::SAMRTools::computeIterationRangeFromPatchOverlap(
+  multiscalelinkedcell::SAMRTools::computeIterationRangeFromCellDescriptionOverlap(
     offset,  dxdy,  1, leftBottom,  rightTop,  cellOffset,  range
   );
   validateEqualsWithParams2( cellOffset(0), 1, cellOffset, range );
@@ -125,7 +125,7 @@ void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeA1A0()
 
 void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeB1B0() {
   #if Dim2
-  tarch::la::Vector<DIMENSIONS, int>  patchSize( 6 );
+  tarch::la::Vector<DIMENSIONS, int>  cellDescriptionSize( 6 );
   tarch::la::Vector<DIMENSIONS, int>  haloSize( 1 );
 
   tarch::la::Vector<DIMENSIONS, int>  relativePositionOfSrcCellToDestCall;
@@ -136,7 +136,7 @@ void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeB1B0()
   tarch::la::assignList( relativePositionOfSrcCellToDestCall ) = 2,1;
   multiscalelinkedcell::SAMRTools::computeIterationRangeFromRelativePosition(
     relativePositionOfSrcCellToDestCall,
-    patchSize,
+    cellDescriptionSize,
     haloSize,
     cellOffset,
     range
@@ -157,7 +157,7 @@ void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeB1B0()
   tarch::la::assignList( leftBottom )  = 1.0/3.0,              0.0;
   tarch::la::assignList( rightTop   )  = 1.0/3.0 +1.0/9.0/6.0, 1.0/9.0;
 
-  multiscalelinkedcell::SAMRTools::computeIterationRangeFromPatchOverlap(
+  multiscalelinkedcell::SAMRTools::computeIterationRangeFromCellDescriptionOverlap(
     offset,  dxdy,  1, leftBottom,  rightTop,  cellOffset,  range
   );
   validateEqualsWithParams2( cellOffset(0), 1, cellOffset, range );
@@ -170,7 +170,7 @@ void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeB1B0()
 
 void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeC0C1() {
   #if Dim2
-  tarch::la::Vector<DIMENSIONS, int>  patchSize( 6 );
+  tarch::la::Vector<DIMENSIONS, int>  cellDescriptionSize( 6 );
   tarch::la::Vector<DIMENSIONS, int>  haloSize( 1 );
 
   tarch::la::Vector<DIMENSIONS, int>  relativePositionOfSrcCellToDestCall;
@@ -181,7 +181,7 @@ void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeC0C1()
   tarch::la::assignList( relativePositionOfSrcCellToDestCall ) = 1,0;
   multiscalelinkedcell::SAMRTools::computeIterationRangeFromRelativePosition(
     relativePositionOfSrcCellToDestCall,
-    patchSize,
+    cellDescriptionSize,
     haloSize,
     cellOffset,
     range
@@ -202,7 +202,7 @@ void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeC0C1()
   tarch::la::assignList( leftBottom )  = 2.0/3.0, 1.0/3.0 - 1.0/27.0/6.0;
   tarch::la::assignList( rightTop   )  = 2.0/3.0 + 1.0/27.0, 1.0/3.0;
 
-  multiscalelinkedcell::SAMRTools::computeIterationRangeFromPatchOverlap(
+  multiscalelinkedcell::SAMRTools::computeIterationRangeFromCellDescriptionOverlap(
     offset,  dxdy,  1, leftBottom,  rightTop,  cellOffset,  range
   );
   validateEqualsWithParams2( cellOffset(0), 1, cellOffset, range );
@@ -215,7 +215,7 @@ void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeC0C1()
   tarch::la::assignList( relativePositionOfSrcCellToDestCall ) = 2,0;
   multiscalelinkedcell::SAMRTools::computeIterationRangeFromRelativePosition(
     relativePositionOfSrcCellToDestCall,
-    patchSize,
+    cellDescriptionSize,
     haloSize,
     cellOffset,
     range
@@ -231,7 +231,7 @@ void multiscalelinkedcell::tests::SAMRToolsTest::testComputeIterationRangeC0C1()
   tarch::la::assignList( leftBottom )  = 2.0/3.0 + 1.0/27.0, 1.0/3.0 - 1.0/27.0/6.0;
   tarch::la::assignList( rightTop   )  = 2.0/3.0 + 1.0/27.0 + 1.0/27.0/6.0, 1.0/3.0;
 
-  multiscalelinkedcell::SAMRTools::computeIterationRangeFromPatchOverlap(
+  multiscalelinkedcell::SAMRTools::computeIterationRangeFromCellDescriptionOverlap(
     offset,  dxdy,  1, leftBottom,  rightTop,  cellOffset,  range
   );
   validateEqualsWithParams2( cellOffset(0), 1, cellOffset, range );

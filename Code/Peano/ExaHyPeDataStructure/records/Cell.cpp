@@ -6,8 +6,8 @@
    }
    
    
-   exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-   _patchIndex(patchIndex),
+   exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+   _cellDescriptionIndex(cellDescriptionIndex),
    _riemannSolveNotDone(riemannSolveNotDone),
    _isInside(isInside),
    _state(state),
@@ -24,13 +24,13 @@
    
    
    exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+   _persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
       
    }
    
    
-   exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-   _persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+   exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+   _persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
       
    }
    
@@ -59,13 +59,13 @@
    
    void exahype::records::Cell::toString (std::ostream& out) const {
       out << "("; 
-      out << "patchIndex:[";
+      out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
       out << ",";
-      out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+      out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
       out << ",";
       out << "isInside:" << getIsInside();
       out << ",";
@@ -96,7 +96,7 @@
    
    exahype::records::CellPacked exahype::records::Cell::convert() const{
       return CellPacked(
-         getPatchIndex(),
+         getCellDescriptionIndex(),
          getRiemannSolveNotDone(),
          getIsInside(),
          getState(),
@@ -120,16 +120,16 @@
             
             const int Attributes = 5;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //patchIndex
-               MPI_CHAR,		 //riemann_solve_not_done
+               MPI_INT,		 //cellDescriptionIndex
+               MPI_CHAR,		 //riemannSolveNotDone
                MPI_CHAR,		 //isInside
                MPI_INT,		 //state
                MPI_UB		 // end/displacement flag
             };
             
             int blocklen[Attributes] = {
-               NUM_PDE,		 //patchIndex
-               1,		 //riemann_solve_not_done
+               NUM_PDE,		 //cellDescriptionIndex
+               1,		 //riemannSolveNotDone
                1,		 //isInside
                1,		 //state
                1		 // end/displacement flag
@@ -139,11 +139,11 @@
             
             MPI_Aint base;
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[4] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[4] );
             
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
@@ -160,8 +160,8 @@
             
             const int Attributes = 9;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //patchIndex
-               MPI_CHAR,		 //riemann_solve_not_done
+               MPI_INT,		 //cellDescriptionIndex
+               MPI_CHAR,		 //riemannSolveNotDone
                MPI_CHAR,		 //isInside
                MPI_INT,		 //state
                MPI_INT,		 //evenFlags
@@ -172,8 +172,8 @@
             };
             
             int blocklen[Attributes] = {
-               NUM_PDE,		 //patchIndex
-               1,		 //riemann_solve_not_done
+               NUM_PDE,		 //cellDescriptionIndex
+               1,		 //riemannSolveNotDone
                1,		 //isInside
                1,		 //state
                DIMENSIONS,		 //evenFlags
@@ -187,7 +187,7 @@
             
             MPI_Aint base;
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
@@ -195,7 +195,7 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[5] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[6] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[7] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[8] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[8] );
             
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
@@ -456,8 +456,8 @@ exahype::records::CellPacked::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_patchIndex(patchIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_cellDescriptionIndex(cellDescriptionIndex),
 _riemannSolveNotDone(riemannSolveNotDone),
 _accessNumber(accessNumber),
 _numberOfLoadsFromInputStream(numberOfLoadsFromInputStream),
@@ -486,7 +486,7 @@ exahype::records::CellPacked::CellPacked() {
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
    if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
       std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
       std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -497,8 +497,8 @@ _persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolv
 }
 
 
-exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
    if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
       std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
       std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -529,13 +529,13 @@ std::string exahype::records::CellPacked::toString() const {
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
    out << "("; 
-   out << "patchIndex:[";
+   out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
    out << ",";
-   out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+   out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
    out << ",";
    out << "isInside:" << getIsInside();
    out << ",";
@@ -566,7 +566,7 @@ exahype::records::CellPacked::PersistentRecords exahype::records::CellPacked::ge
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
    return Cell(
-      getPatchIndex(),
+      getCellDescriptionIndex(),
       getRiemannSolveNotDone(),
       getIsInside(),
       getState(),
@@ -590,15 +590,15 @@ exahype::records::Cell exahype::records::CellPacked::convert() const{
          
          const int Attributes = 4;
          MPI_Datatype subtypes[Attributes] = {
-            MPI_INT,		 //patchIndex
-            MPI_CHAR,		 //riemann_solve_not_done
+            MPI_INT,		 //cellDescriptionIndex
+            MPI_CHAR,		 //riemannSolveNotDone
             MPI_INT,		 //_packedRecords0
             MPI_UB		 // end/displacement flag
          };
          
          int blocklen[Attributes] = {
-            NUM_PDE,		 //patchIndex
-            1,		 //riemann_solve_not_done
+            NUM_PDE,		 //cellDescriptionIndex
+            1,		 //riemannSolveNotDone
             1,		 //_packedRecords0
             1		 // end/displacement flag
          };
@@ -607,10 +607,10 @@ exahype::records::Cell exahype::records::CellPacked::convert() const{
          
          MPI_Aint base;
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[3] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[3] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -627,8 +627,8 @@ exahype::records::Cell exahype::records::CellPacked::convert() const{
          
          const int Attributes = 7;
          MPI_Datatype subtypes[Attributes] = {
-            MPI_INT,		 //patchIndex
-            MPI_CHAR,		 //riemann_solve_not_done
+            MPI_INT,		 //cellDescriptionIndex
+            MPI_CHAR,		 //riemannSolveNotDone
             MPI_SHORT,		 //accessNumber
             MPI_INT,		 //numberOfLoadsFromInputStream
             MPI_INT,		 //numberOfStoresToOutputStream
@@ -637,8 +637,8 @@ exahype::records::Cell exahype::records::CellPacked::convert() const{
          };
          
          int blocklen[Attributes] = {
-            NUM_PDE,		 //patchIndex
-            1,		 //riemann_solve_not_done
+            NUM_PDE,		 //cellDescriptionIndex
+            1,		 //riemannSolveNotDone
             DIMENSIONS_TIMES_TWO,		 //accessNumber
             1,		 //numberOfLoadsFromInputStream
             1,		 //numberOfStoresToOutputStream
@@ -650,13 +650,13 @@ exahype::records::Cell exahype::records::CellPacked::convert() const{
          
          MPI_Aint base;
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[3] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[4] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[5] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[6] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -913,8 +913,8 @@ exahype::records::Cell::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_patchIndex(patchIndex),
+exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_cellDescriptionIndex(cellDescriptionIndex),
 _riemannSolveNotDone(riemannSolveNotDone),
 _isInside(isInside),
 _state(state),
@@ -930,13 +930,13 @@ exahype::records::Cell::Cell() {
 
 
 exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber) {
 
 }
 
 
-exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber) {
+exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber) {
 
 }
 
@@ -965,13 +965,13 @@ return stringstr.str();
 
 void exahype::records::Cell::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
 out << ",";
-out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -1000,7 +1000,7 @@ return _persistentRecords;
 
 exahype::records::CellPacked exahype::records::Cell::convert() const{
 return CellPacked(
-   getPatchIndex(),
+   getCellDescriptionIndex(),
    getRiemannSolveNotDone(),
    getIsInside(),
    getState(),
@@ -1023,8 +1023,8 @@ void exahype::records::Cell::initDatatype() {
       
       const int Attributes = 6;
       MPI_Datatype subtypes[Attributes] = {
-         MPI_INT,		 //patchIndex
-         MPI_CHAR,		 //riemann_solve_not_done
+         MPI_INT,		 //cellDescriptionIndex
+         MPI_CHAR,		 //riemannSolveNotDone
          MPI_CHAR,		 //isInside
          MPI_INT,		 //state
          MPI_INT,		 //level
@@ -1032,8 +1032,8 @@ void exahype::records::Cell::initDatatype() {
       };
       
       int blocklen[Attributes] = {
-         NUM_PDE,		 //patchIndex
-         1,		 //riemann_solve_not_done
+         NUM_PDE,		 //cellDescriptionIndex
+         1,		 //riemannSolveNotDone
          1,		 //isInside
          1,		 //state
          1,		 //level
@@ -1044,12 +1044,12 @@ void exahype::records::Cell::initDatatype() {
       
       MPI_Aint base;
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[4] );
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[5] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[5] );
       
       for (int i=1; i<Attributes; i++) {
          assertion1( disp[i] > disp[i-1], i );
@@ -1066,8 +1066,8 @@ void exahype::records::Cell::initDatatype() {
       
       const int Attributes = 8;
       MPI_Datatype subtypes[Attributes] = {
-         MPI_INT,		 //patchIndex
-         MPI_CHAR,		 //riemann_solve_not_done
+         MPI_INT,		 //cellDescriptionIndex
+         MPI_CHAR,		 //riemannSolveNotDone
          MPI_CHAR,		 //isInside
          MPI_INT,		 //state
          MPI_INT,		 //level
@@ -1077,8 +1077,8 @@ void exahype::records::Cell::initDatatype() {
       };
       
       int blocklen[Attributes] = {
-         NUM_PDE,		 //patchIndex
-         1,		 //riemann_solve_not_done
+         NUM_PDE,		 //cellDescriptionIndex
+         1,		 //riemannSolveNotDone
          1,		 //isInside
          1,		 //state
          1,		 //level
@@ -1091,14 +1091,14 @@ void exahype::records::Cell::initDatatype() {
       
       MPI_Aint base;
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[4] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[5] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[6] );
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[7] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[7] );
       
       for (int i=1; i<Attributes; i++) {
          assertion1( disp[i] > disp[i-1], i );
@@ -1359,8 +1359,8 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_patchIndex(patchIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_cellDescriptionIndex(cellDescriptionIndex),
 _riemannSolveNotDone(riemannSolveNotDone),
 _level(level),
 _accessNumber(accessNumber) {
@@ -1388,7 +1388,7 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber) {
 if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -1399,8 +1399,8 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber) {
+exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber) {
 if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -1431,13 +1431,13 @@ return stringstr.str();
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
 out << ",";
-out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -1466,7 +1466,7 @@ return _persistentRecords;
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
 return Cell(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getRiemannSolveNotDone(),
 getIsInside(),
 getState(),
@@ -1489,16 +1489,16 @@ void exahype::records::CellPacked::initDatatype() {
    
    const int Attributes = 5;
    MPI_Datatype subtypes[Attributes] = {
-      MPI_INT,		 //patchIndex
-      MPI_CHAR,		 //riemann_solve_not_done
+      MPI_INT,		 //cellDescriptionIndex
+      MPI_CHAR,		 //riemannSolveNotDone
       MPI_INT,		 //level
       MPI_INT,		 //_packedRecords0
       MPI_UB		 // end/displacement flag
    };
    
    int blocklen[Attributes] = {
-      NUM_PDE,		 //patchIndex
-      1,		 //riemann_solve_not_done
+      NUM_PDE,		 //cellDescriptionIndex
+      1,		 //riemannSolveNotDone
       1,		 //level
       1,		 //_packedRecords0
       1		 // end/displacement flag
@@ -1508,11 +1508,11 @@ void exahype::records::CellPacked::initDatatype() {
    
    MPI_Aint base;
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[2] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[4] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[4] );
    
    for (int i=1; i<Attributes; i++) {
       assertion1( disp[i] > disp[i-1], i );
@@ -1529,8 +1529,8 @@ void exahype::records::CellPacked::initDatatype() {
    
    const int Attributes = 6;
    MPI_Datatype subtypes[Attributes] = {
-      MPI_INT,		 //patchIndex
-      MPI_CHAR,		 //riemann_solve_not_done
+      MPI_INT,		 //cellDescriptionIndex
+      MPI_CHAR,		 //riemannSolveNotDone
       MPI_INT,		 //level
       MPI_SHORT,		 //accessNumber
       MPI_INT,		 //_packedRecords0
@@ -1538,8 +1538,8 @@ void exahype::records::CellPacked::initDatatype() {
    };
    
    int blocklen[Attributes] = {
-      NUM_PDE,		 //patchIndex
-      1,		 //riemann_solve_not_done
+      NUM_PDE,		 //cellDescriptionIndex
+      1,		 //riemannSolveNotDone
       1,		 //level
       DIMENSIONS_TIMES_TWO,		 //accessNumber
       1,		 //_packedRecords0
@@ -1550,12 +1550,12 @@ void exahype::records::CellPacked::initDatatype() {
    
    MPI_Aint base;
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[2] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[3] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[4] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[5] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[5] );
    
    for (int i=1; i<Attributes; i++) {
       assertion1( disp[i] > disp[i-1], i );
@@ -1813,8 +1813,8 @@ exahype::records::Cell::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
-_patchIndex(patchIndex),
+exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
+_cellDescriptionIndex(cellDescriptionIndex),
 _riemannSolveNotDone(riemannSolveNotDone),
 _isInside(isInside),
 _state(state),
@@ -1837,13 +1837,13 @@ exahype::records::Cell::Cell() {
 
 
 exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords._cellIsAForkCandidate) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords._cellIsAForkCandidate) {
 
 }
 
 
-exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
-_persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate) {
+exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
+_persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate) {
 
 }
 
@@ -1872,13 +1872,13 @@ return stringstr.str();
 
 void exahype::records::Cell::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
 out << ",";
-out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -1921,7 +1921,7 @@ return _persistentRecords;
 
 exahype::records::CellPacked exahype::records::Cell::convert() const{
 return CellPacked(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getRiemannSolveNotDone(),
 getIsInside(),
 getState(),
@@ -1951,8 +1951,8 @@ Cell dummyCell[2];
 
 const int Attributes = 11;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_CHAR,		 //subtreeHoldsWorker
@@ -1965,8 +1965,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //isInside
 1,		 //state
 1,		 //subtreeHoldsWorker
@@ -1982,7 +1982,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
@@ -1992,7 +1992,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persiste
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._totalWorkload))), 		&disp[7] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._maxWorkload))), 		&disp[8] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._minWorkload))), 		&disp[9] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[10] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[10] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -2009,8 +2009,8 @@ Cell dummyCell[2];
 
 const int Attributes = 15;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //evenFlags
@@ -2027,8 +2027,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //isInside
 1,		 //state
 DIMENSIONS,		 //evenFlags
@@ -2048,7 +2048,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
@@ -2062,7 +2062,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persiste
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._maxWorkload))), 		&disp[11] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._minWorkload))), 		&disp[12] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[13] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[14] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[14] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -2323,8 +2323,8 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
-_patchIndex(patchIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
+_cellDescriptionIndex(cellDescriptionIndex),
 _riemannSolveNotDone(riemannSolveNotDone),
 _accessNumber(accessNumber),
 _responsibleRank(responsibleRank),
@@ -2359,7 +2359,7 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords.getCellIsAForkCandidate()) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords.getCellIsAForkCandidate()) {
 if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -2370,8 +2370,8 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
-_persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate) {
+exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
+_persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate) {
 if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -2402,13 +2402,13 @@ return stringstr.str();
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
 out << ",";
-out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -2451,7 +2451,7 @@ return _persistentRecords;
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
 return Cell(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getRiemannSolveNotDone(),
 getIsInside(),
 getState(),
@@ -2481,8 +2481,8 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 10;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_CHAR,		 //subtreeHoldsWorker
 MPI_DOUBLE,		 //nodeWorkload
 MPI_DOUBLE,		 //localWorkload
@@ -2494,8 +2494,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //subtreeHoldsWorker
 1,		 //nodeWorkload
 1,		 //localWorkload
@@ -2510,7 +2510,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._nodeWorkload))), 		&disp[3] );
@@ -2519,7 +2519,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._pe
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._maxWorkload))), 		&disp[6] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._minWorkload))), 		&disp[7] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[8] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[9] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[9] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -2536,8 +2536,8 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 12;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_SHORT,		 //accessNumber
 MPI_INT,		 //responsibleRank
 MPI_CHAR,		 //subtreeHoldsWorker
@@ -2551,8 +2551,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 DIMENSIONS_TIMES_TWO,		 //accessNumber
 1,		 //responsibleRank
 1,		 //subtreeHoldsWorker
@@ -2569,7 +2569,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[3] );
@@ -2580,7 +2580,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._pe
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._maxWorkload))), 		&disp[8] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._minWorkload))), 		&disp[9] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[10] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[11] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[11] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -2838,8 +2838,8 @@ exahype::records::Cell::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_patchIndex(patchIndex),
+exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_cellDescriptionIndex(cellDescriptionIndex),
 _riemannSolveNotDone(riemannSolveNotDone),
 _isInside(isInside),
 _state(state),
@@ -2854,13 +2854,13 @@ exahype::records::Cell::Cell() {
 
 
 exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber) {
 
 }
 
 
-exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber) {
+exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber) {
 
 }
 
@@ -2889,13 +2889,13 @@ return stringstr.str();
 
 void exahype::records::Cell::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
 out << ",";
-out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -2922,7 +2922,7 @@ return _persistentRecords;
 
 exahype::records::CellPacked exahype::records::Cell::convert() const{
 return CellPacked(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getRiemannSolveNotDone(),
 getIsInside(),
 getState(),
@@ -2944,16 +2944,16 @@ Cell dummyCell[2];
 
 const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //isInside
 1,		 //state
 1		 // end/displacement flag
@@ -2963,11 +2963,11 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[4] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -2984,8 +2984,8 @@ Cell dummyCell[2];
 
 const int Attributes = 7;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //evenFlags
@@ -2994,8 +2994,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //isInside
 1,		 //state
 DIMENSIONS,		 //evenFlags
@@ -3007,13 +3007,13 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[4] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[5] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[6] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -3274,8 +3274,8 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_patchIndex(patchIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_cellDescriptionIndex(cellDescriptionIndex),
 _riemannSolveNotDone(riemannSolveNotDone),
 _accessNumber(accessNumber) {
 setIsInside(isInside);
@@ -3302,7 +3302,7 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber) {
 if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -3313,8 +3313,8 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber) {
+exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber) {
 if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -3345,13 +3345,13 @@ return stringstr.str();
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
 out << ",";
-out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -3378,7 +3378,7 @@ return _persistentRecords;
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
 return Cell(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getRiemannSolveNotDone(),
 getIsInside(),
 getState(),
@@ -3400,15 +3400,15 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_INT,		 //_packedRecords0
 MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //_packedRecords0
 1		 // end/displacement flag
 };
@@ -3417,10 +3417,10 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[3] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -3437,16 +3437,16 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_SHORT,		 //accessNumber
 MPI_INT,		 //_packedRecords0
 MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 DIMENSIONS_TIMES_TWO,		 //accessNumber
 1,		 //_packedRecords0
 1		 // end/displacement flag
@@ -3456,11 +3456,11 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[4] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -3718,8 +3718,8 @@ exahype::records::Cell::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_patchIndex(patchIndex),
+exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_cellDescriptionIndex(cellDescriptionIndex),
 _riemannSolveNotDone(riemannSolveNotDone),
 _isInside(isInside),
 _state(state),
@@ -3745,13 +3745,13 @@ exahype::records::Cell::Cell() {
 
 
 exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords._cellIsAForkCandidate, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords._cellIsAForkCandidate, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 
 }
 
 
-exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 
 }
 
@@ -3780,13 +3780,13 @@ return stringstr.str();
 
 void exahype::records::Cell::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
 out << ",";
-out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -3835,7 +3835,7 @@ return _persistentRecords;
 
 exahype::records::CellPacked exahype::records::Cell::convert() const{
 return CellPacked(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getRiemannSolveNotDone(),
 getIsInside(),
 getState(),
@@ -3868,8 +3868,8 @@ Cell dummyCell[2];
 
 const int Attributes = 12;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //level
@@ -3883,8 +3883,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //isInside
 1,		 //state
 1,		 //level
@@ -3901,7 +3901,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
@@ -3912,7 +3912,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persiste
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._totalWorkload))), 		&disp[8] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._maxWorkload))), 		&disp[9] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._minWorkload))), 		&disp[10] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[11] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[11] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -3929,8 +3929,8 @@ Cell dummyCell[2];
 
 const int Attributes = 18;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //level
@@ -3950,8 +3950,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //isInside
 1,		 //state
 1,		 //level
@@ -3974,7 +3974,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
@@ -3991,7 +3991,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persiste
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[14] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[15] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[16] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[17] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[17] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -4252,8 +4252,8 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_patchIndex(patchIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_cellDescriptionIndex(cellDescriptionIndex),
 _riemannSolveNotDone(riemannSolveNotDone),
 _level(level),
 _accessNumber(accessNumber),
@@ -4291,7 +4291,7 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords.getCellIsAForkCandidate(), persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords.getCellIsAForkCandidate(), persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -4302,8 +4302,8 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -4334,13 +4334,13 @@ return stringstr.str();
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
 out << ",";
-out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -4389,7 +4389,7 @@ return _persistentRecords;
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
 return Cell(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getRiemannSolveNotDone(),
 getIsInside(),
 getState(),
@@ -4422,8 +4422,8 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 11;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_INT,		 //level
 MPI_CHAR,		 //subtreeHoldsWorker
 MPI_DOUBLE,		 //nodeWorkload
@@ -4436,8 +4436,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //level
 1,		 //subtreeHoldsWorker
 1,		 //nodeWorkload
@@ -4453,7 +4453,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
@@ -4463,7 +4463,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._pe
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._maxWorkload))), 		&disp[7] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._minWorkload))), 		&disp[8] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[9] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[10] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[10] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -4480,8 +4480,8 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 15;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_INT,		 //level
 MPI_SHORT,		 //accessNumber
 MPI_INT,		 //responsibleRank
@@ -4498,8 +4498,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //level
 DIMENSIONS_TIMES_TWO,		 //accessNumber
 1,		 //responsibleRank
@@ -4519,7 +4519,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[3] );
@@ -4533,7 +4533,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._pe
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[11] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[12] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[13] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[14] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[14] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -4791,8 +4791,8 @@ exahype::records::Cell::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
-_patchIndex(patchIndex),
+exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
+_cellDescriptionIndex(cellDescriptionIndex),
 _riemannSolveNotDone(riemannSolveNotDone),
 _isInside(isInside),
 _state(state),
@@ -4816,13 +4816,13 @@ exahype::records::Cell::Cell() {
 
 
 exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords._cellIsAForkCandidate) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords._cellIsAForkCandidate) {
 
 }
 
 
-exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
-_persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate) {
+exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
+_persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate) {
 
 }
 
@@ -4851,13 +4851,13 @@ return stringstr.str();
 
 void exahype::records::Cell::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
 out << ",";
-out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -4902,7 +4902,7 @@ return _persistentRecords;
 
 exahype::records::CellPacked exahype::records::Cell::convert() const{
 return CellPacked(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getRiemannSolveNotDone(),
 getIsInside(),
 getState(),
@@ -4933,8 +4933,8 @@ Cell dummyCell[2];
 
 const int Attributes = 12;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //level
@@ -4948,8 +4948,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //isInside
 1,		 //state
 1,		 //level
@@ -4966,7 +4966,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
@@ -4977,7 +4977,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persiste
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._totalWorkload))), 		&disp[8] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._maxWorkload))), 		&disp[9] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._minWorkload))), 		&disp[10] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[11] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[11] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -4994,8 +4994,8 @@ Cell dummyCell[2];
 
 const int Attributes = 16;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //level
@@ -5013,8 +5013,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //isInside
 1,		 //state
 1,		 //level
@@ -5035,7 +5035,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
@@ -5050,7 +5050,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persiste
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._maxWorkload))), 		&disp[12] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._minWorkload))), 		&disp[13] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[14] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[15] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[15] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -5311,8 +5311,8 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
-_patchIndex(patchIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
+_cellDescriptionIndex(cellDescriptionIndex),
 _riemannSolveNotDone(riemannSolveNotDone),
 _level(level),
 _accessNumber(accessNumber),
@@ -5348,7 +5348,7 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords.getCellIsAForkCandidate()) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords.getCellIsAForkCandidate()) {
 if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -5359,8 +5359,8 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
-_persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate) {
+exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate):
+_persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate) {
 if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -5391,13 +5391,13 @@ return stringstr.str();
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
 out << ",";
-out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -5442,7 +5442,7 @@ return _persistentRecords;
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
 return Cell(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getRiemannSolveNotDone(),
 getIsInside(),
 getState(),
@@ -5473,8 +5473,8 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 11;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_INT,		 //level
 MPI_CHAR,		 //subtreeHoldsWorker
 MPI_DOUBLE,		 //nodeWorkload
@@ -5487,8 +5487,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //level
 1,		 //subtreeHoldsWorker
 1,		 //nodeWorkload
@@ -5504,7 +5504,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
@@ -5514,7 +5514,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._pe
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._maxWorkload))), 		&disp[7] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._minWorkload))), 		&disp[8] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[9] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[10] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[10] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -5531,8 +5531,8 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 13;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_INT,		 //level
 MPI_SHORT,		 //accessNumber
 MPI_INT,		 //responsibleRank
@@ -5547,8 +5547,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //level
 DIMENSIONS_TIMES_TWO,		 //accessNumber
 1,		 //responsibleRank
@@ -5566,7 +5566,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[3] );
@@ -5578,7 +5578,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._pe
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._maxWorkload))), 		&disp[9] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._minWorkload))), 		&disp[10] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[11] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[12] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[12] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -5836,8 +5836,8 @@ exahype::records::Cell::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_patchIndex(patchIndex),
+exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_cellDescriptionIndex(cellDescriptionIndex),
 _riemannSolveNotDone(riemannSolveNotDone),
 _isInside(isInside),
 _state(state),
@@ -5862,13 +5862,13 @@ exahype::records::Cell::Cell() {
 
 
 exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords._cellIsAForkCandidate, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords._cellIsAForkCandidate, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 
 }
 
 
-exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 
 }
 
@@ -5897,13 +5897,13 @@ return stringstr.str();
 
 void exahype::records::Cell::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
 out << ",";
-out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -5950,7 +5950,7 @@ return _persistentRecords;
 
 exahype::records::CellPacked exahype::records::Cell::convert() const{
 return CellPacked(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getRiemannSolveNotDone(),
 getIsInside(),
 getState(),
@@ -5982,8 +5982,8 @@ Cell dummyCell[2];
 
 const int Attributes = 11;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_CHAR,		 //subtreeHoldsWorker
@@ -5996,8 +5996,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //isInside
 1,		 //state
 1,		 //subtreeHoldsWorker
@@ -6013,7 +6013,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
@@ -6023,7 +6023,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persiste
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._totalWorkload))), 		&disp[7] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._maxWorkload))), 		&disp[8] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._minWorkload))), 		&disp[9] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[10] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[10] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -6040,8 +6040,8 @@ Cell dummyCell[2];
 
 const int Attributes = 17;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //evenFlags
@@ -6060,8 +6060,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //isInside
 1,		 //state
 DIMENSIONS,		 //evenFlags
@@ -6083,7 +6083,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
@@ -6099,7 +6099,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persiste
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[13] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[14] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[15] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[16] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[16] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -6360,8 +6360,8 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_patchIndex(patchIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_cellDescriptionIndex(cellDescriptionIndex),
 _riemannSolveNotDone(riemannSolveNotDone),
 _accessNumber(accessNumber),
 _responsibleRank(responsibleRank),
@@ -6398,7 +6398,7 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords.getCellIsAForkCandidate(), persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._nodeWorkload, persistentRecords._localWorkload, persistentRecords._totalWorkload, persistentRecords._maxWorkload, persistentRecords._minWorkload, persistentRecords.getCellIsAForkCandidate(), persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -6409,8 +6409,8 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, nodeWorkload, localWorkload, totalWorkload, maxWorkload, minWorkload, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -6441,13 +6441,13 @@ return stringstr.str();
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
 out << ",";
-out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -6494,7 +6494,7 @@ return _persistentRecords;
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
 return Cell(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getRiemannSolveNotDone(),
 getIsInside(),
 getState(),
@@ -6526,8 +6526,8 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 10;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_CHAR,		 //subtreeHoldsWorker
 MPI_DOUBLE,		 //nodeWorkload
 MPI_DOUBLE,		 //localWorkload
@@ -6539,8 +6539,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //subtreeHoldsWorker
 1,		 //nodeWorkload
 1,		 //localWorkload
@@ -6555,7 +6555,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._nodeWorkload))), 		&disp[3] );
@@ -6564,7 +6564,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._pe
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._maxWorkload))), 		&disp[6] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._minWorkload))), 		&disp[7] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[8] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[9] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[9] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -6581,8 +6581,8 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 14;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_SHORT,		 //accessNumber
 MPI_INT,		 //responsibleRank
 MPI_CHAR,		 //subtreeHoldsWorker
@@ -6598,8 +6598,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 DIMENSIONS_TIMES_TWO,		 //accessNumber
 1,		 //responsibleRank
 1,		 //subtreeHoldsWorker
@@ -6618,7 +6618,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[3] );
@@ -6631,7 +6631,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._pe
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[10] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[11] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[12] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[13] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[13] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -6889,8 +6889,8 @@ exahype::records::Cell::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_patchIndex(patchIndex),
+exahype::records::Cell::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_cellDescriptionIndex(cellDescriptionIndex),
 _riemannSolveNotDone(riemannSolveNotDone),
 _isInside(isInside),
 _state(state),
@@ -6908,13 +6908,13 @@ exahype::records::Cell::Cell() {
 
 
 exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 
 }
 
 
-exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+exahype::records::Cell::Cell(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 
 }
 
@@ -6943,13 +6943,13 @@ return stringstr.str();
 
 void exahype::records::Cell::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
 out << ",";
-out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -6982,7 +6982,7 @@ return _persistentRecords;
 
 exahype::records::CellPacked exahype::records::Cell::convert() const{
 return CellPacked(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getRiemannSolveNotDone(),
 getIsInside(),
 getState(),
@@ -7007,8 +7007,8 @@ Cell dummyCell[2];
 
 const int Attributes = 6;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //level
@@ -7016,8 +7016,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //isInside
 1,		 //state
 1,		 //level
@@ -7028,12 +7028,12 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[5] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -7050,8 +7050,8 @@ Cell dummyCell[2];
 
 const int Attributes = 10;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //level
@@ -7063,8 +7063,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //isInside
 1,		 //state
 1,		 //level
@@ -7079,7 +7079,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[3] );
@@ -7088,7 +7088,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persiste
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[6] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[7] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[8] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._patchIndex[0])), 		&disp[9] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCell[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[9] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -7349,8 +7349,8 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_patchIndex(patchIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_cellDescriptionIndex(cellDescriptionIndex),
 _riemannSolveNotDone(riemannSolveNotDone),
 _level(level),
 _accessNumber(accessNumber),
@@ -7380,7 +7380,7 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._riemannSolveNotDone, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -7391,8 +7391,8 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& patchIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(patchIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+exahype::records::CellPacked::CellPacked(const tarch::la::Vector<NUM_PDE,int>& cellDescriptionIndex, const bool& riemannSolveNotDone, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(cellDescriptionIndex, riemannSolveNotDone, isInside, state, level, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -7423,13 +7423,13 @@ return stringstr.str();
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < NUM_PDE-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(NUM_PDE-1) << "]";
+   out << getCellDescriptionIndex(NUM_PDE-1) << "]";
 out << ",";
-out << "riemann_solve_not_done:" << getRiemannSolveNotDone();
+out << "riemannSolveNotDone:" << getRiemannSolveNotDone();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -7462,7 +7462,7 @@ return _persistentRecords;
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
 return Cell(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getRiemannSolveNotDone(),
 getIsInside(),
 getState(),
@@ -7487,16 +7487,16 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_INT,		 //level
 MPI_INT,		 //_packedRecords0
 MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //level
 1,		 //_packedRecords0
 1		 // end/displacement flag
@@ -7506,11 +7506,11 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[4] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -7527,8 +7527,8 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 8;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
-MPI_CHAR,		 //riemann_solve_not_done
+MPI_INT,		 //cellDescriptionIndex
+MPI_CHAR,		 //riemannSolveNotDone
 MPI_INT,		 //level
 MPI_SHORT,		 //accessNumber
 MPI_INT,		 //numberOfLoadsFromInputStream
@@ -7538,8 +7538,8 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-NUM_PDE,		 //patchIndex
-1,		 //riemann_solve_not_done
+NUM_PDE,		 //cellDescriptionIndex
+1,		 //riemannSolveNotDone
 1,		 //level
 DIMENSIONS_TIMES_TWO,		 //accessNumber
 1,		 //numberOfLoadsFromInputStream
@@ -7552,14 +7552,14 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._riemannSolveNotDone))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[4] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[5] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[6] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._patchIndex[0])), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyCellPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[7] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );

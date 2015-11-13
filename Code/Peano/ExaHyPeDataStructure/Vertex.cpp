@@ -21,6 +21,6 @@ exahype::Vertex::Vertex(const Base::PersistentVertex& argument):
 }
 
 tarch::la::Vector<TWO_POWER_D,int>
-exahype::Vertex::getPatchIndex() {
-  return _vertexData.getPatchIndex();
+exahype::Vertex::getCellDescriptionIndex() {
+  return _vertexData.getCellDescriptionIndex();
 }

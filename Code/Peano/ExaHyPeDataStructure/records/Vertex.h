@@ -34,7 +34,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   11/11/2015 17:13
+    * @date   13/11/2015 18:16
     */
    class exahype::records::Vertex { 
       
@@ -52,9 +52,9 @@ namespace exahype {
          
          struct PersistentRecords {
             #ifdef UseManualAlignment
-            tarch::la::Vector<TWO_POWER_D,int> _patchIndex __attribute__((aligned(VectorisationAlignment)));
+            tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionIndex __attribute__((aligned(VectorisationAlignment)));
             #else
-            tarch::la::Vector<TWO_POWER_D,int> _patchIndex;
+            tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionIndex;
             #endif
             bool _isHangingNode;
             RefinementControl _refinementControl;
@@ -80,7 +80,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+            PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
             
             
             /**
@@ -102,12 +102,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+            inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _patchIndex;
+               return _cellDescriptionIndex;
             }
             
             
@@ -131,12 +131,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+            inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _patchIndex = (patchIndex);
+               _cellDescriptionIndex = (cellDescriptionIndex);
             }
             
             
@@ -402,12 +402,12 @@ namespace exahype {
          /**
           * Generated
           */
-         Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+         Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
          
          /**
           * Generated
           */
-         Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+         Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
          
          /**
           * Generated
@@ -434,12 +434,12 @@ namespace exahype {
           * 
           * @see convert()
           */
-         inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+         inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _persistentRecords._patchIndex;
+            return _persistentRecords._cellDescriptionIndex;
          }
          
          
@@ -463,37 +463,37 @@ namespace exahype {
           * 
           * @see convert()
           */
-         inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+         inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _persistentRecords._patchIndex = (patchIndex);
+            _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
          }
          
          
          
-         inline int getPatchIndex(int elementIndex) const 
+         inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
             assertion(elementIndex>=0);
             assertion(elementIndex<TWO_POWER_D);
-            return _persistentRecords._patchIndex[elementIndex];
+            return _persistentRecords._cellDescriptionIndex[elementIndex];
             
          }
          
          
          
-         inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+         inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
             assertion(elementIndex>=0);
             assertion(elementIndex<TWO_POWER_D);
-            _persistentRecords._patchIndex[elementIndex]= patchIndex;
+            _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
             
          }
          
@@ -923,7 +923,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   11/11/2015 17:13
+       * @date   13/11/2015 18:16
        */
       class exahype::records::VertexPacked { 
          
@@ -934,7 +934,7 @@ namespace exahype {
             typedef exahype::records::Vertex::RefinementControl RefinementControl;
             
             struct PersistentRecords {
-               tarch::la::Vector<TWO_POWER_D,int> _patchIndex;
+               tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionIndex;
                int _adjacentCellsHeight;
                tarch::la::Vector<DIMENSIONS,double> _x;
                int _level;
@@ -957,7 +957,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+               PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
                
                
                /**
@@ -979,12 +979,12 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+               inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _patchIndex;
+                  return _cellDescriptionIndex;
                }
                
                
@@ -1008,12 +1008,12 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+               inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _patchIndex = (patchIndex);
+                  _cellDescriptionIndex = (cellDescriptionIndex);
                }
                
                
@@ -1299,12 +1299,12 @@ namespace exahype {
             /**
              * Generated
              */
-            VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+            VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
             
             /**
              * Generated
              */
-            VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+            VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
             
             /**
              * Generated
@@ -1331,12 +1331,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+            inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _persistentRecords._patchIndex;
+               return _persistentRecords._cellDescriptionIndex;
             }
             
             
@@ -1360,37 +1360,37 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+            inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _persistentRecords._patchIndex = (patchIndex);
+               _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
             }
             
             
             
-            inline int getPatchIndex(int elementIndex) const 
+            inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                assertion(elementIndex>=0);
                assertion(elementIndex<TWO_POWER_D);
-               return _persistentRecords._patchIndex[elementIndex];
+               return _persistentRecords._cellDescriptionIndex[elementIndex];
                
             }
             
             
             
-            inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+            inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                assertion(elementIndex>=0);
                assertion(elementIndex<TWO_POWER_D);
-               _persistentRecords._patchIndex[elementIndex]= patchIndex;
+               _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                
             }
             
@@ -1841,7 +1841,7 @@ namespace exahype {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   11/11/2015 17:13
+          * @date   13/11/2015 18:16
           */
          class exahype::records::Vertex { 
             
@@ -1859,9 +1859,9 @@ namespace exahype {
                
                struct PersistentRecords {
                   #ifdef UseManualAlignment
-                  tarch::la::Vector<TWO_POWER_D,int> _patchIndex __attribute__((aligned(VectorisationAlignment)));
+                  tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionIndex __attribute__((aligned(VectorisationAlignment)));
                   #else
-                  tarch::la::Vector<TWO_POWER_D,int> _patchIndex;
+                  tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionIndex;
                   #endif
                   bool _isHangingNode;
                   RefinementControl _refinementControl;
@@ -1875,7 +1875,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
+                  PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
                   
                   
                   /**
@@ -1897,12 +1897,12 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+                  inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _patchIndex;
+                     return _cellDescriptionIndex;
                   }
                   
                   
@@ -1926,12 +1926,12 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+                  inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _patchIndex = (patchIndex);
+                     _cellDescriptionIndex = (cellDescriptionIndex);
                   }
                   
                   
@@ -2041,12 +2041,12 @@ namespace exahype {
                /**
                 * Generated
                 */
-               Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
+               Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
                
                /**
                 * Generated
                 */
-               Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain);
+               Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain);
                
                /**
                 * Generated
@@ -2073,12 +2073,12 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+               inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._patchIndex;
+                  return _persistentRecords._cellDescriptionIndex;
                }
                
                
@@ -2102,37 +2102,37 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+               inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._patchIndex = (patchIndex);
+                  _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                }
                
                
                
-               inline int getPatchIndex(int elementIndex) const 
+               inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                   assertion(elementIndex>=0);
                   assertion(elementIndex<TWO_POWER_D);
-                  return _persistentRecords._patchIndex[elementIndex];
+                  return _persistentRecords._cellDescriptionIndex[elementIndex];
                   
                }
                
                
                
-               inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+               inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                   assertion(elementIndex>=0);
                   assertion(elementIndex<TWO_POWER_D);
-                  _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                  _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                   
                }
                
@@ -2354,7 +2354,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   11/11/2015 17:13
+             * @date   13/11/2015 18:16
              */
             class exahype::records::VertexPacked { 
                
@@ -2365,7 +2365,7 @@ namespace exahype {
                   typedef exahype::records::Vertex::RefinementControl RefinementControl;
                   
                   struct PersistentRecords {
-                     tarch::la::Vector<TWO_POWER_D,int> _patchIndex;
+                     tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionIndex;
                      int _adjacentCellsHeight;
                      
                      /** mapping of records:
@@ -2384,7 +2384,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
+                     PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
                      
                      
                      /**
@@ -2406,12 +2406,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+                     inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _patchIndex;
+                        return _cellDescriptionIndex;
                      }
                      
                      
@@ -2435,12 +2435,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+                     inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _patchIndex = (patchIndex);
+                        _cellDescriptionIndex = (cellDescriptionIndex);
                      }
                      
                      
@@ -2567,12 +2567,12 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
+                  VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
                   
                   /**
                    * Generated
                    */
-                  VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain);
+                  VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain);
                   
                   /**
                    * Generated
@@ -2599,12 +2599,12 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+                  inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._patchIndex;
+                     return _persistentRecords._cellDescriptionIndex;
                   }
                   
                   
@@ -2628,37 +2628,37 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+                  inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._patchIndex = (patchIndex);
+                     _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                   }
                   
                   
                   
-                  inline int getPatchIndex(int elementIndex) const 
+                  inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<TWO_POWER_D);
-                     return _persistentRecords._patchIndex[elementIndex];
+                     return _persistentRecords._cellDescriptionIndex[elementIndex];
                      
                   }
                   
                   
                   
-                  inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                  inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<TWO_POWER_D);
-                     _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                     _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                      
                   }
                   
@@ -2899,7 +2899,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   11/11/2015 17:13
+             * @date   13/11/2015 18:16
              */
             class exahype::records::Vertex { 
                
@@ -2917,9 +2917,9 @@ namespace exahype {
                   
                   struct PersistentRecords {
                      #ifdef UseManualAlignment
-                     tarch::la::Vector<TWO_POWER_D,int> _patchIndex __attribute__((aligned(VectorisationAlignment)));
+                     tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionIndex __attribute__((aligned(VectorisationAlignment)));
                      #else
-                     tarch::la::Vector<TWO_POWER_D,int> _patchIndex;
+                     tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionIndex;
                      #endif
                      bool _isHangingNode;
                      RefinementControl _refinementControl;
@@ -2939,7 +2939,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
+                     PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
                      
                      
                      /**
@@ -2961,12 +2961,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+                     inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _patchIndex;
+                        return _cellDescriptionIndex;
                      }
                      
                      
@@ -2990,12 +2990,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+                     inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _patchIndex = (patchIndex);
+                        _cellDescriptionIndex = (cellDescriptionIndex);
                      }
                      
                      
@@ -3183,12 +3183,12 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
+                  Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
                   
                   /**
                    * Generated
                    */
-                  Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
+                  Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
                   
                   /**
                    * Generated
@@ -3215,12 +3215,12 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+                  inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._patchIndex;
+                     return _persistentRecords._cellDescriptionIndex;
                   }
                   
                   
@@ -3244,37 +3244,37 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+                  inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._patchIndex = (patchIndex);
+                     _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                   }
                   
                   
                   
-                  inline int getPatchIndex(int elementIndex) const 
+                  inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<TWO_POWER_D);
-                     return _persistentRecords._patchIndex[elementIndex];
+                     return _persistentRecords._cellDescriptionIndex[elementIndex];
                      
                   }
                   
                   
                   
-                  inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                  inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<TWO_POWER_D);
-                     _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                     _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                      
                   }
                   
@@ -3600,7 +3600,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   11/11/2015 17:13
+                * @date   13/11/2015 18:16
                 */
                class exahype::records::VertexPacked { 
                   
@@ -3611,7 +3611,7 @@ namespace exahype {
                      typedef exahype::records::Vertex::RefinementControl RefinementControl;
                      
                      struct PersistentRecords {
-                        tarch::la::Vector<TWO_POWER_D,int> _patchIndex;
+                        tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionIndex;
                         int _adjacentCellsHeight;
                         tarch::la::Vector<DIMENSIONS,double> _x;
                         int _level;
@@ -3632,7 +3632,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
+                        PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
                         
                         
                         /**
@@ -3654,12 +3654,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+                        inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _patchIndex;
+                           return _cellDescriptionIndex;
                         }
                         
                         
@@ -3683,12 +3683,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+                        inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           _patchIndex = (patchIndex);
+                           _cellDescriptionIndex = (cellDescriptionIndex);
                         }
                         
                         
@@ -3893,12 +3893,12 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
+                     VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
                      
                      /**
                       * Generated
                       */
-                     VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
+                     VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
                      
                      /**
                       * Generated
@@ -3925,12 +3925,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+                     inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _persistentRecords._patchIndex;
+                        return _persistentRecords._cellDescriptionIndex;
                      }
                      
                      
@@ -3954,37 +3954,37 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+                     inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _persistentRecords._patchIndex = (patchIndex);
+                        _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                      }
                      
                      
                      
-                     inline int getPatchIndex(int elementIndex) const 
+                     inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                         assertion(elementIndex>=0);
                         assertion(elementIndex<TWO_POWER_D);
-                        return _persistentRecords._patchIndex[elementIndex];
+                        return _persistentRecords._cellDescriptionIndex[elementIndex];
                         
                      }
                      
                      
                      
-                     inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                     inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                         assertion(elementIndex>=0);
                         assertion(elementIndex<TWO_POWER_D);
-                        _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                        _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                         
                      }
                      
@@ -4329,7 +4329,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   11/11/2015 17:13
+                * @date   13/11/2015 18:16
                 */
                class exahype::records::Vertex { 
                   
@@ -4347,9 +4347,9 @@ namespace exahype {
                      
                      struct PersistentRecords {
                         #ifdef UseManualAlignment
-                        tarch::la::Vector<TWO_POWER_D,int> _patchIndex __attribute__((aligned(VectorisationAlignment)));
+                        tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionIndex __attribute__((aligned(VectorisationAlignment)));
                         #else
-                        tarch::la::Vector<TWO_POWER_D,int> _patchIndex;
+                        tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionIndex;
                         #endif
                         bool _isHangingNode;
                         RefinementControl _refinementControl;
@@ -4369,7 +4369,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+                        PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
                         
                         
                         /**
@@ -4391,12 +4391,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+                        inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _patchIndex;
+                           return _cellDescriptionIndex;
                         }
                         
                         
@@ -4420,12 +4420,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+                        inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           _patchIndex = (patchIndex);
+                           _cellDescriptionIndex = (cellDescriptionIndex);
                         }
                         
                         
@@ -4613,12 +4613,12 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+                     Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
                      
                      /**
                       * Generated
                       */
-                     Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+                     Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
                      
                      /**
                       * Generated
@@ -4645,12 +4645,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+                     inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _persistentRecords._patchIndex;
+                        return _persistentRecords._cellDescriptionIndex;
                      }
                      
                      
@@ -4674,37 +4674,37 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+                     inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _persistentRecords._patchIndex = (patchIndex);
+                        _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                      }
                      
                      
                      
-                     inline int getPatchIndex(int elementIndex) const 
+                     inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                         assertion(elementIndex>=0);
                         assertion(elementIndex<TWO_POWER_D);
-                        return _persistentRecords._patchIndex[elementIndex];
+                        return _persistentRecords._cellDescriptionIndex[elementIndex];
                         
                      }
                      
                      
                      
-                     inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                     inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                         assertion(elementIndex>=0);
                         assertion(elementIndex<TWO_POWER_D);
-                        _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                        _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                         
                      }
                      
@@ -5030,7 +5030,7 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   11/11/2015 17:13
+                   * @date   13/11/2015 18:16
                    */
                   class exahype::records::VertexPacked { 
                      
@@ -5041,7 +5041,7 @@ namespace exahype {
                         typedef exahype::records::Vertex::RefinementControl RefinementControl;
                         
                         struct PersistentRecords {
-                           tarch::la::Vector<TWO_POWER_D,int> _patchIndex;
+                           tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionIndex;
                            int _adjacentCellsHeight;
                            tarch::la::Vector<TWO_POWER_D,int> _adjacentRanks;
                            
@@ -5062,7 +5062,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+                           PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
                            
                            
                            /**
@@ -5084,12 +5084,12 @@ namespace exahype {
                             * 
                             * @see convert()
                             */
-                           inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+                           inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              return _patchIndex;
+                              return _cellDescriptionIndex;
                            }
                            
                            
@@ -5113,12 +5113,12 @@ namespace exahype {
                             * 
                             * @see convert()
                             */
-                           inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+                           inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              _patchIndex = (patchIndex);
+                              _cellDescriptionIndex = (cellDescriptionIndex);
                            }
                            
                            
@@ -5326,12 +5326,12 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+                        VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
                         
                         /**
                          * Generated
                          */
-                        VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+                        VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
                         
                         /**
                          * Generated
@@ -5358,12 +5358,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline tarch::la::Vector<TWO_POWER_D,int> getPatchIndex() const 
+                        inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _persistentRecords._patchIndex;
+                           return _persistentRecords._cellDescriptionIndex;
                         }
                         
                         
@@ -5387,37 +5387,37 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline void setPatchIndex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex) 
+                        inline void setCellDescriptionIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           _persistentRecords._patchIndex = (patchIndex);
+                           _persistentRecords._cellDescriptionIndex = (cellDescriptionIndex);
                         }
                         
                         
                         
-                        inline int getPatchIndex(int elementIndex) const 
+                        inline int getCellDescriptionIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                            assertion(elementIndex>=0);
                            assertion(elementIndex<TWO_POWER_D);
-                           return _persistentRecords._patchIndex[elementIndex];
+                           return _persistentRecords._cellDescriptionIndex[elementIndex];
                            
                         }
                         
                         
                         
-                        inline void setPatchIndex(int elementIndex, const int& patchIndex) 
+                        inline void setCellDescriptionIndex(int elementIndex, const int& cellDescriptionIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                            assertion(elementIndex>=0);
                            assertion(elementIndex<TWO_POWER_D);
-                           _persistentRecords._patchIndex[elementIndex]= patchIndex;
+                           _persistentRecords._cellDescriptionIndex[elementIndex]= cellDescriptionIndex;
                            
                         }
                         

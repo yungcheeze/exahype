@@ -6,8 +6,8 @@
    }
    
    
-   exahype::records::Vertex::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
-   _patchIndex(patchIndex),
+   exahype::records::Vertex::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
+   _cellDescriptionIndex(cellDescriptionIndex),
    _isHangingNode(isHangingNode),
    _refinementControl(refinementControl),
    _adjacentCellsHeight(adjacentCellsHeight),
@@ -25,19 +25,19 @@
    
    
    exahype::records::Vertex::Vertex(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._patchIndex, persistentRecords._isHangingNode, persistentRecords._refinementControl, persistentRecords._adjacentCellsHeight, persistentRecords._insideOutsideDomain, persistentRecords._x, persistentRecords._level, persistentRecords._adjacentRanks, persistentRecords._adjacentSubtreeForksIntoOtherRank) {
+   _persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._isHangingNode, persistentRecords._refinementControl, persistentRecords._adjacentCellsHeight, persistentRecords._insideOutsideDomain, persistentRecords._x, persistentRecords._level, persistentRecords._adjacentRanks, persistentRecords._adjacentSubtreeForksIntoOtherRank) {
       
    }
    
    
-   exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
-   _persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level, adjacentRanks, adjacentSubtreeForksIntoOtherRank) {
+   exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
+   _persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level, adjacentRanks, adjacentSubtreeForksIntoOtherRank) {
       
    }
    
    
-   exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
-   _persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level, adjacentRanks, adjacentSubtreeForksIntoOtherRank),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
+   exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
+   _persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level, adjacentRanks, adjacentSubtreeForksIntoOtherRank),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
    _numberOfAdjacentRefinedCells(numberOfAdjacentRefinedCells) {
       
    }
@@ -83,11 +83,11 @@
    
    void exahype::records::Vertex::toString (std::ostream& out) const {
       out << "("; 
-      out << "patchIndex:[";
+      out << "cellDescriptionIndex:[";
    for (int i = 0; i < TWO_POWER_D-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(TWO_POWER_D-1) << "]";
+   out << getCellDescriptionIndex(TWO_POWER_D-1) << "]";
       out << ",";
       out << "isHangingNode:" << getIsHangingNode();
       out << ",";
@@ -126,7 +126,7 @@
    
    exahype::records::VertexPacked exahype::records::Vertex::convert() const{
       return VertexPacked(
-         getPatchIndex(),
+         getCellDescriptionIndex(),
          getIsHangingNode(),
          getRefinementControl(),
          getAdjacentCellsHeight(),
@@ -205,7 +205,7 @@
             
             const int Attributes = 12;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //patchIndex
+               MPI_INT,		 //cellDescriptionIndex
                MPI_CHAR,		 //isHangingNode
                MPI_INT,		 //refinementControl
                MPI_INT,		 //adjacentCellsHeight
@@ -220,7 +220,7 @@
             };
             
             int blocklen[Attributes] = {
-               TWO_POWER_D,		 //patchIndex
+               TWO_POWER_D,		 //cellDescriptionIndex
                1,		 //isHangingNode
                1,		 //refinementControl
                1,		 //adjacentCellsHeight
@@ -238,7 +238,7 @@
             
             MPI_Aint base;
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]))), &base);
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._isHangingNode))), 		&disp[1] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._refinementControl))), 		&disp[2] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentCellsHeight))), 		&disp[3] );
@@ -249,7 +249,7 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentSubtreeForksIntoOtherRank))), 		&disp[8] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[9] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[10] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._patchIndex[0])), 		&disp[11] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[11] );
             
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
@@ -510,8 +510,8 @@ exahype::records::VertexPacked::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::VertexPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
-_patchIndex(patchIndex),
+exahype::records::VertexPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
+_cellDescriptionIndex(cellDescriptionIndex),
 _adjacentCellsHeight(adjacentCellsHeight),
 _x(x),
 _level(level),
@@ -541,7 +541,7 @@ exahype::records::VertexPacked::VertexPacked() {
 
 
 exahype::records::VertexPacked::VertexPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords.getIsHangingNode(), persistentRecords.getRefinementControl(), persistentRecords._adjacentCellsHeight, persistentRecords.getInsideOutsideDomain(), persistentRecords._x, persistentRecords._level, persistentRecords._adjacentRanks, persistentRecords.getAdjacentSubtreeForksIntoOtherRank()) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords.getIsHangingNode(), persistentRecords.getRefinementControl(), persistentRecords._adjacentCellsHeight, persistentRecords.getInsideOutsideDomain(), persistentRecords._x, persistentRecords._level, persistentRecords._adjacentRanks, persistentRecords.getAdjacentSubtreeForksIntoOtherRank()) {
    if ((7 >= (8 * sizeof(int)))) {
       std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
       std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -552,8 +552,8 @@ _persistentRecords(persistentRecords._patchIndex, persistentRecords.getIsHanging
 }
 
 
-exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
-_persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level, adjacentRanks, adjacentSubtreeForksIntoOtherRank) {
+exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
+_persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level, adjacentRanks, adjacentSubtreeForksIntoOtherRank) {
    if ((7 >= (8 * sizeof(int)))) {
       std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
       std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -564,8 +564,8 @@ _persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHe
 }
 
 
-exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
-_persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level, adjacentRanks, adjacentSubtreeForksIntoOtherRank),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
+exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
+_persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level, adjacentRanks, adjacentSubtreeForksIntoOtherRank),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
 _numberOfAdjacentRefinedCells(numberOfAdjacentRefinedCells) {
    if ((7 >= (8 * sizeof(int)))) {
       std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
@@ -604,11 +604,11 @@ std::string exahype::records::VertexPacked::toString() const {
 
 void exahype::records::VertexPacked::toString (std::ostream& out) const {
    out << "("; 
-   out << "patchIndex:[";
+   out << "cellDescriptionIndex:[";
    for (int i = 0; i < TWO_POWER_D-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(TWO_POWER_D-1) << "]";
+   out << getCellDescriptionIndex(TWO_POWER_D-1) << "]";
    out << ",";
    out << "isHangingNode:" << getIsHangingNode();
    out << ",";
@@ -647,7 +647,7 @@ exahype::records::VertexPacked::PersistentRecords exahype::records::VertexPacked
 
 exahype::records::Vertex exahype::records::VertexPacked::convert() const{
    return Vertex(
-      getPatchIndex(),
+      getCellDescriptionIndex(),
       getIsHangingNode(),
       getRefinementControl(),
       getAdjacentCellsHeight(),
@@ -717,7 +717,7 @@ exahype::records::Vertex exahype::records::VertexPacked::convert() const{
          
          const int Attributes = 9;
          MPI_Datatype subtypes[Attributes] = {
-            MPI_INT,		 //patchIndex
+            MPI_INT,		 //cellDescriptionIndex
             MPI_INT,		 //adjacentCellsHeight
             MPI_DOUBLE,		 //x
             MPI_INT,		 //level
@@ -729,7 +729,7 @@ exahype::records::Vertex exahype::records::VertexPacked::convert() const{
          };
          
          int blocklen[Attributes] = {
-            TWO_POWER_D,		 //patchIndex
+            TWO_POWER_D,		 //cellDescriptionIndex
             1,		 //adjacentCellsHeight
             DIMENSIONS,		 //x
             1,		 //level
@@ -744,7 +744,7 @@ exahype::records::Vertex exahype::records::VertexPacked::convert() const{
          
          MPI_Aint base;
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]))), &base);
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._adjacentCellsHeight))), 		&disp[1] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._x[0]))), 		&disp[2] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._level))), 		&disp[3] );
@@ -752,7 +752,7 @@ exahype::records::Vertex exahype::records::VertexPacked::convert() const{
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[5] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[6] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[7] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._patchIndex[0])), 		&disp[8] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[8] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -1009,8 +1009,8 @@ exahype::records::Vertex::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Vertex::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain):
-_patchIndex(patchIndex),
+exahype::records::Vertex::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain):
+_cellDescriptionIndex(cellDescriptionIndex),
 _isHangingNode(isHangingNode),
 _refinementControl(refinementControl),
 _adjacentCellsHeight(adjacentCellsHeight),
@@ -1024,19 +1024,19 @@ exahype::records::Vertex::Vertex() {
 
 
 exahype::records::Vertex::Vertex(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._isHangingNode, persistentRecords._refinementControl, persistentRecords._adjacentCellsHeight, persistentRecords._insideOutsideDomain) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._isHangingNode, persistentRecords._refinementControl, persistentRecords._adjacentCellsHeight, persistentRecords._insideOutsideDomain) {
 
 }
 
 
-exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain):
-_persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain) {
+exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain):
+_persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain) {
 
 }
 
 
-exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain):
-_persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
+exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain):
+_persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
 _numberOfAdjacentRefinedCells(numberOfAdjacentRefinedCells) {
 
 }
@@ -1080,11 +1080,11 @@ return stringstr.str();
 
 void exahype::records::Vertex::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < TWO_POWER_D-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(TWO_POWER_D-1) << "]";
+   out << getCellDescriptionIndex(TWO_POWER_D-1) << "]";
 out << ",";
 out << "isHangingNode:" << getIsHangingNode();
 out << ",";
@@ -1107,7 +1107,7 @@ return _persistentRecords;
 
 exahype::records::VertexPacked exahype::records::Vertex::convert() const{
 return VertexPacked(
-   getPatchIndex(),
+   getCellDescriptionIndex(),
    getIsHangingNode(),
    getRefinementControl(),
    getAdjacentCellsHeight(),
@@ -1167,7 +1167,7 @@ void exahype::records::Vertex::initDatatype() {
       
       const int Attributes = 8;
       MPI_Datatype subtypes[Attributes] = {
-         MPI_INT,		 //patchIndex
+         MPI_INT,		 //cellDescriptionIndex
          MPI_CHAR,		 //isHangingNode
          MPI_INT,		 //refinementControl
          MPI_INT,		 //adjacentCellsHeight
@@ -1178,7 +1178,7 @@ void exahype::records::Vertex::initDatatype() {
       };
       
       int blocklen[Attributes] = {
-         TWO_POWER_D,		 //patchIndex
+         TWO_POWER_D,		 //cellDescriptionIndex
          1,		 //isHangingNode
          1,		 //refinementControl
          1,		 //adjacentCellsHeight
@@ -1192,14 +1192,14 @@ void exahype::records::Vertex::initDatatype() {
       
       MPI_Aint base;
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]))), &base);
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._isHangingNode))), 		&disp[1] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._refinementControl))), 		&disp[2] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentCellsHeight))), 		&disp[3] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._insideOutsideDomain))), 		&disp[4] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[5] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[6] );
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._patchIndex[0])), 		&disp[7] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[7] );
       
       for (int i=1; i<Attributes; i++) {
          assertion1( disp[i] > disp[i-1], i );
@@ -1460,8 +1460,8 @@ assertion((6 < (8 * sizeof(int))));
 }
 
 
-exahype::records::VertexPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain):
-_patchIndex(patchIndex),
+exahype::records::VertexPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain):
+_cellDescriptionIndex(cellDescriptionIndex),
 _adjacentCellsHeight(adjacentCellsHeight) {
 setIsHangingNode(isHangingNode);
 setRefinementControl(refinementControl);
@@ -1487,7 +1487,7 @@ assertion((6 < (8 * sizeof(int))));
 
 
 exahype::records::VertexPacked::VertexPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords.getIsHangingNode(), persistentRecords.getRefinementControl(), persistentRecords._adjacentCellsHeight, persistentRecords.getInsideOutsideDomain()) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords.getIsHangingNode(), persistentRecords.getRefinementControl(), persistentRecords._adjacentCellsHeight, persistentRecords.getInsideOutsideDomain()) {
 if ((6 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -1498,8 +1498,8 @@ assertion((6 < (8 * sizeof(int))));
 }
 
 
-exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain):
-_persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain) {
+exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain):
+_persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain) {
 if ((6 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -1510,8 +1510,8 @@ assertion((6 < (8 * sizeof(int))));
 }
 
 
-exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain):
-_persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
+exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain):
+_persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
 _numberOfAdjacentRefinedCells(numberOfAdjacentRefinedCells) {
 if ((6 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
@@ -1550,11 +1550,11 @@ return stringstr.str();
 
 void exahype::records::VertexPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < TWO_POWER_D-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(TWO_POWER_D-1) << "]";
+   out << getCellDescriptionIndex(TWO_POWER_D-1) << "]";
 out << ",";
 out << "isHangingNode:" << getIsHangingNode();
 out << ",";
@@ -1577,7 +1577,7 @@ return _persistentRecords;
 
 exahype::records::Vertex exahype::records::VertexPacked::convert() const{
 return Vertex(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getIsHangingNode(),
 getRefinementControl(),
 getAdjacentCellsHeight(),
@@ -1634,7 +1634,7 @@ void exahype::records::VertexPacked::initDatatype() {
    
    const int Attributes = 6;
    MPI_Datatype subtypes[Attributes] = {
-      MPI_INT,		 //patchIndex
+      MPI_INT,		 //cellDescriptionIndex
       MPI_INT,		 //adjacentCellsHeight
       MPI_INT,		 //_packedRecords0
       MPI_INT,		 //adjacentCellsHeightOfPreviousIteration
@@ -1643,7 +1643,7 @@ void exahype::records::VertexPacked::initDatatype() {
    };
    
    int blocklen[Attributes] = {
-      TWO_POWER_D,		 //patchIndex
+      TWO_POWER_D,		 //cellDescriptionIndex
       1,		 //adjacentCellsHeight
       1,		 //_packedRecords0
       1,		 //adjacentCellsHeightOfPreviousIteration
@@ -1655,12 +1655,12 @@ void exahype::records::VertexPacked::initDatatype() {
    
    MPI_Aint base;
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]))), &base);
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._adjacentCellsHeight))), 		&disp[1] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[3] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[4] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._patchIndex[0])), 		&disp[5] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[5] );
    
    for (int i=1; i<Attributes; i++) {
       assertion1( disp[i] > disp[i-1], i );
@@ -1918,8 +1918,8 @@ exahype::records::Vertex::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Vertex::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level):
-_patchIndex(patchIndex),
+exahype::records::Vertex::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level):
+_cellDescriptionIndex(cellDescriptionIndex),
 _isHangingNode(isHangingNode),
 _refinementControl(refinementControl),
 _adjacentCellsHeight(adjacentCellsHeight),
@@ -1935,19 +1935,19 @@ exahype::records::Vertex::Vertex() {
 
 
 exahype::records::Vertex::Vertex(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._isHangingNode, persistentRecords._refinementControl, persistentRecords._adjacentCellsHeight, persistentRecords._insideOutsideDomain, persistentRecords._x, persistentRecords._level) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._isHangingNode, persistentRecords._refinementControl, persistentRecords._adjacentCellsHeight, persistentRecords._insideOutsideDomain, persistentRecords._x, persistentRecords._level) {
 
 }
 
 
-exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level):
-_persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level) {
+exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level):
+_persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level) {
 
 }
 
 
-exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level):
-_persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
+exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level):
+_persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
 _numberOfAdjacentRefinedCells(numberOfAdjacentRefinedCells) {
 
 }
@@ -1991,11 +1991,11 @@ return stringstr.str();
 
 void exahype::records::Vertex::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < TWO_POWER_D-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(TWO_POWER_D-1) << "]";
+   out << getCellDescriptionIndex(TWO_POWER_D-1) << "]";
 out << ",";
 out << "isHangingNode:" << getIsHangingNode();
 out << ",";
@@ -2026,7 +2026,7 @@ return _persistentRecords;
 
 exahype::records::VertexPacked exahype::records::Vertex::convert() const{
 return VertexPacked(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getIsHangingNode(),
 getRefinementControl(),
 getAdjacentCellsHeight(),
@@ -2097,7 +2097,7 @@ Vertex dummyVertex[2];
 
 const int Attributes = 10;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
+MPI_INT,		 //cellDescriptionIndex
 MPI_CHAR,		 //isHangingNode
 MPI_INT,		 //refinementControl
 MPI_INT,		 //adjacentCellsHeight
@@ -2110,7 +2110,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-TWO_POWER_D,		 //patchIndex
+TWO_POWER_D,		 //cellDescriptionIndex
 1,		 //isHangingNode
 1,		 //refinementControl
 1,		 //adjacentCellsHeight
@@ -2126,7 +2126,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._isHangingNode))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._refinementControl))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentCellsHeight))), 		&disp[3] );
@@ -2135,7 +2135,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persis
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._level))), 		&disp[6] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[7] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[8] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._patchIndex[0])), 		&disp[9] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[9] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -2396,8 +2396,8 @@ assertion((6 < (8 * sizeof(int))));
 }
 
 
-exahype::records::VertexPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level):
-_patchIndex(patchIndex),
+exahype::records::VertexPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level):
+_cellDescriptionIndex(cellDescriptionIndex),
 _adjacentCellsHeight(adjacentCellsHeight),
 _x(x),
 _level(level) {
@@ -2425,7 +2425,7 @@ assertion((6 < (8 * sizeof(int))));
 
 
 exahype::records::VertexPacked::VertexPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords.getIsHangingNode(), persistentRecords.getRefinementControl(), persistentRecords._adjacentCellsHeight, persistentRecords.getInsideOutsideDomain(), persistentRecords._x, persistentRecords._level) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords.getIsHangingNode(), persistentRecords.getRefinementControl(), persistentRecords._adjacentCellsHeight, persistentRecords.getInsideOutsideDomain(), persistentRecords._x, persistentRecords._level) {
 if ((6 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -2436,8 +2436,8 @@ assertion((6 < (8 * sizeof(int))));
 }
 
 
-exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level):
-_persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level) {
+exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level):
+_persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level) {
 if ((6 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -2448,8 +2448,8 @@ assertion((6 < (8 * sizeof(int))));
 }
 
 
-exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level):
-_persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
+exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level):
+_persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, x, level),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
 _numberOfAdjacentRefinedCells(numberOfAdjacentRefinedCells) {
 if ((6 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
@@ -2488,11 +2488,11 @@ return stringstr.str();
 
 void exahype::records::VertexPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < TWO_POWER_D-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(TWO_POWER_D-1) << "]";
+   out << getCellDescriptionIndex(TWO_POWER_D-1) << "]";
 out << ",";
 out << "isHangingNode:" << getIsHangingNode();
 out << ",";
@@ -2523,7 +2523,7 @@ return _persistentRecords;
 
 exahype::records::Vertex exahype::records::VertexPacked::convert() const{
 return Vertex(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getIsHangingNode(),
 getRefinementControl(),
 getAdjacentCellsHeight(),
@@ -2588,7 +2588,7 @@ VertexPacked dummyVertexPacked[2];
 
 const int Attributes = 8;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
+MPI_INT,		 //cellDescriptionIndex
 MPI_INT,		 //adjacentCellsHeight
 MPI_DOUBLE,		 //x
 MPI_INT,		 //level
@@ -2599,7 +2599,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-TWO_POWER_D,		 //patchIndex
+TWO_POWER_D,		 //cellDescriptionIndex
 1,		 //adjacentCellsHeight
 DIMENSIONS,		 //x
 1,		 //level
@@ -2613,14 +2613,14 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._adjacentCellsHeight))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._x[0]))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._level))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[4] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[5] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[6] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._patchIndex[0])), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[7] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -2878,8 +2878,8 @@ exahype::records::Vertex::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Vertex::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
-_patchIndex(patchIndex),
+exahype::records::Vertex::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
+_cellDescriptionIndex(cellDescriptionIndex),
 _isHangingNode(isHangingNode),
 _refinementControl(refinementControl),
 _adjacentCellsHeight(adjacentCellsHeight),
@@ -2895,19 +2895,19 @@ exahype::records::Vertex::Vertex() {
 
 
 exahype::records::Vertex::Vertex(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords._isHangingNode, persistentRecords._refinementControl, persistentRecords._adjacentCellsHeight, persistentRecords._insideOutsideDomain, persistentRecords._adjacentRanks, persistentRecords._adjacentSubtreeForksIntoOtherRank) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords._isHangingNode, persistentRecords._refinementControl, persistentRecords._adjacentCellsHeight, persistentRecords._insideOutsideDomain, persistentRecords._adjacentRanks, persistentRecords._adjacentSubtreeForksIntoOtherRank) {
 
 }
 
 
-exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
-_persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, adjacentRanks, adjacentSubtreeForksIntoOtherRank) {
+exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
+_persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, adjacentRanks, adjacentSubtreeForksIntoOtherRank) {
 
 }
 
 
-exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
-_persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, adjacentRanks, adjacentSubtreeForksIntoOtherRank),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
+exahype::records::Vertex::Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
+_persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, adjacentRanks, adjacentSubtreeForksIntoOtherRank),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
 _numberOfAdjacentRefinedCells(numberOfAdjacentRefinedCells) {
 
 }
@@ -2953,11 +2953,11 @@ return stringstr.str();
 
 void exahype::records::Vertex::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < TWO_POWER_D-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(TWO_POWER_D-1) << "]";
+   out << getCellDescriptionIndex(TWO_POWER_D-1) << "]";
 out << ",";
 out << "isHangingNode:" << getIsHangingNode();
 out << ",";
@@ -2988,7 +2988,7 @@ return _persistentRecords;
 
 exahype::records::VertexPacked exahype::records::Vertex::convert() const{
 return VertexPacked(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getIsHangingNode(),
 getRefinementControl(),
 getAdjacentCellsHeight(),
@@ -3056,7 +3056,7 @@ Vertex dummyVertex[2];
 
 const int Attributes = 10;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
+MPI_INT,		 //cellDescriptionIndex
 MPI_CHAR,		 //isHangingNode
 MPI_INT,		 //refinementControl
 MPI_INT,		 //adjacentCellsHeight
@@ -3069,7 +3069,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-TWO_POWER_D,		 //patchIndex
+TWO_POWER_D,		 //cellDescriptionIndex
 1,		 //isHangingNode
 1,		 //refinementControl
 1,		 //adjacentCellsHeight
@@ -3085,7 +3085,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._isHangingNode))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._refinementControl))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentCellsHeight))), 		&disp[3] );
@@ -3094,7 +3094,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persis
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._persistentRecords._adjacentSubtreeForksIntoOtherRank))), 		&disp[6] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[7] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertex[0]._numberOfAdjacentRefinedCells))), 		&disp[8] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._patchIndex[0])), 		&disp[9] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertex[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[9] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -3355,8 +3355,8 @@ assertion((7 < (8 * sizeof(int))));
 }
 
 
-exahype::records::VertexPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
-_patchIndex(patchIndex),
+exahype::records::VertexPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
+_cellDescriptionIndex(cellDescriptionIndex),
 _adjacentCellsHeight(adjacentCellsHeight),
 _adjacentRanks(adjacentRanks) {
 setIsHangingNode(isHangingNode);
@@ -3384,7 +3384,7 @@ assertion((7 < (8 * sizeof(int))));
 
 
 exahype::records::VertexPacked::VertexPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._patchIndex, persistentRecords.getIsHangingNode(), persistentRecords.getRefinementControl(), persistentRecords._adjacentCellsHeight, persistentRecords.getInsideOutsideDomain(), persistentRecords._adjacentRanks, persistentRecords.getAdjacentSubtreeForksIntoOtherRank()) {
+_persistentRecords(persistentRecords._cellDescriptionIndex, persistentRecords.getIsHangingNode(), persistentRecords.getRefinementControl(), persistentRecords._adjacentCellsHeight, persistentRecords.getInsideOutsideDomain(), persistentRecords._adjacentRanks, persistentRecords.getAdjacentSubtreeForksIntoOtherRank()) {
 if ((7 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -3395,8 +3395,8 @@ assertion((7 < (8 * sizeof(int))));
 }
 
 
-exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
-_persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, adjacentRanks, adjacentSubtreeForksIntoOtherRank) {
+exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
+_persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, adjacentRanks, adjacentSubtreeForksIntoOtherRank) {
 if ((7 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -3407,8 +3407,8 @@ assertion((7 < (8 * sizeof(int))));
 }
 
 
-exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& patchIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
-_persistentRecords(patchIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, adjacentRanks, adjacentSubtreeForksIntoOtherRank),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
+exahype::records::VertexPacked::VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank):
+_persistentRecords(cellDescriptionIndex, isHangingNode, refinementControl, adjacentCellsHeight, insideOutsideDomain, adjacentRanks, adjacentSubtreeForksIntoOtherRank),_adjacentCellsHeightOfPreviousIteration(adjacentCellsHeightOfPreviousIteration),
 _numberOfAdjacentRefinedCells(numberOfAdjacentRefinedCells) {
 if ((7 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
@@ -3447,11 +3447,11 @@ return stringstr.str();
 
 void exahype::records::VertexPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "patchIndex:[";
+out << "cellDescriptionIndex:[";
    for (int i = 0; i < TWO_POWER_D-1; i++) {
-      out << getPatchIndex(i) << ",";
+      out << getCellDescriptionIndex(i) << ",";
    }
-   out << getPatchIndex(TWO_POWER_D-1) << "]";
+   out << getCellDescriptionIndex(TWO_POWER_D-1) << "]";
 out << ",";
 out << "isHangingNode:" << getIsHangingNode();
 out << ",";
@@ -3482,7 +3482,7 @@ return _persistentRecords;
 
 exahype::records::Vertex exahype::records::VertexPacked::convert() const{
 return Vertex(
-getPatchIndex(),
+getCellDescriptionIndex(),
 getIsHangingNode(),
 getRefinementControl(),
 getAdjacentCellsHeight(),
@@ -3544,7 +3544,7 @@ VertexPacked dummyVertexPacked[2];
 
 const int Attributes = 7;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //patchIndex
+MPI_INT,		 //cellDescriptionIndex
 MPI_INT,		 //adjacentCellsHeight
 MPI_INT,		 //adjacentRanks
 MPI_INT,		 //_packedRecords0
@@ -3554,7 +3554,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-TWO_POWER_D,		 //patchIndex
+TWO_POWER_D,		 //cellDescriptionIndex
 1,		 //adjacentCellsHeight
 TWO_POWER_D,		 //adjacentRanks
 1,		 //_packedRecords0
@@ -3567,13 +3567,13 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._patchIndex[0]))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._cellDescriptionIndex[0]))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._adjacentCellsHeight))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._adjacentRanks[0]))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._adjacentCellsHeightOfPreviousIteration))), 		&disp[4] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyVertexPacked[0]._numberOfAdjacentRefinedCells))), 		&disp[5] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._patchIndex[0])), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&dummyVertexPacked[1]._persistentRecords._cellDescriptionIndex[0])), 		&disp[6] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );

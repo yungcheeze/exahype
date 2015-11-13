@@ -4,4 +4,4 @@ export PEANO_PDT_DIR=~/dev/packages/peano/pdt
 
 export PROJECT=ExaHyPeDataStructure
 export NAMESPACE=exahype
-export PDT_EXT=$PROJECT/multiscalelinkedcell
+export PDT_EXT=${PROJECT}/multiscalelinkedcell

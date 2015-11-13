@@ -5,5 +5,5 @@ Packed-Type: int;
 Constant: TWO_POWER_D;
 
 class exahype::dastgen::Vertex {
-  expose persistent int patchIndex[TWO_POWER_D];
+  expose persistent int cellDescriptionIndex[TWO_POWER_D];
 };
