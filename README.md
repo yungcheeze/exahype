@@ -7,7 +7,7 @@ Please
 
 *    Don't commit the following:
     
-     * Binary files (\*\.o, executables, \.\.\. )
+     * Binary files (\*\.o, executables, \.\.\. ) excluding those necessary for the documentation 
     
      * Output files (\*\.vtk, logs, \.\.\. )
 
