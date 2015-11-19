@@ -5,8 +5,8 @@
 // this file and your project to your needs as long as the license is in 
 // agreement with the original Peano user constraints. A reference to/citation  
 // of  Peano and its author is highly appreciated.
-#ifndef EXAHYPE_MAPPINGS_CreateGrid_H_
-#define EXAHYPE_MAPPINGS_CreateGrid_H_
+#ifndef EXAHYPE_MAPPINGS_InitCells_H_
+#define EXAHYPE_MAPPINGS_InitCells_H_
 
 
 #include "tarch/logging/Log.h"
@@ -25,7 +25,7 @@
 
 namespace exahype {
       namespace mappings {
-        class CreateGrid;
+        class InitCells;
       } 
 }
 
@@ -37,7 +37,7 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::mappings::CreateGrid {
+class exahype::mappings::InitCells {
   private:
     /**
      * Logging device for the trace macros.
@@ -93,7 +93,7 @@ class exahype::mappings::CreateGrid {
      * that your code works on a parallel machine and for any mapping/algorithm 
      * modification.
      */
-    CreateGrid();
+    InitCells();
 
     #if defined(SharedMemoryParallelisation)
     /**
@@ -106,13 +106,13 @@ class exahype::mappings::CreateGrid {
      *
      * @see mergeWithWorkerThread()
      */
-    CreateGrid(const CreateGrid& masterThread);
+    InitCells(const InitCells& masterThread);
     #endif
 
     /**
      * Destructor. Typically does not implement any operation.
      */
-    virtual ~CreateGrid();
+    virtual ~InitCells();
   
     #if defined(SharedMemoryParallelisation)
     /**
@@ -143,7 +143,7 @@ class exahype::mappings::CreateGrid {
      * on the heap. However, you should protect this object by a BooleanSemaphore 
      * and a lock to serialise all accesses to the plotter.    
      */   
-    void mergeWithWorkerThread(const CreateGrid& workerThread);
+    void mergeWithWorkerThread(const InitCells& workerThread);
     #endif
 
     /**
@@ -1132,7 +1132,7 @@ class exahype::mappings::CreateGrid {
      * beginIteration() might not be called prior to any other event. See the 
      * documentation of CommunicationSpecification for details.
      *
-     * @see CreateGrid()
+     * @see InitCells()
      */
     void beginIteration(
       exahype::State&  solverState
@@ -1165,7 +1165,7 @@ class exahype::mappings::CreateGrid {
      * might not be called after all other events. See the documentation 
      * of CommunicationSpecification for details.
      *
-     * @see CreateGrid()
+     * @see InitCells()
      */
     void endIteration(
       exahype::State&  solverState

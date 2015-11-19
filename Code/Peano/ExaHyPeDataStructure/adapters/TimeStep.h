@@ -17,8 +17,11 @@
 #include "ExaHyPeDataStructure/Cell.h"
 #include "ExaHyPeDataStructure/State.h"
 
- #include "ExaHyPeDataStructure/mappings/TimeStep.h"
 
+ #include "ExaHyPeDataStructure/mappings/UpdateCellData.h"
+ #include "ExaHyPeDataStructure/mappings/ComputeCellData.h"
+ #include "ExaHyPeDataStructure/mappings/ExtrapolateFaceData.h"
+ #include "ExaHyPeDataStructure/mappings/ExchangeFaceData.h"
 
 
 
@@ -38,7 +41,15 @@ namespace exahype {
  */
 class exahype::adapters::TimeStep {
   private:
-    exahype::mappings::TimeStep _map2TimeStep;
+    typedef mappings::UpdateCellData Mapping0;
+    typedef mappings::ComputeCellData Mapping1;
+    typedef mappings::ExtrapolateFaceData Mapping2;
+    typedef mappings::ExchangeFaceData Mapping3;
+
+     Mapping0  _map2UpdateCellData;
+     Mapping1  _map2ComputeCellData;
+     Mapping2  _map2ExtrapolateFaceData;
+     Mapping3  _map2ExchangeFaceData;
 
 
   public:

@@ -15,17 +15,42 @@ cell:
 state:
   dastgen-file: State.def
   
-event-mapping:
-  name: CreateGrid
   
 event-mapping:
-  name: TimeStep
+  name: CreateGrid
+
+event-mapping:
+  name: InitCells
+
+event-mapping:
+  name: InitCellData
+  
+  
+event-mapping:
+  name: UpdateCellData
+  
+event-mapping:
+  name: ComputeCellData
+
+event-mapping:
+  name: ExtrapolateFaceData
+
+event-mapping:
+  name: ExchangeFaceData
+  
+  
   
 adapter:
   name: CreateGrid
   merge-with-user-defined-mapping: CreateGrid
-  merge-with-predefined-mapping: MultiscaleLinkedCell(CellDescriptionIndex)
+  merge-with-user-defined-mapping: InitCells
+  merge-with-user-defined-mapping: InitCellData
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionIndex)
+  
 
 adapter:
   name: TimeStep
-  merge-with-user-defined-mapping: TimeStep
+  merge-with-user-defined-mapping: UpdateCellData
+  merge-with-user-defined-mapping: ComputeCellData
+  merge-with-user-defined-mapping: ExtrapolateFaceData
+  merge-with-user-defined-mapping: ExchangeFaceData
