@@ -1,6 +1,0 @@
-Packed-Type: short int;
-
-class exahype::dastgen::State {  
-  parallelise persistent double timeStepSize;
-  parallelise persistent double time;
-};
