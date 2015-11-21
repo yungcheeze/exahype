@@ -29,7 +29,7 @@ SUBROUTINE CalcTimeStep
         ENDDO        
     ENDDO
     ! 
-    IF(time>tend) THEN
+    IF(time+dt>tend) THEN
         dt = tend - time
     ENDIF 
     ! 
