@@ -14,10 +14,16 @@
  * Mesh parameters.
  */
 ///@{
-#define EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL   3  //!< The refinement level of the initial grid.
-#define EXAHYPE_INITIAL_ADAPTIVE_REFINEMENT_LEVEL 0  //!< The initial level of the adaptive refinement.
-#define EXAHYPE_MAXIMUM_ADAPTIVE_REFINEMENT_LEVEL 0  //!< The maximum level of adaptive refinement.
-#define EXAHYPE_MAXIMUM_REFINEMENT_LEVEL          3  //!< The sum of ::EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL and ::EXAHYPE_MAXIMUM_ADAPTIVE_REFINEMENT_LEVEL.
+#define EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL             1  //!< The refinement level of the initial grid.
+#define EXAHYPE_INITIAL_ADAPTIVE_REFINEMENT_LEVEL           0  //!< The initial level of the adaptive refinement.
+#define EXAHYPE_MAXIMUM_ADAPTIVE_REFINEMENT_LEVEL           0  //!< The maximum level of adaptive refinement.
+#define EXAHYPE_MAXIMUM_REFINEMENT_LEVEL                    1  //!< The sum of ::EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL and ::EXAHYPE_MAXIMUM_ADAPTIVE_REFINEMENT_LEVEL.
+
+#define EXAHYPE_PATCH_SIZE_X                                12 //!< Number of patches in each coordinate direction (+ two ghost cells).
+#define EXAHYPE_PATCH_SIZE_Y                                12 //!< Number of patches in each coordinate direction (+ two ghost cells).
+//#define EXAHYPE_PATCH_SIZE_Z                                1    //!< Number of patches in each coordinate direction (+ two ghost cells/0 ghost cells in 2D).
+#define EXAHYPE_PATCH_SIZE_TOTAL                            (EXAHYPE_PATCH_SIZE_X+2) * (EXAHYPE_PATCH_SIZE_Y+2)
+#define EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO EXAHYPE_PATCH_SIZE_TOTAL * DIMENSIONS_TIMES_TWO
 ///@}
 
 /**
@@ -41,6 +47,10 @@ static const int order[EXAHYPE_NUMBER_OF_PDES] = {             //!< The order of
     0
 };
 }
+
+#define EXAHYPE_CFL_FACTOR 0.9
+///@}
+
 
 /**
  * Visualization parameters.

@@ -18,24 +18,38 @@
  */
 
 ///////////////////////////////////////////////////////////////////////////////
-#ifndef GAUSSLEGENDRE_H_
-#define GAUSSLEGENDRE_H_
+#ifndef EXAHYPE_DG_DGMATRICES_H
+#define EXAHYPE_DG_DGMATRICES_H
 
 namespace exahype {
-  namespace quad {
-    /** \brief The maximum number of supported nodes.**/
-    extern const double gaussLegendreMaxNodes;
+  namespace dg {
+    /** \brief todo */
+    extern const double Kxi[4][4];
+    /**
+     * \brief todo
+     **/
+    extern const double F0[4];
 
     /**
-     * \brief The Gauss-Legendre weights w[n][k] in [-1,1] (n=number of nodes, k=node index).
+     * \brief todo
      **/
-    extern const double gaussLegendreWeights[10][10];
+    extern const double F0[4];
 
     /**
-     * \brief The Gauss-Legendre nodes x[n][k] in [-1,1] (n=number of nodes, k=node index).
+     * \brief todo
      **/
-    extern const double gaussLegendreNodes[10][10];
+    extern const double iK1[4][4];
+
+    /**
+     * \brief todo
+     **/
+    extern const double FLCoeff[4];
+
+    /**
+     * \brief todo
+     **/
+    extern const double FRCoeff[4];
   }
 }
 
-#endif /* GAUSSLEGENDRE_H_ */
+#endif /* EXAHYPE_DG_DGMATRICES_H */

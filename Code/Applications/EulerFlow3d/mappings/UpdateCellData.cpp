@@ -416,14 +416,11 @@ void exahype::mappings::UpdateCellData::enterCell(
 //    double update  = DataHeap::getInstance().getData(cellDescriptionForPde.getUpdate())[0]._persistentRecords._u;
 
     for (int face=0; face<DIMENSIONS_TIMES_TWO; face++) {
-      if (cellDescription.getRiemannSolvePerformed(face)) {
 //        update += DataHeap::getInstance().getData(cellDescriptionForPde.getFluctuation(face))[0]
 //                  ._persistentRecords._u;
         // zero the fluctuations/normal fluxes
 //        DataHeap::getInstance().getData(cellDescriptionForPde.getFluctuation(face))[0].
 //            _persistentRecords._u = 0;
-      }
-      cellDescription.setRiemannSolvePerformed(face,false);
     }
 
 //    DataHeap::getInstance().getData(cellDescriptionForPde.getSolution())[0].

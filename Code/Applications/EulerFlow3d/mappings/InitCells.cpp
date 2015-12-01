@@ -410,11 +410,9 @@ void exahype::mappings::InitCells::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // ! Begin of code for multiscalelinkedcell toolbox and DG method
-
   if (!fineGridCell.isRefined()) {      // We only want to initialize CellDescriptions on the initial fine grid
     fineGridCell.initCellInComputeTree(
           fineGridVerticesEnumerator.getLevel(),
-          fineGridVerticesEnumerator.getVertexPosition(0),
           fineGridVerticesEnumerator.getCellSize(),
           EXAHYPE_NUMBER_OF_PDES,
           exahype::order,

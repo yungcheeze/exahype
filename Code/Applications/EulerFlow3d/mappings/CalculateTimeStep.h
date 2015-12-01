@@ -43,6 +43,11 @@ class exahype::mappings::CalculateTimeStep {
      * Logging device for the trace macros.
      */
     static tarch::logging::Log  _log;
+
+    static const double constexpr PNPM[10] = {             //!< Order depending PNPM factor.
+        1.0, 0.33, 0.17, 0.1, 0.069, 0.045,  0.038, 0.03, 0.02, 0.015
+    };
+
   public:
     /**
      * These flags are used to inform Peano about your operation. It tells the 

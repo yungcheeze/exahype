@@ -1,7 +1,7 @@
 #ifndef _EXAHYPE_RECORDS_CELLDESCRIPTION_H
 #define _EXAHYPE_RECORDS_CELLDESCRIPTION_H
 
-#include "peano/utils/Globals.h"
+#include "EulerFlow3d/Constants.h"
 #include "tarch/compiler/CompilerSpecificSettings.h"
 #include "peano/utils/PeanoOptimisations.h"
 #ifdef Parallel
@@ -32,7 +32,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   01/12/2015 12:06
+ * @date   01/12/2015 18:35
  */
 class exahype::records::CellDescription { 
    
@@ -41,21 +41,33 @@ class exahype::records::CellDescription {
       typedef exahype::records::CellDescriptionPacked Packed;
       
       struct PersistentRecords {
-         int _spaceTimePredictor;
-         int _spaceTimeVolumeFlux;
+         #ifdef UseManualAlignment
+         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _spaceTimePredictor __attribute__((aligned(VectorisationAlignment)));
+         #else
+         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _spaceTimePredictor;
+         #endif
+         #ifdef UseManualAlignment
+         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _spaceTimeVolumeFlux __attribute__((aligned(VectorisationAlignment)));
+         #else
+         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _spaceTimeVolumeFlux;
+         #endif
          int _solution;
          int _update;
          int _predictor;
-         int _volumeFlux;
          #ifdef UseManualAlignment
-         tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _extrapolatedPredictor __attribute__((aligned(VectorisationAlignment)));
+         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _volumeFlux __attribute__((aligned(VectorisationAlignment)));
          #else
-         tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _extrapolatedPredictor;
+         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _volumeFlux;
          #endif
          #ifdef UseManualAlignment
-         tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _fluctuation __attribute__((aligned(VectorisationAlignment)));
+         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> _extrapolatedPredictor __attribute__((aligned(VectorisationAlignment)));
          #else
-         tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _fluctuation;
+         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> _extrapolatedPredictor;
+         #endif
+         #ifdef UseManualAlignment
+         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> _fluctuation __attribute__((aligned(VectorisationAlignment)));
+         #else
+         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> _fluctuation;
          #endif
          int _level;
          #ifdef UseManualAlignment
@@ -68,11 +80,6 @@ class exahype::records::CellDescription {
          #else
          tarch::la::Vector<DIMENSIONS,double> _size;
          #endif
-         #ifdef UseManualAlignment
-         std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed __attribute__((aligned(VectorisationAlignment)));
-         #else
-         std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
-         #endif
          /**
           * Generated
           */
@@ -81,10 +88,29 @@ class exahype::records::CellDescription {
          /**
           * Generated
           */
-         PersistentRecords(const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed);
+         PersistentRecords(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
          
          
-         inline int getSpaceTimePredictor() const 
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getSpaceTimePredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -94,17 +120,55 @@ class exahype::records::CellDescription {
          
          
          
-         inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline void setSpaceTimePredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _spaceTimePredictor = spaceTimePredictor;
+            _spaceTimePredictor = (spaceTimePredictor);
          }
          
          
          
-         inline int getSpaceTimeVolumeFlux() const 
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getSpaceTimeVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -114,12 +178,31 @@ class exahype::records::CellDescription {
          
          
          
-         inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline void setSpaceTimeVolumeFlux(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _spaceTimeVolumeFlux = spaceTimeVolumeFlux;
+            _spaceTimeVolumeFlux = (spaceTimeVolumeFlux);
          }
          
          
@@ -184,22 +267,31 @@ class exahype::records::CellDescription {
          
          
          
-         inline int getVolumeFlux() const 
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
             return _volumeFlux;
-         }
-         
-         
-         
-         inline void setVolumeFlux(const int& volumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _volumeFlux = volumeFlux;
          }
          
          
@@ -223,7 +315,36 @@ class exahype::records::CellDescription {
           * 
           * @see convert()
           */
-         inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
+         inline void setVolumeFlux(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _volumeFlux = (volumeFlux);
+         }
+         
+         
+         
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -252,7 +373,7 @@ class exahype::records::CellDescription {
           * 
           * @see convert()
           */
-         inline void setExtrapolatedPredictor(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
+         inline void setExtrapolatedPredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -281,7 +402,7 @@ class exahype::records::CellDescription {
           * 
           * @see convert()
           */
-         inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
+         inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -310,7 +431,7 @@ class exahype::records::CellDescription {
           * 
           * @see convert()
           */
-         inline void setFluctuation(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation) 
+         inline void setFluctuation(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -456,64 +577,6 @@ class exahype::records::CellDescription {
          
          
          
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _riemannSolvePerformed;
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _riemannSolvePerformed = (riemannSolvePerformed);
-         }
-         
-         
-         
       };
       
    private: 
@@ -533,7 +596,7 @@ class exahype::records::CellDescription {
       /**
        * Generated
        */
-      CellDescription(const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed);
+      CellDescription(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
       
       /**
        * Generated
@@ -541,7 +604,26 @@ class exahype::records::CellDescription {
       ~CellDescription();
       
       
-      inline int getSpaceTimePredictor() const 
+      /**
+       * Generated and optimized
+       * 
+       * If you realise a for loop using exclusively arrays (vectors) and compile 
+       * with -DUseManualAlignment you may add 
+       * \code
+       #pragma vector aligned
+       #pragma simd
+       \endcode to this for loop to enforce your compiler to use SSE/AVX.
+       * 
+       * The alignment is tied to the unpacked records, i.e. for packed class
+       * variants the machine's natural alignment is switched off to recude the  
+       * memory footprint. Do not use any SSE/AVX operations or 
+       * vectorisation on the result for the packed variants, as the data is misaligned. 
+       * If you rely on vectorisation, convert the underlying record 
+       * into the unpacked version first. 
+       * 
+       * @see convert()
+       */
+      inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getSpaceTimePredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -551,17 +633,81 @@ class exahype::records::CellDescription {
       
       
       
-      inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
+      /**
+       * Generated and optimized
+       * 
+       * If you realise a for loop using exclusively arrays (vectors) and compile 
+       * with -DUseManualAlignment you may add 
+       * \code
+       #pragma vector aligned
+       #pragma simd
+       \endcode to this for loop to enforce your compiler to use SSE/AVX.
+       * 
+       * The alignment is tied to the unpacked records, i.e. for packed class
+       * variants the machine's natural alignment is switched off to recude the  
+       * memory footprint. Do not use any SSE/AVX operations or 
+       * vectorisation on the result for the packed variants, as the data is misaligned. 
+       * If you rely on vectorisation, convert the underlying record 
+       * into the unpacked version first. 
+       * 
+       * @see convert()
+       */
+      inline void setSpaceTimePredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._spaceTimePredictor = spaceTimePredictor;
+         _persistentRecords._spaceTimePredictor = (spaceTimePredictor);
       }
       
       
       
-      inline int getSpaceTimeVolumeFlux() const 
+      inline int getSpaceTimePredictor(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         assertion(elementIndex>=0);
+         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
+         return _persistentRecords._spaceTimePredictor[elementIndex];
+         
+      }
+      
+      
+      
+      inline void setSpaceTimePredictor(int elementIndex, const int& spaceTimePredictor) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         assertion(elementIndex>=0);
+         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
+         _persistentRecords._spaceTimePredictor[elementIndex]= spaceTimePredictor;
+         
+      }
+      
+      
+      
+      /**
+       * Generated and optimized
+       * 
+       * If you realise a for loop using exclusively arrays (vectors) and compile 
+       * with -DUseManualAlignment you may add 
+       * \code
+       #pragma vector aligned
+       #pragma simd
+       \endcode to this for loop to enforce your compiler to use SSE/AVX.
+       * 
+       * The alignment is tied to the unpacked records, i.e. for packed class
+       * variants the machine's natural alignment is switched off to recude the  
+       * memory footprint. Do not use any SSE/AVX operations or 
+       * vectorisation on the result for the packed variants, as the data is misaligned. 
+       * If you rely on vectorisation, convert the underlying record 
+       * into the unpacked version first. 
+       * 
+       * @see convert()
+       */
+      inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getSpaceTimeVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -571,12 +717,57 @@ class exahype::records::CellDescription {
       
       
       
-      inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
+      /**
+       * Generated and optimized
+       * 
+       * If you realise a for loop using exclusively arrays (vectors) and compile 
+       * with -DUseManualAlignment you may add 
+       * \code
+       #pragma vector aligned
+       #pragma simd
+       \endcode to this for loop to enforce your compiler to use SSE/AVX.
+       * 
+       * The alignment is tied to the unpacked records, i.e. for packed class
+       * variants the machine's natural alignment is switched off to recude the  
+       * memory footprint. Do not use any SSE/AVX operations or 
+       * vectorisation on the result for the packed variants, as the data is misaligned. 
+       * If you rely on vectorisation, convert the underlying record 
+       * into the unpacked version first. 
+       * 
+       * @see convert()
+       */
+      inline void setSpaceTimeVolumeFlux(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._spaceTimeVolumeFlux = spaceTimeVolumeFlux;
+         _persistentRecords._spaceTimeVolumeFlux = (spaceTimeVolumeFlux);
+      }
+      
+      
+      
+      inline int getSpaceTimeVolumeFlux(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         assertion(elementIndex>=0);
+         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
+         return _persistentRecords._spaceTimeVolumeFlux[elementIndex];
+         
+      }
+      
+      
+      
+      inline void setSpaceTimeVolumeFlux(int elementIndex, const int& spaceTimeVolumeFlux) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         assertion(elementIndex>=0);
+         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
+         _persistentRecords._spaceTimeVolumeFlux[elementIndex]= spaceTimeVolumeFlux;
+         
       }
       
       
@@ -641,22 +832,31 @@ class exahype::records::CellDescription {
       
       
       
-      inline int getVolumeFlux() const 
+      /**
+       * Generated and optimized
+       * 
+       * If you realise a for loop using exclusively arrays (vectors) and compile 
+       * with -DUseManualAlignment you may add 
+       * \code
+       #pragma vector aligned
+       #pragma simd
+       \endcode to this for loop to enforce your compiler to use SSE/AVX.
+       * 
+       * The alignment is tied to the unpacked records, i.e. for packed class
+       * variants the machine's natural alignment is switched off to recude the  
+       * memory footprint. Do not use any SSE/AVX operations or 
+       * vectorisation on the result for the packed variants, as the data is misaligned. 
+       * If you rely on vectorisation, convert the underlying record 
+       * into the unpacked version first. 
+       * 
+       * @see convert()
+       */
+      inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
          return _persistentRecords._volumeFlux;
-      }
-      
-      
-      
-      inline void setVolumeFlux(const int& volumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         _persistentRecords._volumeFlux = volumeFlux;
       }
       
       
@@ -680,7 +880,62 @@ class exahype::records::CellDescription {
        * 
        * @see convert()
        */
-      inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
+      inline void setVolumeFlux(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         _persistentRecords._volumeFlux = (volumeFlux);
+      }
+      
+      
+      
+      inline int getVolumeFlux(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         assertion(elementIndex>=0);
+         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
+         return _persistentRecords._volumeFlux[elementIndex];
+         
+      }
+      
+      
+      
+      inline void setVolumeFlux(int elementIndex, const int& volumeFlux) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         assertion(elementIndex>=0);
+         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
+         _persistentRecords._volumeFlux[elementIndex]= volumeFlux;
+         
+      }
+      
+      
+      
+      /**
+       * Generated and optimized
+       * 
+       * If you realise a for loop using exclusively arrays (vectors) and compile 
+       * with -DUseManualAlignment you may add 
+       * \code
+       #pragma vector aligned
+       #pragma simd
+       \endcode to this for loop to enforce your compiler to use SSE/AVX.
+       * 
+       * The alignment is tied to the unpacked records, i.e. for packed class
+       * variants the machine's natural alignment is switched off to recude the  
+       * memory footprint. Do not use any SSE/AVX operations or 
+       * vectorisation on the result for the packed variants, as the data is misaligned. 
+       * If you rely on vectorisation, convert the underlying record 
+       * into the unpacked version first. 
+       * 
+       * @see convert()
+       */
+      inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -709,7 +964,7 @@ class exahype::records::CellDescription {
        * 
        * @see convert()
        */
-      inline void setExtrapolatedPredictor(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
+      inline void setExtrapolatedPredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -725,7 +980,7 @@ class exahype::records::CellDescription {
  #endif 
  {
          assertion(elementIndex>=0);
-         assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
          return _persistentRecords._extrapolatedPredictor[elementIndex];
          
       }
@@ -738,7 +993,7 @@ class exahype::records::CellDescription {
  #endif 
  {
          assertion(elementIndex>=0);
-         assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
          _persistentRecords._extrapolatedPredictor[elementIndex]= extrapolatedPredictor;
          
       }
@@ -764,7 +1019,7 @@ class exahype::records::CellDescription {
        * 
        * @see convert()
        */
-      inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
+      inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -793,7 +1048,7 @@ class exahype::records::CellDescription {
        * 
        * @see convert()
        */
-      inline void setFluctuation(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation) 
+      inline void setFluctuation(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -809,7 +1064,7 @@ class exahype::records::CellDescription {
  #endif 
  {
          assertion(elementIndex>=0);
-         assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
          return _persistentRecords._fluctuation[elementIndex];
          
       }
@@ -822,7 +1077,7 @@ class exahype::records::CellDescription {
  #endif 
  {
          assertion(elementIndex>=0);
-         assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
          _persistentRecords._fluctuation[elementIndex]= fluctuation;
          
       }
@@ -1016,102 +1271,6 @@ class exahype::records::CellDescription {
       }
       
       
-      
-      /**
-       * Generated and optimized
-       * 
-       * If you realise a for loop using exclusively arrays (vectors) and compile 
-       * with -DUseManualAlignment you may add 
-       * \code
-       #pragma vector aligned
-       #pragma simd
-       \endcode to this for loop to enforce your compiler to use SSE/AVX.
-       * 
-       * The alignment is tied to the unpacked records, i.e. for packed class
-       * variants the machine's natural alignment is switched off to recude the  
-       * memory footprint. Do not use any SSE/AVX operations or 
-       * vectorisation on the result for the packed variants, as the data is misaligned. 
-       * If you rely on vectorisation, convert the underlying record 
-       * into the unpacked version first. 
-       * 
-       * @see convert()
-       */
-      inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         return _persistentRecords._riemannSolvePerformed;
-      }
-      
-      
-      
-      /**
-       * Generated and optimized
-       * 
-       * If you realise a for loop using exclusively arrays (vectors) and compile 
-       * with -DUseManualAlignment you may add 
-       * \code
-       #pragma vector aligned
-       #pragma simd
-       \endcode to this for loop to enforce your compiler to use SSE/AVX.
-       * 
-       * The alignment is tied to the unpacked records, i.e. for packed class
-       * variants the machine's natural alignment is switched off to recude the  
-       * memory footprint. Do not use any SSE/AVX operations or 
-       * vectorisation on the result for the packed variants, as the data is misaligned. 
-       * If you rely on vectorisation, convert the underlying record 
-       * into the unpacked version first. 
-       * 
-       * @see convert()
-       */
-      inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         _persistentRecords._riemannSolvePerformed = (riemannSolvePerformed);
-      }
-      
-      
-      
-      inline bool getRiemannSolvePerformed(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         assertion(elementIndex>=0);
-         assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-         return _persistentRecords._riemannSolvePerformed[elementIndex];
-         
-      }
-      
-      
-      
-      inline void setRiemannSolvePerformed(int elementIndex, const bool& riemannSolvePerformed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         assertion(elementIndex>=0);
-         assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-         _persistentRecords._riemannSolvePerformed[elementIndex]= riemannSolvePerformed;
-         
-      }
-      
-      
-      
-      inline void flipRiemannSolvePerformed(int elementIndex) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         assertion(elementIndex>=0);
-         assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-         _persistentRecords._riemannSolvePerformed.flip(elementIndex);
-      }
-      
-      
       /**
        * Generated
        */
@@ -1185,25 +1344,24 @@ class exahype::records::CellDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   01/12/2015 12:06
+          * @date   01/12/2015 18:35
           */
          class exahype::records::CellDescriptionPacked { 
             
             public:
                
                struct PersistentRecords {
-                  int _spaceTimePredictor;
-                  int _spaceTimeVolumeFlux;
+                  tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _spaceTimePredictor;
+                  tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _spaceTimeVolumeFlux;
                   int _solution;
                   int _update;
                   int _predictor;
-                  int _volumeFlux;
-                  tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _extrapolatedPredictor;
-                  tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _fluctuation;
+                  tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _volumeFlux;
+                  tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> _extrapolatedPredictor;
+                  tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> _fluctuation;
                   int _level;
                   tarch::la::Vector<DIMENSIONS,double> _offset;
                   tarch::la::Vector<DIMENSIONS,double> _size;
-                  std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
                   /**
                    * Generated
                    */
@@ -1212,10 +1370,29 @@ class exahype::records::CellDescription {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed);
+                  PersistentRecords(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
                   
                   
-                  inline int getSpaceTimePredictor() const 
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getSpaceTimePredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1225,17 +1402,55 @@ class exahype::records::CellDescription {
                   
                   
                   
-                  inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline void setSpaceTimePredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _spaceTimePredictor = spaceTimePredictor;
+                     _spaceTimePredictor = (spaceTimePredictor);
                   }
                   
                   
                   
-                  inline int getSpaceTimeVolumeFlux() const 
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getSpaceTimeVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1245,12 +1460,31 @@ class exahype::records::CellDescription {
                   
                   
                   
-                  inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline void setSpaceTimeVolumeFlux(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _spaceTimeVolumeFlux = spaceTimeVolumeFlux;
+                     _spaceTimeVolumeFlux = (spaceTimeVolumeFlux);
                   }
                   
                   
@@ -1315,22 +1549,31 @@ class exahype::records::CellDescription {
                   
                   
                   
-                  inline int getVolumeFlux() const 
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      return _volumeFlux;
-                  }
-                  
-                  
-                  
-                  inline void setVolumeFlux(const int& volumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _volumeFlux = volumeFlux;
                   }
                   
                   
@@ -1354,7 +1597,36 @@ class exahype::records::CellDescription {
                    * 
                    * @see convert()
                    */
-                  inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
+                  inline void setVolumeFlux(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _volumeFlux = (volumeFlux);
+                  }
+                  
+                  
+                  
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1383,7 +1655,7 @@ class exahype::records::CellDescription {
                    * 
                    * @see convert()
                    */
-                  inline void setExtrapolatedPredictor(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
+                  inline void setExtrapolatedPredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1412,7 +1684,7 @@ class exahype::records::CellDescription {
                    * 
                    * @see convert()
                    */
-                  inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
+                  inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1441,7 +1713,7 @@ class exahype::records::CellDescription {
                    * 
                    * @see convert()
                    */
-                  inline void setFluctuation(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation) 
+                  inline void setFluctuation(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1587,64 +1859,6 @@ class exahype::records::CellDescription {
                   
                   
                   
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _riemannSolvePerformed;
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _riemannSolvePerformed = (riemannSolvePerformed);
-                  }
-                  
-                  
-                  
                };
                
             private: 
@@ -1664,7 +1878,7 @@ class exahype::records::CellDescription {
                /**
                 * Generated
                 */
-               CellDescriptionPacked(const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed);
+               CellDescriptionPacked(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
                
                /**
                 * Generated
@@ -1672,7 +1886,26 @@ class exahype::records::CellDescription {
                ~CellDescriptionPacked();
                
                
-               inline int getSpaceTimePredictor() const 
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getSpaceTimePredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1682,17 +1915,81 @@ class exahype::records::CellDescription {
                
                
                
-               inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setSpaceTimePredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._spaceTimePredictor = spaceTimePredictor;
+                  _persistentRecords._spaceTimePredictor = (spaceTimePredictor);
                }
                
                
                
-               inline int getSpaceTimeVolumeFlux() const 
+               inline int getSpaceTimePredictor(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
+                  return _persistentRecords._spaceTimePredictor[elementIndex];
+                  
+               }
+               
+               
+               
+               inline void setSpaceTimePredictor(int elementIndex, const int& spaceTimePredictor) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
+                  _persistentRecords._spaceTimePredictor[elementIndex]= spaceTimePredictor;
+                  
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getSpaceTimeVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1702,12 +1999,57 @@ class exahype::records::CellDescription {
                
                
                
-               inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setSpaceTimeVolumeFlux(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._spaceTimeVolumeFlux = spaceTimeVolumeFlux;
+                  _persistentRecords._spaceTimeVolumeFlux = (spaceTimeVolumeFlux);
+               }
+               
+               
+               
+               inline int getSpaceTimeVolumeFlux(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
+                  return _persistentRecords._spaceTimeVolumeFlux[elementIndex];
+                  
+               }
+               
+               
+               
+               inline void setSpaceTimeVolumeFlux(int elementIndex, const int& spaceTimeVolumeFlux) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
+                  _persistentRecords._spaceTimeVolumeFlux[elementIndex]= spaceTimeVolumeFlux;
+                  
                }
                
                
@@ -1772,22 +2114,31 @@ class exahype::records::CellDescription {
                
                
                
-               inline int getVolumeFlux() const 
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getVolumeFlux() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                   return _persistentRecords._volumeFlux;
-               }
-               
-               
-               
-               inline void setVolumeFlux(const int& volumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._volumeFlux = volumeFlux;
                }
                
                
@@ -1811,7 +2162,62 @@ class exahype::records::CellDescription {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
+               inline void setVolumeFlux(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._volumeFlux = (volumeFlux);
+               }
+               
+               
+               
+               inline int getVolumeFlux(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
+                  return _persistentRecords._volumeFlux[elementIndex];
+                  
+               }
+               
+               
+               
+               inline void setVolumeFlux(int elementIndex, const int& volumeFlux) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
+                  _persistentRecords._volumeFlux[elementIndex]= volumeFlux;
+                  
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1840,7 +2246,7 @@ class exahype::records::CellDescription {
                 * 
                 * @see convert()
                 */
-               inline void setExtrapolatedPredictor(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
+               inline void setExtrapolatedPredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1856,7 +2262,7 @@ class exahype::records::CellDescription {
  #endif 
  {
                   assertion(elementIndex>=0);
-                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
                   return _persistentRecords._extrapolatedPredictor[elementIndex];
                   
                }
@@ -1869,7 +2275,7 @@ class exahype::records::CellDescription {
  #endif 
  {
                   assertion(elementIndex>=0);
-                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
                   _persistentRecords._extrapolatedPredictor[elementIndex]= extrapolatedPredictor;
                   
                }
@@ -1895,7 +2301,7 @@ class exahype::records::CellDescription {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
+               inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1924,7 +2330,7 @@ class exahype::records::CellDescription {
                 * 
                 * @see convert()
                 */
-               inline void setFluctuation(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& fluctuation) 
+               inline void setFluctuation(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1940,7 +2346,7 @@ class exahype::records::CellDescription {
  #endif 
  {
                   assertion(elementIndex>=0);
-                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
                   return _persistentRecords._fluctuation[elementIndex];
                   
                }
@@ -1953,7 +2359,7 @@ class exahype::records::CellDescription {
  #endif 
  {
                   assertion(elementIndex>=0);
-                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
                   _persistentRecords._fluctuation[elementIndex]= fluctuation;
                   
                }
@@ -2144,102 +2550,6 @@ class exahype::records::CellDescription {
                   assertion(elementIndex<DIMENSIONS);
                   _persistentRecords._size[elementIndex]= size;
                   
-               }
-               
-               
-               
-               /**
-                * Generated and optimized
-                * 
-                * If you realise a for loop using exclusively arrays (vectors) and compile 
-                * with -DUseManualAlignment you may add 
-                * \code
-                #pragma vector aligned
-                #pragma simd
-                \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                * 
-                * The alignment is tied to the unpacked records, i.e. for packed class
-                * variants the machine's natural alignment is switched off to recude the  
-                * memory footprint. Do not use any SSE/AVX operations or 
-                * vectorisation on the result for the packed variants, as the data is misaligned. 
-                * If you rely on vectorisation, convert the underlying record 
-                * into the unpacked version first. 
-                * 
-                * @see convert()
-                */
-               inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._riemannSolvePerformed;
-               }
-               
-               
-               
-               /**
-                * Generated and optimized
-                * 
-                * If you realise a for loop using exclusively arrays (vectors) and compile 
-                * with -DUseManualAlignment you may add 
-                * \code
-                #pragma vector aligned
-                #pragma simd
-                \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                * 
-                * The alignment is tied to the unpacked records, i.e. for packed class
-                * variants the machine's natural alignment is switched off to recude the  
-                * memory footprint. Do not use any SSE/AVX operations or 
-                * vectorisation on the result for the packed variants, as the data is misaligned. 
-                * If you rely on vectorisation, convert the underlying record 
-                * into the unpacked version first. 
-                * 
-                * @see convert()
-                */
-               inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._riemannSolvePerformed = (riemannSolvePerformed);
-               }
-               
-               
-               
-               inline bool getRiemannSolvePerformed(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  assertion(elementIndex>=0);
-                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                  return _persistentRecords._riemannSolvePerformed[elementIndex];
-                  
-               }
-               
-               
-               
-               inline void setRiemannSolvePerformed(int elementIndex, const bool& riemannSolvePerformed) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  assertion(elementIndex>=0);
-                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                  _persistentRecords._riemannSolvePerformed[elementIndex]= riemannSolvePerformed;
-                  
-               }
-               
-               
-               
-               inline void flipRiemannSolvePerformed(int elementIndex) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  assertion(elementIndex>=0);
-                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                  _persistentRecords._riemannSolvePerformed.flip(elementIndex);
                }
                
                

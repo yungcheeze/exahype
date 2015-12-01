@@ -1250,6 +1250,18 @@ class exahype::mappings::ExchangeFaceData {
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
     );    
+
+    // Begin of code for ADERDG method
+
+    /**
+     * @brief Initializes the ghost layer of a patch.
+     */
+    void initialiseGhostLayerOfPatch(
+        exahype::Cell& fineGridCell,
+        exahype::Vertex * const  fineGridVertices,
+        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator
+    );
+    // End of code for ADERDG method
 };
 
 

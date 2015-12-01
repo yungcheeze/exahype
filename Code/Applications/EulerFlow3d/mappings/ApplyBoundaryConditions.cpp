@@ -405,8 +405,8 @@ void exahype::mappings::ApplyBoundaryConditions::touchVertexLastTime(
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
-extern const double exahype::quad::gaussLegendreNodes[11][11];
-extern const double exahype::quad::gaussLegendreWeights[11][11];
+extern const double exahype::quad::gaussLegendreNodes[10][10];
+extern const double exahype::quad::gaussLegendreWeights[10][10];
 
 extern const double exahype::dg::normal[3][6];
 

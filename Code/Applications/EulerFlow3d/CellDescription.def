@@ -4,67 +4,56 @@
 /// Version: 13/11/15 
 /////////////////////////////////////////////////
 
-#include "peano/utils/Globals.h"
+#include "EulerFlow3d/Constants.h"
 
 Packed-Type: int;
 
 Constant: DIMENSIONS;
 Constant: DIMENSIONS_TIMES_TWO;
+Constant: EXAHYPE_PATCH_SIZE_TOTAL;
+Constant: EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO;
 
 class exahype::records::CellDescription { 
-  /** Space-time data. Size: #var*(N+1)^(d+1) 
+  /** Space-time data on each patch. Size: #var*(N+1)^(d+1)
    * 
    * \note Only for local time stepping we really need to keep the entire space-time degrees of freedom of the ADER approach.
    * */
   ///@{ 
-  parallelise persistent int spaceTimePredictor; //!< The indices of the space-time predictor DoF belonging to this cell. Variable: q.
+  parallelise persistent int spaceTimePredictor[EXAHYPE_PATCH_SIZE_TOTAL]; //!< The indices of the space-time predictor DoF belonging to this cell. Variable: q.
   ///@}	
   
-  /** Space-time flux data. Size: (d*#var)*(N+1)^(d+1)
+  /** Space-time flux data on each patch. Size: (d*#var)*(N+1)^(d+1)
    * 
    * \note Only for local time stepping we really need to keep the entire space-time degrees of freedom of the ADER approach.
    * */ 
   ///@{ 
-  parallelise persistent int spaceTimeVolumeFlux; //!< The indices of the space-time volume fluxes DoF belonging to this cell. Variable: F. 
+  parallelise persistent int spaceTimeVolumeFlux[EXAHYPE_PATCH_SIZE_TOTAL]; //!< The indices of the space-time volume fluxes DoF belonging to this cell. Variable: F. 
   ///@}	
 
-  /** Volume data. Size: #var*(N+1)^d */
+  /** Volume data on each patch. Size: #var*(N+1)^d * size */
   ///@{
   parallelise persistent int solution;  //!< The indices of the DoF belonging to this cell. Resembles also the state of the previous time step during update calculations. Variable: u.
   parallelise persistent int update;    //!< The indices of the update DoF belonging to this cell. All volume updates and face fluctuations contribute to this variable. Variable: du.
   parallelise persistent int predictor; //!< The indices of the predictor DoF belonging to this cell, i.e., the time integrated space-time DoF. Variable: qA.  
   ///@}	
 
-  /** Volume flux data. Size: (d*#var)*(N+1)^d */
+  /** Volume flux data on each patch. Size: (d*#var)*(N+1)^d */
   ///@{
-  parallelise persistent int volumeFlux; //!< The indices of the volume flux DoF belonging to this cell, i.e., the time integrated space-time DoF. Variable: FA. 
+  parallelise persistent int volumeFlux[EXAHYPE_PATCH_SIZE_TOTAL]; //!< The indices of the volume flux DoF belonging to this cell, i.e., the time integrated space-time DoF. Variable: FA. 
   ///@}	
 
-  /** Face data. Size: [d*2] * #var*(N+1)^(d-1) */
+  /** Face data on each patch. Size: [d*2] * #var*(N+1)^(d-1) */
   ///@{
-  parallelise persistent int extrapolatedPredictor[DIMENSIONS_TIMES_TWO]; //!< The indices of the predictor DoF extrapolated to the bounding faces of the cell. Variables: uN,uS,uW,uE,..
-  parallelise persistent int fluctuation          [DIMENSIONS_TIMES_TWO]; //!< The indices of the normal fluxes computed at the bounding faces of the cell. Variables: FN,FS,FW,FE,.. 
+  parallelise persistent int extrapolatedPredictor[EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO]; //!< The indices of the predictor DoF extrapolated to the bounding faces of the cell. Variables: uN,uS,uW,uE,..
+  parallelise persistent int fluctuation          [EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO]; //!< The indices of the normal fluxes computed at the bounding faces of the cell. Variables: FN,FS,FW,FE,.. 
   // ! Removed the normalFlux field since we can use the fluctuation field to store both quantities.
-  // ! Removed: parallelise persistent int normalFlux[DIMENSIONS_TIMES_TWO]; //!< The indices of the fluctuations DoF computed at the bounding faces of the cell. Variables: DLN,DLS,DLW,DLE,.. 
+  // ! Removed: parallelise persistent int normalFlux[EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO]; //!< The indices of the fluctuations DoF computed at the bounding faces of the cell. Variables: DLN,DLS,DLW,DLE,.. 
   ///@}	
   
   /** Grid information */
   ///@{
   parallelise persistent int    level;              // !< Space-tree level of the cell owning this cell description.
-  parallelise persistent double offset[DIMENSIONS]; // !< Is required by the cellDescription toolbox. Has no meaning in the ExaHyPE context.
+  parallelise persistent double offset[DIMENSIONS]; // !< Offest of the "lower left" node of the lower left ghost cell from the lower left node of the cell
   parallelise persistent double size[DIMENSIONS];   // !< Dimension of the cell owning this cell description in x,y, and z direction.
-  ///@}	
-  
-  /** Solver information. */
-  ///@{
-  /**
-   * @brief Flag indicating if the Riemann solve was already performed on a face $i$, where @f$i=0,1,\ldots,2\,d@f$.
-   * 
-   * This information is used to prevent that face data at internal faces is computed 
-   * and communicated twice during one traversal.
-   * 
-   * After (and before) the Riemann solve phase, all flags in this array are set to the default value (false).   
-   */
-  parallelise persistent bool riemannSolvePerformed[DIMENSIONS_TIMES_TWO];
   ///@}
 };
