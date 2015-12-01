@@ -1,0 +1,14 @@
+\begin{thebibliography}{1}
+
+\bibitem{cockburn_book}
+{\sc B.~{C}ockburn, G.~E. {K}arniadakis, and C.-W. {S}hu}, {\em {D}iscontinuous
+  Galerkin Methods. Lect. Notes Comput. Sci. Eng.}, Springer, 2000.
+
+\bibitem{hartmann_2008}
+{\sc R.~Hartmann}, {\em Numerical analysis of higher order discontinuous
+  {G}alerkin finite element methods}, in VKI LS 2008-08: CFD - ADIGMA course on
+  very high order discretization methods, Oct. 13-17, 2008, H.~Deconinck, ed.,
+  Von Karman Institute for Fluid Dynamics, Rhode Saint Gen{\`e}se, Belgium,
+  2008.
+
+\end{thebibliography}

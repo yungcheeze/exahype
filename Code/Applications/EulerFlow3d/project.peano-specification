@@ -1,0 +1,92 @@
+component: EulerFlow3d
+
+namespace: ::exahype
+
+heap-dastgen-file: CellDescription.def
+
+vertex:
+  dastgen-file: Vertex.def
+  read vector2PowD(int): CellDescriptionsIndex
+  write vector2PowD(int): CellDescriptionsIndex
+  
+cell:
+  dastgen-file: Cell.def
+
+state:
+  dastgen-file: State.def
+  
+  
+event-mapping:
+  name: CreateGrid
+
+event-mapping:
+  name: InitCells
+  
+
+event-mapping:
+  name: CalculateTimeStep
+
+
+event-mapping:
+  name: InitCellData
+  
+event-mapping:
+  name: UpdateCellData
+  
+event-mapping:
+  name: ComputeCellData
+
+event-mapping:
+  name: ExtrapolateFaceData
+
+event-mapping:
+  name: ApplyBoundaryConditions
+
+event-mapping:
+  name: ExchangeFaceData
+  
+event-mapping:
+  name: VTKPlotCellData
+
+    
+adapter:
+  name: CreateGrid
+  merge-with-user-defined-mapping: CreateGrid
+  // tracks vertex creation events here; sets domain boundary and processor boundary indices
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) 
+
+adapter:
+  name: PlotGrid
+  merge-with-predefined-mapping:   VTKGridVisualiser(grid)
+
+adapter:
+  name: InitCells
+  merge-with-user-defined-mapping: InitCells
+  // tracks cell traversal events here; updates neighbour information in vertices
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex)
+
+adapter:
+  name: InitCellData
+  merge-with-user-defined-mapping: InitCellData 
+  merge-with-user-defined-mapping: VTKPlotCellData
+
+adapter:
+  name: TimeStep
+  merge-with-user-defined-mapping: UpdateCellData
+  merge-with-user-defined-mapping: ComputeCellData
+  merge-with-user-defined-mapping: ExtrapolateFaceData
+  merge-with-user-defined-mapping: ApplyBoundaryConditions
+  merge-with-user-defined-mapping: ExchangeFaceData
+  // only necessary here if we refine further 
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex)
+
+adapter:
+  name: TimeStepAndPlot
+  merge-with-user-defined-mapping: UpdateCellData
+  merge-with-user-defined-mapping: ComputeCellData
+  merge-with-user-defined-mapping: ExtrapolateFaceData
+  merge-with-user-defined-mapping: ApplyBoundaryConditions
+  merge-with-user-defined-mapping: ExchangeFaceData
+  merge-with-user-defined-mapping: VTKPlotCellData
+  // only necessary here if we refine further
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex)  

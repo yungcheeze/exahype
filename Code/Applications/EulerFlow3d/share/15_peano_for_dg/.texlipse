@@ -1,0 +1,14 @@
+#TeXlipse project settings
+#Thu Apr 09 22:57:25 CEST 2015
+markTmpDer=true
+builderNum=2
+outputDir=
+makeIndSty=
+bibrefDir=
+outputFormat=pdf
+tempDir=tmp
+mainTexFile=15_peano_for_dg.tex
+outputFile=15_peano_for_dg.pdf
+langSpell=en
+markDer=true
+srcDir=
