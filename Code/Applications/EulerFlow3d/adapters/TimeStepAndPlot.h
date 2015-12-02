@@ -19,12 +19,13 @@
 
 
  #include "EulerFlow3d/mappings/UpdateCellData.h"
+ #include "EulerFlow3d/mappings/SpaceTimePredictor.h"
  #include "EulerFlow3d/mappings/ComputeCellData.h"
  #include "EulerFlow3d/mappings/ExtrapolateFaceData.h"
  #include "EulerFlow3d/mappings/ApplyBoundaryConditions.h"
  #include "EulerFlow3d/mappings/ExchangeFaceData.h"
  #include "EulerFlow3d/mappings/VTKPlotCellData.h"
- #include "EulerFlow3d/adapters/TimeStepAndPlot2MultiscaleLinkedCell_6.h"
+ #include "EulerFlow3d/adapters/TimeStepAndPlot2MultiscaleLinkedCell_7.h"
 
 
 
@@ -45,20 +46,22 @@ namespace exahype {
 class exahype::adapters::TimeStepAndPlot {
   private:
     typedef mappings::UpdateCellData Mapping0;
-    typedef mappings::ComputeCellData Mapping1;
-    typedef mappings::ExtrapolateFaceData Mapping2;
-    typedef mappings::ApplyBoundaryConditions Mapping3;
-    typedef mappings::ExchangeFaceData Mapping4;
-    typedef mappings::VTKPlotCellData Mapping5;
-    typedef adapters::TimeStepAndPlot2MultiscaleLinkedCell_6 Mapping6;
+    typedef mappings::SpaceTimePredictor Mapping1;
+    typedef mappings::ComputeCellData Mapping2;
+    typedef mappings::ExtrapolateFaceData Mapping3;
+    typedef mappings::ApplyBoundaryConditions Mapping4;
+    typedef mappings::ExchangeFaceData Mapping5;
+    typedef mappings::VTKPlotCellData Mapping6;
+    typedef adapters::TimeStepAndPlot2MultiscaleLinkedCell_7 Mapping7;
 
      Mapping0  _map2UpdateCellData;
-     Mapping1  _map2ComputeCellData;
-     Mapping2  _map2ExtrapolateFaceData;
-     Mapping3  _map2ApplyBoundaryConditions;
-     Mapping4  _map2ExchangeFaceData;
-     Mapping5  _map2VTKPlotCellData;
-     Mapping6  _map2TimeStepAndPlot2MultiscaleLinkedCell_6;
+     Mapping1  _map2SpaceTimePredictor;
+     Mapping2  _map2ComputeCellData;
+     Mapping3  _map2ExtrapolateFaceData;
+     Mapping4  _map2ApplyBoundaryConditions;
+     Mapping5  _map2ExchangeFaceData;
+     Mapping6  _map2VTKPlotCellData;
+     Mapping7  _map2TimeStepAndPlot2MultiscaleLinkedCell_7;
 
 
   public:

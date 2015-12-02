@@ -5,6 +5,8 @@
 #ifndef EXAHYPE_EULERFLOW3D_PROBLEM_H_
 #define EXAHYPE_EULERFLOW3D_PROBLEM_H_
 
+#define GAMMA 1.4
+
 namespace exahype {
   namespace problem {
     /**
@@ -13,12 +15,13 @@ namespace exahype {
      * @param[in] x physical x coordinate
      * @param[in] y physical y coordinate
      * @param[in] numberOfVariables the number of consered quantities
-     * @param[out] values array of size numberOfVariables
+     * @param[out] values array of size nvar
      */
-    void PDEInitialValue2d(const double x,const double y,const int numberOfVariables,double * value);
+    void PDEInitialValue2d(const double x,const double y,const int nvar,double * Q);
     double PDEInflow(const double x,const double y);
 
-    double PDEVolumeFlux(double x, double y);
+    void PDEFlux(const double * const Q,const int nvar,double * f,double * g);
+
     double PDENormalFlux(const double x,const double y,const double nx,const double ny);
 
     double DGNormalFlux(const double x,const double y,const double nx,const double ny);

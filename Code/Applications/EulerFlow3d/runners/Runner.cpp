@@ -76,7 +76,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   const int    maximumTimeStep = std::ceil(EXAHYPE_SIMULATION_TIME/timeStepSize);
   const int    plottingStride  = std::floor(maximumTimeStep/EXAHYPE_NUMBER_OF_PLOTS);
 
-  repository.getState().setTimeStepSize(timeStepSize);
+  repository.getState().setTimeStepSize(1e-2);
 
   // The space-tree is initialised with 1 coarse grid cell on level 1 and 3^d fine grid cells on level 2.
   for (int coarseGridLevel=1; coarseGridLevel<EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL; coarseGridLevel++) {
@@ -94,7 +94,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.switchToInitCellData();        // initialize the fields of the cell descriptions, i.e., the initial values.
   repository.iterate();
 
-  for (int n=0; n<0; n++) {
+  for (int n=0; n<1; n++) {
     if (plottingStride>0 && n%plottingStride==0) {
       repository.switchToTimeStepAndPlot();
     } else {

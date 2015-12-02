@@ -1,4 +1,4 @@
-#include "EulerFlow3d/mappings/InitCellData.h"
+#include "EulerFlow3d/mappings/SpaceTimePredictor.h"
 
 #include "EulerFlow3d/Constants.h"
 
@@ -8,12 +8,14 @@
 
 #include "EulerFlow3d/problem/Problem.h"
 
+#include "EulerFlow3d/dg/DGMatrices.h"
+
 #include "stdlib.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
-peano::CommunicationSpecification   exahype::mappings::InitCellData::communicationSpecification() {
+peano::CommunicationSpecification   exahype::mappings::SpaceTimePredictor::communicationSpecification() {
   return peano::CommunicationSpecification(peano::CommunicationSpecification::SendDataAndStateBeforeFirstTouchVertexFirstTime,peano::CommunicationSpecification::SendDataAndStateAfterLastTouchVertexLastTime,false);
 }
 
@@ -21,7 +23,7 @@ peano::CommunicationSpecification   exahype::mappings::InitCellData::communicati
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
-peano::MappingSpecification   exahype::mappings::InitCellData::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::mappings::SpaceTimePredictor::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
@@ -29,7 +31,7 @@ peano::MappingSpecification   exahype::mappings::InitCellData::touchVertexLastTi
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
-peano::MappingSpecification   exahype::mappings::InitCellData::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::mappings::SpaceTimePredictor::touchVertexFirstTimeSpecification() { 
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
@@ -37,7 +39,7 @@ peano::MappingSpecification   exahype::mappings::InitCellData::touchVertexFirstT
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
-peano::MappingSpecification   exahype::mappings::InitCellData::enterCellSpecification() {
+peano::MappingSpecification   exahype::mappings::SpaceTimePredictor::enterCellSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
@@ -45,7 +47,7 @@ peano::MappingSpecification   exahype::mappings::InitCellData::enterCellSpecific
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
-peano::MappingSpecification   exahype::mappings::InitCellData::leaveCellSpecification() {
+peano::MappingSpecification   exahype::mappings::SpaceTimePredictor::leaveCellSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
@@ -53,7 +55,7 @@ peano::MappingSpecification   exahype::mappings::InitCellData::leaveCellSpecific
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
-peano::MappingSpecification   exahype::mappings::InitCellData::ascendSpecification() {
+peano::MappingSpecification   exahype::mappings::SpaceTimePredictor::ascendSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
@@ -61,45 +63,45 @@ peano::MappingSpecification   exahype::mappings::InitCellData::ascendSpecificati
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
-peano::MappingSpecification   exahype::mappings::InitCellData::descendSpecification() {
+peano::MappingSpecification   exahype::mappings::SpaceTimePredictor::descendSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
-tarch::logging::Log                exahype::mappings::InitCellData::_log( "exahype::mappings::InitCellData" ); 
+tarch::logging::Log                exahype::mappings::SpaceTimePredictor::_log( "exahype::mappings::SpaceTimePredictor" ); 
 
 
-exahype::mappings::InitCellData::InitCellData() {
-  logTraceIn( "InitCellData()" );
-  // do nothing
-  logTraceOut( "InitCellData()" );
+exahype::mappings::SpaceTimePredictor::SpaceTimePredictor() {
+  logTraceIn( "SpaceTimePredictor()" );
+  // @todo Insert your code here
+  logTraceOut( "SpaceTimePredictor()" );
 }
 
 
-exahype::mappings::InitCellData::~InitCellData() {
-  logTraceIn( "~InitCellData()" );
-  // do nothing
-  logTraceOut( "~InitCellData()" );
+exahype::mappings::SpaceTimePredictor::~SpaceTimePredictor() {
+  logTraceIn( "~SpaceTimePredictor()" );
+  // @todo Insert your code here
+  logTraceOut( "~SpaceTimePredictor()" );
 }
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::InitCellData::InitCellData(const InitCellData&  masterThread) {
-  logTraceIn( "InitCellData(InitCellData)" );
-  // do nothing
-  logTraceOut( "InitCellData(InitCellData)" );
+exahype::mappings::SpaceTimePredictor::SpaceTimePredictor(const SpaceTimePredictor&  masterThread) {
+  logTraceIn( "SpaceTimePredictor(SpaceTimePredictor)" );
+  // @todo Insert your code here
+  logTraceOut( "SpaceTimePredictor(SpaceTimePredictor)" );
 }
 
 
-void exahype::mappings::InitCellData::mergeWithWorkerThread(const InitCellData& workerThread) {
-  logTraceIn( "mergeWithWorkerThread(InitCellData)" );
-  // do nothing
-  logTraceOut( "mergeWithWorkerThread(InitCellData)" );
+void exahype::mappings::SpaceTimePredictor::mergeWithWorkerThread(const SpaceTimePredictor& workerThread) {
+  logTraceIn( "mergeWithWorkerThread(SpaceTimePredictor)" );
+  // @todo Insert your code here
+  logTraceOut( "mergeWithWorkerThread(SpaceTimePredictor)" );
 }
 #endif
 
 
-void exahype::mappings::InitCellData::createHangingVertex(
+void exahype::mappings::SpaceTimePredictor::createHangingVertex(
     exahype::Vertex&     fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                fineGridX,
     const tarch::la::Vector<DIMENSIONS,double>&                fineGridH,
@@ -109,12 +111,12 @@ void exahype::mappings::InitCellData::createHangingVertex(
     const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "createHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // do nothing
+  // @todo Insert your code here
   logTraceOutWith1Argument( "createHangingVertex(...)", fineGridVertex );
 }
 
 
-void exahype::mappings::InitCellData::destroyHangingVertex(
+void exahype::mappings::SpaceTimePredictor::destroyHangingVertex(
     const exahype::Vertex&   fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
     const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -124,12 +126,12 @@ void exahype::mappings::InitCellData::destroyHangingVertex(
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "destroyHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // do nothing
+  // @todo Insert your code here
   logTraceOutWith1Argument( "destroyHangingVertex(...)", fineGridVertex );
 }
 
 
-void exahype::mappings::InitCellData::createInnerVertex(
+void exahype::mappings::SpaceTimePredictor::createInnerVertex(
     exahype::Vertex&               fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
     const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -139,12 +141,12 @@ void exahype::mappings::InitCellData::createInnerVertex(
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // do nothing
+  // @todo Insert your code here
   logTraceOutWith1Argument( "createInnerVertex(...)", fineGridVertex );
 }
 
 
-void exahype::mappings::InitCellData::createBoundaryVertex(
+void exahype::mappings::SpaceTimePredictor::createBoundaryVertex(
     exahype::Vertex&               fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
     const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -154,12 +156,12 @@ void exahype::mappings::InitCellData::createBoundaryVertex(
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // do nothing
+  // @todo Insert your code here
   logTraceOutWith1Argument( "createBoundaryVertex(...)", fineGridVertex );
 }
 
 
-void exahype::mappings::InitCellData::destroyVertex(
+void exahype::mappings::SpaceTimePredictor::destroyVertex(
     const exahype::Vertex&   fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
     const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -169,12 +171,12 @@ void exahype::mappings::InitCellData::destroyVertex(
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "destroyVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // do nothing
+  // @todo Insert your code here
   logTraceOutWith1Argument( "destroyVertex(...)", fineGridVertex );
 }
 
 
-void exahype::mappings::InitCellData::createCell(
+void exahype::mappings::SpaceTimePredictor::createCell(
     exahype::Cell&                 fineGridCell,
     exahype::Vertex * const        fineGridVertices,
     const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -184,12 +186,12 @@ void exahype::mappings::InitCellData::createCell(
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "createCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // do nothing
+  // @todo Insert your code here
   logTraceOutWith1Argument( "createCell(...)", fineGridCell );
 }
 
 
-void exahype::mappings::InitCellData::destroyCell(
+void exahype::mappings::SpaceTimePredictor::destroyCell(
     const exahype::Cell&           fineGridCell,
     exahype::Vertex * const        fineGridVertices,
     const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -199,12 +201,12 @@ void exahype::mappings::InitCellData::destroyCell(
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "destroyCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // do nothing
+  // @todo Insert your code here
   logTraceOutWith1Argument( "destroyCell(...)", fineGridCell );
 }
 
 #ifdef Parallel
-void exahype::mappings::InitCellData::mergeWithNeighbour(
+void exahype::mappings::SpaceTimePredictor::mergeWithNeighbour(
     exahype::Vertex&  vertex,
     const exahype::Vertex&  neighbour,
     int                                           fromRank,
@@ -213,11 +215,11 @@ void exahype::mappings::InitCellData::mergeWithNeighbour(
     int                                           level
 ) {
   logTraceInWith6Arguments( "mergeWithNeighbour(...)", vertex, neighbour, fromRank, fineGridX, fineGridH, level );
-  // do nothing
+  // @todo Insert your code here
   logTraceOut( "mergeWithNeighbour(...)" );
 }
 
-void exahype::mappings::InitCellData::prepareSendToNeighbour(
+void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
     exahype::Vertex&  vertex,
     int                                           toRank,
     const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -225,11 +227,11 @@ void exahype::mappings::InitCellData::prepareSendToNeighbour(
     int                                           level
 ) {
   logTraceInWith3Arguments( "prepareSendToNeighbour(...)", vertex, toRank, level );
-  // do nothing
+  // @todo Insert your code here
   logTraceOut( "prepareSendToNeighbour(...)" );
 }
 
-void exahype::mappings::InitCellData::prepareCopyToRemoteNode(
+void exahype::mappings::SpaceTimePredictor::prepareCopyToRemoteNode(
     exahype::Vertex&  localVertex,
     int                                           toRank,
     const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -237,11 +239,11 @@ void exahype::mappings::InitCellData::prepareCopyToRemoteNode(
     int                                           level
 ) {
   logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localVertex, toRank, x, h, level );
-  // do nothing
+  // @todo Insert your code here
   logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
-void exahype::mappings::InitCellData::prepareCopyToRemoteNode(
+void exahype::mappings::SpaceTimePredictor::prepareCopyToRemoteNode(
     exahype::Cell&  localCell,
     int                                           toRank,
     const tarch::la::Vector<DIMENSIONS,double>&   cellCentre,
@@ -249,11 +251,11 @@ void exahype::mappings::InitCellData::prepareCopyToRemoteNode(
     int                                           level
 ) {
   logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localCell, toRank, cellCentre, cellSize, level );
-  // do nothing
+  // @todo Insert your code here
   logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
-void exahype::mappings::InitCellData::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::SpaceTimePredictor::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Vertex&  localVertex,
     const exahype::Vertex&  masterOrWorkerVertex,
     int                                       fromRank,
@@ -262,11 +264,11 @@ void exahype::mappings::InitCellData::mergeWithRemoteDataDueToForkOrJoin(
     int                                       level
 ) {
   logTraceInWith6Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localVertex, masterOrWorkerVertex, fromRank, x, h, level );
-  // do nothing
+  // @todo Insert your code here
   logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
-void exahype::mappings::InitCellData::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::SpaceTimePredictor::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Cell&  localCell,
     const exahype::Cell&  masterOrWorkerCell,
     int                                       fromRank,
@@ -275,11 +277,11 @@ void exahype::mappings::InitCellData::mergeWithRemoteDataDueToForkOrJoin(
     int                                       level
 ) {
   logTraceInWith3Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localCell, masterOrWorkerCell, fromRank );
-  // do nothing
+  // @todo Insert your code here
   logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
-bool exahype::mappings::InitCellData::prepareSendToWorker(
+bool exahype::mappings::SpaceTimePredictor::prepareSendToWorker(
     exahype::Cell&                 fineGridCell,
     exahype::Vertex * const        fineGridVertices,
     const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -290,12 +292,12 @@ bool exahype::mappings::InitCellData::prepareSendToWorker(
     int                                                                  worker
 ) {
   logTraceIn( "prepareSendToWorker(...)" );
-  // do nothing
+  // @todo Insert your code here
   logTraceOutWith1Argument( "prepareSendToWorker(...)", true );
   return true;
 }
 
-void exahype::mappings::InitCellData::prepareSendToMaster(
+void exahype::mappings::SpaceTimePredictor::prepareSendToMaster(
     exahype::Cell&                       localCell,
     exahype::Vertex *                    vertices,
     const peano::grid::VertexEnumerator&       verticesEnumerator,
@@ -305,12 +307,12 @@ void exahype::mappings::InitCellData::prepareSendToMaster(
     const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
   logTraceInWith2Arguments( "prepareSendToMaster(...)", localCell, verticesEnumerator.toString() );
-  // do nothing
+  // @todo Insert your code here
   logTraceOut( "prepareSendToMaster(...)" );
 }
 
 
-void exahype::mappings::InitCellData::mergeWithMaster(
+void exahype::mappings::SpaceTimePredictor::mergeWithMaster(
     const exahype::Cell&           workerGridCell,
     exahype::Vertex * const        workerGridVertices,
     const peano::grid::VertexEnumerator& workerEnumerator,
@@ -326,12 +328,12 @@ void exahype::mappings::InitCellData::mergeWithMaster(
     exahype::State&                masterState
 ) {
   logTraceIn( "mergeWithMaster(...)" );
-  // do nothing
+  // @todo Insert your code here
   logTraceOut( "mergeWithMaster(...)" );
 }
 
 
-void exahype::mappings::InitCellData::receiveDataFromMaster(
+void exahype::mappings::SpaceTimePredictor::receiveDataFromMaster(
     exahype::Cell&                        receivedCell,
     exahype::Vertex *                     receivedVertices,
     const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
@@ -344,12 +346,12 @@ void exahype::mappings::InitCellData::receiveDataFromMaster(
     const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
   logTraceIn( "receiveDataFromMaster(...)" );
-  // do nothing
+  // @todo Insert your code here
   logTraceOut( "receiveDataFromMaster(...)" );
 }
 
 
-void exahype::mappings::InitCellData::mergeWithWorker(
+void exahype::mappings::SpaceTimePredictor::mergeWithWorker(
     exahype::Cell&           localCell,
     const exahype::Cell&     receivedMasterCell,
     const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
@@ -357,12 +359,12 @@ void exahype::mappings::InitCellData::mergeWithWorker(
     int                                          level
 ) {
   logTraceInWith2Arguments( "mergeWithWorker(...)", localCell.toString(), receivedMasterCell.toString() );
-  // do nothing
+  // @todo Insert your code here
   logTraceOutWith1Argument( "mergeWithWorker(...)", localCell.toString() );
 }
 
 
-void exahype::mappings::InitCellData::mergeWithWorker(
+void exahype::mappings::SpaceTimePredictor::mergeWithWorker(
     exahype::Vertex&        localVertex,
     const exahype::Vertex&  receivedMasterVertex,
     const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -370,12 +372,12 @@ void exahype::mappings::InitCellData::mergeWithWorker(
     int                                           level
 ) {
   logTraceInWith2Arguments( "mergeWithWorker(...)", localVertex.toString(), receivedMasterVertex.toString() );
-  // do nothing
+  // @todo Insert your code here
   logTraceOutWith1Argument( "mergeWithWorker(...)", localVertex.toString() );
 }
 #endif
 
-void exahype::mappings::InitCellData::touchVertexFirstTime(
+void exahype::mappings::SpaceTimePredictor::touchVertexFirstTime(
     exahype::Vertex&               fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
     const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -385,12 +387,12 @@ void exahype::mappings::InitCellData::touchVertexFirstTime(
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "touchVertexFirstTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // do nothing
+  // @todo Insert your code here
   logTraceOutWith1Argument( "touchVertexFirstTime(...)", fineGridVertex );
 }
 
 
-void exahype::mappings::InitCellData::touchVertexLastTime(
+void exahype::mappings::SpaceTimePredictor::touchVertexLastTime(
     exahype::Vertex&         fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
     const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -400,12 +402,236 @@ void exahype::mappings::InitCellData::touchVertexLastTime(
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // do nothing
+  // @todo Insert your code here
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
 
-void exahype::mappings::InitCellData::enterCell(
+void exahype::mappings::SpaceTimePredictor::computePredictor(
+    const int solution,
+    const int spaceTimePredictor,
+    const int spaceTimeVolumeFlux,
+    const tarch::la::Vector<DIMENSIONS,double> center,
+    const double dxPatch,const double dyPatch,
+    const double dt,
+    const int patchIndex,
+    const int nvar,
+    const int order) {
+  // helper variables
+  const int basisSize = order+1;
+  int numberOfSpaceTimeDof           = nvar * tarch::la::aPowI(DIMENSIONS+1,basisSize);
+
+  double* rhs0 = (double*) std::malloc(numberOfSpaceTimeDof * sizeof(double)); // todo remove all mallocs, nvar is known at compile time and the same for optimization problems
+  double* rhs  = (double*) std::malloc(numberOfSpaceTimeDof * sizeof(double)); // todo remove all mallocs, nvar is known at compile time and the same for optimization problems
+
+  for (int ii=0; ii<basisSize; ii++) { // loop over dof
+    for (int jj=0; jj<basisSize; jj++) {
+      for (int ll=0; ll<basisSize; ll++) { // loop over dof
+        // location and index of nodal degrees of freedom
+        const int nodeIndex          = ii + basisSize * jj;
+        const int spaceTimeNodeIndex = ii + basisSize * jj  + basisSize * basisSize * ll;
+
+        const int dofStartIndex           = nodeIndex * nvar;
+        const int spaceTimeDofStartIndex  = spaceTimeNodeIndex * nvar;
+
+        for (int ivar=0; ivar < nvar; ivar++) {
+          // Trivial initial guess (can be significantly improved)
+          DataHeap::getInstance().getData(spaceTimePredictor)[spaceTimeDofStartIndex+ivar]._persistentRecords._u
+              = DataHeap::getInstance().getData(solution)[dofStartIndex+ivar]._persistentRecords._u;
+
+          // Compute the contribution of the initial condition uh to the time update. I prefer to compute it once
+          // and store it in rhs0, but if you think it is faster, you can also recompute this contribution
+          // inside the Picard loop (DO iter = 1, N+1)
+          rhs0[spaceTimeDofStartIndex+ivar] =
+              quad::gaussLegendreWeights[basisSize-1][ii] *
+              quad::gaussLegendreWeights[basisSize-1][jj] *
+              dg::F0[ll] *
+              DataHeap::getInstance().getData(solution)[dofStartIndex+ivar]._persistentRecords._u;
+        }
+      }
+    }
+  }
+  // Everything work above!!!
+
+  double*    Q;
+  double*    f;
+  double*    g;
+
+  double* tmp = (double*) std::malloc(nvar * basisSize * sizeof(double));
+  double* dqdt = (double*) std::malloc(nvar * basisSize * sizeof(double)); // todo remove all mallocs, nvar is known at compile time and the same for optimization problems
+
+  // Discrete Picard iterations. This set of nested loops should (theoretically) be a dream for vectorization, since they are rather independent...
+  for (int iter=1; iter < basisSize+1; iter++) {
+
+    // Compute the fluxes (once these fluxes are available, the subsequent operations are independent from each other)
+    for (int ll=0; ll<basisSize; ll++) { // loop over dof (time)
+      for (int ii=0; ii<basisSize; ii++) { // loop over dof
+        for (int jj=0; jj<basisSize; jj++) {
+          const int nodeIndex          = ii + basisSize * jj;
+          const int spaceTimeNodeIndex = nodeIndex  + basisSize * basisSize * ll;
+
+          const int spaceTimeDofStartIndex     = spaceTimeNodeIndex * nvar;
+          const int spaceTimeFluxDofStartIndex = spaceTimeDofStartIndex * DIMENSIONS;
+
+          Q = &(DataHeap::getInstance().getData(spaceTimePredictor) [spaceTimeDofStartIndex         ]._persistentRecords._u);
+          f = &(DataHeap::getInstance().getData(spaceTimeVolumeFlux)[spaceTimeFluxDofStartIndex     ]._persistentRecords._u);
+          g = &(DataHeap::getInstance().getData(spaceTimeVolumeFlux)[spaceTimeFluxDofStartIndex+nvar]._persistentRecords._u);
+          exahype::problem::PDEFlux(Q,nvar,f,g);
+        }
+      }
+      // Above seems okay!
+
+      // x direction (independent from the y and z derivatives)
+      // Kxi : basisSize * basisSize
+      // lFh : nvar * basisSize
+
+      // Compute the "derivatives" (contributions of the stiffness matrix)
+      // x direction (independent from the y and z derivatives)
+      for (int ii=0; ii<basisSize; ii++) { // loop over dof
+        for (int jj=0; jj<basisSize; jj++) {
+          const int nodeIndex              = ii + basisSize * jj;
+          const int spaceTimeNodeIndex     = nodeIndex  + basisSize * basisSize * ll;
+          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * nvar;
+
+          double weight = quad::gaussLegendreWeights[basisSize-1][ll] *
+              quad::gaussLegendreWeights[basisSize-1][jj];
+
+          // COMPUTE SPATIAL DERIVATIVES FOR TESTING PURPOSES
+          //          for (int ll=0; ll < basisSize; ll++) { // set tmp = 0
+          //            for(int ivar=0; ivar < nvar; ivar++) {
+          //              tmp[ivar + nvar*ll] = 0.;
+          //            }
+          //          }
+          //
+          //          for(int mm=0; mm < basisSize; mm++) {
+          //            const int mmNodeIndex                  = mm + basisSize * jj;
+          //            const int mmSpaceTimeNodeIndex         = mmNodeIndex  + basisSize * basisSize * ll;
+          //            const int mmSpaceTimeDofStartIndex     = mmSpaceTimeNodeIndex * nvar;
+          //            const int mmSpaceTimeFluxDofStartIndex = mmSpaceTimeDofStartIndex * DIMENSIONS;
+          //
+          //            Q = &(DataHeap::getInstance().getData(spaceTimePredictor) [mmSpaceTimeDofStartIndex]._persistentRecords._u);
+          //            for(int ivar=0; ivar < nvar; ivar++) {
+          //              tmp[ivar] += 1./dxPatch * dg::dudx[ii][mm] * Q[ivar];
+          //            }
+          //          }
+          for(int ivar=0; ivar < nvar; ivar++) {
+            rhs[spaceTimeDofStartIndex+ivar] = rhs0[spaceTimeDofStartIndex+ivar];
+          }
+
+          for(int mm=0; mm < basisSize; mm++) {
+            const int mmNodeIndex                  = mm + basisSize * jj;
+            const int mmSpaceTimeNodeIndex         = mmNodeIndex  + basisSize * basisSize * ll;
+            const int mmSpaceTimeDofStartIndex     = mmSpaceTimeNodeIndex * nvar;
+            const int mmSpaceTimeFluxDofStartIndex = mmSpaceTimeDofStartIndex * DIMENSIONS;
+
+            f = &(DataHeap::getInstance().getData(spaceTimeVolumeFlux)[mmSpaceTimeFluxDofStartIndex]._persistentRecords._u);
+
+            for(int ivar=0; ivar < nvar; ivar++) {
+              rhs[spaceTimeDofStartIndex+ivar]
+                  -= weight * dt/dxPatch * dg::Kxi[mm][ii] * f[ivar];
+            }
+          }
+        }
+      }
+      // Above seems okay!
+
+      // Compute the "derivatives" (contributions of the stiffness matrix)
+      // y direction (independent from the x and z derivatives)
+      for (int ii=0; ii<basisSize; ii++) { // loop over dof
+        for (int jj=0; jj<basisSize; jj++) {
+          const int nodeIndex              = ii + basisSize * jj;
+          const int spaceTimeNodeIndex     = nodeIndex  + basisSize * basisSize * ll;
+          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * nvar;
+
+          double weight = quad::gaussLegendreWeights[basisSize-1][ll] *
+              quad::gaussLegendreWeights[basisSize-1][ii];
+
+          for(int mm=0; mm < basisSize; mm++) {
+            const int mmNodeIndex                  = ii + basisSize * mm;
+            const int mmSpaceTimeNodeIndex         = mmNodeIndex  + basisSize * basisSize * ll;
+            const int mmSpaceTimeDofStartIndex     = mmSpaceTimeNodeIndex * nvar;
+            const int mmSpaceTimeFluxDofStartIndex = mmSpaceTimeDofStartIndex * DIMENSIONS;
+
+            g = &(DataHeap::getInstance().getData(spaceTimeVolumeFlux)[mmSpaceTimeFluxDofStartIndex+nvar]._persistentRecords._u);
+
+            for(int ivar=0; ivar < nvar; ivar++) {
+              rhs[spaceTimeDofStartIndex+ivar]
+                  -= weight * dt/dyPatch * dg::Kxi[mm][jj] * g[ivar];
+            }
+          }
+        }
+      }
+    } // end of time dof loop
+
+    // Above ---
+
+    for (int ii=0; ii<basisSize; ii++) {  // loop over dof
+      for (int jj=0; jj<basisSize; jj++) {
+        const int nodeIndex = ii + basisSize * jj;
+
+        double iWeight = 1./(quad::gaussLegendreWeights[basisSize-1][ii] * quad::gaussLegendreWeights[basisSize-1][jj]);
+
+        for (int ll=0; ll < basisSize; ll++) { // set tmp = 0
+          for(int ivar=0; ivar < nvar; ivar++) {
+            tmp[ivar + nvar*ll] = 0.;
+          }
+        }
+
+        for (int ll=0; ll<basisSize; ll++) { // loop over dof
+          const int spaceTimeNodeIndex     = nodeIndex  + basisSize * basisSize * ll;
+
+          for(int nn=0; nn < basisSize; nn++) {
+            const int nnSpaceTimeNodeIndex     = nodeIndex  + basisSize * basisSize * nn;
+            const int nnSpaceTimeDofStartIndex = nnSpaceTimeNodeIndex * nvar;
+
+            for(int ivar=0; ivar < nvar; ivar++) {
+              tmp[ivar + nvar*ll] += iWeight * dg::iK1[ll][nn] * rhs[nnSpaceTimeDofStartIndex+ivar];
+            }
+          }
+        }
+
+        for (int ll=0; ll<basisSize; ll++) { // loop over dof
+          const int spaceTimeNodeIndex     = nodeIndex  + basisSize * basisSize * ll;
+          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * nvar;
+
+          for(int ivar=0; ivar < nvar; ivar++) {
+            DataHeap::getInstance().getData(spaceTimePredictor)[spaceTimeDofStartIndex+ivar]._persistentRecords._u = tmp[ivar + nvar*ll];
+          }
+        }
+
+        // dqdt
+        for (int ll=0; ll < basisSize; ll++) { // set tmp = 0
+          for(int ivar=0; ivar < nvar; ivar++) {
+            dqdt[ivar + nvar*ll] = 0.;
+          }
+        }
+
+        for (int ll=0; ll<basisSize; ll++) { // loop over dof
+          const int spaceTimeNodeIndex     = nodeIndex  + basisSize * basisSize * ll;
+          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * nvar;
+
+          for(int ivar=0; ivar < nvar; ivar++) {
+
+            for(int nn=0; nn < basisSize; nn++) {
+              const int nnSpaceTimeNodeIndex         = nodeIndex  + basisSize * basisSize * nn;
+              const int nnSpaceTimeDofStartIndex     = nnSpaceTimeNodeIndex * nvar;
+
+              dqdt[ivar + nvar*ll] += 1./dt * dg::dudx[ll][nn] *
+                  DataHeap::getInstance().getData(spaceTimePredictor)[nnSpaceTimeDofStartIndex+ivar]._persistentRecords._u;
+            }
+          }
+        }
+      }
+    }
+  } // end of Picard iteration
+
+  // clean up
+  std::free(tmp);
+  std::free(rhs0);
+  std::free(dqdt);
+}
+
+void exahype::mappings::SpaceTimePredictor::enterCell(
     exahype::Cell&                 fineGridCell,
     exahype::Vertex * const        fineGridVertices,
     const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -419,7 +645,7 @@ void exahype::mappings::InitCellData::enterCell(
   // ! Begin of code for the DG method.
   if (!fineGridCell.isRefined()) {
     records::CellDescription& cellDescription =
-             CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
+        CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
 
     const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
     const double dx = fineGridVerticesEnumerator.getCellSize()(0);
@@ -431,52 +657,30 @@ void exahype::mappings::InitCellData::enterCell(
     const int basisSize = exahype::order[0]+1;
     const int nvar      = exahype::numberOfVariables[0];
 
-    // helper variables
-    double x,y;
-    double* value = (double*) std::malloc(nvar * sizeof(double));
-
     for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
       for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
         const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
 
-        for (int ii=0; ii<basisSize; ii++) { // loop over dof
-          for (int jj=0; jj<basisSize; jj++) {
-            // location and index of nodal degrees of freedom
-            const int nodeIndex = ii + basisSize * jj;
-
-            const double qr = exahype::quad::gaussLegendreNodes[basisSize-1][ii];
-            const double qs = exahype::quad::gaussLegendreNodes[basisSize-1][jj];
-            exahype::geometry::mapping2d(center(0),center(1),dx,dy,dxPatch,dyPatch,i,j,qr,qs,&x,&y);
-
-            // read initial condition
-            exahype::problem::PDEInitialValue2d(x,y,nvar,value);
-
-            // set the DoF
-            const int dofStartIndex  = nodeIndex * nvar;
-
-            for (int ivar=0; ivar < nvar; ivar++) {
-              DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[dofStartIndex+ivar]._persistentRecords._u
-                                = value[ivar];
-
-              DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))[dofStartIndex+ivar]._persistentRecords._u
-                                              = 0.;
-            }
-          }
-        }
+        computePredictor(
+            cellDescription.getSolution(patchIndex),
+            cellDescription.getSpaceTimePredictor(patchIndex),
+            cellDescription.getSpaceTimeVolumeFlux(patchIndex),
+            center,
+            dxPatch,dyPatch,
+            this->_timeStepSize,
+            patchIndex,
+            nvar,
+            basisSize-1);
       }
     }
-
-    // clean up
-    std::free(value);
   }
 
-  // ! End of code for the DG method.
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
 
 
-void exahype::mappings::InitCellData::leaveCell(
+void exahype::mappings::SpaceTimePredictor::leaveCell(
     exahype::Cell&           fineGridCell,
     exahype::Vertex * const  fineGridVertices,
     const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
@@ -486,31 +690,35 @@ void exahype::mappings::InitCellData::leaveCell(
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // do nothing
+  // @todo Insert your code here
   logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
 }
 
 
-void exahype::mappings::InitCellData::beginIteration(
+void exahype::mappings::SpaceTimePredictor::beginIteration(
     exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
-  // do nothing
+
+  // Begin of code for ADERDG method
+  _timeStepSize = solverState.getTimeStepSize();
+  // End of code for ADERDG method
+
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
 
 
-void exahype::mappings::InitCellData::endIteration(
+void exahype::mappings::SpaceTimePredictor::endIteration(
     exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "endIteration(State)", solverState );
-  // do nothing
+  // @todo Insert your code here
   logTraceOutWith1Argument( "endIteration(State)", solverState);
 }
 
 
 
-void exahype::mappings::InitCellData::descend(
+void exahype::mappings::SpaceTimePredictor::descend(
     exahype::Cell * const          fineGridCells,
     exahype::Vertex * const        fineGridVertices,
     const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -519,12 +727,12 @@ void exahype::mappings::InitCellData::descend(
     exahype::Cell&                 coarseGridCell
 ) {
   logTraceInWith2Arguments( "descend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
-  // do nothing
+  // @todo Insert your code here
   logTraceOut( "descend(...)" );
 }
 
 
-void exahype::mappings::InitCellData::ascend(
+void exahype::mappings::SpaceTimePredictor::ascend(
     exahype::Cell * const    fineGridCells,
     exahype::Vertex * const  fineGridVertices,
     const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
@@ -533,6 +741,6 @@ void exahype::mappings::InitCellData::ascend(
     exahype::Cell&           coarseGridCell
 ) {
   logTraceInWith2Arguments( "ascend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
-  // do nothing
+  // @todo Insert your code here
   logTraceOut( "ascend(...)" );
 }

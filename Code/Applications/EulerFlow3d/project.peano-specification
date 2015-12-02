@@ -32,6 +32,9 @@ event-mapping:
   
 event-mapping:
   name: UpdateCellData
+
+event-mapping:
+  name: SpaceTimePredictor
   
 event-mapping:
   name: ComputeCellData
@@ -73,8 +76,9 @@ adapter:
 adapter:
   name: TimeStep
   merge-with-user-defined-mapping: UpdateCellData
-  merge-with-user-defined-mapping: ComputeCellData
+  merge-with-user-defined-mapping: SpaceTimePredictor
   merge-with-user-defined-mapping: ExtrapolateFaceData
+  merge-with-user-defined-mapping: ComputeCellData
   merge-with-user-defined-mapping: ApplyBoundaryConditions
   merge-with-user-defined-mapping: ExchangeFaceData
   // only necessary here if we refine further 
@@ -83,6 +87,7 @@ adapter:
 adapter:
   name: TimeStepAndPlot
   merge-with-user-defined-mapping: UpdateCellData
+  merge-with-user-defined-mapping: SpaceTimePredictor
   merge-with-user-defined-mapping: ComputeCellData
   merge-with-user-defined-mapping: ExtrapolateFaceData
   merge-with-user-defined-mapping: ApplyBoundaryConditions

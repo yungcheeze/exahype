@@ -44,7 +44,7 @@ namespace exahype {
      * @param[in] centerX x coordinate of the center of the cell
      * @param[in] centerY y coordinate of the center of the cell
      * @param[in] dx extent of the cell in x direction
-     * @param[in] dy extent of the cell in y directio
+     * @param[in] dy extent of the cell in y direction
      * @param[in] dxPatch extent of the patch cell in x direction
      * @param[in] dyPatch extent of the patch cell in y directio
      * @param[in] i index of the patch cell
