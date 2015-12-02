@@ -2,12 +2,16 @@
 
 #include "cmath"
 
-double
-exahype::problem::PDEInitialValue(const double x,const double y) {
-  if ((x-0.5)*(x-0.5) + (y-0.25)*(y-0.25)  < 0.01) {
-    return 1.;
+void exahype::problem::PDEInitialValue2d(const double x,const double y,const int numberOfVariables,double * value) {
+  for (int n=0; n < 5; n++) {
+    value[n] = 0;
   }
-  return 0.;
+  value[0] = 1. + 0.1*x + 0.2*y;
+  value[4] = 1;
+
+//  for (int n=0; n < 5; n++) {
+//    value[n] = n+1;
+//  }
 }
 
 double

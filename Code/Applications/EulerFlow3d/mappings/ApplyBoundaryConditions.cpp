@@ -421,57 +421,57 @@ void exahype::mappings::ApplyBoundaryConditions::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
-  if (!fineGridCell.isRefined()) {
-    tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>  cellDescriptionsOfNeighbors;
-    const tarch::la::Vector<THREE_POWER_D,int> cellDescriptionsOfAllNeighbours =
-        multiscalelinkedcell::getIndicesAroundCell(
-            exahype::VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator,fineGridVertices));
-
-    // Store neighbor flux in LEFT (0,r=-1),RIGHT (1,r=+1),FRONT (2,s=-1),BACK (3,s=+1),BOTTOM (4,t=-1),TOP (5,t=+1)
-    // manner, where r,s,t refer to the reference coordinates.
-    cellDescriptionsOfNeighbors[EXAHYPE_FACE_LEFT  ] = cellDescriptionsOfAllNeighbours[PEANO_3D_NEIGHBOUR_LEFT  ];
-    cellDescriptionsOfNeighbors[EXAHYPE_FACE_RIGHT ] = cellDescriptionsOfAllNeighbours[PEANO_3D_NEIGHBOUR_RIGHT ];
-    cellDescriptionsOfNeighbors[EXAHYPE_FACE_FRONT ] = cellDescriptionsOfAllNeighbours[PEANO_3D_NEIGHBOUR_FRONT ];
-    cellDescriptionsOfNeighbors[EXAHYPE_FACE_BACK  ] = cellDescriptionsOfAllNeighbours[PEANO_3D_NEIGHBOUR_BACK  ];
-    cellDescriptionsOfNeighbors[EXAHYPE_FACE_BOTTOM] = cellDescriptionsOfAllNeighbours[PEANO_3D_NEIGHBOUR_BOTTOM];
-    cellDescriptionsOfNeighbors[EXAHYPE_FACE_TOP   ] = cellDescriptionsOfAllNeighbours[PEANO_3D_NEIGHBOUR_TOP   ];
-
-    const int n_gauss_points=2;
-
-    // cell geometry
-    const double h                                    = fineGridVerticesEnumerator.getCellSize()(0);
-    const double ds                                   = 0.5*h;                                       // the length of the path element; constant on the face
-    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-    double x                                          = 0;                                           // physical x coordinate
-    double y                                          = 0;                                           // physical y coordinate
-
-    // helper variables
-    double selfFlux=0;
-    double inflow  =0;
-
-    // read in cell solution and update
-    records::CellDescription& cellDescription = fineGridCell.getCellDescription(0);
-
-    double solution = DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u;
-    double update   = DataHeap::getInstance().getData(cellDescription.getUpdate())[0]._persistentRecords._u;
-
-    // non-optimized quadrature loop;
-    double qr;
-    double qs;
-    for (int face=0; face < DIMENSIONS_TIMES_TWO; face++) {
-      if (cellDescriptionsOfNeighbors[face]==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
-        for (int iq=0; iq < n_gauss_points; iq++) {
-          exahype::dg::GetFaceQr(n_gauss_points,iq,face,&qr);
-          exahype::dg::GetFaceQs(n_gauss_points,iq,face,&qs);
-          exahype::geometry::mapping2d(center(0),center(1),h,qr,qs,&x,&y);
-
-          // do something
-        }
-      }
-    }
-
-    DataHeap::getInstance().getData(cellDescription.getUpdate())[0]._persistentRecords._u += update+selfFlux*solution+inflow;
-  }
+//  if (!fineGridCell.isRefined()) {
+//    tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>  cellDescriptionsOfNeighbors;
+//    const tarch::la::Vector<THREE_POWER_D,int> cellDescriptionsOfAllNeighbours =
+//        multiscalelinkedcell::getIndicesAroundCell(
+//            exahype::VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator,fineGridVertices));
+//
+//    // Store neighbour flux in LEFT (0,r=-1),RIGHT (1,r=+1),FRONT (2,s=-1),BACK (3,s=+1),BOTTOM (4,t=-1),TOP (5,t=+1)
+//    // manner, where r,s,t refer to the reference coordinates.
+//    cellDescriptionsOfNeighbors[EXAHYPE_FACE_LEFT  ] = cellDescriptionsOfAllNeighbours[PEANO_3D_NEIGHBOUR_LEFT  ];
+//    cellDescriptionsOfNeighbors[EXAHYPE_FACE_RIGHT ] = cellDescriptionsOfAllNeighbours[PEANO_3D_NEIGHBOUR_RIGHT ];
+//    cellDescriptionsOfNeighbors[EXAHYPE_FACE_FRONT ] = cellDescriptionsOfAllNeighbours[PEANO_3D_NEIGHBOUR_FRONT ];
+//    cellDescriptionsOfNeighbors[EXAHYPE_FACE_BACK  ] = cellDescriptionsOfAllNeighbours[PEANO_3D_NEIGHBOUR_BACK  ];
+//    cellDescriptionsOfNeighbors[EXAHYPE_FACE_BOTTOM] = cellDescriptionsOfAllNeighbours[PEANO_3D_NEIGHBOUR_BOTTOM];
+//    cellDescriptionsOfNeighbors[EXAHYPE_FACE_TOP   ] = cellDescriptionsOfAllNeighbours[PEANO_3D_NEIGHBOUR_TOP   ];
+//
+//    const int n_gauss_points=2;
+//
+//    // cell geometry
+//    const double h                                    = fineGridVerticesEnumerator.getCellSize()(0);
+//    const double ds                                   = 0.5*h;                                       // the length of the path element; constant on the face
+//    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
+//    double x                                          = 0;                                           // physical x coordinate
+//    double y                                          = 0;                                           // physical y coordinate
+//
+//    // helper variables
+//    double selfFlux=0;
+//    double inflow  =0;
+//
+//    // read in cell solution and update
+//    records::CellDescription& cellDescription = fineGridCell.getCellDescription(0);
+//
+//    double solution = DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u;
+//    double update   = DataHeap::getInstance().getData(cellDescription.getUpdate())[0]._persistentRecords._u;
+//
+//    // non-optimized quadrature loop;
+//    double qr;
+//    double qs;
+//    for (int face=0; face < DIMENSIONS_TIMES_TWO; face++) {
+//      if (cellDescriptionsOfNeighbors[face]==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
+//        for (int iq=0; iq < n_gauss_points; iq++) {
+//          exahype::dg::GetFaceQr(n_gauss_points,iq,face,&qr);
+//          exahype::dg::GetFaceQs(n_gauss_points,iq,face,&qs);
+//          exahype::geometry::mapping2d(center(0),center(1),h,qr,qs,&x,&y);
+//
+//          // do something
+//        }
+//      }
+//    }
+//
+//    DataHeap::getInstance().getData(cellDescription.getUpdate())[0]._persistentRecords._u += update+selfFlux*solution+inflow;
+//  }
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
 

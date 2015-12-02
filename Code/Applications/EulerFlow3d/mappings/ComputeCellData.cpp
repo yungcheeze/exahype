@@ -414,32 +414,32 @@ void exahype::mappings::ComputeCellData::enterCell(
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
   if (!fineGridCell.isRefined()) {
-    // quadrature nodes and weights; dummy lookup table for quadratures with 1 and 2 nodes.
-    // must be moved somewhere else
-    const int    numberOfGaussPoints=2;
-
-    // cell geometry
-    const double h                                    = fineGridVerticesEnumerator.getCellSize()(0); //
-    const double J                                    = 0.25*h*h;                                    // Jacobian determinant; constant in the cell
-    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-    double x                                          = 0;                                            // physical x coordinate
-    double y                                          = 0;                                            // physical y coordinate
-
-    double update = 0;
-
-    // non-optimized quadrature loop;
-    double qr=0;
-    double qs=0;
-
-    for (int iqr=0; iqr < numberOfGaussPoints; iqr++) {
-      for (int iqs=0; iqs < numberOfGaussPoints; iqs++) {
-        qr = exahype::quad::gaussLegendreNodes[numberOfGaussPoints-1][iqr];
-        qs = exahype::quad::gaussLegendreNodes[numberOfGaussPoints-1][iqs];
-        exahype::geometry::mapping2d(center(0),center(1),h,qr,qs,&x,&y);
-        // do something
-      }
-    }
-    update += 0 * J;
+//    // quadrature nodes and weights; dummy lookup table for quadratures with 1 and 2 nodes.
+//    // must be moved somewhere else
+//    const int    numberOfGaussPoints=2;
+//
+//    // cell geometry
+//    const double h                                    = fineGridVerticesEnumerator.getCellSize()(0); //
+//    const double J                                    = 0.25*h*h;                                    // Jacobian determinant; constant in the cell
+//    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
+//    double x                                          = 0;                                            // physical x coordinate
+//    double y                                          = 0;                                            // physical y coordinate
+//
+//    double update = 0;
+//
+//    // non-optimized quadrature loop;
+//    double qr=0;
+//    double qs=0;
+//
+//    for (int iqr=0; iqr < numberOfGaussPoints; iqr++) {
+//      for (int iqs=0; iqs < numberOfGaussPoints; iqs++) {
+//        qr = exahype::quad::gaussLegendreNodes[numberOfGaussPoints-1][iqr];
+//        qs = exahype::quad::gaussLegendreNodes[numberOfGaussPoints-1][iqs];
+//        exahype::geometry::mapping2d(center(0),center(1),h,qr,qs,&x,&y);
+//        // do something
+//      }
+//    }
+//    update += 0 * J;
   }
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );

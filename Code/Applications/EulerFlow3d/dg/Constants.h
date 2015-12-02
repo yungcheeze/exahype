@@ -8,7 +8,7 @@
 #define EXAHYPE_DG_CONSTANTS_H_
 
 /**
- * Indexing of the neighbors of a cell in 2d.
+ * Indexing of the neighbours of a cell in 2d.
  */
 ///@{
 #define PEANO_2D_NEIGHBOUR_LEFT  3
@@ -18,7 +18,7 @@
 ///@}
 
 /**
- * Indexing of the neighbors of a cell in 3d.
+ * Indexing of the neighbours of a cell in 3d.
  */
 ///@{
 #define PEANO_3D_NEIGHBOUR_LEFT   12

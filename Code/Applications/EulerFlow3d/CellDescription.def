@@ -32,9 +32,9 @@ class exahype::records::CellDescription {
 
   /** Volume data on each patch. Size: #var*(N+1)^d * size */
   ///@{
-  parallelise persistent int solution;  //!< The indices of the DoF belonging to this cell. Resembles also the state of the previous time step during update calculations. Variable: u.
-  parallelise persistent int update;    //!< The indices of the update DoF belonging to this cell. All volume updates and face fluctuations contribute to this variable. Variable: du.
-  parallelise persistent int predictor; //!< The indices of the predictor DoF belonging to this cell, i.e., the time integrated space-time DoF. Variable: qA.  
+  parallelise persistent int solution[EXAHYPE_PATCH_SIZE_TOTAL];  //!< The indices of the DoF belonging to this cell. Resembles also the state of the previous time step during update calculations. Variable: u.
+  parallelise persistent int update[EXAHYPE_PATCH_SIZE_TOTAL];    //!< The indices of the update DoF belonging to this cell. All volume updates and face fluctuations contribute to this variable. Variable: du.
+  parallelise persistent int predictor[EXAHYPE_PATCH_SIZE_TOTAL]; //!< The indices of the predictor DoF belonging to this cell, i.e., the time integrated space-time DoF. Variable: qA.  
   ///@}	
 
   /** Volume flux data on each patch. Size: (d*#var)*(N+1)^d */

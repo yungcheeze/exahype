@@ -94,7 +94,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.switchToInitCellData();        // initialize the fields of the cell descriptions, i.e., the initial values.
   repository.iterate();
 
-  for (int n=0; n<maximumTimeStep; n++) {
+  for (int n=0; n<0; n++) {
     if (plottingStride>0 && n%plottingStride==0) {
       repository.switchToTimeStepAndPlot();
     } else {

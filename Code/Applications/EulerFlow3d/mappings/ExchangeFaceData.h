@@ -1261,6 +1261,18 @@ class exahype::mappings::ExchangeFaceData {
         exahype::Vertex * const  fineGridVertices,
         const peano::grid::VertexEnumerator& fineGridVerticesEnumerator
     );
+
+    /**
+     * @brief Copies the neighbour's face data to the respective ghost cell of the current patch.
+     */
+    void copyGhostValues(
+        records::CellDescription& dataSelf,
+        const records::CellDescription& dataNeighbour,
+        const int indexGhostSelf,
+        const int indexNeighbor,
+        const int face,
+        const int numberOfDofOnFace
+    );
     // End of code for ADERDG method
 };
 

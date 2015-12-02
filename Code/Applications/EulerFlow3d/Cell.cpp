@@ -47,26 +47,49 @@ exahype::Cell::initCellInComputeTree(const int level,
     int basisSize            = exahype::order[pde]+1;
 
     //  @todo: consider to precompute these values/to use a lookup table at this point
-    int numberOfSpaceTimeDof = EXAHYPE_PATCH_SIZE_TOTAL                            * numberOfVariables[pde]          * tarch::la::aPowI(DIMENSIONS+1,basisSize);
-    int numberOfDof          = EXAHYPE_PATCH_SIZE_TOTAL                            * exahype::numberOfVariables[pde] * tarch::la::aPowI(DIMENSIONS  ,basisSize);
-    int numberOfDofOnFaces   = EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO * exahype::numberOfVariables[pde] * tarch::la::aPowI(DIMENSIONS-1,basisSize);
+    int numberOfSpaceTimeDof           = numberOfVariables[pde] * tarch::la::aPowI(DIMENSIONS+1,basisSize);
+    int numberOfSpaceTimeVolumeFluxDof = DIMENSIONS*numberOfSpaceTimeDof;
+
+    int numberOfDof           = exahype::numberOfVariables[pde] * tarch::la::aPowI(DIMENSIONS  ,basisSize);
+    int numberOfVolumeFluxDof = DIMENSIONS * numberOfDof;
+    int numberOfDofOnFace     = exahype::numberOfVariables[pde] * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
     records::CellDescription& cellDescriptionForPde =
         CellDescriptionHeap::getInstance().getData(indexOfCellDescriptions)[pde];
 
-    // Allocate space-time DoF
-    cellDescriptionForPde.setSpaceTimePredictor (DataHeap::getInstance().createData(numberOfSpaceTimeDof,numberOfSpaceTimeDof));
-    cellDescriptionForPde.setSpaceTimeVolumeFlux(DataHeap::getInstance().createData(DIMENSIONS*numberOfSpaceTimeDof,DIMENSIONS*numberOfSpaceTimeDof));
+    for (int i=0; i<EXAHYPE_PATCH_SIZE_X+2; i++) { // loop over patches
+      for (int j=0; j<EXAHYPE_PATCH_SIZE_Y+2; j++) {
+        const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
 
-    // Allocate volume DoF
-    cellDescriptionForPde.setSolution   (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
-    cellDescriptionForPde.setUpdate     (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
-    cellDescriptionForPde.setPredictor  (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
-    cellDescriptionForPde.setVolumeFlux (DataHeap::getInstance().createData(DIMENSIONS*numberOfDof,DIMENSIONS*numberOfDof));
+        // Initialize patch space-time DoF to invalid value
+        cellDescriptionForPde.setSpaceTimePredictor (patchIndex,-1);
+        cellDescriptionForPde.setSpaceTimeVolumeFlux(patchIndex,-1);
 
-    // Allocate face DoF
-    cellDescriptionForPde.setExtrapolatedPredictor(DataHeap::getInstance().createData(numberOfDofOnFaces,numberOfDofOnFaces));
-    cellDescriptionForPde.setFluctuation          (DataHeap::getInstance().createData(numberOfDofOnFaces,numberOfDofOnFaces));
+        // Initialize patch volume DoF to invalid value
+        cellDescriptionForPde.setSolution   (patchIndex,-1);
+        cellDescriptionForPde.setUpdate     (patchIndex,-1);
+        cellDescriptionForPde.setPredictor  (patchIndex,-1);
+        cellDescriptionForPde.setVolumeFlux (patchIndex,-1);
+
+        if (i > 0 || i < EXAHYPE_PATCH_SIZE_X+1) {
+          if (j > 0 || j < EXAHYPE_PATCH_SIZE_Y+1) {
+            // Allocate space-time DoF
+            cellDescriptionForPde.setSpaceTimePredictor (patchIndex,DataHeap::getInstance().createData(numberOfSpaceTimeDof,numberOfSpaceTimeDof));
+            cellDescriptionForPde.setSpaceTimeVolumeFlux(patchIndex,DataHeap::getInstance().createData(numberOfSpaceTimeVolumeFluxDof,numberOfSpaceTimeVolumeFluxDof));
+
+            // Allocate volume DoF
+            cellDescriptionForPde.setSolution   (patchIndex,DataHeap::getInstance().createData(numberOfDof,numberOfDof));
+            cellDescriptionForPde.setUpdate     (patchIndex,DataHeap::getInstance().createData(numberOfDof,numberOfDof));
+            cellDescriptionForPde.setPredictor  (patchIndex,DataHeap::getInstance().createData(numberOfDof,numberOfDof));
+            cellDescriptionForPde.setVolumeFlux (patchIndex,DataHeap::getInstance().createData(numberOfVolumeFluxDof,numberOfVolumeFluxDof));
+          }
+        }
+
+        // Allocate face DoF
+        cellDescriptionForPde.setExtrapolatedPredictor(patchIndex,DataHeap::getInstance().createData(numberOfDofOnFace,numberOfDofOnFace));
+        cellDescriptionForPde.setFluctuation          (patchIndex,DataHeap::getInstance().createData(numberOfDofOnFace,numberOfDofOnFace));
+      }
+    }
 
     // Pass geometry information to the cellDescription description
     cellDescriptionForPde.setLevel (level);

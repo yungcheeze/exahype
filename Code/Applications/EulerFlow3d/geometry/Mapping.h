@@ -20,42 +20,73 @@ namespace exahype {
     /**
      * @brief: Maps reference coordinates to physical coordinates.
      *
-     * @param x0 x coordinate of the center of the cell
-     * @param y0 y coordinate of the center of the cell
-     * @param r reference coordinate in [-1,1]
-     * @param s reference coordinate in [-1,1]
-     * @param x physical coordinate
-     * @param y physical coordinate
+     * @param[in] centerX x coordinate of the center of the cell
+     * @param[in] centerY y coordinate of the center of the cell
+     * @param[in] r reference coordinate in [0,1]
+     * @param[in] s reference coordinate in [0,1]
+     * @param[out] x physical coordinate
+     * @param[out] y physical coordinate
      */
     inline void
     mapping2d(
-        const double x0,const double y0,
-        const double h,
+        const double centerX,const double centerY,
+        const double dx,
+        const double dy,
         const double r,const double s,
         double* x,double* y) {
-      *x=x0+.5*h*r;
-      *y=y0+.5*h*s;
+      *x=centerX + 0.5*dx*(r-1.0);
+      *y=centerY + 0.5*dy*(s-1.0);
     }
 
     /**
      * @brief: Maps reference coordinates to physical coordinates.
      *
-     * @param x0 x coordinate of the center of the cell
-     * @param y0 y coordinate of the center of the cell
-     * @param r reference coordinate
-     * @param s reference coordinate
-     * @param x physical coordinate
-     * @param y physical coordinate
+     * @param[in] centerX x coordinate of the center of the cell
+     * @param[in] centerY y coordinate of the center of the cell
+     * @param[in] dx extent of the cell in x direction
+     * @param[in] dy extent of the cell in y directio
+     * @param[in] dxPatch extent of the patch cell in x direction
+     * @param[in] dyPatch extent of the patch cell in y directio
+     * @param[in] i index of the patch cell
+     * @param[in] j index of the patch cell
+     * @param[in] r reference coordinate in [0,1]
+     * @param[in] s reference coordinate in [0,1]
+     * @param[out] x physical coordinate
+     * @param[out] y physical coordinate
+     */
+    inline void
+    mapping2d(
+        const double centerX,const double centerY,
+        const double dx,const double dy,
+        const double dxPatch,const double dyPatch,
+        const int i,const int j,
+        const double r,const double s,
+        double* x,double* y) {
+      *x=centerX - 0.5*dx + (i-1) * dxPatch + dxPatch * r;
+      *y=centerY - 0.5*dy + (j-1) * dyPatch + dyPatch * s;
+    }
+
+
+    /**
+     * @brief: Maps reference coordinates to physical coordinates.
+     *
+     * @param[in] centerX x coordinate of the center of the cell
+     * @param[in] centerY y coordinate of the center of the cell
+     * @param[in] r reference coordinate in [0,1]
+     * @param[in] s reference coordinate in [0,1]
+     * @param[out] x physical coordinate
+     * @param[out] y physical coordinate
      */
     inline void
     mapping3d(
-        const double x0,const double y0,const double z0,
-        const double h,
-        const double r,const double s,const double t,
-        double* x,double* y,double *z) {
-      *x=x0+.5*h*r;
-      *y=y0+.5*h*s;
-      *z=z0+.5*h*t;
+        const double centerX,const double centerY,
+        const double dx,
+        const double dy,
+        const double r,const double s,
+        double* x,double* y) {
+      *x=centerX + 0.5*dx*(r-1.0);
+      *y=centerY + 0.5*dy*(s-1.0);
+      // todo
     }
   }
 }

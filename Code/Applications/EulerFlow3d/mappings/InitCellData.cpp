@@ -1,8 +1,14 @@
 #include "EulerFlow3d/mappings/InitCellData.h"
 
+#include "EulerFlow3d/Constants.h"
+
+#include "EulerFlow3d/math/quad/Gausslegendre.h"
+
 #include "EulerFlow3d/geometry/Mapping.h"
 
 #include "EulerFlow3d/problem/Problem.h"
+
+#include "stdlib.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -412,24 +418,55 @@ void exahype::mappings::InitCellData::enterCell(
 
   // ! Begin of code for the DG method.
   if (!fineGridCell.isRefined()) {
-    // Initialize solution and update and normal fluxes/fluctuations to zero
-    records::CellDescription& cellDescriptionForPde =
+    records::CellDescription& cellDescription =
              CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
 
     const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-    const double h = fineGridVerticesEnumerator.getCellSize()(0);
+    const double dx = fineGridVerticesEnumerator.getCellSize()(0);
+    const double dy = fineGridVerticesEnumerator.getCellSize()(1);
 
+    const double dxPatch = dx/ (double) EXAHYPE_PATCH_SIZE_X;
+    const double dyPatch = dy/ (double) EXAHYPE_PATCH_SIZE_Y;
+
+    const int basisSize = exahype::order[0]+1;
+    const int nvar      = exahype::numberOfVariables[0];
+
+    // helper variables
     double x,y;
-    exahype::geometry::mapping2d(center(0),center(1),h,0,0,&x,&y);
+    double* value = (double*) std::malloc(nvar * sizeof(double));
 
-//    DataHeap::getInstance().getData(cellDescriptionForPde.getSolution())[0]._persistentRecords._u = exahype::problem::PDEInitialValue(x,y);
-//    DataHeap::getInstance().getData(cellDescriptionForPde.getUpdate())  [0]._persistentRecords._u = 0;
+    for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
+      for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
+        const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
 
-    for (int face=0; face<DIMENSIONS_TIMES_TWO; face++) {
-//      DataHeap::getInstance().getData(cellDescriptionForPde.getFluctuation(face))[0]._persistentRecords._u = 0;
-//      cellDescriptionForPde.setRiemannSolvePerformed(face,false);
+        for (int ii=0; ii<basisSize; ii++) { // loop over dof
+          for (int jj=0; jj<basisSize; jj++) {
+            // location and index of nodal degrees of freedom
+            const int nodeIndex = ii + basisSize * jj;
+
+            const double qr = exahype::quad::gaussLegendreNodes[basisSize-1][ii];
+            const double qs = exahype::quad::gaussLegendreNodes[basisSize-1][jj];
+            exahype::geometry::mapping2d(center(0),center(1),dx,dy,dxPatch,dyPatch,i,j,qr,qs,&x,&y);
+
+            // read initial condition
+            exahype::problem::PDEInitialValue2d(x,y,nvar,value);
+
+            // set the DoF
+            const int dofStartIndex  = nodeIndex * nvar;
+
+            for (int ivar=0; ivar < nvar; ivar++) {
+              DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[dofStartIndex+ivar]._persistentRecords._u
+                                = value[ivar];
+            }
+          }
+        }
+      }
     }
+
+    // clean up
+    std::free(value);
   }
+
   // ! End of code for the DG method.
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
