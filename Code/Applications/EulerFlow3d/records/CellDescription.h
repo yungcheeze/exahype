@@ -32,7 +32,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   02/12/2015 15:22
+ * @date   03/12/2015 12:21
  */
 class exahype::records::CellDescription { 
    
@@ -72,14 +72,14 @@ class exahype::records::CellDescription {
          tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _volumeFlux;
          #endif
          #ifdef UseManualAlignment
-         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> _extrapolatedPredictor __attribute__((aligned(VectorisationAlignment)));
+         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _extrapolatedPredictor __attribute__((aligned(VectorisationAlignment)));
          #else
-         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> _extrapolatedPredictor;
+         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _extrapolatedPredictor;
          #endif
          #ifdef UseManualAlignment
-         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> _fluctuation __attribute__((aligned(VectorisationAlignment)));
+         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _fluctuation __attribute__((aligned(VectorisationAlignment)));
          #else
-         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> _fluctuation;
+         tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _fluctuation;
          #endif
          int _level;
          #ifdef UseManualAlignment
@@ -100,7 +100,7 @@ class exahype::records::CellDescription {
          /**
           * Generated
           */
-         PersistentRecords(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+         PersistentRecords(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
          
          
          /**
@@ -470,7 +470,7 @@ class exahype::records::CellDescription {
           * 
           * @see convert()
           */
-         inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
+         inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getExtrapolatedPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -499,7 +499,7 @@ class exahype::records::CellDescription {
           * 
           * @see convert()
           */
-         inline void setExtrapolatedPredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
+         inline void setExtrapolatedPredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& extrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -528,7 +528,7 @@ class exahype::records::CellDescription {
           * 
           * @see convert()
           */
-         inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
+         inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -557,7 +557,7 @@ class exahype::records::CellDescription {
           * 
           * @see convert()
           */
-         inline void setFluctuation(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation) 
+         inline void setFluctuation(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& fluctuation) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -722,7 +722,7 @@ class exahype::records::CellDescription {
       /**
        * Generated
        */
-      CellDescription(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+      CellDescription(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
       
       /**
        * Generated
@@ -1253,7 +1253,7 @@ class exahype::records::CellDescription {
        * 
        * @see convert()
        */
-      inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
+      inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getExtrapolatedPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1282,7 +1282,7 @@ class exahype::records::CellDescription {
        * 
        * @see convert()
        */
-      inline void setExtrapolatedPredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
+      inline void setExtrapolatedPredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& extrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1298,7 +1298,7 @@ class exahype::records::CellDescription {
  #endif 
  {
          assertion(elementIndex>=0);
-         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
+         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
          return _persistentRecords._extrapolatedPredictor[elementIndex];
          
       }
@@ -1311,7 +1311,7 @@ class exahype::records::CellDescription {
  #endif 
  {
          assertion(elementIndex>=0);
-         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
+         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
          _persistentRecords._extrapolatedPredictor[elementIndex]= extrapolatedPredictor;
          
       }
@@ -1337,7 +1337,7 @@ class exahype::records::CellDescription {
        * 
        * @see convert()
        */
-      inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
+      inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1366,7 +1366,7 @@ class exahype::records::CellDescription {
        * 
        * @see convert()
        */
-      inline void setFluctuation(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation) 
+      inline void setFluctuation(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& fluctuation) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1382,7 +1382,7 @@ class exahype::records::CellDescription {
  #endif 
  {
          assertion(elementIndex>=0);
-         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
+         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
          return _persistentRecords._fluctuation[elementIndex];
          
       }
@@ -1395,7 +1395,7 @@ class exahype::records::CellDescription {
  #endif 
  {
          assertion(elementIndex>=0);
-         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
+         assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
          _persistentRecords._fluctuation[elementIndex]= fluctuation;
          
       }
@@ -1662,7 +1662,7 @@ class exahype::records::CellDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   02/12/2015 15:22
+          * @date   03/12/2015 12:21
           */
          class exahype::records::CellDescriptionPacked { 
             
@@ -1675,8 +1675,8 @@ class exahype::records::CellDescription {
                   tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _update;
                   tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _predictor;
                   tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _volumeFlux;
-                  tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> _extrapolatedPredictor;
-                  tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> _fluctuation;
+                  tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _extrapolatedPredictor;
+                  tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> _fluctuation;
                   int _level;
                   tarch::la::Vector<DIMENSIONS,double> _offset;
                   tarch::la::Vector<DIMENSIONS,double> _size;
@@ -1688,7 +1688,7 @@ class exahype::records::CellDescription {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+                  PersistentRecords(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
                   
                   
                   /**
@@ -2058,7 +2058,7 @@ class exahype::records::CellDescription {
                    * 
                    * @see convert()
                    */
-                  inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
+                  inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getExtrapolatedPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2087,7 +2087,7 @@ class exahype::records::CellDescription {
                    * 
                    * @see convert()
                    */
-                  inline void setExtrapolatedPredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
+                  inline void setExtrapolatedPredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& extrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2116,7 +2116,7 @@ class exahype::records::CellDescription {
                    * 
                    * @see convert()
                    */
-                  inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
+                  inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2145,7 +2145,7 @@ class exahype::records::CellDescription {
                    * 
                    * @see convert()
                    */
-                  inline void setFluctuation(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation) 
+                  inline void setFluctuation(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& fluctuation) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2310,7 +2310,7 @@ class exahype::records::CellDescription {
                /**
                 * Generated
                 */
-               CellDescriptionPacked(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+               CellDescriptionPacked(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
                
                /**
                 * Generated
@@ -2841,7 +2841,7 @@ class exahype::records::CellDescription {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getExtrapolatedPredictor() const 
+               inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getExtrapolatedPredictor() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2870,7 +2870,7 @@ class exahype::records::CellDescription {
                 * 
                 * @see convert()
                 */
-               inline void setExtrapolatedPredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor) 
+               inline void setExtrapolatedPredictor(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& extrapolatedPredictor) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2886,7 +2886,7 @@ class exahype::records::CellDescription {
  #endif 
  {
                   assertion(elementIndex>=0);
-                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
+                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
                   return _persistentRecords._extrapolatedPredictor[elementIndex];
                   
                }
@@ -2899,7 +2899,7 @@ class exahype::records::CellDescription {
  #endif 
  {
                   assertion(elementIndex>=0);
-                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
+                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
                   _persistentRecords._extrapolatedPredictor[elementIndex]= extrapolatedPredictor;
                   
                }
@@ -2925,7 +2925,7 @@ class exahype::records::CellDescription {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int> getFluctuation() const 
+               inline tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int> getFluctuation() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2954,7 +2954,7 @@ class exahype::records::CellDescription {
                 * 
                 * @see convert()
                 */
-               inline void setFluctuation(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation) 
+               inline void setFluctuation(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& fluctuation) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2970,7 +2970,7 @@ class exahype::records::CellDescription {
  #endif 
  {
                   assertion(elementIndex>=0);
-                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
+                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
                   return _persistentRecords._fluctuation[elementIndex];
                   
                }
@@ -2983,7 +2983,7 @@ class exahype::records::CellDescription {
  #endif 
  {
                   assertion(elementIndex>=0);
-                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO);
+                  assertion(elementIndex<EXAHYPE_PATCH_SIZE_TOTAL);
                   _persistentRecords._fluctuation[elementIndex]= fluctuation;
                   
                }

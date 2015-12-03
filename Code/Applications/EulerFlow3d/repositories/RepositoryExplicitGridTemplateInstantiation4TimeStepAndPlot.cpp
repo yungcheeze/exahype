@@ -13,10 +13,10 @@
 #include "peano/stacks/VertexArrayStack.h"
 #include "peano/stacks/VertexSTDStack.h"
 
- #include "EulerFlow3d/adapters/CreateGrid.h" 
- #include "EulerFlow3d/adapters/PlotGrid.h" 
- #include "EulerFlow3d/adapters/InitCells.h" 
- #include "EulerFlow3d/adapters/InitCellData.h" 
+ #include "EulerFlow3d/adapters/InitialGrid.h" 
+ #include "EulerFlow3d/adapters/GridExport.h" 
+ #include "EulerFlow3d/adapters/PatchInit.h" 
+ #include "EulerFlow3d/adapters/InitialCondition.h" 
  #include "EulerFlow3d/adapters/TimeStep.h" 
  #include "EulerFlow3d/adapters/TimeStepAndPlot.h" 
 

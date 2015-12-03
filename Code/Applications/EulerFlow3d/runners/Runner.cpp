@@ -34,39 +34,39 @@ int exahype::runners::Runner::run() {
   //       for a quick start, but this is really very dummy (it generates 
   //       solely a sphere computational domain and basically does nothing with 
   //       it).
-  
+
   // Start of dummy implementation
   peano::geometry::Hexahedron geometry(
-    tarch::la::Vector<DIMENSIONS,double>(1.0),
-    tarch::la::Vector<DIMENSIONS,double>(0.0)
-   );
+      tarch::la::Vector<DIMENSIONS,double>(1.0),
+      tarch::la::Vector<DIMENSIONS,double>(0.0)
+  );
   exahype::repositories::Repository* repository = 
-    exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
-      geometry,
-      tarch::la::Vector<DIMENSIONS,double>(1.0),   // domainSize,
-      tarch::la::Vector<DIMENSIONS,double>(0.0)    // computationalDomainOffset
-    );
+      exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
+          geometry,
+          tarch::la::Vector<DIMENSIONS,double>(1.0),   // domainSize,
+          tarch::la::Vector<DIMENSIONS,double>(0.0)    // computationalDomainOffset
+      );
   // End of dummy implementation
-  
+
   int result = 0;
   if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
     result = runAsMaster( *repository );
   }
-  #ifdef Parallel
+#ifdef Parallel
   else {
     result = runAsWorker( *repository );
   }
-  #endif
-  
+#endif
+
   delete repository;
-  
+
   return result;
 }
 
 int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& repository) {
   peano::utils::UserInterface userInterface;
   userInterface.writeHeader();
-  
+
   // ! Begin of code for DG method
   const double CFL             = 0.1;                                                     // CFL number for a 0-th order DG method
   const double minimumMeshSize = 1./std::pow(3.,EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL);  // tripartioning; this is the smallest fine grid mesh size after initial refinement
@@ -80,18 +80,18 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
   // The space-tree is initialised with 1 coarse grid cell on level 1 and 3^d fine grid cells on level 2.
   for (int coarseGridLevel=1; coarseGridLevel<EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL; coarseGridLevel++) {
-    repository.switchToCreateGrid();
+    repository.switchToInitialGrid();
     do {
       repository.iterate();
     } while (!repository.getState().isGridStationary());
   }
 
-  repository.switchToPlotGrid();            // plot the grid
+  repository.switchToGridExport();          // export the grid
   repository.iterate();
 
-  repository.switchToInitCells();           // initialize the cell descriptions;
+  repository.switchToPatchInit();           // initialize the cell descriptions;
   repository.iterate();
-  repository.switchToInitCellData();        // initialize the fields of the cell descriptions, i.e., the initial values.
+  repository.switchToInitialCondition();    // initialize the fields of the cell descriptions, i.e., the initial values.
   repository.iterate();
 
   for (int n=0; n<1; n++) {

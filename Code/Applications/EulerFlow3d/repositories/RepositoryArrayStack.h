@@ -16,10 +16,10 @@
 #include "peano/stacks/VertexArrayStack.h"
 
 
- #include "EulerFlow3d/adapters/CreateGrid.h" 
- #include "EulerFlow3d/adapters/PlotGrid.h" 
- #include "EulerFlow3d/adapters/InitCells.h" 
- #include "EulerFlow3d/adapters/InitCellData.h" 
+ #include "EulerFlow3d/adapters/InitialGrid.h" 
+ #include "EulerFlow3d/adapters/GridExport.h" 
+ #include "EulerFlow3d/adapters/PatchInit.h" 
+ #include "EulerFlow3d/adapters/InitialCondition.h" 
  #include "EulerFlow3d/adapters/TimeStep.h" 
  #include "EulerFlow3d/adapters/TimeStepAndPlot.h" 
 
@@ -47,27 +47,27 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     peano::grid::RegularGridContainer<exahype::Vertex,exahype::Cell>  _regularGridContainer;
     peano::grid::TraversalOrderOnTopLevel                                         _traversalOrderOnTopLevel;
 
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::CreateGrid> _gridWithCreateGrid;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotGrid> _gridWithPlotGrid;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitCells> _gridWithInitCells;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitCellData> _gridWithInitCellData;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialGrid> _gridWithInitialGrid;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GridExport> _gridWithGridExport;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PatchInit> _gridWithPatchInit;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialCondition> _gridWithInitialCondition;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::TimeStep> _gridWithTimeStep;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::TimeStepAndPlot> _gridWithTimeStepAndPlot;
 
   
    exahype::records::RepositoryState               _repositoryState;
    
-    tarch::timing::Measurement _measureCreateGridCPUTime;
-    tarch::timing::Measurement _measurePlotGridCPUTime;
-    tarch::timing::Measurement _measureInitCellsCPUTime;
-    tarch::timing::Measurement _measureInitCellDataCPUTime;
+    tarch::timing::Measurement _measureInitialGridCPUTime;
+    tarch::timing::Measurement _measureGridExportCPUTime;
+    tarch::timing::Measurement _measurePatchInitCPUTime;
+    tarch::timing::Measurement _measureInitialConditionCPUTime;
     tarch::timing::Measurement _measureTimeStepCPUTime;
     tarch::timing::Measurement _measureTimeStepAndPlotCPUTime;
 
-    tarch::timing::Measurement _measureCreateGridCalendarTime;
-    tarch::timing::Measurement _measurePlotGridCalendarTime;
-    tarch::timing::Measurement _measureInitCellsCalendarTime;
-    tarch::timing::Measurement _measureInitCellDataCalendarTime;
+    tarch::timing::Measurement _measureInitialGridCalendarTime;
+    tarch::timing::Measurement _measureGridExportCalendarTime;
+    tarch::timing::Measurement _measurePatchInitCalendarTime;
+    tarch::timing::Measurement _measureInitialConditionCalendarTime;
     tarch::timing::Measurement _measureTimeStepCalendarTime;
     tarch::timing::Measurement _measureTimeStepAndPlotCalendarTime;
 
@@ -115,17 +115,17 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual void readCheckpoint( peano::grid::Checkpoint<exahype::Vertex, exahype::Cell> const * const checkpoint );
     virtual peano::grid::Checkpoint<exahype::Vertex, exahype::Cell>* createEmptyCheckpoint(); 
 
-    virtual void switchToCreateGrid();    
-    virtual void switchToPlotGrid();    
-    virtual void switchToInitCells();    
-    virtual void switchToInitCellData();    
+    virtual void switchToInitialGrid();    
+    virtual void switchToGridExport();    
+    virtual void switchToPatchInit();    
+    virtual void switchToInitialCondition();    
     virtual void switchToTimeStep();    
     virtual void switchToTimeStepAndPlot();    
 
-    virtual bool isActiveAdapterCreateGrid() const;
-    virtual bool isActiveAdapterPlotGrid() const;
-    virtual bool isActiveAdapterInitCells() const;
-    virtual bool isActiveAdapterInitCellData() const;
+    virtual bool isActiveAdapterInitialGrid() const;
+    virtual bool isActiveAdapterGridExport() const;
+    virtual bool isActiveAdapterPatchInit() const;
+    virtual bool isActiveAdapterInitialCondition() const;
     virtual bool isActiveAdapterTimeStep() const;
     virtual bool isActiveAdapterTimeStepAndPlot() const;
 

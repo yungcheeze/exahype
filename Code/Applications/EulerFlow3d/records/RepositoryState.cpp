@@ -37,10 +37,10 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case ReadCheckpoint: return "ReadCheckpoint";
       case Terminate: return "Terminate";
       case RunOnAllNodes: return "RunOnAllNodes";
-      case UseAdapterCreateGrid: return "UseAdapterCreateGrid";
-      case UseAdapterPlotGrid: return "UseAdapterPlotGrid";
-      case UseAdapterInitCells: return "UseAdapterInitCells";
-      case UseAdapterInitCellData: return "UseAdapterInitCellData";
+      case UseAdapterInitialGrid: return "UseAdapterInitialGrid";
+      case UseAdapterGridExport: return "UseAdapterGridExport";
+      case UseAdapterPatchInit: return "UseAdapterPatchInit";
+      case UseAdapterInitialCondition: return "UseAdapterInitialCondition";
       case UseAdapterTimeStep: return "UseAdapterTimeStep";
       case UseAdapterTimeStepAndPlot: return "UseAdapterTimeStepAndPlot";
       case NumberOfAdapters: return "NumberOfAdapters";
@@ -49,7 +49,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterCreateGrid=4,UseAdapterPlotGrid=5,UseAdapterInitCells=6,UseAdapterInitCellData=7,UseAdapterTimeStep=8,UseAdapterTimeStepAndPlot=9,NumberOfAdapters=10)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterInitialGrid=4,UseAdapterGridExport=5,UseAdapterPatchInit=6,UseAdapterInitialCondition=7,UseAdapterTimeStep=8,UseAdapterTimeStepAndPlot=9,NumberOfAdapters=10)";
 }
 
 

@@ -5,7 +5,7 @@ exahype::records::CellDescription::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::CellDescription::PersistentRecords::PersistentRecords(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
+exahype::records::CellDescription::PersistentRecords::PersistentRecords(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
 _spaceTimePredictor(spaceTimePredictor),
 _spaceTimeVolumeFlux(spaceTimeVolumeFlux),
 _solution(solution),
@@ -31,7 +31,7 @@ _persistentRecords(persistentRecords._spaceTimePredictor, persistentRecords._spa
 }
 
 
-exahype::records::CellDescription::CellDescription(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
+exahype::records::CellDescription::CellDescription(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
 _persistentRecords(spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size) {
    
 }
@@ -86,16 +86,16 @@ void exahype::records::CellDescription::toString (std::ostream& out) const {
    out << getVolumeFlux(EXAHYPE_PATCH_SIZE_TOTAL-1) << "]";
    out << ",";
    out << "extrapolatedPredictor:[";
-   for (int i = 0; i < EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO-1; i++) {
+   for (int i = 0; i < EXAHYPE_PATCH_SIZE_TOTAL-1; i++) {
       out << getExtrapolatedPredictor(i) << ",";
    }
-   out << getExtrapolatedPredictor(EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO-1) << "]";
+   out << getExtrapolatedPredictor(EXAHYPE_PATCH_SIZE_TOTAL-1) << "]";
    out << ",";
    out << "fluctuation:[";
-   for (int i = 0; i < EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO-1; i++) {
+   for (int i = 0; i < EXAHYPE_PATCH_SIZE_TOTAL-1; i++) {
       out << getFluctuation(i) << ",";
    }
-   out << getFluctuation(EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO-1) << "]";
+   out << getFluctuation(EXAHYPE_PATCH_SIZE_TOTAL-1) << "]";
    out << ",";
    out << "level:" << getLevel();
    out << ",";
@@ -168,8 +168,8 @@ exahype::records::CellDescriptionPacked exahype::records::CellDescription::conve
             EXAHYPE_PATCH_SIZE_TOTAL,		 //update
             EXAHYPE_PATCH_SIZE_TOTAL,		 //predictor
             EXAHYPE_PATCH_SIZE_TOTAL,		 //volumeFlux
-            EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,		 //extrapolatedPredictor
-            EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,		 //fluctuation
+            EXAHYPE_PATCH_SIZE_TOTAL,		 //extrapolatedPredictor
+            EXAHYPE_PATCH_SIZE_TOTAL,		 //fluctuation
             1,		 //level
             DIMENSIONS,		 //offset
             DIMENSIONS,		 //size
@@ -229,8 +229,8 @@ exahype::records::CellDescriptionPacked exahype::records::CellDescription::conve
             EXAHYPE_PATCH_SIZE_TOTAL,		 //update
             EXAHYPE_PATCH_SIZE_TOTAL,		 //predictor
             EXAHYPE_PATCH_SIZE_TOTAL,		 //volumeFlux
-            EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,		 //extrapolatedPredictor
-            EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,		 //fluctuation
+            EXAHYPE_PATCH_SIZE_TOTAL,		 //extrapolatedPredictor
+            EXAHYPE_PATCH_SIZE_TOTAL,		 //fluctuation
             1,		 //level
             DIMENSIONS,		 //offset
             DIMENSIONS,		 //size
@@ -499,7 +499,7 @@ exahype::records::CellDescriptionPacked::PersistentRecords::PersistentRecords() 
 }
 
 
-exahype::records::CellDescriptionPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
+exahype::records::CellDescriptionPacked::PersistentRecords::PersistentRecords(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
 _spaceTimePredictor(spaceTimePredictor),
 _spaceTimeVolumeFlux(spaceTimeVolumeFlux),
 _solution(solution),
@@ -525,7 +525,7 @@ _persistentRecords(persistentRecords._spaceTimePredictor, persistentRecords._spa
 }
 
 
-exahype::records::CellDescriptionPacked::CellDescriptionPacked(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
+exahype::records::CellDescriptionPacked::CellDescriptionPacked(const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimePredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& spaceTimeVolumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& solution, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& update, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& predictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& volumeFlux, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& extrapolatedPredictor, const tarch::la::Vector<EXAHYPE_PATCH_SIZE_TOTAL,int>& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
 _persistentRecords(spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size) {
    
 }
@@ -580,16 +580,16 @@ void exahype::records::CellDescriptionPacked::toString (std::ostream& out) const
    out << getVolumeFlux(EXAHYPE_PATCH_SIZE_TOTAL-1) << "]";
    out << ",";
    out << "extrapolatedPredictor:[";
-   for (int i = 0; i < EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO-1; i++) {
+   for (int i = 0; i < EXAHYPE_PATCH_SIZE_TOTAL-1; i++) {
       out << getExtrapolatedPredictor(i) << ",";
    }
-   out << getExtrapolatedPredictor(EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO-1) << "]";
+   out << getExtrapolatedPredictor(EXAHYPE_PATCH_SIZE_TOTAL-1) << "]";
    out << ",";
    out << "fluctuation:[";
-   for (int i = 0; i < EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO-1; i++) {
+   for (int i = 0; i < EXAHYPE_PATCH_SIZE_TOTAL-1; i++) {
       out << getFluctuation(i) << ",";
    }
-   out << getFluctuation(EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO-1) << "]";
+   out << getFluctuation(EXAHYPE_PATCH_SIZE_TOTAL-1) << "]";
    out << ",";
    out << "level:" << getLevel();
    out << ",";
@@ -662,8 +662,8 @@ exahype::records::CellDescription exahype::records::CellDescriptionPacked::conve
             EXAHYPE_PATCH_SIZE_TOTAL,		 //update
             EXAHYPE_PATCH_SIZE_TOTAL,		 //predictor
             EXAHYPE_PATCH_SIZE_TOTAL,		 //volumeFlux
-            EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,		 //extrapolatedPredictor
-            EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,		 //fluctuation
+            EXAHYPE_PATCH_SIZE_TOTAL,		 //extrapolatedPredictor
+            EXAHYPE_PATCH_SIZE_TOTAL,		 //fluctuation
             1,		 //level
             DIMENSIONS,		 //offset
             DIMENSIONS,		 //size
@@ -723,8 +723,8 @@ exahype::records::CellDescription exahype::records::CellDescriptionPacked::conve
             EXAHYPE_PATCH_SIZE_TOTAL,		 //update
             EXAHYPE_PATCH_SIZE_TOTAL,		 //predictor
             EXAHYPE_PATCH_SIZE_TOTAL,		 //volumeFlux
-            EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,		 //extrapolatedPredictor
-            EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO,		 //fluctuation
+            EXAHYPE_PATCH_SIZE_TOTAL,		 //extrapolatedPredictor
+            EXAHYPE_PATCH_SIZE_TOTAL,		 //fluctuation
             1,		 //level
             DIMENSIONS,		 //offset
             DIMENSIONS,		 //size

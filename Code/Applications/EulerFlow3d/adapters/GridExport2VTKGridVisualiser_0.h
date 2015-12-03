@@ -1,91 +1,89 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_TimeStepAndPlot_H_
-#define EXAHYPE_ADAPTERS_TimeStepAndPlot_H_
+#ifndef EXAHYPE_ADAPTERS_GridExport2VTKGridVisualiser_0_H_
+#define EXAHYPE_ADAPTERS_GridExport2VTKGridVisualiser_0_H_
 
 
-#include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
+#include "tarch/la/VectorCompare.h"
+#include "tarch/logging/Log.h"
+#include "tarch/multicore/MulticoreDefinitions.h"
+#include "tarch/plotter/griddata/unstructured/vtk/VTKBinaryFileWriter.h"
 
-#include "peano/grid/VertexEnumerator.h"
 #include "peano/MappingSpecification.h"
 #include "peano/CommunicationSpecification.h"
-
-#include "tarch/multicore/MulticoreDefinitions.h"
+#include "peano/grid/VertexEnumerator.h"
 
 #include "EulerFlow3d/Vertex.h"
 #include "EulerFlow3d/Cell.h"
 #include "EulerFlow3d/State.h"
 
-
- #include "EulerFlow3d/mappings/SolutionUpdate.h"
- #include "EulerFlow3d/mappings/SpaceTimePredictor.h"
- #include "EulerFlow3d/mappings/VolumeIntegral.h"
- #include "EulerFlow3d/mappings/BoundaryConditions.h"
- #include "EulerFlow3d/mappings/FaceDataExchange.h"
- #include "EulerFlow3d/mappings/RiemannSolver.h"
- #include "EulerFlow3d/mappings/SurfaceIntegral.h"
- #include "EulerFlow3d/mappings/VTKExport.h"
- #include "EulerFlow3d/adapters/TimeStepAndPlot2MultiscaleLinkedCell_8.h"
-
+#include <map>
 
 
 namespace exahype {
       namespace adapters {
-        class TimeStepAndPlot;
+        class GridExport2VTKGridVisualiser_0;
       } 
 }
 
 
 /**
- * This is a mapping from the spacetree traversal events to your user-defined activities.
- * The latter are realised within the mappings. 
- * 
- * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
+ * This is an adapter plotting a vtk grid file. Please set
+ *
+ * grid   filename
+ *
+ * @author Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::TimeStepAndPlot {
+class exahype::adapters::GridExport2VTKGridVisualiser_0 {
   private:
-    typedef mappings::SolutionUpdate Mapping0;
-    typedef mappings::SpaceTimePredictor Mapping1;
-    typedef mappings::VolumeIntegral Mapping2;
-    typedef mappings::BoundaryConditions Mapping3;
-    typedef mappings::FaceDataExchange Mapping4;
-    typedef mappings::RiemannSolver Mapping5;
-    typedef mappings::SurfaceIntegral Mapping6;
-    typedef mappings::VTKExport Mapping7;
-    typedef adapters::TimeStepAndPlot2MultiscaleLinkedCell_8 Mapping8;
+    /**
+     * One big map mapping vertices to indices. The procedure using this map is 
+     * straightforward. Whenever we encounter a vertex, the object does a 
+     * lookup whether this vertex already has been plotted. If not, it plots it 
+     * and adds an entry.
+     * 
+     * @see plotVertex(const tarch::la::Vector<DIMENSIONS,double>&  x)
+     */
+    static std::map<tarch::la::Vector<DIMENSIONS,double> , int, tarch::la::VectorCompare<DIMENSIONS> >  _vertex2IndexMap;
+    
+    tarch::plotter::griddata::unstructured::vtk::VTKBinaryFileWriter*               _vtkWriter;
+    tarch::plotter::griddata::unstructured::UnstructuredGridWriter::VertexWriter*   _vertexWriter;
+    tarch::plotter::griddata::unstructured::UnstructuredGridWriter::CellWriter*     _cellWriter;
+    
+    tarch::plotter::griddata::Writer::VertexDataWriter*                             _vertexTypeWriter;
+    tarch::plotter::griddata::Writer::VertexDataWriter*                             _vertexRefinementControlWriter;
+    tarch::plotter::griddata::Writer::VertexDataWriter*                             _vertexAdjacentCellsHeight;
 
-     Mapping0  _map2SolutionUpdate;
-     Mapping1  _map2SpaceTimePredictor;
-     Mapping2  _map2VolumeIntegral;
-     Mapping3  _map2BoundaryConditions;
-     Mapping4  _map2FaceDataExchange;
-     Mapping5  _map2RiemannSolver;
-     Mapping6  _map2SurfaceIntegral;
-     Mapping7  _map2VTKExport;
-     Mapping8  _map2TimeStepAndPlot2MultiscaleLinkedCell_8;
-
-
+    tarch::plotter::griddata::Writer::CellDataWriter*                               _cellStateWriter;
+    
+    static int _snapshotCounter;
+    
+    void plotVertex(
+      const exahype::Vertex&                 fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS,double>&  fineGridX
+    );
   public:
-    static peano::MappingSpecification         touchVertexLastTimeSpecification();
-    static peano::MappingSpecification         touchVertexFirstTimeSpecification();
-    static peano::MappingSpecification         enterCellSpecification();
-    static peano::MappingSpecification         leaveCellSpecification();
-    static peano::MappingSpecification         ascendSpecification();
-    static peano::MappingSpecification         descendSpecification();
+    static peano::MappingSpecification   touchVertexLastTimeSpecification();
+    static peano::MappingSpecification   touchVertexFirstTimeSpecification();
+    static peano::MappingSpecification   enterCellSpecification();
+    static peano::MappingSpecification   leaveCellSpecification();
+    static peano::MappingSpecification   ascendSpecification();
+    static peano::MappingSpecification   descendSpecification();
+
     static peano::CommunicationSpecification   communicationSpecification();
 
-    TimeStepAndPlot();
+    GridExport2VTKGridVisualiser_0();
 
     #if defined(SharedMemoryParallelisation)
-    TimeStepAndPlot(const TimeStepAndPlot& masterThread);
+    GridExport2VTKGridVisualiser_0(const GridExport2VTKGridVisualiser_0& masterThread);
     #endif
 
-    virtual ~TimeStepAndPlot();
+    virtual ~GridExport2VTKGridVisualiser_0();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const TimeStepAndPlot& workerThread);
+    void mergeWithWorkerThread(const GridExport2VTKGridVisualiser_0& workerThread);
     #endif
 
     void createInnerVertex(
@@ -192,7 +190,7 @@ class exahype::adapters::TimeStepAndPlot {
 
     void prepareCopyToRemoteNode(
       exahype::Cell&  localCell,
-      int  toRank,
+      int                                           toRank,
       const tarch::la::Vector<DIMENSIONS,double>&   cellCentre,
       const tarch::la::Vector<DIMENSIONS,double>&   cellSize,
       int                                           level
@@ -249,8 +247,8 @@ class exahype::adapters::TimeStepAndPlot {
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
       int                                                                  worker,
-      const exahype::State&           workerState,
-      exahype::State&                 masterState
+      const exahype::State&          workerState,
+      exahype::State&                masterState
     );
 
 

@@ -18,13 +18,14 @@
 #include "EulerFlow3d/State.h"
 
 
- #include "EulerFlow3d/mappings/UpdateCellData.h"
+ #include "EulerFlow3d/mappings/SolutionUpdate.h"
  #include "EulerFlow3d/mappings/SpaceTimePredictor.h"
- #include "EulerFlow3d/mappings/ExtrapolateFaceData.h"
- #include "EulerFlow3d/mappings/ComputeCellData.h"
- #include "EulerFlow3d/mappings/ApplyBoundaryConditions.h"
- #include "EulerFlow3d/mappings/ExchangeFaceData.h"
- #include "EulerFlow3d/adapters/TimeStep2MultiscaleLinkedCell_6.h"
+ #include "EulerFlow3d/mappings/VolumeIntegral.h"
+ #include "EulerFlow3d/mappings/BoundaryConditions.h"
+ #include "EulerFlow3d/mappings/FaceDataExchange.h"
+ #include "EulerFlow3d/mappings/RiemannSolver.h"
+ #include "EulerFlow3d/mappings/SurfaceIntegral.h"
+ #include "EulerFlow3d/adapters/TimeStep2MultiscaleLinkedCell_7.h"
 
 
 
@@ -44,21 +45,23 @@ namespace exahype {
  */
 class exahype::adapters::TimeStep {
   private:
-    typedef mappings::UpdateCellData Mapping0;
+    typedef mappings::SolutionUpdate Mapping0;
     typedef mappings::SpaceTimePredictor Mapping1;
-    typedef mappings::ExtrapolateFaceData Mapping2;
-    typedef mappings::ComputeCellData Mapping3;
-    typedef mappings::ApplyBoundaryConditions Mapping4;
-    typedef mappings::ExchangeFaceData Mapping5;
-    typedef adapters::TimeStep2MultiscaleLinkedCell_6 Mapping6;
+    typedef mappings::VolumeIntegral Mapping2;
+    typedef mappings::BoundaryConditions Mapping3;
+    typedef mappings::FaceDataExchange Mapping4;
+    typedef mappings::RiemannSolver Mapping5;
+    typedef mappings::SurfaceIntegral Mapping6;
+    typedef adapters::TimeStep2MultiscaleLinkedCell_7 Mapping7;
 
-     Mapping0  _map2UpdateCellData;
+     Mapping0  _map2SolutionUpdate;
      Mapping1  _map2SpaceTimePredictor;
-     Mapping2  _map2ExtrapolateFaceData;
-     Mapping3  _map2ComputeCellData;
-     Mapping4  _map2ApplyBoundaryConditions;
-     Mapping5  _map2ExchangeFaceData;
-     Mapping6  _map2TimeStep2MultiscaleLinkedCell_6;
+     Mapping2  _map2VolumeIntegral;
+     Mapping3  _map2BoundaryConditions;
+     Mapping4  _map2FaceDataExchange;
+     Mapping5  _map2RiemannSolver;
+     Mapping6  _map2SurfaceIntegral;
+     Mapping7  _map2TimeStep2MultiscaleLinkedCell_7;
 
 
   public:

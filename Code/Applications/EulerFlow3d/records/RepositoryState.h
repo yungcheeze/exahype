@@ -31,7 +31,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   02/12/2015 15:22
+ * @date   03/12/2015 12:21
  */
 class exahype::records::RepositoryState { 
    
@@ -40,7 +40,7 @@ class exahype::records::RepositoryState {
       typedef exahype::records::RepositoryStatePacked Packed;
       
       enum Action {
-         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterCreateGrid = 4, UseAdapterPlotGrid = 5, UseAdapterInitCells = 6, UseAdapterInitCellData = 7, UseAdapterTimeStep = 8, UseAdapterTimeStepAndPlot = 9, NumberOfAdapters = 10
+         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterInitialGrid = 4, UseAdapterGridExport = 5, UseAdapterPatchInit = 6, UseAdapterInitialCondition = 7, UseAdapterTimeStep = 8, UseAdapterTimeStepAndPlot = 9, NumberOfAdapters = 10
       };
       
       struct PersistentRecords {
@@ -291,7 +291,7 @@ class exahype::records::RepositoryState {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   02/12/2015 15:22
+    * @date   03/12/2015 12:21
     */
    class exahype::records::RepositoryStatePacked { 
       

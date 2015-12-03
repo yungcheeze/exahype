@@ -62,17 +62,17 @@ class exahype::repositories::Repository {
     /**
      * Switch to another event handle.
      */
-    virtual void switchToCreateGrid() = 0;    
-    virtual void switchToPlotGrid() = 0;    
-    virtual void switchToInitCells() = 0;    
-    virtual void switchToInitCellData() = 0;    
+    virtual void switchToInitialGrid() = 0;    
+    virtual void switchToGridExport() = 0;    
+    virtual void switchToPatchInit() = 0;    
+    virtual void switchToInitialCondition() = 0;    
     virtual void switchToTimeStep() = 0;    
     virtual void switchToTimeStepAndPlot() = 0;    
 
-    virtual bool isActiveAdapterCreateGrid() const = 0;
-    virtual bool isActiveAdapterPlotGrid() const = 0;
-    virtual bool isActiveAdapterInitCells() const = 0;
-    virtual bool isActiveAdapterInitCellData() const = 0;
+    virtual bool isActiveAdapterInitialGrid() const = 0;
+    virtual bool isActiveAdapterGridExport() const = 0;
+    virtual bool isActiveAdapterPatchInit() const = 0;
+    virtual bool isActiveAdapterInitialCondition() const = 0;
     virtual bool isActiveAdapterTimeStep() const = 0;
     virtual bool isActiveAdapterTimeStepAndPlot() const = 0;
 

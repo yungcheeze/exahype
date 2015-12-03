@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_TimeStepAndPlot_H_
-#define EXAHYPE_ADAPTERS_TimeStepAndPlot_H_
+#ifndef EXAHYPE_ADAPTERS_GridExport_H_
+#define EXAHYPE_ADAPTERS_GridExport_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,21 +18,13 @@
 #include "EulerFlow3d/State.h"
 
 
- #include "EulerFlow3d/mappings/SolutionUpdate.h"
- #include "EulerFlow3d/mappings/SpaceTimePredictor.h"
- #include "EulerFlow3d/mappings/VolumeIntegral.h"
- #include "EulerFlow3d/mappings/BoundaryConditions.h"
- #include "EulerFlow3d/mappings/FaceDataExchange.h"
- #include "EulerFlow3d/mappings/RiemannSolver.h"
- #include "EulerFlow3d/mappings/SurfaceIntegral.h"
- #include "EulerFlow3d/mappings/VTKExport.h"
- #include "EulerFlow3d/adapters/TimeStepAndPlot2MultiscaleLinkedCell_8.h"
+ #include "EulerFlow3d/adapters/GridExport2VTKGridVisualiser_0.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class TimeStepAndPlot;
+        class GridExport;
       } 
 }
 
@@ -44,27 +36,11 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::TimeStepAndPlot {
+class exahype::adapters::GridExport {
   private:
-    typedef mappings::SolutionUpdate Mapping0;
-    typedef mappings::SpaceTimePredictor Mapping1;
-    typedef mappings::VolumeIntegral Mapping2;
-    typedef mappings::BoundaryConditions Mapping3;
-    typedef mappings::FaceDataExchange Mapping4;
-    typedef mappings::RiemannSolver Mapping5;
-    typedef mappings::SurfaceIntegral Mapping6;
-    typedef mappings::VTKExport Mapping7;
-    typedef adapters::TimeStepAndPlot2MultiscaleLinkedCell_8 Mapping8;
+    typedef adapters::GridExport2VTKGridVisualiser_0 Mapping0;
 
-     Mapping0  _map2SolutionUpdate;
-     Mapping1  _map2SpaceTimePredictor;
-     Mapping2  _map2VolumeIntegral;
-     Mapping3  _map2BoundaryConditions;
-     Mapping4  _map2FaceDataExchange;
-     Mapping5  _map2RiemannSolver;
-     Mapping6  _map2SurfaceIntegral;
-     Mapping7  _map2VTKExport;
-     Mapping8  _map2TimeStepAndPlot2MultiscaleLinkedCell_8;
+     Mapping0  _map2GridExport2VTKGridVisualiser_0;
 
 
   public:
@@ -76,16 +52,16 @@ class exahype::adapters::TimeStepAndPlot {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    TimeStepAndPlot();
+    GridExport();
 
     #if defined(SharedMemoryParallelisation)
-    TimeStepAndPlot(const TimeStepAndPlot& masterThread);
+    GridExport(const GridExport& masterThread);
     #endif
 
-    virtual ~TimeStepAndPlot();
+    virtual ~GridExport();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const TimeStepAndPlot& workerThread);
+    void mergeWithWorkerThread(const GridExport& workerThread);
     #endif
 
     void createInnerVertex(
