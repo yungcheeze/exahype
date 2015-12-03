@@ -1268,8 +1268,12 @@ class exahype::mappings::SpaceTimePredictor {
      */
     void computePredictor(
         const int solution,
+        const int predictor,
+        const int volumeFlux,
         const int spaceTimePredictor,
         const int spaceTimeVolumeFlux,
+        const int extrapolatedPredictor,
+        const int fluctuations,
         const tarch::la::Vector<DIMENSIONS,double> center,
         const double dxPatch,const double dyPatch,
         const double timeStep,

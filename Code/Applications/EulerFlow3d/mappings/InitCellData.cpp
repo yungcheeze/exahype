@@ -428,8 +428,8 @@ void exahype::mappings::InitCellData::enterCell(
     const double dxPatch = dx/ (double) EXAHYPE_PATCH_SIZE_X;
     const double dyPatch = dy/ (double) EXAHYPE_PATCH_SIZE_Y;
 
-    const int basisSize = exahype::order[0]+1;
-    const int nvar      = exahype::numberOfVariables[0];
+    const int basisSize = EXAHYPE_ORDER+1;
+    const int nvar      = EXAHYPE_NVARS;
 
     // helper variables
     double x,y;

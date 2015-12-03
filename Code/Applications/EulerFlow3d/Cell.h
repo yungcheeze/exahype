@@ -76,8 +76,8 @@ public:
       const int level,
       const tarch::la::Vector<DIMENSIONS,double> size,
       const int numberOfPDEs,
-      const int* order,
-      const int* numberOfVariables);
+      const int order,
+      const int numberOfVariables);
   // ! End of code for multiscalelinkedcell toolbox
 };
 

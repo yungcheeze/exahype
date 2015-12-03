@@ -37,22 +37,22 @@ void
 exahype::Cell::initCellInComputeTree(const int level,
                                      const tarch::la::Vector<DIMENSIONS,double> size,
                                      const int numberOfPDEs,
-                                     const int* order,
-                                     const int* numberOfVariables) {
+                                     const int order,
+                                     const int numberOfVariables) {
   const int indexOfCellDescriptions = CellDescriptionHeap::getInstance().createData(numberOfPDEs);
   assertion( indexOfCellDescriptions >= 0 );
   _cellData.setCellDescriptionsIndex(indexOfCellDescriptions);
 
   for (int pde = 0; pde < numberOfPDEs; pde++) {
-    int basisSize            = exahype::order[pde]+1;
+    int basisSize = EXAHYPE_ORDER+1;
 
     //  @todo: consider to precompute these values/to use a lookup table at this point
-    int numberOfSpaceTimeDof           = numberOfVariables[pde] * tarch::la::aPowI(DIMENSIONS+1,basisSize);
+    int numberOfSpaceTimeDof           = EXAHYPE_NVARS * tarch::la::aPowI(DIMENSIONS+1,basisSize);
     int numberOfSpaceTimeVolumeFluxDof = DIMENSIONS*numberOfSpaceTimeDof;
 
-    int numberOfDof           = exahype::numberOfVariables[pde] * tarch::la::aPowI(DIMENSIONS  ,basisSize);
-    int numberOfVolumeFluxDof = DIMENSIONS * numberOfDof;
-    int numberOfDofOnFace     = exahype::numberOfVariables[pde] * tarch::la::aPowI(DIMENSIONS-1,basisSize);
+    int numberOfDof            = EXAHYPE_NVARS * tarch::la::aPowI(DIMENSIONS  ,basisSize);
+    int numberOfVolumeFluxDof  = DIMENSIONS * numberOfDof;
+    int numberOfDofOnFace     = DIMENSIONS_TIMES_TWO * EXAHYPE_NVARS * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
     records::CellDescription& cellDescriptionForPde =
         CellDescriptionHeap::getInstance().getData(indexOfCellDescriptions)[pde];

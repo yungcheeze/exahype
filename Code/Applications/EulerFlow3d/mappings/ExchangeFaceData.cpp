@@ -569,17 +569,16 @@ exahype::mappings::ExchangeFaceData::copyGhostValues(
     const int face,
     const int numberOfDofOnFace
 ) {
-  const int faceIndexGhostSelf = indexGhostSelf*DIMENSIONS_TIMES_TWO + face;
-  const int faceIndexNeighbor  = indexNeighbor *DIMENSIONS_TIMES_TWO + face;
-
+  const int patchIndexGhostSelf = indexGhostSelf;
+  const int patchIndexNeighbor  = indexNeighbor;
 
   for (int dof=0; dof<numberOfDofOnFace; dof++) {
     // copy extrapolated predictor
-    DataHeap::getInstance().getData(dataSelf.getExtrapolatedPredictor(faceIndexGhostSelf))[dof]._persistentRecords._u =
-        DataHeap::getInstance().getData(dataNeighbour.getExtrapolatedPredictor(faceIndexNeighbor))[dof]._persistentRecords._u;
+    DataHeap::getInstance().getData(dataSelf.getExtrapolatedPredictor(patchIndexGhostSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u =
+        DataHeap::getInstance().getData(dataNeighbour.getExtrapolatedPredictor(patchIndexNeighbor))[face*numberOfDofOnFace + dof]._persistentRecords._u;
     // copy extrapolated fluctuation/normal flux
-    DataHeap::getInstance().getData(dataSelf.getFluctuation(faceIndexGhostSelf))[dof]._persistentRecords._u =
-        DataHeap::getInstance().getData(dataNeighbour.getFluctuation(faceIndexNeighbor))[dof]._persistentRecords._u;
+    DataHeap::getInstance().getData(dataSelf.getFluctuation(patchIndexGhostSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u =
+        DataHeap::getInstance().getData(dataNeighbour.getFluctuation(patchIndexNeighbor))[face*numberOfDofOnFace + dof]._persistentRecords._u;
   }
 }
 
@@ -589,8 +588,8 @@ void exahype::mappings::ExchangeFaceData::initialiseGhostLayerOfPatch(
     exahype::Vertex * const  fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator
 ) {
-  int basisSize         = exahype::order[0]+1;
-  int numberOfDofOnFace = exahype::numberOfVariables[0] * tarch::la::aPowI(DIMENSIONS-1,basisSize);
+  int basisSize         = EXAHYPE_ORDER+1;
+  int numberOfDofOnFace = EXAHYPE_NVARS * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
   records::CellDescription& dataSelf =
       CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];

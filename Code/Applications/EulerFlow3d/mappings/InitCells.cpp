@@ -414,9 +414,9 @@ void exahype::mappings::InitCells::enterCell(
     fineGridCell.initCellInComputeTree(
           fineGridVerticesEnumerator.getLevel(),
           fineGridVerticesEnumerator.getCellSize(),
-          EXAHYPE_NUMBER_OF_PDES,
-          exahype::order,
-          exahype::numberOfVariables);
+          EXAHYPE_NPROBLEMS,
+          EXAHYPE_ORDER,
+          EXAHYPE_NVARS);
   }
 
   // ! End of code for multiscalelinkedcell toolbox and DG method

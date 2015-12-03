@@ -437,8 +437,6 @@ void exahype::mappings::VTKPlotCellData::enterCell(
       records::CellDescription& cellDescription =
           CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
 
-      const double dofZero = DataHeap::getInstance().getData(cellDescription.getSolution(0))[0]._persistentRecords._u;
-
       const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
       const double dx = fineGridVerticesEnumerator.getCellSize()(0);
       const double dy = fineGridVerticesEnumerator.getCellSize()(1);
@@ -446,8 +444,8 @@ void exahype::mappings::VTKPlotCellData::enterCell(
       const double dxPatch = dx/EXAHYPE_PATCH_SIZE_X;
       const double dyPatch = dy/EXAHYPE_PATCH_SIZE_Y;
 
-      const int basisSize = exahype::order[0]+1;
-      const int nvar      = exahype::numberOfVariables[0];
+      const int basisSize = EXAHYPE_ORDER+1;
+      const int nvar      = EXAHYPE_NVARS;
 
       // helper variables
       double x,y;

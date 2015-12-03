@@ -37,16 +37,10 @@
  * PDE parameters.
  */
 ///@{
-#define EXAHYPE_NUMBER_OF_PDES 1  //!< The number of snapshots of the solution we want to write to disk during the simulation.
+#define EXAHYPE_NPROBLEMS 1  //!< The number of snapshots of the solution we want to write to disk during the simulation.
 
-namespace exahype {
-static const int numberOfVariables[EXAHYPE_NUMBER_OF_PDES] = { //!< The number of variables for each PDE.
-    5
-};
-static const int order[EXAHYPE_NUMBER_OF_PDES] = {             //!< The order of approximation for each PDE.
-    3
-};
-}
+#define EXAHYPE_NVARS  5
+#define EXAHYPE_ORDER  3
 
 #define EXAHYPE_CFL_FACTOR 0.9
 ///@}
