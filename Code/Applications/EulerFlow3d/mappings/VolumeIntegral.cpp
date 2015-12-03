@@ -420,10 +420,11 @@ void exahype::mappings::VolumeIntegral::computeVolumeIntegral(const int update,
                                                               const int nvar,
                                                               const int basisSize)
 {
-  int numberOfDof      = nvar * tarch::la::aPowI(DIMENSIONS,basisSize);
+  int numberOfDof = nvar * tarch::la::aPowI(DIMENSIONS,basisSize);
   double *f, *g;
 
-  memset((double *) &(DataHeap::getInstance().getData(update)[0]._persistentRecords._u),0,sizeof(double) * numberOfDof);
+  double * du = &(DataHeap::getInstance().getData(update)[0]._persistentRecords._u);
+  memset(du,0,sizeof(double) * numberOfDof);
 
   // x direction (independent from the y and z derivatives)
   // Kxi : basisSize * basisSize
@@ -447,14 +448,13 @@ void exahype::mappings::VolumeIntegral::computeVolumeIntegral(const int update,
         f = &(DataHeap::getInstance().getData(volumeFlux)[mmFluxDofStartIndex]._persistentRecords._u);
 
         for(int ivar=0; ivar < nvar; ivar++) {
-          DataHeap::getInstance().getData(update)[dofStartIndex+ivar]._persistentRecords._u
-              +=  weight/dxPatch * dg::Kxi[ii][mm] * f[ivar];
+          du[dofStartIndex+ivar] +=  weight/dxPatch * dg::Kxi[ii][mm] * f[ivar];
         }
       }
       continue;
     }
   }
-  // Above
+  // Above seems okay!
 
   /// y direction (independent from the y and z derivatives)
   // Kxi : basisSize * basisSize
@@ -477,15 +477,15 @@ void exahype::mappings::VolumeIntegral::computeVolumeIntegral(const int update,
 
         g = &(DataHeap::getInstance().getData(volumeFlux)[mmFluxDofStartIndex+nvar]._persistentRecords._u);
 
+        double * du = &(DataHeap::getInstance().getData(update)[0]._persistentRecords._u);
         for(int ivar=0; ivar < nvar; ivar++) {
-          DataHeap::getInstance().getData(update)[dofStartIndex+ivar]._persistentRecords._u
-              +=  weight/dxPatch * dg::Kxi[jj][mm] * g[ivar];
+          du[dofStartIndex+ivar] +=  weight/dxPatch * dg::Kxi[jj][mm] * g[ivar];
         }
       }
       continue;
     }
   }
-  // Above
+  // Above seems okay!
 
 }
 

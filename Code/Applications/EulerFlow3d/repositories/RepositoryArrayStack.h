@@ -20,8 +20,9 @@
  #include "EulerFlow3d/adapters/GridExport.h" 
  #include "EulerFlow3d/adapters/PatchInit.h" 
  #include "EulerFlow3d/adapters/InitialCondition.h" 
- #include "EulerFlow3d/adapters/TimeStep.h" 
- #include "EulerFlow3d/adapters/TimeStepAndPlot.h" 
+ #include "EulerFlow3d/adapters/Predictor.h" 
+ #include "EulerFlow3d/adapters/Corrector.h" 
+ #include "EulerFlow3d/adapters/SolutionExport.h" 
 
 
 
@@ -51,8 +52,9 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GridExport> _gridWithGridExport;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PatchInit> _gridWithPatchInit;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialCondition> _gridWithInitialCondition;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::TimeStep> _gridWithTimeStep;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::TimeStepAndPlot> _gridWithTimeStepAndPlot;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Predictor> _gridWithPredictor;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Corrector> _gridWithCorrector;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionExport> _gridWithSolutionExport;
 
   
    exahype::records::RepositoryState               _repositoryState;
@@ -61,15 +63,17 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measureGridExportCPUTime;
     tarch::timing::Measurement _measurePatchInitCPUTime;
     tarch::timing::Measurement _measureInitialConditionCPUTime;
-    tarch::timing::Measurement _measureTimeStepCPUTime;
-    tarch::timing::Measurement _measureTimeStepAndPlotCPUTime;
+    tarch::timing::Measurement _measurePredictorCPUTime;
+    tarch::timing::Measurement _measureCorrectorCPUTime;
+    tarch::timing::Measurement _measureSolutionExportCPUTime;
 
     tarch::timing::Measurement _measureInitialGridCalendarTime;
     tarch::timing::Measurement _measureGridExportCalendarTime;
     tarch::timing::Measurement _measurePatchInitCalendarTime;
     tarch::timing::Measurement _measureInitialConditionCalendarTime;
-    tarch::timing::Measurement _measureTimeStepCalendarTime;
-    tarch::timing::Measurement _measureTimeStepAndPlotCalendarTime;
+    tarch::timing::Measurement _measurePredictorCalendarTime;
+    tarch::timing::Measurement _measureCorrectorCalendarTime;
+    tarch::timing::Measurement _measureSolutionExportCalendarTime;
 
 
   public:
@@ -119,15 +123,17 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual void switchToGridExport();    
     virtual void switchToPatchInit();    
     virtual void switchToInitialCondition();    
-    virtual void switchToTimeStep();    
-    virtual void switchToTimeStepAndPlot();    
+    virtual void switchToPredictor();    
+    virtual void switchToCorrector();    
+    virtual void switchToSolutionExport();    
 
     virtual bool isActiveAdapterInitialGrid() const;
     virtual bool isActiveAdapterGridExport() const;
     virtual bool isActiveAdapterPatchInit() const;
     virtual bool isActiveAdapterInitialCondition() const;
-    virtual bool isActiveAdapterTimeStep() const;
-    virtual bool isActiveAdapterTimeStepAndPlot() const;
+    virtual bool isActiveAdapterPredictor() const;
+    virtual bool isActiveAdapterCorrector() const;
+    virtual bool isActiveAdapterSolutionExport() const;
 
      
     #ifdef Parallel

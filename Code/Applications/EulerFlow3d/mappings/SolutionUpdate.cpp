@@ -1,6 +1,19 @@
 #include "EulerFlow3d/mappings/SolutionUpdate.h"
 
+#include "EulerFlow3d/Constants.h"
 
+#include "EulerFlow3d/math/quad/Gausslegendre.h"
+
+#include "EulerFlow3d/geometry/Mapping.h"
+
+#include "EulerFlow3d/problem/Problem.h"
+
+#include "EulerFlow3d/dg/Constants.h"
+#include "EulerFlow3d/dg/DGMatrices.h"
+
+#include "stdlib.h"
+
+#include "string.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -397,6 +410,34 @@ void exahype::mappings::SolutionUpdate::touchVertexLastTime(
 }
 
 
+void exahype::mappings::SolutionUpdate::updateSolution(
+    double * u,
+    const double * const du,
+    const double dxPatch,
+    const double dyPatch,
+    const double dt,
+    const int nvar,
+    const int basisSize) {
+  // x direction (independent from the y and z)
+  for (int ii=0; ii<basisSize; ii++) {
+    for (int jj=0; jj<basisSize; jj++) {
+      const int nodeIndex     = ii + basisSize * jj;
+      const int dofStartIndex = nodeIndex * nvar;
+
+      double weight =  quad::gaussLegendreWeights[basisSize-1][ii] * quad::gaussLegendreWeights[basisSize-1][jj];
+
+      for(int ivar=0; ivar < nvar; ivar++) {
+        u[dofStartIndex+ivar] +=  dt/weight * du[dofStartIndex+ivar];
+
+        if (fabs(du[dofStartIndex+ivar]) > 1e5) { // todo REMOVE; only for debugging
+          asm ("nop");
+        }
+      }
+    }
+  }
+  asm ("nop");
+}
+
 void exahype::mappings::SolutionUpdate::enterCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
@@ -410,23 +451,35 @@ void exahype::mappings::SolutionUpdate::enterCell(
 
   if (!fineGridCell.isRefined()) {
     records::CellDescription& cellDescription =
-          CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
+        CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
 
-    const double h = fineGridVerticesEnumerator.getCellSize()(0);
-//    double update  = DataHeap::getInstance().getData(cellDescriptionForPde.getUpdate())[0]._persistentRecords._u;
+    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
+    const double dx = fineGridVerticesEnumerator.getCellSize()(0);
+    const double dy = fineGridVerticesEnumerator.getCellSize()(1);
 
-    for (int face=0; face<DIMENSIONS_TIMES_TWO; face++) {
-//        update += DataHeap::getInstance().getData(cellDescriptionForPde.getFluctuation(face))[0]
-//                  ._persistentRecords._u;
-        // zero the fluctuations/normal fluxes
-//        DataHeap::getInstance().getData(cellDescriptionForPde.getFluctuation(face))[0].
-//            _persistentRecords._u = 0;
+    const double dxPatch = dx/ (double) EXAHYPE_PATCH_SIZE_X;
+    const double dyPatch = dy/ (double) EXAHYPE_PATCH_SIZE_Y;
+
+    const int basisSize       = EXAHYPE_ORDER+1;
+    const int nvar            = EXAHYPE_NVARS;
+
+    for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
+      for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
+        const int patchIndex      = i     + (EXAHYPE_PATCH_SIZE_X+2) * j;
+
+        double *  uOld = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
+        double *    du = &(DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))  [0]._persistentRecords._u);
+
+        updateSolution(
+            uOld,
+            du,
+            dxPatch,
+            dyPatch,
+            this->_timeStepSize,
+            nvar,
+            basisSize);
+      }
     }
-
-//    DataHeap::getInstance().getData(cellDescriptionForPde.getSolution())[0].
-//        _persistentRecords._u += _timeStepSize * update/h/h;
-//    DataHeap::getInstance().getData(cellDescriptionForPde.getUpdate())[0].
-//        _persistentRecords._u  = 0;
   }
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );

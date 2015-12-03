@@ -43,6 +43,12 @@ class exahype::mappings::RiemannSolver {
      * Logging device for the trace macros.
      */
     static tarch::logging::Log  _log;
+
+    /**
+     * The global time step.
+     */
+    double _timeStepSize;
+
   public:
     /**
      * These flags are used to inform Peano about your operation. It tells the 
@@ -1249,6 +1255,20 @@ class exahype::mappings::RiemannSolver {
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
     );    
+
+    // Begin of code for ADERDG scheme
+    void solveRiemannProblem(
+        double * FL,
+        double * FR,
+        const double * const QL,
+        const double * const QR,
+        const tarch::la::Vector<DIMENSIONS,double> center,
+        const double timeStep,
+        const double hFace,
+        const double * const nx,
+        const int nvar,
+        const int basisSize);
+    // End of code for ADERDG scheme
 };
 
 

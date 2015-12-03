@@ -671,7 +671,7 @@ void exahype::mappings::SpaceTimePredictor::computePredictor(
   /////////////////////////////////////////////////
   // Compute the bounday-extrapolated values for Q and F*n
   /////////////////////////////////////////////////
-  int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize); // change in Cell.cpp!!!!!! and boundary ghost stuff!!! todo
+  int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
   memset((double *) &(DataHeap::getInstance().getData(extrapolatedPredictor)[0]._persistentRecords._u),0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
   memset((double *) &(DataHeap::getInstance().getData(fluctuations)[0]._persistentRecords._u),         0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
@@ -682,6 +682,11 @@ void exahype::mappings::SpaceTimePredictor::computePredictor(
     const int dofStartIndexL = EXAHYPE_FACE_LEFT  * numberOfFaceDof + nodeIndex * nvar;
     const int dofStartIndexR = EXAHYPE_FACE_RIGHT * numberOfFaceDof + nodeIndex * nvar;
 
+    double * tempQL = &(DataHeap::getInstance().getData(extrapolatedPredictor)[dofStartIndexL]._persistentRecords._u);
+    double * tempQR = &(DataHeap::getInstance().getData(extrapolatedPredictor)[dofStartIndexR]._persistentRecords._u);
+    double * tempL = &(DataHeap::getInstance().getData(fluctuations)[dofStartIndexL]._persistentRecords._u);
+    double * tempR = &(DataHeap::getInstance().getData(fluctuations)[dofStartIndexR]._persistentRecords._u);
+
     for (int mm=0; mm<basisSize; mm++) { // loop over dof
       const int mmNodeIndex         = mm  + basisSize * jj;
       const int mmDofStartIndex     = mmNodeIndex * nvar;
@@ -690,8 +695,6 @@ void exahype::mappings::SpaceTimePredictor::computePredictor(
       Q = &(DataHeap::getInstance().getData(predictor) [mmDofStartIndex    ]._persistentRecords._u);
       f = &(DataHeap::getInstance().getData(volumeFlux)[mmFluxDofStartIndex]._persistentRecords._u);
 
-//      double * tempL = &(DataHeap::getInstance().getData(fluctuations)[dofStartIndexL]._persistentRecords._u);
-//      double * tempR = &(DataHeap::getInstance().getData(fluctuations)[dofStartIndexR]._persistentRecords._u);
       for(int ivar=0; ivar < nvar; ivar++) {
         DataHeap::getInstance().getData(extrapolatedPredictor)[dofStartIndexL+ivar]._persistentRecords._u += dg::FLCoeff[mm] * Q[ivar];
         DataHeap::getInstance().getData(extrapolatedPredictor)[dofStartIndexR+ivar]._persistentRecords._u += dg::FRCoeff[mm] * Q[ivar];
@@ -700,6 +703,7 @@ void exahype::mappings::SpaceTimePredictor::computePredictor(
         DataHeap::getInstance().getData(fluctuations)[dofStartIndexR+ivar]._persistentRecords._u += dg::FRCoeff[mm] * f[ivar];
       }
     }
+    continue;
   }
 
   // y-direction: face 2 (left) and face 3 (right)
@@ -707,6 +711,11 @@ void exahype::mappings::SpaceTimePredictor::computePredictor(
     const int nodeIndex      = ii;
     const int dofStartIndexL = EXAHYPE_FACE_FRONT * numberOfFaceDof + nodeIndex * nvar;
     const int dofStartIndexR = EXAHYPE_FACE_BACK  * numberOfFaceDof + nodeIndex * nvar;
+
+    double * tempQL = &(DataHeap::getInstance().getData(extrapolatedPredictor)[dofStartIndexL]._persistentRecords._u);
+    double * tempQR = &(DataHeap::getInstance().getData(extrapolatedPredictor)[dofStartIndexR]._persistentRecords._u);
+    double * tempL = &(DataHeap::getInstance().getData(fluctuations)[dofStartIndexL]._persistentRecords._u);
+    double * tempR = &(DataHeap::getInstance().getData(fluctuations)[dofStartIndexR]._persistentRecords._u);
 
     for (int mm=0; mm<basisSize; mm++) { // loop over dof
       const int mmNodeIndex         = ii  + basisSize * mm;
@@ -716,8 +725,6 @@ void exahype::mappings::SpaceTimePredictor::computePredictor(
       Q = &(DataHeap::getInstance().getData(predictor) [mmDofStartIndex         ]._persistentRecords._u);
       g = &(DataHeap::getInstance().getData(volumeFlux)[mmFluxDofStartIndex+nvar]._persistentRecords._u);
 
-      double * tempL = &(DataHeap::getInstance().getData(extrapolatedPredictor)[dofStartIndexL]._persistentRecords._u);
-      double * tempR = &(DataHeap::getInstance().getData(extrapolatedPredictor)[dofStartIndexR]._persistentRecords._u);
       for(int ivar=0; ivar < nvar; ivar++) {
         DataHeap::getInstance().getData(extrapolatedPredictor)[dofStartIndexL+ivar]._persistentRecords._u += dg::FLCoeff[mm] * Q[ivar];
         DataHeap::getInstance().getData(extrapolatedPredictor)[dofStartIndexR+ivar]._persistentRecords._u += dg::FRCoeff[mm] * Q[ivar];
@@ -726,6 +733,7 @@ void exahype::mappings::SpaceTimePredictor::computePredictor(
         DataHeap::getInstance().getData(fluctuations)[dofStartIndexR+ivar]._persistentRecords._u += dg::FRCoeff[mm] * g[ivar];
       }
     }
+    continue;
   }
 
   // clean up

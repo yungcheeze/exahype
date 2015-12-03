@@ -1,5 +1,19 @@
 #include "EulerFlow3d/mappings/SurfaceIntegral.h"
 
+#include "EulerFlow3d/Constants.h"
+
+#include "EulerFlow3d/math/quad/Gausslegendre.h"
+
+#include "EulerFlow3d/geometry/Mapping.h"
+
+#include "EulerFlow3d/problem/Problem.h"
+
+#include "EulerFlow3d/dg/Constants.h"
+#include "EulerFlow3d/dg/DGMatrices.h"
+
+#include "stdlib.h"
+
+#include "string.h"
 
 
 /**
@@ -63,14 +77,14 @@ tarch::logging::Log                exahype::mappings::SurfaceIntegral::_log( "ex
 
 exahype::mappings::SurfaceIntegral::SurfaceIntegral() {
   logTraceIn( "SurfaceIntegral()" );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "SurfaceIntegral()" );
 }
 
 
 exahype::mappings::SurfaceIntegral::~SurfaceIntegral() {
   logTraceIn( "~SurfaceIntegral()" );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "~SurfaceIntegral()" );
 }
 
@@ -78,14 +92,14 @@ exahype::mappings::SurfaceIntegral::~SurfaceIntegral() {
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::SurfaceIntegral::SurfaceIntegral(const SurfaceIntegral&  masterThread) {
   logTraceIn( "SurfaceIntegral(SurfaceIntegral)" );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "SurfaceIntegral(SurfaceIntegral)" );
 }
 
 
 void exahype::mappings::SurfaceIntegral::mergeWithWorkerThread(const SurfaceIntegral& workerThread) {
   logTraceIn( "mergeWithWorkerThread(SurfaceIntegral)" );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "mergeWithWorkerThread(SurfaceIntegral)" );
 }
 #endif
@@ -101,7 +115,7 @@ void exahype::mappings::SurfaceIntegral::createHangingVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "createHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "createHangingVertex(...)", fineGridVertex );
 }
 
@@ -116,7 +130,7 @@ void exahype::mappings::SurfaceIntegral::destroyHangingVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "destroyHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "destroyHangingVertex(...)", fineGridVertex );
 }
 
@@ -131,7 +145,7 @@ void exahype::mappings::SurfaceIntegral::createInnerVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "createInnerVertex(...)", fineGridVertex );
 }
 
@@ -146,7 +160,7 @@ void exahype::mappings::SurfaceIntegral::createBoundaryVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "createBoundaryVertex(...)", fineGridVertex );
 }
 
@@ -161,7 +175,7 @@ void exahype::mappings::SurfaceIntegral::destroyVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "destroyVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "destroyVertex(...)", fineGridVertex );
 }
 
@@ -176,7 +190,7 @@ void exahype::mappings::SurfaceIntegral::createCell(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "createCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "createCell(...)", fineGridCell );
 }
 
@@ -191,7 +205,7 @@ void exahype::mappings::SurfaceIntegral::destroyCell(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "destroyCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "destroyCell(...)", fineGridCell );
 }
 
@@ -205,7 +219,7 @@ void exahype::mappings::SurfaceIntegral::mergeWithNeighbour(
   int                                           level
 ) {
   logTraceInWith6Arguments( "mergeWithNeighbour(...)", vertex, neighbour, fromRank, fineGridX, fineGridH, level );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "mergeWithNeighbour(...)" );
 }
 
@@ -217,7 +231,7 @@ void exahype::mappings::SurfaceIntegral::prepareSendToNeighbour(
       int                                           level
 ) {
   logTraceInWith3Arguments( "prepareSendToNeighbour(...)", vertex, toRank, level );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "prepareSendToNeighbour(...)" );
 }
 
@@ -229,7 +243,7 @@ void exahype::mappings::SurfaceIntegral::prepareCopyToRemoteNode(
       int                                           level
 ) {
   logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localVertex, toRank, x, h, level );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
@@ -241,7 +255,7 @@ void exahype::mappings::SurfaceIntegral::prepareCopyToRemoteNode(
       int                                           level
 ) {
   logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localCell, toRank, cellCentre, cellSize, level );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
@@ -254,7 +268,7 @@ void exahype::mappings::SurfaceIntegral::mergeWithRemoteDataDueToForkOrJoin(
   int                                       level
 ) {
   logTraceInWith6Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localVertex, masterOrWorkerVertex, fromRank, x, h, level );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
@@ -267,7 +281,7 @@ void exahype::mappings::SurfaceIntegral::mergeWithRemoteDataDueToForkOrJoin(
   int                                       level
 ) {
   logTraceInWith3Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localCell, masterOrWorkerCell, fromRank );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
@@ -282,7 +296,7 @@ bool exahype::mappings::SurfaceIntegral::prepareSendToWorker(
   int                                                                  worker
 ) {
   logTraceIn( "prepareSendToWorker(...)" );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "prepareSendToWorker(...)", true );
   return true;
 }
@@ -297,7 +311,7 @@ void exahype::mappings::SurfaceIntegral::prepareSendToMaster(
   const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
   logTraceInWith2Arguments( "prepareSendToMaster(...)", localCell, verticesEnumerator.toString() );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "prepareSendToMaster(...)" );
 }
 
@@ -318,7 +332,7 @@ void exahype::mappings::SurfaceIntegral::mergeWithMaster(
   exahype::State&                masterState
 ) {
   logTraceIn( "mergeWithMaster(...)" );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "mergeWithMaster(...)" );
 }
 
@@ -336,7 +350,7 @@ void exahype::mappings::SurfaceIntegral::receiveDataFromMaster(
       const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
   logTraceIn( "receiveDataFromMaster(...)" );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "receiveDataFromMaster(...)" );
 }
 
@@ -349,7 +363,7 @@ void exahype::mappings::SurfaceIntegral::mergeWithWorker(
   int                                          level
 ) {
   logTraceInWith2Arguments( "mergeWithWorker(...)", localCell.toString(), receivedMasterCell.toString() );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "mergeWithWorker(...)", localCell.toString() );
 }
 
@@ -362,7 +376,7 @@ void exahype::mappings::SurfaceIntegral::mergeWithWorker(
   int                                           level
 ) {
   logTraceInWith2Arguments( "mergeWithWorker(...)", localVertex.toString(), receivedMasterVertex.toString() );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "mergeWithWorker(...)", localVertex.toString() );
 }
 #endif
@@ -377,7 +391,7 @@ void exahype::mappings::SurfaceIntegral::touchVertexFirstTime(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "touchVertexFirstTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "touchVertexFirstTime(...)", fineGridVertex );
 }
 
@@ -392,9 +406,65 @@ void exahype::mappings::SurfaceIntegral::touchVertexLastTime(
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
+
+void exahype::mappings::SurfaceIntegral::computeSurfaceIntegral(
+    double * du,
+    const tarch::la::Vector<DIMENSIONS,double> center,
+    const double dxPatch,
+    const double dyPatch,
+    const int nvar,
+    const int basisSize,
+    const double * const FLeft,
+    const double * const FRight,
+    const double * const FFront,
+    const double * const FBack
+) {
+  // x direction (independent from the y and z)
+  for (int jj=0; jj<basisSize; jj++) {
+    const int nodeIndex     = jj;
+    const int dofStartIndex = nodeIndex * nvar;
+
+    double weight =  quad::gaussLegendreWeights[basisSize-1][jj];
+
+    for(int mm=0; mm < basisSize; mm++) {
+      const int mmNodeIndex         = mm + basisSize * jj;
+      const int mmDofStartIndex     = mmNodeIndex * nvar;
+
+      for(int ivar=0; ivar < nvar; ivar++) {
+        du[mmDofStartIndex+ivar]
+            -=  weight/dxPatch * ( dg::FRCoeff[mm] * FRight[dofStartIndex+ivar] - dg::FLCoeff[mm] * FLeft[dofStartIndex+ivar] );
+      }
+    }
+    asm ("nop");
+  }
+
+  // Above
+
+  // y direction (independent from the y and z)
+  for (int jj=0; jj<basisSize; jj++) {
+    const int nodeIndex     = jj;
+    const int dofStartIndex = nodeIndex * nvar;
+
+    double weight =  quad::gaussLegendreWeights[basisSize-1][jj];
+
+    for(int mm=0; mm < basisSize; mm++) {
+      const int mmNodeIndex         = jj + basisSize * mm;
+      const int mmDofStartIndex     = mmNodeIndex * nvar;
+
+      for(int ivar=0; ivar < nvar; ivar++) {
+        du[mmDofStartIndex+ivar]
+           -=  weight/dxPatch * ( dg::FRCoeff[mm] * FBack[dofStartIndex+ivar] - dg::FLCoeff[mm] * FFront[dofStartIndex+ivar] );
+      }
+    }
+    asm ("nop");
+  }
+  // Above
+  asm ("nop");
+}
+
 
 
 void exahype::mappings::SurfaceIntegral::enterCell(
@@ -407,7 +477,54 @@ void exahype::mappings::SurfaceIntegral::enterCell(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
+
+  // ! Begin of code for the DG method.
+  if (!fineGridCell.isRefined()) {
+    records::CellDescription& cellDescription =
+        CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
+
+    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
+    const double dx = fineGridVerticesEnumerator.getCellSize()(0);
+    const double dy = fineGridVerticesEnumerator.getCellSize()(1);
+
+    const double dxPatch = dx/ (double) EXAHYPE_PATCH_SIZE_X;
+    const double dyPatch = dy/ (double) EXAHYPE_PATCH_SIZE_Y;
+
+    const int basisSize       = EXAHYPE_ORDER+1;
+    const int nvar            = EXAHYPE_NVARS;
+    const int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
+
+    for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
+      for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
+        const int patchIndex      = i     + (EXAHYPE_PATCH_SIZE_X+2) * j;
+
+        const int dofStartIndexLeft  = EXAHYPE_FACE_LEFT  * numberOfFaceDof;
+        const int dofStartIndexRight = EXAHYPE_FACE_RIGHT * numberOfFaceDof;
+        const int dofStartIndexFront = EXAHYPE_FACE_FRONT * numberOfFaceDof;
+        const int dofStartIndexBack  = EXAHYPE_FACE_BACK  * numberOfFaceDof;
+
+        double * du     = &(DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))     [0]._persistentRecords._u);
+
+        double * FLeft  = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(patchIndex))[dofStartIndexLeft ]._persistentRecords._u);
+        double * FRight = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(patchIndex))[dofStartIndexRight]._persistentRecords._u);
+        double * FFront = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(patchIndex))[dofStartIndexFront]._persistentRecords._u);
+        double * FBack  = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(patchIndex))[dofStartIndexBack ]._persistentRecords._u);
+
+        computeSurfaceIntegral(
+            du,
+            center,
+            dxPatch,
+            dyPatch,
+            nvar,
+            basisSize,
+            FLeft,
+            FRight,
+            FFront,
+            FBack);
+      }
+    }
+  }
+
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
 
@@ -422,7 +539,7 @@ void exahype::mappings::SurfaceIntegral::leaveCell(
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
 }
 
@@ -431,7 +548,7 @@ void exahype::mappings::SurfaceIntegral::beginIteration(
   exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
 
@@ -440,7 +557,7 @@ void exahype::mappings::SurfaceIntegral::endIteration(
   exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "endIteration(State)", solverState );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "endIteration(State)", solverState);
 }
 
@@ -455,7 +572,7 @@ void exahype::mappings::SurfaceIntegral::descend(
   exahype::Cell&                 coarseGridCell
 ) {
   logTraceInWith2Arguments( "descend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "descend(...)" );
 }
 
@@ -469,6 +586,6 @@ void exahype::mappings::SurfaceIntegral::ascend(
   exahype::Cell&           coarseGridCell
 ) {
   logTraceInWith2Arguments( "ascend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "ascend(...)" );
 }

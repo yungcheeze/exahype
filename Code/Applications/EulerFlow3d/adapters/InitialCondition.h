@@ -19,7 +19,6 @@
 
 
  #include "EulerFlow3d/mappings/InitialCondition.h"
- #include "EulerFlow3d/mappings/VTKExport.h"
 
 
 
@@ -40,10 +39,8 @@ namespace exahype {
 class exahype::adapters::InitialCondition {
   private:
     typedef mappings::InitialCondition Mapping0;
-    typedef mappings::VTKExport Mapping1;
 
      Mapping0  _map2InitialCondition;
-     Mapping1  _map2VTKExport;
 
 
   public:

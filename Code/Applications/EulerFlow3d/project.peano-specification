@@ -74,29 +74,20 @@ adapter:
 adapter:
   name: InitialCondition
   merge-with-user-defined-mapping: InitialCondition 
-  merge-with-user-defined-mapping: VTKExport
 
 adapter:
-  name: TimeStep
+  name: Predictor
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: SpaceTimePredictor
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: BoundaryConditions
-  merge-with-user-defined-mapping: FaceDataExchange
-  merge-with-user-defined-mapping: RiemannSolver
-  merge-with-user-defined-mapping: SurfaceIntegral
-  // only necessary here if we refine further 
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex)
 
 adapter:
-  name: TimeStepAndPlot
-  merge-with-user-defined-mapping: SolutionUpdate
-  merge-with-user-defined-mapping: SpaceTimePredictor
-  merge-with-user-defined-mapping: VolumeIntegral
-  merge-with-user-defined-mapping: BoundaryConditions
+  name: Corrector
   merge-with-user-defined-mapping: FaceDataExchange
   merge-with-user-defined-mapping: RiemannSolver
   merge-with-user-defined-mapping: SurfaceIntegral
+
+adapter:
+  name: SolutionExport
   merge-with-user-defined-mapping: VTKExport
-  // only necessary here if we refine further
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex)  

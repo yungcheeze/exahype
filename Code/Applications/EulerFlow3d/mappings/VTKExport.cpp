@@ -468,7 +468,7 @@ void exahype::mappings::VTKExport::enterCell(
 
               const int dofStartIndex  = nodeIndex * nvar;
 
-              for (int ivar=0; ivar < 1; ivar++) {
+              for (int ivar=1; ivar < 2; ivar++) {
                 const double dofValue = DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[dofStartIndex+ivar]._persistentRecords._u;
                 _cellWriter->plotPoint(currentNodeIndex);
                 _vertexValueWriter->plotVertex(currentNodeIndex,dofValue);

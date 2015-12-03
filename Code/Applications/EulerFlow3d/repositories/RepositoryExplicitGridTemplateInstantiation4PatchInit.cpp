@@ -17,8 +17,9 @@
  #include "EulerFlow3d/adapters/GridExport.h" 
  #include "EulerFlow3d/adapters/PatchInit.h" 
  #include "EulerFlow3d/adapters/InitialCondition.h" 
- #include "EulerFlow3d/adapters/TimeStep.h" 
- #include "EulerFlow3d/adapters/TimeStepAndPlot.h" 
+ #include "EulerFlow3d/adapters/Predictor.h" 
+ #include "EulerFlow3d/adapters/Corrector.h" 
+ #include "EulerFlow3d/adapters/SolutionExport.h" 
 
 
 namespace peano {

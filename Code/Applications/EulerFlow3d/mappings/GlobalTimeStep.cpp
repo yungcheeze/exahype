@@ -1,5 +1,19 @@
 #include "EulerFlow3d/mappings/GlobalTimeStep.h"
 
+#include "EulerFlow3d/Constants.h"
+
+#include "EulerFlow3d/math/quad/Gausslegendre.h"
+
+#include "EulerFlow3d/geometry/Mapping.h"
+
+#include "EulerFlow3d/problem/Problem.h"
+
+#include "EulerFlow3d/dg/Constants.h"
+#include "EulerFlow3d/dg/DGMatrices.h"
+
+#include "stdlib.h"
+
+#include "string.h"
 
 
 /**
@@ -63,14 +77,14 @@ tarch::logging::Log                exahype::mappings::GlobalTimeStep::_log( "exa
 
 exahype::mappings::GlobalTimeStep::GlobalTimeStep() {
   logTraceIn( "GlobalTimeStep()" );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "GlobalTimeStep()" );
 }
 
 
 exahype::mappings::GlobalTimeStep::~GlobalTimeStep() {
   logTraceIn( "~GlobalTimeStep()" );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "~GlobalTimeStep()" );
 }
 
@@ -78,14 +92,14 @@ exahype::mappings::GlobalTimeStep::~GlobalTimeStep() {
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::GlobalTimeStep::GlobalTimeStep(const GlobalTimeStep&  masterThread) {
   logTraceIn( "GlobalTimeStep(GlobalTimeStep)" );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "GlobalTimeStep(GlobalTimeStep)" );
 }
 
 
 void exahype::mappings::GlobalTimeStep::mergeWithWorkerThread(const GlobalTimeStep& workerThread) {
   logTraceIn( "mergeWithWorkerThread(GlobalTimeStep)" );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "mergeWithWorkerThread(GlobalTimeStep)" );
 }
 #endif
@@ -101,7 +115,7 @@ void exahype::mappings::GlobalTimeStep::createHangingVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "createHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "createHangingVertex(...)", fineGridVertex );
 }
 
@@ -116,7 +130,7 @@ void exahype::mappings::GlobalTimeStep::destroyHangingVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "destroyHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "destroyHangingVertex(...)", fineGridVertex );
 }
 
@@ -131,7 +145,7 @@ void exahype::mappings::GlobalTimeStep::createInnerVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "createInnerVertex(...)", fineGridVertex );
 }
 
@@ -146,7 +160,7 @@ void exahype::mappings::GlobalTimeStep::createBoundaryVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "createBoundaryVertex(...)", fineGridVertex );
 }
 
@@ -161,7 +175,7 @@ void exahype::mappings::GlobalTimeStep::destroyVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "destroyVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "destroyVertex(...)", fineGridVertex );
 }
 
@@ -176,7 +190,7 @@ void exahype::mappings::GlobalTimeStep::createCell(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "createCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "createCell(...)", fineGridCell );
 }
 
@@ -191,7 +205,7 @@ void exahype::mappings::GlobalTimeStep::destroyCell(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "destroyCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "destroyCell(...)", fineGridCell );
 }
 
@@ -205,7 +219,7 @@ void exahype::mappings::GlobalTimeStep::mergeWithNeighbour(
   int                                           level
 ) {
   logTraceInWith6Arguments( "mergeWithNeighbour(...)", vertex, neighbour, fromRank, fineGridX, fineGridH, level );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "mergeWithNeighbour(...)" );
 }
 
@@ -217,7 +231,7 @@ void exahype::mappings::GlobalTimeStep::prepareSendToNeighbour(
       int                                           level
 ) {
   logTraceInWith3Arguments( "prepareSendToNeighbour(...)", vertex, toRank, level );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "prepareSendToNeighbour(...)" );
 }
 
@@ -229,7 +243,7 @@ void exahype::mappings::GlobalTimeStep::prepareCopyToRemoteNode(
       int                                           level
 ) {
   logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localVertex, toRank, x, h, level );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
@@ -241,7 +255,7 @@ void exahype::mappings::GlobalTimeStep::prepareCopyToRemoteNode(
       int                                           level
 ) {
   logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localCell, toRank, cellCentre, cellSize, level );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
@@ -254,7 +268,7 @@ void exahype::mappings::GlobalTimeStep::mergeWithRemoteDataDueToForkOrJoin(
   int                                       level
 ) {
   logTraceInWith6Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localVertex, masterOrWorkerVertex, fromRank, x, h, level );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
@@ -267,7 +281,7 @@ void exahype::mappings::GlobalTimeStep::mergeWithRemoteDataDueToForkOrJoin(
   int                                       level
 ) {
   logTraceInWith3Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localCell, masterOrWorkerCell, fromRank );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
@@ -282,7 +296,7 @@ bool exahype::mappings::GlobalTimeStep::prepareSendToWorker(
   int                                                                  worker
 ) {
   logTraceIn( "prepareSendToWorker(...)" );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "prepareSendToWorker(...)", true );
   return true;
 }
@@ -297,7 +311,7 @@ void exahype::mappings::GlobalTimeStep::prepareSendToMaster(
   const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
   logTraceInWith2Arguments( "prepareSendToMaster(...)", localCell, verticesEnumerator.toString() );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "prepareSendToMaster(...)" );
 }
 
@@ -318,7 +332,7 @@ void exahype::mappings::GlobalTimeStep::mergeWithMaster(
   exahype::State&                masterState
 ) {
   logTraceIn( "mergeWithMaster(...)" );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "mergeWithMaster(...)" );
 }
 
@@ -336,7 +350,7 @@ void exahype::mappings::GlobalTimeStep::receiveDataFromMaster(
       const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
   logTraceIn( "receiveDataFromMaster(...)" );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "receiveDataFromMaster(...)" );
 }
 
@@ -349,7 +363,7 @@ void exahype::mappings::GlobalTimeStep::mergeWithWorker(
   int                                          level
 ) {
   logTraceInWith2Arguments( "mergeWithWorker(...)", localCell.toString(), receivedMasterCell.toString() );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "mergeWithWorker(...)", localCell.toString() );
 }
 
@@ -362,7 +376,7 @@ void exahype::mappings::GlobalTimeStep::mergeWithWorker(
   int                                           level
 ) {
   logTraceInWith2Arguments( "mergeWithWorker(...)", localVertex.toString(), receivedMasterVertex.toString() );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "mergeWithWorker(...)", localVertex.toString() );
 }
 #endif
@@ -377,7 +391,7 @@ void exahype::mappings::GlobalTimeStep::touchVertexFirstTime(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "touchVertexFirstTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "touchVertexFirstTime(...)", fineGridVertex );
 }
 
@@ -392,7 +406,7 @@ void exahype::mappings::GlobalTimeStep::touchVertexLastTime(
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
@@ -407,7 +421,7 @@ void exahype::mappings::GlobalTimeStep::enterCell(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
 
@@ -422,7 +436,7 @@ void exahype::mappings::GlobalTimeStep::leaveCell(
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
+  // do nothing
   logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
 }
 
@@ -431,7 +445,9 @@ void exahype::mappings::GlobalTimeStep::beginIteration(
   exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
-  // @todo Insert your code here
+
+  // do nothing
+
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
 
@@ -440,7 +456,10 @@ void exahype::mappings::GlobalTimeStep::endIteration(
   exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "endIteration(State)", solverState );
-  // @todo Insert your code here
+
+  // do nothing
+  // solverState.setTimeStepSize(min TimeStep)
+
   logTraceOutWith1Argument( "endIteration(State)", solverState);
 }
 
@@ -455,7 +474,7 @@ void exahype::mappings::GlobalTimeStep::descend(
   exahype::Cell&                 coarseGridCell
 ) {
   logTraceInWith2Arguments( "descend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "descend(...)" );
 }
 
@@ -469,6 +488,6 @@ void exahype::mappings::GlobalTimeStep::ascend(
   exahype::Cell&           coarseGridCell
 ) {
   logTraceInWith2Arguments( "ascend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
-  // @todo Insert your code here
+  // do nothing
   logTraceOut( "ascend(...)" );
 }

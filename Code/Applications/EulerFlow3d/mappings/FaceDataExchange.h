@@ -1256,10 +1256,21 @@ class exahype::mappings::FaceDataExchange {
     /**
      * @brief Initializes the ghost layer of a patch.
      */
-    void initialiseGhostLayerOfPatch(
+    void initialiseGhostLayerOfPatches(
         exahype::Cell& fineGridCell,
         exahype::Vertex * const  fineGridVertices,
         const peano::grid::VertexEnumerator& fineGridVerticesEnumerator
+    );
+
+    /**
+     * @brief Copies the boundary conditions to the respective ghost cell of the current patch.
+     */
+    void setBoundaryGhostValues(
+        records::CellDescription& dataSelf,
+        const int patchIndexGhostSelf,
+        const int patchIndexRealSelf,
+        const int face,
+        const int numberOfDofOnFace
     );
 
     /**
