@@ -1251,6 +1251,16 @@ class exahype::mappings::VolumeIntegral {
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
     );    
+
+    // Begin of code for ADERDG scheme
+    void computeVolumeIntegral(const int update,
+                               const int volumeFlux,
+                               const tarch::la::Vector<DIMENSIONS,double> center,
+                               const double dxPatch,const double dyPatch,
+                               const int patchIndex,
+                               const int nvar,
+                               const int basisSize);
+    // End of code for ADERDG scheme
 };
 
 

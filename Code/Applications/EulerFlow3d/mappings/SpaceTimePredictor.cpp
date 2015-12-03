@@ -570,7 +570,7 @@ void exahype::mappings::SpaceTimePredictor::computePredictor(
       }
     } // end of time dof loop
 
-    // Above ---
+    // Above seems okay!
 
     for (int ii=0; ii<basisSize; ii++) {  // loop over dof
       for (int jj=0; jj<basisSize; jj++) {
@@ -690,8 +690,8 @@ void exahype::mappings::SpaceTimePredictor::computePredictor(
       Q = &(DataHeap::getInstance().getData(predictor) [mmDofStartIndex    ]._persistentRecords._u);
       f = &(DataHeap::getInstance().getData(volumeFlux)[mmFluxDofStartIndex]._persistentRecords._u);
 
-      double * tempL = &(DataHeap::getInstance().getData(fluctuations)[dofStartIndexL]._persistentRecords._u);
-      double * tempR = &(DataHeap::getInstance().getData(fluctuations)[dofStartIndexR]._persistentRecords._u);
+//      double * tempL = &(DataHeap::getInstance().getData(fluctuations)[dofStartIndexL]._persistentRecords._u);
+//      double * tempR = &(DataHeap::getInstance().getData(fluctuations)[dofStartIndexR]._persistentRecords._u);
       for(int ivar=0; ivar < nvar; ivar++) {
         DataHeap::getInstance().getData(extrapolatedPredictor)[dofStartIndexL+ivar]._persistentRecords._u += dg::FLCoeff[mm] * Q[ivar];
         DataHeap::getInstance().getData(extrapolatedPredictor)[dofStartIndexR+ivar]._persistentRecords._u += dg::FRCoeff[mm] * Q[ivar];

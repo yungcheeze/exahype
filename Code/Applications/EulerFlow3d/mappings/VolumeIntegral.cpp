@@ -1,10 +1,19 @@
 #include "EulerFlow3d/mappings/VolumeIntegral.h"
 
-#include "EulerFlow3d/problem/Problem.h"
+#include "EulerFlow3d/Constants.h"
+
+#include "EulerFlow3d/math/quad/Gausslegendre.h"
 
 #include "EulerFlow3d/geometry/Mapping.h"
 
-#include "EulerFlow3d/math/quad/Gausslegendre.h"
+#include "EulerFlow3d/problem/Problem.h"
+
+#include "EulerFlow3d/dg/Constants.h"
+#include "EulerFlow3d/dg/DGMatrices.h"
+
+#include "stdlib.h"
+
+#include "string.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -96,13 +105,13 @@ void exahype::mappings::VolumeIntegral::mergeWithWorkerThread(const VolumeIntegr
 
 
 void exahype::mappings::VolumeIntegral::createHangingVertex(
-      exahype::Vertex&     fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                fineGridH,
-      exahype::Vertex * const   coarseGridVertices,
-      const peano::grid::VertexEnumerator&      coarseGridVerticesEnumerator,
-      exahype::Cell&       coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
+    exahype::Vertex&     fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                fineGridH,
+    exahype::Vertex * const   coarseGridVertices,
+    const peano::grid::VertexEnumerator&      coarseGridVerticesEnumerator,
+    exahype::Cell&       coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "createHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
@@ -111,13 +120,13 @@ void exahype::mappings::VolumeIntegral::createHangingVertex(
 
 
 void exahype::mappings::VolumeIntegral::destroyHangingVertex(
-      const exahype::Vertex&   fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
+    const exahype::Vertex&   fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "destroyHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
@@ -126,13 +135,13 @@ void exahype::mappings::VolumeIntegral::destroyHangingVertex(
 
 
 void exahype::mappings::VolumeIntegral::createInnerVertex(
-      exahype::Vertex&               fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
+    exahype::Vertex&               fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
@@ -141,13 +150,13 @@ void exahype::mappings::VolumeIntegral::createInnerVertex(
 
 
 void exahype::mappings::VolumeIntegral::createBoundaryVertex(
-      exahype::Vertex&               fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
+    exahype::Vertex&               fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
@@ -156,13 +165,13 @@ void exahype::mappings::VolumeIntegral::createBoundaryVertex(
 
 
 void exahype::mappings::VolumeIntegral::destroyVertex(
-      const exahype::Vertex&   fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
+    const exahype::Vertex&   fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "destroyVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
@@ -171,13 +180,13 @@ void exahype::mappings::VolumeIntegral::destroyVertex(
 
 
 void exahype::mappings::VolumeIntegral::createCell(
-      exahype::Cell&                 fineGridCell,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+    exahype::Cell&                 fineGridCell,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "createCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
@@ -186,13 +195,13 @@ void exahype::mappings::VolumeIntegral::createCell(
 
 
 void exahype::mappings::VolumeIntegral::destroyCell(
-      const exahype::Cell&           fineGridCell,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+    const exahype::Cell&           fineGridCell,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "destroyCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
@@ -201,12 +210,12 @@ void exahype::mappings::VolumeIntegral::destroyCell(
 
 #ifdef Parallel
 void exahype::mappings::VolumeIntegral::mergeWithNeighbour(
-  exahype::Vertex&  vertex,
-  const exahype::Vertex&  neighbour,
-  int                                           fromRank,
-  const tarch::la::Vector<DIMENSIONS,double>&   fineGridX,
-  const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
-  int                                           level
+    exahype::Vertex&  vertex,
+    const exahype::Vertex&  neighbour,
+    int                                           fromRank,
+    const tarch::la::Vector<DIMENSIONS,double>&   fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
+    int                                           level
 ) {
   logTraceInWith6Arguments( "mergeWithNeighbour(...)", vertex, neighbour, fromRank, fineGridX, fineGridH, level );
   // do nothing
@@ -214,11 +223,11 @@ void exahype::mappings::VolumeIntegral::mergeWithNeighbour(
 }
 
 void exahype::mappings::VolumeIntegral::prepareSendToNeighbour(
-  exahype::Vertex&  vertex,
-      int                                           toRank,
-      const tarch::la::Vector<DIMENSIONS,double>&   x,
-      const tarch::la::Vector<DIMENSIONS,double>&   h,
-      int                                           level
+    exahype::Vertex&  vertex,
+    int                                           toRank,
+    const tarch::la::Vector<DIMENSIONS,double>&   x,
+    const tarch::la::Vector<DIMENSIONS,double>&   h,
+    int                                           level
 ) {
   logTraceInWith3Arguments( "prepareSendToNeighbour(...)", vertex, toRank, level );
   // do nothing
@@ -226,11 +235,11 @@ void exahype::mappings::VolumeIntegral::prepareSendToNeighbour(
 }
 
 void exahype::mappings::VolumeIntegral::prepareCopyToRemoteNode(
-  exahype::Vertex&  localVertex,
-      int                                           toRank,
-      const tarch::la::Vector<DIMENSIONS,double>&   x,
-      const tarch::la::Vector<DIMENSIONS,double>&   h,
-      int                                           level
+    exahype::Vertex&  localVertex,
+    int                                           toRank,
+    const tarch::la::Vector<DIMENSIONS,double>&   x,
+    const tarch::la::Vector<DIMENSIONS,double>&   h,
+    int                                           level
 ) {
   logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localVertex, toRank, x, h, level );
   // do nothing
@@ -238,11 +247,11 @@ void exahype::mappings::VolumeIntegral::prepareCopyToRemoteNode(
 }
 
 void exahype::mappings::VolumeIntegral::prepareCopyToRemoteNode(
-  exahype::Cell&  localCell,
-      int                                           toRank,
-      const tarch::la::Vector<DIMENSIONS,double>&   cellCentre,
-      const tarch::la::Vector<DIMENSIONS,double>&   cellSize,
-      int                                           level
+    exahype::Cell&  localCell,
+    int                                           toRank,
+    const tarch::la::Vector<DIMENSIONS,double>&   cellCentre,
+    const tarch::la::Vector<DIMENSIONS,double>&   cellSize,
+    int                                           level
 ) {
   logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localCell, toRank, cellCentre, cellSize, level );
   // do nothing
@@ -250,12 +259,12 @@ void exahype::mappings::VolumeIntegral::prepareCopyToRemoteNode(
 }
 
 void exahype::mappings::VolumeIntegral::mergeWithRemoteDataDueToForkOrJoin(
-  exahype::Vertex&  localVertex,
-  const exahype::Vertex&  masterOrWorkerVertex,
-  int                                       fromRank,
-  const tarch::la::Vector<DIMENSIONS,double>&  x,
-  const tarch::la::Vector<DIMENSIONS,double>&  h,
-  int                                       level
+    exahype::Vertex&  localVertex,
+    const exahype::Vertex&  masterOrWorkerVertex,
+    int                                       fromRank,
+    const tarch::la::Vector<DIMENSIONS,double>&  x,
+    const tarch::la::Vector<DIMENSIONS,double>&  h,
+    int                                       level
 ) {
   logTraceInWith6Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localVertex, masterOrWorkerVertex, fromRank, x, h, level );
   // do nothing
@@ -263,12 +272,12 @@ void exahype::mappings::VolumeIntegral::mergeWithRemoteDataDueToForkOrJoin(
 }
 
 void exahype::mappings::VolumeIntegral::mergeWithRemoteDataDueToForkOrJoin(
-  exahype::Cell&  localCell,
-  const exahype::Cell&  masterOrWorkerCell,
-  int                                       fromRank,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
-  int                                       level
+    exahype::Cell&  localCell,
+    const exahype::Cell&  masterOrWorkerCell,
+    int                                       fromRank,
+    const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
+    const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
+    int                                       level
 ) {
   logTraceInWith3Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localCell, masterOrWorkerCell, fromRank );
   // do nothing
@@ -276,14 +285,14 @@ void exahype::mappings::VolumeIntegral::mergeWithRemoteDataDueToForkOrJoin(
 }
 
 bool exahype::mappings::VolumeIntegral::prepareSendToWorker(
-  exahype::Cell&                 fineGridCell,
-  exahype::Vertex * const        fineGridVertices,
-  const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-  exahype::Vertex * const        coarseGridVertices,
-  const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-  exahype::Cell&                 coarseGridCell,
-  const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
-  int                                                                  worker
+    exahype::Cell&                 fineGridCell,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
+    int                                                                  worker
 ) {
   logTraceIn( "prepareSendToWorker(...)" );
   // do nothing
@@ -292,13 +301,13 @@ bool exahype::mappings::VolumeIntegral::prepareSendToWorker(
 }
 
 void exahype::mappings::VolumeIntegral::prepareSendToMaster(
-  exahype::Cell&                       localCell,
-  exahype::Vertex *                    vertices,
-  const peano::grid::VertexEnumerator&       verticesEnumerator, 
-  const exahype::Vertex * const        coarseGridVertices,
-  const peano::grid::VertexEnumerator&       coarseGridVerticesEnumerator,
-  const exahype::Cell&                 coarseGridCell,
-  const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
+    exahype::Cell&                       localCell,
+    exahype::Vertex *                    vertices,
+    const peano::grid::VertexEnumerator&       verticesEnumerator,
+    const exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&       coarseGridVerticesEnumerator,
+    const exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
   logTraceInWith2Arguments( "prepareSendToMaster(...)", localCell, verticesEnumerator.toString() );
   // do nothing
@@ -307,19 +316,19 @@ void exahype::mappings::VolumeIntegral::prepareSendToMaster(
 
 
 void exahype::mappings::VolumeIntegral::mergeWithMaster(
-  const exahype::Cell&           workerGridCell,
-  exahype::Vertex * const        workerGridVertices,
- const peano::grid::VertexEnumerator& workerEnumerator,
-  exahype::Cell&                 fineGridCell,
-  exahype::Vertex * const        fineGridVertices,
-  const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-  exahype::Vertex * const        coarseGridVertices,
-  const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-  exahype::Cell&                 coarseGridCell,
-  const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
-  int                                                                  worker,
-  const exahype::State&          workerState,
-  exahype::State&                masterState
+    const exahype::Cell&           workerGridCell,
+    exahype::Vertex * const        workerGridVertices,
+    const peano::grid::VertexEnumerator& workerEnumerator,
+    exahype::Cell&                 fineGridCell,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
+    int                                                                  worker,
+    const exahype::State&          workerState,
+    exahype::State&                masterState
 ) {
   logTraceIn( "mergeWithMaster(...)" );
   // do nothing
@@ -328,16 +337,16 @@ void exahype::mappings::VolumeIntegral::mergeWithMaster(
 
 
 void exahype::mappings::VolumeIntegral::receiveDataFromMaster(
-      exahype::Cell&                        receivedCell, 
-      exahype::Vertex *                     receivedVertices,
-      const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
-      exahype::Vertex * const               receivedCoarseGridVertices,
-      const peano::grid::VertexEnumerator&        receivedCoarseGridVerticesEnumerator,
-      exahype::Cell&                        receivedCoarseGridCell,
-      exahype::Vertex * const               workersCoarseGridVertices,
-      const peano::grid::VertexEnumerator&        workersCoarseGridVerticesEnumerator,
-      exahype::Cell&                        workersCoarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
+    exahype::Cell&                        receivedCell,
+    exahype::Vertex *                     receivedVertices,
+    const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
+    exahype::Vertex * const               receivedCoarseGridVertices,
+    const peano::grid::VertexEnumerator&        receivedCoarseGridVerticesEnumerator,
+    exahype::Cell&                        receivedCoarseGridCell,
+    exahype::Vertex * const               workersCoarseGridVertices,
+    const peano::grid::VertexEnumerator&        workersCoarseGridVerticesEnumerator,
+    exahype::Cell&                        workersCoarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
   logTraceIn( "receiveDataFromMaster(...)" );
   // do nothing
@@ -346,11 +355,11 @@ void exahype::mappings::VolumeIntegral::receiveDataFromMaster(
 
 
 void exahype::mappings::VolumeIntegral::mergeWithWorker(
-  exahype::Cell&           localCell, 
-  const exahype::Cell&     receivedMasterCell,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
-  int                                          level
+    exahype::Cell&           localCell,
+    const exahype::Cell&     receivedMasterCell,
+    const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
+    const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
+    int                                          level
 ) {
   logTraceInWith2Arguments( "mergeWithWorker(...)", localCell.toString(), receivedMasterCell.toString() );
   // do nothing
@@ -359,11 +368,11 @@ void exahype::mappings::VolumeIntegral::mergeWithWorker(
 
 
 void exahype::mappings::VolumeIntegral::mergeWithWorker(
-  exahype::Vertex&        localVertex,
-  const exahype::Vertex&  receivedMasterVertex,
-  const tarch::la::Vector<DIMENSIONS,double>&   x,
-  const tarch::la::Vector<DIMENSIONS,double>&   h,
-  int                                           level
+    exahype::Vertex&        localVertex,
+    const exahype::Vertex&  receivedMasterVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&   x,
+    const tarch::la::Vector<DIMENSIONS,double>&   h,
+    int                                           level
 ) {
   logTraceInWith2Arguments( "mergeWithWorker(...)", localVertex.toString(), receivedMasterVertex.toString() );
   // do nothing
@@ -372,13 +381,13 @@ void exahype::mappings::VolumeIntegral::mergeWithWorker(
 #endif
 
 void exahype::mappings::VolumeIntegral::touchVertexFirstTime(
-      exahype::Vertex&               fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
+    exahype::Vertex&               fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "touchVertexFirstTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
@@ -389,57 +398,137 @@ extern const double exahype::quad::gaussLegendreNodes[10][10];
 extern const double exahype::quad::gaussLegendreWeights[10][10];
 
 void exahype::mappings::VolumeIntegral::touchVertexLastTime(
-      exahype::Vertex&         fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
+    exahype::Vertex&         fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
+
+void exahype::mappings::VolumeIntegral::computeVolumeIntegral(const int update,
+                                                              const int volumeFlux,
+                                                              const tarch::la::Vector<DIMENSIONS,double> center,
+                                                              const double dxPatch,const double dyPatch,
+                                                              const int patchIndex,
+                                                              const int nvar,
+                                                              const int basisSize)
+{
+  int numberOfDof      = nvar * tarch::la::aPowI(DIMENSIONS,basisSize);
+  double *f, *g;
+
+  memset((double *) &(DataHeap::getInstance().getData(update)[0]._persistentRecords._u),0,sizeof(double) * numberOfDof);
+
+  // x direction (independent from the y and z derivatives)
+  // Kxi : basisSize * basisSize
+  // lFh : nvar * basisSize
+
+  // Compute the "derivatives" (contributions of the stiffness matrix)
+  // x direction (independent from the y and z derivatives)
+  for (int ii=0; ii<basisSize; ii++) { // loop over dof
+    for (int jj=0; jj<basisSize; jj++) {
+      const int nodeIndex     = ii + basisSize * jj;
+      const int dofStartIndex = nodeIndex * nvar;
+
+      double weight =  quad::gaussLegendreWeights[basisSize-1][jj];
+
+      double * temp = &(DataHeap::getInstance().getData(update)[dofStartIndex]._persistentRecords._u);
+      for(int mm=0; mm < basisSize; mm++) {
+        const int mmNodeIndex         = mm + basisSize * jj;
+        const int mmDofStartIndex     = mmNodeIndex * nvar;
+        const int mmFluxDofStartIndex = mmDofStartIndex * DIMENSIONS;
+
+        f = &(DataHeap::getInstance().getData(volumeFlux)[mmFluxDofStartIndex]._persistentRecords._u);
+
+        for(int ivar=0; ivar < nvar; ivar++) {
+          DataHeap::getInstance().getData(update)[dofStartIndex+ivar]._persistentRecords._u
+              +=  weight/dxPatch * dg::Kxi[ii][mm] * f[ivar];
+        }
+      }
+      continue;
+    }
+  }
+  // Above
+
+  /// y direction (independent from the y and z derivatives)
+  // Kxi : basisSize * basisSize
+  // lFh : nvar * basisSize
+
+  // Compute the "derivatives" (contributions of the stiffness matrix)
+  // x direction (independent from the y and z derivatives)
+  for (int ii=0; ii<basisSize; ii++) { // loop over dof
+    for (int jj=0; jj<basisSize; jj++) {
+      const int nodeIndex     = ii + basisSize * jj;
+      const int dofStartIndex = nodeIndex * nvar;
+
+      double weight =  quad::gaussLegendreWeights[basisSize-1][ii];
+
+      double * temp = &(DataHeap::getInstance().getData(update)[dofStartIndex]._persistentRecords._u);
+      for(int mm=0; mm < basisSize; mm++) {
+        const int mmNodeIndex         = ii + basisSize * mm;
+        const int mmDofStartIndex     = mmNodeIndex * nvar;
+        const int mmFluxDofStartIndex = mmDofStartIndex * DIMENSIONS;
+
+        g = &(DataHeap::getInstance().getData(volumeFlux)[mmFluxDofStartIndex+nvar]._persistentRecords._u);
+
+        for(int ivar=0; ivar < nvar; ivar++) {
+          DataHeap::getInstance().getData(update)[dofStartIndex+ivar]._persistentRecords._u
+              +=  weight/dxPatch * dg::Kxi[jj][mm] * g[ivar];
+        }
+      }
+      continue;
+    }
+  }
+  // Above
+
+}
+
 void exahype::mappings::VolumeIntegral::enterCell(
-      exahype::Cell&                 fineGridCell,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+    exahype::Cell&                 fineGridCell,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
   if (!fineGridCell.isRefined()) {
-//    // quadrature nodes and weights; dummy lookup table for quadratures with 1 and 2 nodes.
-//    // must be moved somewhere else
-//    const int    numberOfGaussPoints=2;
-//
-//    // cell geometry
-//    const double h                                    = fineGridVerticesEnumerator.getCellSize()(0); //
-//    const double J                                    = 0.25*h*h;                                    // Jacobian determinant; constant in the cell
-//    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-//    double x                                          = 0;                                            // physical x coordinate
-//    double y                                          = 0;                                            // physical y coordinate
-//
-//    double update = 0;
-//
-//    // non-optimized quadrature loop;
-//    double qr=0;
-//    double qs=0;
-//
-//    for (int iqr=0; iqr < numberOfGaussPoints; iqr++) {
-//      for (int iqs=0; iqs < numberOfGaussPoints; iqs++) {
-//        qr = exahype::quad::gaussLegendreNodes[numberOfGaussPoints-1][iqr];
-//        qs = exahype::quad::gaussLegendreNodes[numberOfGaussPoints-1][iqs];
-//        exahype::geometry::mapping2d(center(0),center(1),h,qr,qs,&x,&y);
-//        // do something
-//      }
-//    }
-//    update += 0 * J;
+    records::CellDescription& cellDescription =
+        CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
+
+    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
+    const double dx = fineGridVerticesEnumerator.getCellSize()(0);
+    const double dy = fineGridVerticesEnumerator.getCellSize()(1);
+
+    const double dxPatch = dx/ (double) EXAHYPE_PATCH_SIZE_X;
+    const double dyPatch = dy/ (double) EXAHYPE_PATCH_SIZE_Y;
+
+    const int basisSize = EXAHYPE_ORDER+1;
+    const int nvar      = EXAHYPE_NVARS;
+
+
+    for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
+      for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
+        const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
+
+        computeVolumeIntegral(
+            cellDescription.getUpdate(patchIndex),
+            cellDescription.getVolumeFlux(patchIndex),
+            center,
+            dxPatch,dyPatch,
+            patchIndex,
+            nvar,
+            basisSize);
+      }
+    }
   }
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
@@ -447,13 +536,13 @@ void exahype::mappings::VolumeIntegral::enterCell(
 
 
 void exahype::mappings::VolumeIntegral::leaveCell(
-      exahype::Cell&           fineGridCell,
-      exahype::Vertex * const  fineGridVertices,
-      const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
+    exahype::Cell&           fineGridCell,
+    exahype::Vertex * const  fineGridVertices,
+    const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
@@ -462,7 +551,7 @@ void exahype::mappings::VolumeIntegral::leaveCell(
 
 
 void exahype::mappings::VolumeIntegral::beginIteration(
-  exahype::State&  solverState
+    exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
   // do nothing
@@ -471,7 +560,7 @@ void exahype::mappings::VolumeIntegral::beginIteration(
 
 
 void exahype::mappings::VolumeIntegral::endIteration(
-  exahype::State&  solverState
+    exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "endIteration(State)", solverState );
   // do nothing
@@ -481,12 +570,12 @@ void exahype::mappings::VolumeIntegral::endIteration(
 
 
 void exahype::mappings::VolumeIntegral::descend(
-  exahype::Cell * const          fineGridCells,
-  exahype::Vertex * const        fineGridVertices,
-  const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-  exahype::Vertex * const        coarseGridVertices,
-  const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-  exahype::Cell&                 coarseGridCell
+    exahype::Cell * const          fineGridCells,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell
 ) {
   logTraceInWith2Arguments( "descend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
   // do nothing
@@ -495,12 +584,12 @@ void exahype::mappings::VolumeIntegral::descend(
 
 
 void exahype::mappings::VolumeIntegral::ascend(
-  exahype::Cell * const    fineGridCells,
-  exahype::Vertex * const  fineGridVertices,
-  const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
-  exahype::Vertex * const  coarseGridVertices,
-  const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-  exahype::Cell&           coarseGridCell
+    exahype::Cell * const    fineGridCells,
+    exahype::Vertex * const  fineGridVertices,
+    const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell
 ) {
   logTraceInWith2Arguments( "ascend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
   // do nothing
