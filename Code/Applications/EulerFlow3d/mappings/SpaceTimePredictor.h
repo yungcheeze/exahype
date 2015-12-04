@@ -1267,13 +1267,13 @@ class exahype::mappings::SpaceTimePredictor {
      * @param[in] order               order of approximation
      */
     void computePredictor(
-        const int solution,
-        const int predictor,
-        const int volumeFlux,
-        const int spaceTimePredictor,
-        const int spaceTimeVolumeFlux,
-        const int extrapolatedPredictor,
-        const int fluctuations,
+        double *lQi,
+        double* lFi,
+        double* luh,
+        double* lQhi,
+        double* lFhi,
+        double* lQhbnd,
+        double* lFhbnd,
         const tarch::la::Vector<DIMENSIONS,double> center,
         const double dxPatch,const double dyPatch,
         const double timeStep,

@@ -81,7 +81,7 @@ adapter:
   merge-with-user-defined-mapping: SpaceTimePredictor
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: BoundaryConditions
-
+// The space-time predictor must be computed before the FaceDataExchange, i.e., the corrector step!
 adapter:
   name: Corrector
   merge-with-user-defined-mapping: FaceDataExchange

@@ -44,10 +44,6 @@ class exahype::mappings::GlobalTimeStep {
      */
     static tarch::logging::Log  _log;
 
-    static const double constexpr PNPM[10] = {             //!< Order depending PNPM factor.
-        1.0, 0.33, 0.17, 0.1, 0.069, 0.045,  0.038, 0.03, 0.02, 0.015
-    };
-
   public:
     /**
      * These flags are used to inform Peano about your operation. It tells the 
@@ -1254,6 +1250,19 @@ class exahype::mappings::GlobalTimeStep {
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
     );    
+
+
+    // Begin of code for ADERDG scheme
+    /**
+     * todo docu
+     */
+    double computeLocalTimeStep(
+        double * u,
+        const double dxPatch,
+        const double dyPatch,
+        const int nvar,
+        const int basisSize);
+    // End of code for ADERDG scheme
 };
 
 
