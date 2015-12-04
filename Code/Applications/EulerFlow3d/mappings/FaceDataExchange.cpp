@@ -3,7 +3,6 @@
 #include "EulerFlow3d/dg/Constants.h"
 
 #include "EulerFlow3d/geometry/Mapping.h"
-#include "EulerFlow3d/dg/DGHelpers.h"
 #include "EulerFlow3d/math/quad/Gausslegendre.h"
 
 #include "EulerFlow3d/multiscalelinkedcell/HangingVertexBookkeeper.h"

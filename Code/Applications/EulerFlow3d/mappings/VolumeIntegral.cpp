@@ -412,8 +412,8 @@ void exahype::mappings::VolumeIntegral::touchVertexLastTime(
 }
 
 
-void exahype::mappings::VolumeIntegral::computeVolumeIntegral(const int update,
-                                                              const int volumeFlux,
+void exahype::mappings::VolumeIntegral::computeVolumeIntegral(double* lduh,
+                                                              double* lFhi,
                                                               const tarch::la::Vector<DIMENSIONS,double> center,
                                                               const double dxPatch,const double dyPatch,
                                                               const int patchIndex,
@@ -423,32 +423,26 @@ void exahype::mappings::VolumeIntegral::computeVolumeIntegral(const int update,
   int numberOfDof = nvar * tarch::la::aPowI(DIMENSIONS,basisSize);
   double *f, *g;
 
-  double * du = &(DataHeap::getInstance().getData(update)[0]._persistentRecords._u);
-  memset(du,0,sizeof(double) * numberOfDof);
-
-  // x direction (independent from the y and z derivatives)
-  // Kxi : basisSize * basisSize
-  // lFh : nvar * basisSize
+  memset(lduh,0,sizeof(double) * numberOfDof);
 
   // Compute the "derivatives" (contributions of the stiffness matrix)
   // x direction (independent from the y and z derivatives)
-  for (int ii=0; ii<basisSize; ii++) { // loop over dof
+  for (int ii=0; ii<basisSize; ii++) {
     for (int jj=0; jj<basisSize; jj++) {
       const int nodeIndex     = ii + basisSize * jj;
       const int dofStartIndex = nodeIndex * nvar;
 
       double weight =  quad::gaussLegendreWeights[basisSize-1][jj];
 
-      double * temp = &(DataHeap::getInstance().getData(update)[dofStartIndex]._persistentRecords._u);
       for(int mm=0; mm < basisSize; mm++) {
         const int mmNodeIndex         = mm + basisSize * jj;
         const int mmDofStartIndex     = mmNodeIndex * nvar;
         const int mmFluxDofStartIndex = mmDofStartIndex * DIMENSIONS;
 
-        f = &(DataHeap::getInstance().getData(volumeFlux)[mmFluxDofStartIndex]._persistentRecords._u);
+        f = &lFhi[mmFluxDofStartIndex];
 
         for(int ivar=0; ivar < nvar; ivar++) {
-          du[dofStartIndex+ivar] +=  weight/dxPatch * dg::Kxi[ii][mm] * f[ivar];
+          lduh[dofStartIndex+ivar] +=  weight/dxPatch * dg::Kxi[ii][mm] * f[ivar];
         }
       }
       continue;
@@ -456,28 +450,23 @@ void exahype::mappings::VolumeIntegral::computeVolumeIntegral(const int update,
   }
   // Above seems okay!
 
-  /// y direction (independent from the y and z derivatives)
-  // Kxi : basisSize * basisSize
-  // lFh : nvar * basisSize
-
   // Compute the "derivatives" (contributions of the stiffness matrix)
-  // x direction (independent from the y and z derivatives)
-  for (int ii=0; ii<basisSize; ii++) { // loop over dof
+  /// y direction (independent from the y and z derivatives)
+  for (int ii=0; ii<basisSize; ii++) {
     for (int jj=0; jj<basisSize; jj++) {
       const int nodeIndex     = ii + basisSize * jj;
       const int dofStartIndex = nodeIndex * nvar;
 
       double weight =  quad::gaussLegendreWeights[basisSize-1][ii];
 
-      double * temp = &(DataHeap::getInstance().getData(update)[dofStartIndex]._persistentRecords._u);
       for(int mm=0; mm < basisSize; mm++) {
         const int mmNodeIndex         = ii + basisSize * mm;
         const int mmDofStartIndex     = mmNodeIndex * nvar;
         const int mmFluxDofStartIndex = mmDofStartIndex * DIMENSIONS;
 
-        g = &(DataHeap::getInstance().getData(volumeFlux)[mmFluxDofStartIndex+nvar]._persistentRecords._u);
+        g = &lFhi[mmFluxDofStartIndex+nvar];
 
-        double * du = &(DataHeap::getInstance().getData(update)[0]._persistentRecords._u);
+        double * du = &lduh[0];
         for(int ivar=0; ivar < nvar; ivar++) {
           du[dofStartIndex+ivar] +=  weight/dxPatch * dg::Kxi[jj][mm] * g[ivar];
         }
@@ -486,7 +475,6 @@ void exahype::mappings::VolumeIntegral::computeVolumeIntegral(const int update,
     }
   }
   // Above seems okay!
-
 }
 
 void exahype::mappings::VolumeIntegral::enterCell(
@@ -519,9 +507,12 @@ void exahype::mappings::VolumeIntegral::enterCell(
       for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
         const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
 
+        double* lFhi = &(DataHeap::getInstance().getData(cellDescription.getVolumeFlux(patchIndex))[0]._persistentRecords._u);
+        double* lduh = &(DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))    [0]._persistentRecords._u);
+
         computeVolumeIntegral(
-            cellDescription.getUpdate(patchIndex),
-            cellDescription.getVolumeFlux(patchIndex),
+            lduh,
+            lFhi,
             center,
             dxPatch,dyPatch,
             patchIndex,

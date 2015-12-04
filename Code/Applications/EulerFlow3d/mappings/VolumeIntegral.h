@@ -1253,8 +1253,11 @@ class exahype::mappings::VolumeIntegral {
     );    
 
     // Begin of code for ADERDG scheme
-    void computeVolumeIntegral(const int update,
-                               const int volumeFlux,
+    /**
+     * Computes the volume integral contribution to the local update.
+     */
+    void computeVolumeIntegral(double* lduh,
+                               double* lFhi,
                                const tarch::la::Vector<DIMENSIONS,double> center,
                                const double dxPatch,const double dyPatch,
                                const int patchIndex,

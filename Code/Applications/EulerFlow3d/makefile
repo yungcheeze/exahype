@@ -128,7 +128,7 @@ header:
 build: files.mk $(OBJECTS)
 	$(LL) $(OBJECTS) -o $(EXECUTABLE) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS) 
 	@echo
-	@echo build of Peano with component AdvectionDG0 successful
+	@echo build of Peano with component EulerFlow3d successful
 	@echo visit Peano\'s homepage at http://www.peano-framework.org
 
 

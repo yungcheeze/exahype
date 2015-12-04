@@ -3,7 +3,6 @@
 #include "EulerFlow3d/dg/Constants.h"
 
 #include "EulerFlow3d/geometry/Mapping.h"
-#include "EulerFlow3d/dg/DGHelpers.h"
 #include "EulerFlow3d/math/quad/Gausslegendre.h"
 
 #include "EulerFlow3d/multiscalelinkedcell/HangingVertexBookkeeper.h"
@@ -404,11 +403,6 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
   // do nothing
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
-
-extern const double exahype::quad::gaussLegendreNodes[10][10];
-extern const double exahype::quad::gaussLegendreWeights[10][10];
-
-extern const double exahype::dg::normal[3][6];
 
 void exahype::mappings::BoundaryConditions::enterCell(
     exahype::Cell&                 fineGridCell,

@@ -404,7 +404,6 @@ void exahype::mappings::InitialCondition::touchVertexLastTime(
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
-
 void exahype::mappings::InitialCondition::enterCell(
     exahype::Cell&                 fineGridCell,
     exahype::Vertex * const        fineGridVertices,
@@ -439,6 +438,9 @@ void exahype::mappings::InitialCondition::enterCell(
       for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
         const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
 
+        double* luh  = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
+        double* lduh = &(DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))  [0]._persistentRecords._u);
+
         for (int ii=0; ii<basisSize; ii++) { // loop over dof
           for (int jj=0; jj<basisSize; jj++) {
             // location and index of nodal degrees of freedom
@@ -455,11 +457,9 @@ void exahype::mappings::InitialCondition::enterCell(
             const int dofStartIndex  = nodeIndex * nvar;
 
             for (int ivar=0; ivar < nvar; ivar++) {
-              DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[dofStartIndex+ivar]._persistentRecords._u
-                                = value[ivar];
+              luh[dofStartIndex+ivar] = value[ivar];
 
-              DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))[dofStartIndex+ivar]._persistentRecords._u
-                                              = 0.;
+              lduh[dofStartIndex+ivar] = 0.;
             }
           }
         }

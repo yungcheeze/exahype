@@ -479,7 +479,7 @@ void exahype::mappings::SpaceTimePredictor::computePredictor(
           const int spaceTimeDofStartIndex     = spaceTimeNodeIndex * nvar;
           const int spaceTimeFluxDofStartIndex = spaceTimeDofStartIndex * DIMENSIONS;
 
-          Q = &lQi [spaceTimeDofStartIndex         ];
+          Q = &lQi [spaceTimeDofStartIndex        ];
           f = &lFi[spaceTimeFluxDofStartIndex     ];
           g = &lFi[spaceTimeFluxDofStartIndex+nvar];
           exahype::problem::PDEFlux(Q,nvar,f,g);

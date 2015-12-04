@@ -467,12 +467,12 @@ void exahype::mappings::SolutionUpdate::enterCell(
       for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
         const int patchIndex      = i     + (EXAHYPE_PATCH_SIZE_X+2) * j;
 
-        double *  uOld = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
-        double *    du = &(DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))  [0]._persistentRecords._u);
+        double* luhOld = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
+        double* lduh   = &(DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))  [0]._persistentRecords._u);
 
         updateSolution(
-            uOld,
-            du,
+            luhOld,
+            lduh,
             dxPatch,
             dyPatch,
             this->_timeStepSize,
