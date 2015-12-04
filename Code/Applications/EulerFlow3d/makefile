@@ -57,14 +57,14 @@ SYSTEM_LFLAGS = $(LINK_TBB)    $(LINK_MPI)
 
 # Settings for the GNU Compiler (Debug Mode)
 # ------------------------------------------
-CC=g++
-COMPILER_CFLAGS=-O0 -pedantic -pedantic-errors -Wall -Wstrict-aliasing -fstrict-aliasing -ggdb -std=c++0x
+#CC=g++
+#COMPILER_CFLAGS=-O0 -pedantic -pedantic-errors -Wall -Wstrict-aliasing -fstrict-aliasing -ggdb -std=c++0x
 
 
 # Settings for the GNU Compiler (Release Mode)
 # --------------------------------------------
-#CC=g++
-#COMPILER_CFLAGS=-O3 -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x
+CC=g++
+COMPILER_CFLAGS=-O3 -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x
 
 
 # Settings for the Intel Compiler (Debug Mode)

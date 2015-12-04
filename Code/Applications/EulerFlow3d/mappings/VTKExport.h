@@ -23,6 +23,8 @@
 #include "EulerFlow3d/Cell.h"
 #include "EulerFlow3d/State.h"
 
+#include "EulerFlow3d/Constants.h"
+
 namespace exahype {
       namespace mappings {
         class VTKExport;

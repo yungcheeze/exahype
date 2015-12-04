@@ -94,7 +94,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.switchToInitialCondition();    // initialize the fields of the cell descriptions, i.e., the initial values.
   repository.iterate();
 
-  for (int n=0; n<40; n++) {
+  for (int n=0; n<240; n++) {
     repository.switchToPredictor();
     repository.iterate();
     repository.switchToCorrector();

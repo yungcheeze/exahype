@@ -42,6 +42,12 @@ namespace exahype {
      * @brief todo
      */
     extern const double dudx[4][4];
+
+
+    /*
+     * Projects nodal values located at Gauss-Legendre nodes to a equidistant grid.
+     */
+    extern const double subOutputMatrix[16][16];
   }
 }
 

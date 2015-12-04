@@ -8,6 +8,10 @@
 
 #include "EulerFlow3d/problem/Problem.h"
 
+#include "EulerFlow3d/dg/DGMatrices.h"
+
+#include "string.h"
+
 int exahype::mappings::VTKExport::_snapshotCounter = 0;
 
 /**
@@ -72,7 +76,8 @@ exahype::mappings::VTKExport::VTKExport():
           _vtkWriter(0),
           _vertexWriter(0),
           _cellWriter(0),
-          _vertexValueWriter(0) {
+          _vertexValueWriter(0)
+{
   logTraceIn( "VTKExport()" );
   // do nothing
   logTraceOut( "VTKExport()" );
@@ -450,28 +455,94 @@ void exahype::mappings::VTKExport::enterCell(
       // helper variables
       double x,y;
 
+      // BEGIN: move into static fields todo
+      int    indexMapping          [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
+      double equidistantCoordinates[DIMENSIONS     ][EXAHYPE_NBASIS_POWER_DIMENSIONS];
+      double equidistantPartition  [TWO_POWER_D    ][EXAHYPE_NBASIS_POWER_DIMENSIONS];
+      double equidistantData       [EXAHYPE_NVARS][EXAHYPE_NBASIS_POWER_DIMENSIONS];
+
+      // define sub nodes
+      for (int ii=0; ii < basisSize; ii++) {
+        for (int jj=0; jj < basisSize; jj++) {
+          const int equiNodeIndex = ii + basisSize * jj;
+
+          indexMapping[ii][jj] = equiNodeIndex;
+          equidistantCoordinates[0][equiNodeIndex] = (double) ii / (double) EXAHYPE_ORDER;
+          equidistantCoordinates[1][equiNodeIndex] = (double) jj / (double) EXAHYPE_ORDER;
+        }
+      }
+
+      // define sub quadrangles/hexahedrons
+      for (int ii=0; ii < basisSize; ii++) {
+        for (int jj=0; jj < basisSize; jj++) {
+          const int equiNodeIndex = ii + basisSize * jj;
+
+          equidistantPartition[0][equiNodeIndex] = indexMapping[ii  ][jj  ];
+          equidistantPartition[1][equiNodeIndex] = indexMapping[ii+1][jj  ];
+          equidistantPartition[2][equiNodeIndex] = indexMapping[ii+1][jj+1];
+          equidistantPartition[3][equiNodeIndex] = indexMapping[ii  ][jj+1];
+        }
+      }
+
+      // END: move into static fields todo
+
       for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
         for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
           const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
 
+          // Map Gauss-Legendre nodes to equidistant subgrid coordinates
+//          std::memset((double *) &subData[0],0,sizeof(double) * EXAHYPE_NVARS * EXAHYPE_NBASIS_POWER_DIMENSIONS);
+          for (int ii=0; ii<basisSize; ii++) { // mem zero
+             for (int jj=0; jj<basisSize; jj++) {
+               const int equiNodeIndex = ii + basisSize * jj;
+
+               for (int ivar=0; ivar < nvar; ivar++) {
+                 equidistantData[ivar][equiNodeIndex] = 0;
+               }
+             }
+          }
+
+          double* u = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
+
+          for (int ii=0; ii<basisSize; ii++) { // project on subgrid coordinates
+            for (int jj=0; jj<basisSize; jj++) {
+              const int equiNodeIndex = ii + basisSize * jj;
+
+              for (int mm=0; mm<basisSize; mm++) { // project on subgrid coordinates
+                for (int nn=0; nn<basisSize; nn++) {
+                  const int nodeIndex     = mm + basisSize * nn;
+                  const int dofStartIndex = nodeIndex * nvar;
+
+                  for (int ivar=0; ivar < nvar; ivar++) {
+                    equidistantData[ivar][equiNodeIndex] += u[dofStartIndex+ivar] * dg::subOutputMatrix[nodeIndex][equiNodeIndex];
+                  }
+                }
+              }
+            }
+          }
+
           for (int ii=0; ii<basisSize; ii++) { // loop over dof
             for (int jj=0; jj<basisSize; jj++) {
               // location and index of nodal degrees of freedom
-              const int nodeIndex = ii + basisSize * jj;           // Angelika todo
+              const int nodeIndex     = ii + basisSize * jj;
+              const int dofStartIndex = nodeIndex * nvar;
 
-              const double qr = exahype::quad::gaussLegendreNodes[basisSize-1][ii];
-              const double qs = exahype::quad::gaussLegendreNodes[basisSize-1][jj];
-              exahype::geometry::mapping2d(center(0),center(1),dx,dy,dxPatch,dyPatch,i,j,qr,qs,&x,&y);
+              const double r = equidistantCoordinates[0][nodeIndex];
+              const double s = equidistantCoordinates[1][nodeIndex];
+
+//              const double r = quad::gaussLegendreNodes[basisSize-1][ii];
+//              const double s = quad::gaussLegendreNodes[basisSize-1][jj];
+
+              exahype::geometry::mapping2d(center(0),center(1),dx,dy,dxPatch,dyPatch,i,j,r,s,&x,&y);
               tarch::la::Vector<DIMENSIONS,double> currentVertexPosition(x,y);
 
-              const int currentNodeIndex = _vertexWriter->plotVertex(currentVertexPosition);
+              const int vtkNodeIndex = _vertexWriter->plotVertex(currentVertexPosition);
+              _cellWriter->plotPoint(vtkNodeIndex);
 
-              const int dofStartIndex  = nodeIndex * nvar;
-
-              for (int ivar=1; ivar < 2; ivar++) {
-                const double dofValue = DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[dofStartIndex+ivar]._persistentRecords._u;
-                _cellWriter->plotPoint(currentNodeIndex);
-                _vertexValueWriter->plotVertex(currentNodeIndex,dofValue);
+              for (int ivar=4; ivar < 5; ivar++) {
+//                const double dofValue = u[dofStartIndex+ivar];
+                const double dofValue = equidistantData[ivar][nodeIndex];
+                _vertexValueWriter->plotVertex(vtkNodeIndex,dofValue);
               }
             }
           }
@@ -503,11 +574,12 @@ void exahype::mappings::VTKExport::enterCell(
     logTraceInWith1Argument( "beginIteration(State)", solverState );
 
     assertion( _vtkWriter==0 );
-    _vtkWriter = new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter();
+    _vtkWriter         = new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter();
     _vertexWriter      = _vtkWriter->createVertexWriter();
     _cellWriter        = _vtkWriter->createCellWriter();
-    _vertexValueWriter = _vtkWriter->createVertexDataWriter("var",1);
-    //_cellValueWriter   = _vtkWriter->createCellDataWriter("concentration",1);
+
+    _vertexValueWriter = _vtkWriter->createVertexDataWriter("Qh",1);
+//    _cellValueWriter   = _vtkWriter->createCellDataWriter("concentration",1);
 
     logTraceOutWith1Argument( "beginIteration(State)", solverState);
   }
@@ -524,14 +596,14 @@ void exahype::mappings::VTKExport::enterCell(
     //  _cellValueWriter->close();
 
     delete _vertexWriter;
-    delete _cellWriter;
     delete _vertexValueWriter;
+    delete _cellWriter;
     //  delete _cellValueWriter;
 
-    _vertexWriter                  = nullptr;
-    _cellWriter                    = nullptr;
-    _vertexValueWriter             = nullptr;
-    //  _cellValueWriter               = nullptr;
+    _vertexWriter      = nullptr;
+    _cellWriter        = nullptr;
+    _vertexValueWriter = nullptr;
+    //  _cellValueWriter = nullptr;
 
     std::ostringstream snapshotFileName;
     snapshotFileName << "solution"
@@ -549,8 +621,6 @@ void exahype::mappings::VTKExport::enterCell(
 
     logTraceOutWith1Argument( "endIteration(State)", solverState);
   }
-
-
 
   void exahype::mappings::VTKExport::descend(
       exahype::Cell * const          fineGridCells,
