@@ -9,7 +9,7 @@
 # ---------
 # Please adopt these directories to your Peano installation. The values are 
 # used by the compiler and linker calls.
-PEANO_HOME = /home/dominic/dev/packages/peano/src
+PEANO_HOME = .
 
 # points to directory holding the project's sources
 PROJECT_HOME = EulerFlow3d  
