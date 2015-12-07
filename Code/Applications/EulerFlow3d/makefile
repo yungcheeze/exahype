@@ -63,8 +63,8 @@ SYSTEM_LFLAGS = $(LINK_TBB)    $(LINK_MPI)
 
 # Settings for the GNU Compiler (Release Mode)
 # --------------------------------------------
-CC=g++
-COMPILER_CFLAGS=-O3 -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x
+#CC=g++
+#COMPILER_CFLAGS=-O3 -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x
 
 
 # Settings for the Intel Compiler (Debug Mode)
@@ -75,8 +75,8 @@ COMPILER_CFLAGS=-O3 -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x
 
 # Settings for the Intel Compiler (Release Mode)
 # ----------------------------------------------
-#CC=icpc
-#COMPILER_CFLAGS=-fast -fstrict-aliasing  -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
+CC=icpc
+COMPILER_CFLAGS=-fast -fstrict-aliasing  -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
 
 
 # Settings for the XLC Compiler (Debug Mode)
