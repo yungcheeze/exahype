@@ -53,42 +53,44 @@ SYSTEM_CFLAGS = $(INCLUDE_TBB) $(INCLUDE_MPI)
 SYSTEM_LFLAGS = $(LINK_TBB)    $(LINK_MPI)
 #SYSTEM_LFLAGS =  $(LINK_OMP)    $(LINK_MPI)
 
+# Decide on compiler and flags depending on the environment variables [CC]={gcc, Intel} and [MODE]={Debug, Release}
+# -----------------------
+ifeq ($(CC),gcc)
+	ifeq ($(MODE),Debug)
+		# Settings for the GNU Compiler (Debug Mode)
+		# ------------------------------------------
+		CC=g++
+		COMPILER_CFLAGS=-O0 -pedantic -pedantic-errors -Wall -Wstrict-aliasing -fstrict-aliasing -ggdb -std=c++0x
+	else
+		# Settings for the GNU Compiler (Release Mode)
+		# --------------------------------------------
+		CC=g++
+		COMPILER_CFLAGS=-O3 -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x
+	endif
+else
+        ifeq ($(MODE),Debug)
+		# Settings for the Intel Compiler (Debug Mode)
+		# --------------------------------------------
+		CC=icpc
+		COMPILER_CFLAGS=-O0 -fstrict-aliasing -std=c++0x
+        else
+		# Settings for the Intel Compiler (Release Mode)
+		# ----------------------------------------------
+		CC=icpc
+		COMPILER_CFLAGS=-fast -fstrict-aliasing  -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
+	endif
+endif
+
+		# Settings for the XLC Compiler (Debug Mode)
+		# --------------------------------------------
+		#CC=xlcc
+		#COMPILER_CFLAGS=-O0 -fstrict-aliasing -qpack_semantic=gnu 
 
 
-# Settings for the GNU Compiler (Debug Mode)
-# ------------------------------------------
-#CC=g++
-#COMPILER_CFLAGS=-O0 -pedantic -pedantic-errors -Wall -Wstrict-aliasing -fstrict-aliasing -ggdb -std=c++0x
-
-
-# Settings for the GNU Compiler (Release Mode)
-# --------------------------------------------
-#CC=g++
-#COMPILER_CFLAGS=-O3 -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x
-
-
-# Settings for the Intel Compiler (Debug Mode)
-# --------------------------------------------
-#CC=icpc
-#COMPILER_CFLAGS=-O0 -fstrict-aliasing -std=c++0x
-
-
-# Settings for the Intel Compiler (Release Mode)
-# ----------------------------------------------
-CC=icpc
-COMPILER_CFLAGS=-fast -fstrict-aliasing  -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
-
-
-# Settings for the XLC Compiler (Debug Mode)
-# --------------------------------------------
-#CC=xlcc
-#COMPILER_CFLAGS=-O0 -fstrict-aliasing -qpack_semantic=gnu 
-
-
-# Settings for the XLC Compiler (Release Mode)
-# ----------------------------------------------
-#CC=xlcc
-#COMPILER_CFLAGS=-fast -fstrict-aliasing -qpack_semantic=gnu 
+		# Settings for the XLC Compiler (Release Mode)
+		# ----------------------------------------------
+		#CC=xlcc
+		#COMPILER_CFLAGS=-fast -fstrict-aliasing -qpack_semantic=gnu 
 
 
 
