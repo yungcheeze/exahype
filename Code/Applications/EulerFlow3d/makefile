@@ -46,12 +46,15 @@ LINK_OMP=-fopenmp
 LINK_MPI=
 
 
-# Assemble Compiler Flags
+# Assemble Compiler Flags depending on the environment variable [SHAREDMEM]={OMP, TBB}
 # -----------------------
-SYSTEM_CFLAGS = $(INCLUDE_TBB) $(INCLUDE_MPI)
-#SYSTEM_CFLAGS =  $(INCLUDE_OMP) $(INCLUDE_MPI)
-SYSTEM_LFLAGS = $(LINK_TBB)    $(LINK_MPI)
-#SYSTEM_LFLAGS =  $(LINK_OMP)    $(LINK_MPI)
+ifeq ($(SHAREDMEM),OMP)
+	SYSTEM_CFLAGS =  $(INCLUDE_OMP) $(INCLUDE_MPI)
+	SYSTEM_LFLAGS =  $(LINK_OMP)    $(LINK_MPI)
+else
+	SYSTEM_CFLAGS = $(INCLUDE_TBB) $(INCLUDE_MPI)
+	SYSTEM_LFLAGS = $(LINK_TBB)    $(LINK_MPI)
+endif
 
 # Decide on compiler and flags depending on the environment variables [CC]={gcc, Intel} and [MODE]={Debug, Release}
 # -----------------------
