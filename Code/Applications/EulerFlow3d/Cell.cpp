@@ -62,15 +62,16 @@ exahype::Cell::initCellInComputeTree(const int level,
         const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
 
         // Initialize patch space-time DoF to invalid value
-        cellDescriptionForPde.setSpaceTimePredictor (patchIndex,-1);
-        cellDescriptionForPde.setSpaceTimeVolumeFlux(patchIndex,-1);
+        cellDescriptionForPde.setSpaceTimePredictor (patchIndex,multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
+        cellDescriptionForPde.setSpaceTimeVolumeFlux(patchIndex,multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 
         // Initialize patch volume DoF to invalid value
-        cellDescriptionForPde.setSolution   (patchIndex,-1);
-        cellDescriptionForPde.setUpdate     (patchIndex,-1);
-        cellDescriptionForPde.setPredictor  (patchIndex,-1);
-        cellDescriptionForPde.setVolumeFlux (patchIndex,-1);
+        cellDescriptionForPde.setSolution   (patchIndex,multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
+        cellDescriptionForPde.setUpdate     (patchIndex,multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
+        cellDescriptionForPde.setPredictor  (patchIndex,multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
+        cellDescriptionForPde.setVolumeFlux (patchIndex,multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 
+        // Allocate space-time and volume DoF only for non-ghost patch cells
         if (i > 0 || i < EXAHYPE_PATCH_SIZE_X+1) {
           if (j > 0 || j < EXAHYPE_PATCH_SIZE_Y+1) {
             // Allocate space-time DoF

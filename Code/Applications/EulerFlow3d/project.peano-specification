@@ -24,8 +24,7 @@ event-mapping:
   
 
 event-mapping:
-  name: GlobalTimeStep
-
+  name: GlobalTimeStepComputation
 
 event-mapping:
   name: InitialCondition
@@ -66,27 +65,53 @@ adapter:
   merge-with-predefined-mapping:   VTKGridVisualiser(grid)
 
 adapter:
-  name: PatchInit
-  merge-with-user-defined-mapping: PatchInit
+  name: PatchInitialisation
+  merge-with-user-defined-mapping: PatchInitialisation
   // tracks cell traversal events here; updates neighbour information in vertices
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex)
+
+adapter:
+  name: PatchInitialisationAndExport
+  merge-with-user-defined-mapping: PatchInitialisation
+  // tracks cell traversal events here; updates neighbour information in vertices
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex)
+  merge-with-user-defined-mapping: VTKExport
 
 adapter:
   name: InitialCondition
   merge-with-user-defined-mapping: InitialCondition 
 
 adapter:
+  name: InitialConditionAndExport
+  merge-with-user-defined-mapping: InitialCondition
+  merge-with-user-defined-mapping: VTKExport
+
+adapter:
+  name: GlobalTimeStepComputation
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
+
+adapter:
   name: Predictor
-  merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: SpaceTimePredictor
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: BoundaryConditions
+
 // The space-time predictor must be computed before the FaceDataExchange, i.e., the corrector step!
+
 adapter:
   name: Corrector
   merge-with-user-defined-mapping: FaceDataExchange
   merge-with-user-defined-mapping: RiemannSolver
   merge-with-user-defined-mapping: SurfaceIntegral
+  merge-with-user-defined-mapping: SolutionUpdate
+
+adapter:
+  name: CorrectorAndExport
+  merge-with-user-defined-mapping: FaceDataExchange
+  merge-with-user-defined-mapping: RiemannSolver
+  merge-with-user-defined-mapping: SurfaceIntegral
+  merge-with-user-defined-mapping: SolutionUpdate
+  merge-with-user-defined-mapping: VTKExport
 
 adapter:
   name: SolutionExport

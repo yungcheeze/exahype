@@ -21,6 +21,7 @@
  #include "EulerFlow3d/mappings/FaceDataExchange.h"
  #include "EulerFlow3d/mappings/RiemannSolver.h"
  #include "EulerFlow3d/mappings/SurfaceIntegral.h"
+ #include "EulerFlow3d/mappings/SolutionUpdate.h"
 
 
 
@@ -43,10 +44,12 @@ class exahype::adapters::Corrector {
     typedef mappings::FaceDataExchange Mapping0;
     typedef mappings::RiemannSolver Mapping1;
     typedef mappings::SurfaceIntegral Mapping2;
+    typedef mappings::SolutionUpdate Mapping3;
 
      Mapping0  _map2FaceDataExchange;
      Mapping1  _map2RiemannSolver;
      Mapping2  _map2SurfaceIntegral;
+     Mapping3  _map2SolutionUpdate;
 
 
   public:

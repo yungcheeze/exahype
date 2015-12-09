@@ -5,8 +5,8 @@
 // this file and your project to your needs as long as the license is in 
 // agreement with the original Peano user constraints. A reference to/citation  
 // of  Peano and its author is highly appreciated.
-#ifndef EXAHYPE_MAPPINGS_GlobalTimeStep_H_
-#define EXAHYPE_MAPPINGS_GlobalTimeStep_H_
+#ifndef EXAHYPE_MAPPINGS_GlobalTimeStepComputation_H_
+#define EXAHYPE_MAPPINGS_GlobalTimeStepComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -25,7 +25,7 @@
 
 namespace exahype {
       namespace mappings {
-        class GlobalTimeStep;
+        class GlobalTimeStepComputation;
       } 
 }
 
@@ -37,13 +37,24 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::mappings::GlobalTimeStep {
+class exahype::mappings::GlobalTimeStepComputation {
   private:
     /**
      * Logging device for the trace macros.
      */
     static tarch::logging::Log  _log;
 
+    /**
+     * Local copy of the state.
+     */
+    State _localState;
+
+    /**
+     * Order depending PNPM factor.
+     */
+    static constexpr double PNPM[10] = {
+        1.0, 0.33, 0.17, 0.1, 0.069, 0.045,  0.038, 0.03, 0.02, 0.015
+    };
   public:
     /**
      * These flags are used to inform Peano about your operation. It tells the 
@@ -94,7 +105,7 @@ class exahype::mappings::GlobalTimeStep {
      * that your code works on a parallel machine and for any mapping/algorithm 
      * modification.
      */
-    GlobalTimeStep();
+    GlobalTimeStepComputation();
 
     #if defined(SharedMemoryParallelisation)
     /**
@@ -107,13 +118,13 @@ class exahype::mappings::GlobalTimeStep {
      *
      * @see mergeWithWorkerThread()
      */
-    GlobalTimeStep(const GlobalTimeStep& masterThread);
+    GlobalTimeStepComputation(const GlobalTimeStepComputation& masterThread);
     #endif
 
     /**
      * Destructor. Typically does not implement any operation.
      */
-    virtual ~GlobalTimeStep();
+    virtual ~GlobalTimeStepComputation();
   
     #if defined(SharedMemoryParallelisation)
     /**
@@ -144,7 +155,7 @@ class exahype::mappings::GlobalTimeStep {
      * on the heap. However, you should protect this object by a BooleanSemaphore 
      * and a lock to serialise all accesses to the plotter.    
      */   
-    void mergeWithWorkerThread(const GlobalTimeStep& workerThread);
+    void mergeWithWorkerThread(const GlobalTimeStepComputation& workerThread);
     #endif
 
     /**
@@ -1139,7 +1150,7 @@ class exahype::mappings::GlobalTimeStep {
      * beginIteration() might not be called prior to any other event. See the 
      * documentation of CommunicationSpecification for details.
      *
-     * @see GlobalTimeStep()
+     * @see GlobalTimeStepComputation()
      */
     void beginIteration(
       exahype::State&  solverState
@@ -1172,7 +1183,7 @@ class exahype::mappings::GlobalTimeStep {
      * might not be called after all other events. See the documentation 
      * of CommunicationSpecification for details.
      *
-     * @see GlobalTimeStep()
+     * @see GlobalTimeStepComputation()
      */
     void endIteration(
       exahype::State&  solverState
@@ -1249,20 +1260,15 @@ class exahype::mappings::GlobalTimeStep {
       exahype::Vertex * const  coarseGridVertices,
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
-    );    
+    );
 
-
-    // Begin of code for ADERDG scheme
-    /**
-     * todo docu
-     */
-    double computeLocalTimeStep(
-        double * u,
-        const double dxPatch,
-        const double dyPatch,
+    // Begin of code for ADERDG method
+    double computeAdmissibleTimeStep(
+        double * luh,
+        const double* dx,
         const int nvar,
         const int basisSize);
-    // End of code for ADERDG scheme
+    // End of code for ADERDG method
 };
 
 

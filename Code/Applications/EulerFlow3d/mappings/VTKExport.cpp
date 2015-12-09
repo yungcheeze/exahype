@@ -456,10 +456,10 @@ void exahype::mappings::VTKExport::enterCell(
       double x,y;
 
       // BEGIN: move into static fields todo
-      int    indexMapping          [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
-      double equidistantCoordinates[DIMENSIONS     ][EXAHYPE_NBASIS_POWER_DIMENSIONS];
-      double equidistantPartition  [TWO_POWER_D    ][EXAHYPE_NBASIS_POWER_DIMENSIONS];
-      double equidistantData       [EXAHYPE_NVARS][EXAHYPE_NBASIS_POWER_DIMENSIONS];
+      int    indexMapping       [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
+      double uniformCoordinates[DIMENSIONS     ][EXAHYPE_NBASIS_POWER_DIMENSIONS];
+      double uniformPartition  [TWO_POWER_D    ][EXAHYPE_NBASIS_POWER_DIMENSIONS];
+      double uniformDoF        [EXAHYPE_NVARS][EXAHYPE_NBASIS_POWER_DIMENSIONS];
 
       // define sub nodes
       for (int ii=0; ii < basisSize; ii++) {
@@ -467,8 +467,8 @@ void exahype::mappings::VTKExport::enterCell(
           const int equiNodeIndex = ii + basisSize * jj;
 
           indexMapping[ii][jj] = equiNodeIndex;
-          equidistantCoordinates[0][equiNodeIndex] = (double) ii / (double) EXAHYPE_ORDER;
-          equidistantCoordinates[1][equiNodeIndex] = (double) jj / (double) EXAHYPE_ORDER;
+          uniformCoordinates[0][equiNodeIndex] = (double) ii / (double) EXAHYPE_ORDER;
+          uniformCoordinates[1][equiNodeIndex] = (double) jj / (double) EXAHYPE_ORDER;
         }
       }
 
@@ -477,10 +477,10 @@ void exahype::mappings::VTKExport::enterCell(
         for (int jj=0; jj < basisSize; jj++) {
           const int equiNodeIndex = ii + basisSize * jj;
 
-          equidistantPartition[0][equiNodeIndex] = indexMapping[ii  ][jj  ];
-          equidistantPartition[1][equiNodeIndex] = indexMapping[ii+1][jj  ];
-          equidistantPartition[2][equiNodeIndex] = indexMapping[ii+1][jj+1];
-          equidistantPartition[3][equiNodeIndex] = indexMapping[ii  ][jj+1];
+          uniformPartition[0][equiNodeIndex] = indexMapping[ii  ][jj  ];
+          uniformPartition[1][equiNodeIndex] = indexMapping[ii+1][jj  ];
+          uniformPartition[2][equiNodeIndex] = indexMapping[ii+1][jj+1];
+          uniformPartition[3][equiNodeIndex] = indexMapping[ii  ][jj+1];
         }
       }
 
@@ -497,12 +497,12 @@ void exahype::mappings::VTKExport::enterCell(
                const int equiNodeIndex = ii + basisSize * jj;
 
                for (int ivar=0; ivar < nvar; ivar++) {
-                 equidistantData[ivar][equiNodeIndex] = 0;
+                 uniformDoF[ivar][equiNodeIndex] = 0;
                }
              }
           }
 
-          double* u = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
+          double* luh = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
 
           for (int ii=0; ii<basisSize; ii++) { // project on subgrid coordinates
             for (int jj=0; jj<basisSize; jj++) {
@@ -514,7 +514,7 @@ void exahype::mappings::VTKExport::enterCell(
                   const int dofStartIndex = nodeIndex * nvar;
 
                   for (int ivar=0; ivar < nvar; ivar++) {
-                    equidistantData[ivar][equiNodeIndex] += u[dofStartIndex+ivar] * dg::subOutputMatrix[nodeIndex][equiNodeIndex];
+                    uniformDoF[ivar][equiNodeIndex] += luh[dofStartIndex+ivar] * dg::subOutputMatrix[nodeIndex][equiNodeIndex];
                   }
                 }
               }
@@ -527,8 +527,8 @@ void exahype::mappings::VTKExport::enterCell(
               const int nodeIndex     = ii + basisSize * jj;
               const int dofStartIndex = nodeIndex * nvar;
 
-              const double r = equidistantCoordinates[0][nodeIndex];
-              const double s = equidistantCoordinates[1][nodeIndex];
+              const double r = uniformCoordinates[0][nodeIndex];
+              const double s = uniformCoordinates[1][nodeIndex];
 
 //              const double r = quad::gaussLegendreNodes[basisSize-1][ii];
 //              const double s = quad::gaussLegendreNodes[basisSize-1][jj];
@@ -541,7 +541,7 @@ void exahype::mappings::VTKExport::enterCell(
 
               for (int ivar=4; ivar < 5; ivar++) {
 //                const double dofValue = u[dofStartIndex+ivar];
-                const double dofValue = equidistantData[ivar][nodeIndex];
+                const double dofValue = uniformDoF[ivar][nodeIndex];
                 _vertexValueWriter->plotVertex(vtkNodeIndex,dofValue);
               }
             }

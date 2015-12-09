@@ -18,6 +18,8 @@
 #include "EulerFlow3d/Constants.h"
 // ! End of code for DG method
 
+tarch::logging::Log  exahype::runners::Runner::_log( "exahype::runners::Runner" );
+
 exahype::runners::Runner::Runner() {
   // @todo Insert your code here
 }
@@ -67,17 +69,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   peano::utils::UserInterface userInterface;
   userInterface.writeHeader();
 
-  // ! Begin of code for DG method
-  const double CFL             = 0.1;                                                     // CFL number for a 0-th order DG method
-  const double minimumMeshSize = 1./std::pow(3.,EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL);  // tripartioning; this is the smallest fine grid mesh size after initial refinement
-  const double maximumVelocity = 1.;                                                       // flux/CFL condition specific value (~max. eigenvalue). (MPI_REDUCTION necessary in order to obtain global time scale)
-
-  const double timeStepSize    = CFL * minimumMeshSize/maximumVelocity;
-  const int    maximumTimeStep = std::ceil(EXAHYPE_SIMULATION_TIME/timeStepSize);
-  const int    plottingStride  = std::floor(maximumTimeStep/EXAHYPE_NUMBER_OF_PLOTS);
-
-  repository.getState().setTimeStepSize(1e-3);
-
   // The space-tree is initialised with 1 coarse grid cell on level 1 and 3^d fine grid cells on level 2.
   for (int coarseGridLevel=1; coarseGridLevel<EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL; coarseGridLevel++) {
     repository.switchToInitialGrid();
@@ -85,28 +76,38 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       repository.iterate();
     } while (!repository.getState().isGridStationary());
   }
-
-  repository.switchToGridExport();          // export the grid
+  repository.switchToGridExport();                // export the grid
   repository.iterate();
 
-  repository.switchToPatchInit();           // initialize the cell descriptions;
+  repository.switchToPatchInitialisation();       // initialize the cell descriptions;
   repository.iterate();
-  repository.switchToInitialCondition();    // initialize the fields of the cell descriptions, i.e., the initial values.
+  repository.switchToInitialConditionAndExport(); // initialize the fields of the cell descriptions, i.e., the initial values.
   repository.iterate();
+
+  repository.getState().setTimeStepSize(1e20);
+  repository.switchToGlobalTimeStepComputation();
+  repository.iterate();
+  logInfo("runAsMaster(...)", "global time step (seconds)=" <<
+          repository.getState().getTimeStepSize() );
 
   for (int n=0; n<240; n++) {
+    // predictor
     repository.switchToPredictor();
     repository.iterate();
-    repository.switchToCorrector();
+    // corrector
+    if (n%EXAHYPE_PLOTTING_STRIDE==0) {
+      repository.switchToCorrectorAndExport();
+    } else {
+      repository.switchToCorrector();
+    }
     repository.iterate();
-    repository.switchToSolutionExport();
+
+    // global reduction
+    repository.getState().setTimeStepSize(1e20);
+    repository.switchToGlobalTimeStepComputation();
     repository.iterate();
-//    if (plottingStride>0 && n%plottingStride==0) {
-//
-//    } else {
-//      repository.switchToTimeStep();
-//    }
-    repository.iterate();
+    logInfo("runAsMaster(...)", "global time step (seconds)=" <<
+            repository.getState().getTimeStepSize() );
   }
 
   repository.logIterationStatistics();

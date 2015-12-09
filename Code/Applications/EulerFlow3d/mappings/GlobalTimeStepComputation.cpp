@@ -1,4 +1,4 @@
-#include "EulerFlow3d/mappings/GlobalTimeStep.h"
+#include "EulerFlow3d/mappings/GlobalTimeStepComputation.h"
 
 #include "EulerFlow3d/Constants.h"
 
@@ -19,7 +19,7 @@
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
-peano::CommunicationSpecification   exahype::mappings::GlobalTimeStep::communicationSpecification() {
+peano::CommunicationSpecification   exahype::mappings::GlobalTimeStepComputation::communicationSpecification() {
   return peano::CommunicationSpecification(peano::CommunicationSpecification::SendDataAndStateBeforeFirstTouchVertexFirstTime,peano::CommunicationSpecification::SendDataAndStateAfterLastTouchVertexLastTime,false);
 }
 
@@ -27,7 +27,7 @@ peano::CommunicationSpecification   exahype::mappings::GlobalTimeStep::communica
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
-peano::MappingSpecification   exahype::mappings::GlobalTimeStep::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
@@ -35,7 +35,7 @@ peano::MappingSpecification   exahype::mappings::GlobalTimeStep::touchVertexLast
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
-peano::MappingSpecification   exahype::mappings::GlobalTimeStep::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
@@ -43,7 +43,7 @@ peano::MappingSpecification   exahype::mappings::GlobalTimeStep::touchVertexFirs
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
-peano::MappingSpecification   exahype::mappings::GlobalTimeStep::enterCellSpecification() {
+peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::enterCellSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
@@ -51,7 +51,7 @@ peano::MappingSpecification   exahype::mappings::GlobalTimeStep::enterCellSpecif
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
-peano::MappingSpecification   exahype::mappings::GlobalTimeStep::leaveCellSpecification() {
+peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::leaveCellSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
@@ -59,7 +59,7 @@ peano::MappingSpecification   exahype::mappings::GlobalTimeStep::leaveCellSpecif
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
-peano::MappingSpecification   exahype::mappings::GlobalTimeStep::ascendSpecification() {
+peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::ascendSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
@@ -67,45 +67,45 @@ peano::MappingSpecification   exahype::mappings::GlobalTimeStep::ascendSpecifica
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
-peano::MappingSpecification   exahype::mappings::GlobalTimeStep::descendSpecification() {
+peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::descendSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
-tarch::logging::Log                exahype::mappings::GlobalTimeStep::_log( "exahype::mappings::GlobalTimeStep" ); 
+tarch::logging::Log                exahype::mappings::GlobalTimeStepComputation::_log( "exahype::mappings::GlobalTimeStepComputation" );
 
 
-exahype::mappings::GlobalTimeStep::GlobalTimeStep() {
-  logTraceIn( "GlobalTimeStep()" );
+exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation() {
+  logTraceIn( "GlobalTimeStepComputation()" );
   // do nothing
-  logTraceOut( "GlobalTimeStep()" );
+  logTraceOut( "GlobalTimeStepComputation()" );
 }
 
 
-exahype::mappings::GlobalTimeStep::~GlobalTimeStep() {
-  logTraceIn( "~GlobalTimeStep()" );
+exahype::mappings::GlobalTimeStepComputation::~GlobalTimeStepComputation() {
+  logTraceIn( "~GlobalTimeStepComputation()" );
   // do nothing
-  logTraceOut( "~GlobalTimeStep()" );
+  logTraceOut( "~GlobalTimeStepComputation()" );
 }
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::GlobalTimeStep::GlobalTimeStep(const GlobalTimeStep&  masterThread) {
-  logTraceIn( "GlobalTimeStep(GlobalTimeStep)" );
+exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const GlobalTimeStepComputation&  masterThread) {
+  logTraceIn( "GlobalTimeStepComputation(GlobalTimeStepComputation)" );
   // do nothing
-  logTraceOut( "GlobalTimeStep(GlobalTimeStep)" );
+  logTraceOut( "GlobalTimeStepComputation(GlobalTimeStepComputation)" );
 }
 
 
-void exahype::mappings::GlobalTimeStep::mergeWithWorkerThread(const GlobalTimeStep& workerThread) {
-  logTraceIn( "mergeWithWorkerThread(GlobalTimeStep)" );
+void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(const GlobalTimeStepComputation& workerThread) {
+  logTraceIn( "mergeWithWorkerThread(GlobalTimeStepComputation)" );
   // do nothing
-  logTraceOut( "mergeWithWorkerThread(GlobalTimeStep)" );
+  logTraceOut( "mergeWithWorkerThread(GlobalTimeStepComputation)" );
 }
 #endif
 
 
-void exahype::mappings::GlobalTimeStep::createHangingVertex(
+void exahype::mappings::GlobalTimeStepComputation::createHangingVertex(
     exahype::Vertex&     fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                fineGridX,
     const tarch::la::Vector<DIMENSIONS,double>&                fineGridH,
@@ -120,7 +120,7 @@ void exahype::mappings::GlobalTimeStep::createHangingVertex(
 }
 
 
-void exahype::mappings::GlobalTimeStep::destroyHangingVertex(
+void exahype::mappings::GlobalTimeStepComputation::destroyHangingVertex(
     const exahype::Vertex&   fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
     const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -135,7 +135,7 @@ void exahype::mappings::GlobalTimeStep::destroyHangingVertex(
 }
 
 
-void exahype::mappings::GlobalTimeStep::createInnerVertex(
+void exahype::mappings::GlobalTimeStepComputation::createInnerVertex(
     exahype::Vertex&               fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
     const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -150,7 +150,7 @@ void exahype::mappings::GlobalTimeStep::createInnerVertex(
 }
 
 
-void exahype::mappings::GlobalTimeStep::createBoundaryVertex(
+void exahype::mappings::GlobalTimeStepComputation::createBoundaryVertex(
     exahype::Vertex&               fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
     const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -165,7 +165,7 @@ void exahype::mappings::GlobalTimeStep::createBoundaryVertex(
 }
 
 
-void exahype::mappings::GlobalTimeStep::destroyVertex(
+void exahype::mappings::GlobalTimeStepComputation::destroyVertex(
     const exahype::Vertex&   fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
     const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -180,7 +180,7 @@ void exahype::mappings::GlobalTimeStep::destroyVertex(
 }
 
 
-void exahype::mappings::GlobalTimeStep::createCell(
+void exahype::mappings::GlobalTimeStepComputation::createCell(
     exahype::Cell&                 fineGridCell,
     exahype::Vertex * const        fineGridVertices,
     const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -195,7 +195,7 @@ void exahype::mappings::GlobalTimeStep::createCell(
 }
 
 
-void exahype::mappings::GlobalTimeStep::destroyCell(
+void exahype::mappings::GlobalTimeStepComputation::destroyCell(
     const exahype::Cell&           fineGridCell,
     exahype::Vertex * const        fineGridVertices,
     const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -210,7 +210,7 @@ void exahype::mappings::GlobalTimeStep::destroyCell(
 }
 
 #ifdef Parallel
-void exahype::mappings::GlobalTimeStep::mergeWithNeighbour(
+void exahype::mappings::GlobalTimeStepComputation::mergeWithNeighbour(
     exahype::Vertex&  vertex,
     const exahype::Vertex&  neighbour,
     int                                           fromRank,
@@ -223,7 +223,7 @@ void exahype::mappings::GlobalTimeStep::mergeWithNeighbour(
   logTraceOut( "mergeWithNeighbour(...)" );
 }
 
-void exahype::mappings::GlobalTimeStep::prepareSendToNeighbour(
+void exahype::mappings::GlobalTimeStepComputation::prepareSendToNeighbour(
     exahype::Vertex&  vertex,
     int                                           toRank,
     const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -235,7 +235,7 @@ void exahype::mappings::GlobalTimeStep::prepareSendToNeighbour(
   logTraceOut( "prepareSendToNeighbour(...)" );
 }
 
-void exahype::mappings::GlobalTimeStep::prepareCopyToRemoteNode(
+void exahype::mappings::GlobalTimeStepComputation::prepareCopyToRemoteNode(
     exahype::Vertex&  localVertex,
     int                                           toRank,
     const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -247,7 +247,7 @@ void exahype::mappings::GlobalTimeStep::prepareCopyToRemoteNode(
   logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
-void exahype::mappings::GlobalTimeStep::prepareCopyToRemoteNode(
+void exahype::mappings::GlobalTimeStepComputation::prepareCopyToRemoteNode(
     exahype::Cell&  localCell,
     int                                           toRank,
     const tarch::la::Vector<DIMENSIONS,double>&   cellCentre,
@@ -259,7 +259,7 @@ void exahype::mappings::GlobalTimeStep::prepareCopyToRemoteNode(
   logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
-void exahype::mappings::GlobalTimeStep::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::GlobalTimeStepComputation::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Vertex&  localVertex,
     const exahype::Vertex&  masterOrWorkerVertex,
     int                                       fromRank,
@@ -272,7 +272,7 @@ void exahype::mappings::GlobalTimeStep::mergeWithRemoteDataDueToForkOrJoin(
   logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
-void exahype::mappings::GlobalTimeStep::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::GlobalTimeStepComputation::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Cell&  localCell,
     const exahype::Cell&  masterOrWorkerCell,
     int                                       fromRank,
@@ -285,7 +285,7 @@ void exahype::mappings::GlobalTimeStep::mergeWithRemoteDataDueToForkOrJoin(
   logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
-bool exahype::mappings::GlobalTimeStep::prepareSendToWorker(
+bool exahype::mappings::GlobalTimeStepComputation::prepareSendToWorker(
     exahype::Cell&                 fineGridCell,
     exahype::Vertex * const        fineGridVertices,
     const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -301,7 +301,7 @@ bool exahype::mappings::GlobalTimeStep::prepareSendToWorker(
   return true;
 }
 
-void exahype::mappings::GlobalTimeStep::prepareSendToMaster(
+void exahype::mappings::GlobalTimeStepComputation::prepareSendToMaster(
     exahype::Cell&                       localCell,
     exahype::Vertex *                    vertices,
     const peano::grid::VertexEnumerator&       verticesEnumerator,
@@ -316,7 +316,7 @@ void exahype::mappings::GlobalTimeStep::prepareSendToMaster(
 }
 
 
-void exahype::mappings::GlobalTimeStep::mergeWithMaster(
+void exahype::mappings::GlobalTimeStepComputation::mergeWithMaster(
     const exahype::Cell&           workerGridCell,
     exahype::Vertex * const        workerGridVertices,
     const peano::grid::VertexEnumerator& workerEnumerator,
@@ -337,7 +337,7 @@ void exahype::mappings::GlobalTimeStep::mergeWithMaster(
 }
 
 
-void exahype::mappings::GlobalTimeStep::receiveDataFromMaster(
+void exahype::mappings::GlobalTimeStepComputation::receiveDataFromMaster(
     exahype::Cell&                        receivedCell,
     exahype::Vertex *                     receivedVertices,
     const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
@@ -355,7 +355,7 @@ void exahype::mappings::GlobalTimeStep::receiveDataFromMaster(
 }
 
 
-void exahype::mappings::GlobalTimeStep::mergeWithWorker(
+void exahype::mappings::GlobalTimeStepComputation::mergeWithWorker(
     exahype::Cell&           localCell,
     const exahype::Cell&     receivedMasterCell,
     const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
@@ -368,7 +368,7 @@ void exahype::mappings::GlobalTimeStep::mergeWithWorker(
 }
 
 
-void exahype::mappings::GlobalTimeStep::mergeWithWorker(
+void exahype::mappings::GlobalTimeStepComputation::mergeWithWorker(
     exahype::Vertex&        localVertex,
     const exahype::Vertex&  receivedMasterVertex,
     const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -381,7 +381,7 @@ void exahype::mappings::GlobalTimeStep::mergeWithWorker(
 }
 #endif
 
-void exahype::mappings::GlobalTimeStep::touchVertexFirstTime(
+void exahype::mappings::GlobalTimeStepComputation::touchVertexFirstTime(
     exahype::Vertex&               fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
     const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -396,7 +396,7 @@ void exahype::mappings::GlobalTimeStep::touchVertexFirstTime(
 }
 
 
-void exahype::mappings::GlobalTimeStep::touchVertexLastTime(
+void exahype::mappings::GlobalTimeStepComputation::touchVertexLastTime(
     exahype::Vertex&         fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
     const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -410,43 +410,44 @@ void exahype::mappings::GlobalTimeStep::touchVertexLastTime(
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
-double exahype::mappings::GlobalTimeStep::computeLocalTimeStep(
-    double * u,
-    const double dxPatch,
-    const double dyPatch,
+constexpr double exahype::mappings::GlobalTimeStepComputation::PNPM[10];
+
+double exahype::mappings::GlobalTimeStepComputation::computeAdmissibleTimeStep(
+    double * luh,
+    const double* dx,
     const int nvar,
     const int basisSize) {
+  double lambda[nvar];
+
   const double normal[3][3]= {
       { 1., 0., 0. },
       { 0., 1., 0. },
       { 0., 0., 1. }
   };
 
-  for (int jj=0; jj<basisSize; jj++) {
-    const int nodeIndex     = jj;
-    const int dofStartIndex = nodeIndex * nvar;
+  double dt=1e20;
+  for(int ii=0; ii < basisSize; ii++) {
+    for (int jj=0; jj<basisSize; jj++) {
+      const int nodeIndex     = ii + basisSize * jj;
+      const int dofStartIndex = nodeIndex * nvar;
 
-    for(int ii=0; ii < basisSize; ii++) {
-      for(int jj=0; jj < basisSize; jj++) {
-        double denom = 0;
+      double denominator=0.0;
+      for (int d=0; d<DIMENSIONS; d++) {
+        problem::PDEEigenvalues(&luh[dofStartIndex],nvar,normal[d],DIMENSIONS,lambda);
 
-//        for (int d=0; d<DIMENSIONS; d++) {
-//          // ca
-//        }
-//
-//        DO iDim = 1, nDim
-//                     CALL PDEEigenvalues(Lambda,uh(:,i,j,k,iElem),nv(:,iDim))
-//                     denom = denom + MAXVAL(ABS(Lambda))/dx(iDim)
-//                 ENDDO
-//                 dt = MIN(dt, CFL*PNPMTable(N)/denom )
+        double maxEigenvalue=0.0;
+        for (int ivar=0; ivar<nvar; ivar++) {
+          maxEigenvalue = std::max(fabs(lambda[ivar]),maxEigenvalue);
+        }
+        denominator += maxEigenvalue/dx[d];
       }
+      dt = std::min(dt,EXAHYPE_CFL_FACTOR*PNPM[basisSize-1]/denominator); // order N = basisSize-1
     }
   }
-  //
-  return 0.;
+  return dt;
 }
 
-void exahype::mappings::GlobalTimeStep::enterCell(
+void exahype::mappings::GlobalTimeStepComputation::enterCell(
     exahype::Cell&                 fineGridCell,
     exahype::Vertex * const        fineGridVertices,
     const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -466,26 +467,26 @@ void exahype::mappings::GlobalTimeStep::enterCell(
     const double dx = fineGridVerticesEnumerator.getCellSize()(0);
     const double dy = fineGridVerticesEnumerator.getCellSize()(1);
 
-    const double dxPatch = dx/ (double) EXAHYPE_PATCH_SIZE_X;
-    const double dyPatch = dy/ (double) EXAHYPE_PATCH_SIZE_Y;
+    const double dxPatch[2] = { dx/ (double) EXAHYPE_PATCH_SIZE_X,
+                                dy/ (double) EXAHYPE_PATCH_SIZE_Y };
 
     const int basisSize       = EXAHYPE_ORDER+1;
     const int nvar            = EXAHYPE_NVARS;
-    const int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
     for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
       for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
         const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
 
 
-        double* u = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
+        double* luh = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
 
-        double localTimeStep = computeLocalTimeStep(
-            u,
+        double admissiblePatchTimeStep = computeAdmissibleTimeStep(
+            luh,
             dxPatch,
-            dyPatch,
             nvar,
             basisSize);
+
+        _localState.setTimeStepSize(std::min(_localState.getTimeStepSize(),admissiblePatchTimeStep));
       }
     }
   }
@@ -494,7 +495,7 @@ void exahype::mappings::GlobalTimeStep::enterCell(
 }
 
 
-void exahype::mappings::GlobalTimeStep::leaveCell(
+void exahype::mappings::GlobalTimeStepComputation::leaveCell(
     exahype::Cell&           fineGridCell,
     exahype::Vertex * const  fineGridVertices,
     const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
@@ -509,31 +510,30 @@ void exahype::mappings::GlobalTimeStep::leaveCell(
 }
 
 
-void exahype::mappings::GlobalTimeStep::beginIteration(
+void exahype::mappings::GlobalTimeStepComputation::beginIteration(
     exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  // do nothing
+  _localState.setTimeStepSize(1e20);
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
 
 
-void exahype::mappings::GlobalTimeStep::endIteration(
+void exahype::mappings::GlobalTimeStepComputation::endIteration(
     exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "endIteration(State)", solverState );
 
-  // do nothing
-  // solverState.setTimeStepSize(min TimeStep)
+  solverState.setMinimumTimeStepSizeOfBoth(_localState);
 
   logTraceOutWith1Argument( "endIteration(State)", solverState);
 }
 
 
 
-void exahype::mappings::GlobalTimeStep::descend(
+void exahype::mappings::GlobalTimeStepComputation::descend(
     exahype::Cell * const          fineGridCells,
     exahype::Vertex * const        fineGridVertices,
     const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -547,7 +547,7 @@ void exahype::mappings::GlobalTimeStep::descend(
 }
 
 
-void exahype::mappings::GlobalTimeStep::ascend(
+void exahype::mappings::GlobalTimeStepComputation::ascend(
     exahype::Cell * const    fineGridCells,
     exahype::Vertex * const  fineGridVertices,
     const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,

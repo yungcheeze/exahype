@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_Predictor_H_
-#define EXAHYPE_ADAPTERS_Predictor_H_
+#ifndef EXAHYPE_ADAPTERS_CorrectorAndExport_H_
+#define EXAHYPE_ADAPTERS_CorrectorAndExport_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,15 +18,17 @@
 #include "EulerFlow3d/State.h"
 
 
- #include "EulerFlow3d/mappings/SpaceTimePredictor.h"
- #include "EulerFlow3d/mappings/VolumeIntegral.h"
- #include "EulerFlow3d/mappings/BoundaryConditions.h"
+ #include "EulerFlow3d/mappings/FaceDataExchange.h"
+ #include "EulerFlow3d/mappings/RiemannSolver.h"
+ #include "EulerFlow3d/mappings/SurfaceIntegral.h"
+ #include "EulerFlow3d/mappings/SolutionUpdate.h"
+ #include "EulerFlow3d/mappings/VTKExport.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class Predictor;
+        class CorrectorAndExport;
       } 
 }
 
@@ -38,15 +40,19 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::Predictor {
+class exahype::adapters::CorrectorAndExport {
   private:
-    typedef mappings::SpaceTimePredictor Mapping0;
-    typedef mappings::VolumeIntegral Mapping1;
-    typedef mappings::BoundaryConditions Mapping2;
+    typedef mappings::FaceDataExchange Mapping0;
+    typedef mappings::RiemannSolver Mapping1;
+    typedef mappings::SurfaceIntegral Mapping2;
+    typedef mappings::SolutionUpdate Mapping3;
+    typedef mappings::VTKExport Mapping4;
 
-     Mapping0  _map2SpaceTimePredictor;
-     Mapping1  _map2VolumeIntegral;
-     Mapping2  _map2BoundaryConditions;
+     Mapping0  _map2FaceDataExchange;
+     Mapping1  _map2RiemannSolver;
+     Mapping2  _map2SurfaceIntegral;
+     Mapping3  _map2SolutionUpdate;
+     Mapping4  _map2VTKExport;
 
 
   public:
@@ -58,16 +64,16 @@ class exahype::adapters::Predictor {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    Predictor();
+    CorrectorAndExport();
 
     #if defined(SharedMemoryParallelisation)
-    Predictor(const Predictor& masterThread);
+    CorrectorAndExport(const CorrectorAndExport& masterThread);
     #endif
 
-    virtual ~Predictor();
+    virtual ~CorrectorAndExport();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const Predictor& workerThread);
+    void mergeWithWorkerThread(const CorrectorAndExport& workerThread);
     #endif
 
     void createInnerVertex(

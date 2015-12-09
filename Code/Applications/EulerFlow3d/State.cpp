@@ -33,3 +33,7 @@ void exahype::State::setTimeStepSize(const double timeStepSize) {
 double exahype::State::getTimeStepSize() const {
   return _stateData.getTimeStepSize();
 }
+
+void exahype::State::setMinimumTimeStepSizeOfBoth(exahype::State anotherState) {
+  _stateData.setTimeStepSize(std::min(_stateData.getTimeStepSize(),anotherState.getTimeStepSize()));
+}

@@ -516,7 +516,9 @@ void exahype::mappings::SolutionUpdate::endIteration(
   exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "endIteration(State)", solverState );
+
   // do nothing
+
   logTraceOutWith1Argument( "endIteration(State)", solverState);
 }
 

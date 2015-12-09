@@ -64,18 +64,26 @@ class exahype::repositories::Repository {
      */
     virtual void switchToInitialGrid() = 0;    
     virtual void switchToGridExport() = 0;    
-    virtual void switchToPatchInit() = 0;    
+    virtual void switchToPatchInitialisation() = 0;    
+    virtual void switchToPatchInitialisationAndExport() = 0;    
     virtual void switchToInitialCondition() = 0;    
+    virtual void switchToInitialConditionAndExport() = 0;    
+    virtual void switchToGlobalTimeStepComputation() = 0;    
     virtual void switchToPredictor() = 0;    
     virtual void switchToCorrector() = 0;    
+    virtual void switchToCorrectorAndExport() = 0;    
     virtual void switchToSolutionExport() = 0;    
 
     virtual bool isActiveAdapterInitialGrid() const = 0;
     virtual bool isActiveAdapterGridExport() const = 0;
-    virtual bool isActiveAdapterPatchInit() const = 0;
+    virtual bool isActiveAdapterPatchInitialisation() const = 0;
+    virtual bool isActiveAdapterPatchInitialisationAndExport() const = 0;
     virtual bool isActiveAdapterInitialCondition() const = 0;
+    virtual bool isActiveAdapterInitialConditionAndExport() const = 0;
+    virtual bool isActiveAdapterGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterPredictor() const = 0;
     virtual bool isActiveAdapterCorrector() const = 0;
+    virtual bool isActiveAdapterCorrectorAndExport() const = 0;
     virtual bool isActiveAdapterSolutionExport() const = 0;
 
 

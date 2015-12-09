@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_Predictor_H_
-#define EXAHYPE_ADAPTERS_Predictor_H_
+#ifndef EXAHYPE_ADAPTERS_PatchInitialisation_H_
+#define EXAHYPE_ADAPTERS_PatchInitialisation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,15 +18,14 @@
 #include "EulerFlow3d/State.h"
 
 
- #include "EulerFlow3d/mappings/SpaceTimePredictor.h"
- #include "EulerFlow3d/mappings/VolumeIntegral.h"
- #include "EulerFlow3d/mappings/BoundaryConditions.h"
+ #include "EulerFlow3d/mappings/PatchInitialisation.h"
+ #include "EulerFlow3d/adapters/PatchInitialisation2MultiscaleLinkedCell_1.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class Predictor;
+        class PatchInitialisation;
       } 
 }
 
@@ -38,15 +37,13 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::Predictor {
+class exahype::adapters::PatchInitialisation {
   private:
-    typedef mappings::SpaceTimePredictor Mapping0;
-    typedef mappings::VolumeIntegral Mapping1;
-    typedef mappings::BoundaryConditions Mapping2;
+    typedef mappings::PatchInitialisation Mapping0;
+    typedef adapters::PatchInitialisation2MultiscaleLinkedCell_1 Mapping1;
 
-     Mapping0  _map2SpaceTimePredictor;
-     Mapping1  _map2VolumeIntegral;
-     Mapping2  _map2BoundaryConditions;
+     Mapping0  _map2PatchInitialisation;
+     Mapping1  _map2PatchInitialisation2MultiscaleLinkedCell_1;
 
 
   public:
@@ -58,16 +55,16 @@ class exahype::adapters::Predictor {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    Predictor();
+    PatchInitialisation();
 
     #if defined(SharedMemoryParallelisation)
-    Predictor(const Predictor& masterThread);
+    PatchInitialisation(const PatchInitialisation& masterThread);
     #endif
 
-    virtual ~Predictor();
+    virtual ~PatchInitialisation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const Predictor& workerThread);
+    void mergeWithWorkerThread(const PatchInitialisation& workerThread);
     #endif
 
     void createInnerVertex(

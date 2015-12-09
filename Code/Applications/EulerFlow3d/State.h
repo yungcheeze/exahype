@@ -78,8 +78,21 @@ class exahype::State: public peano::grid::State< exahype::records::State > {
       * Required for the explicit DG method
       **/
     ///@{
+    /*
+     * Set the time step size of this state.
+     */
     void setTimeStepSize(const double timeStepSize);
+
+    /*
+     * Get the time step size of this state.
+     */
     double getTimeStepSize(void) const;
+
+    /*
+     * Set the minimum time step size of this state and another state as the time
+     * step size of this state.
+     */
+    void setMinimumTimeStepSizeOfBoth(State anotherState);
     ///@}
 };
 
