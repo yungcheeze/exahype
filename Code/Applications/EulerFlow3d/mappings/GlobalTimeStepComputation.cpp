@@ -2,13 +2,16 @@
 
 #include "EulerFlow3d/Constants.h"
 
-#include "EulerFlow3d/math/quad/Gausslegendre.h"
+#include "EulerFlow3d/quad/GaussLegendre.h"
 
 #include "EulerFlow3d/geometry/Mapping.h"
 
 #include "EulerFlow3d/problem/Problem.h"
 
 #include "EulerFlow3d/dg/Constants.h"
+
+#include "EulerFlow3d/dg/ADERDG.h"
+
 #include "EulerFlow3d/dg/DGMatrices.h"
 
 #include "stdlib.h"
@@ -410,43 +413,6 @@ void exahype::mappings::GlobalTimeStepComputation::touchVertexLastTime(
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
-constexpr double exahype::mappings::GlobalTimeStepComputation::PNPM[10];
-
-double exahype::mappings::GlobalTimeStepComputation::computeAdmissibleTimeStep(
-    double * luh,
-    const double* dx,
-    const int nvar,
-    const int basisSize) {
-  double lambda[nvar];
-
-  const double normal[3][3]= {
-      { 1., 0., 0. },
-      { 0., 1., 0. },
-      { 0., 0., 1. }
-  };
-
-  double dt=1e20;
-  for(int ii=0; ii < basisSize; ii++) {
-    for (int jj=0; jj<basisSize; jj++) {
-      const int nodeIndex     = ii + basisSize * jj;
-      const int dofStartIndex = nodeIndex * nvar;
-
-      double denominator=0.0;
-      for (int d=0; d<DIMENSIONS; d++) {
-        problem::PDEEigenvalues(&luh[dofStartIndex],nvar,normal[d],DIMENSIONS,lambda);
-
-        double maxEigenvalue=0.0;
-        for (int ivar=0; ivar<nvar; ivar++) {
-          maxEigenvalue = std::max(fabs(lambda[ivar]),maxEigenvalue);
-        }
-        denominator += maxEigenvalue/dx[d];
-      }
-      dt = std::min(dt,EXAHYPE_CFL_FACTOR*PNPM[basisSize-1]/denominator); // order N = basisSize-1
-    }
-  }
-  return dt;
-}
-
 void exahype::mappings::GlobalTimeStepComputation::enterCell(
     exahype::Cell&                 fineGridCell,
     exahype::Vertex * const        fineGridVertices,
@@ -477,12 +443,13 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
       for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
         const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
 
-
         double* luh = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
+        double lambda[EXAHYPE_NVARS];
 
-        double admissiblePatchTimeStep = computeAdmissibleTimeStep(
+        double admissiblePatchTimeStep = dg::stableTimeStepSize<DIMENSIONS>(
             luh,
             dxPatch,
+            lambda,
             nvar,
             basisSize);
 

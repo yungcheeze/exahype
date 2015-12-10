@@ -1250,37 +1250,7 @@ class exahype::mappings::SpaceTimePredictor {
       exahype::Vertex * const  coarseGridVertices,
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
-    );    
-
-    // Begin of code for ADERDG scheme
-    /**
-     * @brief Computes the space time predictor for a single patch cell.
-     *
-     * @param[in] solution            heap index pointing to the solution dof of this patch cell
-       @param[in] spaceTimePredictor  heap index pointing to the space-time predictor dof of this patch cell
-       @param[in] spaceTimeVolumeFlux heap index pointing to the space-time volumeFlux dof of this patch cell
-     * @param[in] dxPatch             extent of the patch in x direction
-     * @param[in] dyPatch             extent of the patch in y direction
-     * @param[in] timeStep            the global time step
-     * @param[in] patchIndex          linearised index of the patch
-     * @param[in] nvar                nummber of solution variables
-     * @param[in] order               order of approximation
-     */
-    void computePredictor(
-        double *lQi,
-        double* lFi,
-        double* luh,
-        double* lQhi,
-        double* lFhi,
-        double* lQhbnd,
-        double* lFhbnd,
-        const tarch::la::Vector<DIMENSIONS,double> center,
-        const double dxPatch,const double dyPatch,
-        const double timeStep,
-        const int patchIndex,
-        const int nvar,
-        const int order);
-    // End of code for ADERDG scheme
+    );
 };
 
 

@@ -2,7 +2,7 @@
 
 #include "EulerFlow3d/Constants.h"
 
-#include "EulerFlow3d/math/quad/Gausslegendre.h"
+#include "EulerFlow3d/quad/GaussLegendre.h"
 
 #include "EulerFlow3d/geometry/Mapping.h"
 

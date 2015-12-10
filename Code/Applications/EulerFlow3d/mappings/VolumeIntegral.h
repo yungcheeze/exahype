@@ -23,7 +23,7 @@
 #include "EulerFlow3d/State.h"
 
 #include "EulerFlow3d/geometry/Mapping.h"
-#include "EulerFlow3d/math/quad/Gausslegendre.h"
+#include "EulerFlow3d/quad/GaussLegendre.h"
 
 namespace exahype {
       namespace mappings {

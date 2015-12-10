@@ -2,13 +2,14 @@
 
 #include "EulerFlow3d/Constants.h"
 
-#include "EulerFlow3d/math/quad/Gausslegendre.h"
+#include "EulerFlow3d/quad/GaussLegendre.h"
 
 #include "EulerFlow3d/geometry/Mapping.h"
 
 #include "EulerFlow3d/problem/Problem.h"
 
 #include "EulerFlow3d/dg/Constants.h"
+#include "EulerFlow3d/dg/ADERDG.h"
 #include "EulerFlow3d/dg/DGMatrices.h"
 
 #include "stdlib.h"
@@ -410,69 +411,6 @@ void exahype::mappings::RiemannSolver::touchVertexLastTime(
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
-void exahype::mappings::RiemannSolver::solveRiemannProblem(
-            double * FL,
-            double * FR,
-            const double * const QL,
-            const double * const QR,
-            const tarch::la::Vector<DIMENSIONS,double> center,
-            const double dt,
-            const double hFace,
-            const double * const n,
-            const int nvar,
-            const int basisSize) {
-  // Local variables
-  double QavL[EXAHYPE_NVARS]; // av: average
-  double QavR[EXAHYPE_NVARS];
-  double lambdaL[EXAHYPE_NVARS];
-  double lambdaR[EXAHYPE_NVARS];
-
-  // Compute the average states from the left and the right, which we need to compute the numerical dissipation
-  double sMax = 0;
-  memset((double *) QavL,0,nvar * sizeof(double));
-  memset((double *) QavR,0,nvar * sizeof(double));
-
-  for (int ii=0; ii<basisSize; ii++) { // loop over dof
-    const int nodeIndex     = ii;
-    const int dofStartIndex = nodeIndex * nvar;
-
-    double weight =  quad::gaussLegendreWeights[basisSize-1][ii];
-
-    for(int ivar=0; ivar < nvar; ivar++) {
-      QavL[ivar] +=  weight * QL[dofStartIndex+ivar];
-      QavR[ivar] +=  weight * QR[dofStartIndex+ivar];
-    }
-  }
-  //
-  // Here, we implement a very simple Rusanov scheme with scalar dissipation (smax*Id).
-  // We can change this into a more sophisticated Osher or HLLEM Riemann solver whenever needed.
-  //
-  exahype::problem::PDEEigenvalues(QavL,nvar,n,DIMENSIONS,lambdaL);
-  exahype::problem::PDEEigenvalues(QavR,nvar,n,DIMENSIONS,lambdaR);
-
-  sMax = 0;
-  for(int ivar=0; ivar < nvar; ivar++) {
-    sMax = std::max(sMax,std::max(fabs(lambdaL[ivar]),fabs(lambdaR[ivar])));
-  }
-  //
-  // We now compute the numerical flux. Note that the scheme is at the moment written in
-  // CONSERVATION FORM => no fluctuations, but real fluxes.
-  // Later, this will be converted into the left and right fluctuations.
-  //
-  for (int ii=0; ii<basisSize; ii++) { // loop over dof
-    const int nodeIndex     = ii;
-    const int dofStartIndex = nodeIndex * nvar;
-
-    for(int ivar=0; ivar < nvar; ivar++) {
-      FL[dofStartIndex+ivar] = 0.5 * (FL[dofStartIndex+ivar] + FR[dofStartIndex+ivar])
-                              -0.5 * sMax *  (QR[dofStartIndex+ivar] - QL[dofStartIndex+ivar]);
-
-      FR[dofStartIndex+ivar] = FL[dofStartIndex+ivar];
-    }
-    continue;
-  }
-}
-
 void exahype::mappings::RiemannSolver::enterCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
@@ -503,6 +441,12 @@ void exahype::mappings::RiemannSolver::enterCell(
     const double nx[3]= { 1., 0., 0. };
     const double ny[3]= { 0., 1., 0. };
 
+    // work vectors
+    double QavL   [EXAHYPE_NVARS]; // av: average
+    double QavR   [EXAHYPE_NVARS];
+    double lambdaL[EXAHYPE_NVARS];
+    double lambdaR[EXAHYPE_NVARS];
+
     for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
       for (int i=1; i<EXAHYPE_PATCH_SIZE_X+2; i++) { // loop over patches
         const int patchIndex      = i     + (EXAHYPE_PATCH_SIZE_X+2) * j;
@@ -521,12 +465,15 @@ void exahype::mappings::RiemannSolver::enterCell(
           asm ("nop");
         }
 
-        solveRiemannProblem(
+        dg::solveRiemannProblem<DIMENSIONS>(
             FL,
             FR,
             QL,
             QR,
-            center,
+            QavL,
+            QavR,
+            lambdaL,
+            lambdaR,
             this->_timeStepSize,
 
             dxPatch,
@@ -542,8 +489,8 @@ void exahype::mappings::RiemannSolver::enterCell(
         const int patchIndex      = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
         const int patchIndexFront = i + (EXAHYPE_PATCH_SIZE_X+2) * (j-1);
 
-        const int dofStartIndexL = EXAHYPE_FACE_FRONT  * numberOfFaceDof;
-        const int dofStartIndexR = EXAHYPE_FACE_BACK * numberOfFaceDof;
+        const int dofStartIndexL = EXAHYPE_FACE_FRONT * numberOfFaceDof;
+        const int dofStartIndexR = EXAHYPE_FACE_BACK  * numberOfFaceDof;
 
         double * QL = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor(patchIndexFront))[dofStartIndexR]._persistentRecords._u);
         double * QR = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor(patchIndex))     [dofStartIndexL]._persistentRecords._u);
@@ -555,12 +502,15 @@ void exahype::mappings::RiemannSolver::enterCell(
           asm ("nop");
         }
 
-        solveRiemannProblem(
+        dg::solveRiemannProblem<DIMENSIONS>(
             FL,
             FR,
             QL,
             QR,
-            center,
+            QavL,
+            QavR,
+            lambdaL,
+            lambdaR,
             this->_timeStepSize,
 
             dyPatch,

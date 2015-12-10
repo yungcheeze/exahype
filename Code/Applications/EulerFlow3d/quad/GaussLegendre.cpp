@@ -1,4 +1,4 @@
-#include "EulerFlow3d/math/quad/Gausslegendre.h"
+#include "EulerFlow3d/quad/GaussLegendre.h"
 
 const double exahype::quad::gaussLegendreMaxNodes = 10;
 

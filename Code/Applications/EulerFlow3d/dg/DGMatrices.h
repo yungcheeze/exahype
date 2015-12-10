@@ -48,11 +48,6 @@ namespace exahype {
      * Projects nodal values located at Gauss-Legendre nodes to a equidistant grid.
      */
     extern const double subOutputMatrix[16][16];
-
-    /**
-     * todo docu
-     */
-    extern const double PNPM[10];
   }
 }
 

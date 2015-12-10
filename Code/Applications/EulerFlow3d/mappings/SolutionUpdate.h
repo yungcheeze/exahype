@@ -1251,18 +1251,7 @@ class exahype::mappings::SolutionUpdate {
       exahype::Vertex * const  coarseGridVertices,
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
-    );    
-
-    // Begin of code for ADERDG scheme
-    void updateSolution(
-        double * u,
-        const double * const du,
-        const double dxPatch,
-        const double dyPatch,
-        const double dt,
-        const int nvar,
-        const int basisSize);
-    // End of code for ADERDG scheme
+    );
 };
 
 

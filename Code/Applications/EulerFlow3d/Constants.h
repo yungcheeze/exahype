@@ -37,10 +37,29 @@
  * PDE parameters.
  */
 ///@{
-#define EXAHYPE_NPROBLEMS 1  //!< The number of snapshots of the solution we want to write to disk during the simulation.
+#define EXAHYPE_NPROBLEMS 1  //!< The number of different problems we want to solve at once.
 
 #define EXAHYPE_NVARS  5
 #define EXAHYPE_ORDER  3
+
+namespace exahype {
+  constexpr static const double nvars[1] = {
+      5
+  };
+  constexpr static const double order[1] = {
+      3
+  };
+
+  constexpr static const double patchSizeX[1] = {
+      12
+  };
+  constexpr static const double patchSizeY[1] = {
+      12
+  };
+  constexpr static const double patchSizeZ[1] = {
+      1
+  };
+}  // namespace exahype
 
 #define EXAHYPE_NBASIS_POWER_DIMENSIONS 16
 

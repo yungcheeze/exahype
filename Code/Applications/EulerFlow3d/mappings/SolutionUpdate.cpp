@@ -2,13 +2,14 @@
 
 #include "EulerFlow3d/Constants.h"
 
-#include "EulerFlow3d/math/quad/Gausslegendre.h"
+#include "EulerFlow3d/quad/GaussLegendre.h"
 
 #include "EulerFlow3d/geometry/Mapping.h"
 
 #include "EulerFlow3d/problem/Problem.h"
 
 #include "EulerFlow3d/dg/Constants.h"
+#include "EulerFlow3d/dg/ADERDG.h"
 #include "EulerFlow3d/dg/DGMatrices.h"
 
 #include "stdlib.h"
@@ -409,35 +410,6 @@ void exahype::mappings::SolutionUpdate::touchVertexLastTime(
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
-
-void exahype::mappings::SolutionUpdate::updateSolution(
-    double * u,
-    const double * const du,
-    const double dxPatch,
-    const double dyPatch,
-    const double dt,
-    const int nvar,
-    const int basisSize) {
-  // x direction (independent from the y and z)
-  for (int ii=0; ii<basisSize; ii++) {
-    for (int jj=0; jj<basisSize; jj++) {
-      const int nodeIndex     = ii + basisSize * jj;
-      const int dofStartIndex = nodeIndex * nvar;
-
-      double weight =  quad::gaussLegendreWeights[basisSize-1][ii] * quad::gaussLegendreWeights[basisSize-1][jj];
-
-      for(int ivar=0; ivar < nvar; ivar++) {
-        u[dofStartIndex+ivar] +=  dt/weight * du[dofStartIndex+ivar];
-
-        if (fabs(du[dofStartIndex+ivar]) > 1e5) { // todo REMOVE; only for debugging
-          asm ("nop");
-        }
-      }
-    }
-  }
-  asm ("nop");
-}
-
 void exahype::mappings::SolutionUpdate::enterCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
@@ -457,8 +429,8 @@ void exahype::mappings::SolutionUpdate::enterCell(
     const double dx = fineGridVerticesEnumerator.getCellSize()(0);
     const double dy = fineGridVerticesEnumerator.getCellSize()(1);
 
-    const double dxPatch = dx/ (double) EXAHYPE_PATCH_SIZE_X;
-    const double dyPatch = dy/ (double) EXAHYPE_PATCH_SIZE_Y;
+    const double dxPatch[2] = { dx/ (double) EXAHYPE_PATCH_SIZE_X,
+                                dy/ (double) EXAHYPE_PATCH_SIZE_Y };
 
     const int basisSize       = EXAHYPE_ORDER+1;
     const int nvar            = EXAHYPE_NVARS;
@@ -470,11 +442,10 @@ void exahype::mappings::SolutionUpdate::enterCell(
         double* luhOld = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
         double* lduh   = &(DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))  [0]._persistentRecords._u);
 
-        updateSolution(
+        dg::updateSolution<DIMENSIONS>(
             luhOld,
             lduh,
             dxPatch,
-            dyPatch,
             this->_timeStepSize,
             nvar,
             basisSize);
