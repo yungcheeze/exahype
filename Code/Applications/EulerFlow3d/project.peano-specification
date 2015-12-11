@@ -90,24 +90,26 @@ adapter:
   name: GlobalTimeStepComputation
   merge-with-user-defined-mapping: GlobalTimeStepComputation
 
+// -DEC: consider to move the computation of boundary extrapolated values out of the space-time predictor mapping
 adapter:
   name: Predictor
-  merge-with-user-defined-mapping: SpaceTimePredictor
+  merge-with-user-defined-mapping: SpaceTimePredictor 
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: BoundaryConditions
 
 // The space-time predictor must be computed before the FaceDataExchange, i.e., the corrector step!
+adapter: 
+  name: FaceDataExchange
+  merge-with-user-defined-mapping: FaceDataExchange
 
 adapter:
   name: Corrector
-  merge-with-user-defined-mapping: FaceDataExchange
   merge-with-user-defined-mapping: RiemannSolver
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
 
 adapter:
   name: CorrectorAndExport
-  merge-with-user-defined-mapping: FaceDataExchange
   merge-with-user-defined-mapping: RiemannSolver
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate

@@ -24,6 +24,7 @@
  #include "EulerFlow3d/adapters/InitialConditionAndExport.h" 
  #include "EulerFlow3d/adapters/GlobalTimeStepComputation.h" 
  #include "EulerFlow3d/adapters/Predictor.h" 
+ #include "EulerFlow3d/adapters/FaceDataExchange.h" 
  #include "EulerFlow3d/adapters/Corrector.h" 
  #include "EulerFlow3d/adapters/CorrectorAndExport.h" 
  #include "EulerFlow3d/adapters/SolutionExport.h" 
@@ -60,6 +61,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialConditionAndExport> _gridWithInitialConditionAndExport;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GlobalTimeStepComputation> _gridWithGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Predictor> _gridWithPredictor;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::FaceDataExchange> _gridWithFaceDataExchange;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Corrector> _gridWithCorrector;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::CorrectorAndExport> _gridWithCorrectorAndExport;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionExport> _gridWithSolutionExport;
@@ -75,6 +77,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measureInitialConditionAndExportCPUTime;
     tarch::timing::Measurement _measureGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measurePredictorCPUTime;
+    tarch::timing::Measurement _measureFaceDataExchangeCPUTime;
     tarch::timing::Measurement _measureCorrectorCPUTime;
     tarch::timing::Measurement _measureCorrectorAndExportCPUTime;
     tarch::timing::Measurement _measureSolutionExportCPUTime;
@@ -87,6 +90,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measureInitialConditionAndExportCalendarTime;
     tarch::timing::Measurement _measureGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measurePredictorCalendarTime;
+    tarch::timing::Measurement _measureFaceDataExchangeCalendarTime;
     tarch::timing::Measurement _measureCorrectorCalendarTime;
     tarch::timing::Measurement _measureCorrectorAndExportCalendarTime;
     tarch::timing::Measurement _measureSolutionExportCalendarTime;
@@ -143,6 +147,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual void switchToInitialConditionAndExport();    
     virtual void switchToGlobalTimeStepComputation();    
     virtual void switchToPredictor();    
+    virtual void switchToFaceDataExchange();    
     virtual void switchToCorrector();    
     virtual void switchToCorrectorAndExport();    
     virtual void switchToSolutionExport();    
@@ -155,6 +160,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual bool isActiveAdapterInitialConditionAndExport() const;
     virtual bool isActiveAdapterGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterPredictor() const;
+    virtual bool isActiveAdapterFaceDataExchange() const;
     virtual bool isActiveAdapterCorrector() const;
     virtual bool isActiveAdapterCorrectorAndExport() const;
     virtual bool isActiveAdapterSolutionExport() const;

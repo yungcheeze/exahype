@@ -70,6 +70,7 @@ class exahype::repositories::Repository {
     virtual void switchToInitialConditionAndExport() = 0;    
     virtual void switchToGlobalTimeStepComputation() = 0;    
     virtual void switchToPredictor() = 0;    
+    virtual void switchToFaceDataExchange() = 0;    
     virtual void switchToCorrector() = 0;    
     virtual void switchToCorrectorAndExport() = 0;    
     virtual void switchToSolutionExport() = 0;    
@@ -82,6 +83,7 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterInitialConditionAndExport() const = 0;
     virtual bool isActiveAdapterGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterPredictor() const = 0;
+    virtual bool isActiveAdapterFaceDataExchange() const = 0;
     virtual bool isActiveAdapterCorrector() const = 0;
     virtual bool isActiveAdapterCorrectorAndExport() const = 0;
     virtual bool isActiveAdapterSolutionExport() const = 0;

@@ -31,7 +31,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   09/12/2015 11:32
+ * @date   11/12/2015 17:20
  */
 class exahype::records::RepositoryState { 
    
@@ -40,7 +40,7 @@ class exahype::records::RepositoryState {
       typedef exahype::records::RepositoryStatePacked Packed;
       
       enum Action {
-         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterInitialGrid = 4, UseAdapterGridExport = 5, UseAdapterPatchInitialisation = 6, UseAdapterPatchInitialisationAndExport = 7, UseAdapterInitialCondition = 8, UseAdapterInitialConditionAndExport = 9, UseAdapterGlobalTimeStepComputation = 10, UseAdapterPredictor = 11, UseAdapterCorrector = 12, UseAdapterCorrectorAndExport = 13, UseAdapterSolutionExport = 14, NumberOfAdapters = 15
+         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterInitialGrid = 4, UseAdapterGridExport = 5, UseAdapterPatchInitialisation = 6, UseAdapterPatchInitialisationAndExport = 7, UseAdapterInitialCondition = 8, UseAdapterInitialConditionAndExport = 9, UseAdapterGlobalTimeStepComputation = 10, UseAdapterPredictor = 11, UseAdapterFaceDataExchange = 12, UseAdapterCorrector = 13, UseAdapterCorrectorAndExport = 14, UseAdapterSolutionExport = 15, NumberOfAdapters = 16
       };
       
       struct PersistentRecords {
@@ -291,7 +291,7 @@ class exahype::records::RepositoryState {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   09/12/2015 11:32
+    * @date   11/12/2015 17:20
     */
    class exahype::records::RepositoryStatePacked { 
       

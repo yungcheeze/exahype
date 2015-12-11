@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_CorrectorAndExport_H_
-#define EXAHYPE_ADAPTERS_CorrectorAndExport_H_
+#ifndef EXAHYPE_ADAPTERS_FaceDataExchange_H_
+#define EXAHYPE_ADAPTERS_FaceDataExchange_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,16 +18,13 @@
 #include "EulerFlow3d/State.h"
 
 
- #include "EulerFlow3d/mappings/RiemannSolver.h"
- #include "EulerFlow3d/mappings/SurfaceIntegral.h"
- #include "EulerFlow3d/mappings/SolutionUpdate.h"
- #include "EulerFlow3d/mappings/VTKExport.h"
+ #include "EulerFlow3d/mappings/FaceDataExchange.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class CorrectorAndExport;
+        class FaceDataExchange;
       } 
 }
 
@@ -39,17 +36,11 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::CorrectorAndExport {
+class exahype::adapters::FaceDataExchange {
   private:
-    typedef mappings::RiemannSolver Mapping0;
-    typedef mappings::SurfaceIntegral Mapping1;
-    typedef mappings::SolutionUpdate Mapping2;
-    typedef mappings::VTKExport Mapping3;
+    typedef mappings::FaceDataExchange Mapping0;
 
-     Mapping0  _map2RiemannSolver;
-     Mapping1  _map2SurfaceIntegral;
-     Mapping2  _map2SolutionUpdate;
-     Mapping3  _map2VTKExport;
+     Mapping0  _map2FaceDataExchange;
 
 
   public:
@@ -61,16 +52,16 @@ class exahype::adapters::CorrectorAndExport {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    CorrectorAndExport();
+    FaceDataExchange();
 
     #if defined(SharedMemoryParallelisation)
-    CorrectorAndExport(const CorrectorAndExport& masterThread);
+    FaceDataExchange(const FaceDataExchange& masterThread);
     #endif
 
-    virtual ~CorrectorAndExport();
+    virtual ~FaceDataExchange();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const CorrectorAndExport& workerThread);
+    void mergeWithWorkerThread(const FaceDataExchange& workerThread);
     #endif
 
     void createInnerVertex(

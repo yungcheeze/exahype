@@ -21,6 +21,7 @@
  #include "EulerFlow3d/adapters/InitialConditionAndExport.h" 
  #include "EulerFlow3d/adapters/GlobalTimeStepComputation.h" 
  #include "EulerFlow3d/adapters/Predictor.h" 
+ #include "EulerFlow3d/adapters/FaceDataExchange.h" 
  #include "EulerFlow3d/adapters/Corrector.h" 
  #include "EulerFlow3d/adapters/CorrectorAndExport.h" 
  #include "EulerFlow3d/adapters/SolutionExport.h" 

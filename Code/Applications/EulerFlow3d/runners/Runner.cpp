@@ -90,10 +90,15 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   logInfo("runAsMaster(...)", "global time step (seconds)=" <<
           repository.getState().getTimeStepSize() );
 
-  for (int n=0; n<240; n++) {
+  for (int n=0; n<1000; n++) {
     // predictor
     repository.switchToPredictor();
     repository.iterate();
+
+    // face data exchange
+    repository.switchToFaceDataExchange();
+    repository.iterate();
+
     // corrector
     if (n%EXAHYPE_PLOTTING_STRIDE==0) {
       repository.switchToCorrectorAndExport();

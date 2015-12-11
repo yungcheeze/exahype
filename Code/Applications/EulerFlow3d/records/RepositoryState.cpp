@@ -45,6 +45,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case UseAdapterInitialConditionAndExport: return "UseAdapterInitialConditionAndExport";
       case UseAdapterGlobalTimeStepComputation: return "UseAdapterGlobalTimeStepComputation";
       case UseAdapterPredictor: return "UseAdapterPredictor";
+      case UseAdapterFaceDataExchange: return "UseAdapterFaceDataExchange";
       case UseAdapterCorrector: return "UseAdapterCorrector";
       case UseAdapterCorrectorAndExport: return "UseAdapterCorrectorAndExport";
       case UseAdapterSolutionExport: return "UseAdapterSolutionExport";
@@ -54,7 +55,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterInitialGrid=4,UseAdapterGridExport=5,UseAdapterPatchInitialisation=6,UseAdapterPatchInitialisationAndExport=7,UseAdapterInitialCondition=8,UseAdapterInitialConditionAndExport=9,UseAdapterGlobalTimeStepComputation=10,UseAdapterPredictor=11,UseAdapterCorrector=12,UseAdapterCorrectorAndExport=13,UseAdapterSolutionExport=14,NumberOfAdapters=15)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterInitialGrid=4,UseAdapterGridExport=5,UseAdapterPatchInitialisation=6,UseAdapterPatchInitialisationAndExport=7,UseAdapterInitialCondition=8,UseAdapterInitialConditionAndExport=9,UseAdapterGlobalTimeStepComputation=10,UseAdapterPredictor=11,UseAdapterFaceDataExchange=12,UseAdapterCorrector=13,UseAdapterCorrectorAndExport=14,UseAdapterSolutionExport=15,NumberOfAdapters=16)";
 }
 
 
