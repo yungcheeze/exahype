@@ -7,6 +7,10 @@
 
 #include "EulerFlow3d/runners/Runner.h"
 
+#include "tarch/multicore/Core.h"
+#include "tarch/multicore/MulticoreDefinitions.h"
+
+
 
 tarch::logging::Log _log("");
 
@@ -30,6 +34,12 @@ int main(int argc, char** argv) {
     logError("main()", "shared memory initialisation wasn't successful. Application shut down");
     return sharedMemorySetup;
   }
+
+
+  #ifdef SharedMemoryParallelisation
+  const int numberOfCores = 16;
+  tarch::multicore::Core::getInstance().configure(numberOfCores);
+  #endif
 
   int programExitCode = 0;
 
