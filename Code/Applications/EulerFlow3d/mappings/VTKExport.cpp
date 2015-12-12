@@ -96,18 +96,13 @@ exahype::mappings::VTKExport::VTKExport(const VTKExport&  masterThread):
           _vtkWriter(masterThread._vtkWriter),
           _vertexWriter(masterThread._vertexWriter),
           _cellWriter(masterThread._cellWriter),
-          _vertexValueWriter(masterThread._vertexWriter)
-//      _cellValueWriter(masterThread._cellValueWriter) {
-logTraceIn( "VTKExport(VTKExport)" );
-// do nothing
-logTraceOut( "VTKExport(VTKExport)" );
+          _vertexValueWriter(masterThread._vertexValueWriter)
+//      _cellValueWriter(masterThread._cellValueWriter)
+  {
 }
 
 
 void exahype::mappings::VTKExport::mergeWithWorkerThread(const VTKExport& workerThread) {
-  logTraceIn( "mergeWithWorkerThread(VTKExport)" );
-  // do nothing
-  logTraceOut( "mergeWithWorkerThread(VTKExport)" );
 }
 #endif
 
