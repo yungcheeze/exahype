@@ -24,7 +24,7 @@ DIM=-DDim2
 
 # Configure Peano
 #----------------
-PROJECT_CFLAGS = -DDebug -DAsserts 
+PROJECT_CFLAGS =
 PROJECT_LFLAGS = 
 EXECUTABLE=peano-EulerFlow3d-debug
 #EXECUTABLE=peano-EulerFlow3d-debug
@@ -63,7 +63,7 @@ ifeq ($(CC),gcc)
 		# Settings for the GNU Compiler (Debug Mode)
 		# ------------------------------------------
 		CC=g++
-		COMPILER_CFLAGS=-O0 -pedantic -pedantic-errors -Wall -Wstrict-aliasing -fstrict-aliasing -ggdb -std=c++0x
+		COMPILER_CFLAGS=-O0 -pedantic -pedantic-errors -Wall -Wstrict-aliasing -fstrict-aliasing -ggdb -std=c++0x -DDebug -DAsserts 
 	else
 		# Settings for the GNU Compiler (Release Mode)
 		# --------------------------------------------
@@ -75,7 +75,7 @@ else
 		# Settings for the Intel Compiler (Debug Mode)
 		# --------------------------------------------
 		CC=icpc
-		COMPILER_CFLAGS=-O0 -fstrict-aliasing -std=c++0x
+		COMPILER_CFLAGS=-O0 -fstrict-aliasing -std=c++0x -DDebug -DAsserts 
         else
 		# Settings for the Intel Compiler (Release Mode)
 		# ----------------------------------------------
