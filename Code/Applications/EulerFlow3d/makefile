@@ -22,13 +22,6 @@ DIM=-DDim2
 #DIM=-DDim4
 
 
-# Configure Peano
-#----------------
-PROJECT_CFLAGS =
-PROJECT_LFLAGS = 
-EXECUTABLE=peano-EulerFlow3d-debug
-#EXECUTABLE=peano-EulerFlow3d-debug
-
 
 # Configure System
 # ----------------
@@ -46,54 +39,77 @@ LINK_OMP=-fopenmp
 LINK_MPI=
 
 
-# Assemble Compiler Flags depending on the environment variable [SHAREDMEM]={OMP, TBB}
-# -----------------------
-ifeq ($(SHAREDMEM),OMP)
-	SYSTEM_CFLAGS =  $(INCLUDE_OMP) $(INCLUDE_MPI)
-	SYSTEM_LFLAGS =  $(LINK_OMP)    $(LINK_MPI)
-else
-	SYSTEM_CFLAGS = $(INCLUDE_TBB) $(INCLUDE_MPI)
-	SYSTEM_LFLAGS = $(LINK_TBB)    $(LINK_MPI)
-endif
 
-# Decide on compiler and flags depending on the environment variables [CC]={gcc, Intel} and [MODE]={Debug, Release}
+# Decide on compiler and flags depending on the environment variables [CC]={gcc, Intel} and [MODE]={Debug, Profile, Release}
 # -----------------------
 ifeq ($(CC),gcc)
 	ifeq ($(MODE),Debug)
 		# Settings for the GNU Compiler (Debug Mode)
 		# ------------------------------------------
 		CC=g++
-		COMPILER_CFLAGS=-O0 -pedantic -pedantic-errors -Wall -Wstrict-aliasing -fstrict-aliasing -ggdb -std=c++0x -DDebug -DAsserts 
+		COMPILER_CFLAGS=-DDebug -DAsserts -O0 -pedantic -pedantic-errors -Wall -Wstrict-aliasing -fstrict-aliasing -ggdb -std=c++0x
+		COMPILER_LFLAGS=
+		EXECUTABLE=peano-EulerFlow3d-debug
+	else ifeq ($(MODE),Profile)
+		# Settings for the GNU Compiler (Profile Mode)
+		# --------------------------------------------
+		CC=g++
+		COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -O3 -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x
+		COMPILER_LFLAGS=-p -pg
+		EXECUTABLE=peano-EulerFlow3d-profile
 	else
 		# Settings for the GNU Compiler (Release Mode)
 		# --------------------------------------------
 		CC=g++
 		COMPILER_CFLAGS=-O3 -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x
+		COMPILER_LFLAGS=
+		EXECUTABLE=peano-EulerFlow3d-release
 	endif
 else
         ifeq ($(MODE),Debug)
 		# Settings for the Intel Compiler (Debug Mode)
 		# --------------------------------------------
 		CC=icpc
-		COMPILER_CFLAGS=-O0 -fstrict-aliasing -std=c++0x -DDebug -DAsserts 
+		COMPILER_CFLAGS=-DDebug -DAsserts -O0 -fstrict-aliasing -std=c++0x
+		COMPILER_LFLAGS=
+		EXECUTABLE=peano-EulerFlow3d-debug
+	else ifeq ($(MODE),Profile)
+		# Settings for the GNU Compiler (Profile Mode)
+		# --------------------------------------------
+		CC=icpc
+		COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
+		COMPILER_LFLAGS=-p -pg
+		EXECUTABLE=peano-EulerFlow3d-profile
         else
 		# Settings for the Intel Compiler (Release Mode)
 		# ----------------------------------------------
 		CC=icpc
 		COMPILER_CFLAGS=-fast -fstrict-aliasing  -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
+		COMPILER_LFLAGS=
+		EXECUTABLE=peano-EulerFlow3d-release
 	endif
 endif
 
-		# Settings for the XLC Compiler (Debug Mode)
-		# --------------------------------------------
-		#CC=xlcc
-		#COMPILER_CFLAGS=-O0 -fstrict-aliasing -qpack_semantic=gnu 
 
 
-		# Settings for the XLC Compiler (Release Mode)
-		# ----------------------------------------------
-		#CC=xlcc
-		#COMPILER_CFLAGS=-fast -fstrict-aliasing -qpack_semantic=gnu 
+# Assemble Compiler Flags depending on the environment variable [SHAREDMEM]={OMP, TBB}
+# -----------------------
+ifeq ($(SHAREDMEM),OMP)
+        SYSTEM_CFLAGS = $(INCLUDE_OMP) 
+        SYSTEM_LFLAGS = $(LINK_OMP) 
+	COMPILER_CFLAGS += -DSharedOMP
+	EXECUTABLE += omp  
+else ifeq ($(SHAREDMEM),TBB)
+	SYSTEM_CFLAGS = $(INCLUDE_TBB)
+	SYSTEM_LFLAGS = $(LINK_TBB)
+	COMPILER_CFLAGS += -DSharedTBB
+	EXECUTABLE += tbb
+else
+        SYSTEM_CFLAGS = $(INCLUDE_TBB) $(INCLUDE_MPI)
+        SYSTEM_LFLAGS = $(LINK_TBB)    $(LINK_MPI)
+endif
+
+
 
 
 
@@ -102,7 +118,6 @@ endif
 # ---------------
 # By default, I use the compiler command. But you might wanna modify it.
 LL=$(CC)
-COMPILER_LFLAGS=
 
 
 OBJECTS=$(SOURCES:.cpp=.o)
@@ -127,11 +142,11 @@ files.mk:
 
 
 header:
-	@echo  --- This is Peano 3 ---
+	@echo  --- This is ExaHyPE @ Peano 3 ---
 
 
 build: files.mk $(OBJECTS)
-	$(LL) $(OBJECTS) -o $(EXECUTABLE) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS) 
+	$(LL) $(OBJECTS) -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS) 
 	@echo
 	@echo build of Peano with component EulerFlow3d successful
 	@echo visit Peano\'s homepage at http://www.peano-framework.org
@@ -144,4 +159,4 @@ clean:
 
 
 $(OBJECTS): %.o : %.cpp
-	$(CC) $(DIM) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PEANO_HOME) -I. -c $< -o $@
+	$(CC) $(DIM) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PEANO_HOME) -I. -c $< -o $@
