@@ -98,6 +98,8 @@ else ifeq ($(SHAREDMEM),TBB)
 	SYSTEM_CFLAGS = $(INCLUDE_TBB)
 	SYSTEM_LFLAGS = $(LINK_TBB)
 	COMPILER_CFLAGS += -DSharedTBB
+else ifeq($(SHAREDMEM),None)
+	# do nothing
 else
         SYSTEM_CFLAGS = $(INCLUDE_TBB) $(INCLUDE_MPI)
         SYSTEM_LFLAGS = $(LINK_TBB)    $(LINK_MPI)
