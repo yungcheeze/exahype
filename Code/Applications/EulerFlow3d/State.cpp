@@ -8,22 +8,22 @@
 
 exahype::State::State():
   Base() { 
-  // @todo Insert your code here
+  _stateData.setTimeStepSize(1e20);
 }
 
 
 exahype::State::State(const Base::PersistentState& argument):
   Base(argument) {
-  // @todo Insert your code here
+  // do nothing
 }
 
 void exahype::State::writeToCheckpoint( peano::grid::Checkpoint<exahype::Vertex,exahype::Cell>& checkpoint ) const {
-  // @todo Insert your code here
+  // do nothing
 }
 
     
 void exahype::State::readFromCheckpoint( const peano::grid::Checkpoint<exahype::Vertex,exahype::Cell>& checkpoint ) {
-  // @todo Insert your code here
+  // do nothing
 }
 
 void exahype::State::setTimeStepSize(const double timeStepSize) {

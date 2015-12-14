@@ -8,8 +8,13 @@
 
 #include "tarch/Assertions.h"
 
+#include "peano/datatraversal/autotuning/Oracle.h"
+#include "peano/datatraversal/autotuning/OracleForOnePhaseDummy.h"
+
 #include "tarch/parallel/Node.h"
 #include "tarch/parallel/NodePool.h"
+
+#include "tarch/multicore/MulticoreDefinitions.h"
 
 // @todo Remove this include as soon as you've created your real-world geometry
 #include "peano/geometry/Hexahedron.h" 
@@ -69,6 +74,15 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   peano::utils::UserInterface userInterface;
   userInterface.writeHeader();
 
+#ifdef SharedMemoryParallelisation
+  // We assume that the workload per cell is that big that we can set the enterCell
+  // grain size to 1 as well as the minimum grain size. All the other values remain
+  // the default values.
+
+  peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
+      new peano::datatraversal::autotuning::OracleForOnePhaseDummy(true));
+#endif
+
   // The space-tree is initialised with 1 coarse grid cell on level 1 and 3^d fine grid cells on level 2.
   for (int coarseGridLevel=1; coarseGridLevel<EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL; coarseGridLevel++) {
     repository.switchToInitialGrid();
@@ -111,7 +125,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     repository.getState().setTimeStepSize(1e20);
     repository.switchToGlobalTimeStepComputation();
     repository.iterate();
-    logInfo("runAsMaster(...)", "global time step (seconds)=" <<
+    logInfo("runAsMaster(...)", "[ExaHyPE] global time step="<< n <<", global time step size (seconds)=" <<
             repository.getState().getTimeStepSize() );
   }
 

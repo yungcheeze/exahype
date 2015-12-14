@@ -78,7 +78,10 @@ peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::desc
 tarch::logging::Log                exahype::mappings::GlobalTimeStepComputation::_log( "exahype::mappings::GlobalTimeStepComputation" );
 
 
-exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation() {
+exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation()
+  :
+  _localState()
+{
   logTraceIn( "GlobalTimeStepComputation()" );
   // do nothing
   logTraceOut( "GlobalTimeStepComputation()" );
@@ -93,7 +96,10 @@ exahype::mappings::GlobalTimeStepComputation::~GlobalTimeStepComputation() {
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const GlobalTimeStepComputation&  masterThread) {
+exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const GlobalTimeStepComputation&  masterThread)
+  :
+  _localState()
+{
   logTraceIn( "GlobalTimeStepComputation(GlobalTimeStepComputation)" );
   // do nothing
   logTraceOut( "GlobalTimeStepComputation(GlobalTimeStepComputation)" );
@@ -102,7 +108,9 @@ exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const Gl
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(const GlobalTimeStepComputation& workerThread) {
   logTraceIn( "mergeWithWorkerThread(GlobalTimeStepComputation)" );
-  // do nothing
+
+  _localState.setMinimumTimeStepSizeOfBoth(workerThread.getState());
+
   logTraceOut( "mergeWithWorkerThread(GlobalTimeStepComputation)" );
 }
 #endif
@@ -525,4 +533,8 @@ void exahype::mappings::GlobalTimeStepComputation::ascend(
   logTraceInWith2Arguments( "ascend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
   // do nothing
   logTraceOut( "ascend(...)" );
+}
+
+const exahype::State& exahype::mappings::GlobalTimeStepComputation::getState() const {
+  return _localState;
 }

@@ -47,7 +47,7 @@ class exahype::mappings::GlobalTimeStepComputation {
     /**
      * Local copy of the state.
      */
-    State _localState;
+    exahype::State _localState;
 
 //    /**
 //     * Order depending PNPM factor.
@@ -1261,6 +1261,11 @@ class exahype::mappings::GlobalTimeStepComputation {
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
     );
+
+    /**
+     * @brief Returns the state of this mapping.
+     */
+    const exahype::State& getState() const;
 };
 
 
