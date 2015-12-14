@@ -14,6 +14,8 @@ PEANO_HOME = .
 # points to directory holding the project's sources
 PROJECT_HOME = EulerFlow3d  
 
+# name of the executable
+EXECUTABLE=peano-EulerFlow3d
 
 # Set Dimension
 # -------------
@@ -49,21 +51,18 @@ ifeq ($(CC),gcc)
 		CC=g++
 		COMPILER_CFLAGS=-DDebug -DAsserts -O0 -pedantic -pedantic-errors -Wall -Wstrict-aliasing -fstrict-aliasing -ggdb -std=c++0x
 		COMPILER_LFLAGS=
-		EXECUTABLE=peano-EulerFlow3d-debug
 	else ifeq ($(MODE),Profile)
 		# Settings for the GNU Compiler (Profile Mode)
 		# --------------------------------------------
 		CC=g++
 		COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -O3 -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x
 		COMPILER_LFLAGS=-p -pg
-		EXECUTABLE=peano-EulerFlow3d-profile
 	else
 		# Settings for the GNU Compiler (Release Mode)
 		# --------------------------------------------
 		CC=g++
 		COMPILER_CFLAGS=-O3 -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x
 		COMPILER_LFLAGS=
-		EXECUTABLE=peano-EulerFlow3d-release
 	endif
 else
         ifeq ($(MODE),Debug)
@@ -72,21 +71,18 @@ else
 		CC=icpc
 		COMPILER_CFLAGS=-DDebug -DAsserts -O0 -fstrict-aliasing -std=c++0x
 		COMPILER_LFLAGS=
-		EXECUTABLE=peano-EulerFlow3d-debug
 	else ifeq ($(MODE),Profile)
 		# Settings for the GNU Compiler (Profile Mode)
 		# --------------------------------------------
 		CC=icpc
 		COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
 		COMPILER_LFLAGS=-p -pg
-		EXECUTABLE=peano-EulerFlow3d-profile
         else
 		# Settings for the Intel Compiler (Release Mode)
 		# ----------------------------------------------
 		CC=icpc
 		COMPILER_CFLAGS=-fast -fstrict-aliasing  -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
 		COMPILER_LFLAGS=
-		EXECUTABLE=peano-EulerFlow3d-release
 	endif
 endif
 
@@ -98,12 +94,10 @@ ifeq ($(SHAREDMEM),OMP)
         SYSTEM_CFLAGS = $(INCLUDE_OMP) 
         SYSTEM_LFLAGS = $(LINK_OMP) 
 	COMPILER_CFLAGS += -DSharedOMP
-	EXECUTABLE:=$(EXECUTABLE)-omp  
 else ifeq ($(SHAREDMEM),TBB)
 	SYSTEM_CFLAGS = $(INCLUDE_TBB)
 	SYSTEM_LFLAGS = $(LINK_TBB)
 	COMPILER_CFLAGS += -DSharedTBB
-	EXECUTABLE:=$(EXECUTABLE)-tbb
 else
         SYSTEM_CFLAGS = $(INCLUDE_TBB) $(INCLUDE_MPI)
         SYSTEM_LFLAGS = $(LINK_TBB)    $(LINK_MPI)
