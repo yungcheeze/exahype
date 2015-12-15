@@ -98,7 +98,7 @@ else ifeq ($(SHAREDMEM),TBB)
 	SYSTEM_CFLAGS = $(INCLUDE_TBB)
 	SYSTEM_LFLAGS = $(LINK_TBB)
 	COMPILER_CFLAGS += -DSharedTBB
-else ifeq($(SHAREDMEM),None)
+else ifeq ($(SHAREDMEM),None)
 	# do nothing
         SYSTEM_LFLAGS = -lrt 
 else
