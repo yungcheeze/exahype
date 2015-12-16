@@ -1263,7 +1263,7 @@ class exahype::mappings::GlobalTimeStepComputation {
     );
 
     /**
-     * @brief Returns the state of this mapping.
+     * @brief Returns th this mapping's local copy of the state.
      */
     const exahype::State& getState() const;
 };

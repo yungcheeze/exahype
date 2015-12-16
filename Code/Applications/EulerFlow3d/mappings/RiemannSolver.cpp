@@ -29,7 +29,7 @@ peano::CommunicationSpecification   exahype::mappings::RiemannSolver::communicat
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::RiemannSolver::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -37,7 +37,7 @@ peano::MappingSpecification   exahype::mappings::RiemannSolver::touchVertexLastT
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::RiemannSolver::touchVertexFirstTimeSpecification() { 
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -45,7 +45,7 @@ peano::MappingSpecification   exahype::mappings::RiemannSolver::touchVertexFirst
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::RiemannSolver::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::OnlyLeaves,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -53,7 +53,7 @@ peano::MappingSpecification   exahype::mappings::RiemannSolver::enterCellSpecifi
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::RiemannSolver::leaveCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
@@ -61,7 +61,7 @@ peano::MappingSpecification   exahype::mappings::RiemannSolver::leaveCellSpecifi
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::RiemannSolver::ascendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
@@ -69,7 +69,7 @@ peano::MappingSpecification   exahype::mappings::RiemannSolver::ascendSpecificat
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::RiemannSolver::descendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
@@ -77,31 +77,27 @@ tarch::logging::Log                exahype::mappings::RiemannSolver::_log( "exah
 
 
 exahype::mappings::RiemannSolver::RiemannSolver() {
-  logTraceIn( "RiemannSolver()" );
   // do nothing
-  logTraceOut( "RiemannSolver()" );
 }
 
 
 exahype::mappings::RiemannSolver::~RiemannSolver() {
-  logTraceIn( "~RiemannSolver()" );
   // do nothing
-  logTraceOut( "~RiemannSolver()" );
 }
 
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::RiemannSolver::RiemannSolver(const RiemannSolver&  masterThread) {
   logTraceIn( "RiemannSolver(RiemannSolver)" );
-  // do nothing
+
+  _localState.setTimeStepSize(masterThread.getState().getTimeStepSize());
+
   logTraceOut( "RiemannSolver(RiemannSolver)" );
 }
 
 
 void exahype::mappings::RiemannSolver::mergeWithWorkerThread(const RiemannSolver& workerThread) {
-  logTraceIn( "mergeWithWorkerThread(RiemannSolver)" );
   // do nothing
-  logTraceOut( "mergeWithWorkerThread(RiemannSolver)" );
 }
 #endif
 
@@ -115,9 +111,7 @@ void exahype::mappings::RiemannSolver::createHangingVertex(
       exahype::Cell&       coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "createHangingVertex(...)", fineGridVertex );
 }
 
 
@@ -130,9 +124,7 @@ void exahype::mappings::RiemannSolver::destroyHangingVertex(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "destroyHangingVertex(...)", fineGridVertex );
 }
 
 
@@ -145,9 +137,7 @@ void exahype::mappings::RiemannSolver::createInnerVertex(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "createInnerVertex(...)", fineGridVertex );
 }
 
 
@@ -160,9 +150,7 @@ void exahype::mappings::RiemannSolver::createBoundaryVertex(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "createBoundaryVertex(...)", fineGridVertex );
 }
 
 
@@ -175,9 +163,7 @@ void exahype::mappings::RiemannSolver::destroyVertex(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "destroyVertex(...)", fineGridVertex );
 }
 
 
@@ -190,9 +176,7 @@ void exahype::mappings::RiemannSolver::createCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "createCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
-  logTraceOutWith1Argument( "createCell(...)", fineGridCell );
 }
 
 
@@ -205,9 +189,7 @@ void exahype::mappings::RiemannSolver::destroyCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "destroyCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
-  logTraceOutWith1Argument( "destroyCell(...)", fineGridCell );
 }
 
 #ifdef Parallel
@@ -219,9 +201,7 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
   const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
   int                                           level
 ) {
-  logTraceInWith6Arguments( "mergeWithNeighbour(...)", vertex, neighbour, fromRank, fineGridX, fineGridH, level );
   // do nothing
-  logTraceOut( "mergeWithNeighbour(...)" );
 }
 
 void exahype::mappings::RiemannSolver::prepareSendToNeighbour(
@@ -231,9 +211,7 @@ void exahype::mappings::RiemannSolver::prepareSendToNeighbour(
       const tarch::la::Vector<DIMENSIONS,double>&   h,
       int                                           level
 ) {
-  logTraceInWith3Arguments( "prepareSendToNeighbour(...)", vertex, toRank, level );
   // do nothing
-  logTraceOut( "prepareSendToNeighbour(...)" );
 }
 
 void exahype::mappings::RiemannSolver::prepareCopyToRemoteNode(
@@ -243,9 +221,7 @@ void exahype::mappings::RiemannSolver::prepareCopyToRemoteNode(
       const tarch::la::Vector<DIMENSIONS,double>&   h,
       int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localVertex, toRank, x, h, level );
   // do nothing
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
 void exahype::mappings::RiemannSolver::prepareCopyToRemoteNode(
@@ -255,9 +231,7 @@ void exahype::mappings::RiemannSolver::prepareCopyToRemoteNode(
       const tarch::la::Vector<DIMENSIONS,double>&   cellSize,
       int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localCell, toRank, cellCentre, cellSize, level );
   // do nothing
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
 void exahype::mappings::RiemannSolver::mergeWithRemoteDataDueToForkOrJoin(
@@ -268,9 +242,7 @@ void exahype::mappings::RiemannSolver::mergeWithRemoteDataDueToForkOrJoin(
   const tarch::la::Vector<DIMENSIONS,double>&  h,
   int                                       level
 ) {
-  logTraceInWith6Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localVertex, masterOrWorkerVertex, fromRank, x, h, level );
   // do nothing
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
 void exahype::mappings::RiemannSolver::mergeWithRemoteDataDueToForkOrJoin(
@@ -281,9 +253,7 @@ void exahype::mappings::RiemannSolver::mergeWithRemoteDataDueToForkOrJoin(
   const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
   int                                       level
 ) {
-  logTraceInWith3Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localCell, masterOrWorkerCell, fromRank );
   // do nothing
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
 bool exahype::mappings::RiemannSolver::prepareSendToWorker(
@@ -296,9 +266,7 @@ bool exahype::mappings::RiemannSolver::prepareSendToWorker(
   const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
   int                                                                  worker
 ) {
-  logTraceIn( "prepareSendToWorker(...)" );
   // do nothing
-  logTraceOutWith1Argument( "prepareSendToWorker(...)", true );
   return true;
 }
 
@@ -311,9 +279,7 @@ void exahype::mappings::RiemannSolver::prepareSendToMaster(
   const exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
-  logTraceInWith2Arguments( "prepareSendToMaster(...)", localCell, verticesEnumerator.toString() );
   // do nothing
-  logTraceOut( "prepareSendToMaster(...)" );
 }
 
 
@@ -332,9 +298,7 @@ void exahype::mappings::RiemannSolver::mergeWithMaster(
   const exahype::State&          workerState,
   exahype::State&                masterState
 ) {
-  logTraceIn( "mergeWithMaster(...)" );
   // do nothing
-  logTraceOut( "mergeWithMaster(...)" );
 }
 
 
@@ -350,9 +314,7 @@ void exahype::mappings::RiemannSolver::receiveDataFromMaster(
       exahype::Cell&                        workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
-  logTraceIn( "receiveDataFromMaster(...)" );
   // do nothing
-  logTraceOut( "receiveDataFromMaster(...)" );
 }
 
 
@@ -363,9 +325,7 @@ void exahype::mappings::RiemannSolver::mergeWithWorker(
   const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
   int                                          level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localCell.toString(), receivedMasterCell.toString() );
   // do nothing
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localCell.toString() );
 }
 
 
@@ -376,9 +336,7 @@ void exahype::mappings::RiemannSolver::mergeWithWorker(
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localVertex.toString(), receivedMasterVertex.toString() );
   // do nothing
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localVertex.toString() );
 }
 #endif
 
@@ -391,9 +349,7 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexFirstTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "touchVertexFirstTime(...)", fineGridVertex );
 }
 
 
@@ -406,9 +362,7 @@ void exahype::mappings::RiemannSolver::touchVertexLastTime(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
 void exahype::mappings::RiemannSolver::enterCell(
@@ -474,7 +428,7 @@ void exahype::mappings::RiemannSolver::enterCell(
             QavR,
             lambdaL,
             lambdaR,
-            this->_timeStepSize,
+            _localState.getTimeStepSize(),
 
             dxPatch,
             nx,
@@ -511,7 +465,7 @@ void exahype::mappings::RiemannSolver::enterCell(
             QavR,
             lambdaL,
             lambdaR,
-            this->_timeStepSize,
+            _localState.getTimeStepSize(),
 
             dyPatch,
             ny,
@@ -535,9 +489,7 @@ void exahype::mappings::RiemannSolver::leaveCell(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
-  logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
 }
 
 
@@ -546,7 +498,7 @@ void exahype::mappings::RiemannSolver::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  this->_timeStepSize = solverState.getTimeStepSize();
+  _localState.setTimeStepSize(solverState.getTimeStepSize());
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
@@ -555,9 +507,7 @@ void exahype::mappings::RiemannSolver::beginIteration(
 void exahype::mappings::RiemannSolver::endIteration(
   exahype::State&  solverState
 ) {
-  logTraceInWith1Argument( "endIteration(State)", solverState );
   // do nothing
-  logTraceOutWith1Argument( "endIteration(State)", solverState);
 }
 
 
@@ -570,9 +520,7 @@ void exahype::mappings::RiemannSolver::descend(
   const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
   exahype::Cell&                 coarseGridCell
 ) {
-  logTraceInWith2Arguments( "descend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
   // do nothing
-  logTraceOut( "descend(...)" );
 }
 
 
@@ -584,7 +532,9 @@ void exahype::mappings::RiemannSolver::ascend(
   const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
   exahype::Cell&           coarseGridCell
 ) {
-  logTraceInWith2Arguments( "ascend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
   // do nothing
-  logTraceOut( "ascend(...)" );
+}
+
+const exahype::State& exahype::mappings::RiemannSolver::getState() const {
+  return _localState;
 }

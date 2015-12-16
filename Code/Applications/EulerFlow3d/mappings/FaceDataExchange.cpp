@@ -22,7 +22,7 @@ peano::CommunicationSpecification   exahype::mappings::FaceDataExchange::communi
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::FaceDataExchange::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -30,7 +30,7 @@ peano::MappingSpecification   exahype::mappings::FaceDataExchange::touchVertexLa
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::FaceDataExchange::touchVertexFirstTimeSpecification() { 
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -38,7 +38,7 @@ peano::MappingSpecification   exahype::mappings::FaceDataExchange::touchVertexFi
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::FaceDataExchange::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::OnlyLeaves,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -46,7 +46,7 @@ peano::MappingSpecification   exahype::mappings::FaceDataExchange::enterCellSpec
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::FaceDataExchange::leaveCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
@@ -54,7 +54,7 @@ peano::MappingSpecification   exahype::mappings::FaceDataExchange::leaveCellSpec
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::FaceDataExchange::ascendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
@@ -62,7 +62,7 @@ peano::MappingSpecification   exahype::mappings::FaceDataExchange::ascendSpecifi
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::FaceDataExchange::descendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
@@ -70,31 +70,23 @@ tarch::logging::Log                exahype::mappings::FaceDataExchange::_log( "e
 
 
 exahype::mappings::FaceDataExchange::FaceDataExchange() {
-  logTraceIn( "FaceDataExchange()" );
   // do nothing
-  logTraceOut( "FaceDataExchange()" );
 }
 
 
 exahype::mappings::FaceDataExchange::~FaceDataExchange() {
-  logTraceIn( "~FaceDataExchange()" );
   // do nothing
-  logTraceOut( "~FaceDataExchange()" );
 }
 
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::FaceDataExchange::FaceDataExchange(const FaceDataExchange&  masterThread) {
-  logTraceIn( "FaceDataExchange(FaceDataExchange)" );
   // do nothing
-  logTraceOut( "FaceDataExchange(FaceDataExchange)" );
 }
 
 
 void exahype::mappings::FaceDataExchange::mergeWithWorkerThread(const FaceDataExchange& workerThread) {
-  logTraceIn( "mergeWithWorkerThread(FaceDataExchange)" );
   // do nothing
-  logTraceOut( "mergeWithWorkerThread(FaceDataExchange)" );
 }
 #endif
 
@@ -108,9 +100,7 @@ void exahype::mappings::FaceDataExchange::createHangingVertex(
     exahype::Cell&       coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "createHangingVertex(...)", fineGridVertex );
 }
 
 
@@ -123,9 +113,7 @@ void exahype::mappings::FaceDataExchange::destroyHangingVertex(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "destroyHangingVertex(...)", fineGridVertex );
 }
 
 
@@ -138,9 +126,7 @@ void exahype::mappings::FaceDataExchange::createInnerVertex(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "createInnerVertex(...)", fineGridVertex );
 }
 
 
@@ -153,9 +139,7 @@ void exahype::mappings::FaceDataExchange::createBoundaryVertex(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "createBoundaryVertex(...)", fineGridVertex );
 }
 
 
@@ -168,9 +152,7 @@ void exahype::mappings::FaceDataExchange::destroyVertex(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "destroyVertex(...)", fineGridVertex );
 }
 
 
@@ -184,9 +166,7 @@ void exahype::mappings::FaceDataExchange::createCell(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "createCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
-  logTraceOutWith1Argument( "createCell(...)", fineGridCell );
 }
 
 
@@ -199,9 +179,7 @@ void exahype::mappings::FaceDataExchange::destroyCell(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "destroyCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
-  logTraceOutWith1Argument( "destroyCell(...)", fineGridCell );
 }
 
 #ifdef Parallel
@@ -213,9 +191,7 @@ void exahype::mappings::FaceDataExchange::mergeWithNeighbour(
     const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
     int                                           level
 ) {
-  logTraceInWith6Arguments( "mergeWithNeighbour(...)", vertex, neighbour, fromRank, fineGridX, fineGridH, level );
   // do nothing
-  logTraceOut( "mergeWithNeighbour(...)" );
 }
 
 void exahype::mappings::FaceDataExchange::prepareSendToNeighbour(
@@ -225,9 +201,7 @@ void exahype::mappings::FaceDataExchange::prepareSendToNeighbour(
     const tarch::la::Vector<DIMENSIONS,double>&   h,
     int                                           level
 ) {
-  logTraceInWith3Arguments( "prepareSendToNeighbour(...)", vertex, toRank, level );
   // do nothing
-  logTraceOut( "prepareSendToNeighbour(...)" );
 }
 
 void exahype::mappings::FaceDataExchange::prepareCopyToRemoteNode(
@@ -237,9 +211,7 @@ void exahype::mappings::FaceDataExchange::prepareCopyToRemoteNode(
     const tarch::la::Vector<DIMENSIONS,double>&   h,
     int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localVertex, toRank, x, h, level );
   // do nothing
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
 void exahype::mappings::FaceDataExchange::prepareCopyToRemoteNode(
@@ -249,9 +221,7 @@ void exahype::mappings::FaceDataExchange::prepareCopyToRemoteNode(
     const tarch::la::Vector<DIMENSIONS,double>&   cellSize,
     int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localCell, toRank, cellCentre, cellSize, level );
   // do nothing
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
 void exahype::mappings::FaceDataExchange::mergeWithRemoteDataDueToForkOrJoin(
@@ -262,9 +232,7 @@ void exahype::mappings::FaceDataExchange::mergeWithRemoteDataDueToForkOrJoin(
     const tarch::la::Vector<DIMENSIONS,double>&  h,
     int                                       level
 ) {
-  logTraceInWith6Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localVertex, masterOrWorkerVertex, fromRank, x, h, level );
   // do nothing
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
 void exahype::mappings::FaceDataExchange::mergeWithRemoteDataDueToForkOrJoin(
@@ -275,9 +243,7 @@ void exahype::mappings::FaceDataExchange::mergeWithRemoteDataDueToForkOrJoin(
     const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
     int                                       level
 ) {
-  logTraceInWith3Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localCell, masterOrWorkerCell, fromRank );
   // do nothing
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
 bool exahype::mappings::FaceDataExchange::prepareSendToWorker(
@@ -290,9 +256,7 @@ bool exahype::mappings::FaceDataExchange::prepareSendToWorker(
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
     int                                                                  worker
 ) {
-  logTraceIn( "prepareSendToWorker(...)" );
   // do nothing
-  logTraceOutWith1Argument( "prepareSendToWorker(...)", true );
   return true;
 }
 
@@ -305,9 +269,7 @@ void exahype::mappings::FaceDataExchange::prepareSendToMaster(
     const exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
-  logTraceInWith2Arguments( "prepareSendToMaster(...)", localCell, verticesEnumerator.toString() );
   // do nothing
-  logTraceOut( "prepareSendToMaster(...)" );
 }
 
 
@@ -326,9 +288,7 @@ void exahype::mappings::FaceDataExchange::mergeWithMaster(
     const exahype::State&          workerState,
     exahype::State&                masterState
 ) {
-  logTraceIn( "mergeWithMaster(...)" );
   // do nothing
-  logTraceOut( "mergeWithMaster(...)" );
 }
 
 
@@ -344,9 +304,7 @@ void exahype::mappings::FaceDataExchange::receiveDataFromMaster(
     exahype::Cell&                        workersCoarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
-  logTraceIn( "receiveDataFromMaster(...)" );
   // do nothing
-  logTraceOut( "receiveDataFromMaster(...)" );
 }
 
 
@@ -357,9 +315,7 @@ void exahype::mappings::FaceDataExchange::mergeWithWorker(
     const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
     int                                          level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localCell.toString(), receivedMasterCell.toString() );
   // do nothing
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localCell.toString() );
 }
 
 
@@ -370,9 +326,7 @@ void exahype::mappings::FaceDataExchange::mergeWithWorker(
     const tarch::la::Vector<DIMENSIONS,double>&   h,
     int                                           level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localVertex.toString(), receivedMasterVertex.toString() );
   // do nothing
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localVertex.toString() );
 }
 #endif
 
@@ -385,9 +339,7 @@ void exahype::mappings::FaceDataExchange::touchVertexFirstTime(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexFirstTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "touchVertexFirstTime(...)", fineGridVertex );
 }
 
 
@@ -400,9 +352,7 @@ void exahype::mappings::FaceDataExchange::touchVertexLastTime(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
 void
@@ -564,27 +514,21 @@ void exahype::mappings::FaceDataExchange::leaveCell(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
-  logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
 }
 
 
 void exahype::mappings::FaceDataExchange::beginIteration(
     exahype::State&  solverState
 ) {
-  logTraceInWith1Argument( "beginIteration(State)", solverState );
   // do nothing
-  logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
 
 
 void exahype::mappings::FaceDataExchange::endIteration(
     exahype::State&  solverState
 ) {
-  logTraceInWith1Argument( "endIteration(State)", solverState );
   // do nothing
-  logTraceOutWith1Argument( "endIteration(State)", solverState);
 }
 
 
@@ -597,9 +541,7 @@ void exahype::mappings::FaceDataExchange::descend(
     const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
     exahype::Cell&                 coarseGridCell
 ) {
-  logTraceInWith2Arguments( "descend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
   // do nothing
-  logTraceOut( "descend(...)" );
 }
 
 
@@ -611,9 +553,7 @@ void exahype::mappings::FaceDataExchange::ascend(
     const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
     exahype::Cell&           coarseGridCell
 ) {
-  logTraceInWith2Arguments( "ascend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
   // do nothing
-  logTraceOut( "ascend(...)" );
 }
 // End of code for ADERDG method
 

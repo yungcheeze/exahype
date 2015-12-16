@@ -22,7 +22,7 @@ peano::CommunicationSpecification   exahype::mappings::BoundaryConditions::commu
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::BoundaryConditions::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -30,7 +30,7 @@ peano::MappingSpecification   exahype::mappings::BoundaryConditions::touchVertex
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::BoundaryConditions::touchVertexFirstTimeSpecification() { 
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -38,7 +38,7 @@ peano::MappingSpecification   exahype::mappings::BoundaryConditions::touchVertex
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::BoundaryConditions::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::OnlyLeaves,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -46,7 +46,7 @@ peano::MappingSpecification   exahype::mappings::BoundaryConditions::enterCellSp
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::BoundaryConditions::leaveCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
@@ -54,7 +54,7 @@ peano::MappingSpecification   exahype::mappings::BoundaryConditions::leaveCellSp
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::BoundaryConditions::ascendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
@@ -62,7 +62,7 @@ peano::MappingSpecification   exahype::mappings::BoundaryConditions::ascendSpeci
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::BoundaryConditions::descendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
@@ -70,31 +70,23 @@ tarch::logging::Log                exahype::mappings::BoundaryConditions::_log( 
 
 
 exahype::mappings::BoundaryConditions::BoundaryConditions() {
-  logTraceIn( "BoundaryConditions()" );
   // do nothing
-  logTraceOut( "BoundaryConditions()" );
 }
 
 
 exahype::mappings::BoundaryConditions::~BoundaryConditions() {
-  logTraceIn( "~BoundaryConditions()" );
   // do nothing
-  logTraceOut( "~BoundaryConditions()" );
 }
 
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::BoundaryConditions::BoundaryConditions(const BoundaryConditions&  masterThread) {
-  logTraceIn( "BoundaryConditions(BoundaryConditions)" );
   // do nothing
-  logTraceOut( "BoundaryConditions(BoundaryConditions)" );
 }
 
 
 void exahype::mappings::BoundaryConditions::mergeWithWorkerThread(const BoundaryConditions& workerThread) {
-  logTraceIn( "mergeWithWorkerThread(BoundaryConditions)" );
   // do nothing
-  logTraceOut( "mergeWithWorkerThread(BoundaryConditions)" );
 }
 #endif
 
@@ -108,9 +100,7 @@ void exahype::mappings::BoundaryConditions::createHangingVertex(
     exahype::Cell&       coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "createHangingVertex(...)", fineGridVertex );
 }
 
 
@@ -123,9 +113,7 @@ void exahype::mappings::BoundaryConditions::destroyHangingVertex(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "destroyHangingVertex(...)", fineGridVertex );
 }
 
 
@@ -138,9 +126,7 @@ void exahype::mappings::BoundaryConditions::createInnerVertex(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "createInnerVertex(...)", fineGridVertex );
 }
 
 
@@ -153,9 +139,7 @@ void exahype::mappings::BoundaryConditions::createBoundaryVertex(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "createBoundaryVertex(...)", fineGridVertex );
 }
 
 
@@ -168,9 +152,7 @@ void exahype::mappings::BoundaryConditions::destroyVertex(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "destroyVertex(...)", fineGridVertex );
 }
 
 
@@ -183,9 +165,7 @@ void exahype::mappings::BoundaryConditions::createCell(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "createCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
-  logTraceOutWith1Argument( "createCell(...)", fineGridCell );
 }
 
 
@@ -198,9 +178,7 @@ void exahype::mappings::BoundaryConditions::destroyCell(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "destroyCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
-  logTraceOutWith1Argument( "destroyCell(...)", fineGridCell );
 }
 
 #ifdef Parallel
@@ -212,9 +190,7 @@ void exahype::mappings::BoundaryConditions::mergeWithNeighbour(
     const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
     int                                           level
 ) {
-  logTraceInWith6Arguments( "mergeWithNeighbour(...)", vertex, neighbour, fromRank, fineGridX, fineGridH, level );
   // do nothing
-  logTraceOut( "mergeWithNeighbour(...)" );
 }
 
 void exahype::mappings::BoundaryConditions::prepareSendToNeighbour(
@@ -224,9 +200,7 @@ void exahype::mappings::BoundaryConditions::prepareSendToNeighbour(
     const tarch::la::Vector<DIMENSIONS,double>&   h,
     int                                           level
 ) {
-  logTraceInWith3Arguments( "prepareSendToNeighbour(...)", vertex, toRank, level );
   // do nothing
-  logTraceOut( "prepareSendToNeighbour(...)" );
 }
 
 void exahype::mappings::BoundaryConditions::prepareCopyToRemoteNode(
@@ -236,9 +210,7 @@ void exahype::mappings::BoundaryConditions::prepareCopyToRemoteNode(
     const tarch::la::Vector<DIMENSIONS,double>&   h,
     int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localVertex, toRank, x, h, level );
   // do nothing
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
 void exahype::mappings::BoundaryConditions::prepareCopyToRemoteNode(
@@ -248,9 +220,7 @@ void exahype::mappings::BoundaryConditions::prepareCopyToRemoteNode(
     const tarch::la::Vector<DIMENSIONS,double>&   cellSize,
     int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localCell, toRank, cellCentre, cellSize, level );
   // do nothing
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
 void exahype::mappings::BoundaryConditions::mergeWithRemoteDataDueToForkOrJoin(
@@ -261,9 +231,7 @@ void exahype::mappings::BoundaryConditions::mergeWithRemoteDataDueToForkOrJoin(
     const tarch::la::Vector<DIMENSIONS,double>&  h,
     int                                       level
 ) {
-  logTraceInWith6Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localVertex, masterOrWorkerVertex, fromRank, x, h, level );
   // do nothing
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
 void exahype::mappings::BoundaryConditions::mergeWithRemoteDataDueToForkOrJoin(
@@ -274,9 +242,7 @@ void exahype::mappings::BoundaryConditions::mergeWithRemoteDataDueToForkOrJoin(
     const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
     int                                       level
 ) {
-  logTraceInWith3Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localCell, masterOrWorkerCell, fromRank );
   // do nothing
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
 bool exahype::mappings::BoundaryConditions::prepareSendToWorker(
@@ -289,9 +255,7 @@ bool exahype::mappings::BoundaryConditions::prepareSendToWorker(
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
     int                                                                  worker
 ) {
-  logTraceIn( "prepareSendToWorker(...)" );
   // do nothing
-  logTraceOutWith1Argument( "prepareSendToWorker(...)", true );
   return true;
 }
 
@@ -304,9 +268,7 @@ void exahype::mappings::BoundaryConditions::prepareSendToMaster(
     const exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
-  logTraceInWith2Arguments( "prepareSendToMaster(...)", localCell, verticesEnumerator.toString() );
   // do nothing
-  logTraceOut( "prepareSendToMaster(...)" );
 }
 
 
@@ -325,9 +287,7 @@ void exahype::mappings::BoundaryConditions::mergeWithMaster(
     const exahype::State&          workerState,
     exahype::State&                masterState
 ) {
-  logTraceIn( "mergeWithMaster(...)" );
   // do nothing
-  logTraceOut( "mergeWithMaster(...)" );
 }
 
 
@@ -343,9 +303,7 @@ void exahype::mappings::BoundaryConditions::receiveDataFromMaster(
     exahype::Cell&                        workersCoarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
-  logTraceIn( "receiveDataFromMaster(...)" );
   // do nothing
-  logTraceOut( "receiveDataFromMaster(...)" );
 }
 
 
@@ -356,9 +314,7 @@ void exahype::mappings::BoundaryConditions::mergeWithWorker(
     const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
     int                                          level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localCell.toString(), receivedMasterCell.toString() );
   // do nothing
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localCell.toString() );
 }
 
 
@@ -369,9 +325,7 @@ void exahype::mappings::BoundaryConditions::mergeWithWorker(
     const tarch::la::Vector<DIMENSIONS,double>&   h,
     int                                           level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localVertex.toString(), receivedMasterVertex.toString() );
   // do nothing
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localVertex.toString() );
 }
 #endif
 
@@ -384,9 +338,7 @@ void exahype::mappings::BoundaryConditions::touchVertexFirstTime(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexFirstTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "touchVertexFirstTime(...)", fineGridVertex );
 }
 
 
@@ -399,9 +351,7 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
 void exahype::mappings::BoundaryConditions::enterCell(
@@ -479,27 +429,21 @@ void exahype::mappings::BoundaryConditions::leaveCell(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
-  logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
 }
 
 
 void exahype::mappings::BoundaryConditions::beginIteration(
     exahype::State&  solverState
 ) {
-  logTraceInWith1Argument( "beginIteration(State)", solverState );
   // do nothing
-  logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
 
 
 void exahype::mappings::BoundaryConditions::endIteration(
     exahype::State&  solverState
 ) {
-  logTraceInWith1Argument( "endIteration(State)", solverState );
   // do nothing
-  logTraceOutWith1Argument( "endIteration(State)", solverState);
 }
 
 
@@ -512,9 +456,7 @@ void exahype::mappings::BoundaryConditions::descend(
     const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
     exahype::Cell&                 coarseGridCell
 ) {
-  logTraceInWith2Arguments( "descend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
   // do nothing
-  logTraceOut( "descend(...)" );
 }
 
 
@@ -526,7 +468,5 @@ void exahype::mappings::BoundaryConditions::ascend(
     const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
     exahype::Cell&           coarseGridCell
 ) {
-  logTraceInWith2Arguments( "ascend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
   // do nothing
-  logTraceOut( "ascend(...)" );
 }

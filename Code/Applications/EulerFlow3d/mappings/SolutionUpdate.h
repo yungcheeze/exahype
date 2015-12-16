@@ -44,7 +44,10 @@ class exahype::mappings::SolutionUpdate {
      */
     static tarch::logging::Log  _log;
 
-    double _timeStepSize;
+    /**
+     * Local copy of the state.
+     */
+    exahype::State _localState;
 
   public:
     /**
@@ -1252,6 +1255,11 @@ class exahype::mappings::SolutionUpdate {
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
     );
+
+    /**
+     * @brief Returns this mapping's local copy of the state.
+     */
+    const exahype::State& getState() const;
 };
 
 

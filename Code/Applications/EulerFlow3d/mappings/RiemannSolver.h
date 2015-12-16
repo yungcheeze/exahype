@@ -45,9 +45,9 @@ class exahype::mappings::RiemannSolver {
     static tarch::logging::Log  _log;
 
     /**
-     * The global time step.
+     * Local copy of the state.
      */
-    double _timeStepSize;
+    exahype::State _localState;
 
   public:
     /**
@@ -1268,6 +1268,11 @@ class exahype::mappings::RiemannSolver {
         const double * const nx,
         const int nvar,
         const int basisSize);
+
+    /**
+     * @brief Returns this mapping's local copy of the state.
+     */
+    const exahype::State& getState() const;
     // End of code for ADERDG scheme
 };
 

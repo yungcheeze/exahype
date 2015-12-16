@@ -28,7 +28,7 @@ peano::CommunicationSpecification   exahype::mappings::VolumeIntegral::communica
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::VolumeIntegral::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -36,7 +36,7 @@ peano::MappingSpecification   exahype::mappings::VolumeIntegral::touchVertexLast
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::VolumeIntegral::touchVertexFirstTimeSpecification() { 
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -44,7 +44,7 @@ peano::MappingSpecification   exahype::mappings::VolumeIntegral::touchVertexFirs
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::VolumeIntegral::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::OnlyLeaves,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -52,7 +52,7 @@ peano::MappingSpecification   exahype::mappings::VolumeIntegral::enterCellSpecif
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::VolumeIntegral::leaveCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
@@ -60,7 +60,7 @@ peano::MappingSpecification   exahype::mappings::VolumeIntegral::leaveCellSpecif
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::VolumeIntegral::ascendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
@@ -68,7 +68,7 @@ peano::MappingSpecification   exahype::mappings::VolumeIntegral::ascendSpecifica
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::VolumeIntegral::descendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
@@ -76,31 +76,23 @@ tarch::logging::Log                exahype::mappings::VolumeIntegral::_log( "exa
 
 
 exahype::mappings::VolumeIntegral::VolumeIntegral() {
-  logTraceIn( "VolumeIntegral()" );
   // do nothing
-  logTraceOut( "VolumeIntegral()" );
 }
 
 
 exahype::mappings::VolumeIntegral::~VolumeIntegral() {
-  logTraceIn( "~VolumeIntegral()" );
   // do nothing
-  logTraceOut( "~VolumeIntegral()" );
 }
 
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::VolumeIntegral::VolumeIntegral(const VolumeIntegral&  masterThread) {
-  logTraceIn( "VolumeIntegral(VolumeIntegral)" );
   // do nothing
-  logTraceOut( "VolumeIntegral(VolumeIntegral)" );
 }
 
 
 void exahype::mappings::VolumeIntegral::mergeWithWorkerThread(const VolumeIntegral& workerThread) {
-  logTraceIn( "mergeWithWorkerThread(VolumeIntegral)" );
   // do nothing
-  logTraceOut( "mergeWithWorkerThread(VolumeIntegral)" );
 }
 #endif
 
@@ -114,9 +106,7 @@ void exahype::mappings::VolumeIntegral::createHangingVertex(
     exahype::Cell&       coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "createHangingVertex(...)", fineGridVertex );
 }
 
 
@@ -129,9 +119,7 @@ void exahype::mappings::VolumeIntegral::destroyHangingVertex(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "destroyHangingVertex(...)", fineGridVertex );
 }
 
 
@@ -144,9 +132,7 @@ void exahype::mappings::VolumeIntegral::createInnerVertex(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "createInnerVertex(...)", fineGridVertex );
 }
 
 
@@ -159,9 +145,7 @@ void exahype::mappings::VolumeIntegral::createBoundaryVertex(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "createBoundaryVertex(...)", fineGridVertex );
 }
 
 
@@ -174,9 +158,7 @@ void exahype::mappings::VolumeIntegral::destroyVertex(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "destroyVertex(...)", fineGridVertex );
 }
 
 
@@ -189,9 +171,7 @@ void exahype::mappings::VolumeIntegral::createCell(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "createCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
-  logTraceOutWith1Argument( "createCell(...)", fineGridCell );
 }
 
 
@@ -204,9 +184,7 @@ void exahype::mappings::VolumeIntegral::destroyCell(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "destroyCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
-  logTraceOutWith1Argument( "destroyCell(...)", fineGridCell );
 }
 
 #ifdef Parallel
@@ -218,9 +196,7 @@ void exahype::mappings::VolumeIntegral::mergeWithNeighbour(
     const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
     int                                           level
 ) {
-  logTraceInWith6Arguments( "mergeWithNeighbour(...)", vertex, neighbour, fromRank, fineGridX, fineGridH, level );
   // do nothing
-  logTraceOut( "mergeWithNeighbour(...)" );
 }
 
 void exahype::mappings::VolumeIntegral::prepareSendToNeighbour(
@@ -230,9 +206,7 @@ void exahype::mappings::VolumeIntegral::prepareSendToNeighbour(
     const tarch::la::Vector<DIMENSIONS,double>&   h,
     int                                           level
 ) {
-  logTraceInWith3Arguments( "prepareSendToNeighbour(...)", vertex, toRank, level );
   // do nothing
-  logTraceOut( "prepareSendToNeighbour(...)" );
 }
 
 void exahype::mappings::VolumeIntegral::prepareCopyToRemoteNode(
@@ -242,9 +216,7 @@ void exahype::mappings::VolumeIntegral::prepareCopyToRemoteNode(
     const tarch::la::Vector<DIMENSIONS,double>&   h,
     int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localVertex, toRank, x, h, level );
   // do nothing
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
 void exahype::mappings::VolumeIntegral::prepareCopyToRemoteNode(
@@ -254,9 +226,7 @@ void exahype::mappings::VolumeIntegral::prepareCopyToRemoteNode(
     const tarch::la::Vector<DIMENSIONS,double>&   cellSize,
     int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localCell, toRank, cellCentre, cellSize, level );
   // do nothing
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
 void exahype::mappings::VolumeIntegral::mergeWithRemoteDataDueToForkOrJoin(
@@ -267,9 +237,7 @@ void exahype::mappings::VolumeIntegral::mergeWithRemoteDataDueToForkOrJoin(
     const tarch::la::Vector<DIMENSIONS,double>&  h,
     int                                       level
 ) {
-  logTraceInWith6Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localVertex, masterOrWorkerVertex, fromRank, x, h, level );
   // do nothing
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
 void exahype::mappings::VolumeIntegral::mergeWithRemoteDataDueToForkOrJoin(
@@ -280,9 +248,7 @@ void exahype::mappings::VolumeIntegral::mergeWithRemoteDataDueToForkOrJoin(
     const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
     int                                       level
 ) {
-  logTraceInWith3Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localCell, masterOrWorkerCell, fromRank );
   // do nothing
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
 bool exahype::mappings::VolumeIntegral::prepareSendToWorker(
@@ -295,9 +261,7 @@ bool exahype::mappings::VolumeIntegral::prepareSendToWorker(
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
     int                                                                  worker
 ) {
-  logTraceIn( "prepareSendToWorker(...)" );
   // do nothing
-  logTraceOutWith1Argument( "prepareSendToWorker(...)", true );
   return true;
 }
 
@@ -310,9 +274,7 @@ void exahype::mappings::VolumeIntegral::prepareSendToMaster(
     const exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
-  logTraceInWith2Arguments( "prepareSendToMaster(...)", localCell, verticesEnumerator.toString() );
   // do nothing
-  logTraceOut( "prepareSendToMaster(...)" );
 }
 
 
@@ -331,9 +293,7 @@ void exahype::mappings::VolumeIntegral::mergeWithMaster(
     const exahype::State&          workerState,
     exahype::State&                masterState
 ) {
-  logTraceIn( "mergeWithMaster(...)" );
   // do nothing
-  logTraceOut( "mergeWithMaster(...)" );
 }
 
 
@@ -349,9 +309,7 @@ void exahype::mappings::VolumeIntegral::receiveDataFromMaster(
     exahype::Cell&                        workersCoarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
-  logTraceIn( "receiveDataFromMaster(...)" );
   // do nothing
-  logTraceOut( "receiveDataFromMaster(...)" );
 }
 
 
@@ -362,9 +320,7 @@ void exahype::mappings::VolumeIntegral::mergeWithWorker(
     const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
     int                                          level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localCell.toString(), receivedMasterCell.toString() );
   // do nothing
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localCell.toString() );
 }
 
 
@@ -375,9 +331,7 @@ void exahype::mappings::VolumeIntegral::mergeWithWorker(
     const tarch::la::Vector<DIMENSIONS,double>&   h,
     int                                           level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localVertex.toString(), receivedMasterVertex.toString() );
   // do nothing
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localVertex.toString() );
 }
 #endif
 
@@ -390,9 +344,7 @@ void exahype::mappings::VolumeIntegral::touchVertexFirstTime(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexFirstTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "touchVertexFirstTime(...)", fineGridVertex );
 }
 
 extern const double exahype::quad::gaussLegendreNodes[10][10];
@@ -407,9 +359,7 @@ void exahype::mappings::VolumeIntegral::touchVertexLastTime(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
 void exahype::mappings::VolumeIntegral::enterCell(
@@ -468,27 +418,21 @@ void exahype::mappings::VolumeIntegral::leaveCell(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
-  logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
 }
 
 
 void exahype::mappings::VolumeIntegral::beginIteration(
     exahype::State&  solverState
 ) {
-  logTraceInWith1Argument( "beginIteration(State)", solverState );
   // do nothing
-  logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
 
 
 void exahype::mappings::VolumeIntegral::endIteration(
     exahype::State&  solverState
 ) {
-  logTraceInWith1Argument( "endIteration(State)", solverState );
   // do nothing
-  logTraceOutWith1Argument( "endIteration(State)", solverState);
 }
 
 
@@ -501,9 +445,7 @@ void exahype::mappings::VolumeIntegral::descend(
     const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
     exahype::Cell&                 coarseGridCell
 ) {
-  logTraceInWith2Arguments( "descend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
   // do nothing
-  logTraceOut( "descend(...)" );
 }
 
 
@@ -515,7 +457,5 @@ void exahype::mappings::VolumeIntegral::ascend(
     const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
     exahype::Cell&           coarseGridCell
 ) {
-  logTraceInWith2Arguments( "ascend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
   // do nothing
-  logTraceOut( "ascend(...)" );
 }
