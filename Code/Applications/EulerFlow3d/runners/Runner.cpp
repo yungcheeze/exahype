@@ -82,19 +82,19 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
       new peano::datatraversal::autotuning::OracleForOnePhaseDummy(true));
 #endif
-
   // The space-tree is initialised with 1 coarse grid cell on level 1 and 3^d fine grid cells on level 2.
   for (int coarseGridLevel=1; coarseGridLevel<EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL; coarseGridLevel++) {
     repository.switchToInitialGrid();
     do {
       repository.iterate();
-    } while (!repository.getState().isGridStationary());
+    } while (!repository.getState().isGridBalanced());
   }
   repository.switchToGridExport();                // export the grid
   repository.iterate();
 
   repository.switchToPatchInitialisation();       // initialize the cell descriptions;
   repository.iterate();
+
   repository.switchToInitialConditionAndExport(); // initialize the fields of the cell descriptions, i.e., the initial values.
   repository.iterate();
 
@@ -104,7 +104,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   logInfo("runAsMaster(...)", "global time step (seconds)=" <<
           repository.getState().getTimeStepSize() );
 
-  for (int n=0; n<1000; n++) {
+  for (int n=0; n<10000; n++) {
     // predictor
     repository.switchToPredictor();
     repository.iterate();
