@@ -26,7 +26,7 @@ peano::CommunicationSpecification   exahype::mappings::VTKExport::communicationS
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::VTKExport::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -42,7 +42,7 @@ peano::MappingSpecification   exahype::mappings::VTKExport::touchVertexFirstTime
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::VTKExport::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::OnlyLeaves,peano::MappingSpecification::Serial);
 }
 
 
@@ -50,7 +50,7 @@ peano::MappingSpecification   exahype::mappings::VTKExport::enterCellSpecificati
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::VTKExport::leaveCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
@@ -58,7 +58,7 @@ peano::MappingSpecification   exahype::mappings::VTKExport::leaveCellSpecificati
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::VTKExport::ascendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
@@ -66,7 +66,7 @@ peano::MappingSpecification   exahype::mappings::VTKExport::ascendSpecification(
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::VTKExport::descendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
@@ -78,16 +78,12 @@ exahype::mappings::VTKExport::VTKExport():
           _cellWriter(0),
           _vertexValueWriter(0)
 {
-  logTraceIn( "VTKExport()" );
   // do nothing
-  logTraceOut( "VTKExport()" );
 }
 
 
 exahype::mappings::VTKExport::~VTKExport() {
-  logTraceIn( "~VTKExport()" );
   // do nothing
-  logTraceOut( "~VTKExport()" );
 }
 
 
@@ -115,9 +111,7 @@ void exahype::mappings::VTKExport::createHangingVertex(
     exahype::Cell&       coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "createHangingVertex(...)", fineGridVertex );
 }
 
 
@@ -130,9 +124,7 @@ void exahype::mappings::VTKExport::destroyHangingVertex(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "destroyHangingVertex(...)", fineGridVertex );
 }
 
 
@@ -145,9 +137,7 @@ void exahype::mappings::VTKExport::createInnerVertex(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "createInnerVertex(...)", fineGridVertex );
 }
 
 
@@ -160,9 +150,7 @@ void exahype::mappings::VTKExport::createBoundaryVertex(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "createBoundaryVertex(...)", fineGridVertex );
 }
 
 
@@ -175,9 +163,7 @@ void exahype::mappings::VTKExport::destroyVertex(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "destroyVertex(...)", fineGridVertex );
 }
 
 
@@ -190,9 +176,7 @@ void exahype::mappings::VTKExport::createCell(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "createCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
-  logTraceOutWith1Argument( "createCell(...)", fineGridCell );
 }
 
 
@@ -205,9 +189,7 @@ void exahype::mappings::VTKExport::destroyCell(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "destroyCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // do nothing
-  logTraceOutWith1Argument( "destroyCell(...)", fineGridCell );
 }
 
 #ifdef Parallel
@@ -219,9 +201,7 @@ void exahype::mappings::VTKExport::mergeWithNeighbour(
     const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
     int                                           level
 ) {
-  logTraceInWith6Arguments( "mergeWithNeighbour(...)", vertex, neighbour, fromRank, fineGridX, fineGridH, level );
   // do nothing
-  logTraceOut( "mergeWithNeighbour(...)" );
 }
 
 void exahype::mappings::VTKExport::prepareSendToNeighbour(
@@ -231,9 +211,7 @@ void exahype::mappings::VTKExport::prepareSendToNeighbour(
     const tarch::la::Vector<DIMENSIONS,double>&   h,
     int                                           level
 ) {
-  logTraceInWith3Arguments( "prepareSendToNeighbour(...)", vertex, toRank, level );
   // do nothing
-  logTraceOut( "prepareSendToNeighbour(...)" );
 }
 
 void exahype::mappings::VTKExport::prepareCopyToRemoteNode(
@@ -243,9 +221,7 @@ void exahype::mappings::VTKExport::prepareCopyToRemoteNode(
     const tarch::la::Vector<DIMENSIONS,double>&   h,
     int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localVertex, toRank, x, h, level );
   // do nothing
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
 void exahype::mappings::VTKExport::prepareCopyToRemoteNode(
@@ -255,9 +231,7 @@ void exahype::mappings::VTKExport::prepareCopyToRemoteNode(
     const tarch::la::Vector<DIMENSIONS,double>&   cellSize,
     int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localCell, toRank, cellCentre, cellSize, level );
   // do nothing
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
 void exahype::mappings::VTKExport::mergeWithRemoteDataDueToForkOrJoin(
@@ -268,9 +242,7 @@ void exahype::mappings::VTKExport::mergeWithRemoteDataDueToForkOrJoin(
     const tarch::la::Vector<DIMENSIONS,double>&  h,
     int                                       level
 ) {
-  logTraceInWith6Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localVertex, masterOrWorkerVertex, fromRank, x, h, level );
   // do nothing
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
 void exahype::mappings::VTKExport::mergeWithRemoteDataDueToForkOrJoin(
@@ -281,9 +253,7 @@ void exahype::mappings::VTKExport::mergeWithRemoteDataDueToForkOrJoin(
     const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
     int                                       level
 ) {
-  logTraceInWith3Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localCell, masterOrWorkerCell, fromRank );
   // do nothing
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
 bool exahype::mappings::VTKExport::prepareSendToWorker(
@@ -311,9 +281,7 @@ void exahype::mappings::VTKExport::prepareSendToMaster(
     const exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
-  logTraceInWith2Arguments( "prepareSendToMaster(...)", localCell, verticesEnumerator.toString() );
   // do nothing
-  logTraceOut( "prepareSendToMaster(...)" );
 }
 
 
@@ -332,9 +300,7 @@ void exahype::mappings::VTKExport::mergeWithMaster(
     const exahype::State&          workerState,
     exahype::State&                masterState
 ) {
-  logTraceIn( "mergeWithMaster(...)" );
   // do nothing
-  logTraceOut( "mergeWithMaster(...)" );
 }
 
 
@@ -350,9 +316,7 @@ void exahype::mappings::VTKExport::receiveDataFromMaster(
     exahype::Cell&                        workersCoarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
-  logTraceIn( "receiveDataFromMaster(...)" );
   // do nothing
-  logTraceOut( "receiveDataFromMaster(...)" );
 }
 
 
@@ -363,9 +327,7 @@ void exahype::mappings::VTKExport::mergeWithWorker(
     const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
     int                                          level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localCell.toString(), receivedMasterCell.toString() );
   // do nothing
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localCell.toString() );
 }
 
 
@@ -376,9 +338,7 @@ void exahype::mappings::VTKExport::mergeWithWorker(
     const tarch::la::Vector<DIMENSIONS,double>&   h,
     int                                           level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localVertex.toString(), receivedMasterVertex.toString() );
   // do nothing
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localVertex.toString() );
 }
 #endif
 
@@ -411,9 +371,7 @@ void exahype::mappings::VTKExport::touchVertexLastTime(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
   // do nothing
-  logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
 void exahype::mappings::VTKExport::enterCell(
@@ -448,10 +406,11 @@ void exahype::mappings::VTKExport::enterCell(
       const int nvar      = EXAHYPE_NVARS;
 
       // helper variables
-      double x,y;
+      double x = 0;
+      double y = 0;
 
       // BEGIN: move into static fields todo
-      int    indexMapping       [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
+      int    indexMapping      [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
       double uniformCoordinates[DIMENSIONS     ][EXAHYPE_NBASIS_POWER_DIMENSIONS];
       double uniformPartition  [TWO_POWER_D    ][EXAHYPE_NBASIS_POWER_DIMENSIONS];
       double uniformDoF        [EXAHYPE_NVARS][EXAHYPE_NBASIS_POWER_DIMENSIONS];
@@ -459,23 +418,23 @@ void exahype::mappings::VTKExport::enterCell(
       // define sub nodes
       for (int ii=0; ii < basisSize; ii++) {
         for (int jj=0; jj < basisSize; jj++) {
-          const int equiNodeIndex = ii + basisSize * jj;
+          const int uniformNodeIndex = ii + basisSize * jj;
 
-          indexMapping[ii][jj] = equiNodeIndex;
-          uniformCoordinates[0][equiNodeIndex] = (double) ii / (double) EXAHYPE_ORDER;
-          uniformCoordinates[1][equiNodeIndex] = (double) jj / (double) EXAHYPE_ORDER;
+          indexMapping[ii][jj] = uniformNodeIndex;
+          uniformCoordinates[0][uniformNodeIndex] = (double) ii / (double) EXAHYPE_ORDER;
+          uniformCoordinates[1][uniformNodeIndex] = (double) jj / (double) EXAHYPE_ORDER;
         }
       }
 
       // define sub quadrangles/hexahedrons
       for (int ii=0; ii < basisSize; ii++) {
         for (int jj=0; jj < basisSize; jj++) {
-          const int equiNodeIndex = ii + basisSize * jj;
+          const int uniformNodeIndex = ii + basisSize * jj;
 
-          uniformPartition[0][equiNodeIndex] = indexMapping[ii  ][jj  ];
-          uniformPartition[1][equiNodeIndex] = indexMapping[ii+1][jj  ];
-          uniformPartition[2][equiNodeIndex] = indexMapping[ii+1][jj+1];
-          uniformPartition[3][equiNodeIndex] = indexMapping[ii  ][jj+1];
+          uniformPartition[0][uniformNodeIndex] = indexMapping[ii  ][jj  ];
+          uniformPartition[1][uniformNodeIndex] = indexMapping[ii+1][jj  ];
+          uniformPartition[2][uniformNodeIndex] = indexMapping[ii+1][jj+1];
+          uniformPartition[3][uniformNodeIndex] = indexMapping[ii  ][jj+1];
         }
       }
 
@@ -489,10 +448,10 @@ void exahype::mappings::VTKExport::enterCell(
 //          std::memset((double *) &subData[0],0,sizeof(double) * EXAHYPE_NVARS * EXAHYPE_NBASIS_POWER_DIMENSIONS);
           for (int ii=0; ii<basisSize; ii++) { // mem zero
              for (int jj=0; jj<basisSize; jj++) {
-               const int equiNodeIndex = ii + basisSize * jj;
+               const int uniformNodeIndex = ii + basisSize * jj;
 
                for (int ivar=0; ivar < nvar; ivar++) {
-                 uniformDoF[ivar][equiNodeIndex] = 0;
+                 uniformDoF[ivar][uniformNodeIndex] = 0;
                }
              }
           }
@@ -501,7 +460,7 @@ void exahype::mappings::VTKExport::enterCell(
 
           for (int ii=0; ii<basisSize; ii++) { // project on subgrid coordinates
             for (int jj=0; jj<basisSize; jj++) {
-              const int equiNodeIndex = ii + basisSize * jj;
+              const int uniformNodeIndex = ii + basisSize * jj;
 
               for (int mm=0; mm<basisSize; mm++) { // project on subgrid coordinates
                 for (int nn=0; nn<basisSize; nn++) {
@@ -509,7 +468,7 @@ void exahype::mappings::VTKExport::enterCell(
                   const int dofStartIndex = nodeIndex * nvar;
 
                   for (int ivar=0; ivar < nvar; ivar++) {
-                    uniformDoF[ivar][equiNodeIndex] += luh[dofStartIndex+ivar] * dg::subOutputMatrix[nodeIndex][equiNodeIndex];
+                    uniformDoF[ivar][uniformNodeIndex] += luh[dofStartIndex+ivar] * dg::subOutputMatrix[nodeIndex][uniformNodeIndex];
                   }
                 }
               }
@@ -528,7 +487,7 @@ void exahype::mappings::VTKExport::enterCell(
 //              const double r = quad::gaussLegendreNodes[basisSize-1][ii];
 //              const double s = quad::gaussLegendreNodes[basisSize-1][jj];
 
-              exahype::geometry::mapping2d(center(0),center(1),dx,dy,dxPatch,dyPatch,i,j,r,s,&x,&y);
+              geometry::mapping2d(center(0),center(1),dx,dy,dxPatch,dyPatch,i,j,r,s,&x,&y);
               tarch::la::Vector<DIMENSIONS,double> currentVertexPosition(x,y);
 
               const int vtkNodeIndex = _vertexWriter->plotVertex(currentVertexPosition);
