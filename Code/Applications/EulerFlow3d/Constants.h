@@ -14,10 +14,10 @@
  * Mesh parameters.
  */
 ///@{
-#define EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL             5  //!< The refinement level of the initial grid.
+#define EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL             3  //!< The refinement level of the initial grid.
 #define EXAHYPE_INITIAL_ADAPTIVE_REFINEMENT_LEVEL           0  //!< The initial level of the adaptive refinement.
 #define EXAHYPE_MAXIMUM_ADAPTIVE_REFINEMENT_LEVEL           0  //!< The maximum level of adaptive refinement.
-#define EXAHYPE_MAXIMUM_REFINEMENT_LEVEL                    5  //!< The sum of ::EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL and ::EXAHYPE_MAXIMUM_ADAPTIVE_REFINEMENT_LEVEL.
+#define EXAHYPE_MAXIMUM_REFINEMENT_LEVEL                    3  //!< The sum of ::EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL and ::EXAHYPE_MAXIMUM_ADAPTIVE_REFINEMENT_LEVEL.
 
 #define EXAHYPE_PATCH_SIZE_X                                3 //!< Number of patches in each coordinate direction (+ two ghost cells).
 #define EXAHYPE_PATCH_SIZE_Y                                3 //!< Number of patches in each coordinate direction (+ two ghost cells).

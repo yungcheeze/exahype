@@ -104,7 +104,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   logInfo("runAsMaster(...)", "global time step (seconds)=" <<
           repository.getState().getTimeStepSize() );
 
-  for (int n=0; n<10000; n++) {
+  for (int n=0; n<100; n++) {
     // predictor
     repository.switchToPredictor();
     repository.iterate();
