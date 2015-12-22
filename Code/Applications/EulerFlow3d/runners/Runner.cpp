@@ -95,38 +95,47 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.switchToPatchInitialisation();       // initialize the cell descriptions;
   repository.iterate();
 
-  repository.switchToInitialConditionAndExport(); // initialize the fields of the cell descriptions, i.e., the initial values.
+  repository.switchToInitialCondition(); // initialize the fields of the cell descriptions, i.e., the initial values.
   repository.iterate();
 
-  repository.getState().setTimeStepSize(1e20);
+  // global reduction
   repository.switchToGlobalTimeStepComputation();
   repository.iterate();
-  logInfo("runAsMaster(...)", "global time step (seconds)=" <<
+  logInfo("runAsMaster(...)", "[ExaHyPE] global time step="<< 0 <<", global time step size (seconds)=" <<
           repository.getState().getTimeStepSize() );
+  logInfo("runAsMaster(...)", "[ExaHyPE] old global time step size (seconds)=" <<
+            repository.getState().getOldTimeStepSize() );
 
-  for (int n=0; n<100; n++) {
-    // predictor
-    repository.switchToPredictor();
-    repository.iterate();
-
-    // face data exchange
-    repository.switchToFaceDataExchange();
-    repository.iterate();
-
-    // corrector
+  for (int n=0; n<400; n++) {
+    /*
+     * The two adapters that are embedded in the if clause below perform the following steps:
+     *
+     * 1. Perform the corrector step using the old update and the old global time step size.
+     *    This is a leaf-cell-local operation. Thus we immediately obtain the leaf-cell-local current solution.
+     * 2. Perform the predictor step using the leaf-cell-local current solution and the current global time step size.
+     * 3. Compute the leaf-cell-local time step sizes
+     * 4. (Optionally) Export the leaf-cell-local current solution.
+     * 5. After the traversal, set the global current time step size as the new old global time step size.
+     *    Find the minimum leaf-cell-local time step size and set it as the new current
+     *    global time step size.
+     */
     if (n%EXAHYPE_PLOTTING_STRIDE==0) {
-      repository.switchToCorrectorAndExport();
+      repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputationAndExport();
     } else {
-      repository.switchToCorrector();
+      repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputation();
     }
     repository.iterate();
 
-    // global reduction
-    repository.getState().setTimeStepSize(1e20);
-    repository.switchToGlobalTimeStepComputation();
-    repository.iterate();
-    logInfo("runAsMaster(...)", "[ExaHyPE] global time step="<< n <<", global time step size (seconds)=" <<
+    logInfo("runAsMaster(...)", "[ExaHyPE] global time step="<< n+1 <<", global time step size (seconds)=" <<
             repository.getState().getTimeStepSize() );
+    logInfo("runAsMaster(...)", "[ExaHyPE] old global time step size (seconds)=" <<
+              repository.getState().getOldTimeStepSize() );
+
+    /*
+     * Exchange the fluctuations.
+     */
+    repository.switchToFaceDataExchange();
+    repository.iterate();
   }
 
   repository.logIterationStatistics();

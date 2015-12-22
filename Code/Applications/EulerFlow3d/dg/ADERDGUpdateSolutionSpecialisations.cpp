@@ -1,5 +1,7 @@
 #include "EulerFlow3d/dg/ADERDG.h"
 
+#include "iostream"
+
 #include "EulerFlow3d/quad/GaussLegendre.h"
 
 // 3D specialisation
@@ -33,7 +35,7 @@ void exahype::dg::updateSolution<2>(
       double weight =  exahype::quad::gaussLegendreWeights[basisSize-1][ii] * exahype::quad::gaussLegendreWeights[basisSize-1][jj];
 
       for(int ivar=0; ivar < nvar; ivar++) {
-        luh[dofStartIndex+ivar] +=  dt/weight * lduh[dofStartIndex+ivar];
+        luh[dofStartIndex+ivar] +=  (lduh[dofStartIndex+ivar] * dt)/weight;
       }
     }
   }

@@ -90,7 +90,7 @@ exahype::mappings::RiemannSolver::~RiemannSolver() {
 exahype::mappings::RiemannSolver::RiemannSolver(const RiemannSolver&  masterThread) {
   logTraceIn( "RiemannSolver(RiemannSolver)" );
 
-  _localState.setTimeStepSize(masterThread.getState().getTimeStepSize());
+  _localState.setOldTimeStepSize(masterThread.getState().getOldTimeStepSize());
 
   logTraceOut( "RiemannSolver(RiemannSolver)" );
 }
@@ -428,7 +428,7 @@ void exahype::mappings::RiemannSolver::enterCell(
             QavR,
             lambdaL,
             lambdaR,
-            _localState.getTimeStepSize(),
+            _localState.getOldTimeStepSize(),
 
             dxPatch,
             nx,
@@ -498,7 +498,7 @@ void exahype::mappings::RiemannSolver::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  _localState.setTimeStepSize(solverState.getTimeStepSize());
+  _localState.setOldTimeStepSize(solverState.getOldTimeStepSize());
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }

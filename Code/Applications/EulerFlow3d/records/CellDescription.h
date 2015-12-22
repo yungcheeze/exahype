@@ -32,7 +32,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   16/12/2015 14:02
+ * @date   22/12/2015 19:48
  */
 class exahype::records::CellDescription { 
    
@@ -1662,7 +1662,7 @@ class exahype::records::CellDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   16/12/2015 14:02
+          * @date   22/12/2015 19:48
           */
          class exahype::records::CellDescriptionPacked { 
             

@@ -3,6 +3,8 @@
 #include "math.h"
 #include "stdlib.h"
 
+#include "limits"
+
 #include "EulerFlow3d/Constants.h"
 #include "EulerFlow3d/problem/Problem.h"
 
@@ -36,7 +38,7 @@ double exahype::dg::stableTimeStepSize<2>(
       { 0., 1.},
   };
 
-  double dt=1e20;
+  double dt=std::numeric_limits<double>::max();
   for(int ii=0; ii < basisSize; ii++) {
     for (int jj=0; jj<basisSize; jj++) {
       const int nodeIndex     = ii + basisSize * jj;

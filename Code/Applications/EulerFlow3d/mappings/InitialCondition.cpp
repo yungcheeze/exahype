@@ -1,5 +1,7 @@
 #include "EulerFlow3d/mappings/InitialCondition.h"
 
+#include "string.h"
+
 #include "EulerFlow3d/Constants.h"
 
 #include "EulerFlow3d/quad/GaussLegendre.h"
@@ -7,8 +9,6 @@
 #include "EulerFlow3d/geometry/Mapping.h"
 
 #include "EulerFlow3d/problem/Problem.h"
-
-#include "stdlib.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -377,39 +377,53 @@ void exahype::mappings::InitialCondition::enterCell(
     const double dxPatch = dx/ (double) EXAHYPE_PATCH_SIZE_X;
     const double dyPatch = dy/ (double) EXAHYPE_PATCH_SIZE_Y;
 
-    const int basisSize = EXAHYPE_ORDER+1;
-    const int nvar      = EXAHYPE_NVARS;
+    const int basisSize       = EXAHYPE_ORDER+1;
+    const int nvar            = EXAHYPE_NVARS;
+    const int numberOfDof     = nvar * tarch::la::aPowI(DIMENSIONS,basisSize);
+    const int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
     // helper variables
     double x,y;
     double* value = (double*) std::malloc(nvar * sizeof(double));
 
-    for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
-      for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
+    for (int i=0; i<EXAHYPE_PATCH_SIZE_X+2; i++) { // loop over patches
+      for (int j=0; j<EXAHYPE_PATCH_SIZE_Y+2; j++) {
         const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
 
-        double* luh  = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
-        double* lduh = &(DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))  [0]._persistentRecords._u);
+        // zero face data (needed in Riemann solver and surface integral mappings)
+        double* lQhbnd = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor(patchIndex))[0]._persistentRecords._u);
+        double* lFhbnd = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(patchIndex))          [0]._persistentRecords._u);
 
-        for (int ii=0; ii<basisSize; ii++) { // loop over dof
-          for (int jj=0; jj<basisSize; jj++) {
-            // location and index of nodal degrees of freedom
-            const int nodeIndex = ii + basisSize * jj;
+        memset((double *) lQhbnd,0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
+        memset((double *) lFhbnd,0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
 
-            const double qr = exahype::quad::gaussLegendreNodes[basisSize-1][ii];
-            const double qs = exahype::quad::gaussLegendreNodes[basisSize-1][jj];
-            exahype::geometry::mapping2d(center(0),center(1),dx,dy,dxPatch,dyPatch,i,j,qr,qs,&x,&y);
+        if (i>0 && i<EXAHYPE_PATCH_SIZE_X+1) {
+          if (j>0 && j<EXAHYPE_PATCH_SIZE_Y+1) { // non-ghost/real cells
+            // zero update
+            double* lduh   = &(DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))               [0]._persistentRecords._u);
+            memset(lduh,0,sizeof(double) * numberOfDof);
 
-            // read initial condition
-            exahype::problem::PDEInitialValue2d(x,y,nvar,value);
+            // apply initial condition
+            double* luh    = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))             [0]._persistentRecords._u);
+            for (int ii=0; ii<basisSize; ii++) { // loop over dof
+              for (int jj=0; jj<basisSize; jj++) {
+                // location and index of nodal degrees of freedom
+                const int nodeIndex = ii + basisSize * jj;
 
-            // set the DoF
-            const int dofStartIndex  = nodeIndex * nvar;
+                const double qr = exahype::quad::gaussLegendreNodes[basisSize-1][ii];
+                const double qs = exahype::quad::gaussLegendreNodes[basisSize-1][jj];
+                exahype::geometry::mapping2d(center(0),center(1),dx,dy,dxPatch,dyPatch,i,j,qr,qs,&x,&y);
 
-            for (int ivar=0; ivar < nvar; ivar++) {
-              luh[dofStartIndex+ivar] = value[ivar];
+                // read initial condition
+                exahype::problem::PDEInitialValue2d(x,y,nvar,value);
 
-              lduh[dofStartIndex+ivar] = 0.;
+                // set the DoF
+                const int dofStartIndex  = nodeIndex * nvar;
+
+                for (int ivar=0; ivar < nvar; ivar++) {
+                  luh[dofStartIndex+ivar] = value[ivar];
+                }
+              }
             }
           }
         }

@@ -48,6 +48,10 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case UseAdapterFaceDataExchange: return "UseAdapterFaceDataExchange";
       case UseAdapterCorrector: return "UseAdapterCorrector";
       case UseAdapterCorrectorAndExport: return "UseAdapterCorrectorAndExport";
+      case UseAdapterCorrectorAndPredictor: return "UseAdapterCorrectorAndPredictor";
+      case UseAdapterCorrectorAndPredictorAndExport: return "UseAdapterCorrectorAndPredictorAndExport";
+      case UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputation: return "UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputation";
+      case UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputationAndExport: return "UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputationAndExport";
       case UseAdapterSolutionExport: return "UseAdapterSolutionExport";
       case NumberOfAdapters: return "NumberOfAdapters";
    }
@@ -55,7 +59,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterInitialGrid=4,UseAdapterGridExport=5,UseAdapterPatchInitialisation=6,UseAdapterPatchInitialisationAndExport=7,UseAdapterInitialCondition=8,UseAdapterInitialConditionAndExport=9,UseAdapterGlobalTimeStepComputation=10,UseAdapterPredictor=11,UseAdapterFaceDataExchange=12,UseAdapterCorrector=13,UseAdapterCorrectorAndExport=14,UseAdapterSolutionExport=15,NumberOfAdapters=16)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterInitialGrid=4,UseAdapterGridExport=5,UseAdapterPatchInitialisation=6,UseAdapterPatchInitialisationAndExport=7,UseAdapterInitialCondition=8,UseAdapterInitialConditionAndExport=9,UseAdapterGlobalTimeStepComputation=10,UseAdapterPredictor=11,UseAdapterFaceDataExchange=12,UseAdapterCorrector=13,UseAdapterCorrectorAndExport=14,UseAdapterCorrectorAndPredictor=15,UseAdapterCorrectorAndPredictorAndExport=16,UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputation=17,UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputationAndExport=18,UseAdapterSolutionExport=19,NumberOfAdapters=20)";
 }
 
 

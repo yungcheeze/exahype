@@ -24,6 +24,10 @@
  #include "EulerFlow3d/adapters/FaceDataExchange.h" 
  #include "EulerFlow3d/adapters/Corrector.h" 
  #include "EulerFlow3d/adapters/CorrectorAndExport.h" 
+ #include "EulerFlow3d/adapters/CorrectorAndPredictor.h" 
+ #include "EulerFlow3d/adapters/CorrectorAndPredictorAndExport.h" 
+ #include "EulerFlow3d/adapters/CorrectorAndPredictorAndGlobalTimeStepComputation.h" 
+ #include "EulerFlow3d/adapters/CorrectorAndPredictorAndGlobalTimeStepComputationAndExport.h" 
  #include "EulerFlow3d/adapters/SolutionExport.h" 
 
 

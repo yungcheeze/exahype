@@ -16,6 +16,8 @@
 
 #include "string.h"
 
+#include "limits"
+
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
@@ -90,14 +92,12 @@ exahype::mappings::SolutionUpdate::SolutionUpdate(const SolutionUpdate&  masterT
   :
   _localState()
 {
-  _localState.setTimeStepSize(masterThread.getState().getTimeStepSize());
+  _localState.setOldTimeStepSize(masterThread.getState().getOldTimeStepSize());
 }
 
 
 void exahype::mappings::SolutionUpdate::mergeWithWorkerThread(const SolutionUpdate& workerThread) {
-  logTraceIn( "mergeWithWorkerThread(SolutionUpdate)" );
-
-  logTraceOut( "mergeWithWorkerThread(SolutionUpdate)" );
+  // do nothing
 }
 #endif
 
@@ -397,11 +397,15 @@ void exahype::mappings::SolutionUpdate::enterCell(
         double* luhOld = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
         double* lduh   = &(DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))  [0]._persistentRecords._u);
 
+        double dt = _localState.getOldTimeStepSize();
+        if (dt==std::numeric_limits<double>::max())
+          dt = 0;
+
         dg::updateSolution<DIMENSIONS>(
             luhOld,
             lduh,
             dxPatch,
-            _localState.getTimeStepSize(),
+            dt,
             nvar,
             basisSize);
       }
@@ -430,7 +434,7 @@ void exahype::mappings::SolutionUpdate::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  _localState.setTimeStepSize(solverState.getTimeStepSize());
+  _localState.setOldTimeStepSize(solverState.getOldTimeStepSize());
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }

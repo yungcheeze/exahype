@@ -88,7 +88,10 @@ namespace exahype {
     );
 
     /**
-     * @todo docu
+     * \todo docu
+     * Computes the normal fluxes/fluctuations of the two cells adjacent to the current face/
+     * Needs the extrapolated predictor values at the interface.
+     *
      * QavL,QavR,lambdaL, and lambdaR are work vectors of size nvar.
      */
     template <int dim>

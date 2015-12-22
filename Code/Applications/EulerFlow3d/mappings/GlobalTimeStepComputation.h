@@ -49,12 +49,6 @@ class exahype::mappings::GlobalTimeStepComputation {
      */
     exahype::State _localState;
 
-//    /**
-//     * Order depending PNPM factor.
-//     */
-//    static constexpr double PNPM[10] = {
-//        1.0, 0.33, 0.17, 0.1, 0.069, 0.045,  0.038, 0.03, 0.02, 0.015
-//    };
   public:
     /**
      * These flags are used to inform Peano about your operation. It tells the 

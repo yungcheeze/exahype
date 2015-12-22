@@ -80,7 +80,7 @@ tarch::logging::Log                exahype::mappings::GlobalTimeStepComputation:
 
 exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation()
   :
-  _localState()
+  _localState() // initialises the old and current time step size to max double value
 {
   // do nothing
 }
@@ -94,9 +94,9 @@ exahype::mappings::GlobalTimeStepComputation::~GlobalTimeStepComputation() {
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const GlobalTimeStepComputation&  masterThread)
   :
-  _localState()
+  _localState() // initialises the old and current time step size to max double value
 {
-  // do nothing
+  _localState.setTimeStepSizeToMaxValue();
 }
 
 
@@ -439,7 +439,9 @@ void exahype::mappings::GlobalTimeStepComputation::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  _localState.setTimeStepSize(1e20);
+  // is done once per MPI rank
+  solverState.setOldTimeStepSize(solverState.getTimeStepSize());
+  solverState.setTimeStepSizeToMaxValue();
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
@@ -449,6 +451,8 @@ void exahype::mappings::GlobalTimeStepComputation::endIteration(
     exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "endIteration(State)", solverState );
+
+  logInfo("endIteration(...)","local time step size: " << _localState.getTimeStepSize())
 
   solverState.setMinimumTimeStepSizeOfBoth(_localState);
 

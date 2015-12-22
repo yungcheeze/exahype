@@ -47,6 +47,10 @@ exahype::repositories::RepositoryArrayStack::RepositoryArrayStack(
   _gridWithFaceDataExchange(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithCorrector(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithCorrectorAndExport(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithCorrectorAndPredictor(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithCorrectorAndPredictorAndExport(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithCorrectorAndPredictorAndGlobalTimeStepComputation(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithCorrectorAndPredictorAndGlobalTimeStepComputationAndExport(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithSolutionExport(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
 
   _repositoryState() {
@@ -85,6 +89,10 @@ exahype::repositories::RepositoryArrayStack::RepositoryArrayStack(
   _gridWithFaceDataExchange(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithCorrector(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithCorrectorAndExport(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithCorrectorAndPredictor(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithCorrectorAndPredictorAndExport(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithCorrectorAndPredictorAndGlobalTimeStepComputation(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithCorrectorAndPredictorAndGlobalTimeStepComputationAndExport(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithSolutionExport(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
 
   _repositoryState() {
@@ -135,6 +143,10 @@ void exahype::repositories::RepositoryArrayStack::restart(
   _gridWithFaceDataExchange.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithCorrector.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithCorrectorAndExport.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
+  _gridWithCorrectorAndPredictor.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
+  _gridWithCorrectorAndPredictorAndExport.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
+  _gridWithCorrectorAndPredictorAndGlobalTimeStepComputation.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
+  _gridWithCorrectorAndPredictorAndGlobalTimeStepComputationAndExport.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithSolutionExport.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
 
  
@@ -170,6 +182,10 @@ void exahype::repositories::RepositoryArrayStack::terminate() {
   _gridWithFaceDataExchange.terminate();
   _gridWithCorrector.terminate();
   _gridWithCorrectorAndExport.terminate();
+  _gridWithCorrectorAndPredictor.terminate();
+  _gridWithCorrectorAndPredictorAndExport.terminate();
+  _gridWithCorrectorAndPredictorAndGlobalTimeStepComputation.terminate();
+  _gridWithCorrectorAndPredictorAndGlobalTimeStepComputationAndExport.terminate();
   _gridWithSolutionExport.terminate();
 
  
@@ -232,6 +248,10 @@ void exahype::repositories::RepositoryArrayStack::iterate(int numberOfIterations
       case exahype::records::RepositoryState::UseAdapterFaceDataExchange: watch.startTimer(); _gridWithFaceDataExchange.iterate(); watch.stopTimer(); _measureFaceDataExchangeCPUTime.setValue( watch.getCPUTime() ); _measureFaceDataExchangeCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterCorrector: watch.startTimer(); _gridWithCorrector.iterate(); watch.stopTimer(); _measureCorrectorCPUTime.setValue( watch.getCPUTime() ); _measureCorrectorCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterCorrectorAndExport: watch.startTimer(); _gridWithCorrectorAndExport.iterate(); watch.stopTimer(); _measureCorrectorAndExportCPUTime.setValue( watch.getCPUTime() ); _measureCorrectorAndExportCalendarTime.setValue( watch.getCalendarTime() ); break;
+      case exahype::records::RepositoryState::UseAdapterCorrectorAndPredictor: watch.startTimer(); _gridWithCorrectorAndPredictor.iterate(); watch.stopTimer(); _measureCorrectorAndPredictorCPUTime.setValue( watch.getCPUTime() ); _measureCorrectorAndPredictorCalendarTime.setValue( watch.getCalendarTime() ); break;
+      case exahype::records::RepositoryState::UseAdapterCorrectorAndPredictorAndExport: watch.startTimer(); _gridWithCorrectorAndPredictorAndExport.iterate(); watch.stopTimer(); _measureCorrectorAndPredictorAndExportCPUTime.setValue( watch.getCPUTime() ); _measureCorrectorAndPredictorAndExportCalendarTime.setValue( watch.getCalendarTime() ); break;
+      case exahype::records::RepositoryState::UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputation: watch.startTimer(); _gridWithCorrectorAndPredictorAndGlobalTimeStepComputation.iterate(); watch.stopTimer(); _measureCorrectorAndPredictorAndGlobalTimeStepComputationCPUTime.setValue( watch.getCPUTime() ); _measureCorrectorAndPredictorAndGlobalTimeStepComputationCalendarTime.setValue( watch.getCalendarTime() ); break;
+      case exahype::records::RepositoryState::UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputationAndExport: watch.startTimer(); _gridWithCorrectorAndPredictorAndGlobalTimeStepComputationAndExport.iterate(); watch.stopTimer(); _measureCorrectorAndPredictorAndGlobalTimeStepComputationAndExportCPUTime.setValue( watch.getCPUTime() ); _measureCorrectorAndPredictorAndGlobalTimeStepComputationAndExportCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterSolutionExport: watch.startTimer(); _gridWithSolutionExport.iterate(); watch.stopTimer(); _measureSolutionExportCPUTime.setValue( watch.getCPUTime() ); _measureSolutionExportCalendarTime.setValue( watch.getCalendarTime() ); break;
 
       case exahype::records::RepositoryState::Terminate:
@@ -270,6 +290,10 @@ void exahype::repositories::RepositoryArrayStack::iterate(int numberOfIterations
  void exahype::repositories::RepositoryArrayStack::switchToFaceDataExchange() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterFaceDataExchange); }
  void exahype::repositories::RepositoryArrayStack::switchToCorrector() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterCorrector); }
  void exahype::repositories::RepositoryArrayStack::switchToCorrectorAndExport() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterCorrectorAndExport); }
+ void exahype::repositories::RepositoryArrayStack::switchToCorrectorAndPredictor() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterCorrectorAndPredictor); }
+ void exahype::repositories::RepositoryArrayStack::switchToCorrectorAndPredictorAndExport() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterCorrectorAndPredictorAndExport); }
+ void exahype::repositories::RepositoryArrayStack::switchToCorrectorAndPredictorAndGlobalTimeStepComputation() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputation); }
+ void exahype::repositories::RepositoryArrayStack::switchToCorrectorAndPredictorAndGlobalTimeStepComputationAndExport() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputationAndExport); }
  void exahype::repositories::RepositoryArrayStack::switchToSolutionExport() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterSolutionExport); }
 
 
@@ -285,6 +309,10 @@ void exahype::repositories::RepositoryArrayStack::iterate(int numberOfIterations
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterFaceDataExchange() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterFaceDataExchange; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterCorrector() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterCorrector; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterCorrectorAndExport() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterCorrectorAndExport; }
+ bool exahype::repositories::RepositoryArrayStack::isActiveAdapterCorrectorAndPredictor() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterCorrectorAndPredictor; }
+ bool exahype::repositories::RepositoryArrayStack::isActiveAdapterCorrectorAndPredictorAndExport() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterCorrectorAndPredictorAndExport; }
+ bool exahype::repositories::RepositoryArrayStack::isActiveAdapterCorrectorAndPredictorAndGlobalTimeStepComputation() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputation; }
+ bool exahype::repositories::RepositoryArrayStack::isActiveAdapterCorrectorAndPredictorAndGlobalTimeStepComputationAndExport() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputationAndExport; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterSolutionExport() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterSolutionExport; }
 
 
@@ -373,6 +401,10 @@ void exahype::repositories::RepositoryArrayStack::logIterationStatistics() const
    logInfo( "logIterationStatistics()", "| FaceDataExchange \t |  " << _measureFaceDataExchangeCPUTime.getNumberOfMeasurements() << " \t |  " << _measureFaceDataExchangeCPUTime.getAccumulatedValue() << " \t |  " << _measureFaceDataExchangeCPUTime.getValue()  << " \t |  " << _measureFaceDataExchangeCalendarTime.getAccumulatedValue() << " \t |  " << _measureFaceDataExchangeCalendarTime.getValue() << " \t |  " << _measureFaceDataExchangeCPUTime.toString() << " \t |  " << _measureFaceDataExchangeCalendarTime.toString() );
    logInfo( "logIterationStatistics()", "| Corrector \t |  " << _measureCorrectorCPUTime.getNumberOfMeasurements() << " \t |  " << _measureCorrectorCPUTime.getAccumulatedValue() << " \t |  " << _measureCorrectorCPUTime.getValue()  << " \t |  " << _measureCorrectorCalendarTime.getAccumulatedValue() << " \t |  " << _measureCorrectorCalendarTime.getValue() << " \t |  " << _measureCorrectorCPUTime.toString() << " \t |  " << _measureCorrectorCalendarTime.toString() );
    logInfo( "logIterationStatistics()", "| CorrectorAndExport \t |  " << _measureCorrectorAndExportCPUTime.getNumberOfMeasurements() << " \t |  " << _measureCorrectorAndExportCPUTime.getAccumulatedValue() << " \t |  " << _measureCorrectorAndExportCPUTime.getValue()  << " \t |  " << _measureCorrectorAndExportCalendarTime.getAccumulatedValue() << " \t |  " << _measureCorrectorAndExportCalendarTime.getValue() << " \t |  " << _measureCorrectorAndExportCPUTime.toString() << " \t |  " << _measureCorrectorAndExportCalendarTime.toString() );
+   logInfo( "logIterationStatistics()", "| CorrectorAndPredictor \t |  " << _measureCorrectorAndPredictorCPUTime.getNumberOfMeasurements() << " \t |  " << _measureCorrectorAndPredictorCPUTime.getAccumulatedValue() << " \t |  " << _measureCorrectorAndPredictorCPUTime.getValue()  << " \t |  " << _measureCorrectorAndPredictorCalendarTime.getAccumulatedValue() << " \t |  " << _measureCorrectorAndPredictorCalendarTime.getValue() << " \t |  " << _measureCorrectorAndPredictorCPUTime.toString() << " \t |  " << _measureCorrectorAndPredictorCalendarTime.toString() );
+   logInfo( "logIterationStatistics()", "| CorrectorAndPredictorAndExport \t |  " << _measureCorrectorAndPredictorAndExportCPUTime.getNumberOfMeasurements() << " \t |  " << _measureCorrectorAndPredictorAndExportCPUTime.getAccumulatedValue() << " \t |  " << _measureCorrectorAndPredictorAndExportCPUTime.getValue()  << " \t |  " << _measureCorrectorAndPredictorAndExportCalendarTime.getAccumulatedValue() << " \t |  " << _measureCorrectorAndPredictorAndExportCalendarTime.getValue() << " \t |  " << _measureCorrectorAndPredictorAndExportCPUTime.toString() << " \t |  " << _measureCorrectorAndPredictorAndExportCalendarTime.toString() );
+   logInfo( "logIterationStatistics()", "| CorrectorAndPredictorAndGlobalTimeStepComputation \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationCPUTime.getNumberOfMeasurements() << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationCPUTime.getAccumulatedValue() << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationCPUTime.getValue()  << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationCalendarTime.getAccumulatedValue() << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationCalendarTime.getValue() << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationCPUTime.toString() << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationCalendarTime.toString() );
+   logInfo( "logIterationStatistics()", "| CorrectorAndPredictorAndGlobalTimeStepComputationAndExport \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationAndExportCPUTime.getNumberOfMeasurements() << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationAndExportCPUTime.getAccumulatedValue() << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationAndExportCPUTime.getValue()  << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationAndExportCalendarTime.getAccumulatedValue() << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationAndExportCalendarTime.getValue() << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationAndExportCPUTime.toString() << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationAndExportCalendarTime.toString() );
    logInfo( "logIterationStatistics()", "| SolutionExport \t |  " << _measureSolutionExportCPUTime.getNumberOfMeasurements() << " \t |  " << _measureSolutionExportCPUTime.getAccumulatedValue() << " \t |  " << _measureSolutionExportCPUTime.getValue()  << " \t |  " << _measureSolutionExportCalendarTime.getAccumulatedValue() << " \t |  " << _measureSolutionExportCalendarTime.getValue() << " \t |  " << _measureSolutionExportCPUTime.toString() << " \t |  " << _measureSolutionExportCalendarTime.toString() );
 
 }
@@ -390,6 +422,10 @@ void exahype::repositories::RepositoryArrayStack::clearIterationStatistics() {
    _measureFaceDataExchangeCPUTime.erase();
    _measureCorrectorCPUTime.erase();
    _measureCorrectorAndExportCPUTime.erase();
+   _measureCorrectorAndPredictorCPUTime.erase();
+   _measureCorrectorAndPredictorAndExportCPUTime.erase();
+   _measureCorrectorAndPredictorAndGlobalTimeStepComputationCPUTime.erase();
+   _measureCorrectorAndPredictorAndGlobalTimeStepComputationAndExportCPUTime.erase();
    _measureSolutionExportCPUTime.erase();
 
    _measureInitialGridCalendarTime.erase();
@@ -403,6 +439,10 @@ void exahype::repositories::RepositoryArrayStack::clearIterationStatistics() {
    _measureFaceDataExchangeCalendarTime.erase();
    _measureCorrectorCalendarTime.erase();
    _measureCorrectorAndExportCalendarTime.erase();
+   _measureCorrectorAndPredictorCalendarTime.erase();
+   _measureCorrectorAndPredictorAndExportCalendarTime.erase();
+   _measureCorrectorAndPredictorAndGlobalTimeStepComputationCalendarTime.erase();
+   _measureCorrectorAndPredictorAndGlobalTimeStepComputationAndExportCalendarTime.erase();
    _measureSolutionExportCalendarTime.erase();
 
 }

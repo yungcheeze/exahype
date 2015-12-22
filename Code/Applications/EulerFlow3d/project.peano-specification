@@ -116,5 +116,53 @@ adapter:
   merge-with-user-defined-mapping: VTKExport
 
 adapter:
+  name: CorrectorAndPredictor
+  // needs old time step
+  merge-with-user-defined-mapping: RiemannSolver
+  merge-with-user-defined-mapping: SurfaceIntegral
+  merge-with-user-defined-mapping: SolutionUpdate
+  // needs current time step
+  merge-with-user-defined-mapping: SpaceTimePredictor 
+  merge-with-user-defined-mapping: VolumeIntegral
+  merge-with-user-defined-mapping: BoundaryConditions
+
+adapter:
+  name: CorrectorAndPredictorAndExport
+  // needs old time step
+  merge-with-user-defined-mapping: RiemannSolver
+  merge-with-user-defined-mapping: SurfaceIntegral
+  merge-with-user-defined-mapping: SolutionUpdate
+  merge-with-user-defined-mapping: VTKExport // can be moved to end of traversal
+  // needs old time step
+  merge-with-user-defined-mapping: SpaceTimePredictor 
+  merge-with-user-defined-mapping: VolumeIntegral
+  merge-with-user-defined-mapping: BoundaryConditions
+
+adapter:
+  name: CorrectorAndPredictorAndGlobalTimeStepComputation
+  // needs old time step
+  merge-with-user-defined-mapping: RiemannSolver
+  merge-with-user-defined-mapping: SurfaceIntegral
+  merge-with-user-defined-mapping: SolutionUpdate
+  // needs current time step
+  merge-with-user-defined-mapping: SpaceTimePredictor 
+  merge-with-user-defined-mapping: VolumeIntegral
+  merge-with-user-defined-mapping: BoundaryConditions
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
+
+adapter:
+  name: CorrectorAndPredictorAndGlobalTimeStepComputationAndExport
+  // needs old time step
+  merge-with-user-defined-mapping: RiemannSolver
+  merge-with-user-defined-mapping: SurfaceIntegral
+  merge-with-user-defined-mapping: SolutionUpdate
+  merge-with-user-defined-mapping: VTKExport // can be moved to end of traversal
+  // needs old time step
+  merge-with-user-defined-mapping: SpaceTimePredictor 
+  merge-with-user-defined-mapping: VolumeIntegral
+  merge-with-user-defined-mapping: BoundaryConditions
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
+
+adapter:
   name: SolutionExport
   merge-with-user-defined-mapping: VTKExport
