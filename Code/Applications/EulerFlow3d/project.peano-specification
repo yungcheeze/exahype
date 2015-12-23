@@ -32,7 +32,7 @@ event-mapping:
 event-mapping:
   name: SolutionUpdate
 
-event-mapping:
+event-mapping: // -DEC: consider to move the computation of boundary extrapolated values out of the space-time predictor mapping
   name: SpaceTimePredictor
   
 event-mapping:
@@ -77,66 +77,32 @@ adapter:
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex)
   merge-with-user-defined-mapping: VTKExport
 
-adapter:
-  name: InitialCondition
-  merge-with-user-defined-mapping: InitialCondition 
-
-adapter:
-  name: InitialConditionAndExport
-  merge-with-user-defined-mapping: InitialCondition
-  merge-with-user-defined-mapping: VTKExport
-
-adapter:
-  name: GlobalTimeStepComputation
-  merge-with-user-defined-mapping: GlobalTimeStepComputation
-
-// -DEC: consider to move the computation of boundary extrapolated values out of the space-time predictor mapping
-adapter:
-  name: Predictor
-  merge-with-user-defined-mapping: SpaceTimePredictor 
-  merge-with-user-defined-mapping: VolumeIntegral
-  merge-with-user-defined-mapping: BoundaryConditions
-
 // The space-time predictor must be computed before the FaceDataExchange, i.e., the corrector step!
 adapter: 
   name: FaceDataExchange
   merge-with-user-defined-mapping: FaceDataExchange
 
 adapter:
-  name: Corrector
-  merge-with-user-defined-mapping: RiemannSolver
-  merge-with-user-defined-mapping: SurfaceIntegral
-  merge-with-user-defined-mapping: SolutionUpdate
+  name: InitialConditionAndGlobalTimeStepComputation
+  merge-with-user-defined-mapping: InitialCondition
+  // needs current time step
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
 
 adapter:
-  name: CorrectorAndExport
-  merge-with-user-defined-mapping: RiemannSolver
-  merge-with-user-defined-mapping: SurfaceIntegral
-  merge-with-user-defined-mapping: SolutionUpdate
+  name: InitialConditionAndExportAndGlobalTimeStepComputation
+  merge-with-user-defined-mapping: InitialCondition
   merge-with-user-defined-mapping: VTKExport
+  // needs current time step
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
+
 
 adapter:
-  name: CorrectorAndPredictor
-  // needs old time step
-  merge-with-user-defined-mapping: RiemannSolver
-  merge-with-user-defined-mapping: SurfaceIntegral
-  merge-with-user-defined-mapping: SolutionUpdate
+  name: PredictorAndGlobalTimeStepComputation
   // needs current time step
   merge-with-user-defined-mapping: SpaceTimePredictor 
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: BoundaryConditions
-
-adapter:
-  name: CorrectorAndPredictorAndExport
-  // needs old time step
-  merge-with-user-defined-mapping: RiemannSolver
-  merge-with-user-defined-mapping: SurfaceIntegral
-  merge-with-user-defined-mapping: SolutionUpdate
-  merge-with-user-defined-mapping: VTKExport // can be moved to end of traversal
-  // needs old time step
-  merge-with-user-defined-mapping: SpaceTimePredictor 
-  merge-with-user-defined-mapping: VolumeIntegral
-  merge-with-user-defined-mapping: BoundaryConditions
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
 
 adapter:
   name: CorrectorAndPredictorAndGlobalTimeStepComputation
@@ -163,6 +129,63 @@ adapter:
   merge-with-user-defined-mapping: BoundaryConditions
   merge-with-user-defined-mapping: GlobalTimeStepComputation
 
-adapter:
-  name: SolutionExport
-  merge-with-user-defined-mapping: VTKExport
+///////////////////////////////////////////////////
+// Old adapters; uncomment if you need them 
+///////////////////////////////////////////////////
+//adapter:
+//  name: SolutionExport
+//  merge-with-user-defined-mapping: VTKExport
+//adapter:
+//  name: InitialCondition
+//  merge-with-user-defined-mapping: InitialCondition 
+// adapter:
+//   name: InitialConditionAndExport
+//   merge-with-user-defined-mapping: InitialCondition
+//   merge-with-user-defined-mapping: VTKExport
+
+// adapter:
+//   name: GlobalTimeStepComputation
+//   merge-with-user-defined-mapping: GlobalTimeStepComputation
+
+// -DEC: consider to move the computation of boundary extrapolated values out of the space-time predictor mapping
+// adapter:
+//   name: Predictor
+//   merge-with-user-defined-mapping: SpaceTimePredictor 
+//   merge-with-user-defined-mapping: VolumeIntegral
+//   merge-with-user-defined-mapping: BoundaryConditions
+//
+//adapter:
+//  name: Corrector
+//  merge-with-user-defined-mapping: RiemannSolver
+//  merge-with-user-defined-mapping: SurfaceIntegral
+//  merge-with-user-defined-mapping: SolutionUpdate
+//
+//adapter:
+//  name: CorrectorAndExport
+//  merge-with-user-defined-mapping: RiemannSolver
+//  merge-with-user-defined-mapping: SurfaceIntegral
+//  merge-with-user-defined-mapping: SolutionUpdate
+//  merge-with-user-defined-mapping: VTKExport
+//
+//adapter:
+//  name: CorrectorAndPredictor
+//  // needs old time step
+//  merge-with-user-defined-mapping: RiemannSolver
+//  merge-with-user-defined-mapping: SurfaceIntegral
+//  merge-with-user-defined-mapping: SolutionUpdate
+//  // needs current time step
+//  merge-with-user-defined-mapping: SpaceTimePredictor 
+//  merge-with-user-defined-mapping: VolumeIntegral
+//  merge-with-user-defined-mapping: BoundaryConditions
+//
+//adapter:
+//  name: CorrectorAndPredictorAndExport
+//  // needs old time step
+//  merge-with-user-defined-mapping: RiemannSolver
+//  merge-with-user-defined-mapping: SurfaceIntegral
+//  merge-with-user-defined-mapping: SolutionUpdate
+//  merge-with-user-defined-mapping: VTKExport // can be moved to end of traversal
+//  // needs old time step
+//  merge-with-user-defined-mapping: SpaceTimePredictor 
+//  merge-with-user-defined-mapping: VolumeIntegral
+//  merge-with-user-defined-mapping: BoundaryConditions

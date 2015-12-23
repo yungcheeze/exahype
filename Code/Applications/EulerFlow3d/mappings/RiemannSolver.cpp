@@ -401,6 +401,8 @@ void exahype::mappings::RiemannSolver::enterCell(
     double lambdaL[EXAHYPE_NVARS];
     double lambdaR[EXAHYPE_NVARS];
 
+    assertion1WithExplanation(_localState.getOldTimeStepSize() < std::numeric_limits<double>::max(),_localState.getOldTimeStepSize(),"Old time step size was not initialised correctly!");
+
     for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
       for (int i=1; i<EXAHYPE_PATCH_SIZE_X+2; i++) { // loop over patches
         const int patchIndex      = i     + (EXAHYPE_PATCH_SIZE_X+2) * j;

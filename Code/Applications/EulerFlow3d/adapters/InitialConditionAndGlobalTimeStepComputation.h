@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_InitialCondition_H_
-#define EXAHYPE_ADAPTERS_InitialCondition_H_
+#ifndef EXAHYPE_ADAPTERS_InitialConditionAndGlobalTimeStepComputation_H_
+#define EXAHYPE_ADAPTERS_InitialConditionAndGlobalTimeStepComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -19,12 +19,13 @@
 
 
  #include "EulerFlow3d/mappings/InitialCondition.h"
+ #include "EulerFlow3d/mappings/GlobalTimeStepComputation.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class InitialCondition;
+        class InitialConditionAndGlobalTimeStepComputation;
       } 
 }
 
@@ -36,11 +37,13 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::InitialCondition {
+class exahype::adapters::InitialConditionAndGlobalTimeStepComputation {
   private:
     typedef mappings::InitialCondition Mapping0;
+    typedef mappings::GlobalTimeStepComputation Mapping1;
 
      Mapping0  _map2InitialCondition;
+     Mapping1  _map2GlobalTimeStepComputation;
 
 
   public:
@@ -52,16 +55,16 @@ class exahype::adapters::InitialCondition {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    InitialCondition();
+    InitialConditionAndGlobalTimeStepComputation();
 
     #if defined(SharedMemoryParallelisation)
-    InitialCondition(const InitialCondition& masterThread);
+    InitialConditionAndGlobalTimeStepComputation(const InitialConditionAndGlobalTimeStepComputation& masterThread);
     #endif
 
-    virtual ~InitialCondition();
+    virtual ~InitialConditionAndGlobalTimeStepComputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const InitialCondition& workerThread);
+    void mergeWithWorkerThread(const InitialConditionAndGlobalTimeStepComputation& workerThread);
     #endif
 
     void createInnerVertex(

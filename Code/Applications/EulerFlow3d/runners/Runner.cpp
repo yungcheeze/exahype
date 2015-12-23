@@ -92,21 +92,35 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.switchToGridExport();                // export the grid
   repository.iterate();
 
-  repository.switchToPatchInitialisation();       // initialize the cell descriptions;
+  repository.switchToPatchInitialisation();       // initialise the cell descriptions;
   repository.iterate();
 
-  repository.switchToInitialCondition(); // initialize the fields of the cell descriptions, i.e., the initial values.
+  /*
+   * Apply the initial conditions.
+   * Then, compute the the initial current time step size.
+   */
+  repository.switchToInitialConditionAndExportAndGlobalTimeStepComputation();
   repository.iterate();
 
-  // global reduction
-  repository.switchToGlobalTimeStepComputation();
+  /*
+   * Compute current first predictor based on current time step size.
+   * Set current time step size as old time step size of next iteration.
+   * Compute the current time step size of the next iteration.
+   */
+  repository.switchToPredictorAndGlobalTimeStepComputation();
   repository.iterate();
   logInfo("runAsMaster(...)", "[ExaHyPE] global time step="<< 0 <<", global time step size (seconds)=" <<
           repository.getState().getTimeStepSize() );
   logInfo("runAsMaster(...)", "[ExaHyPE] old global time step size (seconds)=" <<
             repository.getState().getOldTimeStepSize() );
 
-  for (int n=0; n<400; n++) {
+  for (int n=1; n<400; n++) {
+    /*
+     * Exchange the fluctuations.
+     */
+    repository.switchToFaceDataExchange();
+    repository.iterate();
+
     /*
      * The two adapters that are embedded in the if clause below perform the following steps:
      *
@@ -130,12 +144,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
             repository.getState().getTimeStepSize() );
     logInfo("runAsMaster(...)", "[ExaHyPE] old global time step size (seconds)=" <<
               repository.getState().getOldTimeStepSize() );
-
-    /*
-     * Exchange the fluctuations.
-     */
-    repository.switchToFaceDataExchange();
-    repository.iterate();
   }
 
   repository.logIterationStatistics();

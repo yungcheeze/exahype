@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_CorrectorAndPredictor_H_
-#define EXAHYPE_ADAPTERS_CorrectorAndPredictor_H_
+#ifndef EXAHYPE_ADAPTERS_InitialConditionAndExportAndGlobalTimeStepComputation_H_
+#define EXAHYPE_ADAPTERS_InitialConditionAndExportAndGlobalTimeStepComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,18 +18,15 @@
 #include "EulerFlow3d/State.h"
 
 
- #include "EulerFlow3d/mappings/RiemannSolver.h"
- #include "EulerFlow3d/mappings/SurfaceIntegral.h"
- #include "EulerFlow3d/mappings/SolutionUpdate.h"
- #include "EulerFlow3d/mappings/SpaceTimePredictor.h"
- #include "EulerFlow3d/mappings/VolumeIntegral.h"
- #include "EulerFlow3d/mappings/BoundaryConditions.h"
+ #include "EulerFlow3d/mappings/InitialCondition.h"
+ #include "EulerFlow3d/mappings/VTKExport.h"
+ #include "EulerFlow3d/mappings/GlobalTimeStepComputation.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class CorrectorAndPredictor;
+        class InitialConditionAndExportAndGlobalTimeStepComputation;
       } 
 }
 
@@ -41,21 +38,15 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::CorrectorAndPredictor {
+class exahype::adapters::InitialConditionAndExportAndGlobalTimeStepComputation {
   private:
-    typedef mappings::RiemannSolver Mapping0;
-    typedef mappings::SurfaceIntegral Mapping1;
-    typedef mappings::SolutionUpdate Mapping2;
-    typedef mappings::SpaceTimePredictor Mapping3;
-    typedef mappings::VolumeIntegral Mapping4;
-    typedef mappings::BoundaryConditions Mapping5;
+    typedef mappings::InitialCondition Mapping0;
+    typedef mappings::VTKExport Mapping1;
+    typedef mappings::GlobalTimeStepComputation Mapping2;
 
-     Mapping0  _map2RiemannSolver;
-     Mapping1  _map2SurfaceIntegral;
-     Mapping2  _map2SolutionUpdate;
-     Mapping3  _map2SpaceTimePredictor;
-     Mapping4  _map2VolumeIntegral;
-     Mapping5  _map2BoundaryConditions;
+     Mapping0  _map2InitialCondition;
+     Mapping1  _map2VTKExport;
+     Mapping2  _map2GlobalTimeStepComputation;
 
 
   public:
@@ -67,16 +58,16 @@ class exahype::adapters::CorrectorAndPredictor {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    CorrectorAndPredictor();
+    InitialConditionAndExportAndGlobalTimeStepComputation();
 
     #if defined(SharedMemoryParallelisation)
-    CorrectorAndPredictor(const CorrectorAndPredictor& masterThread);
+    InitialConditionAndExportAndGlobalTimeStepComputation(const InitialConditionAndExportAndGlobalTimeStepComputation& masterThread);
     #endif
 
-    virtual ~CorrectorAndPredictor();
+    virtual ~InitialConditionAndExportAndGlobalTimeStepComputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const CorrectorAndPredictor& workerThread);
+    void mergeWithWorkerThread(const InitialConditionAndExportAndGlobalTimeStepComputation& workerThread);
     #endif
 
     void createInnerVertex(

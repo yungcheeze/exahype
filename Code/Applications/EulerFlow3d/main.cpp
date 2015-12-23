@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
 
 
   #ifdef SharedMemoryParallelisation
-  const int numberOfCores = 4;
+  const int numberOfCores = 2;
   tarch::multicore::Core::getInstance().configure(numberOfCores);
   #endif
 

@@ -381,8 +381,8 @@ void exahype::mappings::SolutionUpdate::enterCell(
         CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
 
     const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-    const double dx = fineGridVerticesEnumerator.getCellSize()(0);
-    const double dy = fineGridVerticesEnumerator.getCellSize()(1);
+    const double                               dx     = fineGridVerticesEnumerator.getCellSize()(0);
+    const double                               dy     = fineGridVerticesEnumerator.getCellSize()(1);
 
     const double dxPatch[2] = { dx/ (double) EXAHYPE_PATCH_SIZE_X,
                                 dy/ (double) EXAHYPE_PATCH_SIZE_Y };
@@ -397,15 +397,13 @@ void exahype::mappings::SolutionUpdate::enterCell(
         double* luhOld = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
         double* lduh   = &(DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))  [0]._persistentRecords._u);
 
-        double dt = _localState.getOldTimeStepSize();
-        if (dt==std::numeric_limits<double>::max())
-          dt = 0;
+        assertion1WithExplanation(_localState.getOldTimeStepSize() < std::numeric_limits<double>::max(),_localState.getOldTimeStepSize(),"Old time step size was not initialised correctly!");
 
         dg::updateSolution<DIMENSIONS>(
             luhOld,
             lduh,
             dxPatch,
-            dt,
+            _localState.getOldTimeStepSize(),
             nvar,
             basisSize);
       }
