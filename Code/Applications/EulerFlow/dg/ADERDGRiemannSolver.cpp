@@ -58,7 +58,7 @@ void exahype::dg::solveRiemannProblem<2>(
     const int nodeIndex     = ii;
     const int dofStartIndex = nodeIndex * nvar;
 
-    double weight =  quad::gaussLegendreWeights[basisSize-1][ii];
+    double weight =  quad::gaussLegendreWeights[ii];
 
     for(int ivar=0; ivar < nvar; ivar++) {
       QavL[ivar] +=  weight * QL[dofStartIndex+ivar];

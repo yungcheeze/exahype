@@ -347,8 +347,8 @@ void exahype::mappings::VolumeIntegral::touchVertexFirstTime(
   // do nothing
 }
 
-extern const double exahype::quad::gaussLegendreNodes[10][10];
-extern const double exahype::quad::gaussLegendreWeights[10][10];
+extern const double exahype::quad::gaussLegendreNodes[EXAHYPE_ORDER+1];
+extern const double exahype::quad::gaussLegendreWeights[EXAHYPE_ORDER+1];
 
 void exahype::mappings::VolumeIntegral::touchVertexLastTime(
     exahype::Vertex&         fineGridVertex,
