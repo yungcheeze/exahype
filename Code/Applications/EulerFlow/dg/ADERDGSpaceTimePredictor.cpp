@@ -78,8 +78,8 @@ void exahype::dg::spaceTimePredictor<2>(
           // and store it in rhs0, but if you think it is faster, you can also recompute this contribution
           // inside the Picard loop (DO iter = 1, N+1)
           rhs0[spaceTimeDofStartIndex+ivar] =
-              quad::gaussLegendreWeights[basisSize-1][ii] *
-              quad::gaussLegendreWeights[basisSize-1][jj] *
+              quad::gaussLegendreWeights[ii] *
+              quad::gaussLegendreWeights[jj] *
               dg::F0[ll] *
               luh[dofStartIndex+ivar];
         }
@@ -127,8 +127,8 @@ void exahype::dg::spaceTimePredictor<2>(
           const int spaceTimeNodeIndex     = nodeIndex  + basisSize * basisSize * ll;
           const int spaceTimeDofStartIndex = spaceTimeNodeIndex * nvar;
 
-          double weight = quad::gaussLegendreWeights[basisSize-1][ll] *
-              quad::gaussLegendreWeights[basisSize-1][jj];
+          double weight = quad::gaussLegendreWeights[ll] *
+              quad::gaussLegendreWeights[jj];
 
 // COMPUTE SPATIAL DERIVATIVES FOR TESTING PURPOSES
 //for (int ll=0; ll < basisSize; ll++) { // set tmp = 0
@@ -177,8 +177,8 @@ void exahype::dg::spaceTimePredictor<2>(
           const int spaceTimeNodeIndex     = nodeIndex  + basisSize * basisSize * ll;
           const int spaceTimeDofStartIndex = spaceTimeNodeIndex * nvar;
 
-          double weight = quad::gaussLegendreWeights[basisSize-1][ll] *
-              quad::gaussLegendreWeights[basisSize-1][ii];
+          double weight = quad::gaussLegendreWeights[ll] *
+              quad::gaussLegendreWeights[ii];
 
           for(int mm=0; mm < basisSize; mm++) {
             const int mmNodeIndex                  = ii + basisSize * mm;
@@ -203,7 +203,7 @@ void exahype::dg::spaceTimePredictor<2>(
       for (int jj=0; jj<basisSize; jj++) {
         const int nodeIndex = ii + basisSize * jj;
 
-        double iWeight = 1./(quad::gaussLegendreWeights[basisSize-1][ii] * quad::gaussLegendreWeights[basisSize-1][jj]);
+        double iWeight = 1./(quad::gaussLegendreWeights[ii] * quad::gaussLegendreWeights[jj]);
 
         for (int ll=0; ll < basisSize; ll++) { // set tmp = 0
           for(int ivar=0; ivar < nvar; ivar++) {
@@ -283,7 +283,7 @@ void exahype::dg::spaceTimePredictor<2>(
         f = &lFi[spaceTimeFluxDofStartIndex     ];
         g = &lFi[spaceTimeFluxDofStartIndex+nvar];
 
-        double weight = quad::gaussLegendreWeights[basisSize-1][ll];
+        double weight = quad::gaussLegendreWeights[ll];
 
         double * temp = &(lQhi[dofStartIndex]);
         for(int ivar=0; ivar < nvar; ivar++) {

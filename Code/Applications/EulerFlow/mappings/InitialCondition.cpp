@@ -410,8 +410,8 @@ void exahype::mappings::InitialCondition::enterCell(
                 // location and index of nodal degrees of freedom
                 const int nodeIndex = ii + basisSize * jj;
 
-                const double qr = exahype::quad::gaussLegendreNodes[basisSize-1][ii];
-                const double qs = exahype::quad::gaussLegendreNodes[basisSize-1][jj];
+                const double qr = exahype::quad::gaussLegendreNodes[ii];
+                const double qs = exahype::quad::gaussLegendreNodes[jj];
                 exahype::geometry::mapping2d(center(0),center(1),dx,dy,dxPatch,dyPatch,i,j,qr,qs,&x,&y);
 
                 // read initial condition

@@ -36,7 +36,7 @@ void exahype::dg::surfaceIntegral(
     const int nodeIndex     = jj;
     const int dofStartIndex = nodeIndex * nvar;
 
-    double weight =  quad::gaussLegendreWeights[basisSize-1][jj];
+    double weight =  quad::gaussLegendreWeights[jj];
 
     for(int mm=0; mm < basisSize; mm++) {
       const int mmNodeIndex         = mm + basisSize * jj;
@@ -55,7 +55,7 @@ void exahype::dg::surfaceIntegral(
     const int nodeIndex     = jj;
     const int dofStartIndex = nodeIndex * nvar;
 
-    double weight =  quad::gaussLegendreWeights[basisSize-1][jj];
+    double weight =  quad::gaussLegendreWeights[jj];
 
     for(int mm=0; mm < basisSize; mm++) {
       const int mmNodeIndex         = jj + basisSize * mm;

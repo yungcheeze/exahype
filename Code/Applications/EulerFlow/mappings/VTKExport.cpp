@@ -484,8 +484,8 @@ void exahype::mappings::VTKExport::enterCell(
               const double r = uniformCoordinates[0][nodeIndex];
               const double s = uniformCoordinates[1][nodeIndex];
 
-//              const double r = quad::gaussLegendreNodes[basisSize-1][ii];
-//              const double s = quad::gaussLegendreNodes[basisSize-1][jj];
+//              const double r = quad::gaussLegendreNodes[ii];
+//              const double s = quad::gaussLegendreNodes[jj];
 
               geometry::mapping2d(center(0),center(1),dx,dy,dxPatch,dyPatch,i,j,r,s,&x,&y);
               tarch::la::Vector<DIMENSIONS,double> currentVertexPosition(x,y);

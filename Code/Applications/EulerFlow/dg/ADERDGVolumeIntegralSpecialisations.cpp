@@ -50,7 +50,7 @@ void exahype::dg::volumeIntegral<2>(
       const int nodeIndex     = ii + basisSize * jj;
       const int dofStartIndex = nodeIndex * nvar;
 
-      double weight = exahype::quad::gaussLegendreWeights[basisSize-1][jj];
+      double weight = exahype::quad::gaussLegendreWeights[jj];
 
       for(int mm=0; mm < basisSize; mm++) {
         const int mmNodeIndex         = mm + basisSize * jj;
@@ -74,7 +74,7 @@ void exahype::dg::volumeIntegral<2>(
       const int nodeIndex     = ii + basisSize * jj;
       const int dofStartIndex = nodeIndex * nvar;
 
-      double weight = exahype::quad::gaussLegendreWeights[basisSize-1][ii];
+      double weight = exahype::quad::gaussLegendreWeights[ii];
 
       for(int mm=0; mm < basisSize; mm++) {
         const int mmNodeIndex         = ii + basisSize * mm;

@@ -32,7 +32,7 @@ void exahype::dg::updateSolution<2>(
       const int nodeIndex     = ii + basisSize * jj;
       const int dofStartIndex = nodeIndex * nvar;
 
-      double weight =  exahype::quad::gaussLegendreWeights[basisSize-1][ii] * exahype::quad::gaussLegendreWeights[basisSize-1][jj];
+      double weight =  exahype::quad::gaussLegendreWeights[ii] * exahype::quad::gaussLegendreWeights[jj];
 
       for(int ivar=0; ivar < nvar; ivar++) {
         luh[dofStartIndex+ivar] +=  (lduh[dofStartIndex+ivar] * dt)/weight;
