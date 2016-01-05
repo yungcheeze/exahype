@@ -433,6 +433,10 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
             basisSize);
       }
     }
+    // clean up
+    free(rhs0);
+    free(rhs);
+    free(tmp);
   }
 
 
