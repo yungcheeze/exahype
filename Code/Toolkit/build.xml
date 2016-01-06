@@ -99,7 +99,7 @@
 	    </zip>
 
         <!-- copy jar file -->
-        <copy todir="${basedir}">
+        <move todir="${basedir}">
            <fileset dir="${dist.dir}" includes="exahype-toolkit.*"/>
         </copy>
     </target>
