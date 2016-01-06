@@ -33,11 +33,16 @@ public class Main {
 	  }
 	  catch (Exception e) {}
 	  for (int i = 0; i < 50; ++i) System.out.println();
+      printHeader();
 	}
   }
 
   
   public static void main(String[] args) {
+	//
+	// Usually, I write the header directly before a new algorithm phase, but 
+	// not for the first phase
+	//
     printHeader();
     
     if (args.length !=1 && args.length !=2) {
@@ -56,22 +61,52 @@ public class Main {
   	  System.out.println("INFO: You might want to add --not-interactive or --interactive as first command ");
   	  System.out.println("      line argument to control whether script runs interactively" );
     }
-    	
+
+    //
+    // Parse file
+    //
     String inputFileName = args.length==2 ? args[1] : args[0];
-    System.out.print("read input file " + inputFileName);
 
     eu.exahype.parser.Parser parser   = null;
     eu.exahype.node.Start    document = null;
 	try {
+      System.out.print("read input file " + inputFileName + " .");
 	  parser = new eu.exahype.parser.Parser(
         new eu.exahype.lexer.Lexer(new java.io.PushbackReader(
 		  new java.io.FileReader(inputFileName))));
 	  document = parser.parse();
-	  System.out.println(" ... ok");
+	  System.out.println(".. ok");
+	  System.out.println("\n\n\n\n");
 	  System.out.println("Start to interpret script ... ");
 	  waitForInteraction(interactive);
 	} catch (Exception e) {
-      System.out.println(" ... error: " + e.toString());
+      System.out.println(".. failed " );
+	  System.out.println("\n\n\n\n");
+      System.out.println("ERROR: " + e.toString());
+	  return;
+	}
+	
+
+	//
+	// Check directories and pathes
+	//
+	try {
+	  DirectoryAndPathChecker directoryAndPathChecker = new DirectoryAndPathChecker();
+
+	  document.apply( directoryAndPathChecker); 
+
+	  System.out.println("\n\n\n\n");
+	  if (!directoryAndPathChecker.valid) {
+	    System.err.println("ERROR: Some directories did not exist and/or could not be created" );
+        System.err.println("ExaHyPE script failed " );
+        return;		  
+	  }
+	  System.out.println("validated and configured pathes ... ok" );
+	  System.out.println("@todo implement ... ");
+	  waitForInteraction(interactive);
+	} catch (Exception e) {
+      System.out.println("ERROR: " + e.toString());
+      System.err.println("ExaHyPE script failed " );
 	  return;
 	}
   }
