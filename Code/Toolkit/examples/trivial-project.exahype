@@ -5,5 +5,13 @@
  A trivial project without any content.
 
  */
-exahype-project TrivialProject
+exahype-project  TrivialProject
+
+  /*
+   * Set the pathes where we fine peano/tarch and so forth
+   */
+  peano-path                 = ./Peano/peano
+  tarch-path                 = ./Peano/tarch
+  multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
+  exahype-kernel-path        = ./ExaHyPE
 end exahype-project  
