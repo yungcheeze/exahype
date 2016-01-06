@@ -32,8 +32,9 @@ Tokens
   token_project                   = 'exahype-project';
   token_peano_path                = 'peano-path';
   token_tarch_path                = 'tarch-path';
-  token_exahype_kernel_path       = 'exahype-kernel-path';
+  token_exahype_path              = 'exahype-path';
   token_multiscalelinkedcell_path = 'multiscalelinkedcell-path';
+  token_output_directory          = 'output-directory';
   
   token_equals                = '=';
     
@@ -63,11 +64,14 @@ Productions
       token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
       token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
       token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
-      token_exahype_kernel_path        [exahype_kernel_path_equals]:token_equals              [exahype_kernel_path]:filename
+      token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
+      token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
     token_end [end_token]:token_project
-      { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_kernel_path ) };
+      { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory ) };
 
     
     
 Abstract Syntax Tree
-   project = [name]:identifier [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [exahype_kernel_path]:filename;
+   project = [name]:identifier [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [exahype_path]:filename [output_directory]:filename;
+   
+   

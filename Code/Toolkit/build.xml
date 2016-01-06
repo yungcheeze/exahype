@@ -97,10 +97,5 @@
 	    <zip destfile="${dist.dir}/exahype-toolkit.zip">
 	      <fileset dir="${src.dir}/" includes="eu/**/*"/>  
 	    </zip>
-
-        <!-- copy jar file -->
-        <move todir="${basedir}">
-           <fileset dir="${dist.dir}" includes="exahype-toolkit.*"/>
-        </move>
     </target>
 </project>
