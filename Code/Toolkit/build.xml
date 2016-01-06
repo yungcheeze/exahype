@@ -101,6 +101,6 @@
         <!-- copy jar file -->
         <move todir="${basedir}">
            <fileset dir="${dist.dir}" includes="exahype-toolkit.*"/>
-        </copy>
+        </move>
     </target>
 </project>
