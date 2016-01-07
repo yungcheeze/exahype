@@ -8,46 +8,55 @@
 #ifndef EXAHYPE_DG_DGMATRICES_H
 #define EXAHYPE_DG_DGMATRICES_H
 
+#include "EulerFlow/Constants.h"
+
 namespace exahype {
   namespace dg {
     /** @brief todo */
-    extern const double Kxi[4][4];
-    /**
-     * @brief todo
-     **/
-    extern const double F0[4];
+    extern const double Kxi[EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
 
     /**
      * @brief todo
      **/
-    extern const double F0[4];
+    extern const double F0[EXAHYPE_ORDER+1];
 
     /**
      * @brief todo
      **/
-    extern const double iK1[4][4];
+    extern const double F0[EXAHYPE_ORDER+1];
 
     /**
      * @brief todo
      **/
-    extern const double FLCoeff[4];
+    extern const double iK1[EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
 
     /**
      * @brief todo
      **/
-    extern const double FRCoeff[4];
+    extern const double FLCoeff[EXAHYPE_ORDER+1];
 
+    /**
+     * @brief todo
+     **/
+    extern const double FRCoeff[EXAHYPE_ORDER+1];
 
-    /*
+    /**
      * @brief todo
      */
-    extern const double dudx[4][4];
+    extern const double dudx[EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
 
+    // is evaluated at compile time
+    constexpr int power(int basis, int exp) {
+      return (exp==0)? 1 : basis * power(basis, exp-1);
+    }
+    #define OUTPUTGRID_SIZE power(EXAHYPE_ORDER+1,DIMENSIONS)
 
-    /*
+    /**
      * Projects nodal values located at Gauss-Legendre nodes to a equidistant grid.
      */
-    extern const double subOutputMatrix[16][16];
+    extern const double subOutputMatrix[OUTPUTGRID_SIZE][OUTPUTGRID_SIZE];
+    #undef OUTPUTGRID_SIZE
+
   }
 }
 

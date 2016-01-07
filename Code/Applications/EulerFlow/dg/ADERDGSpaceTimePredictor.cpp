@@ -92,7 +92,7 @@ void exahype::dg::spaceTimePredictor<2>(
   double*    f;
   double*    g;
 
-  double* dqdt = (double*) std::malloc(nvar * basisSize * sizeof(double)); // todo this is just for debugging; in general, do not use mallocs
+  //double* dqdt = (double*) std::malloc(nvar * basisSize * sizeof(double)); // todo this is just for debugging; in general, do not use mallocs
 
   // Discrete Picard iterations. This set of nested loops should (theoretically) be a dream for vectorization, since they are rather independent...
   for (int iter=1; iter < basisSize+1; iter++) {
