@@ -12,36 +12,40 @@
 
 namespace exahype {
   namespace dg {
-    /** @brief todo */
+    /**
+      * \brief Element stiffness matrix
+      */
     extern const double Kxi[EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
 
     /**
-     * @brief todo
-     **/
+     * \brief Time flux matrix (left)
+     */
     extern const double F0[EXAHYPE_ORDER+1];
 
     /**
-     * @brief todo
-     **/
-    extern const double F0[EXAHYPE_ORDER+1];
+     * \brief Time flux matrix (right)
+     * \note Unused.
+     */
+    extern const double F1[EXAHYPE_ORDER+1];
 
     /**
-     * @brief todo
-     **/
+     * \brief Inverse stiffness matrix
+     */
     extern const double iK1[EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
 
     /**
-     * @brief todo
-     **/
+     * \brief Left extrapolation coefficients
+     */
     extern const double FLCoeff[EXAHYPE_ORDER+1];
 
     /**
-     * @brief todo
-     **/
+     * \brief Right extrapolation coefficients
+     */
     extern const double FRCoeff[EXAHYPE_ORDER+1];
 
     /**
-     * @brief todo
+     * \brief derivative operator
+     * \note for debugging purposes
      */
     extern const double dudx[EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
 
@@ -52,7 +56,7 @@ namespace exahype {
     #define OUTPUTGRID_SIZE power(EXAHYPE_ORDER+1,DIMENSIONS)
 
     /**
-     * Projects nodal values located at Gauss-Legendre nodes to a equidistant grid.
+     * \brief Projects nodal values located at Gauss-Legendre nodes to a equidistant grid.
      */
     extern const double subOutputMatrix[OUTPUTGRID_SIZE][OUTPUTGRID_SIZE];
     #undef OUTPUTGRID_SIZE
