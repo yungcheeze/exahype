@@ -86,12 +86,15 @@ public class Main {
 	  return;
 	}
 	
+	
+	
+	DirectoryAndPathChecker directoryAndPathChecker = null;
 
 	//
 	// Check directories and pathes
 	//
 	try {
-	  DirectoryAndPathChecker directoryAndPathChecker = new DirectoryAndPathChecker();
+	  directoryAndPathChecker = new DirectoryAndPathChecker();
 
 	  document.apply( directoryAndPathChecker); 
 
@@ -102,7 +105,29 @@ public class Main {
         return;		  
 	  }
 	  System.out.println("validated and configured pathes ... ok" );
-	  System.out.println("@todo implement ... ");
+	  waitForInteraction(interactive);
+	} catch (Exception e) {
+      System.out.println("ERROR: " + e.toString());
+      System.err.println("ExaHyPE script failed " );
+	  return;
+	}
+	
+
+	//
+	// Setup build environment, i.e. makefiles
+	//
+	try {
+	  SetupBuildEnvironment setupBuildEnvironment = new SetupBuildEnvironment(directoryAndPathChecker);
+
+	  document.apply( setupBuildEnvironment ); 
+
+	  System.out.println("\n\n\n\n");
+	  if (!setupBuildEnvironment.valid) {
+	    System.err.println("ERROR: Could not create ExaHyPE's build environment" );
+        System.err.println("ExaHyPE script failed " );
+        return;		  
+	  }
+	  System.out.println("setup build environment... ok" );
 	  waitForInteraction(interactive);
 	} catch (Exception e) {
       System.out.println("ERROR: " + e.toString());
