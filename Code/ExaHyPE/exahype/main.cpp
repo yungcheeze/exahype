@@ -31,6 +31,14 @@ int main(int argc, char** argv) {
     return sharedMemorySetup;
   }
 
+
+
+#ifdef SharedMemoryParallelisation
+const int numberOfCores = 2;
+tarch::multicore::Core::getInstance().configure(numberOfCores);
+#endif
+
+
   int programExitCode = 0;
 
   // @todo Please insert your code here and reset programExitCode
