@@ -4,8 +4,6 @@
 /// Version: 13/11/15 
 /////////////////////////////////////////////////
 
-#include "EulerFlow3d/Constants.h"
-
 Packed-Type: int;
 
 Constant: DIMENSIONS;
@@ -13,7 +11,7 @@ Constant: DIMENSIONS_TIMES_TWO;
 Constant: EXAHYPE_PATCH_SIZE_TOTAL;
 Constant: EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO;
 
-class exahype::records::CellDescription { 
+class exahype::records::ADERDGCellDescription { 
   /** Space-time data on each patch. Size: #var*(N+1)^(d+1)
    * 
    * \note Only for local time stepping we really need to keep the entire space-time degrees of freedom of the ADER approach.

@@ -1,0 +1,13 @@
+/**
+ 
+  @page ExaHyPE
+  
+  <h1>Regenerate ExaHyPE kernel</h1>
+  
+  Please call the following command from within your exahype directory:
+  
+  <pre>
+  java -jar ~/workspace/peano/pdt/pdt.jar --generate-gluecode exahype.peano-specification . ~/workspace/peano/pdt/usrtemplates:../../Peano/multiscalelinkedcell
+  </pre>
+  
+  

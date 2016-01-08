@@ -7,9 +7,6 @@
  */
 exahype-project  TrivialProject
 
-  /*
-   * Set the pathes where we fine peano/tarch and so forth
-   */
   peano-path                 = ./Peano/peano
   tarch-path                 = ./Peano/tarch
   multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
