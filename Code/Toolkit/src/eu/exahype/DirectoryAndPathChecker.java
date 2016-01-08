@@ -6,11 +6,11 @@ import eu.exahype.node.AProject;
 public class DirectoryAndPathChecker extends DepthFirstAdapter {
   public Boolean valid = true;
   
-  private java.io.File peanoPath;
-  private java.io.File tarchPath;
-  private java.io.File multiscalelinkedcellPath;
-  private java.io.File exahypePath;
-  private java.io.File outputDirectory;
+  protected java.io.File peanoPath;
+  protected java.io.File tarchPath;
+  protected java.io.File multiscalelinkedcellPath;
+  protected java.io.File exahypePath;
+  protected java.io.File outputDirectory;
   
   public void inAProject(AProject node) {
 	peanoPath                = new java.io.File(node.getPeanoPath().getText());
