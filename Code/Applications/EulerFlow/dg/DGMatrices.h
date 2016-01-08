@@ -44,6 +44,13 @@ namespace exahype {
     extern const double FRCoeff[EXAHYPE_ORDER+1];
 
     /**
+     * \brief Joint extrapolation coefficients
+     *
+     * FCoeff = [[FLCoeff];[FRCoeff]]
+     */
+    extern const double FCoeff[2][EXAHYPE_ORDER+1];
+
+    /**
      * \brief derivative operator
      * \note for debugging purposes
      */
@@ -57,6 +64,7 @@ namespace exahype {
 
     /**
      * \brief Projects nodal values located at Gauss-Legendre nodes to a equidistant grid.
+     * \warning Only DIMENSIONS=2 supported!
      */
     extern const double subOutputMatrix[OUTPUTGRID_SIZE][OUTPUTGRID_SIZE];
     #undef OUTPUTGRID_SIZE
