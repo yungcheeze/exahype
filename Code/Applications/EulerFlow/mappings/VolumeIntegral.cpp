@@ -384,10 +384,6 @@ void exahype::mappings::VolumeIntegral::enterCell(
     const double dxPatch[2] = { dx/ (double) EXAHYPE_PATCH_SIZE_X,
                                 dy/ (double) EXAHYPE_PATCH_SIZE_Y };
 
-    const int basisSize = EXAHYPE_ORDER+1;
-    const int nvar      = EXAHYPE_NVARS;
-
-
     for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
       for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
         const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
@@ -398,9 +394,7 @@ void exahype::mappings::VolumeIntegral::enterCell(
         dg::volumeIntegral<DIMENSIONS>(
             lduh,
             lFhi,
-            dxPatch,
-            nvar,
-            basisSize);
+            dxPatch);
       }
     }
   }

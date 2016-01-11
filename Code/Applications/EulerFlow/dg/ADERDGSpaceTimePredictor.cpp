@@ -264,7 +264,7 @@ void exahype::dg::spaceTimePredictor<2>(
   // Immediately compute the time-averaged space-time polynomials
   /////////////////////////////////////////////////
   //int numberOfDof      = nvar * tarch::la::aPowI(dim,basisSize);
-  int numberOfFluxDof  = numberOfDof * dim;
+  constexpr int numberOfFluxDof  = numberOfDof * dim;
 
   memset((double *) lQhi,0,sizeof(double) * numberOfDof);
   memset((double *) lFhi,0,sizeof(double) * numberOfFluxDof);
@@ -301,7 +301,7 @@ void exahype::dg::spaceTimePredictor<2>(
   /////////////////////////////////////////////////
   // Compute the bounday-extrapolated values for Q and F*n
   /////////////////////////////////////////////////
-  int numberOfFaceDof = nvar * tarch::la::aPowI(dim-1,basisSize);
+  constexpr int numberOfFaceDof = nvar * power(basisSize, dim-1); // tarch::la::aPowI(dim-1,basisSize);
 
   memset((double *) &lQhbnd[0],0,sizeof(double) * numberOfFaceDof * dimTimesTwo);
   memset((double *) &lFhbnd[0],0,sizeof(double) * numberOfFaceDof * dimTimesTwo);
@@ -312,10 +312,10 @@ void exahype::dg::spaceTimePredictor<2>(
     const int dofStartIndexL = EXAHYPE_FACE_LEFT  * numberOfFaceDof + nodeIndex * nvar;
     const int dofStartIndexR = EXAHYPE_FACE_RIGHT * numberOfFaceDof + nodeIndex * nvar;
 
-    double * tempQL = &lQhbnd[dofStartIndexL];
+    /*double * tempQL = &lQhbnd[dofStartIndexL];
     double * tempQR = &lQhbnd[dofStartIndexR];
     double * tempL  = &lFhbnd[dofStartIndexL];
-    double * tempR  = &lFhbnd[dofStartIndexR];
+    double * tempR  = &lFhbnd[dofStartIndexR];*/
 
     for (int mm=0; mm<basisSize; mm++) { // loop over dof
       const int mmNodeIndex         = mm  + basisSize * jj;

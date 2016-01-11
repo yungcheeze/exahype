@@ -48,9 +48,7 @@ namespace exahype {
     void volumeIntegral(
         double * lduh,
         const double * const lFhi,
-        const double * const dx,
-        const int nvar,
-        const int basisSize
+        const double * const dx
     );
 
     /**
@@ -160,9 +158,7 @@ namespace exahype {
     void volumeIntegral<2>(
         double * lduh,
         const double * const lFhi,
-        const double * const dx,
-        const int nvar,
-        const int basisSize
+        const double * const dx
     );
 
     template <>
@@ -222,9 +218,7 @@ namespace exahype {
     void volumeIntegral<3>(
         double * lduh,
         const double * const lFhi,
-        const double * const dx,
-        const int nvar,
-        const int basisSize
+        const double * const dx
     );
 
     template <>

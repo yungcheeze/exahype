@@ -13,12 +13,12 @@ template <>
 void exahype::dg::volumeIntegral<3>(
     double* lduh,
     const double * const lFhi,
-    const double * const dx,
-    const int nvar,
-    const int basisSize
+    const double * const dx
 ) {
-  constexpr int dim         = 3;
-  constexpr int dimTimesTwo = 6;
+  constexpr int dim         = DIMENSIONS;     // 3
+  constexpr int dimTimesTwo = (2*DIMENSIONS); // 6
+  constexpr int nvar = EXAHYPE_NVARS;
+  constexpr int basisSize = EXAHYPE_ORDER+1;
 
   // todo insert your code here
   // todo insert your code here
@@ -29,15 +29,13 @@ template <>
 void exahype::dg::volumeIntegral<2>(
     double* lduh,
     const double * const lFhi,
-    const double * const dx,
-    const int nvar,
-    const int basisSize
+    const double * const dx
 ) {
-  constexpr int dim = 2;
+  constexpr int dim = DIMENSIONS; // 2
+  constexpr int nvar = EXAHYPE_NVARS;
+  constexpr int basisSize = EXAHYPE_ORDER+1;
+  constexpr int numberOfDof = nvar * power(basisSize,dim);
 
-  // todo insert your code here
-
-  int numberOfDof = nvar * tarch::la::aPowI(dim,basisSize);
   const double * f;
   const double * g;
 
@@ -60,7 +58,7 @@ void exahype::dg::volumeIntegral<2>(
         f = &lFhi[mmFluxDofStartIndex];
 
         for(int ivar=0; ivar < nvar; ivar++) {
-          lduh[dofStartIndex+ivar] +=  weight/dx[0] * dg::Kxi[ii][mm] * f[ivar]; // todo Kxi is order depending; is here hard coded for N=3
+          lduh[dofStartIndex+ivar] +=  weight/dx[0] * dg::Kxi[ii][mm] * f[ivar];
         }
       }
     }
@@ -85,7 +83,7 @@ void exahype::dg::volumeIntegral<2>(
 
         double * du = &lduh[0];
         for(int ivar=0; ivar < nvar; ivar++) {
-          du[dofStartIndex+ivar] +=  weight/dx[1] * dg::Kxi[jj][mm] * g[ivar]; // todo Kxi is order depending; is here hard coded for N=3
+          du[dofStartIndex+ivar] +=  weight/dx[1] * dg::Kxi[jj][mm] * g[ivar];
         }
       }
     }
