@@ -51,14 +51,18 @@ void exahype::dg::spaceTimePredictor<2>(
     double * tmp,
     const double * const dx,
     const double dt,
-    const int nvar,
-    const int basisSize
+    const int nvar_unused,
+    const int basisSize_unused
 ) {
-  constexpr int dim         = 2;
-  constexpr int dimTimesTwo = 4;
+  constexpr int dim         = DIMENSIONS;
+  constexpr int dimTimesTwo = (2*DIMENSIONS);
+  constexpr int basisSize   = (EXAHYPE_ORDER+1);
+  constexpr int nvar        = EXAHYPE_NVARS;
 
   // helper variables
-  int numberOfSpaceTimeDof  = nvar * tarch::la::aPowI(dim+1,basisSize);
+  //int numberOfSpaceTimeDof  = nvar * tarch::la::aPowI(dim+1,basisSize);
+  constexpr int numberOfSpaceTimeDof  = nvar * power(basisSize,dim+1);
+  constexpr int numberOfDof           = nvar * power(basisSize, dim);
 
   for (int ii=0; ii<basisSize; ii++) { // loop over dof
     for (int jj=0; jj<basisSize; jj++) {
@@ -261,7 +265,7 @@ void exahype::dg::spaceTimePredictor<2>(
   // Post processing of the predictor:
   // Immediately compute the time-averaged space-time polynomials
   /////////////////////////////////////////////////
-  int numberOfDof      = nvar * tarch::la::aPowI(dim,basisSize);
+  //int numberOfDof      = nvar * tarch::la::aPowI(dim,basisSize);
   int numberOfFluxDof  = numberOfDof * dim;
 
   memset((double *) lQhi,0,sizeof(double) * numberOfDof);
