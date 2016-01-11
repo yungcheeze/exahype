@@ -390,8 +390,8 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
     const double dxPatch[DIMENSIONS] = { dx/ (double) EXAHYPE_PATCH_SIZE_X,
                                          dy/ (double) EXAHYPE_PATCH_SIZE_Y };
 
-    const int basisSize = EXAHYPE_ORDER+1;
-    const int nvar      = EXAHYPE_NVARS;
+    constexpr int basisSize = EXAHYPE_ORDER+1;
+    constexpr int nvar      = EXAHYPE_NVARS;
 
     // work vectors
     int numberOfSpaceTimeDof  = nvar * tarch::la::aPowI(DIMENSIONS+1,basisSize);
@@ -428,9 +428,7 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
             rhs,
             tmp,
             dxPatch,
-            _localState.getTimeStepSize(),
-            nvar,
-            basisSize);
+            _localState.getTimeStepSize());
       }
     }
     // clean up

@@ -133,9 +133,7 @@ namespace exahype {
         double * rhs,
         double * tmp,
         const double * const dx,
-        const double dt,
-        const int nvar,
-        const int basisSize
+        const double dt
     );
 
     // 2D specialisations
@@ -197,9 +195,7 @@ namespace exahype {
         double * rhs,
         double * tmp,
         const double * const dx,
-        const double dt,
-        const int nvar,
-        const int basisSize
+        const double dt
     );
 
     // 3D specialisations
@@ -261,9 +257,7 @@ namespace exahype {
         double * rhs,
         double * tmp,
         const double * const dx,
-        const double dt,
-        const int nvar,
-        const int basisSize
+        const double dt
     );
 
   }  // namespace dg

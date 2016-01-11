@@ -26,12 +26,12 @@ void exahype::dg::spaceTimePredictor<3>(
     double * rhs,
     double * tmp,
     const double * const dx,
-    const double dt,
-    const int nvar,
-    const int basisSize
+    const double dt
 ) {
-  constexpr int dim         = 3;
-  constexpr int dimTimesTwo = 6;
+  constexpr int dim         = DIMENSIONS;         // 3
+  constexpr int dimTimesTwo = (2*DIMENSIONS);     // 6
+  constexpr int nvar        = EXAHYPE_NVARS;
+  constexpr int basisSize   = (EXAHYPE_ORDER+1);
 
   // todo insert your code here
 }
@@ -50,12 +50,10 @@ void exahype::dg::spaceTimePredictor<2>(
     double * rhs,
     double * tmp,
     const double * const dx,
-    const double dt,
-    const int nvar_unused,
-    const int basisSize_unused
+    const double dt
 ) {
-  constexpr int dim         = DIMENSIONS;
-  constexpr int dimTimesTwo = (2*DIMENSIONS);
+  constexpr int dim         = DIMENSIONS;         // 2
+  constexpr int dimTimesTwo = (2*DIMENSIONS);     // 4
   constexpr int basisSize   = (EXAHYPE_ORDER+1);
   constexpr int nvar        = EXAHYPE_NVARS;
 
