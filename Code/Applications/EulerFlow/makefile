@@ -9,10 +9,10 @@
 # ---------
 # Please adopt these directories to your Peano installation. The values are 
 # used by the compiler and linker calls.
-PEANO_HOME = .
+PEANO_HOME  =.
 
 # points to directory holding the project's sources
-PROJECT_HOME = EulerFlow  
+PROJECT_HOME=EulerFlow
 
 # name of the executable
 EXECUTABLE=peano-EulerFlow
@@ -123,7 +123,8 @@ OBJECTS=$(SOURCES:.cpp=.o)
 
 all: header build
 
-
+buildinfo:
+	$(PROJECT_HOME)/generate-buildinfo.sh $(PROJECT_HOME)
 
 files.mk:
 	touch files.mk
@@ -142,7 +143,7 @@ header:
 	@echo  --- This is ExaHyPE @ Peano 3 ---
 
 
-build: files.mk $(OBJECTS)
+build: buildinfo files.mk $(OBJECTS)
 	$(LL) $(OBJECTS) -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS) 
 	@echo
 	@echo build of Peano with component EulerFlow successful
