@@ -104,9 +104,7 @@ namespace exahype {
         double * lambdaR,
         const double dt,
         const double hFace,
-        const double * const n,
-        const int nvar,
-        const int basisSize
+        const double * const n
     );
 
     /**
@@ -173,9 +171,7 @@ namespace exahype {
         double * lambdaR,
         const double dt,
         const double hFace,
-        const double * const n,
-        const int nvar,
-        const int basisSize
+        const double * const n
     );
 
     template <>
@@ -233,9 +229,7 @@ namespace exahype {
         double * lambdaR,
         const double dt,
         const double hFace,
-        const double * const n,
-        const int nvar,
-        const int basisSize
+        const double * const n
     );
 
     template <>

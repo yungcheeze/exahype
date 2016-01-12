@@ -23,11 +23,12 @@ void exahype::dg::solveRiemannProblem<3>(
             double * lambdaR,
             const double dt,
             const double hFace,
-            const double * const n,
-            const int nvar,
-            const int basisSize
+            const double * const n
 ) {
-  constexpr int dim = 2;
+  constexpr int dim       = DIMENSIONS;       // 3
+  constexpr int nvar      = EXAHYPE_NVARS;
+  constexpr int basisSize = EXAHYPE_ORDER+1;
+
   // todo insert your code here
 }
 
@@ -43,11 +44,11 @@ void exahype::dg::solveRiemannProblem<2>(
             double * lambdaR,
             const double dt,
             const double hFace,
-            const double * const n,
-            const int nvar,
-            const int basisSize
+            const double * const n
 ) {
-  constexpr int dim = 2;
+  constexpr int dim       = DIMENSIONS;       // 2
+  constexpr int nvar      = EXAHYPE_NVARS;
+  constexpr int basisSize = EXAHYPE_ORDER+1;
 
   // Compute the average states from the left and the right, which we need to compute the numerical dissipation
   double sMax = 0;

@@ -40,6 +40,15 @@
 */
 
 /**
+ * Microarchitecture-specific alignment.
+ * - wsm: 16
+ * - snb: 32
+ * - hsw: 32
+ * - knc: 64
+ */
+#define ALIGNMENT 32
+
+/**
  * Simulation runtime parameters.
  */
 ///@{

@@ -392,6 +392,7 @@ void exahype::mappings::RiemannSolver::enterCell(
     const int nvar            = EXAHYPE_NVARS;
     const int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
+    // normal vectors
     const double nx[3]= { 1., 0., 0. };
     const double ny[3]= { 0., 1., 0. };
 
@@ -433,10 +434,7 @@ void exahype::mappings::RiemannSolver::enterCell(
             _localState.getOldTimeStepSize(),
 
             dxPatch,
-            nx,
-
-            nvar,
-            basisSize);
+            nx);
       }
     }
 
@@ -470,10 +468,7 @@ void exahype::mappings::RiemannSolver::enterCell(
             _localState.getTimeStepSize(),
 
             dyPatch,
-            ny,
-
-            nvar,
-            basisSize);
+            ny);
       }
     }
   }
