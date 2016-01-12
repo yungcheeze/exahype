@@ -8,7 +8,7 @@ import runtimeparser as rp
 import hpclib as hpc
 from plotting import scalingplot as sp
 
-"""
+'''
 .. module:: usertimeplot
   :platform: Unix, Windows, Mac
   :synopsis: Creates a speedup plot based on Peano output files with specific file naming pattern.
@@ -16,10 +16,10 @@ from plotting import scalingplot as sp
 .. moduleauthor:: Dominic Etienne Charrier <dominic.e.charrier@durham.ac.uk>
 
 :synopsis: Creates a speedup plot based on  Peano output files with specific file naming pattern.
-"""
+'''
 
-def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_counts,thread_counts,n_runs,cc,mode,ylim,per_iteration=False,hyperthreading=False,annotate=False):
-    """
+def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_counts,thread_counts,n_runs,cc,mode,ylim,per_iteration=False,hyperthreading=False,annotate=False,create_pdf=False):
+    '''
     Creates a scaling plot for the cumulative user time spent within the 
     specified adapters.
    
@@ -50,8 +50,12 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
          Annotate the plots with the speedup values.
       per_iteration (bool):
          Use the adapter times per iteration.
-    """
+    '''
     n_root_dir       = len(root_dir)
+    
+    colors  = ['b', 'r']
+    markers = ['s','^']
+    
     n_process_counts = len(process_counts)
     n_thread_counts  = len(thread_counts)
     
@@ -67,12 +71,12 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
     # In the hyper-threading case, we only want to plot a line
     # for the 'real' threads.
     if not hyperthreading: 
-        plt.plot(p,p,label=r"ideal",markersize=4,marker="",markevery=1,lw=1.2,linestyle="dashed",color="grey")
+        plt.plot(p,p,label=r'ideal',markersize=4,marker='',markevery=1,lw=1.2,linestyle='dashed',color='grey')
     else:
         p2        = p[0:-1] # [inclusive:exclusive]
         p2.append(p2[-1]+2)
-        p_ticks[-1] = "%d+HT" % p[-2]
-        plt.plot(p[0:-1],p[0:-1],label=r"ideal",markersize=4,marker="",markevery=1,lw=1.2,linestyle="dashed",color="grey")
+        p_ticks[-1] = '%d+HT' % p[-2]
+        plt.plot(p[0:-1],p[0:-1],label=r'ideal',markersize=4,marker='',markevery=1,lw=1.2,linestyle='dashed',color='grey')
     
     t_ref = 0
     
@@ -90,10 +94,10 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
         speedup_measured = speedup_measured[0];
     
         # Measured speedup
-        sp.plot_scaling(ax,p,speedup_measured,legend[i],"blue","s",hyperthreading,annotate)
+        sp.plot_scaling(ax,p,speedup_measured,legend[i],colors[i],markers[i],hyperthreading,annotate)
 
-    plt.ylabel(r"speedup", fontsize=12)    
-    plt.xlabel(r"number of cores", fontsize=12)
+    plt.ylabel(r'speedup', fontsize=12)    
+    plt.xlabel(r'number of cores', fontsize=12)
     plt.grid(True)
 
     ax.set_xlim(0.8,p2[-1]+0.2)
@@ -101,23 +105,23 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
     plt.yticks(p,map(str,p))
     ax.set_ylim(0.8,ylim+0.2)
 
-    plt.suptitle("",fontsize=12)
-    plt.tick_params(axis="both", which="major", labelsize=10)
-    plt.tick_params(axis="both", which="minor", labelsize=10)
+    plt.suptitle('',fontsize=12)
+    plt.tick_params(axis='both', which='major', labelsize=10)
+    plt.tick_params(axis='both', which='minor', labelsize=10)
     
     fig = plt.gcf()
-    matplotlib.pylab.legend(loc="best",fontsize="10")	
+    matplotlib.pylab.legend(loc='best',fontsize='10')	
     DefaultSize = matplotlib.pylab.gcf().get_size_inches()
     fig.set_size_inches( (DefaultSize[0]/10, DefaultSize[1]/10) )
     fig.set_size_inches(7.25,7.25)
     
-    plot_info = [''] * n_root_dir
-    for i in range(0,n_root_dir):
-       plot_info[i] = '+'.join(adapters[i])
-       print(i)
-       plot_info[i] = prefix[i] + '-' + plot_info[i]
-
-    plt.savefig("%s/%s.pdf" % ('.','_'.join(plot_info)), bbox_inches="tight")
+    if create_pdf:
+        plot_info = [''] * n_root_dir
+        for i in range(0,n_root_dir):
+            plot_info[i] = '+'.join(adapters[i])
+            plot_info[i] = prefix[i] + '-' + plot_info[i]
+        plt.savefig('%s/%s.pdf' % ('.','_'.join(plot_info)), bbox_inches='tight')
+        print("PDF output written.")
     plt.show()
     return
 
@@ -134,19 +138,20 @@ Sample usage:\n
 python usertimeplot.py -path \'examples/151217_phi1_node\' -prefix \'151217\' -legend \'2x Xeon  5-2650 @ 2.00GHz\' -mode tbb -cc icpc -ylim 16 -per_iteration -adapter \'Predictor+Corrector\' -t 1 2 4 6 8 10 12 16 32 -hyperthreading'''
 
 parser = argparse.ArgumentParser(description=help,formatter_class=RawTextHelpFormatter)
-parser.add_argument("-path",nargs='+',required=True,help='Directories containing the Peano output files. The times read from the file in the first specified directory corresponding to the smallest thread count are considered as reference values.')
-parser.add_argument("-prefix",default=[''],nargs='+',required=True,help='Prefix of the files - usually the date of the test and an identifier for the machine and the MPI process that has written the output files. Must be supplied once per \'root_dir\' entry.')
-parser.add_argument("-legend",nargs='+',required=True,help='Legend entry for the each data set - usually an identifier for the machine and the MPI process that has written the output files. Must be supplied once per \'root_dir\' entry.')
-parser.add_argument("-adapter",default=['Total'],nargs='+',help='Name of the adapters separated by a "+". (Use \'Total\' for the  cumulative time of all specified adapters. Does not make sense with \'per_iteration\' switched on.)')
-parser.add_argument("-n",default=[1],nargs='+',help='MPI process counts [default=1].')
-parser.add_argument("-t",default=[1],nargs='+',required=True,help='Threads per MPI process [default=1].')
-parser.add_argument("-r",default=1,help='Number of runs for all \'n\' and \'t\' combinations [default=1].')
-parser.add_argument("-cc",default='icpc',nargs='+',help='Compiler [default=\'icpc\']')
-parser.add_argument("-mode",default='tbb',nargs='+',help='Shared memory mode [default=\'tbb\']')
-parser.add_argument("-ylim",required=True,help='Upper limit for the y-Axis.')
+parser.add_argument('-path',nargs='+',required=True,help='Directories containing the Peano output files. The times read from the file in the first specified directory corresponding to the smallest thread count are considered as reference values.')
+parser.add_argument('-prefix',default=[''],nargs='+',required=True,help='Prefix of the files - usually the date of the test and an identifier for the machine and the MPI process that has written the output files. Must be supplied once per \'root_dir\' entry.')
+parser.add_argument('-legend',nargs='+',required=True,help='Legend entry for the each data set - usually an identifier for the machine and the MPI process that has written the output files. Must be supplied once per \'root_dir\' entry.')
+parser.add_argument('-adapter',default=['Total'],nargs='+',help='Name of the adapters separated by a '+'. (Use \'Total\' for the  cumulative time of all specified adapters. Does not make sense with \'per_iteration\' switched on.)')
+parser.add_argument('-n',default=[1],nargs='+',help='MPI process counts [default=1].')
+parser.add_argument('-t',default=[1],nargs='+',required=True,help='Threads per MPI process [default=1].')
+parser.add_argument('-r',default=1,help='Number of runs for all \'n\' and \'t\' combinations [default=1].')
+parser.add_argument('-cc',default='icpc',nargs='+',help='Compiler [default=\'icpc\']')
+parser.add_argument('-mode',default='tbb',nargs='+',help='Shared memory mode [default=\'tbb\']')
+parser.add_argument('-ylim',required=True,help='Upper limit for the y-Axis.')
 parser.add_argument('-hyperthreading', action='store_true', default=False,help='The last thread count corresponds to a hyperthreading run.')
 parser.add_argument('-annotate', action='store_true', default=False,help='Annotate the plots with the speedup values.')
 parser.add_argument('-per_iteration', action='store_true', default=False,help='Use the adapter times per iteration instead of the total times.')
+parser.add_argument('-create_pdf', action='store_true', default=False,help='Creates a PDF plot in the working directory.')
 
 args           = parser.parse_args();
 
@@ -155,6 +160,7 @@ prefix         = args.prefix
 legend         = args.legend
 n_root_dir     = len(root_dir)
 adapter        = [['']]*n_root_dir
+
 for i in range(0,n_root_dir):
     adapter[i] = args.adapter[i].split('+')
 
@@ -167,5 +173,6 @@ ylim           = float(args.ylim)
 hyperthreading = args.hyperthreading
 annotate       = args.annotate
 per_iteration  = args.per_iteration
+create_pdf     = args.create_pdf
 
-plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapter,process_counts,thread_counts,n_runs,cc,mode,ylim,per_iteration,hyperthreading,annotate)
+plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapter,process_counts,thread_counts,n_runs,cc,mode,ylim,per_iteration,hyperthreading,annotate,create_pdf)
