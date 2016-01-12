@@ -10,8 +10,8 @@ from plotting import scalingplot as sp
 
 """
 .. module:: usertimeplot
-  :platform: Unix, Windows
-  :synopsis: Creates a speedup plot based on  Peano output files with specific file naming pattern.
+  :platform: Unix, Windows, Mac
+  :synopsis: Creates a speedup plot based on Peano output files with specific file naming pattern.
    
 .. moduleauthor:: Dominic Etienne Charrier <dominic.e.charrier@durham.ac.uk>
 
@@ -51,23 +51,16 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
       per_iteration (bool):
          Use the adapter times per iteration.
     """
+    n_root_dir       = len(root_dir)
     n_process_counts = len(process_counts)
     n_thread_counts  = len(thread_counts)
-    
-    times                = rp.parse_all_adapter_times(root_dir[0],prefix[0],process_counts,thread_counts,n_runs,cc[0],mode[0],per_iteration)
-    total_times        = rp.sum_all_adapter_times(times,n_process_counts,n_thread_counts)
-    times['Total']    = total_times
-    cumulative_times = rp.sum_adapter_times(times,adapters,n_process_counts,n_thread_counts)
     
     # Plotting
     fig = plt.figure()
     ax  = fig.add_subplot(111)
     
-    speedup_measured = hpc.compute_speedup_2(cumulative_times['avg_usertime'],cumulative_times['avg_usertime'][0][0])
-    speedup_measured = speedup_measured[0];
-    
-    p         = map(int,thread_counts)
-    p2        = p
+    p       = map(int,thread_counts)
+    p2      = p
     p_ticks = map(str,p)
     
     # Ideal speedup
@@ -81,8 +74,23 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
         p_ticks[-1] = "%d+HT" % p[-2]
         plt.plot(p[0:-1],p[0:-1],label=r"ideal",markersize=4,marker="",markevery=1,lw=1.2,linestyle="dashed",color="grey")
     
-    # Measured speedup
-    sp.plot_scaling(ax,p,speedup_measured,legend[0],"blue","s",hyperthreading,annotate)
+    t_ref = 0
+    
+    for i in range(0,n_root_dir):
+        # Read in user and CPU times
+        times            = rp.parse_all_adapter_times(root_dir[i],prefix[i],process_counts,thread_counts,n_runs,cc[0],mode[0],per_iteration)
+        total_times      = rp.sum_all_adapter_times(times,n_process_counts,n_thread_counts)
+        times['Total']   = total_times
+        cumulative_times = rp.sum_adapter_times(times,adapters[i],n_process_counts,n_thread_counts)
+        
+        if i==0:
+            t_ref = cumulative_times['avg_usertime'][0][0]
+        
+        speedup_measured = hpc.compute_speedup_2(cumulative_times['avg_usertime'],t_ref)
+        speedup_measured = speedup_measured[0];
+    
+        # Measured speedup
+        sp.plot_scaling(ax,p,speedup_measured,legend[i],"blue","s",hyperthreading,annotate)
 
     plt.ylabel(r"speedup", fontsize=12)    
     plt.xlabel(r"number of cores", fontsize=12)
@@ -102,7 +110,14 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
     DefaultSize = matplotlib.pylab.gcf().get_size_inches()
     fig.set_size_inches( (DefaultSize[0]/10, DefaultSize[1]/10) )
     fig.set_size_inches(7.25,7.25)
-    plt.savefig("%s/%s_%s.pdf" % (root_dir[0],prefix[0],'+'.join(adapters)), bbox_inches="tight")
+    
+    plot_info = [''] * n_root_dir
+    for i in range(0,n_root_dir):
+       plot_info[i] = '+'.join(adapters[i])
+       print(i)
+       plot_info[i] = prefix[i] + '-' + plot_info[i]
+
+    plt.savefig("%s/%s.pdf" % ('.','_'.join(plot_info)), bbox_inches="tight")
     plt.show()
     return
 
@@ -116,13 +131,13 @@ Creates a speedup plot based on Peano output files with specific file naming pat
 If multiple adapters are specified, then the cumulative user times are used to compute the speedup.
 \n\n
 Sample usage:\n
-python usertimeplot.py -path \'examples/151217_phi1_node\' -prefix \'151217\' -legend \'2x Xeon  5-2650 @ 2.00GHz\' -mode tbb -cc icpc -ylim 16 -per_iteration -adapter \'Predictor\' \'Corrector\' -t 1 2 4 6 8 10 12 16 32 -hyperthreading'''
+python usertimeplot.py -path \'examples/151217_phi1_node\' -prefix \'151217\' -legend \'2x Xeon  5-2650 @ 2.00GHz\' -mode tbb -cc icpc -ylim 16 -per_iteration -adapter \'Predictor+Corrector\' -t 1 2 4 6 8 10 12 16 32 -hyperthreading'''
 
 parser = argparse.ArgumentParser(description=help,formatter_class=RawTextHelpFormatter)
-parser.add_argument("-path",nargs='+',required=True,help='Directories containing the Peano output files. (Implementation does currently only support one directory.)')
+parser.add_argument("-path",nargs='+',required=True,help='Directories containing the Peano output files. The times read from the file in the first specified directory corresponding to the smallest thread count are considered as reference values.')
 parser.add_argument("-prefix",default=[''],nargs='+',required=True,help='Prefix of the files - usually the date of the test and an identifier for the machine and the MPI process that has written the output files. Must be supplied once per \'root_dir\' entry.')
 parser.add_argument("-legend",nargs='+',required=True,help='Legend entry for the each data set - usually an identifier for the machine and the MPI process that has written the output files. Must be supplied once per \'root_dir\' entry.')
-parser.add_argument("-adapter",default=['Total'],nargs='+',help='Name of the adapters. (Use \'Total\' for the  cumulative time forall adapters. Does not make sense with per_iteration switched on.)')
+parser.add_argument("-adapter",default=['Total'],nargs='+',help='Name of the adapters separated by a "+". (Use \'Total\' for the  cumulative time of all specified adapters. Does not make sense with \'per_iteration\' switched on.)')
 parser.add_argument("-n",default=[1],nargs='+',help='MPI process counts [default=1].')
 parser.add_argument("-t",default=[1],nargs='+',required=True,help='Threads per MPI process [default=1].')
 parser.add_argument("-r",default=1,help='Number of runs for all \'n\' and \'t\' combinations [default=1].')
@@ -134,10 +149,15 @@ parser.add_argument('-annotate', action='store_true', default=False,help='Annota
 parser.add_argument('-per_iteration', action='store_true', default=False,help='Use the adapter times per iteration instead of the total times.')
 
 args           = parser.parse_args();
+
 root_dir       = args.path
 prefix         = args.prefix
 legend         = args.legend
-adapter        = args.adapter
+n_root_dir     = len(root_dir)
+adapter        = [['']]*n_root_dir
+for i in range(0,n_root_dir):
+    adapter[i] = args.adapter[i].split('+')
+
 process_counts = args.n
 thread_counts  = args.t
 n_runs         = args.r
