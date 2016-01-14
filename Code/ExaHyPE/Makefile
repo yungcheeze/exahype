@@ -143,8 +143,8 @@ header:
 build: buildinfo files.mk $(OBJECTS)
 	$(LL) $(OBJECTS) -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS) 
 	@echo
-	@echo build of Peano with component EulerFlow successful
-	@echo visit Peano\'s homepage at http://www.peano-framework.org
+	@echo build of ExaHyPE successful
+	@echo run code with ./ExaHyPE and pass config file as argument
 
 
 clean:
