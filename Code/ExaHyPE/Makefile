@@ -120,10 +120,6 @@ files.mk:
 	find -H $(MULTISCALELINKEDCELL_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
 	find -H $(EXAHYPE_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
 	find -H $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
-	# if you encouter problems with awk, use the following snippets (through they
-	# do in turn not work with all bash versions. In particular not with MACs:
-	#
-	# find $(PROJECT_HOME) -name '*.cpp' -printf '%p ' >> files.mk
 
 
 
@@ -154,4 +150,4 @@ clean:
 
 
 $(OBJECTS): %.o : %.cpp
-	$(CC) $(DIM) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PEANO_PATH)/.. -I$(TARCH_PATH)/.. -I$(MULTISCALELINKEDCELL_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)/..  -c $< -o $@
+	$(CC) $(DIM) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH)  -I$(PEANO_PATH)/.. -I$(TARCH_PATH)/.. -I$(MULTISCALELINKEDCELL_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@

@@ -14,6 +14,10 @@
 
 
 
+// @todo raus
+#include "exahype/Constants.h"
+
+
 
 
 tarch::logging::Log _log("");
@@ -97,7 +101,7 @@ int main(int argc, char** argv) {
   // ============
   //
   exahype::runners::Runner runner;
-  programExitCode = runner.run();
+  int programExitCode = runner.run();
   
   if (programExitCode==0) {
     #ifdef Parallel
