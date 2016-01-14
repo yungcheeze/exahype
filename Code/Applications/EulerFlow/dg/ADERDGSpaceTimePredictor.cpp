@@ -12,6 +12,10 @@
 
 #include "string.h"
 
+#include <fstream>
+using std::cout;
+using std::endl;
+
 // explicit specialisations
 template <>
 void exahype::dg::spaceTimePredictor<3>(
@@ -39,16 +43,16 @@ void exahype::dg::spaceTimePredictor<3>(
 
 template <>
 void exahype::dg::spaceTimePredictor<2>(
-    double * lQi,
-    double * lFi,
-    const double * const luh,
-    double * lQhi,
-    double * lFhi,
-    double * lQhbnd,
-    double * lFhbnd,
-    double * rhs0,
-    double * rhs,
-    double * tmp,
+    double * /*local*/ lQi,
+    double * /*local*/ lFi,
+    const double * const /*in*/ luh,
+    double * /*out*/ lQhi,
+    double * /*out*/ lFhi,
+    double * /*out*/ lQhbnd,
+    double * /*out*/ lFhbnd,
+    double * /*local*/ rhs0,
+    double * /*local*/ rhs,
+    double * /*local*/ tmp,
     const double * const dx,
     const double dt
 ) {
@@ -61,6 +65,8 @@ void exahype::dg::spaceTimePredictor<2>(
   //int numberOfSpaceTimeDof  = nvar * tarch::la::aPowI(dim+1,basisSize);
   constexpr int numberOfSpaceTimeDof  = nvar * power(basisSize,dim+1);
   constexpr int numberOfDof           = nvar * power(basisSize, dim);
+
+  std::ofstream outfile;
 
   for (int ii=0; ii<basisSize; ii++) { // loop over dof
     for (int jj=0; jj<basisSize; jj++) {
@@ -266,9 +272,21 @@ void exahype::dg::spaceTimePredictor<2>(
   //int numberOfDof      = nvar * tarch::la::aPowI(dim,basisSize);
   constexpr int numberOfFluxDof  = numberOfDof * dim;
 
+  // lFhi (nDOF(2), nDOF(1), d, nVar)
+  // to become : lFhi [d][nDOF(2)][nDOF(1)][nVar]
+
   memset((double *) lQhi,0,sizeof(double) * numberOfDof);
   memset((double *) lFhi,0,sizeof(double) * numberOfFluxDof);
 
+  // current memory layout
+  // lFhi (nDOF(2), nDOF(1), d, nVar)
+  // to become : lFhi [d][nDOF(2)][nDOF(1)][nVar]
+  //
+  // lFhi's size in total: basisSize * basisSize * nVar * d
+  // lFhi(:,iDim,i,j) = MATMUL(lFh(:,iDim,i,j,:),wGPN)
+
+/*
+  // original version
   for (int ii=0; ii<basisSize; ii++) { // loop over dof
     for (int jj=0; jj<basisSize; jj++) {
       const int nodeIndex     = ii + basisSize * jj;
@@ -296,7 +314,55 @@ void exahype::dg::spaceTimePredictor<2>(
         }
       }
     }
+  }*/
+
+  // modified version
+  for (int ii=0; ii<basisSize; ii++) { // loop over dof
+    for (int jj=0; jj<basisSize; jj++) {
+      const int nodeIndex         = ii + basisSize * jj;
+      const int dofStartIndex     = nodeIndex * nvar;
+      const int fluxDofStartIndex = dim * dofStartIndex;
+
+      for (int ll=0; ll<basisSize; ll++) { // loop over dof
+        const int spaceTimeNodeIndex         = nodeIndex  + basisSize * basisSize * ll;
+        const int spaceTimeDofStartIndex     = spaceTimeNodeIndex * nvar;
+        const int spaceTimeFluxDofStartIndex = spaceTimeDofStartIndex * dim;
+
+        Q = &lQi[spaceTimeDofStartIndex];
+
+        f = &lFi[spaceTimeFluxDofStartIndex     ];
+        g = &lFi[spaceTimeFluxDofStartIndex+nvar];
+
+        double weight = quad::gaussLegendreWeights[ll];
+
+        double * temp = &(lQhi[dofStartIndex]);
+        for(int ivar=0; ivar < nvar; ivar++) {
+          lQhi[dofStartIndex+ivar] += weight * Q[ivar]; //lQi = 80
+
+          // old version:
+          //lFhi[fluxDofStartIndex+ivar     ] += weight * f[ivar];  // x
+          //lFhi[fluxDofStartIndex+nvar+ivar] += weight * g[ivar];  // y
+
+          lFhi[dofStartIndex+ivar]  += weight * f[ivar];           // gives x consecutively
+          lFhi[numberOfDof+dofStartIndex+ivar]+= weight * g[ivar]; // gives y consecutively
+        }
+      }
+    }
   }
+
+  // now:
+  // lFhi (nDOF(2), nDOF(1), d, nVar) => 160
+  // lFhi = [ lFhi_x, lFhi_y ] = [ 80, 80 ]
+  // for the time being stored in one single array.
+  // (a) idea for improvement:
+  //     lFhi_x = &lFhi[0]
+  //     lFhi_y = &lFhi[numberOfDof] for easier access mechanism and readability
+  // (b) TODO reorder lFhi_y, lFhi_z do have better access mechanism
+  //     in SurfaceIntegral??? e.g. lFhi_y(nvar, i,j,k) becomes lFhi_y(nvar,j,i,k)
+  //     and then the usual access mechanism
+  // (c) the offset is the number of quantities stored in lFhi_?,
+  //     which is numberOfDof = nVar * basisSize^dim
+
 
   /////////////////////////////////////////////////
   // Compute the bounday-extrapolated values for Q and F*n
@@ -323,14 +389,15 @@ void exahype::dg::spaceTimePredictor<2>(
       const int mmFluxDofStartIndex = mmDofStartIndex * dim;
 
       Q = &lQhi[mmDofStartIndex    ];
-      f = &lFhi[mmFluxDofStartIndex];
+      //f = &lFhi[mmFluxDofStartIndex];
+      f = &lFhi[mmDofStartIndex]; // lFhi_x
 
       for(int ivar=0; ivar < nvar; ivar++) {
         lQhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * Q[ivar];
         lQhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * Q[ivar];
 
-        lFhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * f[ivar];
-        lFhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * f[ivar];
+        lFhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * f[ivar]; // lFhi_x * FLCoeff
+        lFhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * f[ivar]; // lFhi_x * FRCoeff
       }
     }
     continue;
@@ -348,18 +415,31 @@ void exahype::dg::spaceTimePredictor<2>(
       const int mmFluxDofStartIndex = mmDofStartIndex * dim;
 
       Q = &lQhi [mmDofStartIndex         ];
-      g = &lFhi[mmFluxDofStartIndex+nvar];
+      //g = &lFhi[mmFluxDofStartIndex+nvar];
+      g = &lFhi[numberOfDof/*offset*/+mmDofStartIndex]; // access lFhi_y in lFhi = [lFhi_x | lFhi_y]
 
       for(int ivar=0; ivar < nvar; ivar++) {
         lQhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * Q[ivar];
         lQhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * Q[ivar];
 
-        lFhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * g[ivar];
-        lFhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * g[ivar];
+        lFhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * g[ivar]; // lFhi_y * FLCoeff
+        lFhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * g[ivar]; // lFhi_y * FRCoeff
       }
     }
     continue;
   }
+
+  // so far ok:
+  //
+
+  /*outfile.open("lFhbnd.txt", std::ios::app);
+  for(int i=0;i<numberOfFaceDof*2;i++) {
+    outfile << lFhbnd[i] << std::endl;
+  }
+
+  outfile.close();
+  exit(0);*/
+
 
   // clean up
 //  std::free(dqdt);

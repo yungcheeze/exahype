@@ -38,6 +38,9 @@ void exahype::dg::volumeIntegral<2>(
   const double * f;
   const double * g;
 
+  // lFhi's memory layout has been revised. Now it has the format
+  // lFhi = [ lFhi_x | lFhi_y ]
+
   memset(lduh,0,sizeof(double) * numberOfDof);
 
   // access lduh(nDOF[2] x nDOF[1] x nvar) in the usual 3D array manner
@@ -56,7 +59,7 @@ void exahype::dg::volumeIntegral<2>(
         const int mmDofStartIndex     = mmNodeIndex * nvar;
         const int mmFluxDofStartIndex = mmDofStartIndex * dim;
 
-        f = &lFhi[mmFluxDofStartIndex];
+        f = &lFhi[mmFluxDofStartIndex]; // TODO
 
         for(int ivar=0; ivar < nvar; ivar++) {
           lduh3D[ii][jj][ivar] += weight/dx[0] * dg::Kxi[jj][mm] * f[ivar];
@@ -79,7 +82,7 @@ void exahype::dg::volumeIntegral<2>(
         const int mmDofStartIndex     = mmNodeIndex * nvar;
         const int mmFluxDofStartIndex = mmDofStartIndex * dim;
 
-        g = &lFhi[mmFluxDofStartIndex+nvar];
+        g = &lFhi[mmFluxDofStartIndex+nvar];  // TODO
 
         for(int ivar=0; ivar < nvar; ivar++) {
           lduh3D[ii][jj][ivar] += weight/dx[1] * dg::Kxi[ii][mm] * g[ivar];
