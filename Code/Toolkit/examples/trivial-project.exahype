@@ -17,4 +17,11 @@ exahype-project  TrivialProject
   dimensions                 = 2
   
   
+  
+  shared-memory
+    cores                    = 4
+    properties-file          = sharedmemory.properties
+    autotuning               = off
+  end shared-memory  
+  
 end exahype-project  
