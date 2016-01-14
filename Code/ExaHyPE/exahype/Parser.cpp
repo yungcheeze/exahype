@@ -2,6 +2,9 @@
 
 #include <fstream>
 
+#include <stdio.h>
+#include <string.h>
+
 
 
 tarch::logging::Log exahype::Parser::_log( "exahype::Parser" );
@@ -22,18 +25,31 @@ void exahype::Parser::readFile( const std::string& filename ) {
     return;
   }
 
+  bool currentlyReadsComment = false;
+
+
   while (!inputFile.eof()) {
     char lineBuffer[MAX_CHARS_PER_LINE];
     inputFile.getline(lineBuffer, MAX_CHARS_PER_LINE);
 
-    const char* token[MAX_TOKENS_PER_LINE] = {};
+    char* token;
     
     // parse the line
-    token[0] = strtok(lineBuffer, DELIMITER);
+    token = strtok(lineBuffer, DELIMITER);
     int currentTokenInLine = 0;
-    while (token[currentTokenInLine]) {
-      std::string newToken = token[currentTokenInLine];
-      logInfo( "readFile(String)", "got token " << newToken );
+    while (token) {
+      std::string newToken = token;
+      if (currentlyReadsComment && newToken.find("*/")!=std::string::npos) {
+        currentlyReadsComment = false;
+      }
+      else if (!currentlyReadsComment && newToken.find("/*")!=std::string::npos) {
+        currentlyReadsComment = true;
+      }
+      else if (!currentlyReadsComment) {
+        logInfo( "readFile(String)", "got token " << newToken );
+        _tokenStream.push_back( newToken );
+      }
+      token = strtok(0, DELIMITER); // subsequent tokens
       currentTokenInLine++;
     }
   }
@@ -73,8 +89,8 @@ using std::ifstream;
 
 #include <cstring>
 */
-
 /*
+
 const int MAX_CHARS_PER_LINE = 512;
 const int MAX_TOKENS_PER_LINE = 20;
 const char* const DELIMITER = " ";
@@ -98,11 +114,11 @@ int main()
     int n = 0; // a for-loop index
 
     // array to store memory addresses of the tokens in buf
-    const char* token[MAX_TOKENS_PER_LINE] = {}; // initialize to 0
+    const char* token;
 
     // parse the line
-    token[0] = strtok(buf, DELIMITER); // first token
-    if (token[0]) // zero if line is blank
+    token = strtok(buf, DELIMITER); // first token
+    if (token) // zero if line is blank
     {
       for (n = 1; n < MAX_TOKENS_PER_LINE; n++)
       {

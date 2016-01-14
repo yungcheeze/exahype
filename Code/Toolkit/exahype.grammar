@@ -57,14 +57,12 @@ Tokens
   
   traditional_comment         = '/*' not_star+ '*'+ (not_star_not_slash not_star* '*'+)* '/';
   documentation_comment       = '/**' '*'* (not_star_not_slash not_star* '*'+)* '/';
-  end_of_line_comment         = '//' not_line_terminator * line_terminator;
 
 
 Ignored Tokens
   
   traditional_comment,
   documentation_comment,
-  end_of_line_comment,
   blank;
 
 
