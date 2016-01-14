@@ -42,7 +42,11 @@ namespace exahype {
     );
 
     /**
-     * @todo docu
+     * @brief Computes the volume integral
+     *
+     * @param[out] lduh   spatial degrees of freedom, array of size nVar*basisSize**dim
+     * @param[in]  lFhi   flux tensor, array of size nVar*dim*basisSize**dim
+     * @param[in]  dx     array of size dim containing the spacing of the cell
      */
     template <int dim>
     void volumeIntegral(
