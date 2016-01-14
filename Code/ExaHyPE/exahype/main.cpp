@@ -5,7 +5,11 @@
 
 #include "peano/peano.h"
 
-#include "exahype/runners/Runner.h"
+#include "EulerFlow/runners/Runner.h"
+
+#include "tarch/multicore/Core.h"
+#include "tarch/multicore/MulticoreDefinitions.h"
+
 
 
 tarch::logging::Log _log("");
@@ -32,12 +36,10 @@ int main(int argc, char** argv) {
   }
 
 
-
-#ifdef SharedMemoryParallelisation
-const int numberOfCores = 2;
-tarch::multicore::Core::getInstance().configure(numberOfCores);
-#endif
-
+  #ifdef SharedMemoryParallelisation
+  const int numberOfCores = 2;
+  tarch::multicore::Core::getInstance().configure(numberOfCores);
+  #endif
 
   int programExitCode = 0;
 
