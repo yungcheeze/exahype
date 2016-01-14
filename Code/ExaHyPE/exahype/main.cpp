@@ -5,10 +5,14 @@
 
 #include "peano/peano.h"
 
-#include "EulerFlow/runners/Runner.h"
+#include "exahype/runners/Runner.h"
 
 #include "tarch/multicore/Core.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
+
+#include "exahype/Parser.h"
+
+
 
 
 
@@ -18,6 +22,10 @@ tarch::logging::Log _log("");
 int main(int argc, char** argv) {
   peano::fillLookupTables();
 
+  //
+  //   Setup environment
+  // =====================
+  //
   int parallelSetup = peano::initParallelEnvironment(&argc,&argv);
   if ( parallelSetup!=0 ) {
     #ifdef Parallel
@@ -35,43 +43,62 @@ int main(int argc, char** argv) {
     return sharedMemorySetup;
   }
 
+  //
+  //   Parse config file
+  // =====================
+  //
+  if (argc!=2) {
+    logError( "main()", "Usage: ./ExaHyPE config-file" );
+    return -1;
+  }
 
+  exahype::Parser parser;
+  parser.readFile( argv[1] );
+
+  if (!parser.isValid()) {
+    logError( "main()", "invalid config file. Quit" );
+    return -2;
+  }
+
+  //
+  //   Configure environment with data from config file
+  // ====================================================
+  //
   #ifdef SharedMemoryParallelisation
   const int numberOfCores = 2;
   tarch::multicore::Core::getInstance().configure(numberOfCores);
   #endif
 
-  int programExitCode = 0;
-
-  // @todo Please insert your code here and reset programExitCode
-  //       if something goes wrong. 
-  // ============================================================  
-
-  // Configure the output
+  //
+  //   Run tests
+  // =============
+  //
   tarch::logging::CommandLineLogger::getInstance().clearFilterList();
   tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "info", false ) );
   tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "debug", true ) );
-//  tarch::logging::CommandLineLogger::getInstance().setLogFormat( ... please consult source code documentation );
+  tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "debug", -1, "exahype", false ) );
 
-  // Runs the unit tests
+  //
+  //   Run tests
+  // =============
+  //
+  #if defined(Debug) || defined(Asserts)
   tarch::tests::TestCaseRegistry::getInstance().getTestCaseCollection().run();  
-  programExitCode = tarch::tests::TestCaseRegistry::getInstance().getTestCaseCollection().getNumberOfErrors();
+  int testExitCode = tarch::tests::TestCaseRegistry::getInstance().getTestCaseCollection().getNumberOfErrors();
 
-  // Runs the integration tests
-  //if (programExitCode==0) {
-  //  tarch::tests::TestCaseRegistry::getInstance().getIntegrationTestCaseCollection().run();  
-  //  programExitCode = tarch::tests::TestCaseRegistry::getInstance().getIntegrationTestCaseCollection().getNumberOfErrors();
-  //}
-  
-  // dummy call to runner
-  if (programExitCode==0) {
-    tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "debug", -1, "exahype", false ) );
-    exahype::runners::Runner runner;
-    programExitCode = runner.run();
+  if (testExitCode!=0) {
+    logError( "main()", "unit tests failed. Quit" );
+    return -2;
   }
-  
-  // ============================================================  
+  #endif
 
+  //
+  //   Run code
+  // ============
+  //
+  exahype::runners::Runner runner;
+  programExitCode = runner.run();
+  
   if (programExitCode==0) {
     #ifdef Parallel
     if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
