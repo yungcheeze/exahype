@@ -297,10 +297,6 @@ void exahype::dg::spaceTimePredictor<2>(
         for(int ivar=0; ivar < nvar; ivar++) {
           lQhi[dofStartIndex+ivar] += weight * Q[ivar];
 
-          // old version:
-          //lFhi[fluxDofStartIndex+ivar     ] += weight * f[ivar];  // x
-          //lFhi[fluxDofStartIndex+nvar+ivar] += weight * g[ivar];  // y
-
           lFhi_x[dofStartIndex+ivar] += weight * f[ivar];
           lFhi_y[dofStartIndex+ivar] += weight * g[ivar];
         }
@@ -341,9 +337,6 @@ void exahype::dg::spaceTimePredictor<2>(
         lQhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * Q[ivar];
         lQhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * Q[ivar];
 
-        //lFhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * f[ivar]; // lFhi_x * FLCoeff
-        //lFhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * f[ivar]; // lFhi_x * FRCoeff
-
         lFhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * lFhi_x[mmDofStartIndex+ivar]; // lFhi_x * FLCoeff
         lFhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * lFhi_x[mmDofStartIndex+ivar]; // lFhi_x * FRCoeff
       }
@@ -364,15 +357,10 @@ void exahype::dg::spaceTimePredictor<2>(
       const int mmDofStartIndex     = mmNodeIndex * nvar;
 
       Q = &lQhi [mmDofStartIndex         ];
-      //g = &lFhi[mmFluxDofStartIndex+nvar];
-      g = &lFhi[numberOfDof/*offset*/+mmDofStartIndex]; // access lFhi_y in lFhi = [lFhi_x | lFhi_y]
 
       for(int ivar=0; ivar < nvar; ivar++) {
         lQhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * Q[ivar];
         lQhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * Q[ivar];
-
-        //lFhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * g[ivar]; // lFhi_y * FLCoeff
-        //lFhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * g[ivar]; // lFhi_y * FRCoeff
 
         lFhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * lFhi_y[mmDofStartIndex+ivar]; // lFhi_y * FLCoeff
         lFhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * lFhi_y[mmDofStartIndex+ivar]; // lFhi_y * FRCoeff
