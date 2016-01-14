@@ -1,5 +1,5 @@
-#include "ExaHyPeDataStructure/multiscalelinkedcell/tests/HangingVertexBookkeeperTest.h"
-#include "ExaHyPeDataStructure/multiscalelinkedcell/HangingVertexBookkeeper.h"
+#include "multiscalelinkedcell/tests/HangingVertexBookkeeperTest.h"
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
 #include "tarch/la/Vector.h"
 #include "peano/utils/Globals.h"

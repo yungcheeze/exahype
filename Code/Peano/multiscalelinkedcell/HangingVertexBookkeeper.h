@@ -175,7 +175,7 @@ class multiscalelinkedcell::HangingVertexBookkeeper {
 };
 
 
-#include "ExaHyPeDataStructure/multiscalelinkedcell/HangingVertexBookkeeper.cpph"
+#include "multiscalelinkedcell/HangingVertexBookkeeper.cpph"
 
 
 #endif

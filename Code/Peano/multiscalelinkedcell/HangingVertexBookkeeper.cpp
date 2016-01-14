@@ -1,4 +1,4 @@
-#include "ExaHyPeDataStructure/multiscalelinkedcell/HangingVertexBookkeeper.h"
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
 #include "peano/utils/Loop.h"
 

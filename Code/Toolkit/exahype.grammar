@@ -35,16 +35,20 @@ Tokens
   token_exahype_path              = 'exahype-path';
   token_multiscalelinkedcell_path = 'multiscalelinkedcell-path';
   token_output_directory          = 'output-directory';
+  token_dimensions                = 'dimensions';
   
   token_equals                = '=';
     
   blank                       = ( cr | lf | tab | ' ' ) +;
   identifier                  = nondigit ( digit | nondigit ) *;
 
+  int_number                  = digit+;
+  float_number                = (digit+ | digit+ '.' digit+);
+
   filename                    = '/' ? (filename_element + '/') * filename_element +;
   
   traditional_comment         = '/*' not_star+ '*'+ (not_star_not_slash not_star* '*'+)* '/';
-  documentation_comment       =    '/**' '*'* (not_star_not_slash not_star* '*'+)* '/';
+  documentation_comment       = '/**' '*'* (not_star_not_slash not_star* '*'+)* '/';
   end_of_line_comment         = '//' not_line_terminator * line_terminator;
 
 
@@ -66,12 +70,11 @@ Productions
       token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
       token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
       token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+      token_dimensions                 [dimensions_equals]:token_equals                       [dimensions]:int_number
     token_end [end_token]:token_project
-      { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory ) };
+      { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, dimensions ) };
 
-    
-    
 Abstract Syntax Tree
-   project = [name]:identifier [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [exahype_path]:filename [output_directory]:filename;
+   project = [name]:identifier [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [exahype_path]:filename [output_directory]:filename [dimensions]:int_number;
    
    

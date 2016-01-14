@@ -18,10 +18,13 @@
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "exahype/Vertex.h"
-#include "exahype/Cell.h"
-#include "exahype/State.h"
+#include "EulerFlow/Vertex.h"
+#include "EulerFlow/Cell.h"
+#include "EulerFlow/State.h"
 
+// ! Begin of code for DG method
+#include "EulerFlow/Constants.h"
+// ! End of code for DG method
 
 namespace exahype {
       namespace mappings {
@@ -906,9 +909,6 @@ class exahype::mappings::InitialGrid {
 
     /**
      * Counterpart of mergeWithMaster()
-     * 
-     * Remark: If your grid exhibits sufficient regularity beyond the domain 
-     *         boundaries, the received cell might be an outside cell. 
      */
     void mergeWithWorker(
       exahype::Cell&           localCell, 
@@ -921,9 +921,6 @@ class exahype::mappings::InitialGrid {
 
     /**
      * Counterpart of mergeWithMaster()
-     * 
-     * Remark: If your grid exhibits sufficient regularity beyond the domain 
-     *         boundaries, the received vertex might be an outside vertex. 
      */
     void mergeWithWorker(
       exahype::Vertex&        localVertex,

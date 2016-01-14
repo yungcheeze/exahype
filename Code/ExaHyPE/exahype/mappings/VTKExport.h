@@ -8,20 +8,22 @@
 #ifndef EXAHYPE_MAPPINGS_VTKExport_H_
 #define EXAHYPE_MAPPINGS_VTKExport_H_
 
-
-#include "tarch/logging/Log.h"
+#include "peano/utils/Loop.h"
 #include "tarch/la/Vector.h"
+#include "tarch/la/VectorCompare.h"
+#include "tarch/logging/Log.h"
+#include "tarch/multicore/MulticoreDefinitions.h"
+#include "tarch/plotter/griddata/unstructured/vtk/VTKTextFileWriter.h"
 
-#include "peano/grid/VertexEnumerator.h"
 #include "peano/MappingSpecification.h"
 #include "peano/CommunicationSpecification.h"
+#include "peano/grid/VertexEnumerator.h"
 
-#include "tarch/multicore/MulticoreDefinitions.h"
+#include "EulerFlow/Vertex.h"
+#include "EulerFlow/Cell.h"
+#include "EulerFlow/State.h"
 
-#include "exahype/Vertex.h"
-#include "exahype/Cell.h"
-#include "exahype/State.h"
-
+#include "EulerFlow/Constants.h"
 
 namespace exahype {
       namespace mappings {
@@ -43,6 +45,25 @@ class exahype::mappings::VTKExport {
      * Logging device for the trace macros.
      */
     static tarch::logging::Log  _log;
+
+    /**
+     * One big map mapping vertices to indices. The procedure using this map is
+     * straightforward. Whenever we encounter a vertex, the object does a
+     * lookup whether this vertex already has been plotted. If not, it plots it
+     * and adds an entry.
+     *
+     * @see plotVertex(const tarch::la::Vector<DIMENSIONS,double>&  x)
+     */
+
+    tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter*                 _vtkWriter;
+    tarch::plotter::griddata::unstructured::UnstructuredGridWriter::VertexWriter*   _vertexWriter;
+    tarch::plotter::griddata::unstructured::UnstructuredGridWriter::CellWriter*     _cellWriter;
+
+    tarch::plotter::griddata::Writer::VertexDataWriter*                             _vertexValueWriter;
+//    tarch::plotter::griddata::Writer::CellDataWriter*                               _cellValueWriter;
+
+    static int _snapshotCounter;
+
   public:
     /**
      * These flags are used to inform Peano about your operation. It tells the 

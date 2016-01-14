@@ -1,5 +1,5 @@
-#include "ExaHyPeDataStructure/multiscalelinkedcell/tests/SAMRToolsTest.h"
-#include "ExaHyPeDataStructure/multiscalelinkedcell/SAMRTools.h"
+#include "multiscalelinkedcell/tests/SAMRToolsTest.h"
+#include "multiscalelinkedcell/SAMRTools.h"
 
 #include "tarch/la/Vector.h"
 #include "peano/utils/Globals.h"

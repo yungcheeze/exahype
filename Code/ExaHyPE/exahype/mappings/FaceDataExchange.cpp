@@ -1,6 +1,14 @@
-#include "exahype/mappings/FaceDataExchange.h"
+#include "EulerFlow/mappings/FaceDataExchange.h"
 
+#include "EulerFlow/dg/Constants.h"
 
+#include "EulerFlow/geometry/Mapping.h"
+#include "EulerFlow/quad/GaussLegendre.h"
+
+#include "EulerFlow/multiscalelinkedcell/HangingVertexBookkeeper.h"
+#include "EulerFlow/VertexOperations.h"
+
+#include "EulerFlow/problem/Problem.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -14,7 +22,7 @@ peano::CommunicationSpecification   exahype::mappings::FaceDataExchange::communi
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::FaceDataExchange::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -22,7 +30,7 @@ peano::MappingSpecification   exahype::mappings::FaceDataExchange::touchVertexLa
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::FaceDataExchange::touchVertexFirstTimeSpecification() { 
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -30,7 +38,7 @@ peano::MappingSpecification   exahype::mappings::FaceDataExchange::touchVertexFi
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::FaceDataExchange::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::OnlyLeaves,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -38,7 +46,7 @@ peano::MappingSpecification   exahype::mappings::FaceDataExchange::enterCellSpec
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::FaceDataExchange::leaveCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
@@ -46,7 +54,7 @@ peano::MappingSpecification   exahype::mappings::FaceDataExchange::leaveCellSpec
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::FaceDataExchange::ascendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
@@ -54,7 +62,7 @@ peano::MappingSpecification   exahype::mappings::FaceDataExchange::ascendSpecifi
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::FaceDataExchange::descendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
@@ -62,413 +70,490 @@ tarch::logging::Log                exahype::mappings::FaceDataExchange::_log( "e
 
 
 exahype::mappings::FaceDataExchange::FaceDataExchange() {
-  logTraceIn( "FaceDataExchange()" );
-  // @todo Insert your code here
-  logTraceOut( "FaceDataExchange()" );
+  // do nothing
 }
 
 
 exahype::mappings::FaceDataExchange::~FaceDataExchange() {
-  logTraceIn( "~FaceDataExchange()" );
-  // @todo Insert your code here
-  logTraceOut( "~FaceDataExchange()" );
+  // do nothing
 }
 
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::FaceDataExchange::FaceDataExchange(const FaceDataExchange&  masterThread) {
-  logTraceIn( "FaceDataExchange(FaceDataExchange)" );
-  // @todo Insert your code here
-  logTraceOut( "FaceDataExchange(FaceDataExchange)" );
+  // do nothing
 }
 
 
 void exahype::mappings::FaceDataExchange::mergeWithWorkerThread(const FaceDataExchange& workerThread) {
-  logTraceIn( "mergeWithWorkerThread(FaceDataExchange)" );
-  // @todo Insert your code here
-  logTraceOut( "mergeWithWorkerThread(FaceDataExchange)" );
+  // do nothing
 }
 #endif
 
 
 void exahype::mappings::FaceDataExchange::createHangingVertex(
-      exahype::Vertex&     fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                fineGridH,
-      exahype::Vertex * const   coarseGridVertices,
-      const peano::grid::VertexEnumerator&      coarseGridVerticesEnumerator,
-      exahype::Cell&       coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
+    exahype::Vertex&     fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                fineGridH,
+    exahype::Vertex * const   coarseGridVertices,
+    const peano::grid::VertexEnumerator&      coarseGridVerticesEnumerator,
+    exahype::Cell&       coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "createHangingVertex(...)", fineGridVertex );
+  // do nothing
 }
 
 
 void exahype::mappings::FaceDataExchange::destroyHangingVertex(
-      const exahype::Vertex&   fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
+    const exahype::Vertex&   fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "destroyHangingVertex(...)", fineGridVertex );
+  // do nothing
 }
 
 
 void exahype::mappings::FaceDataExchange::createInnerVertex(
-      exahype::Vertex&               fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
+    exahype::Vertex&               fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "createInnerVertex(...)", fineGridVertex );
+  // do nothing
 }
 
 
 void exahype::mappings::FaceDataExchange::createBoundaryVertex(
-      exahype::Vertex&               fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
+    exahype::Vertex&               fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "createBoundaryVertex(...)", fineGridVertex );
+  // do nothing
 }
 
 
 void exahype::mappings::FaceDataExchange::destroyVertex(
-      const exahype::Vertex&   fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
+    const exahype::Vertex&   fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "destroyVertex(...)", fineGridVertex );
+  // do nothing
 }
 
 
+
 void exahype::mappings::FaceDataExchange::createCell(
-      exahype::Cell&                 fineGridCell,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+    exahype::Cell&                 fineGridCell,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "createCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "createCell(...)", fineGridCell );
+  // do nothing
 }
 
 
 void exahype::mappings::FaceDataExchange::destroyCell(
-      const exahype::Cell&           fineGridCell,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+    const exahype::Cell&           fineGridCell,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "destroyCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "destroyCell(...)", fineGridCell );
+  // do nothing
 }
 
 #ifdef Parallel
 void exahype::mappings::FaceDataExchange::mergeWithNeighbour(
-  exahype::Vertex&  vertex,
-  const exahype::Vertex&  neighbour,
-  int                                           fromRank,
-  const tarch::la::Vector<DIMENSIONS,double>&   fineGridX,
-  const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
-  int                                           level
+    exahype::Vertex&  vertex,
+    const exahype::Vertex&  neighbour,
+    int                                           fromRank,
+    const tarch::la::Vector<DIMENSIONS,double>&   fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
+    int                                           level
 ) {
-  logTraceInWith6Arguments( "mergeWithNeighbour(...)", vertex, neighbour, fromRank, fineGridX, fineGridH, level );
-  // @todo Insert your code here
-  logTraceOut( "mergeWithNeighbour(...)" );
+  // do nothing
 }
 
 void exahype::mappings::FaceDataExchange::prepareSendToNeighbour(
-  exahype::Vertex&  vertex,
-      int                                           toRank,
-      const tarch::la::Vector<DIMENSIONS,double>&   x,
-      const tarch::la::Vector<DIMENSIONS,double>&   h,
-      int                                           level
+    exahype::Vertex&  vertex,
+    int                                           toRank,
+    const tarch::la::Vector<DIMENSIONS,double>&   x,
+    const tarch::la::Vector<DIMENSIONS,double>&   h,
+    int                                           level
 ) {
-  logTraceInWith3Arguments( "prepareSendToNeighbour(...)", vertex, toRank, level );
-  // @todo Insert your code here
-  logTraceOut( "prepareSendToNeighbour(...)" );
+  // do nothing
 }
 
 void exahype::mappings::FaceDataExchange::prepareCopyToRemoteNode(
-  exahype::Vertex&  localVertex,
-      int                                           toRank,
-      const tarch::la::Vector<DIMENSIONS,double>&   x,
-      const tarch::la::Vector<DIMENSIONS,double>&   h,
-      int                                           level
+    exahype::Vertex&  localVertex,
+    int                                           toRank,
+    const tarch::la::Vector<DIMENSIONS,double>&   x,
+    const tarch::la::Vector<DIMENSIONS,double>&   h,
+    int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localVertex, toRank, x, h, level );
-  // @todo Insert your code here
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
+  // do nothing
 }
 
 void exahype::mappings::FaceDataExchange::prepareCopyToRemoteNode(
-  exahype::Cell&  localCell,
-      int                                           toRank,
-      const tarch::la::Vector<DIMENSIONS,double>&   cellCentre,
-      const tarch::la::Vector<DIMENSIONS,double>&   cellSize,
-      int                                           level
+    exahype::Cell&  localCell,
+    int                                           toRank,
+    const tarch::la::Vector<DIMENSIONS,double>&   cellCentre,
+    const tarch::la::Vector<DIMENSIONS,double>&   cellSize,
+    int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localCell, toRank, cellCentre, cellSize, level );
-  // @todo Insert your code here
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
+  // do nothing
 }
 
 void exahype::mappings::FaceDataExchange::mergeWithRemoteDataDueToForkOrJoin(
-  exahype::Vertex&  localVertex,
-  const exahype::Vertex&  masterOrWorkerVertex,
-  int                                       fromRank,
-  const tarch::la::Vector<DIMENSIONS,double>&  x,
-  const tarch::la::Vector<DIMENSIONS,double>&  h,
-  int                                       level
+    exahype::Vertex&  localVertex,
+    const exahype::Vertex&  masterOrWorkerVertex,
+    int                                       fromRank,
+    const tarch::la::Vector<DIMENSIONS,double>&  x,
+    const tarch::la::Vector<DIMENSIONS,double>&  h,
+    int                                       level
 ) {
-  logTraceInWith6Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localVertex, masterOrWorkerVertex, fromRank, x, h, level );
-  // @todo Insert your code here
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
+  // do nothing
 }
 
 void exahype::mappings::FaceDataExchange::mergeWithRemoteDataDueToForkOrJoin(
-  exahype::Cell&  localCell,
-  const exahype::Cell&  masterOrWorkerCell,
-  int                                       fromRank,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
-  int                                       level
+    exahype::Cell&  localCell,
+    const exahype::Cell&  masterOrWorkerCell,
+    int                                       fromRank,
+    const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
+    const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
+    int                                       level
 ) {
-  logTraceInWith3Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localCell, masterOrWorkerCell, fromRank );
-  // @todo Insert your code here
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
+  // do nothing
 }
 
 bool exahype::mappings::FaceDataExchange::prepareSendToWorker(
-  exahype::Cell&                 fineGridCell,
-  exahype::Vertex * const        fineGridVertices,
-  const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-  exahype::Vertex * const        coarseGridVertices,
-  const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-  exahype::Cell&                 coarseGridCell,
-  const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
-  int                                                                  worker
+    exahype::Cell&                 fineGridCell,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
+    int                                                                  worker
 ) {
-  logTraceIn( "prepareSendToWorker(...)" );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "prepareSendToWorker(...)", true );
+  // do nothing
   return true;
 }
 
 void exahype::mappings::FaceDataExchange::prepareSendToMaster(
-  exahype::Cell&                       localCell,
-  exahype::Vertex *                    vertices,
-  const peano::grid::VertexEnumerator&       verticesEnumerator, 
-  const exahype::Vertex * const        coarseGridVertices,
-  const peano::grid::VertexEnumerator&       coarseGridVerticesEnumerator,
-  const exahype::Cell&                 coarseGridCell,
-  const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
+    exahype::Cell&                       localCell,
+    exahype::Vertex *                    vertices,
+    const peano::grid::VertexEnumerator&       verticesEnumerator,
+    const exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&       coarseGridVerticesEnumerator,
+    const exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
-  logTraceInWith2Arguments( "prepareSendToMaster(...)", localCell, verticesEnumerator.toString() );
-  // @todo Insert your code here
-  logTraceOut( "prepareSendToMaster(...)" );
+  // do nothing
 }
 
 
 void exahype::mappings::FaceDataExchange::mergeWithMaster(
-  const exahype::Cell&           workerGridCell,
-  exahype::Vertex * const        workerGridVertices,
- const peano::grid::VertexEnumerator& workerEnumerator,
-  exahype::Cell&                 fineGridCell,
-  exahype::Vertex * const        fineGridVertices,
-  const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-  exahype::Vertex * const        coarseGridVertices,
-  const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-  exahype::Cell&                 coarseGridCell,
-  const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
-  int                                                                  worker,
-  const exahype::State&          workerState,
-  exahype::State&                masterState
+    const exahype::Cell&           workerGridCell,
+    exahype::Vertex * const        workerGridVertices,
+    const peano::grid::VertexEnumerator& workerEnumerator,
+    exahype::Cell&                 fineGridCell,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
+    int                                                                  worker,
+    const exahype::State&          workerState,
+    exahype::State&                masterState
 ) {
-  logTraceIn( "mergeWithMaster(...)" );
-  // @todo Insert your code here
-  logTraceOut( "mergeWithMaster(...)" );
+  // do nothing
 }
 
 
 void exahype::mappings::FaceDataExchange::receiveDataFromMaster(
-      exahype::Cell&                        receivedCell, 
-      exahype::Vertex *                     receivedVertices,
-      const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
-      exahype::Vertex * const               receivedCoarseGridVertices,
-      const peano::grid::VertexEnumerator&        receivedCoarseGridVerticesEnumerator,
-      exahype::Cell&                        receivedCoarseGridCell,
-      exahype::Vertex * const               workersCoarseGridVertices,
-      const peano::grid::VertexEnumerator&        workersCoarseGridVerticesEnumerator,
-      exahype::Cell&                        workersCoarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
+    exahype::Cell&                        receivedCell,
+    exahype::Vertex *                     receivedVertices,
+    const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
+    exahype::Vertex * const               receivedCoarseGridVertices,
+    const peano::grid::VertexEnumerator&        receivedCoarseGridVerticesEnumerator,
+    exahype::Cell&                        receivedCoarseGridCell,
+    exahype::Vertex * const               workersCoarseGridVertices,
+    const peano::grid::VertexEnumerator&        workersCoarseGridVerticesEnumerator,
+    exahype::Cell&                        workersCoarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
-  logTraceIn( "receiveDataFromMaster(...)" );
-  // @todo Insert your code here
-  logTraceOut( "receiveDataFromMaster(...)" );
+  // do nothing
 }
 
 
 void exahype::mappings::FaceDataExchange::mergeWithWorker(
-  exahype::Cell&           localCell, 
-  const exahype::Cell&     receivedMasterCell,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
-  int                                          level
+    exahype::Cell&           localCell,
+    const exahype::Cell&     receivedMasterCell,
+    const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
+    const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
+    int                                          level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localCell.toString(), receivedMasterCell.toString() );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localCell.toString() );
+  // do nothing
 }
 
 
 void exahype::mappings::FaceDataExchange::mergeWithWorker(
-  exahype::Vertex&        localVertex,
-  const exahype::Vertex&  receivedMasterVertex,
-  const tarch::la::Vector<DIMENSIONS,double>&   x,
-  const tarch::la::Vector<DIMENSIONS,double>&   h,
-  int                                           level
+    exahype::Vertex&        localVertex,
+    const exahype::Vertex&  receivedMasterVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&   x,
+    const tarch::la::Vector<DIMENSIONS,double>&   h,
+    int                                           level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localVertex.toString(), receivedMasterVertex.toString() );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localVertex.toString() );
+  // do nothing
 }
 #endif
 
 void exahype::mappings::FaceDataExchange::touchVertexFirstTime(
-      exahype::Vertex&               fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
+    exahype::Vertex&               fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexFirstTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "touchVertexFirstTime(...)", fineGridVertex );
+  // do nothing
 }
 
 
 void exahype::mappings::FaceDataExchange::touchVertexLastTime(
-      exahype::Vertex&         fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
+    exahype::Vertex&         fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
+  // do nothing
 }
 
+void
+exahype::mappings::FaceDataExchange::setBoundaryGhostValues(
+    records::CellDescription& dataSelf,
+    const int patchIndexGhostSelf,
+    const int patchIndexRealSelf,
+    const int face,
+    const int numberOfDofOnFace
+) {
+  for (int dof=0; dof<numberOfDofOnFace; dof++) {
+    // copy extrapolated predictor
+    DataHeap::getInstance().getData(dataSelf.getExtrapolatedPredictor(patchIndexGhostSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u =
+        DataHeap::getInstance().getData(dataSelf.getExtrapolatedPredictor(patchIndexRealSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u;
+    // copy extrapolated fluctuation/normal flux
+    DataHeap::getInstance().getData(dataSelf.getFluctuation(patchIndexGhostSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u =
+        DataHeap::getInstance().getData(dataSelf.getFluctuation(patchIndexRealSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u;
+  }
+}
+
+void
+exahype::mappings::FaceDataExchange::copyGhostValues(
+    records::CellDescription& dataSelf,
+    const records::CellDescription& dataNeighbour,
+    const int patchIndexGhostSelf,
+    const int patchIndexNeighbour,
+    const int face,
+    const int numberOfDofOnFace
+) {
+  for (int dof=0; dof<numberOfDofOnFace; dof++) {
+
+    double * QSelfGhost     = &(DataHeap::getInstance().getData(dataSelf.getExtrapolatedPredictor(patchIndexGhostSelf))[0]._persistentRecords._u);
+    double * QRealNeighbour = &(DataHeap::getInstance().getData(dataNeighbour.getExtrapolatedPredictor(patchIndexNeighbour))[0]._persistentRecords._u);
+
+    // copy extrapolated predictor
+    DataHeap::getInstance().getData(dataSelf.getExtrapolatedPredictor(patchIndexGhostSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u =
+        DataHeap::getInstance().getData(dataNeighbour.getExtrapolatedPredictor(patchIndexNeighbour))[face*numberOfDofOnFace + dof]._persistentRecords._u;
+    // copy extrapolated fluctuation/normal flux
+    DataHeap::getInstance().getData(dataSelf.getFluctuation(patchIndexGhostSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u =
+        DataHeap::getInstance().getData(dataNeighbour.getFluctuation(patchIndexNeighbour))[face*numberOfDofOnFace + dof]._persistentRecords._u;
+  }
+}
+
+// Begin of code for ADERDG method
+void exahype::mappings::FaceDataExchange::initialiseGhostLayerOfPatches(
+    exahype::Cell& fineGridCell,
+    exahype::Vertex * const  fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator
+) {
+  int basisSize         = EXAHYPE_ORDER+1;
+  int numberOfDofOnFace = EXAHYPE_NVARS * tarch::la::aPowI(DIMENSIONS-1,basisSize);
+
+  records::CellDescription& cellDescriptionSelf =
+      CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
+
+  // Read in neighbour information
+  const tarch::la::Vector<THREE_POWER_D,int> cellDescriptionsOfAllNeighbours =
+      multiscalelinkedcell::getIndicesAroundCell(
+          exahype::VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator,fineGridVertices));
+
+  int indexGhostSelf = 0;
+  int indexRealSelf = 0;
+  int indexRealNeighbor  = 0;
+
+  for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) {
+    ///////////////////////////////////////
+    // FRONT
+    ///////////////////////////////////////
+    indexGhostSelf    = i + (EXAHYPE_PATCH_SIZE_X+2) * 0;
+    indexRealSelf     = i + (EXAHYPE_PATCH_SIZE_X+2) * 1;
+    indexRealNeighbor = i + (EXAHYPE_PATCH_SIZE_X+2) * EXAHYPE_PATCH_SIZE_Y;
+
+    if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_FRONT]==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
+      setBoundaryGhostValues(cellDescriptionSelf,indexGhostSelf,indexRealSelf,EXAHYPE_FACE_BACK,numberOfDofOnFace);
+    } else if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_FRONT] > multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
+      records::CellDescription& cellDescriptionNeighbourFront =
+          CellDescriptionHeap::getInstance().getData(cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_FRONT])[0];
+
+      copyGhostValues(cellDescriptionSelf,cellDescriptionNeighbourFront,indexGhostSelf,indexRealNeighbor,EXAHYPE_FACE_BACK,numberOfDofOnFace);
+    }
+    ///////////////////////////////////////
+    // BACK
+    ///////////////////////////////////////
+    indexGhostSelf    = i + (EXAHYPE_PATCH_SIZE_X+2) * (EXAHYPE_PATCH_SIZE_Y+1); // ghost
+    indexRealSelf     = i + (EXAHYPE_PATCH_SIZE_X+2) * (EXAHYPE_PATCH_SIZE_Y);   // non-ghost
+    indexRealNeighbor = i + (EXAHYPE_PATCH_SIZE_X+2) * 1;                        // non-ghost
+
+
+    if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_BACK]==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
+      setBoundaryGhostValues(cellDescriptionSelf,indexGhostSelf,indexRealSelf,EXAHYPE_FACE_FRONT,numberOfDofOnFace);
+    } else if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_BACK] > multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
+      records::CellDescription& cellDescriptionNeighbourBack =
+          CellDescriptionHeap::getInstance().getData(cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_BACK])[0];
+
+      copyGhostValues(cellDescriptionSelf,cellDescriptionNeighbourBack,indexGhostSelf,indexRealNeighbor,EXAHYPE_FACE_FRONT,numberOfDofOnFace);
+    }
+
+    for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
+      ///////////////////////////////////////
+      // LEFT
+      ///////////////////////////////////////
+      indexGhostSelf    = 0 +                    (EXAHYPE_PATCH_SIZE_X+2) * j; // ghost
+      indexRealSelf     = 1 +                    (EXAHYPE_PATCH_SIZE_X+2) * j; // non-ghost
+      indexRealNeighbor = EXAHYPE_PATCH_SIZE_X + (EXAHYPE_PATCH_SIZE_X+2) * j; // non-ghost
+
+
+      if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_LEFT]==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
+        setBoundaryGhostValues(cellDescriptionSelf,indexGhostSelf,indexRealSelf,EXAHYPE_FACE_RIGHT,numberOfDofOnFace);
+      } else if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_LEFT] > multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
+        records::CellDescription& cellDescriptionNeighbourLeft =
+            CellDescriptionHeap::getInstance().getData(cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_LEFT])[0];
+        copyGhostValues(cellDescriptionSelf,cellDescriptionNeighbourLeft,indexGhostSelf,indexRealNeighbor,EXAHYPE_FACE_RIGHT,numberOfDofOnFace);
+      }
+
+      ///////////////////////////////////////
+      // RIGHT
+      ///////////////////////////////////////
+      indexGhostSelf    = (EXAHYPE_PATCH_SIZE_X+1) + (EXAHYPE_PATCH_SIZE_X+2) * j; // ghost
+      indexRealSelf     = EXAHYPE_PATCH_SIZE_X     + (EXAHYPE_PATCH_SIZE_X+2) * j; // non-ghost
+      indexRealNeighbor = 1                        + (EXAHYPE_PATCH_SIZE_X+2) * j; // non-ghost
+
+
+      if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_RIGHT]==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
+        setBoundaryGhostValues(cellDescriptionSelf,indexGhostSelf,indexRealSelf,EXAHYPE_FACE_LEFT,numberOfDofOnFace);
+      } else if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_RIGHT] > multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
+        records::CellDescription& cellDescriptionNeighbourRight =
+            CellDescriptionHeap::getInstance().getData(cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_RIGHT])[0];
+        copyGhostValues(cellDescriptionSelf,cellDescriptionNeighbourRight,indexGhostSelf,indexRealNeighbor,EXAHYPE_FACE_LEFT,numberOfDofOnFace);
+      }
+    }
+  }
+}
 
 void exahype::mappings::FaceDataExchange::enterCell(
-      exahype::Cell&                 fineGridCell,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+    exahype::Cell&                 fineGridCell,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
+
+  if (!fineGridCell.isRefined()) {
+      initialiseGhostLayerOfPatches(fineGridCell,fineGridVertices,fineGridVerticesEnumerator);
+  }
+
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
 
 
 void exahype::mappings::FaceDataExchange::leaveCell(
-      exahype::Cell&           fineGridCell,
-      exahype::Vertex * const  fineGridVertices,
-      const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
+    exahype::Cell&           fineGridCell,
+    exahype::Vertex * const  fineGridVertices,
+    const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
+  // do nothing
 }
 
 
 void exahype::mappings::FaceDataExchange::beginIteration(
-  exahype::State&  solverState
+    exahype::State&  solverState
 ) {
-  logTraceInWith1Argument( "beginIteration(State)", solverState );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "beginIteration(State)", solverState);
+  // do nothing
 }
 
 
 void exahype::mappings::FaceDataExchange::endIteration(
-  exahype::State&  solverState
+    exahype::State&  solverState
 ) {
-  logTraceInWith1Argument( "endIteration(State)", solverState );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "endIteration(State)", solverState);
+  // do nothing
 }
 
 
 
 void exahype::mappings::FaceDataExchange::descend(
-  exahype::Cell * const          fineGridCells,
-  exahype::Vertex * const        fineGridVertices,
-  const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-  exahype::Vertex * const        coarseGridVertices,
-  const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-  exahype::Cell&                 coarseGridCell
+    exahype::Cell * const          fineGridCells,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell
 ) {
-  logTraceInWith2Arguments( "descend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
-  // @todo Insert your code here
-  logTraceOut( "descend(...)" );
+  // do nothing
 }
 
 
 void exahype::mappings::FaceDataExchange::ascend(
-  exahype::Cell * const    fineGridCells,
-  exahype::Vertex * const  fineGridVertices,
-  const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
-  exahype::Vertex * const  coarseGridVertices,
-  const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-  exahype::Cell&           coarseGridCell
+    exahype::Cell * const    fineGridCells,
+    exahype::Vertex * const  fineGridVertices,
+    const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell
 ) {
-  logTraceInWith2Arguments( "ascend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
-  // @todo Insert your code here
-  logTraceOut( "ascend(...)" );
+  // do nothing
 }
+// End of code for ADERDG method
+

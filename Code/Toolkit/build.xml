@@ -86,7 +86,7 @@
         -->
         
       	<!-- create jar file -->
-		<jar destfile="${dist.dir}/exahype.jar"
+		<jar destfile="${dist.dir}/ExaHyPE.jar"
           basedir="${bin.dir}"
 	      manifest="${basedir}/Manifest.txt"
         >

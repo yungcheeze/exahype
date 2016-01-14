@@ -18,9 +18,10 @@
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "exahype/Vertex.h"
-#include "exahype/Cell.h"
-#include "exahype/State.h"
+#include "EulerFlow/Vertex.h"
+#include "EulerFlow/Cell.h"
+#include "EulerFlow/State.h"
+
 
 
 namespace exahype {
@@ -1249,6 +1250,41 @@ class exahype::mappings::FaceDataExchange {
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
     );    
+
+    // Begin of code for ADERDG method
+
+    /**
+     * @brief Initializes the ghost layer of a patch.
+     */
+    void initialiseGhostLayerOfPatches(
+        exahype::Cell& fineGridCell,
+        exahype::Vertex * const  fineGridVertices,
+        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator
+    );
+
+    /**
+     * @brief Copies the boundary conditions to the respective ghost cell of the current patch.
+     */
+    void setBoundaryGhostValues(
+        records::CellDescription& dataSelf,
+        const int patchIndexGhostSelf,
+        const int patchIndexRealSelf,
+        const int face,
+        const int numberOfDofOnFace
+    );
+
+    /**
+     * @brief Copies the neighbour's face data to the respective ghost cell of the current patch.
+     */
+    void copyGhostValues(
+        records::CellDescription& dataSelf,
+        const records::CellDescription& dataNeighbour,
+        const int indexGhostSelf,
+        const int indexNeighbor,
+        const int face,
+        const int numberOfDofOnFace
+    );
+    // End of code for ADERDG method
 };
 
 

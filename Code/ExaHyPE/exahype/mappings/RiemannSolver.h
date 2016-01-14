@@ -18,9 +18,9 @@
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "exahype/Vertex.h"
-#include "exahype/Cell.h"
-#include "exahype/State.h"
+#include "EulerFlow/Vertex.h"
+#include "EulerFlow/Cell.h"
+#include "EulerFlow/State.h"
 
 
 namespace exahype {
@@ -43,6 +43,12 @@ class exahype::mappings::RiemannSolver {
      * Logging device for the trace macros.
      */
     static tarch::logging::Log  _log;
+
+    /**
+     * Local copy of the state.
+     */
+    exahype::State _localState;
+
   public:
     /**
      * These flags are used to inform Peano about your operation. It tells the 
@@ -1249,6 +1255,25 @@ class exahype::mappings::RiemannSolver {
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
     );    
+
+    // Begin of code for ADERDG scheme
+    void solveRiemannProblem(
+        double * FL,
+        double * FR,
+        const double * const QL,
+        const double * const QR,
+        const tarch::la::Vector<DIMENSIONS,double> center,
+        const double timeStep,
+        const double hFace,
+        const double * const nx,
+        const int nvar,
+        const int basisSize);
+
+    /**
+     * @brief Returns this mapping's local copy of the state.
+     */
+    const exahype::State& getState() const;
+    // End of code for ADERDG scheme
 };
 
 

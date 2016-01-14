@@ -424,7 +424,7 @@ void exahype::adapters::GridExport2VTKGridVisualiser_0::beginIteration(
 ) {
   assertion( _vtkWriter==0 );
   
-  _vtkWriter = new tarch::plotter::griddata::unstructured::vtk::VTKBinaryFileWriter();
+  _vtkWriter = new UsedWriter();
   
   _vertexWriter     = _vtkWriter->createVertexWriter();
   _cellWriter       = _vtkWriter->createCellWriter();

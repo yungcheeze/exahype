@@ -1,4 +1,4 @@
-#include "ExaHyPeDataStructure/multiscalelinkedcell/SAMRTools.h"
+#include "multiscalelinkedcell/SAMRTools.h"
 
 
 int multiscalelinkedcell::SAMRTools::getNumberOfCellsPerCellDescription(

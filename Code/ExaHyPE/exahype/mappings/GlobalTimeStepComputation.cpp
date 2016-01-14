@@ -1,5 +1,22 @@
-#include "exahype/mappings/GlobalTimeStepComputation.h"
+#include "EulerFlow/mappings/GlobalTimeStepComputation.h"
 
+#include "EulerFlow/Constants.h"
+
+#include "EulerFlow/quad/GaussLegendre.h"
+
+#include "EulerFlow/geometry/Mapping.h"
+
+#include "EulerFlow/problem/Problem.h"
+
+#include "EulerFlow/dg/Constants.h"
+
+#include "EulerFlow/dg/ADERDG.h"
+
+#include "EulerFlow/dg/DGMatrices.h"
+
+#include "stdlib.h"
+
+#include "string.h"
 
 
 /**
@@ -14,15 +31,15 @@ peano::CommunicationSpecification   exahype::mappings::GlobalTimeStepComputation
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
-peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::touchVertexFirstTimeSpecification() { 
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::touchVertexFirstTimeSpecification() {
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -30,7 +47,7 @@ peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::touc
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::OnlyLeaves,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -38,7 +55,7 @@ peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::ente
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::leaveCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
@@ -46,7 +63,7 @@ peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::leav
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::ascendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
@@ -54,421 +71,419 @@ peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::asce
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::descendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
-tarch::logging::Log                exahype::mappings::GlobalTimeStepComputation::_log( "exahype::mappings::GlobalTimeStepComputation" ); 
+tarch::logging::Log                exahype::mappings::GlobalTimeStepComputation::_log( "exahype::mappings::GlobalTimeStepComputation" );
 
 
-exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation() {
-  logTraceIn( "GlobalTimeStepComputation()" );
-  // @todo Insert your code here
-  logTraceOut( "GlobalTimeStepComputation()" );
+exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation()
+  :
+  _localState() // initialises the old and current time step size to max double value
+{
+  // do nothing
 }
 
 
 exahype::mappings::GlobalTimeStepComputation::~GlobalTimeStepComputation() {
-  logTraceIn( "~GlobalTimeStepComputation()" );
-  // @todo Insert your code here
-  logTraceOut( "~GlobalTimeStepComputation()" );
+  // do nothing
 }
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const GlobalTimeStepComputation&  masterThread) {
-  logTraceIn( "GlobalTimeStepComputation(GlobalTimeStepComputation)" );
-  // @todo Insert your code here
-  logTraceOut( "GlobalTimeStepComputation(GlobalTimeStepComputation)" );
+exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const GlobalTimeStepComputation&  masterThread)
+  :
+  _localState() // initialises the old and current time step size to max double value
+{
+  _localState.setTimeStepSizeToMaxValue();
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(const GlobalTimeStepComputation& workerThread) {
   logTraceIn( "mergeWithWorkerThread(GlobalTimeStepComputation)" );
-  // @todo Insert your code here
+
+  _localState.setMinimumTimeStepSizeOfBoth(workerThread.getState());
+
   logTraceOut( "mergeWithWorkerThread(GlobalTimeStepComputation)" );
 }
 #endif
 
 
 void exahype::mappings::GlobalTimeStepComputation::createHangingVertex(
-      exahype::Vertex&     fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                fineGridH,
-      exahype::Vertex * const   coarseGridVertices,
-      const peano::grid::VertexEnumerator&      coarseGridVerticesEnumerator,
-      exahype::Cell&       coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
+    exahype::Vertex&     fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                fineGridH,
+    exahype::Vertex * const   coarseGridVertices,
+    const peano::grid::VertexEnumerator&      coarseGridVerticesEnumerator,
+    exahype::Cell&       coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "createHangingVertex(...)", fineGridVertex );
+  // do nothing
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::destroyHangingVertex(
-      const exahype::Vertex&   fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
+    const exahype::Vertex&   fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "destroyHangingVertex(...)", fineGridVertex );
+  // do nothing
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::createInnerVertex(
-      exahype::Vertex&               fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
+    exahype::Vertex&               fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "createInnerVertex(...)", fineGridVertex );
+  // do nothing
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::createBoundaryVertex(
-      exahype::Vertex&               fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
+    exahype::Vertex&               fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "createBoundaryVertex(...)", fineGridVertex );
+  // do nothing
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::destroyVertex(
-      const exahype::Vertex&   fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
+    const exahype::Vertex&   fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "destroyVertex(...)", fineGridVertex );
+  // do nothing
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::createCell(
-      exahype::Cell&                 fineGridCell,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+    exahype::Cell&                 fineGridCell,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "createCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "createCell(...)", fineGridCell );
+  // do nothing
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::destroyCell(
-      const exahype::Cell&           fineGridCell,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+    const exahype::Cell&           fineGridCell,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "destroyCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "destroyCell(...)", fineGridCell );
+  // do nothing
 }
 
 #ifdef Parallel
 void exahype::mappings::GlobalTimeStepComputation::mergeWithNeighbour(
-  exahype::Vertex&  vertex,
-  const exahype::Vertex&  neighbour,
-  int                                           fromRank,
-  const tarch::la::Vector<DIMENSIONS,double>&   fineGridX,
-  const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
-  int                                           level
+    exahype::Vertex&  vertex,
+    const exahype::Vertex&  neighbour,
+    int                                           fromRank,
+    const tarch::la::Vector<DIMENSIONS,double>&   fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
+    int                                           level
 ) {
-  logTraceInWith6Arguments( "mergeWithNeighbour(...)", vertex, neighbour, fromRank, fineGridX, fineGridH, level );
-  // @todo Insert your code here
-  logTraceOut( "mergeWithNeighbour(...)" );
+  // do nothing
 }
 
 void exahype::mappings::GlobalTimeStepComputation::prepareSendToNeighbour(
-  exahype::Vertex&  vertex,
-      int                                           toRank,
-      const tarch::la::Vector<DIMENSIONS,double>&   x,
-      const tarch::la::Vector<DIMENSIONS,double>&   h,
-      int                                           level
+    exahype::Vertex&  vertex,
+    int                                           toRank,
+    const tarch::la::Vector<DIMENSIONS,double>&   x,
+    const tarch::la::Vector<DIMENSIONS,double>&   h,
+    int                                           level
 ) {
-  logTraceInWith3Arguments( "prepareSendToNeighbour(...)", vertex, toRank, level );
-  // @todo Insert your code here
-  logTraceOut( "prepareSendToNeighbour(...)" );
+  // do nothing
 }
 
 void exahype::mappings::GlobalTimeStepComputation::prepareCopyToRemoteNode(
-  exahype::Vertex&  localVertex,
-      int                                           toRank,
-      const tarch::la::Vector<DIMENSIONS,double>&   x,
-      const tarch::la::Vector<DIMENSIONS,double>&   h,
-      int                                           level
+    exahype::Vertex&  localVertex,
+    int                                           toRank,
+    const tarch::la::Vector<DIMENSIONS,double>&   x,
+    const tarch::la::Vector<DIMENSIONS,double>&   h,
+    int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localVertex, toRank, x, h, level );
-  // @todo Insert your code here
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
+  // do nothing
 }
 
 void exahype::mappings::GlobalTimeStepComputation::prepareCopyToRemoteNode(
-  exahype::Cell&  localCell,
-      int                                           toRank,
-      const tarch::la::Vector<DIMENSIONS,double>&   cellCentre,
-      const tarch::la::Vector<DIMENSIONS,double>&   cellSize,
-      int                                           level
+    exahype::Cell&  localCell,
+    int                                           toRank,
+    const tarch::la::Vector<DIMENSIONS,double>&   cellCentre,
+    const tarch::la::Vector<DIMENSIONS,double>&   cellSize,
+    int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localCell, toRank, cellCentre, cellSize, level );
-  // @todo Insert your code here
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
+  // do nothing
 }
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithRemoteDataDueToForkOrJoin(
-  exahype::Vertex&  localVertex,
-  const exahype::Vertex&  masterOrWorkerVertex,
-  int                                       fromRank,
-  const tarch::la::Vector<DIMENSIONS,double>&  x,
-  const tarch::la::Vector<DIMENSIONS,double>&  h,
-  int                                       level
+    exahype::Vertex&  localVertex,
+    const exahype::Vertex&  masterOrWorkerVertex,
+    int                                       fromRank,
+    const tarch::la::Vector<DIMENSIONS,double>&  x,
+    const tarch::la::Vector<DIMENSIONS,double>&  h,
+    int                                       level
 ) {
-  logTraceInWith6Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localVertex, masterOrWorkerVertex, fromRank, x, h, level );
-  // @todo Insert your code here
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
+  // do nothing
 }
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithRemoteDataDueToForkOrJoin(
-  exahype::Cell&  localCell,
-  const exahype::Cell&  masterOrWorkerCell,
-  int                                       fromRank,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
-  int                                       level
+    exahype::Cell&  localCell,
+    const exahype::Cell&  masterOrWorkerCell,
+    int                                       fromRank,
+    const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
+    const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
+    int                                       level
 ) {
-  logTraceInWith3Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localCell, masterOrWorkerCell, fromRank );
-  // @todo Insert your code here
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
+  // do nothing
 }
 
 bool exahype::mappings::GlobalTimeStepComputation::prepareSendToWorker(
-  exahype::Cell&                 fineGridCell,
-  exahype::Vertex * const        fineGridVertices,
-  const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-  exahype::Vertex * const        coarseGridVertices,
-  const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-  exahype::Cell&                 coarseGridCell,
-  const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
-  int                                                                  worker
+    exahype::Cell&                 fineGridCell,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
+    int                                                                  worker
 ) {
-  logTraceIn( "prepareSendToWorker(...)" );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "prepareSendToWorker(...)", true );
+  // do nothing
   return true;
 }
 
 void exahype::mappings::GlobalTimeStepComputation::prepareSendToMaster(
-  exahype::Cell&                       localCell,
-  exahype::Vertex *                    vertices,
-  const peano::grid::VertexEnumerator&       verticesEnumerator, 
-  const exahype::Vertex * const        coarseGridVertices,
-  const peano::grid::VertexEnumerator&       coarseGridVerticesEnumerator,
-  const exahype::Cell&                 coarseGridCell,
-  const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
+    exahype::Cell&                       localCell,
+    exahype::Vertex *                    vertices,
+    const peano::grid::VertexEnumerator&       verticesEnumerator,
+    const exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&       coarseGridVerticesEnumerator,
+    const exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
-  logTraceInWith2Arguments( "prepareSendToMaster(...)", localCell, verticesEnumerator.toString() );
-  // @todo Insert your code here
-  logTraceOut( "prepareSendToMaster(...)" );
+  // do nothing
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithMaster(
-  const exahype::Cell&           workerGridCell,
-  exahype::Vertex * const        workerGridVertices,
- const peano::grid::VertexEnumerator& workerEnumerator,
-  exahype::Cell&                 fineGridCell,
-  exahype::Vertex * const        fineGridVertices,
-  const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-  exahype::Vertex * const        coarseGridVertices,
-  const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-  exahype::Cell&                 coarseGridCell,
-  const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
-  int                                                                  worker,
-  const exahype::State&          workerState,
-  exahype::State&                masterState
+    const exahype::Cell&           workerGridCell,
+    exahype::Vertex * const        workerGridVertices,
+    const peano::grid::VertexEnumerator& workerEnumerator,
+    exahype::Cell&                 fineGridCell,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
+    int                                                                  worker,
+    const exahype::State&          workerState,
+    exahype::State&                masterState
 ) {
-  logTraceIn( "mergeWithMaster(...)" );
-  // @todo Insert your code here
-  logTraceOut( "mergeWithMaster(...)" );
+  // do nothing
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::receiveDataFromMaster(
-      exahype::Cell&                        receivedCell, 
-      exahype::Vertex *                     receivedVertices,
-      const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
-      exahype::Vertex * const               receivedCoarseGridVertices,
-      const peano::grid::VertexEnumerator&        receivedCoarseGridVerticesEnumerator,
-      exahype::Cell&                        receivedCoarseGridCell,
-      exahype::Vertex * const               workersCoarseGridVertices,
-      const peano::grid::VertexEnumerator&        workersCoarseGridVerticesEnumerator,
-      exahype::Cell&                        workersCoarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
+    exahype::Cell&                        receivedCell,
+    exahype::Vertex *                     receivedVertices,
+    const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
+    exahype::Vertex * const               receivedCoarseGridVertices,
+    const peano::grid::VertexEnumerator&        receivedCoarseGridVerticesEnumerator,
+    exahype::Cell&                        receivedCoarseGridCell,
+    exahype::Vertex * const               workersCoarseGridVertices,
+    const peano::grid::VertexEnumerator&        workersCoarseGridVerticesEnumerator,
+    exahype::Cell&                        workersCoarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
-  logTraceIn( "receiveDataFromMaster(...)" );
-  // @todo Insert your code here
-  logTraceOut( "receiveDataFromMaster(...)" );
+  // do nothing
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithWorker(
-  exahype::Cell&           localCell, 
-  const exahype::Cell&     receivedMasterCell,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
-  int                                          level
+    exahype::Cell&           localCell,
+    const exahype::Cell&     receivedMasterCell,
+    const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
+    const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
+    int                                          level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localCell.toString(), receivedMasterCell.toString() );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localCell.toString() );
+  // do nothing
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithWorker(
-  exahype::Vertex&        localVertex,
-  const exahype::Vertex&  receivedMasterVertex,
-  const tarch::la::Vector<DIMENSIONS,double>&   x,
-  const tarch::la::Vector<DIMENSIONS,double>&   h,
-  int                                           level
+    exahype::Vertex&        localVertex,
+    const exahype::Vertex&  receivedMasterVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&   x,
+    const tarch::la::Vector<DIMENSIONS,double>&   h,
+    int                                           level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localVertex.toString(), receivedMasterVertex.toString() );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localVertex.toString() );
+  // do nothing
 }
 #endif
 
 void exahype::mappings::GlobalTimeStepComputation::touchVertexFirstTime(
-      exahype::Vertex&               fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
+    exahype::Vertex&               fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexFirstTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "touchVertexFirstTime(...)", fineGridVertex );
+  // do nothing
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::touchVertexLastTime(
-      exahype::Vertex&         fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
+    exahype::Vertex&         fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
+  // do nothing
 }
 
-
 void exahype::mappings::GlobalTimeStepComputation::enterCell(
-      exahype::Cell&                 fineGridCell,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+    exahype::Cell&                 fineGridCell,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
+
+  // ! Begin of code for the DG method.
+  if (!fineGridCell.isRefined()) {
+    records::CellDescription& cellDescription =
+        CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
+
+    const double dx = fineGridVerticesEnumerator.getCellSize()(0);
+    const double dy = fineGridVerticesEnumerator.getCellSize()(1);
+
+    const double dxPatch[2] = { dx/ (double) EXAHYPE_PATCH_SIZE_X,
+                                dy/ (double) EXAHYPE_PATCH_SIZE_Y };
+
+    const int basisSize       = EXAHYPE_ORDER+1;
+    const int nvar            = EXAHYPE_NVARS;
+
+    for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
+      for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
+        const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
+
+        double* luh = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
+        double lambda[EXAHYPE_NVARS];
+
+        double admissiblePatchTimeStep = dg::stableTimeStepSize<DIMENSIONS>(
+            luh,
+            dxPatch,
+            lambda,
+            nvar,
+            basisSize);
+
+        _localState.setTimeStepSize(std::min(_localState.getTimeStepSize(),admissiblePatchTimeStep));
+      }
+    }
+  }
+
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::leaveCell(
-      exahype::Cell&           fineGridCell,
-      exahype::Vertex * const  fineGridVertices,
-      const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
+    exahype::Cell&           fineGridCell,
+    exahype::Vertex * const  fineGridVertices,
+    const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
+  // do nothing
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::beginIteration(
-  exahype::State&  solverState
+    exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
-  // @todo Insert your code here
+
+  // is done once per MPI rank
+  solverState.setOldTimeStepSize(solverState.getTimeStepSize());
+  solverState.setTimeStepSizeToMaxValue();
+
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::endIteration(
-  exahype::State&  solverState
+    exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "endIteration(State)", solverState );
-  // @todo Insert your code here
+
+  logInfo("endIteration(...)","local time step size: " << _localState.getTimeStepSize())
+
+  solverState.setMinimumTimeStepSizeOfBoth(_localState);
+
   logTraceOutWith1Argument( "endIteration(State)", solverState);
 }
 
 
 
 void exahype::mappings::GlobalTimeStepComputation::descend(
-  exahype::Cell * const          fineGridCells,
-  exahype::Vertex * const        fineGridVertices,
-  const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-  exahype::Vertex * const        coarseGridVertices,
-  const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-  exahype::Cell&                 coarseGridCell
+    exahype::Cell * const          fineGridCells,
+    exahype::Vertex * const        fineGridVertices,
+    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+    exahype::Vertex * const        coarseGridVertices,
+    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+    exahype::Cell&                 coarseGridCell
 ) {
-  logTraceInWith2Arguments( "descend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
-  // @todo Insert your code here
-  logTraceOut( "descend(...)" );
+  // do nothing
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::ascend(
-  exahype::Cell * const    fineGridCells,
-  exahype::Vertex * const  fineGridVertices,
-  const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
-  exahype::Vertex * const  coarseGridVertices,
-  const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-  exahype::Cell&           coarseGridCell
+    exahype::Cell * const    fineGridCells,
+    exahype::Vertex * const  fineGridVertices,
+    const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell
 ) {
-  logTraceInWith2Arguments( "ascend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
-  // @todo Insert your code here
-  logTraceOut( "ascend(...)" );
+  // do nothing
+}
+
+const exahype::State& exahype::mappings::GlobalTimeStepComputation::getState() const {
+  return _localState;
 }

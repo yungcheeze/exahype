@@ -13,4 +13,8 @@ exahype-project  TrivialProject
   exahype-path               = ./ExaHyPE
   
   output-directory           = ./Applications/trivialproject
+  
+  dimensions                 = 2
+  
+  
 end exahype-project  
