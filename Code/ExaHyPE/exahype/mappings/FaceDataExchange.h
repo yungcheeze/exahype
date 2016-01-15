@@ -18,9 +18,9 @@
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "EulerFlow/Vertex.h"
-#include "EulerFlow/Cell.h"
-#include "EulerFlow/State.h"
+#include "exahype/Vertex.h"
+#include "exahype/Cell.h"
+#include "exahype/State.h"
 
 
 
@@ -1266,7 +1266,7 @@ class exahype::mappings::FaceDataExchange {
      * @brief Copies the boundary conditions to the respective ghost cell of the current patch.
      */
     void setBoundaryGhostValues(
-        records::CellDescription& dataSelf,
+        records::ADERDGCellDescription& dataSelf,
         const int patchIndexGhostSelf,
         const int patchIndexRealSelf,
         const int face,
@@ -1277,8 +1277,8 @@ class exahype::mappings::FaceDataExchange {
      * @brief Copies the neighbour's face data to the respective ghost cell of the current patch.
      */
     void copyGhostValues(
-        records::CellDescription& dataSelf,
-        const records::CellDescription& dataNeighbour,
+        records::ADERDGCellDescription& dataSelf,
+        const records::ADERDGCellDescription& dataNeighbour,
         const int indexGhostSelf,
         const int indexNeighbor,
         const int face,

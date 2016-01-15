@@ -18,9 +18,11 @@
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "EulerFlow/Vertex.h"
-#include "EulerFlow/Cell.h"
-#include "EulerFlow/State.h"
+#include "exahype/records/ADERDGCellDescription.h"
+
+#include "exahype/Vertex.h"
+#include "exahype/Cell.h"
+#include "exahype/State.h"
 
 // ! Begin of code for multiscalelinkedcell toolbox
 #include "peano/heap/Heap.h"
@@ -31,7 +33,7 @@ namespace exahype {
     class PatchInitialisation;
   }
 
-  typedef peano::heap::PlainHeap< exahype::records::CellDescription > CellDescriptionHeap;
+  typedef peano::heap::PlainHeap< exahype::records::ADERDGCellDescription > ADERDGCellDescriptionHeap;
   typedef peano::heap::PlainDoubleHeap DataHeap;
 }
 

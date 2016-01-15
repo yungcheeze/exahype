@@ -1,4 +1,4 @@
-#include "EulerFlow/mappings/PatchInit.h"
+#include "exahype/mappings/PatchInit.h"
 
 
 

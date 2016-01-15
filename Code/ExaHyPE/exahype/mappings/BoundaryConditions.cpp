@@ -1,14 +1,13 @@
-#include "EulerFlow/mappings/BoundaryConditions.h"
+#include "exahype/mappings/BoundaryConditions.h"
 
-#include "EulerFlow/dg/Constants.h"
+#include "exahype/dg/Constants.h"
 
-#include "EulerFlow/geometry/Mapping.h"
-#include "EulerFlow/quad/GaussLegendre.h"
+#include "exahype/quad/GaussLegendre.h"
 
-#include "EulerFlow/multiscalelinkedcell/HangingVertexBookkeeper.h"
-#include "EulerFlow/VertexOperations.h"
+#include "exahype/multiscalelinkedcell/HangingVertexBookkeeper.h"
+#include "exahype/VertexOperations.h"
 
-#include "EulerFlow/problem/Problem.h"
+#include "exahype/problem/Problem.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -369,7 +368,7 @@ void exahype::mappings::BoundaryConditions::enterCell(
 //    tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>  cellDescriptionsOfNeighbors;
 //    const tarch::la::Vector<THREE_POWER_D,int> cellDescriptionsOfAllNeighbours =
 //        multiscalelinkedcell::getIndicesAroundCell(
-//            exahype::VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator,fineGridVertices));
+//            exahype::VertexOperations::readADERDGCellDescriptionsIndex(fineGridVerticesEnumerator,fineGridVertices));
 //
 //    // Store neighbour flux in LEFT (0,r=-1),RIGHT (1,r=+1),FRONT (2,s=-1),BACK (3,s=+1),BOTTOM (4,t=-1),TOP (5,t=+1)
 //    // manner, where r,s,t refer to the reference coordinates.
@@ -394,7 +393,7 @@ void exahype::mappings::BoundaryConditions::enterCell(
 //    double inflow  =0;
 //
 //    // read in cell solution and update
-//    records::CellDescription& cellDescription = fineGridCell.getCellDescription(0);
+//    records::ADERDGCellDescription& cellDescription = fineGridCell.getADERDGCellDescription(0);
 //
 //    double solution = DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u;
 //    double update   = DataHeap::getInstance().getData(cellDescription.getUpdate())[0]._persistentRecords._u;

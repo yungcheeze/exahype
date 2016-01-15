@@ -1,4 +1,4 @@
-#include "EulerFlow/mappings/PatchInitialisation.h"
+#include "exahype/mappings/PatchInitialisation.h"
 
 
 
@@ -362,7 +362,7 @@ void exahype::mappings::PatchInitialisation::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   // ! Begin of code for multiscalelinkedcell toolbox and DG method
-  if (!fineGridCell.isRefined()) {      // We only want to initialize CellDescriptions on the initial fine grid
+  if (!fineGridCell.isRefined()) {      // We only want to initialize ADERDGCellDescriptions on the initial fine grid
     fineGridCell.initCellInComputeTree(
           fineGridVerticesEnumerator.getLevel(),
           fineGridVerticesEnumerator.getCellSize(),
@@ -395,7 +395,7 @@ void exahype::mappings::PatchInitialisation::beginIteration(
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
   // ! Begin of code for multiscalelinkedcell toolbox.
-  CellDescriptionHeap::getInstance().setName("cell-description-heap");
+  ADERDGCellDescriptionHeap::getInstance().setName("cell-description-heap");
   DataHeap::getInstance().setName("data-heap");
   // ! End of code for multiscalelinkedcell toolbox.
 

@@ -19,11 +19,11 @@
 #include "peano/CommunicationSpecification.h"
 #include "peano/grid/VertexEnumerator.h"
 
-#include "EulerFlow/Vertex.h"
-#include "EulerFlow/Cell.h"
-#include "EulerFlow/State.h"
+#include "exahype/Vertex.h"
+#include "exahype/Cell.h"
+#include "exahype/State.h"
 
-#include "EulerFlow/Constants.h"
+#include "peano/utils/Globals.h"
 
 namespace exahype {
       namespace mappings {

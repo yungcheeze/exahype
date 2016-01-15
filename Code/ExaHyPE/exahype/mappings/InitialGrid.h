@@ -18,12 +18,12 @@
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "EulerFlow/Vertex.h"
-#include "EulerFlow/Cell.h"
-#include "EulerFlow/State.h"
+#include "exahype/Vertex.h"
+#include "exahype/Cell.h"
+#include "exahype/State.h"
 
 // ! Begin of code for DG method
-#include "EulerFlow/Constants.h"
+#include "peano/utils/Globals.h"
 // ! End of code for DG method
 
 namespace exahype {

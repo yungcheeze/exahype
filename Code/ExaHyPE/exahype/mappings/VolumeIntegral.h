@@ -18,12 +18,9 @@
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "EulerFlow/Vertex.h"
-#include "EulerFlow/Cell.h"
-#include "EulerFlow/State.h"
-
-#include "EulerFlow/geometry/Mapping.h"
-#include "EulerFlow/quad/GaussLegendre.h"
+#include "exahype/Vertex.h"
+#include "exahype/Cell.h"
+#include "exahype/State.h"
 
 namespace exahype {
       namespace mappings {

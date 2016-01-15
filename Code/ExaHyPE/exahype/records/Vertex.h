@@ -34,7 +34,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   14/01/2016 09:41
+    * @date   14/01/2016 17:34
     */
    class exahype::records::Vertex { 
       
@@ -52,9 +52,9 @@ namespace exahype {
          
          struct PersistentRecords {
             #ifdef UseManualAlignment
-            tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionsIndex __attribute__((aligned(VectorisationAlignment)));
+            tarch::la::Vector<TWO_POWER_D,int> _ADERDGCellDescriptionsIndex __attribute__((aligned(VectorisationAlignment)));
             #else
-            tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionsIndex;
+            tarch::la::Vector<TWO_POWER_D,int> _ADERDGCellDescriptionsIndex;
             #endif
             bool _isHangingNode;
             RefinementControl _refinementControl;
@@ -80,7 +80,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+            PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
             
             
             /**
@@ -102,12 +102,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+            inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _cellDescriptionsIndex;
+               return _ADERDGCellDescriptionsIndex;
             }
             
             
@@ -131,12 +131,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+            inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _cellDescriptionsIndex = (cellDescriptionsIndex);
+               _ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
             }
             
             
@@ -402,12 +402,12 @@ namespace exahype {
          /**
           * Generated
           */
-         Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+         Vertex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
          
          /**
           * Generated
           */
-         Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+         Vertex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
          
          /**
           * Generated
@@ -434,12 +434,12 @@ namespace exahype {
           * 
           * @see convert()
           */
-         inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+         inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _persistentRecords._cellDescriptionsIndex;
+            return _persistentRecords._ADERDGCellDescriptionsIndex;
          }
          
          
@@ -463,37 +463,37 @@ namespace exahype {
           * 
           * @see convert()
           */
-         inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+         inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _persistentRecords._cellDescriptionsIndex = (cellDescriptionsIndex);
+            _persistentRecords._ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
          }
          
          
          
-         inline int getCellDescriptionsIndex(int elementIndex) const 
+         inline int getADERDGCellDescriptionsIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
             assertion(elementIndex>=0);
             assertion(elementIndex<TWO_POWER_D);
-            return _persistentRecords._cellDescriptionsIndex[elementIndex];
+            return _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex];
             
          }
          
          
          
-         inline void setCellDescriptionsIndex(int elementIndex, const int& cellDescriptionsIndex) 
+         inline void setADERDGCellDescriptionsIndex(int elementIndex, const int& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
             assertion(elementIndex>=0);
             assertion(elementIndex<TWO_POWER_D);
-            _persistentRecords._cellDescriptionsIndex[elementIndex]= cellDescriptionsIndex;
+            _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex]= ADERDGCellDescriptionsIndex;
             
          }
          
@@ -923,7 +923,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   14/01/2016 09:41
+       * @date   14/01/2016 17:34
        */
       class exahype::records::VertexPacked { 
          
@@ -934,7 +934,7 @@ namespace exahype {
             typedef exahype::records::Vertex::RefinementControl RefinementControl;
             
             struct PersistentRecords {
-               tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionsIndex;
+               tarch::la::Vector<TWO_POWER_D,int> _ADERDGCellDescriptionsIndex;
                int _adjacentCellsHeight;
                tarch::la::Vector<DIMENSIONS,double> _x;
                int _level;
@@ -957,7 +957,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+               PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
                
                
                /**
@@ -979,12 +979,12 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+               inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _cellDescriptionsIndex;
+                  return _ADERDGCellDescriptionsIndex;
                }
                
                
@@ -1008,12 +1008,12 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+               inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _cellDescriptionsIndex = (cellDescriptionsIndex);
+                  _ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
                }
                
                
@@ -1299,12 +1299,12 @@ namespace exahype {
             /**
              * Generated
              */
-            VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+            VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
             
             /**
              * Generated
              */
-            VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+            VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
             
             /**
              * Generated
@@ -1331,12 +1331,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+            inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _persistentRecords._cellDescriptionsIndex;
+               return _persistentRecords._ADERDGCellDescriptionsIndex;
             }
             
             
@@ -1360,37 +1360,37 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+            inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _persistentRecords._cellDescriptionsIndex = (cellDescriptionsIndex);
+               _persistentRecords._ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
             }
             
             
             
-            inline int getCellDescriptionsIndex(int elementIndex) const 
+            inline int getADERDGCellDescriptionsIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                assertion(elementIndex>=0);
                assertion(elementIndex<TWO_POWER_D);
-               return _persistentRecords._cellDescriptionsIndex[elementIndex];
+               return _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex];
                
             }
             
             
             
-            inline void setCellDescriptionsIndex(int elementIndex, const int& cellDescriptionsIndex) 
+            inline void setADERDGCellDescriptionsIndex(int elementIndex, const int& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                assertion(elementIndex>=0);
                assertion(elementIndex<TWO_POWER_D);
-               _persistentRecords._cellDescriptionsIndex[elementIndex]= cellDescriptionsIndex;
+               _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex]= ADERDGCellDescriptionsIndex;
                
             }
             
@@ -1832,7 +1832,7 @@ namespace exahype {
          
          
          
-      #elif defined(Parallel) && !defined(Asserts)
+      #elif !defined(Parallel) && !defined(Asserts)
          /**
           * @author This class is generated by DaStGen
           * 		   DataStructureGenerator (DaStGen)
@@ -1841,7 +1841,7 @@ namespace exahype {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   14/01/2016 09:41
+          * @date   14/01/2016 17:34
           */
          class exahype::records::Vertex { 
             
@@ -1854,25 +1854,19 @@ namespace exahype {
                };
                
                enum RefinementControl {
-                  Unrefined = 0, Refined = 1, RefinementTriggered = 2, Refining = 3, EraseTriggered = 4, Erasing = 5, RefineDueToJoinThoughWorkerIsAlreadyErasing = 6, EnforceRefinementTriggered = 7
+                  Unrefined = 0, Refined = 1, RefinementTriggered = 2, Refining = 3, EraseTriggered = 4, Erasing = 5
                };
                
                struct PersistentRecords {
                   #ifdef UseManualAlignment
-                  tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionsIndex __attribute__((aligned(VectorisationAlignment)));
+                  tarch::la::Vector<TWO_POWER_D,int> _ADERDGCellDescriptionsIndex __attribute__((aligned(VectorisationAlignment)));
                   #else
-                  tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionsIndex;
+                  tarch::la::Vector<TWO_POWER_D,int> _ADERDGCellDescriptionsIndex;
                   #endif
                   bool _isHangingNode;
                   RefinementControl _refinementControl;
                   int _adjacentCellsHeight;
                   InsideOutsideDomain _insideOutsideDomain;
-                  #ifdef UseManualAlignment
-                  tarch::la::Vector<TWO_POWER_D,int> _adjacentRanks __attribute__((aligned(VectorisationAlignment)));
-                  #else
-                  tarch::la::Vector<TWO_POWER_D,int> _adjacentRanks;
-                  #endif
-                  bool _adjacentSubtreeForksIntoOtherRank;
                   /**
                    * Generated
                    */
@@ -1881,7 +1875,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+                  PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
                   
                   
                   /**
@@ -1903,12 +1897,12 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+                  inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _cellDescriptionsIndex;
+                     return _ADERDGCellDescriptionsIndex;
                   }
                   
                   
@@ -1932,12 +1926,12 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+                  inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _cellDescriptionsIndex = (cellDescriptionsIndex);
+                     _ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
                   }
                   
                   
@@ -2022,84 +2016,6 @@ namespace exahype {
                   
                   
                   
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline tarch::la::Vector<TWO_POWER_D,int> getAdjacentRanks() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _adjacentRanks;
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline void setAdjacentRanks(const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _adjacentRanks = (adjacentRanks);
-                  }
-                  
-                  
-                  
-                  inline bool getAdjacentSubtreeForksIntoOtherRank() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _adjacentSubtreeForksIntoOtherRank;
-                  }
-                  
-                  
-                  
-                  inline void setAdjacentSubtreeForksIntoOtherRank(const bool& adjacentSubtreeForksIntoOtherRank) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _adjacentSubtreeForksIntoOtherRank = adjacentSubtreeForksIntoOtherRank;
-                  }
-                  
-                  
-                  
                };
                
             private: 
@@ -2125,12 +2041,12 @@ namespace exahype {
                /**
                 * Generated
                 */
-               Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+               Vertex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
                
                /**
                 * Generated
                 */
-               Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+               Vertex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain);
                
                /**
                 * Generated
@@ -2157,12 +2073,12 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+               inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._cellDescriptionsIndex;
+                  return _persistentRecords._ADERDGCellDescriptionsIndex;
                }
                
                
@@ -2186,37 +2102,37 @@ namespace exahype {
                 * 
                 * @see convert()
                 */
-               inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+               inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._cellDescriptionsIndex = (cellDescriptionsIndex);
+                  _persistentRecords._ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
                }
                
                
                
-               inline int getCellDescriptionsIndex(int elementIndex) const 
+               inline int getADERDGCellDescriptionsIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                   assertion(elementIndex>=0);
                   assertion(elementIndex<TWO_POWER_D);
-                  return _persistentRecords._cellDescriptionsIndex[elementIndex];
+                  return _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex];
                   
                }
                
                
                
-               inline void setCellDescriptionsIndex(int elementIndex, const int& cellDescriptionsIndex) 
+               inline void setADERDGCellDescriptionsIndex(int elementIndex, const int& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                   assertion(elementIndex>=0);
                   assertion(elementIndex<TWO_POWER_D);
-                  _persistentRecords._cellDescriptionsIndex[elementIndex]= cellDescriptionsIndex;
+                  _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex]= ADERDGCellDescriptionsIndex;
                   
                }
                
@@ -2341,110 +2257,6 @@ namespace exahype {
                }
                
                
-               
-               /**
-                * Generated and optimized
-                * 
-                * If you realise a for loop using exclusively arrays (vectors) and compile 
-                * with -DUseManualAlignment you may add 
-                * \code
-                #pragma vector aligned
-                #pragma simd
-                \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                * 
-                * The alignment is tied to the unpacked records, i.e. for packed class
-                * variants the machine's natural alignment is switched off to recude the  
-                * memory footprint. Do not use any SSE/AVX operations or 
-                * vectorisation on the result for the packed variants, as the data is misaligned. 
-                * If you rely on vectorisation, convert the underlying record 
-                * into the unpacked version first. 
-                * 
-                * @see convert()
-                */
-               inline tarch::la::Vector<TWO_POWER_D,int> getAdjacentRanks() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._adjacentRanks;
-               }
-               
-               
-               
-               /**
-                * Generated and optimized
-                * 
-                * If you realise a for loop using exclusively arrays (vectors) and compile 
-                * with -DUseManualAlignment you may add 
-                * \code
-                #pragma vector aligned
-                #pragma simd
-                \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                * 
-                * The alignment is tied to the unpacked records, i.e. for packed class
-                * variants the machine's natural alignment is switched off to recude the  
-                * memory footprint. Do not use any SSE/AVX operations or 
-                * vectorisation on the result for the packed variants, as the data is misaligned. 
-                * If you rely on vectorisation, convert the underlying record 
-                * into the unpacked version first. 
-                * 
-                * @see convert()
-                */
-               inline void setAdjacentRanks(const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._adjacentRanks = (adjacentRanks);
-               }
-               
-               
-               
-               inline int getAdjacentRanks(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  assertion(elementIndex>=0);
-                  assertion(elementIndex<TWO_POWER_D);
-                  return _persistentRecords._adjacentRanks[elementIndex];
-                  
-               }
-               
-               
-               
-               inline void setAdjacentRanks(int elementIndex, const int& adjacentRanks) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  assertion(elementIndex>=0);
-                  assertion(elementIndex<TWO_POWER_D);
-                  _persistentRecords._adjacentRanks[elementIndex]= adjacentRanks;
-                  
-               }
-               
-               
-               
-               inline bool getAdjacentSubtreeForksIntoOtherRank() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._adjacentSubtreeForksIntoOtherRank;
-               }
-               
-               
-               
-               inline void setAdjacentSubtreeForksIntoOtherRank(const bool& adjacentSubtreeForksIntoOtherRank) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._adjacentSubtreeForksIntoOtherRank = adjacentSubtreeForksIntoOtherRank;
-               }
-               
-               
                /**
                 * Generated
                 */
@@ -2542,7 +2354,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   14/01/2016 09:41
+             * @date   14/01/2016 17:34
              */
             class exahype::records::VertexPacked { 
                
@@ -2553,16 +2365,14 @@ namespace exahype {
                   typedef exahype::records::Vertex::RefinementControl RefinementControl;
                   
                   struct PersistentRecords {
-                     tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionsIndex;
+                     tarch::la::Vector<TWO_POWER_D,int> _ADERDGCellDescriptionsIndex;
                      int _adjacentCellsHeight;
-                     tarch::la::Vector<TWO_POWER_D,int> _adjacentRanks;
                      
                      /** mapping of records:
                      || Member 	|| startbit 	|| length
                       |  isHangingNode	| startbit 0	| #bits 1
                       |  refinementControl	| startbit 1	| #bits 3
                       |  insideOutsideDomain	| startbit 4	| #bits 2
-                      |  adjacentSubtreeForksIntoOtherRank	| startbit 6	| #bits 1
                       */
                      int _packedRecords0;
                      
@@ -2574,7 +2384,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+                     PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
                      
                      
                      /**
@@ -2596,12 +2406,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+                     inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _cellDescriptionsIndex;
+                        return _ADERDGCellDescriptionsIndex;
                      }
                      
                      
@@ -2625,12 +2435,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+                     inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _cellDescriptionsIndex = (cellDescriptionsIndex);
+                        _ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
                      }
                      
                      
@@ -2667,7 +2477,7 @@ namespace exahype {
    mask = static_cast<int>(mask << (1));
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (1));
-   assertion(( tmp >= 0 &&  tmp <= 7));
+   assertion(( tmp >= 0 &&  tmp <= 5));
    return (RefinementControl) tmp;
                      }
                      
@@ -2678,7 +2488,7 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                        assertion((refinementControl >= 0 && refinementControl <= 7));
+                        assertion((refinementControl >= 0 && refinementControl <= 5));
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (1));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
@@ -2736,87 +2546,6 @@ namespace exahype {
                      
                      
                      
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline tarch::la::Vector<TWO_POWER_D,int> getAdjacentRanks() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _adjacentRanks;
-                     }
-                     
-                     
-                     
-                     /**
-                      * Generated and optimized
-                      * 
-                      * If you realise a for loop using exclusively arrays (vectors) and compile 
-                      * with -DUseManualAlignment you may add 
-                      * \code
-                      #pragma vector aligned
-                      #pragma simd
-                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                      * 
-                      * The alignment is tied to the unpacked records, i.e. for packed class
-                      * variants the machine's natural alignment is switched off to recude the  
-                      * memory footprint. Do not use any SSE/AVX operations or 
-                      * vectorisation on the result for the packed variants, as the data is misaligned. 
-                      * If you rely on vectorisation, convert the underlying record 
-                      * into the unpacked version first. 
-                      * 
-                      * @see convert()
-                      */
-                     inline void setAdjacentRanks(const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _adjacentRanks = (adjacentRanks);
-                     }
-                     
-                     
-                     
-                     inline bool getAdjacentSubtreeForksIntoOtherRank() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        int mask = 1 << (6);
-   int tmp = static_cast<int>(_packedRecords0 & mask);
-   return (tmp != 0);
-                     }
-                     
-                     
-                     
-                     inline void setAdjacentSubtreeForksIntoOtherRank(const bool& adjacentSubtreeForksIntoOtherRank) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        int mask = 1 << (6);
-   _packedRecords0 = static_cast<int>( adjacentSubtreeForksIntoOtherRank ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
-                     }
-                     
-                     
-                     
                   };
                   
                private: 
@@ -2838,12 +2567,12 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+                  VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
                   
                   /**
                    * Generated
                    */
-                  VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
+                  VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain);
                   
                   /**
                    * Generated
@@ -2870,12 +2599,12 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+                  inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._cellDescriptionsIndex;
+                     return _persistentRecords._ADERDGCellDescriptionsIndex;
                   }
                   
                   
@@ -2899,37 +2628,37 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+                  inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._cellDescriptionsIndex = (cellDescriptionsIndex);
+                     _persistentRecords._ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
                   }
                   
                   
                   
-                  inline int getCellDescriptionsIndex(int elementIndex) const 
+                  inline int getADERDGCellDescriptionsIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<TWO_POWER_D);
-                     return _persistentRecords._cellDescriptionsIndex[elementIndex];
+                     return _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex];
                      
                   }
                   
                   
                   
-                  inline void setCellDescriptionsIndex(int elementIndex, const int& cellDescriptionsIndex) 
+                  inline void setADERDGCellDescriptionsIndex(int elementIndex, const int& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<TWO_POWER_D);
-                     _persistentRecords._cellDescriptionsIndex[elementIndex]= cellDescriptionsIndex;
+                     _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex]= ADERDGCellDescriptionsIndex;
                      
                   }
                   
@@ -2967,7 +2696,7 @@ namespace exahype {
    mask = static_cast<int>(mask << (1));
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (1));
-   assertion(( tmp >= 0 &&  tmp <= 7));
+   assertion(( tmp >= 0 &&  tmp <= 5));
    return (RefinementControl) tmp;
                   }
                   
@@ -2978,7 +2707,7 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                     assertion((refinementControl >= 0 && refinementControl <= 7));
+                     assertion((refinementControl >= 0 && refinementControl <= 5));
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (1));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
@@ -3075,113 +2804,6 @@ namespace exahype {
                   }
                   
                   
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline tarch::la::Vector<TWO_POWER_D,int> getAdjacentRanks() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._adjacentRanks;
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline void setAdjacentRanks(const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._adjacentRanks = (adjacentRanks);
-                  }
-                  
-                  
-                  
-                  inline int getAdjacentRanks(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     assertion(elementIndex>=0);
-                     assertion(elementIndex<TWO_POWER_D);
-                     return _persistentRecords._adjacentRanks[elementIndex];
-                     
-                  }
-                  
-                  
-                  
-                  inline void setAdjacentRanks(int elementIndex, const int& adjacentRanks) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     assertion(elementIndex>=0);
-                     assertion(elementIndex<TWO_POWER_D);
-                     _persistentRecords._adjacentRanks[elementIndex]= adjacentRanks;
-                     
-                  }
-                  
-                  
-                  
-                  inline bool getAdjacentSubtreeForksIntoOtherRank() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     int mask = 1 << (6);
-   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
-   return (tmp != 0);
-                  }
-                  
-                  
-                  
-                  inline void setAdjacentSubtreeForksIntoOtherRank(const bool& adjacentSubtreeForksIntoOtherRank) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     int mask = 1 << (6);
-   _persistentRecords._packedRecords0 = static_cast<int>( adjacentSubtreeForksIntoOtherRank ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
-                  }
-                  
-                  
                   /**
                    * Generated
                    */
@@ -3268,7 +2890,7 @@ namespace exahype {
                
                
             
-         #elif defined(Asserts) && !defined(Parallel)
+         #elif !defined(Parallel) && defined(Asserts)
             /**
              * @author This class is generated by DaStGen
              * 		   DataStructureGenerator (DaStGen)
@@ -3277,7 +2899,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   14/01/2016 09:41
+             * @date   14/01/2016 17:34
              */
             class exahype::records::Vertex { 
                
@@ -3295,9 +2917,9 @@ namespace exahype {
                   
                   struct PersistentRecords {
                      #ifdef UseManualAlignment
-                     tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionsIndex __attribute__((aligned(VectorisationAlignment)));
+                     tarch::la::Vector<TWO_POWER_D,int> _ADERDGCellDescriptionsIndex __attribute__((aligned(VectorisationAlignment)));
                      #else
-                     tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionsIndex;
+                     tarch::la::Vector<TWO_POWER_D,int> _ADERDGCellDescriptionsIndex;
                      #endif
                      bool _isHangingNode;
                      RefinementControl _refinementControl;
@@ -3317,7 +2939,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
+                     PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
                      
                      
                      /**
@@ -3339,12 +2961,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+                     inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _cellDescriptionsIndex;
+                        return _ADERDGCellDescriptionsIndex;
                      }
                      
                      
@@ -3368,12 +2990,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+                     inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _cellDescriptionsIndex = (cellDescriptionsIndex);
+                        _ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
                      }
                      
                      
@@ -3561,12 +3183,12 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
+                  Vertex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
                   
                   /**
                    * Generated
                    */
-                  Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
+                  Vertex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
                   
                   /**
                    * Generated
@@ -3593,12 +3215,12 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+                  inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._cellDescriptionsIndex;
+                     return _persistentRecords._ADERDGCellDescriptionsIndex;
                   }
                   
                   
@@ -3622,37 +3244,37 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+                  inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._cellDescriptionsIndex = (cellDescriptionsIndex);
+                     _persistentRecords._ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
                   }
                   
                   
                   
-                  inline int getCellDescriptionsIndex(int elementIndex) const 
+                  inline int getADERDGCellDescriptionsIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<TWO_POWER_D);
-                     return _persistentRecords._cellDescriptionsIndex[elementIndex];
+                     return _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex];
                      
                   }
                   
                   
                   
-                  inline void setCellDescriptionsIndex(int elementIndex, const int& cellDescriptionsIndex) 
+                  inline void setADERDGCellDescriptionsIndex(int elementIndex, const int& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<TWO_POWER_D);
-                     _persistentRecords._cellDescriptionsIndex[elementIndex]= cellDescriptionsIndex;
+                     _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex]= ADERDGCellDescriptionsIndex;
                      
                   }
                   
@@ -3978,7 +3600,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   14/01/2016 09:41
+                * @date   14/01/2016 17:34
                 */
                class exahype::records::VertexPacked { 
                   
@@ -3989,7 +3611,7 @@ namespace exahype {
                      typedef exahype::records::Vertex::RefinementControl RefinementControl;
                      
                      struct PersistentRecords {
-                        tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionsIndex;
+                        tarch::la::Vector<TWO_POWER_D,int> _ADERDGCellDescriptionsIndex;
                         int _adjacentCellsHeight;
                         tarch::la::Vector<DIMENSIONS,double> _x;
                         int _level;
@@ -4010,7 +3632,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
+                        PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
                         
                         
                         /**
@@ -4032,12 +3654,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+                        inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _cellDescriptionsIndex;
+                           return _ADERDGCellDescriptionsIndex;
                         }
                         
                         
@@ -4061,12 +3683,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+                        inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           _cellDescriptionsIndex = (cellDescriptionsIndex);
+                           _ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
                         }
                         
                         
@@ -4271,12 +3893,12 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
+                     VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
                      
                      /**
                       * Generated
                       */
-                     VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
+                     VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<DIMENSIONS,double>& x, const int& level);
                      
                      /**
                       * Generated
@@ -4303,12 +3925,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+                     inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _persistentRecords._cellDescriptionsIndex;
+                        return _persistentRecords._ADERDGCellDescriptionsIndex;
                      }
                      
                      
@@ -4332,37 +3954,37 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+                     inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _persistentRecords._cellDescriptionsIndex = (cellDescriptionsIndex);
+                        _persistentRecords._ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
                      }
                      
                      
                      
-                     inline int getCellDescriptionsIndex(int elementIndex) const 
+                     inline int getADERDGCellDescriptionsIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                         assertion(elementIndex>=0);
                         assertion(elementIndex<TWO_POWER_D);
-                        return _persistentRecords._cellDescriptionsIndex[elementIndex];
+                        return _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex];
                         
                      }
                      
                      
                      
-                     inline void setCellDescriptionsIndex(int elementIndex, const int& cellDescriptionsIndex) 
+                     inline void setADERDGCellDescriptionsIndex(int elementIndex, const int& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                         assertion(elementIndex>=0);
                         assertion(elementIndex<TWO_POWER_D);
-                        _persistentRecords._cellDescriptionsIndex[elementIndex]= cellDescriptionsIndex;
+                        _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex]= ADERDGCellDescriptionsIndex;
                         
                      }
                      
@@ -4698,7 +4320,7 @@ namespace exahype {
                   
                   
                
-            #elif !defined(Parallel) && !defined(Asserts)
+            #elif defined(Parallel) && !defined(Asserts)
                /**
                 * @author This class is generated by DaStGen
                 * 		   DataStructureGenerator (DaStGen)
@@ -4707,7 +4329,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   14/01/2016 09:41
+                * @date   14/01/2016 17:34
                 */
                class exahype::records::Vertex { 
                   
@@ -4720,19 +4342,25 @@ namespace exahype {
                      };
                      
                      enum RefinementControl {
-                        Unrefined = 0, Refined = 1, RefinementTriggered = 2, Refining = 3, EraseTriggered = 4, Erasing = 5
+                        Unrefined = 0, Refined = 1, RefinementTriggered = 2, Refining = 3, EraseTriggered = 4, Erasing = 5, RefineDueToJoinThoughWorkerIsAlreadyErasing = 6, EnforceRefinementTriggered = 7
                      };
                      
                      struct PersistentRecords {
                         #ifdef UseManualAlignment
-                        tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionsIndex __attribute__((aligned(VectorisationAlignment)));
+                        tarch::la::Vector<TWO_POWER_D,int> _ADERDGCellDescriptionsIndex __attribute__((aligned(VectorisationAlignment)));
                         #else
-                        tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionsIndex;
+                        tarch::la::Vector<TWO_POWER_D,int> _ADERDGCellDescriptionsIndex;
                         #endif
                         bool _isHangingNode;
                         RefinementControl _refinementControl;
                         int _adjacentCellsHeight;
                         InsideOutsideDomain _insideOutsideDomain;
+                        #ifdef UseManualAlignment
+                        tarch::la::Vector<TWO_POWER_D,int> _adjacentRanks __attribute__((aligned(VectorisationAlignment)));
+                        #else
+                        tarch::la::Vector<TWO_POWER_D,int> _adjacentRanks;
+                        #endif
+                        bool _adjacentSubtreeForksIntoOtherRank;
                         /**
                          * Generated
                          */
@@ -4741,7 +4369,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
+                        PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
                         
                         
                         /**
@@ -4763,12 +4391,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+                        inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _cellDescriptionsIndex;
+                           return _ADERDGCellDescriptionsIndex;
                         }
                         
                         
@@ -4792,12 +4420,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+                        inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           _cellDescriptionsIndex = (cellDescriptionsIndex);
+                           _ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
                         }
                         
                         
@@ -4882,6 +4510,84 @@ namespace exahype {
                         
                         
                         
+                        /**
+                         * Generated and optimized
+                         * 
+                         * If you realise a for loop using exclusively arrays (vectors) and compile 
+                         * with -DUseManualAlignment you may add 
+                         * \code
+                         #pragma vector aligned
+                         #pragma simd
+                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                         * 
+                         * The alignment is tied to the unpacked records, i.e. for packed class
+                         * variants the machine's natural alignment is switched off to recude the  
+                         * memory footprint. Do not use any SSE/AVX operations or 
+                         * vectorisation on the result for the packed variants, as the data is misaligned. 
+                         * If you rely on vectorisation, convert the underlying record 
+                         * into the unpacked version first. 
+                         * 
+                         * @see convert()
+                         */
+                        inline tarch::la::Vector<TWO_POWER_D,int> getAdjacentRanks() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _adjacentRanks;
+                        }
+                        
+                        
+                        
+                        /**
+                         * Generated and optimized
+                         * 
+                         * If you realise a for loop using exclusively arrays (vectors) and compile 
+                         * with -DUseManualAlignment you may add 
+                         * \code
+                         #pragma vector aligned
+                         #pragma simd
+                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                         * 
+                         * The alignment is tied to the unpacked records, i.e. for packed class
+                         * variants the machine's natural alignment is switched off to recude the  
+                         * memory footprint. Do not use any SSE/AVX operations or 
+                         * vectorisation on the result for the packed variants, as the data is misaligned. 
+                         * If you rely on vectorisation, convert the underlying record 
+                         * into the unpacked version first. 
+                         * 
+                         * @see convert()
+                         */
+                        inline void setAdjacentRanks(const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _adjacentRanks = (adjacentRanks);
+                        }
+                        
+                        
+                        
+                        inline bool getAdjacentSubtreeForksIntoOtherRank() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _adjacentSubtreeForksIntoOtherRank;
+                        }
+                        
+                        
+                        
+                        inline void setAdjacentSubtreeForksIntoOtherRank(const bool& adjacentSubtreeForksIntoOtherRank) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _adjacentSubtreeForksIntoOtherRank = adjacentSubtreeForksIntoOtherRank;
+                        }
+                        
+                        
+                        
                      };
                      
                   private: 
@@ -4907,12 +4613,12 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
+                     Vertex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
                      
                      /**
                       * Generated
                       */
-                     Vertex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain);
+                     Vertex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
                      
                      /**
                       * Generated
@@ -4939,12 +4645,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+                     inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _persistentRecords._cellDescriptionsIndex;
+                        return _persistentRecords._ADERDGCellDescriptionsIndex;
                      }
                      
                      
@@ -4968,37 +4674,37 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+                     inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _persistentRecords._cellDescriptionsIndex = (cellDescriptionsIndex);
+                        _persistentRecords._ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
                      }
                      
                      
                      
-                     inline int getCellDescriptionsIndex(int elementIndex) const 
+                     inline int getADERDGCellDescriptionsIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                         assertion(elementIndex>=0);
                         assertion(elementIndex<TWO_POWER_D);
-                        return _persistentRecords._cellDescriptionsIndex[elementIndex];
+                        return _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex];
                         
                      }
                      
                      
                      
-                     inline void setCellDescriptionsIndex(int elementIndex, const int& cellDescriptionsIndex) 
+                     inline void setADERDGCellDescriptionsIndex(int elementIndex, const int& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                         assertion(elementIndex>=0);
                         assertion(elementIndex<TWO_POWER_D);
-                        _persistentRecords._cellDescriptionsIndex[elementIndex]= cellDescriptionsIndex;
+                        _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex]= ADERDGCellDescriptionsIndex;
                         
                      }
                      
@@ -5123,6 +4829,110 @@ namespace exahype {
                      }
                      
                      
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline tarch::la::Vector<TWO_POWER_D,int> getAdjacentRanks() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _persistentRecords._adjacentRanks;
+                     }
+                     
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline void setAdjacentRanks(const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _persistentRecords._adjacentRanks = (adjacentRanks);
+                     }
+                     
+                     
+                     
+                     inline int getAdjacentRanks(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        assertion(elementIndex>=0);
+                        assertion(elementIndex<TWO_POWER_D);
+                        return _persistentRecords._adjacentRanks[elementIndex];
+                        
+                     }
+                     
+                     
+                     
+                     inline void setAdjacentRanks(int elementIndex, const int& adjacentRanks) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        assertion(elementIndex>=0);
+                        assertion(elementIndex<TWO_POWER_D);
+                        _persistentRecords._adjacentRanks[elementIndex]= adjacentRanks;
+                        
+                     }
+                     
+                     
+                     
+                     inline bool getAdjacentSubtreeForksIntoOtherRank() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _persistentRecords._adjacentSubtreeForksIntoOtherRank;
+                     }
+                     
+                     
+                     
+                     inline void setAdjacentSubtreeForksIntoOtherRank(const bool& adjacentSubtreeForksIntoOtherRank) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _persistentRecords._adjacentSubtreeForksIntoOtherRank = adjacentSubtreeForksIntoOtherRank;
+                     }
+                     
+                     
                      /**
                       * Generated
                       */
@@ -5220,7 +5030,7 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   14/01/2016 09:41
+                   * @date   14/01/2016 17:34
                    */
                   class exahype::records::VertexPacked { 
                      
@@ -5231,14 +5041,16 @@ namespace exahype {
                         typedef exahype::records::Vertex::RefinementControl RefinementControl;
                         
                         struct PersistentRecords {
-                           tarch::la::Vector<TWO_POWER_D,int> _cellDescriptionsIndex;
+                           tarch::la::Vector<TWO_POWER_D,int> _ADERDGCellDescriptionsIndex;
                            int _adjacentCellsHeight;
+                           tarch::la::Vector<TWO_POWER_D,int> _adjacentRanks;
                            
                            /** mapping of records:
                            || Member 	|| startbit 	|| length
                             |  isHangingNode	| startbit 0	| #bits 1
                             |  refinementControl	| startbit 1	| #bits 3
                             |  insideOutsideDomain	| startbit 4	| #bits 2
+                            |  adjacentSubtreeForksIntoOtherRank	| startbit 6	| #bits 1
                             */
                            int _packedRecords0;
                            
@@ -5250,7 +5062,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
+                           PersistentRecords(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
                            
                            
                            /**
@@ -5272,12 +5084,12 @@ namespace exahype {
                             * 
                             * @see convert()
                             */
-                           inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+                           inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              return _cellDescriptionsIndex;
+                              return _ADERDGCellDescriptionsIndex;
                            }
                            
                            
@@ -5301,12 +5113,12 @@ namespace exahype {
                             * 
                             * @see convert()
                             */
-                           inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+                           inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                              _cellDescriptionsIndex = (cellDescriptionsIndex);
+                              _ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
                            }
                            
                            
@@ -5343,7 +5155,7 @@ namespace exahype {
    mask = static_cast<int>(mask << (1));
    int tmp = static_cast<int>(_packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (1));
-   assertion(( tmp >= 0 &&  tmp <= 5));
+   assertion(( tmp >= 0 &&  tmp <= 7));
    return (RefinementControl) tmp;
                            }
                            
@@ -5354,7 +5166,7 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                              assertion((refinementControl >= 0 && refinementControl <= 5));
+                              assertion((refinementControl >= 0 && refinementControl <= 7));
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (1));
    _packedRecords0 = static_cast<int>(_packedRecords0 & ~mask);
@@ -5412,6 +5224,87 @@ namespace exahype {
                            
                            
                            
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline tarch::la::Vector<TWO_POWER_D,int> getAdjacentRanks() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _adjacentRanks;
+                           }
+                           
+                           
+                           
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline void setAdjacentRanks(const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _adjacentRanks = (adjacentRanks);
+                           }
+                           
+                           
+                           
+                           inline bool getAdjacentSubtreeForksIntoOtherRank() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              int mask = 1 << (6);
+   int tmp = static_cast<int>(_packedRecords0 & mask);
+   return (tmp != 0);
+                           }
+                           
+                           
+                           
+                           inline void setAdjacentSubtreeForksIntoOtherRank(const bool& adjacentSubtreeForksIntoOtherRank) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              int mask = 1 << (6);
+   _packedRecords0 = static_cast<int>( adjacentSubtreeForksIntoOtherRank ? (_packedRecords0 | mask) : (_packedRecords0 & ~mask));
+                           }
+                           
+                           
+                           
                         };
                         
                      private: 
@@ -5433,12 +5326,12 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain);
+                        VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
                         
                         /**
                          * Generated
                          */
-                        VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain);
+                        VertexPacked(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex, const bool& isHangingNode, const RefinementControl& refinementControl, const int& adjacentCellsHeight, const int& adjacentCellsHeightOfPreviousIteration, const int& numberOfAdjacentRefinedCells, const InsideOutsideDomain& insideOutsideDomain, const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks, const bool& adjacentSubtreeForksIntoOtherRank);
                         
                         /**
                          * Generated
@@ -5465,12 +5358,12 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline tarch::la::Vector<TWO_POWER_D,int> getCellDescriptionsIndex() const 
+                        inline tarch::la::Vector<TWO_POWER_D,int> getADERDGCellDescriptionsIndex() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           return _persistentRecords._cellDescriptionsIndex;
+                           return _persistentRecords._ADERDGCellDescriptionsIndex;
                         }
                         
                         
@@ -5494,37 +5387,37 @@ namespace exahype {
                          * 
                          * @see convert()
                          */
-                        inline void setCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& cellDescriptionsIndex) 
+                        inline void setADERDGCellDescriptionsIndex(const tarch::la::Vector<TWO_POWER_D,int>& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                           _persistentRecords._cellDescriptionsIndex = (cellDescriptionsIndex);
+                           _persistentRecords._ADERDGCellDescriptionsIndex = (ADERDGCellDescriptionsIndex);
                         }
                         
                         
                         
-                        inline int getCellDescriptionsIndex(int elementIndex) const 
+                        inline int getADERDGCellDescriptionsIndex(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                            assertion(elementIndex>=0);
                            assertion(elementIndex<TWO_POWER_D);
-                           return _persistentRecords._cellDescriptionsIndex[elementIndex];
+                           return _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex];
                            
                         }
                         
                         
                         
-                        inline void setCellDescriptionsIndex(int elementIndex, const int& cellDescriptionsIndex) 
+                        inline void setADERDGCellDescriptionsIndex(int elementIndex, const int& ADERDGCellDescriptionsIndex) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                            assertion(elementIndex>=0);
                            assertion(elementIndex<TWO_POWER_D);
-                           _persistentRecords._cellDescriptionsIndex[elementIndex]= cellDescriptionsIndex;
+                           _persistentRecords._ADERDGCellDescriptionsIndex[elementIndex]= ADERDGCellDescriptionsIndex;
                            
                         }
                         
@@ -5562,7 +5455,7 @@ namespace exahype {
    mask = static_cast<int>(mask << (1));
    int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
    tmp = static_cast<int>(tmp >> (1));
-   assertion(( tmp >= 0 &&  tmp <= 5));
+   assertion(( tmp >= 0 &&  tmp <= 7));
    return (RefinementControl) tmp;
                         }
                         
@@ -5573,7 +5466,7 @@ namespace exahype {
  __attribute__((always_inline))
  #endif 
  {
-                           assertion((refinementControl >= 0 && refinementControl <= 5));
+                           assertion((refinementControl >= 0 && refinementControl <= 7));
    int mask =  (1 << (3)) - 1;
    mask = static_cast<int>(mask << (1));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
@@ -5667,6 +5560,113 @@ namespace exahype {
    mask = static_cast<int>(mask << (4));
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 & ~mask);
    _persistentRecords._packedRecords0 = static_cast<int>(_persistentRecords._packedRecords0 | static_cast<int>(insideOutsideDomain) << (4));
+                        }
+                        
+                        
+                        
+                        /**
+                         * Generated and optimized
+                         * 
+                         * If you realise a for loop using exclusively arrays (vectors) and compile 
+                         * with -DUseManualAlignment you may add 
+                         * \code
+                         #pragma vector aligned
+                         #pragma simd
+                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                         * 
+                         * The alignment is tied to the unpacked records, i.e. for packed class
+                         * variants the machine's natural alignment is switched off to recude the  
+                         * memory footprint. Do not use any SSE/AVX operations or 
+                         * vectorisation on the result for the packed variants, as the data is misaligned. 
+                         * If you rely on vectorisation, convert the underlying record 
+                         * into the unpacked version first. 
+                         * 
+                         * @see convert()
+                         */
+                        inline tarch::la::Vector<TWO_POWER_D,int> getAdjacentRanks() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _persistentRecords._adjacentRanks;
+                        }
+                        
+                        
+                        
+                        /**
+                         * Generated and optimized
+                         * 
+                         * If you realise a for loop using exclusively arrays (vectors) and compile 
+                         * with -DUseManualAlignment you may add 
+                         * \code
+                         #pragma vector aligned
+                         #pragma simd
+                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                         * 
+                         * The alignment is tied to the unpacked records, i.e. for packed class
+                         * variants the machine's natural alignment is switched off to recude the  
+                         * memory footprint. Do not use any SSE/AVX operations or 
+                         * vectorisation on the result for the packed variants, as the data is misaligned. 
+                         * If you rely on vectorisation, convert the underlying record 
+                         * into the unpacked version first. 
+                         * 
+                         * @see convert()
+                         */
+                        inline void setAdjacentRanks(const tarch::la::Vector<TWO_POWER_D,int>& adjacentRanks) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _persistentRecords._adjacentRanks = (adjacentRanks);
+                        }
+                        
+                        
+                        
+                        inline int getAdjacentRanks(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           assertion(elementIndex>=0);
+                           assertion(elementIndex<TWO_POWER_D);
+                           return _persistentRecords._adjacentRanks[elementIndex];
+                           
+                        }
+                        
+                        
+                        
+                        inline void setAdjacentRanks(int elementIndex, const int& adjacentRanks) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           assertion(elementIndex>=0);
+                           assertion(elementIndex<TWO_POWER_D);
+                           _persistentRecords._adjacentRanks[elementIndex]= adjacentRanks;
+                           
+                        }
+                        
+                        
+                        
+                        inline bool getAdjacentSubtreeForksIntoOtherRank() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           int mask = 1 << (6);
+   int tmp = static_cast<int>(_persistentRecords._packedRecords0 & mask);
+   return (tmp != 0);
+                        }
+                        
+                        
+                        
+                        inline void setAdjacentSubtreeForksIntoOtherRank(const bool& adjacentSubtreeForksIntoOtherRank) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           int mask = 1 << (6);
+   _persistentRecords._packedRecords0 = static_cast<int>( adjacentSubtreeForksIntoOtherRank ? (_persistentRecords._packedRecords0 | mask) : (_persistentRecords._packedRecords0 & ~mask));
                         }
                         
                         

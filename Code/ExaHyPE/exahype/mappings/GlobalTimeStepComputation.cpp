@@ -1,18 +1,14 @@
-#include "EulerFlow/mappings/GlobalTimeStepComputation.h"
+#include "exahype/mappings/GlobalTimeStepComputation.h"
 
-#include "EulerFlow/Constants.h"
+#include "peano/utils/Globals.h"
 
-#include "EulerFlow/quad/GaussLegendre.h"
+#include "exahype/quad/GaussLegendre.h"
 
-#include "EulerFlow/geometry/Mapping.h"
+#include "exahype/problem/Problem.h"
 
-#include "EulerFlow/problem/Problem.h"
+#include "exahype/dg/Constants.h"
 
-#include "EulerFlow/dg/Constants.h"
-
-#include "EulerFlow/dg/ADERDG.h"
-
-#include "EulerFlow/dg/DGMatrices.h"
+#include "exahype/aderdg/ADERDG.h"
 
 #include "stdlib.h"
 
@@ -386,36 +382,31 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
 
   // ! Begin of code for the DG method.
   if (!fineGridCell.isRefined()) {
-    records::CellDescription& cellDescription =
-        CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
+    records::ADERDGCellDescription& cellDescription =
+        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-    const double dx = fineGridVerticesEnumerator.getCellSize()(0);
-    const double dy = fineGridVerticesEnumerator.getCellSize()(1);
+    const double* dx = { fineGridVerticesEnumerator.getCellSize()(0), fineGridVerticesEnumerator.getCellSize()(1) }
 
-    const double dxPatch[2] = { dx/ (double) EXAHYPE_PATCH_SIZE_X,
-                                dy/ (double) EXAHYPE_PATCH_SIZE_Y };
+
 
     const int basisSize       = EXAHYPE_ORDER+1;
     const int nvar            = EXAHYPE_NVARS;
+    const int numberOfDof     = nvar * tarch::la::aPowI(DIMENSIONS,basisSize);
+    const int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
-    for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
-      for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
-        const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
+    double* luh = &(DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u);
+    double lambda[EXAHYPE_NVARS];
 
-        double* luh = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
-        double lambda[EXAHYPE_NVARS];
+    double admissiblePatchTimeStep = dg::stableTimeStepSize<DIMENSIONS>(
+        luh,
+        dx,
+        lambda,
+        nvar,
+        basisSize);
 
-        double admissiblePatchTimeStep = dg::stableTimeStepSize<DIMENSIONS>(
-            luh,
-            dxPatch,
-            lambda,
-            nvar,
-            basisSize);
-
-        _localState.setTimeStepSize(std::min(_localState.getTimeStepSize(),admissiblePatchTimeStep));
-      }
-    }
+    _localState.setTimeStepSize(std::min(_localState.getTimeStepSize(),admissiblePatchTimeStep));
   }
+
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
