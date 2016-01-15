@@ -63,8 +63,6 @@ namespace exahype {
     void surfaceIntegral(
         double * lduh,
         const double * const dx,
-        const int nvar,
-        const int basisSize,
         const double * const FLeft,
         const double * const FRight,
         const double * const FFront,
@@ -79,8 +77,6 @@ namespace exahype {
     void surfaceIntegral(
         double * lduh,
         const double * const dx,
-        const int nvar,
-        const int basisSize,
         const double * const FLeft,
         const double * const FRight,
         const double * const FFront,
