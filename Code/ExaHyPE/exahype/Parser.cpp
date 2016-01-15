@@ -1,4 +1,5 @@
 #include "exahype/Parser.h"
+#include "tarch/Assertions.h"
 
 #include <fstream>
 
@@ -46,7 +47,7 @@ void exahype::Parser::readFile( const std::string& filename ) {
         currentlyReadsComment = true;
       }
       else if (!currentlyReadsComment) {
-        logInfo( "readFile(String)", "got token " << newToken );
+        logDebug( "readFile(String)", "got token " << newToken );
         _tokenStream.push_back( newToken );
       }
       token = strtok(0, DELIMITER); // subsequent tokens
@@ -56,83 +57,51 @@ void exahype::Parser::readFile( const std::string& filename ) {
 
 }
 
+
 bool exahype::Parser::isValid() const {
   return  !_tokenStream.empty();
 }
 
 
-
-/*
-string name,age,salary,hoursWorked,randomText;
-
-while(getline(readFile,line))   {
-    stringstream iss(line);
-    getline(iss, name, ':');
-    getline(iss, age, '-');
-    getline(iss, salary, ',');
-    getline(iss, hoursWorked, '[');
-    getline(iss, randomText, ']');
-}
-readFile.close();
-
-
-a
-
-
-
-
-using std::cout;
-using std::endl;
-
-#include <fstream>
-using std::ifstream;
-
-#include <cstring>
-*/
-/*
-
-const int MAX_CHARS_PER_LINE = 512;
-const int MAX_TOKENS_PER_LINE = 20;
-const char* const DELIMITER = " ";
-
-int main()
-{
-  // create a file-reading object
-  ifstream fin;
-  fin.open("data.txt"); // open a file
-  if (!fin.good())
-    return 1; // exit if file not found
-
-  // read each line of the file
-  while (!fin.eof())
-  {
-    // read an entire line into memory
-    char buf[MAX_CHARS_PER_LINE];
-    fin.getline(buf, MAX_CHARS_PER_LINE);
-
-    // parse the line into blank-delimited tokens
-    int n = 0; // a for-loop index
-
-    // array to store memory addresses of the tokens in buf
-    const char* token;
-
-    // parse the line
-    token = strtok(buf, DELIMITER); // first token
-    if (token) // zero if line is blank
-    {
-      for (n = 1; n < MAX_TOKENS_PER_LINE; n++)
-      {
-        token[n] = strtok(0, DELIMITER); // subsequent tokens
-        if (!token[n]) break; // no more tokens
-      }
-    }
-
-    // process (print) the tokens
-    for (int i = 0; i < n; i++) // n = #of tokens
-      cout << "Token[" << i << "] = " << token[i] << endl;
-    cout << endl;
+std::string exahype::Parser::getTokenAfter( std::string token ) const {
+  assertion( isValid() );
+  int currentToken = 0;
+  while (_tokenStream[currentToken]!=token && currentToken<static_cast<int>(_tokenStream.size())) {
+    currentToken++;
   }
+  currentToken++;
+  if ( currentToken<static_cast<int>(_tokenStream.size())) {
+    return _tokenStream[currentToken];
+  }
+  else return "notoken";
 }
 
 
-*/
+std::string exahype::Parser::getTokenAfter( std::string token0, std::string token1 ) const {
+  assertion( isValid() );
+  int currentToken = 0;
+  while (_tokenStream[currentToken]!=token0 && currentToken<static_cast<int>(_tokenStream.size())) {
+    currentToken++;
+  }
+  while (_tokenStream[currentToken]!=token1 && currentToken<static_cast<int>(_tokenStream.size())) {
+    currentToken++;
+  }
+  currentToken++;
+  if ( currentToken<static_cast<int>(_tokenStream.size())) {
+    return _tokenStream[currentToken];
+  }
+  else return "notoken";
+}
+
+
+int exahype::Parser::getNumberOfThreads() {
+  assertion( isValid() );
+  std::string token = getTokenAfter("shared-memory","cores");
+  logInfo( "getNumberOfThreads()", "found token " << token );
+  int result = atoi( token.c_str() );
+  if (result==0) {
+    logInfo( "getNumberOfThreads()", "Invalid number of cores set: " << token << ". Use one core, i.e. switch off multithreading" );
+    result = 1;
+  }
+  return result;
+}

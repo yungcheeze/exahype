@@ -5,17 +5,12 @@
 
 #include "peano/peano.h"
 
-#include "exahype/runners/Runner.h"
+//#include "exahype/runners/Runner.h"
 
 #include "tarch/multicore/Core.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
 
 #include "exahype/Parser.h"
-
-
-
-// @todo raus
-#include "exahype/Constants.h"
 
 
 
@@ -69,8 +64,8 @@ int main(int argc, char** argv) {
   // ====================================================
   //
   #ifdef SharedMemoryParallelisation
-  const int numberOfCores = 2;
-  tarch::multicore::Core::getInstance().configure(numberOfCores);
+  const int numberOfThreads = parser.getNumberOfThreads();
+  tarch::multicore::Core::getInstance().configure(numberOfThreads);
   #endif
 
   //
@@ -100,8 +95,11 @@ int main(int argc, char** argv) {
   //   Run code
   // ============
   //
+/*
   exahype::runners::Runner runner;
   int programExitCode = runner.run();
+*/
+  int programExitCode = 0;
   
   if (programExitCode==0) {
     #ifdef Parallel

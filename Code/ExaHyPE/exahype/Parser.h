@@ -20,10 +20,21 @@ class exahype::Parser {
     static tarch::logging::Log _log;
 
     std::vector< std::string > _tokenStream;
+
+    /**
+     * @return "notoken" if not found.
+     */
+    std::string getTokenAfter( std::string token ) const;
+    std::string getTokenAfter( std::string token0, std::string token1 ) const;
   public:
     void readFile( const std::string& filename );
 
     bool isValid() const;
+
+    /**
+     * @return How many threads is the code supposed to use?
+     */
+    int getNumberOfThreads();
 };
 
 #endif
