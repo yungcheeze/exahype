@@ -380,13 +380,6 @@ void exahype::mappings::SolutionUpdate::enterCell(
     records::CellDescription& cellDescription =
         CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
 
-    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-    const double                               dx     = fineGridVerticesEnumerator.getCellSize()(0);
-    const double                               dy     = fineGridVerticesEnumerator.getCellSize()(1);
-
-    const double dxPatch[2] = { dx/ (double) EXAHYPE_PATCH_SIZE_X,
-                                dy/ (double) EXAHYPE_PATCH_SIZE_Y };
-
     for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
       for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
         const int patchIndex      = i     + (EXAHYPE_PATCH_SIZE_X+2) * j;
@@ -399,7 +392,6 @@ void exahype::mappings::SolutionUpdate::enterCell(
         dg::updateSolution<DIMENSIONS>(
             luhOld,
             lduh,
-            dxPatch,
             _localState.getOldTimeStepSize());
       }
     }

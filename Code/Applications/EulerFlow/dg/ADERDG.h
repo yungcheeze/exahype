@@ -29,13 +29,15 @@ namespace exahype {
     );
 
     /**
-     * @todo docu
+     * @brief Adds the delta to the solution and thereby finalises the updates of the cell
+     * @param[in,out] luh    the current solution that is to be updated
+     * @param[in]     lduh   the update quantities that are incorporated into \p luh
+     * @param[in]     dt     the time step
      */
     template <int dim>
     void updateSolution(
         double * luh,
         const double * const lduh,
-        const double * const dx,
         const double dt
     );
 
@@ -144,7 +146,6 @@ namespace exahype {
     void updateSolution<2>(
         double * luh,
         const double * const lduh,
-        const double * const dx,
         const double dt
     );
 
@@ -200,7 +201,6 @@ namespace exahype {
     void updateSolution<3>(
         double * luh,
         const double * const lduh,
-        const double * const dx,
         const double dt
     );
 
