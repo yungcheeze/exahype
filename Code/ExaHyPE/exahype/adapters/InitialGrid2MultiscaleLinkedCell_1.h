@@ -26,7 +26,7 @@ namespace exahype {
 /**
  * This is an adapter providing a multiscale linked-cell data structure
  *
- * CellDescriptionsIndex   Name of the index used for the cell indices within the vertex and 
+ * ADERDGCellDescriptionsIndex   Name of the index used for the cell indices within the vertex and 
  *          the cell
  *
  * @author Tobias Weinzierl

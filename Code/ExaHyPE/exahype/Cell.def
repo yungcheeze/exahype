@@ -1,5 +1,5 @@
 Packed-Type: int;
 
 class exahype::dastgen::Cell {  
-  parallelise persistent int cellDescriptionsIndex; //!< We specify a cellDescription for each PDE that should run on the grid.
+  parallelise persistent int ADERDGCellDescriptionsIndex; //!< We specify a ADERDGCellDescription for each PDE that should run on the grid.
 };

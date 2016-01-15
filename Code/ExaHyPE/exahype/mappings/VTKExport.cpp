@@ -1,14 +1,14 @@
-#include "EulerFlow/mappings/VTKExport.h"
+#include "exahype/mappings/VTKExport.h"
 
-#include "EulerFlow/Constants.h"
+#include "peano/utils/Globals.h"
 
-#include "EulerFlow/quad/GaussLegendre.h"
+#include "exahype/quad/GaussLegendre.h"
 
-#include "EulerFlow/geometry/Mapping.h"
+#include "exahype/geometry/Mapping.h"
 
-#include "EulerFlow/problem/Problem.h"
+#include "exahype/problem/Problem.h"
 
-#include "EulerFlow/dg/DGMatrices.h"
+#include "exahype/dg/DGMatrices.h"
 
 #include "string.h"
 
@@ -392,15 +392,15 @@ void exahype::mappings::VTKExport::enterCell(
 #endif
       assertion( DIMENSIONS==2);
 
-      records::CellDescription& cellDescription =
-          CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
+      records::ADERDGCellDescription& cellDescription =
+          ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
       const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
       const double dx = fineGridVerticesEnumerator.getCellSize()(0);
       const double dy = fineGridVerticesEnumerator.getCellSize()(1);
 
-      const double dxPatch = dx/EXAHYPE_PATCH_SIZE_X;
-      const double dyPatch = dy/EXAHYPE_PATCH_SIZE_Y;
+      const double dxPatch = dx;
+      const double dyPatch = dy;
 
       const int basisSize = EXAHYPE_ORDER+1;
       const int nvar      = EXAHYPE_NVARS;
@@ -439,11 +439,6 @@ void exahype::mappings::VTKExport::enterCell(
       }
 
       // END: move into static fields todo
-
-      for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
-        for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
-          const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
-
           // Map Gauss-Legendre nodes to equidistant subgrid coordinates
 //          std::memset((double *) &subData[0],0,sizeof(double) * EXAHYPE_NVARS * EXAHYPE_NBASIS_POWER_DIMENSIONS);
           for (int ii=0; ii<basisSize; ii++) { // mem zero
@@ -500,8 +495,6 @@ void exahype::mappings::VTKExport::enterCell(
               }
             }
           }
-        }
-      }
     }
     logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
   }

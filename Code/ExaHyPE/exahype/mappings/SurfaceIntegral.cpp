@@ -1,16 +1,14 @@
-#include "EulerFlow/mappings/SurfaceIntegral.h"
+#include "exahype/mappings/SurfaceIntegral.h"
 
-#include "EulerFlow/Constants.h"
+#include "peano/utils/Globals.h"
 
-#include "EulerFlow/quad/GaussLegendre.h"
+#include "exahype/quad/GaussLegendre.h"
 
-#include "EulerFlow/geometry/Mapping.h"
+#include "exahype/problem/Problem.h"
 
-#include "EulerFlow/problem/Problem.h"
-
-#include "EulerFlow/dg/Constants.h"
-#include "EulerFlow/dg/ADERDG.h"
-#include "EulerFlow/dg/DGMatrices.h"
+#include "exahype/dg/Constants.h"
+#include "exahype/aderdg/ADERDG.h"
+#include "exahype/dg/DGMatrices.h"
 
 #include "stdlib.h"
 #include "string.h"
@@ -373,8 +371,8 @@ void exahype::mappings::SurfaceIntegral::enterCell(
 
   // ! Begin of code for the DG method.
   if (!fineGridCell.isRefined()) {
-    records::CellDescription& cellDescription =
-        CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
+    records::ADERDGCellDescription& cellDescription =
+        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
     const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
     const double dx = fineGridVerticesEnumerator.getCellSize()(0);

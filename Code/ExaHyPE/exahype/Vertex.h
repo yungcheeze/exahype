@@ -63,6 +63,12 @@ class exahype::Vertex: public peano::grid::Vertex< exahype::records::Vertex > {
      * type standard constructor.
      */
     Vertex(const Base::PersistentVertex& argument);
+
+
+    /**
+     * Return the cell descriptions indices of the adjacent cells.
+     */
+    tarch::la::Vector<TWO_POWER_D,int>& getADERDGCellDescriptionsIndex();
 };
 
 

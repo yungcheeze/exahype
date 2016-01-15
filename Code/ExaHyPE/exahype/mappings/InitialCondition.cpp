@@ -1,14 +1,13 @@
-#include "EulerFlow/mappings/InitialCondition.h"
+#include "exahype/mappings/InitialCondition.h"
 
 #include "string.h"
 
-#include "EulerFlow/Constants.h"
+#include "peano/utils/Globals.h"
+#include "exahype/Constants.h"
 
-#include "EulerFlow/quad/GaussLegendre.h"
+#include "exahype/quad/GaussLegendre.h"
 
-#include "EulerFlow/geometry/Mapping.h"
-
-#include "EulerFlow/problem/Problem.h"
+#include "exahype/problem/Problem.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -367,15 +366,12 @@ void exahype::mappings::InitialCondition::enterCell(
 
   // ! Begin of code for the DG method.
   if (!fineGridCell.isRefined()) {
-    records::CellDescription& cellDescription =
-             CellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
+    records::ADERDGCellDescription& cellDescription =
+             ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
     const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
     const double dx = fineGridVerticesEnumerator.getCellSize()(0);
     const double dy = fineGridVerticesEnumerator.getCellSize()(1);
-
-    const double dxPatch = dx/ (double) EXAHYPE_PATCH_SIZE_X;
-    const double dyPatch = dy/ (double) EXAHYPE_PATCH_SIZE_Y;
 
     const int basisSize       = EXAHYPE_ORDER+1;
     const int nvar            = EXAHYPE_NVARS;
@@ -383,49 +379,42 @@ void exahype::mappings::InitialCondition::enterCell(
     const int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
     // helper variables
-    double x,y;
+    double  x,y;
     double* value = (double*) std::malloc(nvar * sizeof(double));
 
-    for (int i=0; i<EXAHYPE_PATCH_SIZE_X+2; i++) { // loop over patches
-      for (int j=0; j<EXAHYPE_PATCH_SIZE_Y+2; j++) {
-        const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
+    // zero face data (needed in Riemann solver and surface integral mappings)
+    double* lQhbnd = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor())[0]._persistentRecords._u);
+    double* lFhbnd = &(DataHeap::getInstance().getData(cellDescription.getFluctuation())          [0]._persistentRecords._u);
 
-        // zero face data (needed in Riemann solver and surface integral mappings)
-        double* lQhbnd = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor(patchIndex))[0]._persistentRecords._u);
-        double* lFhbnd = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(patchIndex))          [0]._persistentRecords._u);
+    memset((double *) lQhbnd,0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
+    memset((double *) lFhbnd,0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
 
-        memset((double *) lQhbnd,0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
-        memset((double *) lFhbnd,0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
+    // zero update
+    double* lduh   = &(DataHeap::getInstance().getData(cellDescription.getUpdate())               [0]._persistentRecords._u);
+    memset(lduh,0,sizeof(double) * numberOfDof);
 
-        if (i>0 && i<EXAHYPE_PATCH_SIZE_X+1) {
-          if (j>0 && j<EXAHYPE_PATCH_SIZE_Y+1) { // non-ghost/real cells
-            // zero update
-            double* lduh   = &(DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))               [0]._persistentRecords._u);
-            memset(lduh,0,sizeof(double) * numberOfDof);
+    // apply initial condition
+    double* luh    = &(DataHeap::getInstance().getData(cellDescription.getSolution())             [0]._persistentRecords._u);
+    for (int ii=0; ii<basisSize; ii++) { // loop over dof
+      for (int jj=0; jj<basisSize; jj++) {
+        // location and index of nodal degrees of freedom
+        const int nodeIndex = ii + basisSize * jj;
 
-            // apply initial condition
-            double* luh    = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))             [0]._persistentRecords._u);
-            for (int ii=0; ii<basisSize; ii++) { // loop over dof
-              for (int jj=0; jj<basisSize; jj++) {
-                // location and index of nodal degrees of freedom
-                const int nodeIndex = ii + basisSize * jj;
+        // const double * const nodeIndex = { ii, jj }
+        // exahype::aderdg::ADERDGInitialValue<2>(luh,nvar,value)
 
-                const double qr = exahype::quad::gaussLegendreNodes[ii];
-                const double qs = exahype::quad::gaussLegendreNodes[jj];
-                exahype::geometry::mapping2d(center(0),center(1),dx,dy,dxPatch,dyPatch,i,j,qr,qs,&x,&y);
+        const double qr = exahype::quad::gaussLegendreNodes[ii];
+        const double qs = exahype::quad::gaussLegendreNodes[jj];
+        exahype::geometry::mapping2d(center(0),center(1),dx,dy,qr,qs,&x,&y);
 
-                // read initial condition
-                exahype::problem::PDEInitialValue2d(x,y,nvar,value);
+        // read initial condition
+        exahype::problem::PDEInitialValue2d(x,y,nvar,value);
 
-                // set the DoF
-                const int dofStartIndex  = nodeIndex * nvar;
+        // set the DoF
+        const int dofStartIndex  = nodeIndex * nvar;
 
-                for (int ivar=0; ivar < nvar; ivar++) {
-                  luh[dofStartIndex+ivar] = value[ivar];
-                }
-              }
-            }
-          }
+        for (int ivar=0; ivar < nvar; ivar++) {
+          luh[dofStartIndex+ivar] = value[ivar];
         }
       }
     }

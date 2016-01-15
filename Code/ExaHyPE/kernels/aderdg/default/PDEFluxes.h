@@ -4,19 +4,15 @@
 #define GAMMA 1.4
 
 namespace exahype {
-  namespace kernels {
-    /**
-     * @brief Computes the initial value of the kernels at point (x,y)
-     *
-     * @param[in] x physical x coordinate
-     * @param[in] y physical y coordinate
-     * @param[in] nvar the number of consered quantities
-     * @param[out] values array of size nvar
-     */
-    void PDEInitialValue2d(const double x,const double y,const int nvar,double * Q);
-
+  namespace pde {
     /**
      * @brief Computes the physical (flux) tensor values.
+     *
+     * @note: DEC: Function does probably not exist if optimised kernel for single PDE runs is used.
+     *             Function must be provided by user for  uncertainty quantification/parameter sweep runs.
+     * @note: DEC: Needs to be dynamically modified in the uncertainty quantification/parameter sweep case.
+     * @note: DEC: Needs to accept user data (void* userData) for
+     *             uncertainty quantification/parameter sweep runs.
      *
      * @param[in] Q the conserved variables
      * @param[in] nvar the number of consered quantities
@@ -28,6 +24,8 @@ namespace exahype {
 
     /**
      * @brief Computes the physical (flux) tensor values.
+     *
+     * @note: DEC: Function does possibly not exist if optimised kernel is used.
      *
      * @param[in] Q the conserved variables
      * @param[in] nvar the number of consered quantities
