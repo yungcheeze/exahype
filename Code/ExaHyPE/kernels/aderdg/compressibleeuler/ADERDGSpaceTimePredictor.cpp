@@ -1,8 +1,9 @@
-#include "kernels/compressibleeuler/ADERDG.h"
+#include "exahype/Constants.h"
+#include "exahype/aderdg/ADERDG.h"
 
 #include "tarch/la/ScalarOperations.h"
 
-#include "EulerFlow/quad/GaussLegendre.h"
+#include "kernels/quad/GaussLegendre.h"
 
 #include "kernels/compressibleeuler/DGMatrices.h"
 #include "kernels/compressibleeuler/Constants.h"
@@ -14,7 +15,7 @@
 
 // explicit specialisations
 template <>
-void exahype::dg::spaceTimePredictor<3>(
+void exahype::aderdg::spaceTimePredictor<3>(
     double * lQi,
     double * lFi,
     const double * const luh,
@@ -38,7 +39,7 @@ void exahype::dg::spaceTimePredictor<3>(
 
 
 template <>
-void exahype::dg::spaceTimePredictor<2>(
+void exahype::aderdg::spaceTimePredictor<2>(
     double * lQi,
     double * lFi,
     const double * const luh,

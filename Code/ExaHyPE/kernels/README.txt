@@ -15,6 +15,7 @@ Example:
 vs.
    use-user-pde-description = ${PROJECT}/PDEDescription.cpp 
    
-  
+[4] Mappings, quadrature points etc. should not be part of the 
+ExaHyPE engine.
 
 

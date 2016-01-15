@@ -1,11 +1,11 @@
-#include "kernels/compressibleeuler/ADERDG.h"
+#include "exahype/aderdg/ADERDG.h"
 
 #include "EulerFlow/quad/GaussLegendre.h"
 
 #include "kernels/compressibleeuler/DGMatrices.h"
 
 // 3D
-void exahype::dg::surfaceIntegral(
+void exahype::aderdg::surfaceIntegral(
     double * lduh,
     const double * const dx,
     const int nvar,
@@ -21,7 +21,7 @@ void exahype::dg::surfaceIntegral(
 }
 
 // 2D
-void exahype::dg::surfaceIntegral(
+void exahype::aderdg::surfaceIntegral(
     double * lduh,
     const double * const dx,
     const int nvar,

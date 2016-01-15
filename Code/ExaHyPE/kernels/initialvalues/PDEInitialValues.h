@@ -1,15 +1,15 @@
-#ifndef EXAHYPE_KERNELS_DEFAULT_PDEDESCRIPTION_H_
-#define EXAHYPE_KERNELS_DEFAULT_PDEDESCRIPTION_H_
+#ifndef EXAHYPE_PDE_PDEINITIALVALUES_H_
+#define EXAHYPE_PDE_PDEINITIALVALUES_H_
 
 namespace exahype {
-  namespace kernels {
+  namespace pde {
     /**
      * @brief Computes the initial value of the kernels at point (x,y)
      *
-     * @note: DEC: Needs to be defined by the user.
-     * @note: DEC: Needs to provide an enumerator and state information for users for
+     * @todo: DEC: Needs to be defined by the user.
+     * @todo: DEC: Needs to provide an enumerator and state information for
      *        uncertainty quantification/parameter sweep runs.
-     * @note: DEC: Needs to accept user data (void* userData) for
+     * @todo: DEC: Needs to accept user data (void* userData) for
      *        uncertainty quantification/parameter sweep runs.
      *
      * @param[in] x physical x coordinate
@@ -18,7 +18,7 @@ namespace exahype {
      * @param[out] values array of size nvar
      */
     void PDEInitialValue2d(const double x,const double y,const int nvar,double * Q);
-  }  // namespace kernels
+  }  // namespace pde
 }  // namespace exahype
 
-#endif /* EXAHYPE_KERNELS_DEFAULT_PDEDESCRIPTION_H_ */
+#endif /* EXAHYPE_PDE_PDEINITIALVALUES_H_ */

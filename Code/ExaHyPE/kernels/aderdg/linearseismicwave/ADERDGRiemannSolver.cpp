@@ -1,10 +1,10 @@
-#include "kernels/compressibleeuler/ADERDG.h"
+#include "exahype/aderg/ADERDG.h"
 
 #include "string.h"
 
 #include "tarch/la/ScalarOperations.h"
 
-#include "EulerFlow/quad/GaussLegendre.h"
+#include "kernels/quad/GaussLegendre.h"
 
 #include "kernels/compressibleeuler/DGMatrices.h"
 
@@ -12,7 +12,7 @@
 
 // explicit specialisation
 template <>
-void exahype::dg::solveRiemannProblem<3>(
+void exahype::aderdg::riemannSolver<3>(
             double * FL,
             double * FR,
             const double * const QL,
@@ -33,7 +33,7 @@ void exahype::dg::solveRiemannProblem<3>(
 }
 
 template <>
-void exahype::dg::solveRiemannProblem<2>(
+void exahype::aderdg::riemannSolver<2>(
             double * FL,
             double * FR,
             const double * const QL,

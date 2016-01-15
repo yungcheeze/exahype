@@ -1,4 +1,4 @@
-#include "kernels/compressibleeuler/ADERDG.h"
+#include "exahype/aderdg/ADERDG.h"
 
 #include "iostream"
 
@@ -6,7 +6,7 @@
 
 // 3D specialisation
 template <>
-void exahype::dg::updateSolution<3>(
+void exahype::aderdg::solutionUpdate<3>(
     double * luh,
     const double * const lduh,
     const double * const dx,
@@ -19,7 +19,7 @@ void exahype::dg::updateSolution<3>(
 
 // 2D specialisation
 template <>
-void exahype::dg::updateSolution<2>(
+void exahype::aderdg::solutionUpdate<2>(
     double * luh,
     const double * const lduh,
     const double * const dx,

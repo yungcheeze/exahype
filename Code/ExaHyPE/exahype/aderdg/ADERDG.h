@@ -4,7 +4,7 @@
 #include "exahype/Constants.h"
 
 namespace exahype {
-  namespace kernels {
+  namespace aderdg {
     /**
      * Order depending PNPM factor.
      */
@@ -34,7 +34,7 @@ namespace exahype {
      * @todo docu
      */
     template <int dim>
-    void updateSolution(
+    void solutionUpdate(
         double * luh,
         const double * const lduh,
         const double * const dx,
@@ -95,7 +95,7 @@ namespace exahype {
      * QavL,QavR,lambdaL, and lambdaR are work vectors of size nvar.
      */
     template <int dim>
-    void solveRiemannProblem(
+    void riemannSolver(
         double * FL,
         double * FR,
         const double * const QL,
@@ -135,16 +135,19 @@ namespace exahype {
     );
 
     /**
-     * @todo docu
-     * Sets the initial values.
+     * Sets the initial values for an element.
      *
-     * rhs0, rhs, and tmp are work vectors.
-     * luh will not be modified.
+     * @param[in/out] luh       The local solution DoF.
+     * @param[in]     center    The element center.
+     * @param[in]     nvar      Number of physical coordinates.
+     * @param[in]     basisSize number of DoF in one coordinate direction.
+     *
+     * @todo: DEC: Will need more input parameters for parameter sweep runs (void* userData).
      */
     template <int dim>
     void initialValues(
         double * luh,
-        double * nvar,
+        const double * double center,
         const int nvar,
         const int basisSize
     );
@@ -160,7 +163,7 @@ namespace exahype {
     );
 
     template <>
-    void updateSolution<2>(
+    void solutionUpdate<2>(
         double * luh,
         const double * const lduh,
         const double * const dx,
@@ -177,7 +180,7 @@ namespace exahype {
     );
 
     template <>
-    void solveRiemannProblem<2>(
+    void riemannSolver<2>(
         double * FL,
         double * FR,
         const double * const QL,
@@ -207,6 +210,14 @@ namespace exahype {
         const double dt
     );
 
+    template <>
+    void initialValues<2>(
+        double * luh,
+        const double * double center,
+        const int nvar,
+        const int basisSize
+    );
+
     // 3D specialisations
     template <>
     double stableTimeStepSize<3>(
@@ -218,7 +229,7 @@ namespace exahype {
     );
 
     template <>
-    void updateSolution<3>(
+    void solutionUpdate<3>(
         double * luh,
         const double * const lduh,
         const double * const dx,
@@ -235,7 +246,7 @@ namespace exahype {
     );
 
     template <>
-    void solveRiemannProblem<3>(
+    void riemannSolver<3>(
         double * FL,
         double * FR,
         const double * const QL,
@@ -265,7 +276,14 @@ namespace exahype {
         const double dt
     );
 
-  }  // namespace dg
+    template <>
+    void initialValues<3>(
+        double * luh,
+        const double * double center,
+        const int nvar,
+        const int basisSize
+    );
+  }  // namespace aderdg
 }  // namespace exahype
 
 

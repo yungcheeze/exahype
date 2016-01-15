@@ -1,4 +1,4 @@
-#include "kernels/compressibleeuler/ADERDG.h"
+#include "exahype/aderdg/ADERDG.h"
 
 #include "math.h"
 #include "stdlib.h"
@@ -10,7 +10,7 @@
 
 // 3D specialisation
 template <>
-double exahype::dg::stableTimeStepSize<3>(
+double exahype::aderdg::stableTimeStepSize<3>(
     const double * const luh,
     const double * const dx,
     double * lambda,
@@ -23,7 +23,7 @@ double exahype::dg::stableTimeStepSize<3>(
 
 // 2D specialisation
 template <>
-double exahype::dg::stableTimeStepSize<2>(
+double exahype::aderdg::stableTimeStepSize<2>(
     const double * const luh,
     const double * const dx,
     double * lambda,
