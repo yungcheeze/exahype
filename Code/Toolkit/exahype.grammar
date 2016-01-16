@@ -38,14 +38,18 @@ Tokens
   token_multiscalelinkedcell_path = 'multiscalelinkedcell-path';
   token_output_directory          = 'output-directory';
   token_dimensions                = 'dimensions';
+  token_computational_domain      = 'computational-domain';
   
   token_cores                     = 'cores';
   token_properties_file           = 'properties-file';
   token_autotuning                = 'autotuning';
+  token_size                      = 'size';
+  token_offset                    = 'offset';
   
   token_on_off                    = 'on' | 'off';
   
   token_equals                = '=';
+  token_comma                 = ',';
     
   blank                       = ( cr | lf | tab | ' ' ) +;
   identifier                  = nondigit ( digit | nondigit ) *;
@@ -78,8 +82,9 @@ Productions
         token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
         token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
         token_dimensions                 [dimensions_equals]:token_equals                       [dimensions]:int_number
+        computational_domain
       token_end [end_token]:token_project
-        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, dimensions, [] ) }
+        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, dimensions, computational_domain.computational_domain, [] ) }
     |
     {with_shared_mem}
       [begin_token]:token_project [name]:identifier 
@@ -89,9 +94,10 @@ Productions
         token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
         token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
         token_dimensions                 [dimensions_equals]:token_equals                       [dimensions]:int_number
+        computational_domain
         shared_memory
       token_end [end_token]:token_project
-        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, dimensions, [shared_memory.shared_memory] ) }
+        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, dimensions, computational_domain.computational_domain, [shared_memory.shared_memory] ) }
         ;
 
   shared_memory {->shared_memory} =
@@ -100,16 +106,25 @@ Productions
     token_end [end_token]:token_shared_memory
       { -> New shared_memory( cores,properties_file,autotuning ) };
 
-
+  computational_domain {->computational_domain} = 
+    [begin_token]:token_computational_domain
+      token_size    [size_equals]:token_equals     [size]:float_number
+      token_offset  [offset_equals]:token_equals   [offset_x]:float_number [comma_xy]:token_comma [offset_y]:float_number [comma_yz]:token_comma [offset_z]:float_number 
+    token_end [end_token]:token_computational_domain
+      { -> New computational_domain( size,offset_x,offset_y,offset_z ) };
+    
 
 
 Abstract Syntax Tree
    project = 
      [name]:identifier [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [exahype_path]:filename [output_directory]:filename [dimensions]:int_number
+     computational_domain
      shared_memory*    // grammar ensures that there is at most one
-     
      ;
    
    shared_memory = 
      [cores]:int_number [properties_file]:filename [autotuning]:token_on_off;
+
+   computational_domain = 
+     [size]:float_number [offset_x]:float_number [offset_y]:float_number [offset_z]:float_number;
    
