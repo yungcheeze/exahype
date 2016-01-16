@@ -42,9 +42,9 @@ Tokens
   
   token_cores                     = 'cores';
   token_properties_file           = 'properties-file';
-  token_autotuning                = 'autotuning';
   token_size                      = 'size';
   token_offset                    = 'offset';
+  token_identifier                = 'identifier';
   
   token_on_off                    = 'on' | 'off';
   
@@ -102,9 +102,11 @@ Productions
 
   shared_memory {->shared_memory} =
     [begin_token]:token_shared_memory
-      token_cores [cores_equals]:token_equals [cores]:int_number token_properties_file [properties_equals]:token_equals [properties_file]:filename token_autotuning [autotuning_equals]:token_equals [autotuning]:token_on_off
+      token_identifier [identifier_equals]:token_equals [identifier]:identifier
+      token_cores [cores_equals]:token_equals [cores]:int_number 
+      token_properties_file [properties_equals]:token_equals [properties_file]:filename
     token_end [end_token]:token_shared_memory
-      { -> New shared_memory( cores,properties_file,autotuning ) };
+      { -> New shared_memory( cores,properties_file,identifier ) };
 
   computational_domain {->computational_domain} = 
     [begin_token]:token_computational_domain
@@ -123,7 +125,7 @@ Abstract Syntax Tree
      ;
    
    shared_memory = 
-     [cores]:int_number [properties_file]:filename [autotuning]:token_on_off;
+     [cores]:int_number [properties_file]:filename [identifier]:identifier;
 
    computational_domain = 
      [size]:float_number [offset_x]:float_number [offset_y]:float_number [offset_z]:float_number;

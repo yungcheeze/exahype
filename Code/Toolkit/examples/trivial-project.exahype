@@ -22,9 +22,9 @@ exahype-project  TrivialProject
   end computational-domain
     
   shared-memory
+    identifier               = autotuning
     cores                    = 4
     properties-file          = sharedmemory.properties
-    autotuning               = off
   end shared-memory  
   
 end exahype-project  
