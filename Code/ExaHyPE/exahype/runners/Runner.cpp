@@ -14,6 +14,10 @@
 #include "peano/geometry/Hexahedron.h"
 
 
+#include "peano/datatraversal/autotuning/Oracle.h"
+#include "peano/datatraversal/autotuning/OracleForOnePhaseDummy.h"
+
+
 tarch::logging::Log  exahype::runners::Runner::_log( "exahype::runners::Runner" );
 
 
@@ -36,48 +40,40 @@ void exahype::runners::Runner::setupComputationalDomain() {
 
 
 void exahype::runners::Runner::initSharedMemoryConfiguration() {
-  #ifdef SharedMemoryParallelisation
+//  #ifdef SharedMemoryParallelisation
   const int numberOfThreads = parser.getNumberOfThreads();
   tarch::multicore::Core::getInstance().configure(numberOfThreads);
 
-
-
-  ifstream f(name.c_str());
+  ifstream f(_parser.getMulticorePropertiesFile().c_str());
   bool multicorePropertiesFileDoesExist = f.good();
-      f.close();
+  f.close();
 
-
-  if (_parser.useMulticoreAutotuning()) {
-//      if (_parser.getMulticorePropertiesFile())
-      // if no autotuning and profile, dann
-
-
+  switch (_parser.getMulticoreOracleType()) {
+    case Parser::Dummy:
+      peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
+        new peano::datatraversal::autotuning::OracleForOnePhaseDummy(true)
+      );
+      break;
+    case Parser::Autotuning:
+      break;
+    case Parser::GrainSizeSampling:
+      break;
   }
-  else {
-    #ifdef PerformanceAnalysis
-      grain size sampling oracle
-    #else
-
-      dummy oracle
-    #endif
-  }
-  #endif
+//  #endif
 }
 
 
 void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
   #ifdef SharedMemoryParallelisation
-  if (_parser.useMulticoreAutotuning()) {
-
-      // zurueckschreiben der Daten in File
-//      if (_parser.getMulticorePropertiesFile())
-      // if no autotuning and profile, dann
-
-
+  switch (_parser.getMulticoreOracleType()) {
+    case Parser::Dummy:
+      break;
+    case Parser::Autotuning:
+      break;
+    case Parser::GrainSizeSampling:
+      break;
   }
-//#ifdef PerformanceAnalysis
-  grain size sampling oracle
-#endif
+  #endif
 }
 
 
