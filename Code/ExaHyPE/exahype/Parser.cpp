@@ -146,18 +146,22 @@ std::string exahype::Parser::getMulticorePropertiesFile() const {
 }
 
 
-bool exahype::Parser::useMulticoreAutotuning() const {
-  std::string token =  getTokenAfter("shared-memory","properties-file");
+exahype::Parser::MulticoreOracleType exahype::Parser::getMulticoreOracleType() const {
+  std::string token =  getTokenAfter("shared-memory","identifier");
   // @todo Change into Debug
-  logInfo( "useMulticoreAutotuning()", "found token " << token );
-  if (token.compare("off")==0) {
-    return false;
+  exahype::Parser::MulticoreOracleType result = Dummy;
+  if ( token.compare( "dummy") ) {
+    result = Dummy;
   }
-  else if (token.compare("on")==0) {
-    return true;
+  else if ( token.compare( "autotuning") ) {
+    result = Autotuning;
+  }
+  else if ( token.compare( "sampling") ) {
+    result = GrainSizeSampling;
   }
   else {
-    logWarning( "useMulticoreAutotuning()", "Invalid autotuning option: " << token << ". Switch off autotuning.");
-    return false;
+    logError( "getMulticoreOracleType()", "Invalid shared memory identifier " << token << ". Use dummy, autotuning, sampling. Set to dummy" );
+    result = Dummy;
   }
+  return result;
 }

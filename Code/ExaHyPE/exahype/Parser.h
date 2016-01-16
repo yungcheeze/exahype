@@ -29,6 +29,13 @@ class exahype::Parser {
     std::string getTokenAfter( std::string token, int additionalTokensToSkip=0 ) const;
     std::string getTokenAfter( std::string token0, std::string token1, int additionalTokensToSkip=0 ) const;
   public:
+    enum MulticoreOracleType {
+      Dummy,
+      Autotuning,
+      GrainSizeSampling
+      // evtl. spaeter mal InvadeSHM
+    };
+
     void readFile( const std::string& filename );
 
     bool isValid() const;
@@ -47,7 +54,7 @@ class exahype::Parser {
 
     std::string getMulticorePropertiesFile() const;
 
-    bool useMulticoreAutotuning() const;
+    MulticoreOracleType getMulticoreOracleType() const;
 };
 
 #endif
