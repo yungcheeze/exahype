@@ -17,6 +17,8 @@
 #include "peano/datatraversal/autotuning/Oracle.h"
 #include "peano/datatraversal/autotuning/OracleForOnePhaseDummy.h"
 
+#include "sharedmemoryoracles/OracleForOnePhaseWithGrainSizeSampling.h"
+
 
 tarch::logging::Log  exahype::runners::Runner::_log( "exahype::runners::Runner" );
 
@@ -40,7 +42,7 @@ void exahype::runners::Runner::setupComputationalDomain() {
 
 
 void exahype::runners::Runner::initSharedMemoryConfiguration() {
-//  #ifdef SharedMemoryParallelisation
+  #ifdef SharedMemoryParallelisation
   const int numberOfThreads = parser.getNumberOfThreads();
   tarch::multicore::Core::getInstance().configure(numberOfThreads);
 
@@ -57,9 +59,16 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
     case Parser::Autotuning:
       break;
     case Parser::GrainSizeSampling:
+      peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
+        new sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling(
+          10,
+          true, // useThreadPipelining,
+          true  // logarithmicDistribution
+        )
+      );
       break;
   }
-//  #endif
+  #endif
 }
 
 
@@ -71,6 +80,8 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
     case Parser::Autotuning:
       break;
     case Parser::GrainSizeSampling:
+      // @todo Das muss aber jetzt in das File gehen und oben brauchen wir ein loadStatistics
+      peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics();
       break;
   }
   #endif
