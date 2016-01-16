@@ -8,6 +8,8 @@ namespace exahype {
 
 #include <vector>
 #include "tarch/logging/Log.h"
+#include "tarch/la/Vector.h"
+#include "peano/utils/Globals.h"
 
 
 /**
@@ -24,8 +26,8 @@ class exahype::Parser {
     /**
      * @return "notoken" if not found.
      */
-    std::string getTokenAfter( std::string token ) const;
-    std::string getTokenAfter( std::string token0, std::string token1 ) const;
+    std::string getTokenAfter( std::string token, int additionalTokensToSkip=0 ) const;
+    std::string getTokenAfter( std::string token0, std::string token1, int additionalTokensToSkip=0 ) const;
   public:
     void readFile( const std::string& filename );
 
@@ -35,6 +37,17 @@ class exahype::Parser {
      * @return How many threads is the code supposed to use?
      */
     int getNumberOfThreads();
+
+    /**
+     * Our domain always is cubic.
+     */
+    double getSize() const;
+
+    tarch::la::Vector<DIMENSIONS,double> getOffset() const;
+
+    std::string getMulticorePropertiesFile() const;
+
+    bool useMulticoreAutotuning() const;
 };
 
 #endif

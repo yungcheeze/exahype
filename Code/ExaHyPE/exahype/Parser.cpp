@@ -63,13 +63,13 @@ bool exahype::Parser::isValid() const {
 }
 
 
-std::string exahype::Parser::getTokenAfter( std::string token ) const {
+std::string exahype::Parser::getTokenAfter( std::string token, int additionalTokensToSkip ) const {
   assertion( isValid() );
   int currentToken = 0;
   while (_tokenStream[currentToken]!=token && currentToken<static_cast<int>(_tokenStream.size())) {
     currentToken++;
   }
-  currentToken++;
+  currentToken += (additionalTokensToSkip+1);
   if ( currentToken<static_cast<int>(_tokenStream.size())) {
     return _tokenStream[currentToken];
   }
@@ -77,7 +77,7 @@ std::string exahype::Parser::getTokenAfter( std::string token ) const {
 }
 
 
-std::string exahype::Parser::getTokenAfter( std::string token0, std::string token1 ) const {
+std::string exahype::Parser::getTokenAfter( std::string token0, std::string token1, int additionalTokensToSkip ) const {
   assertion( isValid() );
   int currentToken = 0;
   while (_tokenStream[currentToken]!=token0 && currentToken<static_cast<int>(_tokenStream.size())) {
@@ -86,7 +86,7 @@ std::string exahype::Parser::getTokenAfter( std::string token0, std::string toke
   while (_tokenStream[currentToken]!=token1 && currentToken<static_cast<int>(_tokenStream.size())) {
     currentToken++;
   }
-  currentToken++;
+  currentToken += (additionalTokensToSkip+1);
   if ( currentToken<static_cast<int>(_tokenStream.size())) {
     return _tokenStream[currentToken];
   }
@@ -97,11 +97,67 @@ std::string exahype::Parser::getTokenAfter( std::string token0, std::string toke
 int exahype::Parser::getNumberOfThreads() {
   assertion( isValid() );
   std::string token = getTokenAfter("shared-memory","cores");
-  logInfo( "getNumberOfThreads()", "found token " << token );
+  logDebug( "getNumberOfThreads()", "found token " << token );
   int result = atoi( token.c_str() );
   if (result==0) {
-    logInfo( "getNumberOfThreads()", "Invalid number of cores set: " << token << ". Use one core, i.e. switch off multithreading" );
+    logError( "getNumberOfThreads()", "Invalid number of cores set: " << token << ". Use one core, i.e. switch off multithreading" );
     result = 1;
   }
   return result;
+}
+
+
+double exahype::Parser::getSize() const {
+  assertion( isValid() );
+  std::string token = getTokenAfter("computational-domain","size");
+  // @todo change into Debug
+  logInfo( "getSize()", "found token " << token );
+  double result = atof( token.c_str() );
+  if (result<=0) {
+    logError( "getSize()", "Invalid size of computational domain: " << token << ". Use unit cube" );
+    result = 1.0;
+  }
+  return result;
+}
+
+
+tarch::la::Vector<DIMENSIONS,double> exahype::Parser::getOffset() const {
+  assertion( isValid() );
+  std::string token;
+  tarch::la::Vector<DIMENSIONS,double> result;
+  token     = getTokenAfter("computational-domain","offset", 0);
+  result(0) = atof( token.c_str() );
+  token     = getTokenAfter("computational-domain","offset", 1);
+  result(1) = atof( token.c_str() );
+  token     = getTokenAfter("computational-domain","offset", 2);
+  result(2) = atof( token.c_str() );
+  // @todo change into Debug
+  logInfo( "getSize()", "found offset " << result );
+  return result;
+}
+
+
+
+std::string exahype::Parser::getMulticorePropertiesFile() const {
+  std::string result =  getTokenAfter("shared-memory","properties-file");
+  // @todo Change into Debug
+  logInfo( "getMulticorePropertiesFile()", "found token " << result );
+  return result;
+}
+
+
+bool exahype::Parser::useMulticoreAutotuning() const {
+  std::string token =  getTokenAfter("shared-memory","properties-file");
+  // @todo Change into Debug
+  logInfo( "useMulticoreAutotuning()", "found token " << token );
+  if (token.compare("off")==0) {
+    return false;
+  }
+  else if (token.compare("on")==0) {
+    return true;
+  }
+  else {
+    logWarning( "useMulticoreAutotuning()", "Invalid autotuning option: " << token << ". Switch off autotuning.");
+    return false;
+  }
 }

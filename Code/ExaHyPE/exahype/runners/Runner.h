@@ -9,11 +9,14 @@
 #define _EXAHYPE_RUNNERS_RUNNER_H_ 
 
 
+#include "tarch/logging/Log.h"
+#include "exahype/Parser.h"
+
+
 namespace exahype {
     namespace runners {
       class Runner;
     }
-
     namespace repositories {
       class Repository;
     }
@@ -27,6 +30,32 @@ namespace exahype {
  */
 class exahype::runners::Runner {
   private:
+    static tarch::logging::Log _log;
+
+    const exahype::Parser _parser;
+
+    /**
+     * Create computational domain.
+     */
+    void setupComputationalDomain();
+
+    /**
+     * Setup the oracles for the shared memory parallelisation. Different
+     * oracles can be employed:
+     *
+     * - If no autotuning is used and no valid properties file is provided and
+     *   the code is compiled with -DPerformanceAnalysis, we use the grain size
+     *   sampling
+     * - If no autotuning is used and no valid properties file is provided, we
+     *   use the default oracle coming along with the Peano kernel
+     * - If autotuning is enabled and no valid properties file is provided, we
+     *
+     *
+     * @todo Weiterschreiben
+     */
+    void initSharedMemoryConfiguration();
+    void shutdownSharedMemoryConfiguration();
+
     int runAsMaster(exahype::repositories::Repository& repository);
     
     #ifdef Parallel
@@ -42,7 +71,7 @@ class exahype::runners::Runner {
     void runGlobalStep();
     #endif
   public:
-    Runner();
+    Runner(const Parser& parser);
     virtual ~Runner();
 
     /**
