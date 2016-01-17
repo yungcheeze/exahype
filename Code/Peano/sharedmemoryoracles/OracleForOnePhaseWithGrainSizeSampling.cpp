@@ -75,6 +75,12 @@ void sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::parallelSectio
 }
 
 
+
+void sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::loadStatistics(const std::string& filename) {
+  assertionMsg( false, "not yet implemented" );
+}
+
+
 void sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::plotStatistics() const {
   for (ExecutionTimeSamplingDatabase::const_iterator p=_executionTimes.begin(); p!=_executionTimes.end(); p++) {
     logInfo(

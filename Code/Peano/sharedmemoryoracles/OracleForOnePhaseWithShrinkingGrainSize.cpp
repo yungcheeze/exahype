@@ -139,6 +139,11 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::parallelSecti
 }
 
 
+void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::loadStatistics(const std::string& filename) {
+  assertionMsg( false, "not yet implemented" );
+}
+
+
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::plotStatistics() const {
   if (_currentMeasurement.getNumberOfMeasurements()>0 || !_oracleIsSearching) {
     if (_biggestProblemSize < _currentGrainSize && _oracleIsSearching) {
