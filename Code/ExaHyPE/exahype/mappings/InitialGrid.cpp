@@ -1,8 +1,8 @@
 #include "exahype/mappings/InitialGrid.h"
 
-// ! Begin of code for DG method
 #include "peano/utils/Globals.h"
-// ! End of code for DG method
+
+#include "exahype/Constants.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.

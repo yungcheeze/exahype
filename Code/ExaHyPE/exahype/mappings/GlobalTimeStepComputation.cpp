@@ -2,18 +2,8 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/quad/GaussLegendre.h"
-
-#include "exahype/problem/Problem.h"
-
-#include "exahype/dg/Constants.h"
-
+#include "exahype/Constants.h"
 #include "exahype/aderdg/ADERDG.h"
-
-#include "stdlib.h"
-
-#include "string.h"
-
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -383,11 +373,9 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
   // ! Begin of code for the DG method.
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
-        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
+        ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-    const double* dx = { fineGridVerticesEnumerator.getCellSize()(0), fineGridVerticesEnumerator.getCellSize()(1) }
-
-
+    const double * dx = { fineGridVerticesEnumerator.getCellSize()(0), fineGridVerticesEnumerator.getCellSize()(1) }
 
     const int basisSize       = EXAHYPE_ORDER+1;
     const int nvar            = EXAHYPE_NVARS;
@@ -397,7 +385,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
     double* luh = &(DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u);
     double lambda[EXAHYPE_NVARS];
 
-    double admissiblePatchTimeStep = dg::stableTimeStepSize<DIMENSIONS>(
+    double admissiblePatchTimeStep = aderdg::stableTimeStepSize<DIMENSIONS>(
         luh,
         dx,
         lambda,

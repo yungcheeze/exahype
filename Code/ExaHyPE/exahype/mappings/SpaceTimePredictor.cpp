@@ -2,17 +2,8 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/quad/GaussLegendre.h"
-
-#include "exahype/problem/Problem.h"
-
-#include "exahype/dg/Constants.h"
+#include "exahype/Constants.h"
 #include "exahype/aderdg/ADERDG.h"
-#include "exahype/dg/DGMatrices.h"
-
-#include "stdlib.h"
-
-#include "string.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -85,8 +76,8 @@ exahype::mappings::SpaceTimePredictor::~SpaceTimePredictor() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::SpaceTimePredictor::SpaceTimePredictor(const SpaceTimePredictor&  masterThread)
-  :
-  _localState()
+:
+      _localState()
 {
   logTraceIn( "SpaceTimePredictor(SpaceTimePredictor)" );
 
@@ -379,14 +370,14 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
   // ! Begin of code for the DG method.
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
-        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
+        ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
     const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
     const double dx = fineGridVerticesEnumerator.getCellSize()(0);
     const double dy = fineGridVerticesEnumerator.getCellSize()(1);
 
     const double dxPatch[DIMENSIONS] = { dx/ (double) EXAHYPE_PATCH_SIZE_X,
-                                         dy/ (double) EXAHYPE_PATCH_SIZE_Y };
+        dy/ (double) EXAHYPE_PATCH_SIZE_Y };
 
     constexpr int basisSize = EXAHYPE_ORDER+1;
     constexpr int nvar      = EXAHYPE_NVARS;
@@ -397,38 +388,37 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
     double* rhs  = (double*) std::malloc(numberOfSpaceTimeDof * sizeof(double)); // todo remove all mallocs, maximum nvar is known at compile time
     double* tmp  = (double*) std::malloc(nvar * basisSize * sizeof(double));     // todo remove all mallocs, maximum nvar is known at compile time
 
-    for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
-      for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
-        const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
+    // space-time DoF (basisSize**(DIMENSIONS+1))
+    double * lQi = &(DataHeap::getInstance().getData(cellDescription.getSpaceTimePredictor()) [0]._persistentRecords._u);
+    double * lFi = &(DataHeap::getInstance().getData(cellDescription.getSpaceTimeVolumeFlux())[0]._persistentRecords._u);
 
-        // space-time DoF (basisSize**(DIMENSIONS+1))
-        double * lQi = &(DataHeap::getInstance().getData(cellDescription.getSpaceTimePredictor(patchIndex)) [0]._persistentRecords._u);
-        double * lFi = &(DataHeap::getInstance().getData(cellDescription.getSpaceTimeVolumeFlux(patchIndex))[0]._persistentRecords._u);
+    // volume DoF (basisSize**(DIMENSIONS))
+    double * luh  = &(DataHeap::getInstance().getData(cellDescription.getSolution())  [0]._persistentRecords._u);
+    double * lQhi = &(DataHeap::getInstance().getData(cellDescription.getPredictor()) [0]._persistentRecords._u);
+    double * lFhi = &(DataHeap::getInstance().getData(cellDescription.getVolumeFlux())[0]._persistentRecords._u);
 
-        // volume DoF (basisSize**(DIMENSIONS))
-        double * luh  = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))  [0]._persistentRecords._u);
-        double * lQhi = &(DataHeap::getInstance().getData(cellDescription.getPredictor(patchIndex)) [0]._persistentRecords._u);
-        double * lFhi = &(DataHeap::getInstance().getData(cellDescription.getVolumeFlux(patchIndex))[0]._persistentRecords._u);
-
-        // face DoF (basisSize**(DIMENSIONS-1))
-        double * lQhbnd = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor(patchIndex))[0]._persistentRecords._u);
-        double * lFhbnd = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(patchIndex))          [0]._persistentRecords._u);
-
-        dg::spaceTimePredictor<2>(
-            lQi,
-            lFi,
-            luh,
-            lQhi,
-            lFhi,
-            lQhbnd,
-            lFhbnd,
-            rhs0,
-            rhs,
-            tmp,
-            dxPatch,
-            _localState.getTimeStepSize());
-      }
+    // face DoF (basisSize**(DIMENSIONS-1))
+    double * lQhbnd[DIMENSIONS_TIMES_TWO];
+    double * lFhbnd[DIMENSIONS_TIMES_TWO];
+    for (int face=0; face < DIMENSIONS_TIMES_TWO) {
+      lQhbnd[face] = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor(face))[0]._persistentRecords._u);
+      lFhbnd[face] = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(face))          [0]._persistentRecords._u);
     }
+
+    aderdg::spaceTimePredictor<2>(
+        lQi,
+        lFi,
+        luh,
+        lQhi,
+        lFhi,
+        lQhbnd,
+        lFhbnd,
+        rhs0,
+        rhs,
+        tmp,
+        dxPatch,
+        _localState.getTimeStepSize());
+
     // clean up
     free(rhs0);
     free(rhs);

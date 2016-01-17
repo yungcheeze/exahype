@@ -1,17 +1,12 @@
 #include "exahype/mappings/SurfaceIntegral.h"
 
-#include "peano/utils/Globals.h"
-
-#include "exahype/quad/GaussLegendre.h"
-
-#include "exahype/problem/Problem.h"
-
-#include "exahype/dg/Constants.h"
-#include "exahype/aderdg/ADERDG.h"
-#include "exahype/dg/DGMatrices.h"
-
 #include "stdlib.h"
 #include "string.h"
+
+#include "peano/utils/Globals.h"
+
+#include "exahype/Constants.h"
+#include "exahype/aderdg/ADERDG.h"
 
 
 /**
@@ -372,49 +367,35 @@ void exahype::mappings::SurfaceIntegral::enterCell(
   // ! Begin of code for the DG method.
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
-        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
+        ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
     const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-    const double dx = fineGridVerticesEnumerator.getCellSize()(0);
-    const double dy = fineGridVerticesEnumerator.getCellSize()(1);
-
-    const double dxPatch[DIMENSIONS] = { dx/ (double) EXAHYPE_PATCH_SIZE_X,
-        dy/ (double) EXAHYPE_PATCH_SIZE_Y };
+    const double* const dx = { fineGridVerticesEnumerator.getCellSize()[0], fineGridVerticesEnumerator.getCellSize()[1] };
 
     const int basisSize       = EXAHYPE_ORDER+1;
     const int nvar            = EXAHYPE_NVARS;
     const int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
-    for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
-      for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
-        const int patchIndex      = i     + (EXAHYPE_PATCH_SIZE_X+2) * j;
+    double * lduh     = &(DataHeap::getInstance().getData(cellDescription.getUpdate())[0]._persistentRecords._u);
 
-        const int dofStartIndexLeft  = EXAHYPE_FACE_LEFT  * numberOfFaceDof;
-        const int dofStartIndexRight = EXAHYPE_FACE_RIGHT * numberOfFaceDof;
-        const int dofStartIndexFront = EXAHYPE_FACE_FRONT * numberOfFaceDof;
-        const int dofStartIndexBack  = EXAHYPE_FACE_BACK  * numberOfFaceDof;
+    double * lFhLeft  = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(EXAHYPE_FACE_LEFT)) [0]._persistentRecords._u);
+    double * lFhRight = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(EXAHYPE_FACE_RIGHT))[0]._persistentRecords._u);
+    double * lFhFront = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(EXAHYPE_FACE_FRONT))[0]._persistentRecords._u);
+    double * lFhBack  = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(EXAHYPE_FACE_BACK)) [0]._persistentRecords._u);
 
-        double * lduh     = &(DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))     [0]._persistentRecords._u);
-
-        double * lFhLeft  = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(patchIndex))[dofStartIndexLeft ]._persistentRecords._u);
-        double * lFhRight = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(patchIndex))[dofStartIndexRight]._persistentRecords._u);
-        double * lFhFront = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(patchIndex))[dofStartIndexFront]._persistentRecords._u);
-        double * lFhBack  = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(patchIndex))[dofStartIndexBack ]._persistentRecords._u);
-
-        dg::surfaceIntegral(
-            lduh,
-            dxPatch,
-            nvar,
-            basisSize,
-            lFhLeft,
-            lFhRight,
-            lFhFront,
-            lFhBack);
-      }
-    }
+    aderdg::surfaceIntegral(
+        lduh,
+        dx,
+        nvar,
+        basisSize,
+        lFhLeft,
+        lFhRight,
+        lFhFront,
+        lFhBack);
   }
+}
 
-  logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
+logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
 
 

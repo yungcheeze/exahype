@@ -1,16 +1,12 @@
 #include "exahype/mappings/VTKExport.h"
 
+#include "string.h"
+
 #include "peano/utils/Globals.h"
 
-#include "exahype/quad/GaussLegendre.h"
+#include "exahype/Constants.h"
 
-#include "exahype/geometry/Mapping.h"
-
-#include "exahype/problem/Problem.h"
-
-#include "exahype/dg/DGMatrices.h"
-
-#include "string.h"
+#include "exahype/aderdg/ADERDGIO.h"
 
 int exahype::mappings::VTKExport::_snapshotCounter = 0;
 
@@ -393,108 +389,15 @@ void exahype::mappings::VTKExport::enterCell(
       assertion( DIMENSIONS==2);
 
       records::ADERDGCellDescription& cellDescription =
-          ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
+          ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-      const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-      const double dx = fineGridVerticesEnumerator.getCellSize()(0);
-      const double dy = fineGridVerticesEnumerator.getCellSize()(1);
-
-      const double dxPatch = dx;
-      const double dyPatch = dy;
+      const double * double center = &(fineGridVerticesEnumerator.getCellCenter()[0]);
 
       const int basisSize = EXAHYPE_ORDER+1;
       const int nvar      = EXAHYPE_NVARS;
 
-      // helper variables
-      double x = 0;
-      double y = 0;
-
-      // BEGIN: move into static fields todo
-      int    indexMapping      [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
-      double uniformCoordinates[DIMENSIONS     ][EXAHYPE_NBASIS_POWER_DIMENSIONS];
-      double uniformPartition  [TWO_POWER_D    ][EXAHYPE_NBASIS_POWER_DIMENSIONS];
-      double uniformDoF        [EXAHYPE_NVARS][EXAHYPE_NBASIS_POWER_DIMENSIONS];
-
-      // define sub nodes
-      for (int ii=0; ii < basisSize; ii++) {
-        for (int jj=0; jj < basisSize; jj++) {
-          const int uniformNodeIndex = ii + basisSize * jj;
-
-          indexMapping[ii][jj] = uniformNodeIndex;
-          uniformCoordinates[0][uniformNodeIndex] = (double) ii / (double) EXAHYPE_ORDER;
-          uniformCoordinates[1][uniformNodeIndex] = (double) jj / (double) EXAHYPE_ORDER;
-        }
-      }
-
-      // define sub quadrangles/hexahedrons
-      for (int ii=0; ii < basisSize; ii++) {
-        for (int jj=0; jj < basisSize; jj++) {
-          const int uniformNodeIndex = ii + basisSize * jj;
-
-          uniformPartition[0][uniformNodeIndex] = indexMapping[ii  ][jj  ];
-          uniformPartition[1][uniformNodeIndex] = indexMapping[ii+1][jj  ];
-          uniformPartition[2][uniformNodeIndex] = indexMapping[ii+1][jj+1];
-          uniformPartition[3][uniformNodeIndex] = indexMapping[ii  ][jj+1];
-        }
-      }
-
-      // END: move into static fields todo
-          // Map Gauss-Legendre nodes to equidistant subgrid coordinates
-//          std::memset((double *) &subData[0],0,sizeof(double) * EXAHYPE_NVARS * EXAHYPE_NBASIS_POWER_DIMENSIONS);
-          for (int ii=0; ii<basisSize; ii++) { // mem zero
-             for (int jj=0; jj<basisSize; jj++) {
-               const int uniformNodeIndex = ii + basisSize * jj;
-
-               for (int ivar=0; ivar < nvar; ivar++) {
-                 uniformDoF[ivar][uniformNodeIndex] = 0;
-               }
-             }
-          }
-
-          double* luh = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
-
-          for (int ii=0; ii<basisSize; ii++) { // project on subgrid coordinates
-            for (int jj=0; jj<basisSize; jj++) {
-              const int uniformNodeIndex = ii + basisSize * jj;
-
-              for (int mm=0; mm<basisSize; mm++) { // project on subgrid coordinates
-                for (int nn=0; nn<basisSize; nn++) {
-                  const int nodeIndex     = mm + basisSize * nn;
-                  const int dofStartIndex = nodeIndex * nvar;
-
-                  for (int ivar=0; ivar < nvar; ivar++) {
-                    uniformDoF[ivar][uniformNodeIndex] += luh[dofStartIndex+ivar] * dg::subOutputMatrix[nodeIndex][uniformNodeIndex];
-                  }
-                }
-              }
-            }
-          }
-
-          for (int ii=0; ii<basisSize; ii++) { // loop over dof
-            for (int jj=0; jj<basisSize; jj++) {
-              // location and index of nodal degrees of freedom
-              const int nodeIndex     = ii + basisSize * jj;
-              const int dofStartIndex = nodeIndex * nvar;
-
-              const double r = uniformCoordinates[0][nodeIndex];
-              const double s = uniformCoordinates[1][nodeIndex];
-
-//              const double r = quad::gaussLegendreNodes[ii];
-//              const double s = quad::gaussLegendreNodes[jj];
-
-              geometry::mapping2d(center(0),center(1),dx,dy,dxPatch,dyPatch,i,j,r,s,&x,&y);
-              tarch::la::Vector<DIMENSIONS,double> currentVertexPosition(x,y);
-
-              const int vtkNodeIndex = _vertexWriter->plotVertex(currentVertexPosition);
-              _cellWriter->plotPoint(vtkNodeIndex);
-
-              for (int ivar=4; ivar < 5; ivar++) {
-//                const double dofValue = u[dofStartIndex+ivar];
-                const double dofValue = uniformDoF[ivar][nodeIndex];
-                _vertexValueWriter->plotVertex(vtkNodeIndex,dofValue);
-              }
-            }
-          }
+      double* luh = &(DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u);
+      exahype::aderdg::io::exportToVTK(_vtkWriter,_vertexWriter,_cellWriter,_vertexValueWriter,luh,)
     }
     logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
   }

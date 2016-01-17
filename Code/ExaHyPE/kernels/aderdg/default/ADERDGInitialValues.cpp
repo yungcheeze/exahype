@@ -3,11 +3,14 @@
 #include "kernels/quad/GaussLegendre.h"
 #include "kernels/geometry/ElementMapping.h"
 
+#include "kernels/initialvalues/PDEInitialValues.h"
+
 // 3D specialisation
 template <>
 void exahype::aderdg::initialValues<3>(
     double * luh,
-    double * center,
+    const double * const center,
+    const double * const dx,
     const int nvar,
     const int basisSize
 ) {
@@ -18,10 +21,13 @@ void exahype::aderdg::initialValues<3>(
 template <>
 void exahype::aderdg::initialValues<2>(
     double * luh,
-    double * center,
+    const double * const center,
+    const double * const dx,
     const int nvar,
     const int basisSize
 ) {
+  double x,y;
+
   for (int ii=0; ii<basisSize; ii++) { // loop over dof
     for (int jj=0; jj<basisSize; jj++) {
       // location and index of nodal degrees of freedom
@@ -32,17 +38,11 @@ void exahype::aderdg::initialValues<2>(
 
       const double qr = exahype::quad::gaussLegendreNodes[ii];
       const double qs = exahype::quad::gaussLegendreNodes[jj];
-      exahype::geometry::mapping2d(center(0),center(1),dx,dy,qr,qs,&x,&y);
+      exahype::geometry::mapping2d(center[0],center[1],dx[0],dx[1],qr,qs,&x,&y);
 
-      // read initial condition
-      exahype::problem::PDEInitialValue2d(x,y,nvar,value);
-
-      // set the DoF
+      // read and set the initial values
       const int dofStartIndex  = nodeIndex * nvar;
-
-      for (int ivar=0; ivar < nvar; ivar++) {
-        luh[dofStartIndex+ivar] = value[ivar];
-      }
+      exahype::pde::PDEInitialValue2d(x,y,nvar,&luh[dofStartIndex]);
     }
   }
 }

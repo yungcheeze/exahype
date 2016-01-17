@@ -41,7 +41,7 @@ exahype::Cell::initCellInComputeTree(const int level,
                                      const int numberOfPDEs,
                                      const int order,
                                      const int numberOfVariables) {
-  const int indexOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().createData(numberOfPDEs);
+  const int indexOfADERDGCellDescriptions = ADERDGADERDGCellDescriptionHeap::getInstance().createData(numberOfPDEs);
   assertion( indexOfADERDGCellDescriptions >= 0 );
   _cellData.setADERDGCellDescriptionsIndex(indexOfADERDGCellDescriptions);
 
@@ -57,7 +57,7 @@ exahype::Cell::initCellInComputeTree(const int level,
     int numberOfDofOnFace      = DIMENSIONS_TIMES_TWO * EXAHYPE_NVARS * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
     records::ADERDGCellDescription& cellDescriptionForPde =
-        ADERDGCellDescriptionHeap::getInstance().getData(indexOfADERDGCellDescriptions)[pde];
+        ADERDGADERDGCellDescriptionHeap::getInstance().getData(indexOfADERDGCellDescriptions)[pde];
 
     // Allocate space-time DoF
     cellDescriptionForPde.setSpaceTimePredictor (DataHeap::getInstance().createData(numberOfSpaceTimeDof,numberOfSpaceTimeDof));

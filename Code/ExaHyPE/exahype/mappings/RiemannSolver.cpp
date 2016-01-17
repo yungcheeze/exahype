@@ -2,18 +2,8 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/quad/GaussLegendre.h"
-
-#include "exahype/problem/Problem.h"
-
-#include "exahype/dg/Constants.h"
+#include "exahype/Constants.h"
 #include "exahype/aderdg/ADERDG.h"
-#include "exahype/dg/DGMatrices.h"
-
-#include "stdlib.h"
-
-#include "string.h"
-
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -377,7 +367,7 @@ void exahype::mappings::RiemannSolver::enterCell(
   // ! Begin of code for the DG method.
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
-        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
+        ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
     const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
     const double dx = fineGridVerticesEnumerator.getCellSize()(0);
@@ -420,7 +410,7 @@ void exahype::mappings::RiemannSolver::enterCell(
           asm ("nop");
         }
 
-        dg::solveRiemannProblem<DIMENSIONS>(
+        aderdg::riemannSolver<DIMENSIONS>(
             FL,
             FR,
             QL,
@@ -454,7 +444,7 @@ void exahype::mappings::RiemannSolver::enterCell(
           asm ("nop");
         }
 
-        dg::solveRiemannProblem<DIMENSIONS>(
+        aderdg::riemannSolver<DIMENSIONS>(
             FL,
             FR,
             QL,

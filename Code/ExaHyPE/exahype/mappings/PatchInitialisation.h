@@ -33,7 +33,7 @@ namespace exahype {
     class PatchInitialisation;
   }
 
-  typedef peano::heap::PlainHeap< exahype::records::ADERDGCellDescription > ADERDGCellDescriptionHeap;
+  typedef peano::heap::PlainHeap< exahype::records::ADERDGCellDescription > ADERDGADERDGCellDescriptionHeap;
   typedef peano::heap::PlainDoubleHeap DataHeap;
 }
 

@@ -33,7 +33,7 @@
 
 #define EXAHYPE_PATCH_SIZE_X                                3 //!< Number of patches in each coordinate direction (+ two ghost cells).
 #define EXAHYPE_PATCH_SIZE_Y                                3 //!< Number of patches in each coordinate direction (+ two ghost cells).
-//#define EXAHYPE_PATCH_SIZE_Z                                1    //!< Number of patches in each coordinate direction (+ two ghost cells/0 ghost cells in 2D).
+//#define EXAHYPE_PATCH_SIZE_Z                                1 //!< Number of patches in each coordinate direction (+ two ghost cells/0 ghost cells in 2D).
 #define EXAHYPE_PATCH_SIZE_TOTAL                            (EXAHYPE_PATCH_SIZE_X+2) * (EXAHYPE_PATCH_SIZE_Y+2)
 #define EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO EXAHYPE_PATCH_SIZE_TOTAL * DIMENSIONS_TIMES_TWO
 #endif
@@ -54,25 +54,6 @@
 
 #define EXAHYPE_NVARS  5
 #define EXAHYPE_ORDER  3
-
-namespace exahype {
-  constexpr static const double nvars[1] = {
-      5
-  };
-  constexpr static const double order[1] = {
-      3
-  };
-
-  constexpr static const double patchSizeX[1] = {
-      12
-  };
-  constexpr static const double patchSizeY[1] = {
-      12
-  };
-  constexpr static const double patchSizeZ[1] = {
-      1
-  };
-}  // namespace exahype
 
 #define EXAHYPE_NBASIS_POWER_DIMENSIONS 16
 

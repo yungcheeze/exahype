@@ -30,8 +30,7 @@ namespace exahype {
     inline void
     mapping2d(
         const double centerX,const double centerY,
-        const double dx,
-        const double dy,
+        const double dx,const double dy,
         const double r,const double s,
         double* x,double* y) {
       *x=centerX + 0.5*dx*(r-1.0);

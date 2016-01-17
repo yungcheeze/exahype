@@ -1,6 +1,6 @@
 #include "exahype/mappings/PatchInitialisation.h"
 
-
+#include "exahype/Constants.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -395,7 +395,7 @@ void exahype::mappings::PatchInitialisation::beginIteration(
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
   // ! Begin of code for multiscalelinkedcell toolbox.
-  ADERDGCellDescriptionHeap::getInstance().setName("cell-description-heap");
+  ADERDGADERDGCellDescriptionHeap::getInstance().setName("cell-description-heap");
   DataHeap::getInstance().setName("data-heap");
   // ! End of code for multiscalelinkedcell toolbox.
 

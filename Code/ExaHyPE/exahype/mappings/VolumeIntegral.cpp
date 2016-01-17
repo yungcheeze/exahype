@@ -2,17 +2,8 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/quad/GaussLegendre.h"
-
-#include "exahype/problem/Problem.h"
-
-#include "exahype/dg/Constants.h"
+#include "exahype/Constants.h"
 #include "exahype/aderdg/ADERDG.h"
-#include "exahype/dg/DGMatrices.h"
-
-#include "stdlib.h"
-
-#include "string.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -345,9 +336,6 @@ void exahype::mappings::VolumeIntegral::touchVertexFirstTime(
   // do nothing
 }
 
-extern const double exahype::quad::gaussLegendreNodes[EXAHYPE_ORDER+1];
-extern const double exahype::quad::gaussLegendreWeights[EXAHYPE_ORDER+1];
-
 void exahype::mappings::VolumeIntegral::touchVertexLastTime(
     exahype::Vertex&         fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
@@ -373,28 +361,19 @@ void exahype::mappings::VolumeIntegral::enterCell(
 
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
-        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
+        ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
     const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-    const double dx = fineGridVerticesEnumerator.getCellSize()(0);
-    const double dy = fineGridVerticesEnumerator.getCellSize()(1);
+    const double* const  dx = { fineGridVerticesEnumerator.getCellSize()[0], fineGridVerticesEnumerator.getCellSize()[1] };
 
-    const double dxPatch[2] = { dx/ (double) EXAHYPE_PATCH_SIZE_X,
-                                dy/ (double) EXAHYPE_PATCH_SIZE_Y };
+    double * lFhi = &(DataHeap::getInstance().getData(cellDescription.getVolumeFlux())[0]._persistentRecords._u);
+    double * lduh = &(DataHeap::getInstance().getData(cellDescription.getUpdate())    [0]._persistentRecords._u);
 
-    for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) { // loop over patches
-      for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
-        const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
+    aderdg::volumeIntegral<DIMENSIONS>(
+        lduh,
+        lFhi,
+        dx);
 
-        double * lFhi = &(DataHeap::getInstance().getData(cellDescription.getVolumeFlux(patchIndex))[0]._persistentRecords._u);
-        double * lduh = &(DataHeap::getInstance().getData(cellDescription.getUpdate(patchIndex))    [0]._persistentRecords._u);
-
-        dg::volumeIntegral<DIMENSIONS>(
-            lduh,
-            lFhi,
-            dxPatch);
-      }
-    }
   }
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
@@ -426,8 +405,6 @@ void exahype::mappings::VolumeIntegral::endIteration(
 ) {
   // do nothing
 }
-
-
 
 void exahype::mappings::VolumeIntegral::descend(
     exahype::Cell * const          fineGridCells,
