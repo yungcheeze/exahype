@@ -47,7 +47,7 @@ void exahype::dg::surfaceIntegral(
     for(int mm=0; mm < basisSize; mm++) {
       for(int ivar=0; ivar < nvar; ivar++) {
         lduh3D[jj][mm][ivar]
-            -=  weight/dx[0] * ( dg::FRCoeff[mm] * FRight[dofStartIndex+ivar] - dg::FLCoeff[mm] * FLeft[dofStartIndex+ivar] ); // todo FL/RCoeff is hard coded
+            -=  weight/dx[0] * ( dg::FRCoeff[mm] * FRight[dofStartIndex+ivar] - dg::FLCoeff[mm] * FLeft[dofStartIndex+ivar] );
       }
     }
   }
@@ -63,9 +63,8 @@ void exahype::dg::surfaceIntegral(
 
     for(int mm=0; mm < basisSize; mm++) {
       for(int ivar=0; ivar < nvar; ivar++) {
-        //lduh[mmDofStartIndex+ivar]
         lduh3D[mm][jj][ivar]
-           -=  weight/dx[1] * ( dg::FRCoeff[mm] * FBack[dofStartIndex+ivar] - dg::FLCoeff[mm] * FFront[dofStartIndex+ivar] ); // todo FL/RCoeff is hard coded
+           -=  weight/dx[1] * ( dg::FRCoeff[mm] * FBack[dofStartIndex+ivar] - dg::FLCoeff[mm] * FFront[dofStartIndex+ivar] );
       }
     }
   }
