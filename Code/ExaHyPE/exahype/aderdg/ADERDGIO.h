@@ -1,4 +1,6 @@
-#include "tarch/plotter/griddata/unstructured/"
+#include "tarch/plotter/griddata/unstructured/vtk/VTKTextFileWriter.h"
+#include "tarch/plotter/griddata/unstructured/UnstructuredGridWriter.h"
+#include "tarch/plotter/griddata/Writer.h"
 
 #ifndef EXAHYPE_ADERDG_ADERDGIO_H_
 #define EXAHYPE_ADERDG_ADERDGIO_H_
@@ -30,37 +32,37 @@ namespace exahype {
           const int nvar,
           const int basisSize
       );
+
+      // 2D specialisations
+      template <>
+      double exportToVTK<2>(
+          tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter*                 _vtkWriter,
+          tarch::plotter::griddata::unstructured::UnstructuredGridWriter::VertexWriter*   _vertexWriter,
+          tarch::plotter::griddata::unstructured::UnstructuredGridWriter::CellWriter*     _cellWriter,
+          tarch::plotter::griddata::Writer::VertexDataWriter*                             _vertexValueWriter,
+          const double * const luh,
+          const double * const center,
+          const double * const dx,
+          const int nvar,
+          const int basisSize
+      );
+
+      // 3D specialisations
+      template <>
+      double exportToVTK<3>(
+          tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter*                 _vtkWriter,
+          tarch::plotter::griddata::unstructured::UnstructuredGridWriter::VertexWriter*   _vertexWriter,
+          tarch::plotter::griddata::unstructured::UnstructuredGridWriter::CellWriter*     _cellWriter,
+          tarch::plotter::griddata::Writer::VertexDataWriter*                             _vertexValueWriter,
+          const double * const luh,
+          const double * const center,
+          const double * const dx,
+          const int nvar,
+          const int basisSize
+      );
     } // namespace io
   }  // namespace aderdg
 }  // namespace exahype
-
-// 2D specialisations
-template <>
-double exahype::aderdg::io::exportToVTK<2>(
-    tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter*                 _vtkWriter,
-    tarch::plotter::griddata::unstructured::UnstructuredGridWriter::VertexWriter*   _vertexWriter,
-    tarch::plotter::griddata::unstructured::UnstructuredGridWriter::CellWriter*     _cellWriter,
-    tarch::plotter::griddata::Writer::VertexDataWriter*                             _vertexValueWriter,
-    const double * const luh,
-    const double * const center,
-    const double * const dx,
-    const int nvar,
-    const int basisSize
-);
-
-// 3D specialisations
-template <>
-double exahype::aderdg::io::exportToVTK<3>(
-    tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter*                 _vtkWriter,
-    tarch::plotter::griddata::unstructured::UnstructuredGridWriter::VertexWriter*   _vertexWriter,
-    tarch::plotter::griddata::unstructured::UnstructuredGridWriter::CellWriter*     _cellWriter,
-    tarch::plotter::griddata::Writer::VertexDataWriter*                             _vertexValueWriter,
-    const double * const luh,
-    const double * const center,
-    const double * const dx,
-    const int nvar,
-    const int basisSize
-);
 
 // No includes since there are no partial template function specialisations allowed by the standard
 // and full specialisations belong in a source file.

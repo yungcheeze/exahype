@@ -398,12 +398,8 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
     double * lFhi = &(DataHeap::getInstance().getData(cellDescription.getVolumeFlux())[0]._persistentRecords._u);
 
     // face DoF (basisSize**(DIMENSIONS-1))
-    double * lQhbnd[DIMENSIONS_TIMES_TWO];
-    double * lFhbnd[DIMENSIONS_TIMES_TWO];
-    for (int face=0; face < DIMENSIONS_TIMES_TWO) {
-      lQhbnd[face] = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor(face))[0]._persistentRecords._u);
-      lFhbnd[face] = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(face))          [0]._persistentRecords._u);
-    }
+    double * lQhbnd = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor())[0]._persistentRecords._u);
+    double * lFhbnd = &(DataHeap::getInstance().getData(cellDescription.getFluctuation())          [0]._persistentRecords._u);
 
     aderdg::spaceTimePredictor<2>(
         lQi,

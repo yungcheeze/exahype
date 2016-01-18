@@ -1,8 +1,7 @@
 #include "exahype/aderdg/ADERDG.h"
 
-#include "EulerFlow/quad/GaussLegendre.h"
-
-#include "kernels/compressibleeuler/DGMatrices.h"
+#include "kernels/quad/GaussLegendre.h"
+#include "kernels/aderdg/DGMatrices.h"
 
 // 3D
 void exahype::aderdg::surfaceIntegral(
@@ -44,7 +43,7 @@ void exahype::aderdg::surfaceIntegral(
 
       for(int ivar=0; ivar < nvar; ivar++) {
         lduh[mmDofStartIndex+ivar]
-            -=  weight/dx[0] * ( dg::FRCoeff[mm] * FRight[dofStartIndex+ivar] - dg::FLCoeff[mm] * FLeft[dofStartIndex+ivar] ); // todo FL/RCoeff is hard coded
+            -=  weight/dx[0] * ( aderdg::FRCoeff[mm] * FRight[dofStartIndex+ivar] - aderdg::FLCoeff[mm] * FLeft[dofStartIndex+ivar] ); // todo FL/RCoeff is hard coded
       }
     }
   }
@@ -63,7 +62,7 @@ void exahype::aderdg::surfaceIntegral(
 
       for(int ivar=0; ivar < nvar; ivar++) {
         lduh[mmDofStartIndex+ivar]
-           -=  weight/dx[1] * ( dg::FRCoeff[mm] * FBack[dofStartIndex+ivar] - dg::FLCoeff[mm] * FFront[dofStartIndex+ivar] ); // todo FL/RCoeff is hard coded
+           -=  weight/dx[1] * ( aderdg::FRCoeff[mm] * FBack[dofStartIndex+ivar] - aderdg::FLCoeff[mm] * FFront[dofStartIndex+ivar] ); // todo FL/RCoeff is hard coded
       }
     }
   }

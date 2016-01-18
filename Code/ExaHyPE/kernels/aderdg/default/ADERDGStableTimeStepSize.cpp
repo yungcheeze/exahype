@@ -5,8 +5,9 @@
 
 #include "limits"
 
-#include "EulerFlow/Constants.h"
-#include "EulerFlow/problem/Problem.h"
+#include "exahype/Constants.h"
+
+#include "kernels/aderdg/default/PDEFluxes.h"
 
 // 3D specialisation
 template <>
@@ -16,8 +17,7 @@ double exahype::aderdg::stableTimeStepSize<3>(
     double * lambda,
     const int nvar,
     const int basisSize) {
-  constexpr int dim = 3;
-
+  constexpr int DIM3=3;
   // todo insert your code here
 }
 
@@ -29,11 +29,9 @@ double exahype::aderdg::stableTimeStepSize<2>(
     double * lambda,
     const int nvar,
     const int basisSize) {
-  constexpr int dim = 2;
+  constexpr int DIM2=2;
 
-  // todo insert your code here
-
-  const double normal[dim][dim]= {
+  const double normal[DIM2][DIM2]= {
       { 1., 0.},
       { 0., 1.},
   };
@@ -45,8 +43,8 @@ double exahype::aderdg::stableTimeStepSize<2>(
       const int dofStartIndex = nodeIndex * nvar;
 
       double denominator=0.0;
-      for (int d=0; d<dim; d++) {
-        problem::PDEEigenvalues(&luh[dofStartIndex],nvar,normal[d],dim,lambda);
+      for (int d=0; d<DIM2; d++) {
+        pde::PDEEigenvalues2d(&luh[dofStartIndex],nvar,normal[d],DIM2,lambda);
 
         double maxEigenvalue=0.0;
         for (int ivar=0; ivar<nvar; ivar++) {

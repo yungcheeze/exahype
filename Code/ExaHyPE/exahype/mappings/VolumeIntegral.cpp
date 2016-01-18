@@ -363,8 +363,10 @@ void exahype::mappings::VolumeIntegral::enterCell(
     records::ADERDGCellDescription& cellDescription =
         ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-    const double* const  dx = { fineGridVerticesEnumerator.getCellSize()[0], fineGridVerticesEnumerator.getCellSize()[1] };
+    // todo DEC: I wonder if this works since _values is a private array member of Vector. Probably not. It
+    // is probably better to pass Vector<DIMENSION,doubles> to the kernel functions.
+    const double * const center = &fineGridVerticesEnumerator.getCellCenter()[0];
+    const double * const size   = &fineGridVerticesEnumerator.getCellSize()[0];
 
     double * lFhi = &(DataHeap::getInstance().getData(cellDescription.getVolumeFlux())[0]._persistentRecords._u);
     double * lduh = &(DataHeap::getInstance().getData(cellDescription.getUpdate())    [0]._persistentRecords._u);
@@ -372,7 +374,7 @@ void exahype::mappings::VolumeIntegral::enterCell(
     aderdg::volumeIntegral<DIMENSIONS>(
         lduh,
         lFhi,
-        dx);
+        size);
 
   }
 

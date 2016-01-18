@@ -369,23 +369,29 @@ void exahype::mappings::SurfaceIntegral::enterCell(
     records::ADERDGCellDescription& cellDescription =
         ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-    const double* const dx = { fineGridVerticesEnumerator.getCellSize()[0], fineGridVerticesEnumerator.getCellSize()[1] };
+    // todo DEC: I wonder if this works since _values is a private array member of Vector. Probably not. It
+    // is probably better to pass Vector<DIMENSION,doubles> to the kernel functions.
+    const double * const size   = &fineGridVerticesEnumerator.getCellSize()[0];
 
     const int basisSize       = EXAHYPE_ORDER+1;
     const int nvar            = EXAHYPE_NVARS;
     const int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
-    double * lduh     = &(DataHeap::getInstance().getData(cellDescription.getUpdate())[0]._persistentRecords._u);
+    const int dofStartIndexLeft  = EXAHYPE_FACE_LEFT  * numberOfFaceDof;
+    const int dofStartIndexRight = EXAHYPE_FACE_RIGHT * numberOfFaceDof;
+    const int dofStartIndexFront = EXAHYPE_FACE_FRONT * numberOfFaceDof;
+    const int dofStartIndexBack  = EXAHYPE_FACE_BACK  * numberOfFaceDof;
 
-    double * lFhLeft  = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(EXAHYPE_FACE_LEFT)) [0]._persistentRecords._u);
-    double * lFhRight = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(EXAHYPE_FACE_RIGHT))[0]._persistentRecords._u);
-    double * lFhFront = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(EXAHYPE_FACE_FRONT))[0]._persistentRecords._u);
-    double * lFhBack  = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(EXAHYPE_FACE_BACK)) [0]._persistentRecords._u);
+    double * lduh     = &(DataHeap::getInstance().getData(cellDescription.getUpdate())     [0]._persistentRecords._u);
+
+    double * lFhLeft  = &(DataHeap::getInstance().getData(cellDescription.getFluctuation())[dofStartIndexLeft ]._persistentRecords._u);
+    double * lFhRight = &(DataHeap::getInstance().getData(cellDescription.getFluctuation())[dofStartIndexRight]._persistentRecords._u);
+    double * lFhFront = &(DataHeap::getInstance().getData(cellDescription.getFluctuation())[dofStartIndexFront]._persistentRecords._u);
+    double * lFhBack  = &(DataHeap::getInstance().getData(cellDescription.getFluctuation())[dofStartIndexBack ]._persistentRecords._u);
 
     aderdg::surfaceIntegral(
         lduh,
-        dx,
+        size,
         nvar,
         basisSize,
         lFhLeft,
@@ -393,7 +399,6 @@ void exahype::mappings::SurfaceIntegral::enterCell(
         lFhFront,
         lFhBack);
   }
-}
 
 logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }

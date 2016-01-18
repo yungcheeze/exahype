@@ -375,7 +375,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
     records::ADERDGCellDescription& cellDescription =
         ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-    const double * dx = { fineGridVerticesEnumerator.getCellSize()(0), fineGridVerticesEnumerator.getCellSize()(1) }
+    const double * size = &fineGridVerticesEnumerator.getCellSize()[0];
 
     const int basisSize       = EXAHYPE_ORDER+1;
     const int nvar            = EXAHYPE_NVARS;
@@ -387,7 +387,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
 
     double admissiblePatchTimeStep = aderdg::stableTimeStepSize<DIMENSIONS>(
         luh,
-        dx,
+        size,
         lambda,
         nvar,
         basisSize);

@@ -41,10 +41,10 @@ class exahype::records::ADERDGCellDescription {
 
   /** Face data on each patch. Size: [d*2] * #var*(N+1)^(d-1) */
   ///@{
-  parallelise persistent int extrapolatedPredictor[DIMENSIONS_TIMES_TWO]; //!< The indices of the predictor DoF extrapolated to the bounding faces of the cell. Variables: uN,uS,uW,uE,..
-  parallelise persistent int fluctuation          [DIMENSIONS_TIMES_TWO]; //!< The indices of the normal fluxes computed at the bounding faces of the cell. Variables: FN,FS,FW,FE,.. 
+  parallelise persistent int extrapolatedPredictor; //!< The indices of the predictor DoF extrapolated to the bounding faces of the cell. Variables: uN,uS,uW,uE,..
+  parallelise persistent int fluctuation;           //!< The indices of the normal fluxes computed at the bounding faces of the cell. Variables: FN,FS,FW,FE,.. 
   // ! Removed the normalFlux field since we can use the fluctuation field to store both quantities.
-  // ! Removed: parallelise persistent int normalFlux{DIMENSIONS_TIMES_TWO; //!< The indices of the fluctuations DoF computed at the bounding faces of the cell. Variables: DLN,DLS,DLW,DLE,.. 
+  // ! Removed: parallelise persistent int normalFlux; //!< The indices of the fluctuations DoF computed at the bounding faces of the cell. Variables: DLN,DLS,DLW,DLE,.. 
   ///@}	
   
   /** Grid information */

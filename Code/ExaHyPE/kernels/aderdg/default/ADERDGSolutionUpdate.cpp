@@ -1,8 +1,6 @@
 #include "exahype/aderdg/ADERDG.h"
 
-#include "iostream"
-
-#include "EulerFlow/quad/GaussLegendre.h"
+#include "kernels/quad/GaussLegendre.h"
 
 // 3D specialisation
 template <>
@@ -32,7 +30,7 @@ void exahype::aderdg::solutionUpdate<2>(
       const int nodeIndex     = ii + basisSize * jj;
       const int dofStartIndex = nodeIndex * nvar;
 
-      double weight =  exahype::quad::gaussLegendreWeights[ii] * exahype::quad::gaussLegendreWeights[jj];
+      double weight = quad::gaussLegendreWeights[ii] * quad::gaussLegendreWeights[jj];
 
       for(int ivar=0; ivar < nvar; ivar++) {
         luh[dofStartIndex+ivar] +=  (lduh[dofStartIndex+ivar] * dt)/weight;

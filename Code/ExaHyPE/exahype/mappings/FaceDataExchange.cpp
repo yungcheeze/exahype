@@ -2,8 +2,6 @@
 
 #include "exahype/Constants.h"
 
-#include "exahype/aderdg/ADERDG.h"
-
 /**
  * Indexing of the neighbours of a cell in 2d.
  */
@@ -371,136 +369,136 @@ void exahype::mappings::FaceDataExchange::touchVertexLastTime(
   // do nothing
 }
 
-void
-exahype::mappings::FaceDataExchange::setBoundaryGhostValues(
-    records::ADERDGCellDescription& dataSelf,
-    const int patchIndexGhostSelf,
-    const int patchIndexRealSelf,
-    const int face,
-    const int numberOfDofOnFace
-) {
-  for (int dof=0; dof<numberOfDofOnFace; dof++) {
-    // copy extrapolated predictor
-    DataHeap::getInstance().getData(dataSelf.getExtrapolatedPredictor(patchIndexGhostSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u =
-        DataHeap::getInstance().getData(dataSelf.getExtrapolatedPredictor(patchIndexRealSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u;
-    // copy extrapolated fluctuation/normal flux
-    DataHeap::getInstance().getData(dataSelf.getFluctuation(patchIndexGhostSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u =
-        DataHeap::getInstance().getData(dataSelf.getFluctuation(patchIndexRealSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u;
-  }
-}
+//void
+//exahype::mappings::FaceDataExchange::setBoundaryGhostValues(
+//    records::ADERDGCellDescription& dataSelf,
+//    const int patchIndexGhostSelf,
+//    const int patchIndexRealSelf,
+//    const int face,
+//    const int numberOfDofOnFace
+//) {
+//  for (int dof=0; dof<numberOfDofOnFace; dof++) {
+//    // copy extrapolated predictor
+//    DataHeap::getInstance().getData(dataSelf.getExtrapolatedPredictor(patchIndexGhostSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u =
+//        DataHeap::getInstance().getData(dataSelf.getExtrapolatedPredictor(patchIndexRealSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u;
+//    // copy extrapolated fluctuation/normal flux
+//    DataHeap::getInstance().getData(dataSelf.getFluctuation(patchIndexGhostSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u =
+//        DataHeap::getInstance().getData(dataSelf.getFluctuation(patchIndexRealSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u;
+//  }
+//}
 
-void
-exahype::mappings::FaceDataExchange::copyGhostValues(
-    records::ADERDGCellDescription& dataSelf,
-    const records::ADERDGCellDescription& dataNeighbour,
-    const int patchIndexGhostSelf,
-    const int patchIndexNeighbour,
-    const int face,
-    const int numberOfDofOnFace
-) {
-  for (int dof=0; dof<numberOfDofOnFace; dof++) {
+//void
+//exahype::mappings::FaceDataExchange::copyGhostValues(
+//    records::ADERDGCellDescription& dataSelf,
+//    const records::ADERDGCellDescription& dataNeighbour,
+//    const int patchIndexGhostSelf,
+//    const int patchIndexNeighbour,
+//    const int face,
+//    const int numberOfDofOnFace
+//) {
+//  for (int dof=0; dof<numberOfDofOnFace; dof++) {
+//
+//    double * QSelfGhost     = &(DataHeap::getInstance().getData(dataSelf.getExtrapolatedPredictor(patchIndexGhostSelf))[0]._persistentRecords._u);
+//    double * QRealNeighbour = &(DataHeap::getInstance().getData(dataNeighbour.getExtrapolatedPredictor(patchIndexNeighbour))[0]._persistentRecords._u);
+//
+//    // copy extrapolated predictor
+//    DataHeap::getInstance().getData(dataSelf.getExtrapolatedPredictor(patchIndexGhostSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u =
+//        DataHeap::getInstance().getData(dataNeighbour.getExtrapolatedPredictor(patchIndexNeighbour))[face*numberOfDofOnFace + dof]._persistentRecords._u;
+//    // copy extrapolated fluctuation/normal flux
+//    DataHeap::getInstance().getData(dataSelf.getFluctuation(patchIndexGhostSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u =
+//        DataHeap::getInstance().getData(dataNeighbour.getFluctuation(patchIndexNeighbour))[face*numberOfDofOnFace + dof]._persistentRecords._u;
+//  }
+//}
 
-    double * QSelfGhost     = &(DataHeap::getInstance().getData(dataSelf.getExtrapolatedPredictor(patchIndexGhostSelf))[0]._persistentRecords._u);
-    double * QRealNeighbour = &(DataHeap::getInstance().getData(dataNeighbour.getExtrapolatedPredictor(patchIndexNeighbour))[0]._persistentRecords._u);
-
-    // copy extrapolated predictor
-    DataHeap::getInstance().getData(dataSelf.getExtrapolatedPredictor(patchIndexGhostSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u =
-        DataHeap::getInstance().getData(dataNeighbour.getExtrapolatedPredictor(patchIndexNeighbour))[face*numberOfDofOnFace + dof]._persistentRecords._u;
-    // copy extrapolated fluctuation/normal flux
-    DataHeap::getInstance().getData(dataSelf.getFluctuation(patchIndexGhostSelf))[face*numberOfDofOnFace + dof]._persistentRecords._u =
-        DataHeap::getInstance().getData(dataNeighbour.getFluctuation(patchIndexNeighbour))[face*numberOfDofOnFace + dof]._persistentRecords._u;
-  }
-}
-
-// Begin of code for ADERDG method
-void exahype::mappings::FaceDataExchange::initialiseGhostLayerOfPatches(
-    exahype::Cell& fineGridCell,
-    exahype::Vertex * const  fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator
-) {
-  int basisSize         = EXAHYPE_ORDER+1;
-  int numberOfDofOnFace = EXAHYPE_NVARS * tarch::la::aPowI(DIMENSIONS-1,basisSize);
-
-  records::ADERDGCellDescription& cellDescriptionSelf =
-      ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
-
-  // Read in neighbour information
-  const tarch::la::Vector<THREE_POWER_D,int> cellDescriptionsOfAllNeighbours =
-      multiscalelinkedcell::getIndicesAroundCell(
-          exahype::VertexOperations::readADERDGCellDescriptionsIndex(fineGridVerticesEnumerator,fineGridVertices));
-
-  int indexGhostSelf = 0;
-  int indexRealSelf = 0;
-  int indexRealNeighbor  = 0;
-
-  for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) {
-    ///////////////////////////////////////
-    // FRONT
-    ///////////////////////////////////////
-    indexGhostSelf    = i + (EXAHYPE_PATCH_SIZE_X+2) * 0;
-    indexRealSelf     = i + (EXAHYPE_PATCH_SIZE_X+2) * 1;
-    indexRealNeighbor = i + (EXAHYPE_PATCH_SIZE_X+2) * EXAHYPE_PATCH_SIZE_Y;
-
-    if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_FRONT]==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
-      setBoundaryGhostValues(cellDescriptionSelf,indexGhostSelf,indexRealSelf,EXAHYPE_FACE_BACK,numberOfDofOnFace);
-    } else if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_FRONT] > multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
-      records::ADERDGCellDescription& cellDescriptionNeighbourFront =
-          ADERDGADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_FRONT])[0];
-
-      copyGhostValues(cellDescriptionSelf,cellDescriptionNeighbourFront,indexGhostSelf,indexRealNeighbor,EXAHYPE_FACE_BACK,numberOfDofOnFace);
-    }
-    ///////////////////////////////////////
-    // BACK
-    ///////////////////////////////////////
-    indexGhostSelf    = i + (EXAHYPE_PATCH_SIZE_X+2) * (EXAHYPE_PATCH_SIZE_Y+1); // ghost
-    indexRealSelf     = i + (EXAHYPE_PATCH_SIZE_X+2) * (EXAHYPE_PATCH_SIZE_Y);   // non-ghost
-    indexRealNeighbor = i + (EXAHYPE_PATCH_SIZE_X+2) * 1;                        // non-ghost
-
-
-    if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_BACK]==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
-      setBoundaryGhostValues(cellDescriptionSelf,indexGhostSelf,indexRealSelf,EXAHYPE_FACE_FRONT,numberOfDofOnFace);
-    } else if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_BACK] > multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
-      records::ADERDGCellDescription& cellDescriptionNeighbourBack =
-          ADERDGADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_BACK])[0];
-
-      copyGhostValues(cellDescriptionSelf,cellDescriptionNeighbourBack,indexGhostSelf,indexRealNeighbor,EXAHYPE_FACE_FRONT,numberOfDofOnFace);
-    }
-
-    for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
-      ///////////////////////////////////////
-      // LEFT
-      ///////////////////////////////////////
-      indexGhostSelf    = 0 +                    (EXAHYPE_PATCH_SIZE_X+2) * j; // ghost
-      indexRealSelf     = 1 +                    (EXAHYPE_PATCH_SIZE_X+2) * j; // non-ghost
-      indexRealNeighbor = EXAHYPE_PATCH_SIZE_X + (EXAHYPE_PATCH_SIZE_X+2) * j; // non-ghost
-
-
-      if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_LEFT]==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
-        setBoundaryGhostValues(cellDescriptionSelf,indexGhostSelf,indexRealSelf,EXAHYPE_FACE_RIGHT,numberOfDofOnFace);
-      } else if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_LEFT] > multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
-        records::ADERDGCellDescription& cellDescriptionNeighbourLeft =
-            ADERDGADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_LEFT])[0];
-        copyGhostValues(cellDescriptionSelf,cellDescriptionNeighbourLeft,indexGhostSelf,indexRealNeighbor,EXAHYPE_FACE_RIGHT,numberOfDofOnFace);
-      }
-
-      ///////////////////////////////////////
-      // RIGHT
-      ///////////////////////////////////////
-      indexGhostSelf    = (EXAHYPE_PATCH_SIZE_X+1) + (EXAHYPE_PATCH_SIZE_X+2) * j; // ghost
-      indexRealSelf     = EXAHYPE_PATCH_SIZE_X     + (EXAHYPE_PATCH_SIZE_X+2) * j; // non-ghost
-      indexRealNeighbor = 1                        + (EXAHYPE_PATCH_SIZE_X+2) * j; // non-ghost
-
-
-      if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_RIGHT]==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
-        setBoundaryGhostValues(cellDescriptionSelf,indexGhostSelf,indexRealSelf,EXAHYPE_FACE_LEFT,numberOfDofOnFace);
-      } else if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_RIGHT] > multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
-        records::ADERDGCellDescription& cellDescriptionNeighbourRight =
-            ADERDGADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_RIGHT])[0];
-        copyGhostValues(cellDescriptionSelf,cellDescriptionNeighbourRight,indexGhostSelf,indexRealNeighbor,EXAHYPE_FACE_LEFT,numberOfDofOnFace);
-      }
-    }
-  }
-}
+//// Begin of code for ADERDG method
+//void exahype::mappings::FaceDataExchange::initialiseGhostLayerOfPatches(
+//    exahype::Cell& fineGridCell,
+//    exahype::Vertex * const  fineGridVertices,
+//    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator
+//) {
+//  int basisSize         = EXAHYPE_ORDER+1;
+//  int numberOfDofOnFace = EXAHYPE_NVARS * tarch::la::aPowI(DIMENSIONS-1,basisSize);
+//
+//  records::ADERDGCellDescription& cellDescriptionSelf =
+//      ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
+//
+//  // Read in neighbour information
+//  const tarch::la::Vector<THREE_POWER_D,int> cellDescriptionsOfAllNeighbours =
+//      multiscalelinkedcell::getIndicesAroundCell(
+//          exahype::VertexOperations::readADERDGCellDescriptionsIndex(fineGridVerticesEnumerator,fineGridVertices));
+//
+//  int indexGhostSelf = 0;
+//  int indexRealSelf = 0;
+//  int indexRealNeighbor  = 0;
+//
+//  for (int i=1; i<EXAHYPE_PATCH_SIZE_X+1; i++) {
+//    ///////////////////////////////////////
+//    // FRONT
+//    ///////////////////////////////////////
+//    indexGhostSelf    = i + (EXAHYPE_PATCH_SIZE_X+2) * 0;
+//    indexRealSelf     = i + (EXAHYPE_PATCH_SIZE_X+2) * 1;
+//    indexRealNeighbor = i + (EXAHYPE_PATCH_SIZE_X+2) * EXAHYPE_PATCH_SIZE_Y;
+//
+//    if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_FRONT]==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
+//      setBoundaryGhostValues(cellDescriptionSelf,indexGhostSelf,indexRealSelf,EXAHYPE_FACE_BACK,numberOfDofOnFace);
+//    } else if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_FRONT] > multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
+//      records::ADERDGCellDescription& cellDescriptionNeighbourFront =
+//          ADERDGADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_FRONT])[0];
+//
+//      copyGhostValues(cellDescriptionSelf,cellDescriptionNeighbourFront,indexGhostSelf,indexRealNeighbor,EXAHYPE_FACE_BACK,numberOfDofOnFace);
+//    }
+//    ///////////////////////////////////////
+//    // BACK
+//    ///////////////////////////////////////
+//    indexGhostSelf    = i + (EXAHYPE_PATCH_SIZE_X+2) * (EXAHYPE_PATCH_SIZE_Y+1); // ghost
+//    indexRealSelf     = i + (EXAHYPE_PATCH_SIZE_X+2) * (EXAHYPE_PATCH_SIZE_Y);   // non-ghost
+//    indexRealNeighbor = i + (EXAHYPE_PATCH_SIZE_X+2) * 1;                        // non-ghost
+//
+//
+//    if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_BACK]==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
+//      setBoundaryGhostValues(cellDescriptionSelf,indexGhostSelf,indexRealSelf,EXAHYPE_FACE_FRONT,numberOfDofOnFace);
+//    } else if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_BACK] > multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
+//      records::ADERDGCellDescription& cellDescriptionNeighbourBack =
+//          ADERDGADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_BACK])[0];
+//
+//      copyGhostValues(cellDescriptionSelf,cellDescriptionNeighbourBack,indexGhostSelf,indexRealNeighbor,EXAHYPE_FACE_FRONT,numberOfDofOnFace);
+//    }
+//
+//    for (int j=1; j<EXAHYPE_PATCH_SIZE_Y+1; j++) {
+//      ///////////////////////////////////////
+//      // LEFT
+//      ///////////////////////////////////////
+//      indexGhostSelf    = 0 +                    (EXAHYPE_PATCH_SIZE_X+2) * j; // ghost
+//      indexRealSelf     = 1 +                    (EXAHYPE_PATCH_SIZE_X+2) * j; // non-ghost
+//      indexRealNeighbor = EXAHYPE_PATCH_SIZE_X + (EXAHYPE_PATCH_SIZE_X+2) * j; // non-ghost
+//
+//
+//      if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_LEFT]==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
+//        setBoundaryGhostValues(cellDescriptionSelf,indexGhostSelf,indexRealSelf,EXAHYPE_FACE_RIGHT,numberOfDofOnFace);
+//      } else if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_LEFT] > multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
+//        records::ADERDGCellDescription& cellDescriptionNeighbourLeft =
+//            ADERDGADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_LEFT])[0];
+//        copyGhostValues(cellDescriptionSelf,cellDescriptionNeighbourLeft,indexGhostSelf,indexRealNeighbor,EXAHYPE_FACE_RIGHT,numberOfDofOnFace);
+//      }
+//
+//      ///////////////////////////////////////
+//      // RIGHT
+//      ///////////////////////////////////////
+//      indexGhostSelf    = (EXAHYPE_PATCH_SIZE_X+1) + (EXAHYPE_PATCH_SIZE_X+2) * j; // ghost
+//      indexRealSelf     = EXAHYPE_PATCH_SIZE_X     + (EXAHYPE_PATCH_SIZE_X+2) * j; // non-ghost
+//      indexRealNeighbor = 1                        + (EXAHYPE_PATCH_SIZE_X+2) * j; // non-ghost
+//
+//
+//      if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_RIGHT]==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
+//        setBoundaryGhostValues(cellDescriptionSelf,indexGhostSelf,indexRealSelf,EXAHYPE_FACE_LEFT,numberOfDofOnFace);
+//      } else if (cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_RIGHT] > multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
+//        records::ADERDGCellDescription& cellDescriptionNeighbourRight =
+//            ADERDGADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsOfAllNeighbours[PEANO_2D_NEIGHBOUR_RIGHT])[0];
+//        copyGhostValues(cellDescriptionSelf,cellDescriptionNeighbourRight,indexGhostSelf,indexRealNeighbor,EXAHYPE_FACE_LEFT,numberOfDofOnFace);
+//      }
+//    }
+//  }
+//}
 
 void exahype::mappings::FaceDataExchange::enterCell(
     exahype::Cell&                 fineGridCell,
@@ -514,7 +512,7 @@ void exahype::mappings::FaceDataExchange::enterCell(
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
   if (!fineGridCell.isRefined()) {
-      initialiseGhostLayerOfPatches(fineGridCell,fineGridVertices,fineGridVerticesEnumerator);
+//      initialiseGhostLayerOfPatches(fineGridCell,fineGridVertices,fineGridVerticesEnumerator);
   }
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );

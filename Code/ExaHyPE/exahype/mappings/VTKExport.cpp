@@ -391,13 +391,14 @@ void exahype::mappings::VTKExport::enterCell(
       records::ADERDGCellDescription& cellDescription =
           ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-      const double * double center = &(fineGridVerticesEnumerator.getCellCenter()[0]);
+      const double * const center = &fineGridVerticesEnumerator.getCellCenter()[0];
+      const double * const size   = &fineGridVerticesEnumerator.getCellSize()  [0];
 
       const int basisSize = EXAHYPE_ORDER+1;
       const int nvar      = EXAHYPE_NVARS;
 
       double* luh = &(DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u);
-      exahype::aderdg::io::exportToVTK(_vtkWriter,_vertexWriter,_cellWriter,_vertexValueWriter,luh,)
+      exahype::aderdg::io::exportToVTK<DIMENSIONS>(_vtkWriter,_vertexWriter,_cellWriter,_vertexValueWriter,luh,center,size,nvar,basisSize);
     }
     logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
   }

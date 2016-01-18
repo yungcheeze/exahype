@@ -73,6 +73,42 @@ class exahype::State: public peano::grid::State< exahype::records::State > {
      * type standard constructor.
      */
     State(const Base::PersistentState& argument);
+
+    /**
+      * Required for the explicit DG method
+      **/
+    ///@{
+    /*
+     * Set the time step size of this state.
+     */
+    void setTimeStepSize(const double newTimeStepSize);
+
+    /**
+     * Set the time step size to the maximum double value.
+     */
+    void setTimeStepSizeToMaxValue();
+
+    /*
+     * Get the time step size of this state.
+     */
+    double getTimeStepSize(void) const;
+
+    /*
+     * Set the old time step size of this state.
+     */
+    void setOldTimeStepSize(const double newOldTimeStepSize);
+
+    /*
+     * Get the old time step size of this state.
+     */
+    double getOldTimeStepSize(void) const;
+
+    /*
+     * Set the minimum time step size of this state and another state as the time
+     * step size of this state.
+     */
+    void setMinimumTimeStepSizeOfBoth(State anotherState);
+    ///@}
 };
 
 

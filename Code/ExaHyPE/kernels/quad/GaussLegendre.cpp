@@ -1,4 +1,4 @@
-#include "exahype/quad/GaussLegendre.h"
+#include "kernels/quad/GaussLegendre.h"
 
 const double exahype::quad::gaussLegendreMaxNodes = 10;
 

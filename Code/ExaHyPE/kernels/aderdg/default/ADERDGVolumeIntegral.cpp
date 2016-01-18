@@ -4,9 +4,8 @@
 
 #include "tarch/la/ScalarOperations.h"
 
-#include "EulerFlow/quad/GaussLegendre.h"
-
-#include "kernels/compressibleeuler/DGMatrices.h"
+#include "kernels/quad/GaussLegendre.h"
+#include "kernels/aderdg/DGMatrices.h"
 
 // 3D specialisation
 template <>
@@ -59,7 +58,7 @@ void exahype::aderdg::volumeIntegral<2>(
         f = &lFhi[mmFluxDofStartIndex];
 
         for(int ivar=0; ivar < nvar; ivar++) {
-          lduh3D[ii][jj][ivar] += weight/dx[0] * dg::Kxi[jj][mm] * f[ivar];
+          lduh3D[ii][jj][ivar] += weight/dx[0] * aderdg::Kxi[jj][mm] * f[ivar];
         }
       }
     }
@@ -82,7 +81,7 @@ void exahype::aderdg::volumeIntegral<2>(
         g = &lFhi[mmFluxDofStartIndex+nvar];
 
         for(int ivar=0; ivar < nvar; ivar++) {
-          lduh3D[ii][jj][ivar] += weight/dx[1] * dg::Kxi[ii][mm] * g[ivar];
+          lduh3D[ii][jj][ivar] += weight/dx[1] * aderdg::Kxi[ii][mm] * g[ivar];
         }
       }
     }

@@ -6,7 +6,7 @@
 
 exahype::Vertex::Vertex():
   Base() { 
-  _vertexData._persistentRecords._cellDescriptionsIndex =
+  _vertexData._persistentRecords._ADERDGCellDescriptionsIndex =
       multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createVertexLinkMapForNewVertex();
 }
 
@@ -24,5 +24,5 @@ exahype::Vertex::Vertex(const Base::PersistentVertex& argument):
 
 tarch::la::Vector<TWO_POWER_D,int>&
 exahype::Vertex::getADERDGCellDescriptionsIndex() {
-  return _vertexData._persistentRecords._cellDescriptionsIndex;
+  return _vertexData._persistentRecords._ADERDGCellDescriptionsIndex;
 }

@@ -1,14 +1,13 @@
-#include "exahype/aderg/ADERDG.h"
+#include "exahype/aderdg/ADERDG.h"
 
 #include "string.h"
 
 #include "tarch/la/ScalarOperations.h"
 
 #include "kernels/quad/GaussLegendre.h"
+#include "kernels/aderdg/DGMatrices.h"
 
-#include "kernels/compressibleeuler/DGMatrices.h"
-
-#include "EulerFlow/problem/Problem.h"
+#include "kernels/aderdg/default/PDEFluxes.h"
 
 // explicit specialisation
 template <>
@@ -46,7 +45,7 @@ void exahype::aderdg::riemannSolver<2>(
             const double hFace,
             const double * const n
 ) {
-  constexpr int dim       = DIMENSIONS;       // 2
+  constexpr int DIM2       = 2;             // 2
   constexpr int nvar      = EXAHYPE_NVARS;
   constexpr int basisSize = EXAHYPE_ORDER+1;
 
@@ -70,8 +69,8 @@ void exahype::aderdg::riemannSolver<2>(
   // Here, we implement a very simple Rusanov scheme with scalar dissipation (smax*Id).
   // We can change this into a more sophisticated Osher or HLLEM Riemann solver whenever needed.
   //
-  exahype::problem::PDEEigenvalues(QavL,nvar,n,dim,lambdaL);
-  exahype::problem::PDEEigenvalues(QavR,nvar,n,dim,lambdaR);
+  exahype::pde::PDEEigenvalues2d(QavL,nvar,n,DIM2,lambdaL);
+  exahype::pde::PDEEigenvalues2d(QavR,nvar,n,DIM2,lambdaR);
 
   sMax = 0;
   for(int ivar=0; ivar < nvar; ivar++) {

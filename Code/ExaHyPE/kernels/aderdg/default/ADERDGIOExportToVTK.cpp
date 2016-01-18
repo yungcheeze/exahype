@@ -5,7 +5,7 @@
 #include "kernels/geometry/ElementMapping.h"
 #include "kernels/quad/GaussLegendre.h"
 
-#include "kernels/compressibleeuler/DGMatrices.h"
+#include "kernels/aderdg/DGMatrices.h"
 
 // 3D specialisations
 template <>
@@ -87,7 +87,7 @@ double exahype::aderdg::io::exportToVTK<2>(
           const int dofStartIndex = nodeIndex * nvar;
 
           for (int ivar=0; ivar < nvar; ivar++) {
-            uniformDoF[ivar][uniformNodeIndex] += luh[dofStartIndex+ivar] * dg::subOutputMatrix[nodeIndex][uniformNodeIndex];
+            uniformDoF[ivar][uniformNodeIndex] += luh[dofStartIndex+ivar] * aderdg::subOutputMatrix[nodeIndex][uniformNodeIndex];
           }
         }
       }

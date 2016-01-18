@@ -1,6 +1,7 @@
 #include "exahype/aderdg/ADERDG.h"
 
 #include "stdlib.h"
+
 #include "string.h"
 
 #include "tarch/la/ScalarOperations.h"
@@ -8,6 +9,8 @@
 #include "exahype/Constants.h"
 
 #include "kernels/quad/GaussLegendre.h"
+#include "kernels/aderdg/DGMatrices.h"
+#include "kernels/aderdg/default/PDEFluxes.h"
 
 // explicit specialisations
 template <>
@@ -17,8 +20,8 @@ void exahype::aderdg::spaceTimePredictor<3>(
     const double * const luh,
     double * lQhi,
     double * lFhi,
-    double * lQhbnd[],
-    double * lFhbnd[],
+    double * lQhbnd,
+    double * lFhbnd,
     double * rhs0,
     double * rhs,
     double * tmp,
@@ -41,8 +44,8 @@ void exahype::aderdg::spaceTimePredictor<2>(
     const double * const luh,
     double * lQhi,
     double * lFhi,
-    double * lQhbnd[],
-    double * lFhbnd[],
+    double * lQhbnd,
+    double * lFhbnd,
     double * rhs0,
     double * rhs,
     double * tmp,
@@ -56,8 +59,8 @@ void exahype::aderdg::spaceTimePredictor<2>(
 
   // helper variables
   //int numberOfSpaceTimeDof  = nvar * tarch::la::aPowI(dim+1,basisSize);
-  constexpr int numberOfSpaceTimeDof  = nvar * tarch::la::aPowI(dim+1,basisSize);
-  constexpr int numberOfDof           = nvar * tarch::la::aPowI(dim,  basisSize);
+  constexpr int numberOfSpaceTimeDof  = nvar * power(basisSize,dim+1);
+  constexpr int numberOfDof           = nvar * power(basisSize, dim);
 
   for (int ii=0; ii<basisSize; ii++) { // loop over dof
     for (int jj=0; jj<basisSize; jj++) {
@@ -79,7 +82,7 @@ void exahype::aderdg::spaceTimePredictor<2>(
           rhs0[spaceTimeDofStartIndex+ivar] =
               quad::gaussLegendreWeights[ii] *
               quad::gaussLegendreWeights[jj] *
-              dg::F0[ll] *
+              aderdg::F0[ll] *
               luh[dofStartIndex+ivar];
         }
       }
@@ -106,10 +109,10 @@ void exahype::aderdg::spaceTimePredictor<2>(
           const int spaceTimeDofStartIndex     = spaceTimeNodeIndex * nvar;
           const int spaceTimeFluxDofStartIndex = spaceTimeDofStartIndex * dim;
 
-          Q = &lQi [spaceTimeDofStartIndex        ];
+          Q = &lQi[spaceTimeDofStartIndex        ];
           f = &lFi[spaceTimeFluxDofStartIndex     ];
           g = &lFi[spaceTimeFluxDofStartIndex+nvar];
-          exahype::problem::PDEFlux(Q,nvar,f,g);
+          exahype::pde::PDEFlux2d(Q,nvar,f,g);
         }
       }
       // Above seems okay!
@@ -144,7 +147,7 @@ void exahype::aderdg::spaceTimePredictor<2>(
 //
 //  Q = &(lQi [mmSpaceTimeDofStartIndex]);
 //  for(int ivar=0; ivar < nvar; ivar++) {
-//    tmp[ivar] += 1./dxPatch * dg::dudx[ii][mm] * Q[ivar];
+//    tmp[ivar] += 1./dxPatch * aderdg::dudx[ii][mm] * Q[ivar];
 //  }
 //}
           for(int ivar=0; ivar < nvar; ivar++) {
@@ -161,7 +164,7 @@ void exahype::aderdg::spaceTimePredictor<2>(
 
             for(int ivar=0; ivar < nvar; ivar++) {
               rhs[spaceTimeDofStartIndex+ivar]
-                  -= weight * dt/dx[0] * dg::Kxi[mm][ii] * f[ivar];
+                  -= weight * dt/dx[0] * aderdg::Kxi[mm][ii] * f[ivar];
             }
           }
         }
@@ -189,7 +192,7 @@ void exahype::aderdg::spaceTimePredictor<2>(
 
             for(int ivar=0; ivar < nvar; ivar++) {
               rhs[spaceTimeDofStartIndex+ivar]
-                  -= weight * dt/dx[1] * dg::Kxi[mm][jj] * g[ivar];
+                  -= weight * dt/dx[1] * aderdg::Kxi[mm][jj] * g[ivar];
             }
           }
         }
@@ -217,7 +220,7 @@ void exahype::aderdg::spaceTimePredictor<2>(
             const int nnSpaceTimeDofStartIndex = nnSpaceTimeNodeIndex * nvar;
 
             for(int ivar=0; ivar < nvar; ivar++) {
-              tmp[ivar + nvar*ll] += iWeight * dg::iK1[ll][nn] * rhs[nnSpaceTimeDofStartIndex+ivar];
+              tmp[ivar + nvar*ll] += iWeight * aderdg::iK1[ll][nn] * rhs[nnSpaceTimeDofStartIndex+ivar];
             }
           }
         }
@@ -247,7 +250,7 @@ void exahype::aderdg::spaceTimePredictor<2>(
 //              const int nnSpaceTimeNodeIndex         = nodeIndex  + basisSize * basisSize * nn;
 //              const int nnSpaceTimeDofStartIndex     = nnSpaceTimeNodeIndex * nvar;
 //
-//              dqdt[ivar + nvar*ll] += 1./dt * dg::dudx[ll][nn] *
+//              dqdt[ivar + nvar*ll] += 1./dt * aderdg::dudx[ll][nn] *
 //                  lQi[nnSpaceTimeDofStartIndex+ivar];
 //            }
 //          }
@@ -298,18 +301,16 @@ void exahype::aderdg::spaceTimePredictor<2>(
   /////////////////////////////////////////////////
   // Compute the bounday-extrapolated values for Q and F*n
   /////////////////////////////////////////////////
-  constexpr int numberOfFaceDof = nvar * tarch::la::aPowI(dim-1,basisSize);
+  constexpr int numberOfFaceDof = nvar * power(basisSize, dim-1); // tarch::la::aPowI(dim-1,basisSize);
 
-  for (int face=0; face<DIMENSIONS_TIMES_TWO; face++) {
-    memset((double *) &lQhbnd[face][0],0,sizeof(double) * numberOfFaceDof * dimTimesTwo);
-    memset((double *) &lFhbnd[face][0],0,sizeof(double) * numberOfFaceDof * dimTimesTwo);
-  }
+  memset((double *) &lQhbnd[0],0,sizeof(double) * numberOfFaceDof * dimTimesTwo);
+  memset((double *) &lFhbnd[0],0,sizeof(double) * numberOfFaceDof * dimTimesTwo);
 
   // x-direction: face 0 (left) and face 1 (right)
   for (int jj=0; jj<basisSize; jj++) {
     const int nodeIndex      = jj;
-    const int dofStartIndexL = /*EXAHYPE_FACE_LEFT  * numberOfFaceDof + */nodeIndex * nvar;
-    const int dofStartIndexR = /*EXAHYPE_FACE_RIGHT * numberOfFaceDof + */nodeIndex * nvar;
+    const int dofStartIndexL = EXAHYPE_FACE_LEFT  * numberOfFaceDof + nodeIndex * nvar;
+    const int dofStartIndexR = EXAHYPE_FACE_RIGHT * numberOfFaceDof + nodeIndex * nvar;
 
     /*double * tempQL = &lQhbnd[dofStartIndexL];
     double * tempQR = &lQhbnd[dofStartIndexR];
@@ -325,11 +326,11 @@ void exahype::aderdg::spaceTimePredictor<2>(
       f = &lFhi[mmFluxDofStartIndex];
 
       for(int ivar=0; ivar < nvar; ivar++) {
-        lQhbnd[EXAHYPE_FACE_LEFT ][dofStartIndexL+ivar] += dg::FLCoeff[mm] * Q[ivar];
-        lQhbnd[EXAHYPE_FACE_RIGHT][dofStartIndexR+ivar] += dg::FRCoeff[mm] * Q[ivar];
+        lQhbnd[dofStartIndexL+ivar] += aderdg::FLCoeff[mm] * Q[ivar];
+        lQhbnd[dofStartIndexR+ivar] += aderdg::FRCoeff[mm] * Q[ivar];
 
-        lFhbnd[EXAHYPE_FACE_LEFT ][dofStartIndexL+ivar] += dg::FLCoeff[mm] * f[ivar];
-        lFhbnd[EXAHYPE_FACE_RIGHT][dofStartIndexR+ivar] += dg::FRCoeff[mm] * f[ivar];
+        lFhbnd[dofStartIndexL+ivar] += aderdg::FLCoeff[mm] * f[ivar];
+        lFhbnd[dofStartIndexR+ivar] += aderdg::FRCoeff[mm] * f[ivar];
       }
     }
     continue;
@@ -338,23 +339,23 @@ void exahype::aderdg::spaceTimePredictor<2>(
   // y-direction: face 2 (left) and face 3 (right)
   for (int ii=0; ii<basisSize; ii++) {
     const int nodeIndex      = ii;
-    const int dofStartIndexL = /*EXAHYPE_FACE_FRONT * numberOfFaceDof + */nodeIndex * nvar;
-    const int dofStartIndexR = /*EXAHYPE_FACE_BACK  * numberOfFaceDof + */nodeIndex * nvar;
+    const int dofStartIndexL = EXAHYPE_FACE_FRONT * numberOfFaceDof + nodeIndex * nvar;
+    const int dofStartIndexR = EXAHYPE_FACE_BACK  * numberOfFaceDof + nodeIndex * nvar;
 
     for (int mm=0; mm<basisSize; mm++) {
       const int mmNodeIndex         = ii  + basisSize * mm;
       const int mmDofStartIndex     = mmNodeIndex * nvar;
       const int mmFluxDofStartIndex = mmDofStartIndex * dim;
 
-      Q = &lQhi[mmDofStartIndex         ];
+      Q = &lQhi [mmDofStartIndex         ];
       g = &lFhi[mmFluxDofStartIndex+nvar];
 
       for(int ivar=0; ivar < nvar; ivar++) {
-        lQhbnd[EXAHYPE_FACE_FRONT][dofStartIndexL+ivar] += dg::FLCoeff[mm] * Q[ivar]; // need dg::FLCoeff in kernels
-        lQhbnd[EXAHYPE_FACE_BACK ][dofStartIndexR+ivar] += dg::FRCoeff[mm] * Q[ivar]; // need dg::FRCoeff in kernels
+        lQhbnd[dofStartIndexL+ivar] += aderdg::FLCoeff[mm] * Q[ivar];
+        lQhbnd[dofStartIndexR+ivar] += aderdg::FRCoeff[mm] * Q[ivar];
 
-        lFhbnd[EXAHYPE_FACE_FRONT][dofStartIndexL+ivar] += dg::FLCoeff[mm] * g[ivar]; // need dg::FLCoeff in kernels
-        lFhbnd[EXAHYPE_FACE_BACK ][dofStartIndexR+ivar] += dg::FRCoeff[mm] * g[ivar]; // need dg::FRCoeff in kernels
+        lFhbnd[dofStartIndexL+ivar] += aderdg::FLCoeff[mm] * g[ivar];
+        lFhbnd[dofStartIndexR+ivar] += aderdg::FRCoeff[mm] * g[ivar];
       }
     }
     continue;

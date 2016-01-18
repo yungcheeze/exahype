@@ -1,3 +1,5 @@
+#include "exahype/aderdg/ADERDG.h"
+
 #include "exahype/mappings/InitialCondition.h"
 
 #include "string.h"
@@ -366,31 +368,21 @@ void exahype::mappings::InitialCondition::enterCell(
     records::ADERDGCellDescription& cellDescription =
              ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-    const double * dx = { fineGridVerticesEnumerator.getCellSize()[0], fineGridVerticesEnumerator.getCellSize()[1] };
+    const double * const center = &fineGridVerticesEnumerator.getCellCenter()[0];  // the center of the cell
+    const double * const size   = &fineGridVerticesEnumerator.getCellSize()[0];  // the center of the cell
 
     constexpr int basisSize       = EXAHYPE_ORDER+1;
     constexpr int nvar            = EXAHYPE_NVARS;
     const     int numberOfDof     = nvar * tarch::la::aPowI(DIMENSIONS,basisSize);
     const     int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
-    // zero face data (needed in Riemann solver and surface integral mappings)
-    //    double* lQhbnd = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor())[0]._persistentRecords._u);
-    //    double* lFhbnd = &(DataHeap::getInstance().getData(cellDescription.getFluctuation())          [0]._persistentRecords._u);
-    //
-    //    memset((double *) lQhbnd,0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
-    //    memset((double *) lFhbnd,0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
-
     // zero update
-    double* lduh   = &(DataHeap::getInstance().getData(cellDescription.getUpdate())               [0]._persistentRecords._u);
+    double* lduh = &(DataHeap::getInstance().getData(cellDescription.getUpdate())               [0]._persistentRecords._u);
     memset(lduh,0,sizeof(double) * numberOfDof);
 
     // apply initial condition
     double* luh    = &(DataHeap::getInstance().getData(cellDescription.getSolution())             [0]._persistentRecords._u);
-    exahype::aderdg::initialValues<DIMENSIONS>(luh,&center[0],dx,nvar,basisSize);
-
-    // clean up
-    std::free(value);
+    exahype::aderdg::initialValues<DIMENSIONS>(luh,center,size,nvar,basisSize);
   }
 
   // ! End of code for the DG method.

@@ -1,5 +1,5 @@
-#ifndef EXAHYPE_DG_ADERDG_H_
-#define EXAHYPE_DG_ADERDG_H_
+#ifndef EXAHYPE_ADERDG_ADERDG_H_
+#define EXAHYPE_ADERDG_ADERDG_H_
 
 /**
  * Indexing of the faces of a cell.
@@ -44,7 +44,7 @@ namespace exahype {
      * @todo docu
      */
     template <int dim>
-    void exahype::aderdg::solutionUpdate(
+    void solutionUpdate(
         double * luh,
         const double * const lduh,
         const double * const dx,
@@ -57,7 +57,7 @@ namespace exahype {
      * @todo docu
      */
     template <int dim>
-    void exahype::aderdg::volumeIntegral(
+    void volumeIntegral(
         double * lduh,
         const double * const lFhi,
         const double * const dx
@@ -68,7 +68,7 @@ namespace exahype {
      * @brief Computes the 2d surface integral contributions
      * to the cell update.
      */
-    void exahype::aderdg::surfaceIntegral(
+    void surfaceIntegral(
         double * lduh,
         const double * const dx,
         const int nvar,
@@ -84,7 +84,7 @@ namespace exahype {
      * @brief Computes the 3d surface integral contributions
      * to the cell update.
      */
-    void exahype::aderdg::surfaceIntegral(
+    void surfaceIntegral(
         double * lduh,
         const double * const dx,
         const int nvar,
@@ -105,7 +105,7 @@ namespace exahype {
      * QavL,QavR,lambdaL, and lambdaR are work vectors of size nvar.
      */
     template <int dim>
-    void exahype::aderdg::riemannSolver(
+    void riemannSolver(
         double * FL,
         double * FR,
         const double * const QL,
@@ -129,14 +129,14 @@ namespace exahype {
      * luh will not be modified.
      */
     template <int dim>
-    void exahype::aderdg::spaceTimePredictor(
+    void spaceTimePredictor(
         double * lQi,
         double * lFi,
         const double * const luh, // const
         double * lQhi,
         double * lFhi,
-        double * lQhbnd[],
-        double * lFhbnd[],
+        double * lQhbnd,
+        double * lFhbnd,
         double * rhs0,
         double * rhs,
         double * tmp,
@@ -155,7 +155,141 @@ namespace exahype {
      * @todo: DEC: Will need more input parameters for parameter sweep runs (void* userData).
      */
     template <int dim>
-    void exahype::aderdg::initialValues(
+    void initialValues(
+        double * luh,
+        const double * const center,
+        const double * const dx,
+        const int nvar,
+        const int basisSize
+    );
+
+    // 2D specialisations
+    template <>
+    double stableTimeStepSize<2>(
+        const double * const luh,
+        const double * const dx,
+        double * lambda,
+        const int nvar,
+        const int basisSize
+    );
+
+    template <>
+    void solutionUpdate<2>(
+        double * luh,
+        const double * const lduh,
+        const double * const dx,
+        const double dt,
+        const int nvar,
+        const int basisSize
+    );
+
+    template <>
+    void volumeIntegral<2>(
+        double * lduh,
+        const double * const lFhi,
+        const double * const dx
+    );
+
+    template <>
+    void riemannSolver<2>(
+        double * FL,
+        double * FR,
+        const double * const QL,
+        const double * const QR,
+        double * QavL,
+        double * QavR,
+        double * lambdaL,
+        double * lambdaR,
+        const double dt,
+        const double hFace,
+        const double * const n
+    );
+
+    template <>
+    void spaceTimePredictor<2>(
+        double * lQi,
+        double * lFi,
+        const double * const luh,
+        double * lQhi,
+        double * lFhi,
+        double * lQhbnd,
+        double * lFhbnd,
+        double * rhs0,
+        double * rhs,
+        double * tmp,
+        const double * const dx,
+        const double dt
+    );
+
+    template <>
+    void initialValues<2>(
+        double * luh,
+        const double * const center,
+        const double * const dx,
+        const int nvar,
+        const int basisSize
+    );
+
+    // 3D specialisations
+    template <>
+    double stableTimeStepSize<3>(
+        const double * const luh,
+        const double * const dx,
+        double * lambda,
+        const int nvar,
+        const int basisSize
+    );
+
+    template <>
+    void solutionUpdate<3>(
+        double * luh,
+        const double * const lduh,
+        const double * const dx,
+        const double dt,
+        const int nvar,
+        const int basisSize
+    );
+
+    template <>
+    void volumeIntegral<3>(
+        double * lduh,
+        const double * const lFhi,
+        const double * const dx
+    );
+
+    template <>
+    void riemannSolver<3>(
+        double * FL,
+        double * FR,
+        const double * const QL,
+        const double * const QR,
+        double * QavL,
+        double * QavR,
+        double * lambdaL,
+        double * lambdaR,
+        const double dt,
+        const double hFace,
+        const double * const n
+    );
+
+    template <>
+    void spaceTimePredictor<3>(
+        double * lQi,
+        double * lFi,
+        const double * const luh,
+        double * lQhi,
+        double * lFhi,
+        double * lQhbnd,
+        double * lFhbnd,
+        double * rhs0,
+        double * rhs,
+        double * tmp,
+        const double * const dx,
+        const double dt
+    );
+
+    template <>
+    void initialValues<3>(
         double * luh,
         const double * const center,
         const double * const dx,
@@ -165,141 +299,7 @@ namespace exahype {
   }  // namespace aderdg
 }  // namespace exahype
 
-// 2D specialisations
-template <>
-double exahype::aderdg::stableTimeStepSize<2>(
-    const double * const luh,
-    const double * const dx,
-    double * lambda,
-    const int nvar,
-    const int basisSize
-);
-
-template <>
-void exahype::aderdg::solutionUpdate<2>(
-    double * luh,
-    const double * const lduh,
-    const double * const dx,
-    const double dt,
-    const int nvar,
-    const int basisSize
-);
-
-template <>
-void exahype::aderdg::volumeIntegral<2>(
-    double * lduh,
-    const double * const lFhi,
-    const double * const dx
-);
-
-template <>
-void exahype::aderdg::riemannSolver<2>(
-    double * FL,
-    double * FR,
-    const double * const QL,
-    const double * const QR,
-    double * QavL,
-    double * QavR,
-    double * lambdaL,
-    double * lambdaR,
-    const double dt,
-    const double hFace,
-    const double * const n
-);
-
-template <>
-void exahype::aderdg::spaceTimePredictor<2>(
-    double * lQi,
-    double * lFi,
-    const double * const luh,
-    double * lQhi,
-    double * lFhi,
-    double * lQhbnd[],
-    double * lFhbnd[],
-    double * rhs0,
-    double * rhs,
-    double * tmp,
-    const double * const dx,
-    const double dt
-);
-
-template <>
-void exahype::aderdg::initialValues<2>(
-    double * luh,
-    const double * const center,
-    const double * const dx,
-    const int nvar,
-    const int basisSize
-);
-
-// 3D specialisations
-template <>
-double exahype::aderdg::stableTimeStepSize<3>(
-    const double * const luh,
-    const double * const dx,
-    double * lambda,
-    const int nvar,
-    const int basisSize
-);
-
-template <>
-void exahype::aderdg::solutionUpdate<3>(
-    double * luh,
-    const double * const lduh,
-    const double * const dx,
-    const double dt,
-    const int nvar,
-    const int basisSize
-);
-
-template <>
-void exahype::aderdg::volumeIntegral<3>(
-    double * lduh,
-    const double * const lFhi,
-    const double * const dx
-);
-
-template <>
-void exahype::aderdg::riemannSolver<3>(
-    double * FL,
-    double * FR,
-    const double * const QL,
-    const double * const QR,
-    double * QavL,
-    double * QavR,
-    double * lambdaL,
-    double * lambdaR,
-    const double dt,
-    const double hFace,
-    const double * const n
-);
-
-template <>
-void exahype::aderdg::spaceTimePredictor<3>(
-    double * lQi,
-    double * lFi,
-    const double * const luh,
-    double * lQhi,
-    double * lFhi,
-    double * lQhbnd[],
-    double * lFhbnd[],
-    double * rhs0,
-    double * rhs,
-    double * tmp,
-    const double * const dx,
-    const double dt
-);
-
-template <>
-void exahype::aderdg::initialValues<3>(
-    double * luh,
-    const double * const center,
-    const double * const dx,
-    const int nvar,
-    const int basisSize
-);
-
 // No includes since there are no partial template function specialisations allowed by the standard
 // and full specialisations belong in a source file.
 
-#endif /* EXAHYPE_DG_ADERDG_H_ */
+#endif /* EXAHYPE_ADERDG_ADERDG_H_ */
