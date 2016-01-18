@@ -29,20 +29,24 @@ namespace exahype {
     );
 
     /**
-     * @todo docu
+     * @brief Adds the delta to the solution and thereby finalises the updates of the cell
+     * @param[in,out] luh    the current solution that is to be updated
+     * @param[in]     lduh   the update quantities that are incorporated into \p luh
+     * @param[in]     dt     the time step
      */
     template <int dim>
     void updateSolution(
         double * luh,
         const double * const lduh,
-        const double * const dx,
-        const double dt,
-        const int nvar,
-        const int basisSize
+        const double dt
     );
 
     /**
-     * @todo docu
+     * @brief Computes the volume integral
+     *
+     * @param[out] lduh   spatial degrees of freedom, array of size nVar*basisSize**dim
+     * @param[in]  lFhi   flux tensor, array of size nVar*dim*basisSize**dim
+     * @param[in]  dx     array of size dim containing the spacing of the cell
      */
     template <int dim>
     void volumeIntegral(
@@ -59,8 +63,6 @@ namespace exahype {
     void surfaceIntegral(
         double * lduh,
         const double * const dx,
-        const int nvar,
-        const int basisSize,
         const double * const FLeft,
         const double * const FRight,
         const double * const FFront,
@@ -75,8 +77,6 @@ namespace exahype {
     void surfaceIntegral(
         double * lduh,
         const double * const dx,
-        const int nvar,
-        const int basisSize,
         const double * const FLeft,
         const double * const FRight,
         const double * const FFront,
@@ -146,10 +146,7 @@ namespace exahype {
     void updateSolution<2>(
         double * luh,
         const double * const lduh,
-        const double * const dx,
-        const double dt,
-        const int nvar,
-        const int basisSize
+        const double dt
     );
 
     template <>
@@ -204,10 +201,7 @@ namespace exahype {
     void updateSolution<3>(
         double * luh,
         const double * const lduh,
-        const double * const dx,
-        const double dt,
-        const int nvar,
-        const int basisSize
+        const double dt
     );
 
     template <>

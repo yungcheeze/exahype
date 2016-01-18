@@ -26,20 +26,16 @@ namespace exahype {
  */ 
 class exahype::tests::TestCase: public tarch::tests::TestCase {
   private:
-    /**
-     * These operation usually implement the real tests.
-     */
-    void test1();
+    const double eps = 1.0e-10; // for quick adaption of the test cases (say, switch to single precision)
 
-    /**
-     * These operation usually implement the real tests.
-     */
-    void test2();
+    void testSpaceTimePredictor();
+    void testVolumeIntegral();
+    void testRiemannSolver();
+    void testSurfaceIntegral();
+    void testUpdateSolution();
 
-    /**
-     * These operation usually implement the real tests.
-     */
-    void test3();
+    //void test1();
+
   public: 
     TestCase(); 
     virtual ~TestCase();

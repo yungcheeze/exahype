@@ -406,8 +406,6 @@ void exahype::mappings::SurfaceIntegral::enterCell(
         dg::surfaceIntegral(
             lduh,
             dxPatch,
-            nvar,
-            basisSize,
             lFhLeft,
             lFhRight,
             lFhFront,

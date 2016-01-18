@@ -9,10 +9,7 @@ template <>
 void exahype::dg::updateSolution<3>(
     double * luh,
     const double * const lduh,
-    const double * const dx,
-    const double dt,
-    const int nvar,
-    const int basisSize
+    const double dt
 ) {
   // todo insert your code here
 }
@@ -20,13 +17,13 @@ void exahype::dg::updateSolution<3>(
 // 2D specialisation
 template <>
 void exahype::dg::updateSolution<2>(
-    double * luh,
-    const double * const lduh,
-    const double * const dx,
-    const double dt,
-    const int nvar,
-    const int basisSize
+    double * /*inout*/ luh,
+    const double * const /*in*/ lduh,
+    const double /*in*/ dt
 ) {
+  constexpr int nvar        = EXAHYPE_NVARS;
+  constexpr int basisSize   = EXAHYPE_ORDER+1;
+
   for (int ii=0; ii<basisSize; ii++) {
     for (int jj=0; jj<basisSize; jj++) {
       const int nodeIndex     = ii + basisSize * jj;

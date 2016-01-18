@@ -12,13 +12,13 @@
 template <>
 void exahype::dg::volumeIntegral<3>(
     double* /*out*/ lduh,
-    const double * const lFhi,
-    const double * const dx
+    const double * const /*in*/ lFhi,
+    const double * const /*in*/ dx
 ) {
   constexpr int dim         = DIMENSIONS;     // 3
   constexpr int dimTimesTwo = (2*DIMENSIONS); // 6
-  constexpr int nvar = EXAHYPE_NVARS;
-  constexpr int basisSize = EXAHYPE_ORDER+1;
+  constexpr int nvar        = EXAHYPE_NVARS;
+  constexpr int basisSize   = EXAHYPE_ORDER+1;
 
   // todo insert your code here
 }
@@ -27,16 +27,21 @@ void exahype::dg::volumeIntegral<3>(
 template <>
 void exahype::dg::volumeIntegral<2>(
     double* /*out*/ lduh,
-    const double * const lFhi,
-    const double * const dx
+    const double * const /*in*/ lFhi,
+    const double * const /*in*/ dx
 ) {
-  constexpr int dim = DIMENSIONS;             // 2
-  constexpr int nvar = EXAHYPE_NVARS;
-  constexpr int basisSize = EXAHYPE_ORDER+1;
+  constexpr int dim         = DIMENSIONS;                 // 2
+  constexpr int nvar        = EXAHYPE_NVARS;
+  constexpr int basisSize   = EXAHYPE_ORDER+1;
   constexpr int numberOfDof = nvar * power(basisSize,dim);
 
-  const double * f;
-  const double * g;
+  // memory layout of lFhi:
+  // lFhi = [ lFhi_x | lFhi_y ] ordered as follows
+  // (a) lFhi_x[nDOF_y][nDOF_x][nVar]
+  // (b) lFhi_y[nDOF_y][nDOF_x][nVar]
+  // let's not bother with offsets and define separate flux matrices
+  const double * lFhi_x = &lFhi[0];            // f flux
+  const double * lFhi_y = &lFhi[numberOfDof];  // g flux
 
   memset(lduh,0,sizeof(double) * numberOfDof);
 
@@ -51,21 +56,18 @@ void exahype::dg::volumeIntegral<2>(
 
       double weight = exahype::quad::gaussLegendreWeights[ii];
 
+      // MATMUL: Kxi * lFhi_x
       for(int mm=0; mm < basisSize; mm++) {
         const int mmNodeIndex         = mm + basisSize * ii;
         const int mmDofStartIndex     = mmNodeIndex * nvar;
-        const int mmFluxDofStartIndex = mmDofStartIndex * dim;
-
-        f = &lFhi[mmFluxDofStartIndex];
 
         for(int ivar=0; ivar < nvar; ivar++) {
-          lduh3D[ii][jj][ivar] += weight/dx[0] * dg::Kxi[jj][mm] * f[ivar];
+          lduh3D[ii][jj][ivar] += weight/dx[0] * dg::Kxi[jj][mm] * lFhi_x[mmDofStartIndex+ivar];
         }
       }
     }
   }
 
-  // Above seems okay!
 
   // Compute the "derivatives" (contributions of the stiffness matrix)
   // y direction (independent from the y and z derivatives)
@@ -74,18 +76,16 @@ void exahype::dg::volumeIntegral<2>(
 
       double weight = exahype::quad::gaussLegendreWeights[jj];
 
+      // MATMUL: Kxi * lFhi_y
       for(int mm=0; mm < basisSize; mm++) {
         const int mmNodeIndex         = jj + basisSize * mm;
         const int mmDofStartIndex     = mmNodeIndex * nvar;
-        const int mmFluxDofStartIndex = mmDofStartIndex * dim;
-
-        g = &lFhi[mmFluxDofStartIndex+nvar];
 
         for(int ivar=0; ivar < nvar; ivar++) {
-          lduh3D[ii][jj][ivar] += weight/dx[1] * dg::Kxi[ii][mm] * g[ivar];
+          lduh3D[ii][jj][ivar] += weight/dx[1] * dg::Kxi[ii][mm] * lFhi_y[mmDofStartIndex+ivar];
         }
       }
     }
   }
-  // Above seems okay!
+
 }

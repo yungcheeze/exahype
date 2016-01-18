@@ -8,8 +8,6 @@
 void exahype::dg::surfaceIntegral(
     double * lduh,
     const double * const dx,
-    const int nvar,
-    const int basisSize,
     const double * const FLeft,
     const double * const FRight,
     const double * const FFront,
@@ -17,20 +15,28 @@ void exahype::dg::surfaceIntegral(
     const double * const FBottom,
     const double * const FTop
 ) {
+  constexpr int nvar        = EXAHYPE_NVARS;
+  constexpr int basisSize   = EXAHYPE_ORDER+1;
+
   // todo insert your code here
 }
 
 // 2D
 void exahype::dg::surfaceIntegral(
-    double * lduh,
-    const double * const dx,
-    const int nvar,
-    const int basisSize,
+    double * /*inout*/ lduh,
+    const double * const /*in*/ dx,
     const double * const FLeft,
     const double * const FRight,
     const double * const FFront,
     const double * const FBack
 ) {
+  constexpr int nvar        = EXAHYPE_NVARS;
+  constexpr int basisSize   = EXAHYPE_ORDER+1;
+
+  // access lduh(nDOF[2] x nDOF[1] x nvar) in the usual 3D array manner
+  typedef double tensor_t[basisSize][nvar];
+  tensor_t *lduh3D = (tensor_t *)lduh;
+
   // x direction (independent from the y and z)
   for (int jj=0; jj<basisSize; jj++) {
     const int nodeIndex     = jj;
@@ -39,15 +45,13 @@ void exahype::dg::surfaceIntegral(
     double weight =  quad::gaussLegendreWeights[jj];
 
     for(int mm=0; mm < basisSize; mm++) {
-      const int mmNodeIndex         = mm + basisSize * jj;
-      const int mmDofStartIndex     = mmNodeIndex * nvar;
-
       for(int ivar=0; ivar < nvar; ivar++) {
-        lduh[mmDofStartIndex+ivar]
-            -=  weight/dx[0] * ( dg::FRCoeff[mm] * FRight[dofStartIndex+ivar] - dg::FLCoeff[mm] * FLeft[dofStartIndex+ivar] ); // todo FL/RCoeff is hard coded
+        lduh3D[jj][mm][ivar]
+            -=  weight/dx[0] * ( dg::FRCoeff[mm] * FRight[dofStartIndex+ivar] - dg::FLCoeff[mm] * FLeft[dofStartIndex+ivar] );
       }
     }
   }
+
   // Above seems okay!
 
   // y direction (independent from the y and z)
@@ -58,14 +62,12 @@ void exahype::dg::surfaceIntegral(
     double weight =  quad::gaussLegendreWeights[jj];
 
     for(int mm=0; mm < basisSize; mm++) {
-      const int mmNodeIndex         = jj + basisSize * mm;
-      const int mmDofStartIndex     = mmNodeIndex * nvar;
-
       for(int ivar=0; ivar < nvar; ivar++) {
-        lduh[mmDofStartIndex+ivar]
-           -=  weight/dx[1] * ( dg::FRCoeff[mm] * FBack[dofStartIndex+ivar] - dg::FLCoeff[mm] * FFront[dofStartIndex+ivar] ); // todo FL/RCoeff is hard coded
+        lduh3D[mm][jj][ivar]
+           -=  weight/dx[1] * ( dg::FRCoeff[mm] * FBack[dofStartIndex+ivar] - dg::FLCoeff[mm] * FFront[dofStartIndex+ivar] );
       }
     }
   }
+
   // Above seems okay!
 }
