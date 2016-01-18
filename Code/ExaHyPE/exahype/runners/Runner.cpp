@@ -33,14 +33,6 @@ exahype::runners::Runner::~Runner() {
 }
 
 
-void exahype::runners::Runner::setupComputationalDomain() {
-  peano::geometry::Hexahedron geometry(
-    tarch::la::Vector<DIMENSIONS,double>( _parser.getSize() ),
-    _parser.getOffset()
-   );
-}
-
-
 void exahype::runners::Runner::initSharedMemoryConfiguration() {
   #ifdef SharedMemoryParallelisation
   const int numberOfThreads = parser.getNumberOfThreads();
@@ -90,9 +82,12 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 
 
 int exahype::runners::Runner::run() {
-  setupComputationalDomain();
-
   initSharedMemoryConfiguration();
+
+  peano::geometry::Hexahedron geometry(
+    tarch::la::Vector<DIMENSIONS,double>( _parser.getSize() ),
+    _parser.getOffset()
+   );
 
   exahype::repositories::Repository* repository = 
     exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(

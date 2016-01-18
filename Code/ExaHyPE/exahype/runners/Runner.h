@@ -22,8 +22,6 @@ namespace exahype {
     }
 }
 
-
-
 /**
  * Runner
  *
@@ -33,11 +31,6 @@ class exahype::runners::Runner {
     static tarch::logging::Log _log;
 
     const exahype::Parser _parser;
-
-    /**
-     * Create computational domain.
-     */
-    void setupComputationalDomain();
 
     /**
      * Setup the oracles for the shared memory parallelisation. Different
