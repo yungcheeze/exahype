@@ -860,7 +860,186 @@ void exahype::tests::TestCase::testSurfaceIntegral() {
 
 
 void exahype::tests::TestCase::testUpdateSolution() {
+  if(EXAHYPE_ORDER==3) {
+    cout << "Test solution update, ORDER=3, DIM=2" << endl;
 
+    // in/out:
+    double * luh  = new double[80]();
+    for(int i=0;i<80;i+=5) {
+      luh[i]   = 1.0;
+      luh[i+4] = 2.5;
+    }
+
+    // inputs:
+    const double dt = 1.40831757919882352703e-03;
+    double lduh[80] = {
+      6.93136751845e-310,
+      6.93136751845e-310,
+      -3.85240924537,
+      -1.22497305535e-16,
+      5.34573771861,
+      5.34573771861,
+      2.85142157753,
+      -7.22235167637,
+      -7.74641761194e-17,
+      -5.34573771861,
+      5.34573771861,
+      -2.85142157753,
+      -7.22235167637,
+      2.85795830992e-17,
+      7.22235167637,
+      2.85142157753,
+      3.85240924537,
+      -3.85240924537,
+      2.93091460302e-17,
+      -7.22235167637,
+      8.69555536681e-322,
+      8.69555536681e-322,
+      2.85142157753,
+      -3.85240924537,
+      -3.85240924537,
+      -1.22497305535e-16,
+      5.34573771861,
+      5.34573771861,
+      2.85142157753,
+      -7.22235167637,
+      -7.74641761194e-17,
+      -5.34573771861,
+      5.34573771861,
+      -2.85142157753,
+      -7.22235167637,
+      2.85795830992e-17,
+      7.22235167637,
+      2.85142157753,
+      3.85240924537,
+      -3.85240924537,
+      2.93091460302e-17,
+      -7.22235167637,
+      -5.70284315505,
+      3.33519014225e-319,
+      2.05164022212e-16,
+      -1.54928352239e-16,
+      10.6914754372,
+      -10.6914754372,
+      0,
+      -5.42249232835e-16,
+      -6.4862093408e-17,
+      -10.6914754372,
+      -10.6914754372,
+      0,
+      -2.27017326925e-16,
+      3.71888723946e-17,
+      14.4447033527,
+      -5.70284315505,
+      0,
+      1.3016105338e-16,
+      3.915089398e-17,
+      -7.70481849073,
+      7.70481849073,
+      0,
+      1.3702812893e-16,
+      5.71591661983e-17,
+      5.70284315505,
+      14.4447033527,
+      0,
+      2.00057081693e-16,
+      3.71888723946e-17,
+      -5.70284315505,
+      14.4447033527,
+      0,
+      1.3016105338e-16,
+      5.14845862726e-17,
+      7.70481849073,
+      7.70481849073,
+      0,
+      1.80196051954e-16};
+
+
+    dg::updateSolution<2>(luh,lduh,dt);
+
+    validateNumericalEqualsWithEps(luh[0], 1, eps);
+    validateNumericalEqualsWithEps(luh[1], 3.22688437998e-311, eps);
+    validateNumericalEqualsWithEps(luh[2], -0.179348147189, eps);
+    validateNumericalEqualsWithEps(luh[3], -5.70283772674e-18, eps);
+    validateNumericalEqualsWithEps(luh[4], 2.74886975763, eps);
+    validateNumericalEqualsWithEps(luh[5], 1.13274736515, eps);
+    validateNumericalEqualsWithEps(luh[6], 0.0708075706777, eps);
+    validateNumericalEqualsWithEps(luh[7], -0.179348147189, eps);
+    validateNumericalEqualsWithEps(luh[8], -1.92361949169e-18, eps);
+    validateNumericalEqualsWithEps(luh[9], 2.36725263485, eps);
+    validateNumericalEqualsWithEps(luh[10], 1.13274736515, eps);
+    validateNumericalEqualsWithEps(luh[11], -0.0708075706777, eps);
+    validateNumericalEqualsWithEps(luh[12], -0.179348147189, eps);
+    validateNumericalEqualsWithEps(luh[13], 7.09698932695e-19, eps);
+    validateNumericalEqualsWithEps(luh[14], 2.67934814719, eps);
+    validateNumericalEqualsWithEps(luh[15], 1.13274736515, eps);
+    validateNumericalEqualsWithEps(luh[16], 0.179348147189, eps);
+    validateNumericalEqualsWithEps(luh[17], -0.179348147189, eps);
+    validateNumericalEqualsWithEps(luh[18], 1.36448147157e-18, eps);
+    validateNumericalEqualsWithEps(luh[19], 2.16376485233, eps);
+    validateNumericalEqualsWithEps(luh[20], 1, eps);
+    validateNumericalEqualsWithEps(luh[21], 0, eps);
+    validateNumericalEqualsWithEps(luh[22], 0.0708075706777, eps);
+    validateNumericalEqualsWithEps(luh[23], -0.0956644720902, eps);
+    validateNumericalEqualsWithEps(luh[24], 2.40433552791, eps);
+    validateNumericalEqualsWithEps(luh[25], 1, eps);
+    validateNumericalEqualsWithEps(luh[26], 0.0708075706776, eps);
+    validateNumericalEqualsWithEps(luh[27], 0.0708075706776, eps);
+    validateNumericalEqualsWithEps(luh[28], 0.0377688254662, eps);
+    validateNumericalEqualsWithEps(luh[29], 2.40433552791, eps);
+    validateNumericalEqualsWithEps(luh[30], 1, eps);
+    validateNumericalEqualsWithEps(luh[31], -0.0708075706776, eps);
+    validateNumericalEqualsWithEps(luh[32], 0.0708075706776, eps);
+    validateNumericalEqualsWithEps(luh[33], -0.0377688254662, eps);
+    validateNumericalEqualsWithEps(luh[34], 2.40433552791, eps);
+    validateNumericalEqualsWithEps(luh[35], 1, eps);
+    validateNumericalEqualsWithEps(luh[36], 0.179348147189, eps);
+    validateNumericalEqualsWithEps(luh[37], 0.0708075706777, eps);
+    validateNumericalEqualsWithEps(luh[38], 0.0956644720902, eps);
+    validateNumericalEqualsWithEps(luh[39], 2.40433552791, eps);
+    validateNumericalEqualsWithEps(luh[40], 1, eps);
+    validateNumericalEqualsWithEps(luh[41], -0.179348147189, eps);
+    validateNumericalEqualsWithEps(luh[42], -0.141615141355, eps);
+    validateNumericalEqualsWithEps(luh[43], 8.27559956784e-321, eps);
+    validateNumericalEqualsWithEps(luh[44], 2.5, eps);
+    validateNumericalEqualsWithEps(luh[45], 1, eps);
+    validateNumericalEqualsWithEps(luh[46], 0.141615141355, eps);
+    validateNumericalEqualsWithEps(luh[47], -0.141615141355, eps);
+    validateNumericalEqualsWithEps(luh[48], 0, eps);
+    validateNumericalEqualsWithEps(luh[49], 2.5, eps);
+    validateNumericalEqualsWithEps(luh[50], 1, eps);
+    validateNumericalEqualsWithEps(luh[51], -0.141615141355, eps);
+    validateNumericalEqualsWithEps(luh[52], -0.141615141355, eps);
+    validateNumericalEqualsWithEps(luh[53], 0, eps);
+    validateNumericalEqualsWithEps(luh[54], 2.5, eps);
+    validateNumericalEqualsWithEps(luh[55], 1, eps);
+    validateNumericalEqualsWithEps(luh[56], 0.358696294376, eps);
+    validateNumericalEqualsWithEps(luh[57], -0.141615141355, eps);
+    validateNumericalEqualsWithEps(luh[58], 0, eps);
+    validateNumericalEqualsWithEps(luh[59], 2.5, eps);
+    validateNumericalEqualsWithEps(luh[60], 1, eps);
+    validateNumericalEqualsWithEps(luh[61], -0.358696294377, eps);
+    validateNumericalEqualsWithEps(luh[62], 0.358696294377, eps);
+    validateNumericalEqualsWithEps(luh[63], 0, eps);
+    validateNumericalEqualsWithEps(luh[64], 2.5, eps);
+    validateNumericalEqualsWithEps(luh[65], 1, eps);
+    validateNumericalEqualsWithEps(luh[66], 0.141615141355, eps);
+    validateNumericalEqualsWithEps(luh[67], 0.358696294376, eps);
+    validateNumericalEqualsWithEps(luh[68], 0, eps);
+    validateNumericalEqualsWithEps(luh[69], 2.5, eps);
+    validateNumericalEqualsWithEps(luh[70], 1, eps);
+    validateNumericalEqualsWithEps(luh[71], -0.141615141355, eps);
+    validateNumericalEqualsWithEps(luh[72], 0.358696294376, eps);
+    validateNumericalEqualsWithEps(luh[73], 0, eps);
+    validateNumericalEqualsWithEps(luh[74], 2.5, eps);
+    validateNumericalEqualsWithEps(luh[75], 1, eps);
+    validateNumericalEqualsWithEps(luh[76], 0.358696294377, eps);
+    validateNumericalEqualsWithEps(luh[77], 0.358696294377, eps);
+    validateNumericalEqualsWithEps(luh[78], 0, eps);
+    validateNumericalEqualsWithEps(luh[79], 2.5, eps);
+
+    delete[] luh;
+  }
 } // testUpdateSolution
 
 

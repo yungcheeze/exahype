@@ -1,8 +1,6 @@
 #include "EulerFlow/dg/ADERDG.h"
-
-#include "iostream"
-
 #include "EulerFlow/quad/GaussLegendre.h"
+
 
 // 3D specialisation
 template <>
