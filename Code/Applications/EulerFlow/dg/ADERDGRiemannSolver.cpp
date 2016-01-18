@@ -34,17 +34,17 @@ void exahype::dg::solveRiemannProblem<3>(
 
 template <>
 void exahype::dg::solveRiemannProblem<2>(
-            double * FL,
-            double * FR,
-            const double * const QL,
-            const double * const QR,
-            double * QavL,
-            double * QavR,
-            double * lambdaL,
-            double * lambdaR,
+            double * /*out*/ FL,
+            double * /*out*/ FR,
+            const double * /*in*/ const QL,
+            const double * /*in*/ const QR,
+            double * /*local*/ QavL,
+            double * /*local*/ QavR,
+            double * /*local*/ lambdaL,
+            double * /*local*/ lambdaR,
             const double dt,
             const double hFace,
-            const double * const n
+            const double * const /*in*/ n
 ) {
   constexpr int dim       = DIMENSIONS;       // 2
   constexpr int nvar      = EXAHYPE_NVARS;

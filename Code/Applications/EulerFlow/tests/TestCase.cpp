@@ -7,8 +7,10 @@
 #include "EulerFlow/Constants.h"
 
 #include <iostream>
+#include <algorithm> // max
 using std::cout;
 using std::endl;
+using std::max;
 
 registerTest(exahype::tests::TestCase)
 
@@ -812,6 +814,41 @@ void exahype::tests::TestCase::testVolumeIntegral() {
 
 
 void exahype::tests::TestCase::testRiemannSolver() {
+  // Rusanov
+  if(EXAHYPE_ORDER==3) {
+    cout << "Test Riemann Solver (Rusanov), ORDER=3, DIM=2" << endl;
+    // input:
+    double QL[20] = {1.,0.,0.,0.,2.5,1.,0.,0.,0.,2.5,1.,0.,0.,0.,2.5,1.,0.,0.,0.,2.5};
+    double QR[20] = {1.,0.,0.,0.,2.5,1.,0.,0.,0.,2.5,1.,0.,0.,0.,2.5,1.,0.,0.,0.,2.5};
+
+    const double nx[3]= { 1., 0., 0. }; // normal vector in x direction
+
+    // local:
+    double QavL[5];
+    double QavR[5];
+    double lambdaL[5];
+    double lambdaR[5];
+
+    // output:
+    double *FL = new double[20];
+    double *FR = new double[20];
+
+    dg::solveRiemannProblem<2>(FL, FR, QL, QR, QavL, QavR, lambdaL, lambdaR, 0.0 /*unused*/, 0.0 /*unused*/, nx);
+
+    // (a) FL == FR, element by element
+    for(int i=0;i<20;i++) {
+      validateEquals(FL[i],FR[i]);
+    }
+    // (b) check max speed
+    double sMax = 0;
+    for(int ivar=0; ivar < 5; ivar++) {
+      sMax = max(sMax, max(fabs(lambdaL[ivar]),fabs(lambdaR[ivar])));
+    }
+    validateNumericalEqualsWithEps(sMax, 1.18321595661992, eps);
+
+    delete[] FL;
+    delete[] FR;
+  }
 
 } // testRiemannSolver
 
