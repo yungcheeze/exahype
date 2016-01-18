@@ -36,7 +36,6 @@ void exahype::tests::TestCase::run() {
   testMethod( testRiemannSolver      );
   testMethod( testSurfaceIntegral    );
   testMethod( testUpdateSolution     );
-
 }
 
 /*
@@ -554,7 +553,262 @@ void exahype::tests::TestCase::testSpaceTimePredictor() {
 
 
 void exahype::tests::TestCase::testVolumeIntegral() {
+  if(EXAHYPE_ORDER==3) {
+    cout << "Test volume integral, ORDER=3, DIM=2" << endl;
 
+    // output:
+    double *lduh = new double[80];
+
+    // input:
+    const double dx[2] = {3.70370370370370349811e-02, 3.70370370370370349811e-02}; // mesh spacing
+    const double lFhi[160] = {
+      -5.78725778411e-18,
+      1,
+      3.90655760696e-35,
+      0,
+      -2.02554022444e-17,
+      3.32798659798e-18,
+      1,
+      -6.28505465062e-35,
+      0,
+      1.16479530929e-17,
+      -3.07890876627e-18,
+      1,
+      6.02226203114e-35,
+      0,
+      -1.07761806819e-17,
+      7.66579600935e-18,
+      1,
+      -5.27718213855e-35,
+      0,
+      2.68302860327e-17,
+      -1.48132747725e-17,
+      1,
+      -6.28505465062e-35,
+      0,
+      -5.18464617038e-17,
+      7.63123721751e-18,
+      1,
+      1.09880295341e-34,
+      0,
+      2.67093302613e-17,
+      -4.17981679914e-18,
+      1,
+      -7.10324058069e-35,
+      0,
+      -1.4629358797e-17,
+      1.23156350651e-17,
+      1,
+      5.00229224796e-35,
+      0,
+      4.31047227278e-17,
+      -1.48132747725e-17,
+      1,
+      6.02226203114e-35,
+      0,
+      -5.18464617038e-17,
+      7.63123721751e-18,
+      1,
+      -7.10324058069e-35,
+      0,
+      2.67093302613e-17,
+      -4.17981679914e-18,
+      1,
+      4.8794232613e-35,
+      0,
+      -1.4629358797e-17,
+      1.23156350651e-17,
+      1,
+      -4.73179353928e-35,
+      0,
+      4.31047227278e-17,
+      -5.78725778411e-18,
+      1,
+      -5.27718213855e-35,
+      0,
+      -2.02554022444e-17,
+      3.32798659798e-18,
+      1,
+      5.00229224796e-35,
+      0,
+      1.16479530929e-17,
+      -3.07890876627e-18,
+      1,
+      -4.73179353928e-35,
+      0,
+      -1.07761806819e-17,
+      7.66579600935e-18,
+      1,
+      7.37687416339e-35,
+      0,
+      2.68302860327e-17,
+      -5.78725778411e-18,
+      3.90655760696e-35,
+      1,
+      0,
+      -2.02554022444e-17,
+      -1.48132747725e-17,
+      -6.28505465062e-35,
+      1,
+      0,
+      -5.18464617038e-17,
+      -1.48132747725e-17,
+      6.02226203114e-35,
+      1,
+      0,
+      -5.18464617038e-17,
+      -5.78725778411e-18,
+      -5.27718213855e-35,
+      1,
+      0,
+      -2.02554022444e-17,
+      3.32798659798e-18,
+      -6.28505465062e-35,
+      1,
+      0,
+      1.16479530929e-17,
+      7.63123721751e-18,
+      1.09880295341e-34,
+      1,
+      0,
+      2.67093302613e-17,
+      7.63123721751e-18,
+      -7.10324058069e-35,
+      1,
+      0,
+      2.67093302613e-17,
+      3.32798659798e-18,
+      5.00229224796e-35,
+      1,
+      0,
+      1.16479530929e-17,
+      -3.07890876627e-18,
+      6.02226203114e-35,
+      1,
+      0,
+      -1.07761806819e-17,
+      -4.17981679914e-18,
+      -7.10324058069e-35,
+      1,
+      0,
+      -1.4629358797e-17,
+      -4.17981679914e-18,
+      4.8794232613e-35,
+      1,
+      0,
+      -1.4629358797e-17,
+      -3.07890876627e-18,
+      -4.73179353928e-35,
+      1,
+      0,
+      -1.07761806819e-17,
+      7.66579600935e-18,
+      -5.27718213855e-35,
+      1,
+      0,
+      2.68302860327e-17,
+      1.23156350651e-17,
+      5.00229224796e-35,
+      1,
+      0,
+      4.31047227278e-17,
+      1.23156350651e-17,
+      -4.73179353928e-35,
+      1,
+      0,
+      4.31047227278e-17,
+      7.66579600935e-18,
+      7.37687416339e-35,
+      1,
+      0,
+      2.68302860327e-17
+    };
+
+    dg::volumeIntegral<2>(lduh, lFhi, dx);
+
+    validateNumericalEqualsWithEps(lduh[0], 2.68172016875e-17, eps);
+    validateNumericalEqualsWithEps(lduh[1], -7.70481849073, eps);
+    validateNumericalEqualsWithEps(lduh[2], -7.70481849073, eps);
+    validateNumericalEqualsWithEps(lduh[3], 0, eps);
+    validateNumericalEqualsWithEps(lduh[4], 9.38602059063e-17, eps);
+    validateNumericalEqualsWithEps(lduh[5], 7.85885858643e-17, eps);
+    validateNumericalEqualsWithEps(lduh[6], 5.70284315505, eps);
+    validateNumericalEqualsWithEps(lduh[7], -14.4447033527, eps);
+    validateNumericalEqualsWithEps(lduh[8], 0, eps);
+    validateNumericalEqualsWithEps(lduh[9], 2.75060050525e-16, eps);
+    validateNumericalEqualsWithEps(lduh[10], 5.86182920605e-17, eps);
+    validateNumericalEqualsWithEps(lduh[11], -5.70284315505, eps);
+    validateNumericalEqualsWithEps(lduh[12], -14.4447033527, eps);
+    validateNumericalEqualsWithEps(lduh[13], 0, eps);
+    validateNumericalEqualsWithEps(lduh[14], 2.05164022212e-16, eps);
+    validateNumericalEqualsWithEps(lduh[15], 3.915089398e-17, eps);
+    validateNumericalEqualsWithEps(lduh[16], 7.70481849073, eps);
+    validateNumericalEqualsWithEps(lduh[17], -7.70481849073, eps);
+    validateNumericalEqualsWithEps(lduh[18], 0, eps);
+    validateNumericalEqualsWithEps(lduh[19], 1.3702812893e-16, eps);
+    validateNumericalEqualsWithEps(lduh[20], 7.85885858643e-17, eps);
+    validateNumericalEqualsWithEps(lduh[21], -14.4447033527, eps);
+    validateNumericalEqualsWithEps(lduh[22], 5.70284315505, eps);
+    validateNumericalEqualsWithEps(lduh[23], 0, eps);
+    validateNumericalEqualsWithEps(lduh[24], 2.75060050525e-16, eps);
+    validateNumericalEqualsWithEps(lduh[25], -2.4499461107e-16, eps);
+    validateNumericalEqualsWithEps(lduh[26], 10.6914754372, eps);
+    validateNumericalEqualsWithEps(lduh[27], 10.6914754372, eps);
+    validateNumericalEqualsWithEps(lduh[28], 0, eps);
+    validateNumericalEqualsWithEps(lduh[29], -8.57481138746e-16, eps);
+    validateNumericalEqualsWithEps(lduh[30], -1.54928352239e-16, eps);
+    validateNumericalEqualsWithEps(lduh[31], -10.6914754372, eps);
+    validateNumericalEqualsWithEps(lduh[32], 10.6914754372, eps);
+    validateNumericalEqualsWithEps(lduh[33], 0, eps);
+    validateNumericalEqualsWithEps(lduh[34], -5.42249232835e-16, eps);
+    validateNumericalEqualsWithEps(lduh[35], 5.71591661981e-17, eps);
+    validateNumericalEqualsWithEps(lduh[36], 14.4447033527, eps);
+    validateNumericalEqualsWithEps(lduh[37], 5.70284315505, eps);
+    validateNumericalEqualsWithEps(lduh[38], 0, eps);
+    validateNumericalEqualsWithEps(lduh[39], 2.00057081693e-16, eps);
+    validateNumericalEqualsWithEps(lduh[40], 5.86182920605e-17, eps);
+    validateNumericalEqualsWithEps(lduh[41], -14.4447033527, eps);
+    validateNumericalEqualsWithEps(lduh[42], -5.70284315505, eps);
+    validateNumericalEqualsWithEps(lduh[43], 0, eps);
+    validateNumericalEqualsWithEps(lduh[44], 2.05164022212e-16, eps);
+    validateNumericalEqualsWithEps(lduh[45], -1.54928352239e-16, eps);
+    validateNumericalEqualsWithEps(lduh[46], 10.6914754372, eps);
+    validateNumericalEqualsWithEps(lduh[47], -10.6914754372, eps);
+    validateNumericalEqualsWithEps(lduh[48], 0, eps);
+    validateNumericalEqualsWithEps(lduh[49], -5.42249232835e-16, eps);
+    validateNumericalEqualsWithEps(lduh[50], -6.48620934071e-17, eps);
+    validateNumericalEqualsWithEps(lduh[51], -10.6914754372, eps);
+    validateNumericalEqualsWithEps(lduh[52], -10.6914754372, eps);
+    validateNumericalEqualsWithEps(lduh[53], 0, eps);
+    validateNumericalEqualsWithEps(lduh[54], -2.27017326925e-16, eps);
+    validateNumericalEqualsWithEps(lduh[55], 3.71888723943e-17, eps);
+    validateNumericalEqualsWithEps(lduh[56], 14.4447033527, eps);
+    validateNumericalEqualsWithEps(lduh[57], -5.70284315505, eps);
+    validateNumericalEqualsWithEps(lduh[58], 0, eps);
+    validateNumericalEqualsWithEps(lduh[59], 1.3016105338e-16, eps);
+    validateNumericalEqualsWithEps(lduh[60], 3.915089398e-17, eps);
+    validateNumericalEqualsWithEps(lduh[61], -7.70481849073, eps);
+    validateNumericalEqualsWithEps(lduh[62], 7.70481849073, eps);
+    validateNumericalEqualsWithEps(lduh[63], 0, eps);
+    validateNumericalEqualsWithEps(lduh[64], 1.3702812893e-16, eps);
+    validateNumericalEqualsWithEps(lduh[65], 5.71591661981e-17, eps);
+    validateNumericalEqualsWithEps(lduh[66], 5.70284315505, eps);
+    validateNumericalEqualsWithEps(lduh[67], 14.4447033527, eps);
+    validateNumericalEqualsWithEps(lduh[68], 0, eps);
+    validateNumericalEqualsWithEps(lduh[69], 2.00057081693e-16, eps);
+    validateNumericalEqualsWithEps(lduh[70], 3.71888723943e-17, eps);
+    validateNumericalEqualsWithEps(lduh[71], -5.70284315505, eps);
+    validateNumericalEqualsWithEps(lduh[72], 14.4447033527, eps);
+    validateNumericalEqualsWithEps(lduh[73], 0, eps);
+    validateNumericalEqualsWithEps(lduh[74], 1.3016105338e-16, eps);
+    validateNumericalEqualsWithEps(lduh[75], 5.14845862726e-17, eps);
+    validateNumericalEqualsWithEps(lduh[76], 7.70481849073, eps);
+    validateNumericalEqualsWithEps(lduh[77], 7.70481849073, eps);
+    validateNumericalEqualsWithEps(lduh[78], 0, eps);
+    validateNumericalEqualsWithEps(lduh[79], 1.80196051954e-16, eps);
+
+    delete[] lduh;
+  }
 
 } // testVolumeIntegral
 
