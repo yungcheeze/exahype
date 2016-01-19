@@ -6,14 +6,14 @@
 
 // 3D
 void exahype::dg::surfaceIntegral(
-    double * lduh,
-    const double * const dx,
-    const double * const FLeft,
-    const double * const FRight,
-    const double * const FFront,
-    const double * const FBack,
-    const double * const FBottom,
-    const double * const FTop
+    double * restrict /*inout*/ lduh,
+    const double * restrict const /*in*/ dx,
+    const double * restrict const /*in*/ FLeft,
+    const double * restrict const /*in*/ FRight,
+    const double * restrict const /*in*/ FFront,
+    const double * restrict const /*in*/ FBack,
+    const double * restrict const /*in*/ FBottom,
+    const double * restrict const /*in*/ FTop
 ) {
   constexpr int nvar        = EXAHYPE_NVARS;
   constexpr int basisSize   = EXAHYPE_ORDER+1;
@@ -23,12 +23,12 @@ void exahype::dg::surfaceIntegral(
 
 // 2D
 void exahype::dg::surfaceIntegral(
-    double * /*inout*/ lduh,
-    const double * const /*in*/ dx,
-    const double * const FLeft,
-    const double * const FRight,
-    const double * const FFront,
-    const double * const FBack
+    double * restrict /*inout*/ lduh,
+    const double * restrict const /*in*/ dx,
+    const double * restrict const /*in*/ FLeft,
+    const double * restrict const /*in*/ FRight,
+    const double * restrict const /*in*/ FFront,
+    const double * restrict const /*in*/ FBack
 ) {
   constexpr int nvar        = EXAHYPE_NVARS;
   constexpr int basisSize   = EXAHYPE_ORDER+1;

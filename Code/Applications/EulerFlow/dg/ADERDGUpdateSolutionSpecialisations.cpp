@@ -5,8 +5,8 @@
 // 3D specialisation
 template <>
 void exahype::dg::updateSolution<3>(
-    double * luh,
-    const double * const lduh,
+    double * restrict luh,
+    const double * restrict const lduh,
     const double dt
 ) {
   // todo insert your code here
@@ -15,8 +15,8 @@ void exahype::dg::updateSolution<3>(
 // 2D specialisation
 template <>
 void exahype::dg::updateSolution<2>(
-    double * /*inout*/ luh,
-    const double * const /*in*/ lduh,
+    double * restrict /*inout*/ luh,
+    const double * restrict const /*in*/ lduh,
     const double /*in*/ dt
 ) {
   constexpr int nvar        = EXAHYPE_NVARS;

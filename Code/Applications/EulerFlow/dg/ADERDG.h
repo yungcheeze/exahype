@@ -21,11 +21,9 @@ namespace exahype {
      */
     template <int dim>
     double stableTimeStepSize(
-        const double * const luh,
-        const double * const dx,
-        double * lambda,
-        const int nvar,
-        const int basisSize
+        const double * restrict const luh,
+        const double * restrict const dx,
+        double * restrict lambda
     );
 
     /**
@@ -36,8 +34,8 @@ namespace exahype {
      */
     template <int dim>
     void updateSolution(
-        double * luh,
-        const double * const lduh,
+        double * restrict luh,
+        const double * restrict const lduh,
         const double dt
     );
 
@@ -50,9 +48,9 @@ namespace exahype {
      */
     template <int dim>
     void volumeIntegral(
-        double * lduh,
-        const double * const lFhi,
-        const double * const dx
+        double * restrict lduh,
+        const double * restrict const lFhi,
+        const double * restrict const dx
     );
 
     /**
@@ -61,12 +59,12 @@ namespace exahype {
      * to the cell update.
      */
     void surfaceIntegral(
-        double * lduh,
-        const double * const dx,
-        const double * const FLeft,
-        const double * const FRight,
-        const double * const FFront,
-        const double * const FBack
+        double * restrict lduh,
+        const double * restrict const dx,
+        const double * restrict const FLeft,
+        const double * restrict const FRight,
+        const double * restrict const FFront,
+        const double * restrict const FBack
     );
 
     /**
@@ -75,14 +73,14 @@ namespace exahype {
      * to the cell update.
      */
     void surfaceIntegral(
-        double * lduh,
-        const double * const dx,
-        const double * const FLeft,
-        const double * const FRight,
-        const double * const FFront,
-        const double * const FBack,
-        const double * const FBottom,
-        const double * const FTop
+        double * restrict lduh,
+        const double * restrict const dx,
+        const double * restrict const FLeft,
+        const double * restrict const FRight,
+        const double * restrict const FFront,
+        const double * restrict const FBack,
+        const double * restrict const FBottom,
+        const double * restrict const FTop
     );
 
     /**
@@ -94,17 +92,17 @@ namespace exahype {
      */
     template <int dim>
     void solveRiemannProblem(
-        double * FL,
-        double * FR,
-        const double * const QL,
-        const double * const QR,
-        double * QavL,
-        double * QavR,
-        double * lambdaL,
-        double * lambdaR,
+        double * restrict FL,
+        double * restrict FR,
+        const double * restrict const QL,
+        const double * restrict const QR,
+        double * restrict QavL,
+        double * restrict QavR,
+        double * restrict lambdaL,
+        double * restrict lambdaR,
         const double dt,
         const double hFace,
-        const double * const n
+        const double * restrict const n
     );
 
     /**
@@ -118,127 +116,123 @@ namespace exahype {
      */
     template <int dim>
     void spaceTimePredictor(
-        double * lQi,
-        double * lFi,
-        const double * const luh, // const
-        double * lQhi,
-        double * lFhi,
-        double * lQhbnd,
-        double * lFhbnd,
-        double * rhs0,
-        double * rhs,
-        double * tmp,
-        const double * const dx,
+        double * restrict lQi,
+        double * restrict lFi,
+        const double * restrict const luh, // const
+        double * restrict lQhi,
+        double * restrict lFhi,
+        double * restrict lQhbnd,
+        double * restrict lFhbnd,
+        double * restrict rhs0,
+        double * restrict rhs,
+        double * restrict tmp,
+        const double * restrict const dx,
         const double dt
     );
 
     // 2D specialisations
     template <>
     double stableTimeStepSize<2>(
-        const double * const luh,
-        const double * const dx,
-        double * lambda,
-        const int nvar,
-        const int basisSize
+        const double * restrict const luh,
+        const double * restrict const dx,
+        double * restrict lambda
     );
 
     template <>
     void updateSolution<2>(
-        double * luh,
-        const double * const lduh,
+        double * restrict luh,
+        const double * restrict const lduh,
         const double dt
     );
 
     template <>
     void volumeIntegral<2>(
-        double * lduh,
-        const double * const lFhi,
-        const double * const dx
+        double * restrict lduh,
+        const double * restrict const lFhi,
+        const double * restrict const dx
     );
 
     template <>
     void solveRiemannProblem<2>(
-        double * FL,
-        double * FR,
-        const double * const QL,
-        const double * const QR,
-        double * QavL,
-        double * QavR,
-        double * lambdaL,
-        double * lambdaR,
+        double * restrict FL,
+        double * restrict FR,
+        const double * restrict const QL,
+        const double * restrict const QR,
+        double * restrict QavL,
+        double * restrict QavR,
+        double * restrict lambdaL,
+        double * restrict lambdaR,
         const double dt,
         const double hFace,
-        const double * const n
+        const double * restrict const n
     );
 
     template <>
     void spaceTimePredictor<2>(
-        double * lQi,
-        double * lFi,
-        const double * const luh,
-        double * lQhi,
-        double * lFhi,
-        double * lQhbnd,
-        double * lFhbnd,
-        double * rhs0,
-        double * rhs,
-        double * tmp,
-        const double * const dx,
+        double * restrict lQi,
+        double * restrict lFi,
+        const double * restrict const luh,
+        double * restrict lQhi,
+        double * restrict lFhi,
+        double * restrict lQhbnd,
+        double * restrict lFhbnd,
+        double * restrict rhs0,
+        double * restrict rhs,
+        double * restrict tmp,
+        const double * restrict const dx,
         const double dt
     );
 
     // 3D specialisations
     template <>
     double stableTimeStepSize<3>(
-        const double * const luh,
-        const double * const dx,
-        double * lambda,
-        const int nvar,
-        const int basisSize
+        const double * restrict const luh,
+        const double * restrict const dx,
+        double * restrict lambda
     );
 
     template <>
     void updateSolution<3>(
-        double * luh,
-        const double * const lduh,
+        double * restrict luh,
+        const double * restrict const lduh,
         const double dt
     );
 
     template <>
     void volumeIntegral<3>(
-        double * lduh,
-        const double * const lFhi,
-        const double * const dx
+        double * restrict lduh,
+        const double * restrict const lFhi,
+        const double * restrict const dx
     );
 
     template <>
     void solveRiemannProblem<3>(
-        double * FL,
-        double * FR,
-        const double * const QL,
-        const double * const QR,
-        double * QavL,
-        double * QavR,
-        double * lambdaL,
-        double * lambdaR,
+        double * restrict FL,
+        double * restrict FR,
+        const double * restrict const QL,
+        const double * restrict const QR,
+        double * restrict QavL,
+        double * restrict QavR,
+        double * restrict lambdaL,
+        double * restrict lambdaR,
         const double dt,
         const double hFace,
-        const double * const n
+        const double * restrict const n
     );
 
     template <>
     void spaceTimePredictor<3>(
-        double * lQi,
-        double * lFi,
-        const double * const luh,
-        double * lQhi,
-        double * lFhi,
-        double * lQhbnd,
-        double * lFhbnd,
-        double * rhs0,
-        double * rhs,
-        double * tmp,
-        const double * const dx,
+        double * restrict lQi,
+        double * restrict lFi,
+        const double * restrict const luh,
+        double * restrict lQhi,
+        double * restrict lFhi,
+        double * restrict lQhbnd,
+        double * restrict lFhbnd,
+        double * restrict rhs0,
+        double * restrict rhs,
+        double * restrict tmp,
+        const double * restrict const dx,
         const double dt
     );
 

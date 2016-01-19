@@ -11,12 +11,12 @@
 // 3D specialisation
 template <>
 double exahype::dg::stableTimeStepSize<3>(
-    const double * const luh,
-    const double * const dx,
-    double * lambda,
-    const int nvar,
-    const int basisSize) {
-  constexpr int dim = 3;
+    const double * restrict const luh,
+    const double * restrict const dx,
+    double * restrict lambda) {
+  constexpr int dim = DIMENSIONS; // 3
+  constexpr int nvar        = EXAHYPE_NVARS;
+  constexpr int basisSize   = EXAHYPE_ORDER+1;
 
   // todo insert your code here
 }
@@ -24,12 +24,12 @@ double exahype::dg::stableTimeStepSize<3>(
 // 2D specialisation
 template <>
 double exahype::dg::stableTimeStepSize<2>(
-    const double * const luh,
-    const double * const dx,
-    double * lambda,
-    const int nvar,
-    const int basisSize) {
-  constexpr int dim = 2;
+    const double * restrict const luh,
+    const double * restrict const dx,
+    double * restrict lambda) {
+  constexpr int dim = DIMENSIONS; // 2
+  constexpr int nvar        = EXAHYPE_NVARS;
+  constexpr int basisSize   = EXAHYPE_ORDER+1;
 
   // todo insert your code here
 

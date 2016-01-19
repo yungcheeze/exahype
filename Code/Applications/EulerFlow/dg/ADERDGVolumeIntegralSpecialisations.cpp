@@ -11,9 +11,9 @@
 // 3D specialisation
 template <>
 void exahype::dg::volumeIntegral<3>(
-    double* /*out*/ lduh,
-    const double * const /*in*/ lFhi,
-    const double * const /*in*/ dx
+    double * restrict /*out*/ lduh,
+    const double * restrict const /*in*/ lFhi,
+    const double * restrict const /*in*/ dx
 ) {
   constexpr int dim         = DIMENSIONS;     // 3
   constexpr int dimTimesTwo = (2*DIMENSIONS); // 6
@@ -26,9 +26,9 @@ void exahype::dg::volumeIntegral<3>(
 // 2D specialisation
 template <>
 void exahype::dg::volumeIntegral<2>(
-    double* /*out*/ lduh,
-    const double * const /*in*/ lFhi,
-    const double * const /*in*/ dx
+    double* restrict /*out*/ lduh,
+    const double * restrict const /*in*/ lFhi,
+    const double * restrict const /*in*/ dx
 ) {
   constexpr int dim         = DIMENSIONS;                 // 2
   constexpr int nvar        = EXAHYPE_NVARS;

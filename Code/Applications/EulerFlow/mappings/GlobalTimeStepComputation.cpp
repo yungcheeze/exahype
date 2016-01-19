@@ -408,9 +408,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
         double admissiblePatchTimeStep = dg::stableTimeStepSize<DIMENSIONS>(
             luh,
             dxPatch,
-            lambda,
-            nvar,
-            basisSize);
+            lambda);
 
         _localState.setTimeStepSize(std::min(_localState.getTimeStepSize(),admissiblePatchTimeStep));
       }

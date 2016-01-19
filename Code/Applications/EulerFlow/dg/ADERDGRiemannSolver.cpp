@@ -13,17 +13,17 @@
 // explicit specialisation
 template <>
 void exahype::dg::solveRiemannProblem<3>(
-            double * FL,
-            double * FR,
-            const double * const QL,
-            const double * const QR,
-            double * QavL,
-            double * QavR,
-            double * lambdaL,
-            double * lambdaR,
-            const double dt,
-            const double hFace,
-            const double * const n
+            double * restrict /*out*/ FL,
+            double * restrict /*out*/ FR,
+            const double * restrict const /*in*/ QL,
+            const double * restrict const /*in*/ QR,
+            double * restrict /*local*/ QavL,
+            double * restrict /*local*/ QavR,
+            double * restrict /*local*/ lambdaL,
+            double * restrict /*local*/ lambdaR,
+            const double /*in*/ dt,
+            const double /*unused*/ hFace,
+            const double * restrict const /*unused*/ n
 ) {
   constexpr int dim       = DIMENSIONS;       // 3
   constexpr int nvar      = EXAHYPE_NVARS;
@@ -34,17 +34,17 @@ void exahype::dg::solveRiemannProblem<3>(
 
 template <>
 void exahype::dg::solveRiemannProblem<2>(
-            double * /*out*/ FL,
-            double * /*out*/ FR,
-            const double * /*in*/ const QL,
-            const double * /*in*/ const QR,
-            double * /*local*/ QavL,
-            double * /*local*/ QavR,
-            double * /*local*/ lambdaL,
-            double * /*local*/ lambdaR,
-            const double dt,
-            const double hFace,
-            const double * const /*in*/ n
+            double * restrict /*out*/ FL,
+            double * restrict /*out*/ FR,
+            const double * restrict const /*in*/ QL,
+            const double * restrict const /*in*/ QR,
+            double * restrict /*local*/ QavL,
+            double * restrict /*local*/ QavR,
+            double * restrict /*local*/ lambdaL,
+            double * restrict /*local*/ lambdaR,
+            const double /*in*/ dt,
+            const double /*unused*/ hFace,
+            const double * restrict const /*unused*/ n
 ) {
   constexpr int dim       = DIMENSIONS;       // 2
   constexpr int nvar      = EXAHYPE_NVARS;

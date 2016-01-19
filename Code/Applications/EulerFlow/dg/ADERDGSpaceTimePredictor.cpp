@@ -15,18 +15,18 @@
 // explicit specialisations
 template <>
 void exahype::dg::spaceTimePredictor<3>(
-    double * lQi,
-    double * lFi,
-    const double * const luh,
-    double * lQhi,
-    double * lFhi,
-    double * lQhbnd,
-    double * lFhbnd,
-    double * rhs0,
-    double * rhs,
-    double * tmp,
-    const double * const dx,
-    const double dt
+    double * restrict /*local*/ lQi,
+    double * restrict /*local*/ lFi,
+    const double * restrict const /*in*/ luh,
+    double * restrict /*out*/ lQhi,
+    double * restrict /*out*/ lFhi,
+    double * restrict /*out*/ lQhbnd,
+    double * restrict /*out*/ lFhbnd,
+    double * restrict /*local*/ rhs0,
+    double * restrict /*local*/ rhs,
+    double * restrict /*local*/ tmp,
+    const double * restrict const /*in*/ dx,
+    const double /*in*/ dt
 ) {
   constexpr int dim         = DIMENSIONS;         // 3
   constexpr int dimTimesTwo = (2*DIMENSIONS);     // 6
@@ -39,18 +39,18 @@ void exahype::dg::spaceTimePredictor<3>(
 
 template <>
 void exahype::dg::spaceTimePredictor<2>(
-    double * /*local*/ lQi,
-    double * /*local*/ lFi,
-    const double * const /*in*/ luh,
-    double * /*out*/ lQhi,
-    double * /*out*/ lFhi,
-    double * /*out*/ lQhbnd,
-    double * /*out*/ lFhbnd,
-    double * /*local*/ rhs0,
-    double * /*local*/ rhs,
-    double * /*local*/ tmp,
-    const double * const dx,
-    const double dt
+    double * restrict /*local*/ lQi,
+    double * restrict /*local*/ lFi,
+    const double * restrict const /*in*/ luh,
+    double * restrict /*out*/ lQhi,
+    double * restrict /*out*/ lFhi,
+    double * restrict /*out*/ lQhbnd,
+    double * restrict /*out*/ lFhbnd,
+    double * restrict /*local*/ rhs0,
+    double * restrict /*local*/ rhs,
+    double * restrict /*local*/ tmp,
+    const double * restrict const /*in*/ dx,
+    const double /*in*/ dt
 ) {
   constexpr int dim         = DIMENSIONS;         // 2
   constexpr int dimTimesTwo = (2*DIMENSIONS);     // 4
