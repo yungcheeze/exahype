@@ -1,5 +1,7 @@
 #include "exahype/mappings/RiemannSolver.h"
 
+#include "tarch/multicore/Lock.h"
+
 #include "peano/utils/Globals.h"
 
 #include "exahype/Constants.h"
@@ -17,7 +19,7 @@ peano::CommunicationSpecification   exahype::mappings::RiemannSolver::communicat
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::RiemannSolver::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::OnlyLeaves,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -33,7 +35,7 @@ peano::MappingSpecification   exahype::mappings::RiemannSolver::touchVertexFirst
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::RiemannSolver::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::OnlyLeaves,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -340,6 +342,75 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
   // do nothing
 }
 
+void exahype::mappings::RiemannSolver::solveRiemannProblem(
+    tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices,
+    const int cellIndexL,
+    const int cellIndexR,
+    const int faceL,
+    const int faceR,
+    const int numberOfFaceDof,
+    const double * const normal
+) {
+  // Only continue if this is an internal face. See multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex.
+  if (
+      adjacentADERDGCellDescriptionsIndices[cellIndexL] < 0
+      ||
+      adjacentADERDGCellDescriptionsIndices[cellIndexR] < 0
+  ) {
+    return;
+  }
+
+  records::ADERDGCellDescription&  cellDescriptionL =
+      ADERDGADERDGCellDescriptionHeap::getInstance().getData(adjacentADERDGCellDescriptionsIndices[cellIndexL])[0];
+  records::ADERDGCellDescription& cellDescriptionR  =
+      ADERDGADERDGCellDescriptionHeap::getInstance().getData(adjacentADERDGCellDescriptionsIndices[cellIndexR])[0];
+
+
+  bool riemannSolveNotPerformed = false;
+  {
+    // Lock the critical multithreading area.
+    tarch::multicore::Lock lock(_semaphore);
+    riemannSolveNotPerformed = !cellDescriptionL.getRiemannSolvePerformed(faceL)
+                               &&
+                               !cellDescriptionR.getRiemannSolvePerformed(faceR);
+
+    if(riemannSolveNotPerformed==true) {
+      cellDescriptionL.setRiemannSolvePerformed(faceL,true);
+      cellDescriptionR.setRiemannSolvePerformed(faceR,true);
+    }
+  } // Unlock the critical multithreading area by letting lock go out of scope.
+
+
+  if (riemannSolveNotPerformed) {
+    constexpr double superfluousArgument = 0;
+
+    // work vectors
+    double QavL   [EXAHYPE_NVARS]; // av: average
+    double QavR   [EXAHYPE_NVARS];
+    double lambdaL[EXAHYPE_NVARS];
+    double lambdaR[EXAHYPE_NVARS];
+
+    double * QL = &(DataHeap::getInstance().getData(cellDescriptionL.getExtrapolatedPredictor())[faceL * numberOfFaceDof]._persistentRecords._u);
+    double * QR = &(DataHeap::getInstance().getData(cellDescriptionR.getExtrapolatedPredictor())[faceR * numberOfFaceDof]._persistentRecords._u);
+
+    double * FL = &(DataHeap::getInstance().getData(cellDescriptionL.getFluctuation())[faceL * numberOfFaceDof]._persistentRecords._u);
+    double * FR = &(DataHeap::getInstance().getData(cellDescriptionR.getFluctuation())[faceR * numberOfFaceDof]._persistentRecords._u);
+
+    aderdg::riemannSolver<DIMENSIONS>(
+        FL,
+        FR,
+        QL,
+        QR,
+        QavL,
+        QavR,
+        lambdaL,
+        lambdaR,
+        _localState.getOldTimeStepSize(),
+
+        superfluousArgument,
+        normal);
+  }
+}
 
 void exahype::mappings::RiemannSolver::touchVertexLastTime(
     exahype::Vertex&         fineGridVertex,
@@ -350,7 +421,83 @@ void exahype::mappings::RiemannSolver::touchVertexLastTime(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  // do nothing
+  logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
+
+  if (
+      fineGridVertex.getRefinementControl()==Vertex::Records::Unrefined // todo Replace by something that works for multiple PDEs. Must possible move into solveRiemannProblem.
+  ) {
+    assertion1WithExplanation(_localState.getOldTimeStepSize() < std::numeric_limits<double>::max(),_localState.getOldTimeStepSize(),"Old time step size was not initialised correctly!");
+
+    tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
+    // todo: DEC: Reverse engineered indices from
+    // PatchInitialisation2MultiscaleLinkedCell_1::touchVertexLastTime(...)
+    // Not sure what happens with hanging nodes.
+
+    /*
+     * Right cell-left cell   pair indices: 0,1; 2,3;   4,5; 6;7
+     * Front cell-back cell   pair indices: 0,2; 1,3;   4,6; 5;7
+     * Top   cell-bottom cell pair indices: 0,4; 1,5;   2,6; 3;7
+     *
+     * Note that from the viewpoint of a cell, the face
+     * has always the "opposite" index, i.e., we solve a Riemann
+     * problem on the left face of the right cell (which
+     * is the right face of the left cell).
+     */
+
+    constexpr int basisSize   = EXAHYPE_ORDER+1;
+    constexpr int nvar        = EXAHYPE_NVARS;
+    const int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
+
+    // index maps (
+    constexpr int cellIndicesLeft   [4] = { 0, 2, 4, 6 };
+    constexpr int cellIndicesRight  [4] = { 1, 3, 5, 7 };
+    constexpr int cellIndicesFront  [4] = { 0, 1, 4, 5 };
+    constexpr int cellIndicesBack   [4] = { 2, 3, 6, 7 };
+#if DIMENSIONS==3
+    constexpr int cellIndicesBottom [4] = { 0, 1, 2, 3 };
+    constexpr int cellIndicesTop    [4] = { 4, 5, 6, 7 };
+#endif
+
+    // normal vectors
+    const double nx[3]= { 1., 0., 0. };
+    const double ny[3]= { 0., 1., 0. };
+#if DIMENSIONS==3
+    const double nz[3]= { 0., 0., 1. };
+#endif
+
+    // Left/right face
+    for (int i=0; i<TWO_POWER_D_DIVIDED_BY_TWO; i++) {
+      solveRiemannProblem(
+          adjacentADERDGCellDescriptionsIndices,
+          cellIndicesLeft [i],
+          cellIndicesRight[i],
+          EXAHYPE_FACE_RIGHT,
+          EXAHYPE_FACE_LEFT,
+          numberOfFaceDof,
+          nx);
+
+      solveRiemannProblem(
+          adjacentADERDGCellDescriptionsIndices,
+          cellIndicesFront[i],
+          cellIndicesBack [i],
+          EXAHYPE_FACE_BACK,
+          EXAHYPE_FACE_FRONT,
+          numberOfFaceDof,
+          ny);
+
+#if DIMENSIONS==3
+      solveRiemannProblem(
+          adjacentADERDGCellDescriptionsIndices,
+          cellIndicesBottom[i],
+          cellIndicesTop   [i],
+          EXAHYPE_FACE_TOP,
+          EXAHYPE_FACE_BOTTOM,
+          numberOfFaceDof,
+          nz);
+#endif
+    }
+  }
+  logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
 void exahype::mappings::RiemannSolver::enterCell(
@@ -362,96 +509,7 @@ void exahype::mappings::RiemannSolver::enterCell(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-
-  // todo DEC: needs to be replaced by a combination of FaceDataExchange and this mapping if do not have ghost layers.
-  // ! Begin of code for the DG method.
-  if (!fineGridCell.isRefined()) {
-    //    records::ADERDGCellDescription& cellDescription =
-    //        ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
-    //
-    //    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-    //    const double dx = fineGridVerticesEnumerator.getCellSize()(0);
-    //    const double dy = fineGridVerticesEnumerator.getCellSize()(1);
-    //
-    //    const double dxPatch = dx/ (double) EXAHYPE_PATCH_SIZE_X;
-    //    const double dyPatch = dy/ (double) EXAHYPE_PATCH_SIZE_Y;
-    //
-    //    const int basisSize       = EXAHYPE_ORDER+1;
-    //    const int nvar            = EXAHYPE_NVARS;
-    //    const int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
-    //
-    //    // normal vectors
-    //    const double nx[3]= { 1., 0., 0. };
-    //    const double ny[3]= { 0., 1., 0. };
-    //
-    //    // work vectors
-    //    double QavL   [EXAHYPE_NVARS]; // av: average
-    //    double QavR   [EXAHYPE_NVARS];
-    //    double lambdaL[EXAHYPE_NVARS];
-    //    double lambdaR[EXAHYPE_NVARS];
-    //
-    //    assertion1WithExplanation(_localState.getOldTimeStepSize() < std::numeric_limits<double>::max(),_localState.getOldTimeStepSize(),"Old time step size was not initialised correctly!");
-    //
-    //    const int dofStartIndexL = EXAHYPE_FACE_LEFT  * numberOfFaceDof;
-    //    const int dofStartIndexR = EXAHYPE_FACE_RIGHT * numberOfFaceDof;
-    //
-    //    double * QL = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor(patchIndexLeft))[dofStartIndexR]._persistentRecords._u);
-    //    double * QR = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor(patchIndex))    [dofStartIndexL]._persistentRecords._u);
-    //
-    //    double * FL = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(patchIndexLeft))[dofStartIndexR]._persistentRecords._u);
-    //    double * FR = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(patchIndex))    [dofStartIndexL]._persistentRecords._u);
-    //
-    //    if (i==13) { // todo REMOVE; only for debugging
-    //      asm ("nop");
-    //    }
-    //
-    //    aderdg::riemannSolver<DIMENSIONS>(
-    //        FL,
-    //        FR,
-    //        QL,
-    //        QR,
-    //        QavL,
-    //        QavR,
-    //        lambdaL,
-    //        lambdaR,
-    //        _localState.getOldTimeStepSize(),
-    //
-    //        dxPatch,
-    //        nx);
-    //
-
-
-    //  const int dofStartIndexL = EXAHYPE_FACE_FRONT * numberOfFaceDof;
-    //  const int dofStartIndexR = EXAHYPE_FACE_BACK  * numberOfFaceDof;
-    //
-    //  double * QL = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor(patchIndexFront))[dofStartIndexR]._persistentRecords._u);
-    //  double * QR = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor(patchIndex))     [dofStartIndexL]._persistentRecords._u);
-    //
-    //  double * FL = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(patchIndexFront))[dofStartIndexR]._persistentRecords._u);
-    //  double * FR = &(DataHeap::getInstance().getData(cellDescription.getFluctuation(patchIndex))     [dofStartIndexL]._persistentRecords._u);
-    //
-    //  if (j==13) { // todo REMOVE; only for debugging
-    //    asm ("nop");
-    //  }
-    //
-    //  aderdg::riemannSolver<DIMENSIONS>(
-    //      FL,
-    //      FR,
-    //      QL,
-    //      QR,
-    //      QavL,
-    //      QavR,
-    //      lambdaL,
-    //      lambdaR,
-    //      _localState.getTimeStepSize(),
-    //
-    //      dyPatch,
-    //      ny);
-  }
-
-
-  logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
+  // do nothing
 }
 
 

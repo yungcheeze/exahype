@@ -372,12 +372,7 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
     records::ADERDGCellDescription& cellDescription =
         ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-    const double dx = fineGridVerticesEnumerator.getCellSize()(0);
-    const double dy = fineGridVerticesEnumerator.getCellSize()(1);
-
-    const double dxPatch[DIMENSIONS] = { dx/ (double) EXAHYPE_PATCH_SIZE_X,
-        dy/ (double) EXAHYPE_PATCH_SIZE_Y };
+    const double * const size = &fineGridVerticesEnumerator.getCellSize()[0];
 
     constexpr int basisSize = EXAHYPE_ORDER+1;
     constexpr int nvar      = EXAHYPE_NVARS;
@@ -412,7 +407,7 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
         rhs0,
         rhs,
         tmp,
-        dxPatch,
+        size,
         _localState.getTimeStepSize());
 
     // clean up

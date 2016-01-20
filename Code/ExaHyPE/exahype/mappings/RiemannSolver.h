@@ -17,6 +17,7 @@
 #include "peano/CommunicationSpecification.h"
 
 #include "tarch/multicore/MulticoreDefinitions.h"
+#include "tarch/multicore/BooleanSemaphore.h"
 
 #include "exahype/Vertex.h"
 #include "exahype/Cell.h"
@@ -40,6 +41,11 @@ namespace exahype {
 class exahype::mappings::RiemannSolver {
   private:
     /**
+     * Semaphore for locking critical multithreading code areas.
+     */
+    tarch::multicore::BooleanSemaphore _semaphore;
+
+    /**
      * Logging device for the trace macros.
      */
     static tarch::logging::Log  _log;
@@ -49,6 +55,26 @@ class exahype::mappings::RiemannSolver {
      */
     exahype::State _localState;
 
+    /**
+     * Solve the Riemann problem at the interface between two cells ("left" and "right").
+     *
+     * @param[in] adjacentADERDGCellDescriptionsIndices Map holding the cell description indices around a vertex.
+     * @param[in] cellIndexL                            Index for adjacentADERDGCellDescriptionsIndices referring to the "left" cell.
+     * @param[in] cellIndexR                            Index for adjacentADERDGCellDescriptionsIndices referring to the "right" cell.
+     * @param[in] faceL                                 Index for the face belonging to the "left" cell.
+     *                                                  One out of (EXAHYPE_FACE_LEFT,EXAHYPE_FACE_RIGHT,...,EXAHYPE_FACE_TOP).
+     * @param[in] faceR                                 Index for the face belonging to the "right" cell. See also the
+     *                                                  description of faceL.
+     * @param[in] normal                                Normal vector.
+     */
+    void solveRiemannProblem(
+            tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices,
+            const int cellIndexL,
+            const int cellIndexR,
+            const int faceL,
+            const int faceR,
+            const int numberOfFaceDof,
+            const double * const normal);
   public:
     /**
      * These flags are used to inform Peano about your operation. It tells the 
@@ -1254,26 +1280,12 @@ class exahype::mappings::RiemannSolver {
       exahype::Vertex * const  coarseGridVertices,
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
-    );    
-
-    // Begin of code for ADERDG scheme
-    void solveRiemannProblem(
-        double * FL,
-        double * FR,
-        const double * const QL,
-        const double * const QR,
-        const tarch::la::Vector<DIMENSIONS,double> center,
-        const double timeStep,
-        const double hFace,
-        const double * const nx,
-        const int nvar,
-        const int basisSize);
+    );
 
     /**
      * @brief Returns this mapping's local copy of the state.
      */
     const exahype::State& getState() const;
-    // End of code for ADERDG scheme
 };
 
 

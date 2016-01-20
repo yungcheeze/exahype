@@ -367,23 +367,18 @@ void exahype::mappings::SolutionUpdate::enterCell(
     records::ADERDGCellDescription& cellDescription =
         ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-    const double                               dx     = fineGridVerticesEnumerator.getCellSize()(0);
-    const double                               dy     = fineGridVerticesEnumerator.getCellSize()(1);
-
-    const double dxPatch[2] = { dx/ (double) EXAHYPE_PATCH_SIZE_X,
-        dy/ (double) EXAHYPE_PATCH_SIZE_Y };
+    const double * const size = &fineGridVerticesEnumerator.getCellSize()[0];
 
     const int basisSize       = EXAHYPE_ORDER+1;
     const int nvar            = EXAHYPE_NVARS;
 
-    double* luhOld = &(DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u);
-    double* lduh   = &(DataHeap::getInstance().getData(cellDescription.getUpdate())  [0]._persistentRecords._u);
+    double * luhOld = &(DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u);
+    double * lduh   = &(DataHeap::getInstance().getData(cellDescription.getUpdate())  [0]._persistentRecords._u);
 
     aderdg::solutionUpdate<DIMENSIONS>(
         luhOld,
         lduh,
-        dxPatch,
+        size,
         _localState.getOldTimeStepSize(),
         nvar,
         basisSize);

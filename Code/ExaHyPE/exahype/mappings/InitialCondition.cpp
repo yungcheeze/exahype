@@ -377,11 +377,11 @@ void exahype::mappings::InitialCondition::enterCell(
     const     int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
     // zero update
-    double* lduh = &(DataHeap::getInstance().getData(cellDescription.getUpdate())               [0]._persistentRecords._u);
+    double* lduh = &(DataHeap::getInstance().getData(cellDescription.getUpdate())[0]._persistentRecords._u);
     memset(lduh,0,sizeof(double) * numberOfDof);
 
     // apply initial condition
-    double* luh    = &(DataHeap::getInstance().getData(cellDescription.getSolution())             [0]._persistentRecords._u);
+    double* luh    = &(DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u);
     exahype::aderdg::initialValues<DIMENSIONS>(luh,center,size,nvar,basisSize);
   }
 

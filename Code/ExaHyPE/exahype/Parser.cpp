@@ -120,7 +120,6 @@ double exahype::Parser::getSize() const {
   return result;
 }
 
-
 tarch::la::Vector<DIMENSIONS,double> exahype::Parser::getOffset() const {
   assertion( isValid() );
   std::string token;
@@ -129,8 +128,10 @@ tarch::la::Vector<DIMENSIONS,double> exahype::Parser::getOffset() const {
   result(0) = atof( token.c_str() );
   token     = getTokenAfter("computational-domain","offset", 1);
   result(1) = atof( token.c_str() );
+#if DIMENSIONS==3
   token     = getTokenAfter("computational-domain","offset", 2);
   result(2) = atof( token.c_str() );
+#endif
   // @todo change into Debug
   logInfo( "getSize()", "found offset " << result );
   return result;

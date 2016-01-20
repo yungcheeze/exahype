@@ -9,8 +9,26 @@ Packed-Type: int;
 
 Constant: DIMENSIONS;
 Constant: DIMENSIONS_TIMES_TWO;
+Constant: TWO_POWER_D;
 
-class exahype::records::ADERDGCellDescription { 
+class exahype::records::ADERDGCellDescription {
+  /** 
+   * Indicates if this a parent cell (true) or a leaf cell that holds data.
+   */
+  parallelise persistent bool isParent;
+  
+  /** 
+   * Indicates if this a real cell (false) that holds space-time, volume, and face data
+   * or a virtual cell that holds only face data.
+   */
+  parallelise persistent bool isVirtual; 
+  
+  /** 
+   * We hold a bool for each face belonging to this ADER-DG cell stating
+   * if a Riemann solve has already performed on it.
+   */
+  parallelise persistent bool riemannSolvePerformed[TWO_POWER_D];
+  
   /** Space-time data on each patch. Size: #var*(N+1)^(d+1)
    * 
    * \note Only for local time stepping we really need to keep the entire space-time degrees of freedom of the ADER approach.

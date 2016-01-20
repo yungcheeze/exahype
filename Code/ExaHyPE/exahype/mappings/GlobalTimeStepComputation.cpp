@@ -385,14 +385,14 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
     double* luh = &(DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u);
     double lambda[EXAHYPE_NVARS];
 
-    double admissiblePatchTimeStep = aderdg::stableTimeStepSize<DIMENSIONS>(
+    double admissibleTimeStepSize = aderdg::stableTimeStepSize<DIMENSIONS>(
         luh,
         size,
         lambda,
         nvar,
         basisSize);
 
-    _localState.setTimeStepSize(std::min(_localState.getTimeStepSize(),admissiblePatchTimeStep));
+    _localState.setTimeStepSize(std::min(_localState.getTimeStepSize(),admissibleTimeStepSize));
   }
 
 

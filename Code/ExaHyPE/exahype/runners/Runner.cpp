@@ -9,7 +9,6 @@
 #include "tarch/multicore/Core.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-
 #include "peano/utils/UserInterface.h"
 #include "peano/geometry/Hexahedron.h"
 
@@ -19,13 +18,14 @@
 
 #include "sharedmemoryoracles/OracleForOnePhaseWithGrainSizeSampling.h"
 
+#include "exahype/Constants.h"
 
 tarch::logging::Log  exahype::runners::Runner::_log( "exahype::runners::Runner" );
 
 
 
 exahype::runners::Runner::Runner(const Parser& parser):
-  _parser(parser) {
+          _parser(parser) {
 }
 
 
@@ -34,7 +34,7 @@ exahype::runners::Runner::~Runner() {
 
 
 void exahype::runners::Runner::initSharedMemoryConfiguration() {
-  #ifdef SharedMemoryParallelisation
+#ifdef SharedMemoryParallelisation
   const int numberOfThreads = parser.getNumberOfThreads();
   tarch::multicore::Core::getInstance().configure(numberOfThreads);
 
@@ -45,27 +45,27 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
   switch (_parser.getMulticoreOracleType()) {
     case Parser::Dummy:
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
-        new peano::datatraversal::autotuning::OracleForOnePhaseDummy(true)
+          new peano::datatraversal::autotuning::OracleForOnePhaseDummy(true)
       );
       break;
     case Parser::Autotuning:
       break;
     case Parser::GrainSizeSampling:
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
-        new sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling(
-          10,
-          true, // useThreadPipelining,
-          true  // logarithmicDistribution
-        )
+          new sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling(
+              10,
+              true, // useThreadPipelining,
+              true  // logarithmicDistribution
+          )
       );
       break;
   }
-  #endif
+#endif
 }
 
 
 void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
-  #ifdef SharedMemoryParallelisation
+#ifdef SharedMemoryParallelisation
   switch (_parser.getMulticoreOracleType()) {
     case Parser::Dummy:
       break;
@@ -76,7 +76,7 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
       peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics();
       break;
   }
-  #endif
+#endif
 }
 
 
@@ -85,32 +85,31 @@ int exahype::runners::Runner::run() {
   initSharedMemoryConfiguration();
 
   peano::geometry::Hexahedron geometry(
-    tarch::la::Vector<DIMENSIONS,double>( _parser.getSize() ),
-    _parser.getOffset()
-   );
+      tarch::la::Vector<DIMENSIONS,double>( 1.0 /*_parser.getSize()*/ ),
+      tarch::la::Vector<DIMENSIONS,double>( 0.0 ) // _parser.getOffset()
+  );
 
   exahype::repositories::Repository* repository = 
-    exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
-      geometry,
-      tarch::la::Vector<DIMENSIONS,double>( _parser.getSize() ),
-      _parser.getOffset()
-    );
+      exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
+          geometry,
+          tarch::la::Vector<DIMENSIONS,double>( 1.0 /*_parser.getSize()*/ ),
+          tarch::la::Vector<DIMENSIONS,double>( 0.0 ) // _parser.getOffset()
+      );
 
-  
   int result = 0;
   if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
     result = runAsMaster( *repository );
   }
-  #ifdef Parallel
+#ifdef Parallel
   else {
     result = runAsWorker( *repository );
   }
-  #endif
-  
+#endif
+
   shutdownSharedMemoryConfiguration();
 
   delete repository;
-  
+
   return result;
 }
 
@@ -119,26 +118,73 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   peano::utils::UserInterface userInterface;
   userInterface.writeHeader();
 
-  // @todo Insert your code here
-  
-  // Start of dummy implementation
-  
-  repository.switchToInitialGrid(); repository.iterate();
-  repository.switchToGridExport(); repository.iterate();
-  repository.switchToPatchInitialisation(); repository.iterate();
-  repository.switchToPatchInitialisationAndExport(); repository.iterate();
-  repository.switchToFaceDataExchange(); repository.iterate();
-  repository.switchToInitialConditionAndGlobalTimeStepComputation(); repository.iterate();
-  repository.switchToInitialConditionAndExportAndGlobalTimeStepComputation(); repository.iterate();
-  repository.switchToPredictorAndGlobalTimeStepComputation(); repository.iterate();
-  repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputation(); repository.iterate();
-  repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputationAndExport(); repository.iterate();
+  // The space-tree is initialised with 1 coarse grid cell on level 1 and 3^d fine grid cells on level 2.
+  for (int coarseGridLevel=1; coarseGridLevel<EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL; coarseGridLevel++) {
+    repository.switchToInitialGrid();
+    do {
+      repository.iterate();
+    } while (!repository.getState().isGridBalanced());
+  }
+  repository.switchToGridExport();                // export the grid
+  repository.iterate();
 
- 
- 
+  repository.switchToPatchInitialisation();       // initialise the cell descriptions;
+  repository.iterate();
+
+  /*
+   * Apply the initial conditions.
+   * Then, compute the the initial current time step size.
+   */
+  repository.switchToInitialConditionAndExportAndGlobalTimeStepComputation();
+  repository.iterate();
+
+  /*
+   * Compute current first predictor based on current time step size.
+   * Set current time step size as old time step size of next iteration.
+   * Compute the current time step size of the next iteration.
+   */
+  repository.switchToPredictorAndGlobalTimeStepComputation();
+  repository.iterate();
+  logInfo("runAsMaster(...)", "[ExaHyPE] global time step="<< 0 <<", global time step size (seconds)=" <<
+          repository.getState().getTimeStepSize() );
+  logInfo("runAsMaster(...)", "[ExaHyPE] old global time step size (seconds)=" <<
+          repository.getState().getOldTimeStepSize() );
+
+  for (int n=1; n<400; n++) {
+    /*
+     * Exchange the fluctuations.
+     */
+    repository.switchToFaceDataExchange();
+    repository.iterate();
+
+    /*
+     * The two adapters that are embedded in the if clause below perform the following steps:
+     *
+     * 1. Perform the corrector step using the old update and the old global time step size.
+     *    This is a leaf-cell-local operation. Thus we immediately obtain the leaf-cell-local current solution.
+     * 2. Perform the predictor step using the leaf-cell-local current solution and the current global time step size.
+     * 3. Compute the leaf-cell-local time step sizes
+     * 4. (Optionally) Export the leaf-cell-local current solution.
+     * 5. After the traversal, set the global current time step size as the new old global time step size.
+     *    Find the minimum leaf-cell-local time step size and set it as the new current
+     *    global time step size.
+     */
+    if (n%EXAHYPE_PLOTTING_STRIDE==0) {
+      repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputationAndExport();
+    } else {
+      repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputation();
+    }
+    repository.iterate();
+
+    logInfo("runAsMaster(...)", "[ExaHyPE] global time step="<< n+1 <<", global time step size (seconds)=" <<
+            repository.getState().getTimeStepSize() );
+    logInfo("runAsMaster(...)", "[ExaHyPE] old global time step size (seconds)=" <<
+            repository.getState().getOldTimeStepSize() );
+  }
+
   repository.logIterationStatistics();
   repository.terminate();
-  // End of dummy implementation
+  // ! End of code for DG method
 
   return 0;
 }

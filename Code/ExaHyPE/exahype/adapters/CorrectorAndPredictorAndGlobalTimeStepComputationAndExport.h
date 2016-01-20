@@ -18,7 +18,6 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/RiemannSolver.h"
  #include "exahype/mappings/SurfaceIntegral.h"
  #include "exahype/mappings/SolutionUpdate.h"
  #include "exahype/mappings/VTKExport.h"
@@ -45,23 +44,21 @@ namespace exahype {
  */
 class exahype::adapters::CorrectorAndPredictorAndGlobalTimeStepComputationAndExport {
   private:
-    typedef mappings::RiemannSolver Mapping0;
-    typedef mappings::SurfaceIntegral Mapping1;
-    typedef mappings::SolutionUpdate Mapping2;
-    typedef mappings::VTKExport Mapping3;
-    typedef mappings::SpaceTimePredictor Mapping4;
-    typedef mappings::VolumeIntegral Mapping5;
-    typedef mappings::BoundaryConditions Mapping6;
-    typedef mappings::GlobalTimeStepComputation Mapping7;
+    typedef mappings::SurfaceIntegral Mapping0;
+    typedef mappings::SolutionUpdate Mapping1;
+    typedef mappings::VTKExport Mapping2;
+    typedef mappings::SpaceTimePredictor Mapping3;
+    typedef mappings::VolumeIntegral Mapping4;
+    typedef mappings::BoundaryConditions Mapping5;
+    typedef mappings::GlobalTimeStepComputation Mapping6;
 
-     Mapping0  _map2RiemannSolver;
-     Mapping1  _map2SurfaceIntegral;
-     Mapping2  _map2SolutionUpdate;
-     Mapping3  _map2VTKExport;
-     Mapping4  _map2SpaceTimePredictor;
-     Mapping5  _map2VolumeIntegral;
-     Mapping6  _map2BoundaryConditions;
-     Mapping7  _map2GlobalTimeStepComputation;
+     Mapping0  _map2SurfaceIntegral;
+     Mapping1  _map2SolutionUpdate;
+     Mapping2  _map2VTKExport;
+     Mapping3  _map2SpaceTimePredictor;
+     Mapping4  _map2VolumeIntegral;
+     Mapping5  _map2BoundaryConditions;
+     Mapping6  _map2GlobalTimeStepComputation;
 
 
   public:
