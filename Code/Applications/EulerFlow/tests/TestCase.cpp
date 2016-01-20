@@ -5,6 +5,7 @@
 #include "tarch/tests/TestCaseFactory.h"
 #include "EulerFlow/dg/ADERDG.h"
 #include "EulerFlow/Constants.h"
+#include "EulerFlow/problem/Problem.h"
 
 #include <iostream>
 #include <algorithm> // max
@@ -32,6 +33,8 @@ exahype::tests::TestCase::~TestCase() {
 void exahype::tests::TestCase::run() {
   // @todo If you have further tests, add them here
   //testMethod( test1 );
+
+  testMethod( testPDE                );
 
   testMethod( testSpaceTimePredictor );
   testMethod( testVolumeIntegral     );
@@ -1225,6 +1228,48 @@ void exahype::tests::TestCase::testUpdateSolution() {
     delete[] luh;
   }
 } // testUpdateSolution
+
+void exahype::tests::TestCase::testPDE() {
+  cout << "Test PDE-related functions" << endl;
+
+  // 2D
+  double Q[5] = {1., 0.1, 0.2, 0.3, 3.5}; // pressure = 1.39
+  double f[5], g[5];
+  problem::PDEFlux(Q,f,g);
+
+  validateNumericalEquals(0.1, f[0]);
+  validateNumericalEquals(1.4, f[1]);
+  validateNumericalEqualsWithParams1(0.02, f[2], g[1]);
+  validateNumericalEquals(0.03, f[3]);
+  validateNumericalEquals(0.489, f[4]);
+
+  validateNumericalEquals(0.2, g[0]);
+  validateNumericalEquals(1.43, g[2]);
+  validateNumericalEquals(0.06, g[3]);
+  validateNumericalEquals(0.978,g[4]);
+
+  // 3D
+  double h[5];
+  problem::PDEFlux(Q,f,g,h);
+
+  validateNumericalEquals(0.1, f[0]);
+  validateNumericalEquals(1.4, f[1]);
+  validateNumericalEqualsWithParams1(0.02, f[2], g[1]);
+  validateNumericalEquals(0.03, f[3]);
+  validateNumericalEquals(0.489, f[4]);
+
+  validateNumericalEquals(0.2, g[0]);
+  validateNumericalEquals(1.43, g[2]);
+  validateNumericalEquals(0.06, g[3]);
+  validateNumericalEquals(0.978,g[4]);
+
+  validateNumericalEquals(0.3, h[0]);
+  validateNumericalEquals(0.03,h[1]);
+  validateNumericalEquals(0.06,h[2]);
+  validateNumericalEquals(1.48,h[3]);
+  validateNumericalEquals(1.4670,h[4]);
+
+} // testPDE
 
 
 #ifdef UseTestSpecificCompilerSettings

@@ -415,7 +415,7 @@ void exahype::mappings::InitialCondition::enterCell(
                 exahype::geometry::mapping2d(center(0),center(1),dx,dy,dxPatch,dyPatch,i,j,qr,qs,&x,&y);
 
                 // read initial condition
-                exahype::problem::PDEInitialValue2d(x,y,nvar,value);
+                exahype::problem::PDEInitialValue2d(x,y,value);
 
                 // set the DoF
                 const int dofStartIndex  = nodeIndex * nvar;

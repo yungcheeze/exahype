@@ -1,5 +1,7 @@
 #include "EulerFlow/problem/Problem.h"
 
+#include "EulerFlow/Constants.h"
+
 #include "cmath"
 
 // UNCOMMENT FOR DEBUGGING PURPOSES
@@ -12,18 +14,22 @@
 //  value[4] = 1./(GAMMA-1) + 0.5 * value[0] * 1.*1.;
 //}
 
-void exahype::problem::PDEInitialValue2d(const double x,const double y,const int nvar,double * value) {
-  for (int n=0; n < 5; n++) {
-    value[n] = 0;
-  }
+void exahype::problem::PDEInitialValue2d(const double /*in*/ x,
+                                         const double /*in*/ y,
+                                         double * restrict /*out*/ value) {
   value[0] = 1.;
+  value[1] = 0.;
+  value[2] = 0.;
+  value[3] = 0.;
   value[4] = 1./(GAMMA-1) + std::exp(-((x-0.5)*(x-0.5) + (y-0.5)*(y-0.5))/(0.05*0.05)) * 1.0e-3;
 }
 
 
-void exahype::problem::PDEFlux(const double * const Q,const int nvar,double * f,double * g) {
-  double irho = 1.0/Q[0];
-  double p = (GAMMA-1)*( Q[4] - 0.5* (Q[1]*Q[1] + Q[2]*Q[2]) * irho );
+void exahype::problem::PDEFlux(const double * restrict const /*in*/ Q,
+                               double * restrict /*out*/ f,
+                               double * restrict /*out*/ g) {
+  const double irho = 1.0/Q[0];
+  const double p = (GAMMA-1)*( Q[4] - 0.5* (Q[1]*Q[1] + Q[2]*Q[2]) * irho );
 
   f[0] = Q[1];
   f[1] = irho*Q[1]*Q[1] + p;
@@ -38,7 +44,39 @@ void exahype::problem::PDEFlux(const double * const Q,const int nvar,double * f,
   g[4] = irho*Q[2]*(Q[4]+p);
 }
 
-void exahype::problem::PDEEigenvalues(const double * const Q,const int nvar,const double * const n,const int d,double * lambda) {
+void exahype::problem::PDEFlux(const double * restrict const /*in*/ Q,
+                               double * restrict /*out*/ f,
+                               double * restrict /*out*/ g,
+                               double * restrict /*out*/ h) {
+  const double irho = 1.0/Q[0];
+  const double p = (GAMMA-1)*( Q[4] - 0.5* (Q[1]*Q[1] + Q[2]*Q[2]) * irho );
+
+  f[0] = Q[1];
+  f[1] = irho*Q[1]*Q[1] + p;
+  f[2] = irho*Q[1]*Q[2];
+  f[3] = irho*Q[1]*Q[3];
+  f[4] = irho*Q[1]*(Q[4]+p);
+
+  g[0] = Q[2];
+  g[1] = irho*Q[2]*Q[1];
+  g[2] = irho*Q[2]*Q[2] + p;
+  g[3] = irho*Q[2]*Q[3];
+  g[4] = irho*Q[2]*(Q[4]+p);
+
+  h[0] = Q[3];
+  h[1] = irho*Q[3]*Q[1];
+  h[2] = irho*Q[3]*Q[2];
+  h[3] = irho*Q[3]*Q[3] + p;
+  h[4] = irho*Q[3]*(Q[4]+p);
+}
+
+
+void exahype::problem::PDEEigenvalues(const double * restrict const /*in*/ Q,
+                                      const double * restrict const /*in*/n,
+                                      double * restrict /*out*/ lambda) {
+  constexpr int d    = DIMENSIONS;
+  constexpr int nvar = EXAHYPE_NVARS;
+
   double irho = 1.0/Q[0];
   double p = (GAMMA-1)*( Q[4] - 0.5* (Q[1]*Q[1] + Q[2]*Q[2]) * irho );
 

@@ -21,9 +21,9 @@ void exahype::dg::solveRiemannProblem<3>(
             double * restrict /*local*/ QavR,
             double * restrict /*local*/ lambdaL,
             double * restrict /*local*/ lambdaR,
-            const double /*in*/ dt,
+            const double /*unused*/ dt,
             const double /*unused*/ hFace,
-            const double * restrict const /*unused*/ n
+            const double * restrict const /*in*/ n
 ) {
   constexpr int dim       = DIMENSIONS;       // 3
   constexpr int nvar      = EXAHYPE_NVARS;
@@ -42,9 +42,9 @@ void exahype::dg::solveRiemannProblem<2>(
             double * restrict /*local*/ QavR,
             double * restrict /*local*/ lambdaL,
             double * restrict /*local*/ lambdaR,
-            const double /*in*/ dt,
+            const double /*unused*/ dt,
             const double /*unused*/ hFace,
-            const double * restrict const /*unused*/ n
+            const double * restrict const /*in*/ n
 ) {
   constexpr int dim       = DIMENSIONS;       // 2
   constexpr int nvar      = EXAHYPE_NVARS;
@@ -70,8 +70,8 @@ void exahype::dg::solveRiemannProblem<2>(
   // Here, we implement a very simple Rusanov scheme with scalar dissipation (smax*Id).
   // We can change this into a more sophisticated Osher or HLLEM Riemann solver whenever needed.
   //
-  exahype::problem::PDEEigenvalues(QavL,nvar,n,dim,lambdaL);
-  exahype::problem::PDEEigenvalues(QavR,nvar,n,dim,lambdaR);
+  exahype::problem::PDEEigenvalues(QavL,n,lambdaL);
+  exahype::problem::PDEEigenvalues(QavR,n,lambdaR);
 
   sMax = 0;
   for(int ivar=0; ivar < nvar; ivar++) {

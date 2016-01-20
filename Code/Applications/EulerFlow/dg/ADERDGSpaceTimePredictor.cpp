@@ -111,7 +111,7 @@ void exahype::dg::spaceTimePredictor<2>(
           Q = &lQi [spaceTimeDofStartIndex        ];
           f = &lFi[spaceTimeFluxDofStartIndex     ];
           g = &lFi[spaceTimeFluxDofStartIndex+nvar];
-          exahype::problem::PDEFlux(Q,nvar,f,g);
+          exahype::problem::PDEFlux(Q,f,g);
         }
       }
       // Above seems okay!

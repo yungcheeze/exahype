@@ -34,6 +34,8 @@ class exahype::tests::TestCase: public tarch::tests::TestCase {
     void testSurfaceIntegral();
     void testUpdateSolution();
 
+    void testPDE();
+
     //void test1();
 
   public: 
