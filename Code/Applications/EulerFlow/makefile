@@ -24,6 +24,9 @@ DIM=-DDim2
 #DIM=-DDim4
 
 
+# Use original or optimised kernels
+#OPTIMISED_KERNELS =
+#OPTIMISED_KERNELS = -DUseOptimisedKernels
 
 # Configure System
 # ----------------
@@ -49,19 +52,19 @@ ifeq ($(CC),gcc)
 		# Settings for the GNU Compiler (Debug Mode)
 		# ------------------------------------------
 		CC=g++
-		COMPILER_CFLAGS=-DDebug -DAsserts -O0 -pedantic -pedantic-errors -Wall -Wstrict-aliasing -fstrict-aliasing -Drestrict=__restrict__ -ggdb -std=c++0x
+		COMPILER_CFLAGS=-DDebug -DAsserts $(OPTIMISED_KERNELS) -O0 -pedantic -pedantic-errors -Wall -Wstrict-aliasing -fstrict-aliasing -Drestrict=__restrict__ -ggdb -std=c++0x
 		COMPILER_LFLAGS=
 	else ifeq ($(MODE),Profile)
 		# Settings for the GNU Compiler (Profile Mode)
 		# --------------------------------------------
 		CC=g++
-		COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -O3 -fstrict-aliasing -Drestrict=__restrict__ -fno-rtti -fno-exceptions -std=c++0x
+		COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg $(OPTIMISED_KERNELS) -O3 -fstrict-aliasing -Drestrict=__restrict__ -fno-rtti -fno-exceptions -std=c++0x
 		COMPILER_LFLAGS=-p -pg
 	else
 		# Settings for the GNU Compiler (Release Mode)
 		# --------------------------------------------
 		CC=g++
-		COMPILER_CFLAGS=-O3 -fstrict-aliasing -Drestrict=__restrict__ -fno-rtti -fno-exceptions -std=c++0x
+		COMPILER_CFLAGS= $(OPTIMISED_KERNELS) -O3 -fstrict-aliasing -Drestrict=__restrict__ -fno-rtti -fno-exceptions -std=c++0x
 		COMPILER_LFLAGS=
 	endif
 else
@@ -69,19 +72,19 @@ else
 		# Settings for the Intel Compiler (Debug Mode)
 		# --------------------------------------------
 		CC=icpc
-		COMPILER_CFLAGS=-DDebug -DAsserts -O0 -fstrict-aliasing -restrict -std=c++0x
+		COMPILER_CFLAGS=-DDebug -DAsserts $(OPTIMISED_KERNELS) -O0 -fstrict-aliasing -restrict -std=c++0x
 		COMPILER_LFLAGS=
 	else ifeq ($(MODE),Profile)
 		# Settings for the GNU Compiler (Profile Mode)
 		# --------------------------------------------
 		CC=icpc
-		COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
+		COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg $(OPTIMISED_KERNELS) -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
 		COMPILER_LFLAGS=-p -pg
         else
 		# Settings for the Intel Compiler (Release Mode)
 		# ----------------------------------------------
 		CC=icpc
-		COMPILER_CFLAGS=-fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
+		COMPILER_CFLAGS=$(OPTIMISED_KERNELS) -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
 		COMPILER_LFLAGS=
 	endif
 endif

@@ -46,7 +46,7 @@ double exahype::dg::stableTimeStepSize<2>(
 
       double denominator=0.0;
       for (int d=0; d<dim; d++) {
-        problem::PDEEigenvalues(&luh[dofStartIndex],nvar,normal[d],dim,lambda);
+        problem::PDEEigenvalues(&luh[dofStartIndex],normal[d],lambda);
 
         double maxEigenvalue=0.0;
         for (int ivar=0; ivar<nvar; ivar++) {
