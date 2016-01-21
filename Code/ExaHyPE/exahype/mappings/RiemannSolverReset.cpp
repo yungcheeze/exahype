@@ -1,86 +1,89 @@
-#include "exahype/adapters/GridExport.h"
+#include "exahype/mappings/RiemannSolverReset.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::GridExport::communicationSpecification() {
-  return peano::CommunicationSpecification::getMinimalSpecification()
-   & exahype::adapters::GridExport2VTKGridVisualiser_0::communicationSpecification()
 
-  ;
+/**
+ * @todo Please tailor the parameters to your mapping's properties.
+ */
+peano::CommunicationSpecification   exahype::mappings::RiemannSolverReset::communicationSpecification() {
+  return peano::CommunicationSpecification(peano::CommunicationSpecification::SendDataAndStateBeforeFirstTouchVertexFirstTime,peano::CommunicationSpecification::SendDataAndStateAfterLastTouchVertexLastTime,false);
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridExport::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::adapters::GridExport2VTKGridVisualiser_0::touchVertexLastTimeSpecification()
-
-  ;
+/**
+ * @todo Please tailor the parameters to your mapping's properties.
+ */
+peano::MappingSpecification   exahype::mappings::RiemannSolverReset::touchVertexLastTimeSpecification() {
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridExport::touchVertexFirstTimeSpecification() { 
-  return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::adapters::GridExport2VTKGridVisualiser_0::touchVertexFirstTimeSpecification()
-
-  ;
+/**
+ * @todo Please tailor the parameters to your mapping's properties.
+ */
+peano::MappingSpecification   exahype::mappings::RiemannSolverReset::touchVertexFirstTimeSpecification() { 
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridExport::enterCellSpecification() {
-  return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::adapters::GridExport2VTKGridVisualiser_0::enterCellSpecification()
-
-  ;
+/**
+ * @todo Please tailor the parameters to your mapping's properties.
+ */
+peano::MappingSpecification   exahype::mappings::RiemannSolverReset::enterCellSpecification() {
+  return peano::MappingSpecification(peano::MappingSpecification::OnlyLeaves,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridExport::leaveCellSpecification() {
-  return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::adapters::GridExport2VTKGridVisualiser_0::leaveCellSpecification()
-
-  ;
+/**
+ * @todo Please tailor the parameters to your mapping's properties.
+ */
+peano::MappingSpecification   exahype::mappings::RiemannSolverReset::leaveCellSpecification() {
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridExport::ascendSpecification() {
-  return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::adapters::GridExport2VTKGridVisualiser_0::ascendSpecification()
-
-  ;
+/**
+ * @todo Please tailor the parameters to your mapping's properties.
+ */
+peano::MappingSpecification   exahype::mappings::RiemannSolverReset::ascendSpecification() {
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
-peano::MappingSpecification   exahype::adapters::GridExport::descendSpecification() {
-  return peano::MappingSpecification::getMinimalSpecification()
-   & exahype::adapters::GridExport2VTKGridVisualiser_0::descendSpecification()
-
-  ;
+/**
+ * @todo Please tailor the parameters to your mapping's properties.
+ */
+peano::MappingSpecification   exahype::mappings::RiemannSolverReset::descendSpecification() {
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
-exahype::adapters::GridExport::GridExport() {
+tarch::logging::Log                exahype::mappings::RiemannSolverReset::_log( "exahype::mappings::RiemannSolverReset" ); 
+
+
+exahype::mappings::RiemannSolverReset::RiemannSolverReset() {
+  // do nothing
 }
 
 
-exahype::adapters::GridExport::~GridExport() {
+exahype::mappings::RiemannSolverReset::~RiemannSolverReset() {
+  // do nothing
 }
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::adapters::GridExport::GridExport(const GridExport&  masterThread):
-  _map2GridExport2VTKGridVisualiser_0(masterThread._map2GridExport2VTKGridVisualiser_0) 
-
-{
+exahype::mappings::RiemannSolverReset::RiemannSolverReset(const RiemannSolverReset&  masterThread) {
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::mergeWithWorkerThread(const GridExport& workerThread) {
-  _map2GridExport2VTKGridVisualiser_0.mergeWithWorkerThread(workerThread._map2GridExport2VTKGridVisualiser_0);
-
+void exahype::mappings::RiemannSolverReset::mergeWithWorkerThread(const RiemannSolverReset& workerThread) {
+  // do nothing
 }
 #endif
 
 
-void exahype::adapters::GridExport::createHangingVertex(
+void exahype::mappings::RiemannSolverReset::createHangingVertex(
       exahype::Vertex&     fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                fineGridH,
@@ -89,13 +92,11 @@ void exahype::adapters::GridExport::createHangingVertex(
       exahype::Cell&       coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
-  _map2GridExport2VTKGridVisualiser_0.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-
-
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::destroyHangingVertex(
+void exahype::mappings::RiemannSolverReset::destroyHangingVertex(
       const exahype::Vertex&   fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -104,12 +105,11 @@ void exahype::adapters::GridExport::destroyHangingVertex(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  _map2GridExport2VTKGridVisualiser_0.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::createInnerVertex(
+void exahype::mappings::RiemannSolverReset::createInnerVertex(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -118,12 +118,11 @@ void exahype::adapters::GridExport::createInnerVertex(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  _map2GridExport2VTKGridVisualiser_0.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::createBoundaryVertex(
+void exahype::mappings::RiemannSolverReset::createBoundaryVertex(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -132,12 +131,11 @@ void exahype::adapters::GridExport::createBoundaryVertex(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  _map2GridExport2VTKGridVisualiser_0.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::destroyVertex(
+void exahype::mappings::RiemannSolverReset::destroyVertex(
       const exahype::Vertex&   fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -146,12 +144,11 @@ void exahype::adapters::GridExport::destroyVertex(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  _map2GridExport2VTKGridVisualiser_0.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::createCell(
+void exahype::mappings::RiemannSolverReset::createCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -160,12 +157,11 @@ void exahype::adapters::GridExport::createCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  _map2GridExport2VTKGridVisualiser_0.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::destroyCell(
+void exahype::mappings::RiemannSolverReset::destroyCell(
       const exahype::Cell&           fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -174,13 +170,11 @@ void exahype::adapters::GridExport::destroyCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  _map2GridExport2VTKGridVisualiser_0.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-
+  // do nothing
 }
 
-
 #ifdef Parallel
-void exahype::adapters::GridExport::mergeWithNeighbour(
+void exahype::mappings::RiemannSolverReset::mergeWithNeighbour(
   exahype::Vertex&  vertex,
   const exahype::Vertex&  neighbour,
   int                                           fromRank,
@@ -188,48 +182,40 @@ void exahype::adapters::GridExport::mergeWithNeighbour(
   const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
   int                                           level
 ) {
-   _map2GridExport2VTKGridVisualiser_0.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
-
+  // do nothing
 }
 
-
-void exahype::adapters::GridExport::prepareSendToNeighbour(
+void exahype::mappings::RiemannSolverReset::prepareSendToNeighbour(
   exahype::Vertex&  vertex,
-  int                                           toRank,
-  const tarch::la::Vector<DIMENSIONS,double>&   x,
-  const tarch::la::Vector<DIMENSIONS,double>&   h,
-  int                                           level
-) {
-   _map2GridExport2VTKGridVisualiser_0.prepareSendToNeighbour( vertex, toRank, x, h, level );
-
-}
-
-
-void exahype::adapters::GridExport::prepareCopyToRemoteNode(
-  exahype::Vertex&  localVertex,
-  int                                           toRank,
-  const tarch::la::Vector<DIMENSIONS,double>&   x,
-  const tarch::la::Vector<DIMENSIONS,double>&   h,
-  int                                           level
-) {
-   _map2GridExport2VTKGridVisualiser_0.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
-
-}
-
-
-void exahype::adapters::GridExport::prepareCopyToRemoteNode(
-  exahype::Cell&  localCell,
       int                                           toRank,
       const tarch::la::Vector<DIMENSIONS,double>&   x,
       const tarch::la::Vector<DIMENSIONS,double>&   h,
       int                                           level
 ) {
-   _map2GridExport2VTKGridVisualiser_0.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
-
+  // do nothing
 }
 
+void exahype::mappings::RiemannSolverReset::prepareCopyToRemoteNode(
+  exahype::Vertex&  localVertex,
+      int                                           toRank,
+      const tarch::la::Vector<DIMENSIONS,double>&   x,
+      const tarch::la::Vector<DIMENSIONS,double>&   h,
+      int                                           level
+) {
+  // do nothing
+}
 
-void exahype::adapters::GridExport::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::RiemannSolverReset::prepareCopyToRemoteNode(
+  exahype::Cell&  localCell,
+      int                                           toRank,
+      const tarch::la::Vector<DIMENSIONS,double>&   cellCentre,
+      const tarch::la::Vector<DIMENSIONS,double>&   cellSize,
+      int                                           level
+) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolverReset::mergeWithRemoteDataDueToForkOrJoin(
   exahype::Vertex&  localVertex,
   const exahype::Vertex&  masterOrWorkerVertex,
   int                                       fromRank,
@@ -237,25 +223,21 @@ void exahype::adapters::GridExport::mergeWithRemoteDataDueToForkOrJoin(
   const tarch::la::Vector<DIMENSIONS,double>&  h,
   int                                       level
 ) {
-   _map2GridExport2VTKGridVisualiser_0.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
-
+  // do nothing
 }
 
-
-void exahype::adapters::GridExport::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::RiemannSolverReset::mergeWithRemoteDataDueToForkOrJoin(
   exahype::Cell&  localCell,
   const exahype::Cell&  masterOrWorkerCell,
   int                                       fromRank,
-  const tarch::la::Vector<DIMENSIONS,double>&  x,
-  const tarch::la::Vector<DIMENSIONS,double>&  h,
+  const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
+  const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
   int                                       level
 ) {
-   _map2GridExport2VTKGridVisualiser_0.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
-
+  // do nothing
 }
 
-
-bool exahype::adapters::GridExport::prepareSendToWorker(
+bool exahype::mappings::RiemannSolverReset::prepareSendToWorker(
   exahype::Cell&                 fineGridCell,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -265,14 +247,11 @@ bool exahype::adapters::GridExport::prepareSendToWorker(
   const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
   int                                                                  worker
 ) {
-  bool result = false;
-   result |= _map2GridExport2VTKGridVisualiser_0.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
-
-  return result;
+  // do nothing
+  return true;
 }
 
-
-void exahype::adapters::GridExport::prepareSendToMaster(
+void exahype::mappings::RiemannSolverReset::prepareSendToMaster(
   exahype::Cell&                       localCell,
   exahype::Vertex *                    vertices,
   const peano::grid::VertexEnumerator&       verticesEnumerator, 
@@ -281,15 +260,14 @@ void exahype::adapters::GridExport::prepareSendToMaster(
   const exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
-   _map2GridExport2VTKGridVisualiser_0.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::mergeWithMaster(
+void exahype::mappings::RiemannSolverReset::mergeWithMaster(
   const exahype::Cell&           workerGridCell,
   exahype::Vertex * const        workerGridVertices,
-  const peano::grid::VertexEnumerator& workerEnumerator,
+ const peano::grid::VertexEnumerator& workerEnumerator,
   exahype::Cell&                 fineGridCell,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -298,15 +276,14 @@ void exahype::adapters::GridExport::mergeWithMaster(
   exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
   int                                                                  worker,
-    const exahype::State&          workerState,
+  const exahype::State&          workerState,
   exahype::State&                masterState
 ) {
-   _map2GridExport2VTKGridVisualiser_0.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
-
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::receiveDataFromMaster(
+void exahype::mappings::RiemannSolverReset::receiveDataFromMaster(
       exahype::Cell&                        receivedCell, 
       exahype::Vertex *                     receivedVertices,
       const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
@@ -318,37 +295,33 @@ void exahype::adapters::GridExport::receiveDataFromMaster(
       exahype::Cell&                        workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
-   _map2GridExport2VTKGridVisualiser_0.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
-
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::mergeWithWorker(
+void exahype::mappings::RiemannSolverReset::mergeWithWorker(
   exahype::Cell&           localCell, 
   const exahype::Cell&     receivedMasterCell,
   const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
   const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
   int                                          level
 ) {
-   _map2GridExport2VTKGridVisualiser_0.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
-
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::mergeWithWorker(
+void exahype::mappings::RiemannSolverReset::mergeWithWorker(
   exahype::Vertex&        localVertex,
   const exahype::Vertex&  receivedMasterVertex,
   const tarch::la::Vector<DIMENSIONS,double>&   x,
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
-   _map2GridExport2VTKGridVisualiser_0.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
-
+  // do nothing
 }
 #endif
 
-
-void exahype::adapters::GridExport::touchVertexFirstTime(
+void exahype::mappings::RiemannSolverReset::touchVertexFirstTime(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -357,12 +330,11 @@ void exahype::adapters::GridExport::touchVertexFirstTime(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  _map2GridExport2VTKGridVisualiser_0.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::touchVertexLastTime(
+void exahype::mappings::RiemannSolverReset::touchVertexLastTime(
       exahype::Vertex&         fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -371,12 +343,11 @@ void exahype::adapters::GridExport::touchVertexLastTime(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  _map2GridExport2VTKGridVisualiser_0.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::enterCell(
+void exahype::mappings::RiemannSolverReset::enterCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -385,12 +356,23 @@ void exahype::adapters::GridExport::enterCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  _map2GridExport2VTKGridVisualiser_0.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
+  if (!fineGridCell.isRefined()) {
+    records::ADERDGCellDescription& cellDescription =
+        ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
+
+    std::bitset<TWO_POWER_D> riemannSolvePerformed;
+    cellDescription.setRiemannSolvePerformed(riemannSolvePerformed);
+
+    assertion1(cellDescription.getRiemannSolvePerformed().none(),cellDescription.toString());
+  }
+
+  logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
 
 
-void exahype::adapters::GridExport::leaveCell(
+void exahype::mappings::RiemannSolverReset::leaveCell(
       exahype::Cell&           fineGridCell,
       exahype::Vertex * const  fineGridVertices,
       const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
@@ -399,30 +381,26 @@ void exahype::adapters::GridExport::leaveCell(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
-  _map2GridExport2VTKGridVisualiser_0.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::beginIteration(
+void exahype::mappings::RiemannSolverReset::beginIteration(
   exahype::State&  solverState
 ) {
-  _map2GridExport2VTKGridVisualiser_0.beginIteration( solverState );
-
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::endIteration(
+void exahype::mappings::RiemannSolverReset::endIteration(
   exahype::State&  solverState
 ) {
-  _map2GridExport2VTKGridVisualiser_0.endIteration( solverState );
-
+  // do nothing
 }
 
 
 
-
-void exahype::adapters::GridExport::descend(
+void exahype::mappings::RiemannSolverReset::descend(
   exahype::Cell * const          fineGridCells,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -430,12 +408,11 @@ void exahype::adapters::GridExport::descend(
   const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
   exahype::Cell&                 coarseGridCell
 ) {
-  _map2GridExport2VTKGridVisualiser_0.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
-
+  // do nothing
 }
 
 
-void exahype::adapters::GridExport::ascend(
+void exahype::mappings::RiemannSolverReset::ascend(
   exahype::Cell * const    fineGridCells,
   exahype::Vertex * const  fineGridVertices,
   const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
@@ -443,6 +420,5 @@ void exahype::adapters::GridExport::ascend(
   const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
   exahype::Cell&           coarseGridCell
 ) {
-  _map2GridExport2VTKGridVisualiser_0.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
-
+  // do nothing
 }

@@ -47,6 +47,9 @@ event-mapping:
   name: FaceDataExchange
   
 event-mapping:
+  name: RiemannSolverReset
+  
+event-mapping:
   name: RiemannSolver
   
 event-mapping:
@@ -84,7 +87,6 @@ adapter:
   name: FaceDataExchange
   merge-with-user-defined-mapping: RiemannSolver
   merge-with-user-defined-mapping: BoundaryConditions
-  // delete: merge-with-user-defined-mapping: FaceDataExchange
 
 adapter:
   name: InitialConditionAndGlobalTimeStepComputation
@@ -102,6 +104,7 @@ adapter:
 
 adapter:
   name: PredictorAndGlobalTimeStepComputation
+  merge-with-user-defined-mapping: RiemannSolverReset
   // needs current time step
   merge-with-user-defined-mapping: SpaceTimePredictor 
   merge-with-user-defined-mapping: VolumeIntegral
@@ -109,8 +112,8 @@ adapter:
 
 adapter:
   name: CorrectorAndPredictorAndGlobalTimeStepComputation
+  merge-with-user-defined-mapping: RiemannSolverReset
   // needs old time step
-  // delete:  merge-with-user-defined-mapping: RiemannSolver
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
   // needs current time step
@@ -120,13 +123,12 @@ adapter:
 
 adapter:
   name: CorrectorAndPredictorAndGlobalTimeStepComputationAndExport
+  merge-with-user-defined-mapping: RiemannSolverReset
   // needs old time step
-  // delete:  merge-with-user-defined-mapping: RiemannSolver
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: VTKExport // can be moved to end of traversal
   // needs current time step
   merge-with-user-defined-mapping: SpaceTimePredictor 
   merge-with-user-defined-mapping: VolumeIntegral
-  merge-with-user-defined-mapping: BoundaryConditions
   merge-with-user-defined-mapping: GlobalTimeStepComputation
