@@ -17,6 +17,7 @@
 #include <complex>
 #include <string>
 #include <iostream>
+#include "exahype/Constants.h"
 
 namespace exahype {
    namespace records {
@@ -34,7 +35,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   20/01/2016 16:19
+    * @date   21/01/2016 15:08
     */
    class exahype::records::Cell { 
       
@@ -47,6 +48,11 @@ namespace exahype {
          };
          
          struct PersistentRecords {
+            #ifdef UseManualAlignment
+            std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive __attribute__((aligned(VectorisationAlignment)));
+            #else
+            std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
+            #endif
             int _ADERDGCellDescriptionsIndex;
             bool _isInside;
             State _state;
@@ -70,7 +76,65 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+            PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+            
+            
+            /**
+             * Generated and optimized
+             * 
+             * If you realise a for loop using exclusively arrays (vectors) and compile 
+             * with -DUseManualAlignment you may add 
+             * \code
+             #pragma vector aligned
+             #pragma simd
+             \endcode to this for loop to enforce your compiler to use SSE/AVX.
+             * 
+             * The alignment is tied to the unpacked records, i.e. for packed class
+             * variants the machine's natural alignment is switched off to recude the  
+             * memory footprint. Do not use any SSE/AVX operations or 
+             * vectorisation on the result for the packed variants, as the data is misaligned. 
+             * If you rely on vectorisation, convert the underlying record 
+             * into the unpacked version first. 
+             * 
+             * @see convert()
+             */
+            inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _isPDEActive;
+            }
+            
+            
+            
+            /**
+             * Generated and optimized
+             * 
+             * If you realise a for loop using exclusively arrays (vectors) and compile 
+             * with -DUseManualAlignment you may add 
+             * \code
+             #pragma vector aligned
+             #pragma simd
+             \endcode to this for loop to enforce your compiler to use SSE/AVX.
+             * 
+             * The alignment is tied to the unpacked records, i.e. for packed class
+             * variants the machine's natural alignment is switched off to recude the  
+             * memory footprint. Do not use any SSE/AVX operations or 
+             * vectorisation on the result for the packed variants, as the data is misaligned. 
+             * If you rely on vectorisation, convert the underlying record 
+             * into the unpacked version first. 
+             * 
+             * @see convert()
+             */
+            inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _isPDEActive = (isPDEActive);
+            }
+            
             
             
             inline int getADERDGCellDescriptionsIndex() const 
@@ -308,12 +372,108 @@ namespace exahype {
          /**
           * Generated
           */
-         Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+         Cell(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
          
          /**
           * Generated
           */
          virtual ~Cell();
+         
+         
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._isPDEActive;
+         }
+         
+         
+         
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._isPDEActive = (isPDEActive);
+         }
+         
+         
+         
+         inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            assertion(elementIndex>=0);
+            assertion(elementIndex<EXAHYPE_NPROBLEMS);
+            return _persistentRecords._isPDEActive[elementIndex];
+            
+         }
+         
+         
+         
+         inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            assertion(elementIndex>=0);
+            assertion(elementIndex<EXAHYPE_NPROBLEMS);
+            _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+            
+         }
+         
+         
+         
+         inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            assertion(elementIndex>=0);
+            assertion(elementIndex<EXAHYPE_NPROBLEMS);
+            _persistentRecords._isPDEActive.flip(elementIndex);
+         }
+         
          
          
          inline int getADERDGCellDescriptionsIndex() const 
@@ -682,7 +842,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   20/01/2016 16:19
+       * @date   21/01/2016 15:08
        */
       class exahype::records::CellPacked { 
          
@@ -691,6 +851,7 @@ namespace exahype {
             typedef exahype::records::Cell::State State;
             
             struct PersistentRecords {
+               std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
                int _ADERDGCellDescriptionsIndex;
                tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                int _numberOfLoadsFromInputStream;
@@ -712,7 +873,65 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+               PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _isPDEActive;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _isPDEActive = (isPDEActive);
+               }
+               
                
                
                inline int getADERDGCellDescriptionsIndex() const 
@@ -970,12 +1189,108 @@ namespace exahype {
             /**
              * Generated
              */
-            CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+            CellPacked(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
             
             /**
              * Generated
              */
             virtual ~CellPacked();
+            
+            
+            /**
+             * Generated and optimized
+             * 
+             * If you realise a for loop using exclusively arrays (vectors) and compile 
+             * with -DUseManualAlignment you may add 
+             * \code
+             #pragma vector aligned
+             #pragma simd
+             \endcode to this for loop to enforce your compiler to use SSE/AVX.
+             * 
+             * The alignment is tied to the unpacked records, i.e. for packed class
+             * variants the machine's natural alignment is switched off to recude the  
+             * memory footprint. Do not use any SSE/AVX operations or 
+             * vectorisation on the result for the packed variants, as the data is misaligned. 
+             * If you rely on vectorisation, convert the underlying record 
+             * into the unpacked version first. 
+             * 
+             * @see convert()
+             */
+            inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._isPDEActive;
+            }
+            
+            
+            
+            /**
+             * Generated and optimized
+             * 
+             * If you realise a for loop using exclusively arrays (vectors) and compile 
+             * with -DUseManualAlignment you may add 
+             * \code
+             #pragma vector aligned
+             #pragma simd
+             \endcode to this for loop to enforce your compiler to use SSE/AVX.
+             * 
+             * The alignment is tied to the unpacked records, i.e. for packed class
+             * variants the machine's natural alignment is switched off to recude the  
+             * memory footprint. Do not use any SSE/AVX operations or 
+             * vectorisation on the result for the packed variants, as the data is misaligned. 
+             * If you rely on vectorisation, convert the underlying record 
+             * into the unpacked version first. 
+             * 
+             * @see convert()
+             */
+            inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._isPDEActive = (isPDEActive);
+            }
+            
+            
+            
+            inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               assertion(elementIndex>=0);
+               assertion(elementIndex<EXAHYPE_NPROBLEMS);
+               return _persistentRecords._isPDEActive[elementIndex];
+               
+            }
+            
+            
+            
+            inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               assertion(elementIndex>=0);
+               assertion(elementIndex<EXAHYPE_NPROBLEMS);
+               _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+               
+            }
+            
+            
+            
+            inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               assertion(elementIndex>=0);
+               assertion(elementIndex<EXAHYPE_NPROBLEMS);
+               _persistentRecords._isPDEActive.flip(elementIndex);
+            }
+            
             
             
             inline int getADERDGCellDescriptionsIndex() const 
@@ -1368,7 +1683,7 @@ namespace exahype {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   20/01/2016 16:19
+          * @date   21/01/2016 15:08
           */
          class exahype::records::Cell { 
             
@@ -1381,6 +1696,11 @@ namespace exahype {
                };
                
                struct PersistentRecords {
+                  #ifdef UseManualAlignment
+                  std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive __attribute__((aligned(VectorisationAlignment)));
+                  #else
+                  std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
+                  #endif
                   int _ADERDGCellDescriptionsIndex;
                   bool _isInside;
                   State _state;
@@ -1403,7 +1723,65 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                  PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                  
+                  
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _isPDEActive;
+                  }
+                  
+                  
+                  
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _isPDEActive = (isPDEActive);
+                  }
+                  
                   
                   
                   inline int getADERDGCellDescriptionsIndex() const 
@@ -1621,12 +1999,108 @@ namespace exahype {
                /**
                 * Generated
                 */
-               Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+               Cell(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
                
                /**
                 * Generated
                 */
                virtual ~Cell();
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._isPDEActive;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._isPDEActive = (isPDEActive);
+               }
+               
+               
+               
+               inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                  return _persistentRecords._isPDEActive[elementIndex];
+                  
+               }
+               
+               
+               
+               inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                  _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+                  
+               }
+               
+               
+               
+               inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                  _persistentRecords._isPDEActive.flip(elementIndex);
+               }
+               
                
                
                inline int getADERDGCellDescriptionsIndex() const 
@@ -1975,7 +2449,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   20/01/2016 16:19
+             * @date   21/01/2016 15:08
              */
             class exahype::records::CellPacked { 
                
@@ -1984,6 +2458,7 @@ namespace exahype {
                   typedef exahype::records::Cell::State State;
                   
                   struct PersistentRecords {
+                     std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
                      int _ADERDGCellDescriptionsIndex;
                      int _level;
                      tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
@@ -2004,7 +2479,65 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                     PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _isPDEActive;
+                     }
+                     
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _isPDEActive = (isPDEActive);
+                     }
+                     
                      
                      
                      inline int getADERDGCellDescriptionsIndex() const 
@@ -2242,12 +2775,108 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                  CellPacked(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
                   
                   /**
                    * Generated
                    */
                   virtual ~CellPacked();
+                  
+                  
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._isPDEActive;
+                  }
+                  
+                  
+                  
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._isPDEActive = (isPDEActive);
+                  }
+                  
+                  
+                  
+                  inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion(elementIndex>=0);
+                     assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                     return _persistentRecords._isPDEActive[elementIndex];
+                     
+                  }
+                  
+                  
+                  
+                  inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion(elementIndex>=0);
+                     assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                     _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+                     
+                  }
+                  
+                  
+                  
+                  inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion(elementIndex>=0);
+                     assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                     _persistentRecords._isPDEActive.flip(elementIndex);
+                  }
+                  
                   
                   
                   inline int getADERDGCellDescriptionsIndex() const 
@@ -2621,7 +3250,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   20/01/2016 16:19
+             * @date   21/01/2016 15:08
              */
             class exahype::records::Cell { 
                
@@ -2634,6 +3263,11 @@ namespace exahype {
                   };
                   
                   struct PersistentRecords {
+                     #ifdef UseManualAlignment
+                     std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive __attribute__((aligned(VectorisationAlignment)));
+                     #else
+                     std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
+                     #endif
                      int _ADERDGCellDescriptionsIndex;
                      bool _isInside;
                      State _state;
@@ -2663,7 +3297,65 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                     PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _isPDEActive;
+                     }
+                     
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _isPDEActive = (isPDEActive);
+                     }
+                     
                      
                      
                      inline int getADERDGCellDescriptionsIndex() const 
@@ -3021,12 +3713,108 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                  Cell(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
                   
                   /**
                    * Generated
                    */
                   virtual ~Cell();
+                  
+                  
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._isPDEActive;
+                  }
+                  
+                  
+                  
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._isPDEActive = (isPDEActive);
+                  }
+                  
+                  
+                  
+                  inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion(elementIndex>=0);
+                     assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                     return _persistentRecords._isPDEActive[elementIndex];
+                     
+                  }
+                  
+                  
+                  
+                  inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion(elementIndex>=0);
+                     assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                     _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+                     
+                  }
+                  
+                  
+                  
+                  inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion(elementIndex>=0);
+                     assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                     _persistentRecords._isPDEActive.flip(elementIndex);
+                  }
+                  
                   
                   
                   inline int getADERDGCellDescriptionsIndex() const 
@@ -3515,7 +4303,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   20/01/2016 16:19
+                * @date   21/01/2016 15:08
                 */
                class exahype::records::CellPacked { 
                   
@@ -3524,6 +4312,7 @@ namespace exahype {
                      typedef exahype::records::Cell::State State;
                      
                      struct PersistentRecords {
+                        std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
                         int _ADERDGCellDescriptionsIndex;
                         tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                         int _responsibleRank;
@@ -3551,7 +4340,65 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                        PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                        
+                        
+                        /**
+                         * Generated and optimized
+                         * 
+                         * If you realise a for loop using exclusively arrays (vectors) and compile 
+                         * with -DUseManualAlignment you may add 
+                         * \code
+                         #pragma vector aligned
+                         #pragma simd
+                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                         * 
+                         * The alignment is tied to the unpacked records, i.e. for packed class
+                         * variants the machine's natural alignment is switched off to recude the  
+                         * memory footprint. Do not use any SSE/AVX operations or 
+                         * vectorisation on the result for the packed variants, as the data is misaligned. 
+                         * If you rely on vectorisation, convert the underlying record 
+                         * into the unpacked version first. 
+                         * 
+                         * @see convert()
+                         */
+                        inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _isPDEActive;
+                        }
+                        
+                        
+                        
+                        /**
+                         * Generated and optimized
+                         * 
+                         * If you realise a for loop using exclusively arrays (vectors) and compile 
+                         * with -DUseManualAlignment you may add 
+                         * \code
+                         #pragma vector aligned
+                         #pragma simd
+                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                         * 
+                         * The alignment is tied to the unpacked records, i.e. for packed class
+                         * variants the machine's natural alignment is switched off to recude the  
+                         * memory footprint. Do not use any SSE/AVX operations or 
+                         * vectorisation on the result for the packed variants, as the data is misaligned. 
+                         * If you rely on vectorisation, convert the underlying record 
+                         * into the unpacked version first. 
+                         * 
+                         * @see convert()
+                         */
+                        inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _isPDEActive = (isPDEActive);
+                        }
+                        
                         
                         
                         inline int getADERDGCellDescriptionsIndex() const 
@@ -3932,12 +4779,108 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                     CellPacked(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
                      
                      /**
                       * Generated
                       */
                      virtual ~CellPacked();
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _persistentRecords._isPDEActive;
+                     }
+                     
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _persistentRecords._isPDEActive = (isPDEActive);
+                     }
+                     
+                     
+                     
+                     inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        assertion(elementIndex>=0);
+                        assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                        return _persistentRecords._isPDEActive[elementIndex];
+                        
+                     }
+                     
+                     
+                     
+                     inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        assertion(elementIndex>=0);
+                        assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                        _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+                        
+                     }
+                     
+                     
+                     
+                     inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        assertion(elementIndex>=0);
+                        assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                        _persistentRecords._isPDEActive.flip(elementIndex);
+                     }
+                     
                      
                      
                      inline int getADERDGCellDescriptionsIndex() const 
@@ -4454,7 +5397,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   20/01/2016 16:19
+                * @date   21/01/2016 15:08
                 */
                class exahype::records::Cell { 
                   
@@ -4467,6 +5410,11 @@ namespace exahype {
                      };
                      
                      struct PersistentRecords {
+                        #ifdef UseManualAlignment
+                        std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive __attribute__((aligned(VectorisationAlignment)));
+                        #else
+                        std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
+                        #endif
                         int _ADERDGCellDescriptionsIndex;
                         bool _isInside;
                         State _state;
@@ -4488,7 +5436,65 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                        PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                        
+                        
+                        /**
+                         * Generated and optimized
+                         * 
+                         * If you realise a for loop using exclusively arrays (vectors) and compile 
+                         * with -DUseManualAlignment you may add 
+                         * \code
+                         #pragma vector aligned
+                         #pragma simd
+                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                         * 
+                         * The alignment is tied to the unpacked records, i.e. for packed class
+                         * variants the machine's natural alignment is switched off to recude the  
+                         * memory footprint. Do not use any SSE/AVX operations or 
+                         * vectorisation on the result for the packed variants, as the data is misaligned. 
+                         * If you rely on vectorisation, convert the underlying record 
+                         * into the unpacked version first. 
+                         * 
+                         * @see convert()
+                         */
+                        inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _isPDEActive;
+                        }
+                        
+                        
+                        
+                        /**
+                         * Generated and optimized
+                         * 
+                         * If you realise a for loop using exclusively arrays (vectors) and compile 
+                         * with -DUseManualAlignment you may add 
+                         * \code
+                         #pragma vector aligned
+                         #pragma simd
+                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                         * 
+                         * The alignment is tied to the unpacked records, i.e. for packed class
+                         * variants the machine's natural alignment is switched off to recude the  
+                         * memory footprint. Do not use any SSE/AVX operations or 
+                         * vectorisation on the result for the packed variants, as the data is misaligned. 
+                         * If you rely on vectorisation, convert the underlying record 
+                         * into the unpacked version first. 
+                         * 
+                         * @see convert()
+                         */
+                        inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _isPDEActive = (isPDEActive);
+                        }
+                        
                         
                         
                         inline int getADERDGCellDescriptionsIndex() const 
@@ -4686,12 +5692,108 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                     Cell(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
                      
                      /**
                       * Generated
                       */
                      virtual ~Cell();
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _persistentRecords._isPDEActive;
+                     }
+                     
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _persistentRecords._isPDEActive = (isPDEActive);
+                     }
+                     
+                     
+                     
+                     inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        assertion(elementIndex>=0);
+                        assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                        return _persistentRecords._isPDEActive[elementIndex];
+                        
+                     }
+                     
+                     
+                     
+                     inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        assertion(elementIndex>=0);
+                        assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                        _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+                        
+                     }
+                     
+                     
+                     
+                     inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        assertion(elementIndex>=0);
+                        assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                        _persistentRecords._isPDEActive.flip(elementIndex);
+                     }
+                     
                      
                      
                      inline int getADERDGCellDescriptionsIndex() const 
@@ -5020,7 +6122,7 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   20/01/2016 16:19
+                   * @date   21/01/2016 15:08
                    */
                   class exahype::records::CellPacked { 
                      
@@ -5029,6 +6131,7 @@ namespace exahype {
                         typedef exahype::records::Cell::State State;
                         
                         struct PersistentRecords {
+                           std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
                            int _ADERDGCellDescriptionsIndex;
                            tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                            
@@ -5048,7 +6151,65 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                           PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                           
+                           
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _isPDEActive;
+                           }
+                           
+                           
+                           
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _isPDEActive = (isPDEActive);
+                           }
+                           
                            
                            
                            inline int getADERDGCellDescriptionsIndex() const 
@@ -5266,12 +6427,108 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
+                        CellPacked(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber);
                         
                         /**
                          * Generated
                          */
                         virtual ~CellPacked();
+                        
+                        
+                        /**
+                         * Generated and optimized
+                         * 
+                         * If you realise a for loop using exclusively arrays (vectors) and compile 
+                         * with -DUseManualAlignment you may add 
+                         * \code
+                         #pragma vector aligned
+                         #pragma simd
+                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                         * 
+                         * The alignment is tied to the unpacked records, i.e. for packed class
+                         * variants the machine's natural alignment is switched off to recude the  
+                         * memory footprint. Do not use any SSE/AVX operations or 
+                         * vectorisation on the result for the packed variants, as the data is misaligned. 
+                         * If you rely on vectorisation, convert the underlying record 
+                         * into the unpacked version first. 
+                         * 
+                         * @see convert()
+                         */
+                        inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _persistentRecords._isPDEActive;
+                        }
+                        
+                        
+                        
+                        /**
+                         * Generated and optimized
+                         * 
+                         * If you realise a for loop using exclusively arrays (vectors) and compile 
+                         * with -DUseManualAlignment you may add 
+                         * \code
+                         #pragma vector aligned
+                         #pragma simd
+                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                         * 
+                         * The alignment is tied to the unpacked records, i.e. for packed class
+                         * variants the machine's natural alignment is switched off to recude the  
+                         * memory footprint. Do not use any SSE/AVX operations or 
+                         * vectorisation on the result for the packed variants, as the data is misaligned. 
+                         * If you rely on vectorisation, convert the underlying record 
+                         * into the unpacked version first. 
+                         * 
+                         * @see convert()
+                         */
+                        inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _persistentRecords._isPDEActive = (isPDEActive);
+                        }
+                        
+                        
+                        
+                        inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           assertion(elementIndex>=0);
+                           assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                           return _persistentRecords._isPDEActive[elementIndex];
+                           
+                        }
+                        
+                        
+                        
+                        inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           assertion(elementIndex>=0);
+                           assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                           _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+                           
+                        }
+                        
+                        
+                        
+                        inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           assertion(elementIndex>=0);
+                           assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                           _persistentRecords._isPDEActive.flip(elementIndex);
+                        }
+                        
                         
                         
                         inline int getADERDGCellDescriptionsIndex() const 
@@ -5625,7 +6882,7 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   20/01/2016 16:19
+                   * @date   21/01/2016 15:08
                    */
                   class exahype::records::Cell { 
                      
@@ -5638,6 +6895,11 @@ namespace exahype {
                         };
                         
                         struct PersistentRecords {
+                           #ifdef UseManualAlignment
+                           std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive __attribute__((aligned(VectorisationAlignment)));
+                           #else
+                           std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
+                           #endif
                            int _ADERDGCellDescriptionsIndex;
                            bool _isInside;
                            State _state;
@@ -5670,7 +6932,65 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                           PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                           
+                           
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _isPDEActive;
+                           }
+                           
+                           
+                           
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _isPDEActive = (isPDEActive);
+                           }
+                           
                            
                            
                            inline int getADERDGCellDescriptionsIndex() const 
@@ -6088,12 +7408,108 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                        Cell(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                         
                         /**
                          * Generated
                          */
                         virtual ~Cell();
+                        
+                        
+                        /**
+                         * Generated and optimized
+                         * 
+                         * If you realise a for loop using exclusively arrays (vectors) and compile 
+                         * with -DUseManualAlignment you may add 
+                         * \code
+                         #pragma vector aligned
+                         #pragma simd
+                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                         * 
+                         * The alignment is tied to the unpacked records, i.e. for packed class
+                         * variants the machine's natural alignment is switched off to recude the  
+                         * memory footprint. Do not use any SSE/AVX operations or 
+                         * vectorisation on the result for the packed variants, as the data is misaligned. 
+                         * If you rely on vectorisation, convert the underlying record 
+                         * into the unpacked version first. 
+                         * 
+                         * @see convert()
+                         */
+                        inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _persistentRecords._isPDEActive;
+                        }
+                        
+                        
+                        
+                        /**
+                         * Generated and optimized
+                         * 
+                         * If you realise a for loop using exclusively arrays (vectors) and compile 
+                         * with -DUseManualAlignment you may add 
+                         * \code
+                         #pragma vector aligned
+                         #pragma simd
+                         \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                         * 
+                         * The alignment is tied to the unpacked records, i.e. for packed class
+                         * variants the machine's natural alignment is switched off to recude the  
+                         * memory footprint. Do not use any SSE/AVX operations or 
+                         * vectorisation on the result for the packed variants, as the data is misaligned. 
+                         * If you rely on vectorisation, convert the underlying record 
+                         * into the unpacked version first. 
+                         * 
+                         * @see convert()
+                         */
+                        inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _persistentRecords._isPDEActive = (isPDEActive);
+                        }
+                        
+                        
+                        
+                        inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           assertion(elementIndex>=0);
+                           assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                           return _persistentRecords._isPDEActive[elementIndex];
+                           
+                        }
+                        
+                        
+                        
+                        inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           assertion(elementIndex>=0);
+                           assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                           _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+                           
+                        }
+                        
+                        
+                        
+                        inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           assertion(elementIndex>=0);
+                           assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                           _persistentRecords._isPDEActive.flip(elementIndex);
+                        }
+                        
                         
                         
                         inline int getADERDGCellDescriptionsIndex() const 
@@ -6642,7 +8058,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   20/01/2016 16:19
+                      * @date   21/01/2016 15:08
                       */
                      class exahype::records::CellPacked { 
                         
@@ -6651,6 +8067,7 @@ namespace exahype {
                            typedef exahype::records::Cell::State State;
                            
                            struct PersistentRecords {
+                              std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
                               int _ADERDGCellDescriptionsIndex;
                               int _level;
                               tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
@@ -6681,7 +8098,65 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                              PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                              
+                              
+                              /**
+                               * Generated and optimized
+                               * 
+                               * If you realise a for loop using exclusively arrays (vectors) and compile 
+                               * with -DUseManualAlignment you may add 
+                               * \code
+                               #pragma vector aligned
+                               #pragma simd
+                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                               * 
+                               * The alignment is tied to the unpacked records, i.e. for packed class
+                               * variants the machine's natural alignment is switched off to recude the  
+                               * memory footprint. Do not use any SSE/AVX operations or 
+                               * vectorisation on the result for the packed variants, as the data is misaligned. 
+                               * If you rely on vectorisation, convert the underlying record 
+                               * into the unpacked version first. 
+                               * 
+                               * @see convert()
+                               */
+                              inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _isPDEActive;
+                              }
+                              
+                              
+                              
+                              /**
+                               * Generated and optimized
+                               * 
+                               * If you realise a for loop using exclusively arrays (vectors) and compile 
+                               * with -DUseManualAlignment you may add 
+                               * \code
+                               #pragma vector aligned
+                               #pragma simd
+                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                               * 
+                               * The alignment is tied to the unpacked records, i.e. for packed class
+                               * variants the machine's natural alignment is switched off to recude the  
+                               * memory footprint. Do not use any SSE/AVX operations or 
+                               * vectorisation on the result for the packed variants, as the data is misaligned. 
+                               * If you rely on vectorisation, convert the underlying record 
+                               * into the unpacked version first. 
+                               * 
+                               * @see convert()
+                               */
+                              inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _isPDEActive = (isPDEActive);
+                              }
+                              
                               
                               
                               inline int getADERDGCellDescriptionsIndex() const 
@@ -7122,12 +8597,108 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                           CellPacked(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                            
                            /**
                             * Generated
                             */
                            virtual ~CellPacked();
+                           
+                           
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._isPDEActive;
+                           }
+                           
+                           
+                           
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._isPDEActive = (isPDEActive);
+                           }
+                           
+                           
+                           
+                           inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              assertion(elementIndex>=0);
+                              assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                              return _persistentRecords._isPDEActive[elementIndex];
+                              
+                           }
+                           
+                           
+                           
+                           inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              assertion(elementIndex>=0);
+                              assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                              _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+                              
+                           }
+                           
+                           
+                           
+                           inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              assertion(elementIndex>=0);
+                              assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                              _persistentRecords._isPDEActive.flip(elementIndex);
+                           }
+                           
                            
                            
                            inline int getADERDGCellDescriptionsIndex() const 
@@ -7704,7 +9275,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   20/01/2016 16:19
+                      * @date   21/01/2016 15:08
                       */
                      class exahype::records::Cell { 
                         
@@ -7717,6 +9288,11 @@ namespace exahype {
                            };
                            
                            struct PersistentRecords {
+                              #ifdef UseManualAlignment
+                              std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive __attribute__((aligned(VectorisationAlignment)));
+                              #else
+                              std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
+                              #endif
                               int _ADERDGCellDescriptionsIndex;
                               bool _isInside;
                               State _state;
@@ -7747,7 +9323,65 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                              PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                              
+                              
+                              /**
+                               * Generated and optimized
+                               * 
+                               * If you realise a for loop using exclusively arrays (vectors) and compile 
+                               * with -DUseManualAlignment you may add 
+                               * \code
+                               #pragma vector aligned
+                               #pragma simd
+                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                               * 
+                               * The alignment is tied to the unpacked records, i.e. for packed class
+                               * variants the machine's natural alignment is switched off to recude the  
+                               * memory footprint. Do not use any SSE/AVX operations or 
+                               * vectorisation on the result for the packed variants, as the data is misaligned. 
+                               * If you rely on vectorisation, convert the underlying record 
+                               * into the unpacked version first. 
+                               * 
+                               * @see convert()
+                               */
+                              inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _isPDEActive;
+                              }
+                              
+                              
+                              
+                              /**
+                               * Generated and optimized
+                               * 
+                               * If you realise a for loop using exclusively arrays (vectors) and compile 
+                               * with -DUseManualAlignment you may add 
+                               * \code
+                               #pragma vector aligned
+                               #pragma simd
+                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                               * 
+                               * The alignment is tied to the unpacked records, i.e. for packed class
+                               * variants the machine's natural alignment is switched off to recude the  
+                               * memory footprint. Do not use any SSE/AVX operations or 
+                               * vectorisation on the result for the packed variants, as the data is misaligned. 
+                               * If you rely on vectorisation, convert the underlying record 
+                               * into the unpacked version first. 
+                               * 
+                               * @see convert()
+                               */
+                              inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _isPDEActive = (isPDEActive);
+                              }
+                              
                               
                               
                               inline int getADERDGCellDescriptionsIndex() const 
@@ -8125,12 +9759,108 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                           Cell(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
                            
                            /**
                             * Generated
                             */
                            virtual ~Cell();
+                           
+                           
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._isPDEActive;
+                           }
+                           
+                           
+                           
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._isPDEActive = (isPDEActive);
+                           }
+                           
+                           
+                           
+                           inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              assertion(elementIndex>=0);
+                              assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                              return _persistentRecords._isPDEActive[elementIndex];
+                              
+                           }
+                           
+                           
+                           
+                           inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              assertion(elementIndex>=0);
+                              assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                              _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+                              
+                           }
+                           
+                           
+                           
+                           inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              assertion(elementIndex>=0);
+                              assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                              _persistentRecords._isPDEActive.flip(elementIndex);
+                           }
+                           
                            
                            
                            inline int getADERDGCellDescriptionsIndex() const 
@@ -8639,7 +10369,7 @@ namespace exahype {
                          *
                          * 		   build date: 09-02-2014 14:40
                          *
-                         * @date   20/01/2016 16:19
+                         * @date   21/01/2016 15:08
                          */
                         class exahype::records::CellPacked { 
                            
@@ -8648,6 +10378,7 @@ namespace exahype {
                               typedef exahype::records::Cell::State State;
                               
                               struct PersistentRecords {
+                                 std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
                                  int _ADERDGCellDescriptionsIndex;
                                  int _level;
                                  tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
@@ -8676,7 +10407,65 @@ namespace exahype {
                                  /**
                                   * Generated
                                   */
-                                 PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                                 PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                                 
+                                 
+                                 /**
+                                  * Generated and optimized
+                                  * 
+                                  * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                  * with -DUseManualAlignment you may add 
+                                  * \code
+                                  #pragma vector aligned
+                                  #pragma simd
+                                  \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                  * 
+                                  * The alignment is tied to the unpacked records, i.e. for packed class
+                                  * variants the machine's natural alignment is switched off to recude the  
+                                  * memory footprint. Do not use any SSE/AVX operations or 
+                                  * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                  * If you rely on vectorisation, convert the underlying record 
+                                  * into the unpacked version first. 
+                                  * 
+                                  * @see convert()
+                                  */
+                                 inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                    return _isPDEActive;
+                                 }
+                                 
+                                 
+                                 
+                                 /**
+                                  * Generated and optimized
+                                  * 
+                                  * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                  * with -DUseManualAlignment you may add 
+                                  * \code
+                                  #pragma vector aligned
+                                  #pragma simd
+                                  \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                  * 
+                                  * The alignment is tied to the unpacked records, i.e. for packed class
+                                  * variants the machine's natural alignment is switched off to recude the  
+                                  * memory footprint. Do not use any SSE/AVX operations or 
+                                  * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                  * If you rely on vectorisation, convert the underlying record 
+                                  * into the unpacked version first. 
+                                  * 
+                                  * @see convert()
+                                  */
+                                 inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                    _isPDEActive = (isPDEActive);
+                                 }
+                                 
                                  
                                  
                                  inline int getADERDGCellDescriptionsIndex() const 
@@ -9077,12 +10866,108 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                              CellPacked(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
                               
                               /**
                                * Generated
                                */
                               virtual ~CellPacked();
+                              
+                              
+                              /**
+                               * Generated and optimized
+                               * 
+                               * If you realise a for loop using exclusively arrays (vectors) and compile 
+                               * with -DUseManualAlignment you may add 
+                               * \code
+                               #pragma vector aligned
+                               #pragma simd
+                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                               * 
+                               * The alignment is tied to the unpacked records, i.e. for packed class
+                               * variants the machine's natural alignment is switched off to recude the  
+                               * memory footprint. Do not use any SSE/AVX operations or 
+                               * vectorisation on the result for the packed variants, as the data is misaligned. 
+                               * If you rely on vectorisation, convert the underlying record 
+                               * into the unpacked version first. 
+                               * 
+                               * @see convert()
+                               */
+                              inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _persistentRecords._isPDEActive;
+                              }
+                              
+                              
+                              
+                              /**
+                               * Generated and optimized
+                               * 
+                               * If you realise a for loop using exclusively arrays (vectors) and compile 
+                               * with -DUseManualAlignment you may add 
+                               * \code
+                               #pragma vector aligned
+                               #pragma simd
+                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                               * 
+                               * The alignment is tied to the unpacked records, i.e. for packed class
+                               * variants the machine's natural alignment is switched off to recude the  
+                               * memory footprint. Do not use any SSE/AVX operations or 
+                               * vectorisation on the result for the packed variants, as the data is misaligned. 
+                               * If you rely on vectorisation, convert the underlying record 
+                               * into the unpacked version first. 
+                               * 
+                               * @see convert()
+                               */
+                              inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _persistentRecords._isPDEActive = (isPDEActive);
+                              }
+                              
+                              
+                              
+                              inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 assertion(elementIndex>=0);
+                                 assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                                 return _persistentRecords._isPDEActive[elementIndex];
+                                 
+                              }
+                              
+                              
+                              
+                              inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 assertion(elementIndex>=0);
+                                 assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                                 _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+                                 
+                              }
+                              
+                              
+                              
+                              inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 assertion(elementIndex>=0);
+                                 assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                                 _persistentRecords._isPDEActive.flip(elementIndex);
+                              }
+                              
                               
                               
                               inline int getADERDGCellDescriptionsIndex() const 
@@ -9619,7 +11504,7 @@ namespace exahype {
                          *
                          * 		   build date: 09-02-2014 14:40
                          *
-                         * @date   20/01/2016 16:19
+                         * @date   21/01/2016 15:08
                          */
                         class exahype::records::Cell { 
                            
@@ -9632,6 +11517,11 @@ namespace exahype {
                               };
                               
                               struct PersistentRecords {
+                                 #ifdef UseManualAlignment
+                                 std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive __attribute__((aligned(VectorisationAlignment)));
+                                 #else
+                                 std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
+                                 #endif
                                  int _ADERDGCellDescriptionsIndex;
                                  bool _isInside;
                                  State _state;
@@ -9663,7 +11553,65 @@ namespace exahype {
                                  /**
                                   * Generated
                                   */
-                                 PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                 PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                 
+                                 
+                                 /**
+                                  * Generated and optimized
+                                  * 
+                                  * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                  * with -DUseManualAlignment you may add 
+                                  * \code
+                                  #pragma vector aligned
+                                  #pragma simd
+                                  \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                  * 
+                                  * The alignment is tied to the unpacked records, i.e. for packed class
+                                  * variants the machine's natural alignment is switched off to recude the  
+                                  * memory footprint. Do not use any SSE/AVX operations or 
+                                  * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                  * If you rely on vectorisation, convert the underlying record 
+                                  * into the unpacked version first. 
+                                  * 
+                                  * @see convert()
+                                  */
+                                 inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                    return _isPDEActive;
+                                 }
+                                 
+                                 
+                                 
+                                 /**
+                                  * Generated and optimized
+                                  * 
+                                  * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                  * with -DUseManualAlignment you may add 
+                                  * \code
+                                  #pragma vector aligned
+                                  #pragma simd
+                                  \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                  * 
+                                  * The alignment is tied to the unpacked records, i.e. for packed class
+                                  * variants the machine's natural alignment is switched off to recude the  
+                                  * memory footprint. Do not use any SSE/AVX operations or 
+                                  * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                  * If you rely on vectorisation, convert the underlying record 
+                                  * into the unpacked version first. 
+                                  * 
+                                  * @see convert()
+                                  */
+                                 inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                    _isPDEActive = (isPDEActive);
+                                 }
+                                 
                                  
                                  
                                  inline int getADERDGCellDescriptionsIndex() const 
@@ -10061,12 +12009,108 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                              Cell(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                               
                               /**
                                * Generated
                                */
                               virtual ~Cell();
+                              
+                              
+                              /**
+                               * Generated and optimized
+                               * 
+                               * If you realise a for loop using exclusively arrays (vectors) and compile 
+                               * with -DUseManualAlignment you may add 
+                               * \code
+                               #pragma vector aligned
+                               #pragma simd
+                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                               * 
+                               * The alignment is tied to the unpacked records, i.e. for packed class
+                               * variants the machine's natural alignment is switched off to recude the  
+                               * memory footprint. Do not use any SSE/AVX operations or 
+                               * vectorisation on the result for the packed variants, as the data is misaligned. 
+                               * If you rely on vectorisation, convert the underlying record 
+                               * into the unpacked version first. 
+                               * 
+                               * @see convert()
+                               */
+                              inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _persistentRecords._isPDEActive;
+                              }
+                              
+                              
+                              
+                              /**
+                               * Generated and optimized
+                               * 
+                               * If you realise a for loop using exclusively arrays (vectors) and compile 
+                               * with -DUseManualAlignment you may add 
+                               * \code
+                               #pragma vector aligned
+                               #pragma simd
+                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                               * 
+                               * The alignment is tied to the unpacked records, i.e. for packed class
+                               * variants the machine's natural alignment is switched off to recude the  
+                               * memory footprint. Do not use any SSE/AVX operations or 
+                               * vectorisation on the result for the packed variants, as the data is misaligned. 
+                               * If you rely on vectorisation, convert the underlying record 
+                               * into the unpacked version first. 
+                               * 
+                               * @see convert()
+                               */
+                              inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _persistentRecords._isPDEActive = (isPDEActive);
+                              }
+                              
+                              
+                              
+                              inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 assertion(elementIndex>=0);
+                                 assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                                 return _persistentRecords._isPDEActive[elementIndex];
+                                 
+                              }
+                              
+                              
+                              
+                              inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 assertion(elementIndex>=0);
+                                 assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                                 _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+                                 
+                              }
+                              
+                              
+                              
+                              inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 assertion(elementIndex>=0);
+                                 assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                                 _persistentRecords._isPDEActive.flip(elementIndex);
+                              }
+                              
                               
                               
                               inline int getADERDGCellDescriptionsIndex() const 
@@ -10595,7 +12639,7 @@ namespace exahype {
                             *
                             * 		   build date: 09-02-2014 14:40
                             *
-                            * @date   20/01/2016 16:19
+                            * @date   21/01/2016 15:08
                             */
                            class exahype::records::CellPacked { 
                               
@@ -10604,6 +12648,7 @@ namespace exahype {
                                  typedef exahype::records::Cell::State State;
                                  
                                  struct PersistentRecords {
+                                    std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
                                     int _ADERDGCellDescriptionsIndex;
                                     tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                                     int _responsibleRank;
@@ -10633,7 +12678,65 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                    PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                    
+                                    
+                                    /**
+                                     * Generated and optimized
+                                     * 
+                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                     * with -DUseManualAlignment you may add 
+                                     * \code
+                                     #pragma vector aligned
+                                     #pragma simd
+                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                     * 
+                                     * The alignment is tied to the unpacked records, i.e. for packed class
+                                     * variants the machine's natural alignment is switched off to recude the  
+                                     * memory footprint. Do not use any SSE/AVX operations or 
+                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                     * If you rely on vectorisation, convert the underlying record 
+                                     * into the unpacked version first. 
+                                     * 
+                                     * @see convert()
+                                     */
+                                    inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _isPDEActive;
+                                    }
+                                    
+                                    
+                                    
+                                    /**
+                                     * Generated and optimized
+                                     * 
+                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                     * with -DUseManualAlignment you may add 
+                                     * \code
+                                     #pragma vector aligned
+                                     #pragma simd
+                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                     * 
+                                     * The alignment is tied to the unpacked records, i.e. for packed class
+                                     * variants the machine's natural alignment is switched off to recude the  
+                                     * memory footprint. Do not use any SSE/AVX operations or 
+                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                     * If you rely on vectorisation, convert the underlying record 
+                                     * into the unpacked version first. 
+                                     * 
+                                     * @see convert()
+                                     */
+                                    inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _isPDEActive = (isPDEActive);
+                                    }
+                                    
                                     
                                     
                                     inline int getADERDGCellDescriptionsIndex() const 
@@ -11054,12 +13157,108 @@ namespace exahype {
                                  /**
                                   * Generated
                                   */
-                                 CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                 CellPacked(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                  
                                  /**
                                   * Generated
                                   */
                                  virtual ~CellPacked();
+                                 
+                                 
+                                 /**
+                                  * Generated and optimized
+                                  * 
+                                  * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                  * with -DUseManualAlignment you may add 
+                                  * \code
+                                  #pragma vector aligned
+                                  #pragma simd
+                                  \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                  * 
+                                  * The alignment is tied to the unpacked records, i.e. for packed class
+                                  * variants the machine's natural alignment is switched off to recude the  
+                                  * memory footprint. Do not use any SSE/AVX operations or 
+                                  * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                  * If you rely on vectorisation, convert the underlying record 
+                                  * into the unpacked version first. 
+                                  * 
+                                  * @see convert()
+                                  */
+                                 inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                    return _persistentRecords._isPDEActive;
+                                 }
+                                 
+                                 
+                                 
+                                 /**
+                                  * Generated and optimized
+                                  * 
+                                  * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                  * with -DUseManualAlignment you may add 
+                                  * \code
+                                  #pragma vector aligned
+                                  #pragma simd
+                                  \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                  * 
+                                  * The alignment is tied to the unpacked records, i.e. for packed class
+                                  * variants the machine's natural alignment is switched off to recude the  
+                                  * memory footprint. Do not use any SSE/AVX operations or 
+                                  * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                  * If you rely on vectorisation, convert the underlying record 
+                                  * into the unpacked version first. 
+                                  * 
+                                  * @see convert()
+                                  */
+                                 inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                    _persistentRecords._isPDEActive = (isPDEActive);
+                                 }
+                                 
+                                 
+                                 
+                                 inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                    assertion(elementIndex>=0);
+                                    assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                                    return _persistentRecords._isPDEActive[elementIndex];
+                                    
+                                 }
+                                 
+                                 
+                                 
+                                 inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                    assertion(elementIndex>=0);
+                                    assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                                    _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+                                    
+                                 }
+                                 
+                                 
+                                 
+                                 inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                    assertion(elementIndex>=0);
+                                    assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                                    _persistentRecords._isPDEActive.flip(elementIndex);
+                                 }
+                                 
                                  
                                  
                                  inline int getADERDGCellDescriptionsIndex() const 
@@ -11616,7 +13815,7 @@ namespace exahype {
                             *
                             * 		   build date: 09-02-2014 14:40
                             *
-                            * @date   20/01/2016 16:19
+                            * @date   21/01/2016 15:08
                             */
                            class exahype::records::Cell { 
                               
@@ -11629,6 +13828,11 @@ namespace exahype {
                                  };
                                  
                                  struct PersistentRecords {
+                                    #ifdef UseManualAlignment
+                                    std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive __attribute__((aligned(VectorisationAlignment)));
+                                    #else
+                                    std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
+                                    #endif
                                     int _ADERDGCellDescriptionsIndex;
                                     bool _isInside;
                                     State _state;
@@ -11653,7 +13857,65 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                    PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                    
+                                    
+                                    /**
+                                     * Generated and optimized
+                                     * 
+                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                     * with -DUseManualAlignment you may add 
+                                     * \code
+                                     #pragma vector aligned
+                                     #pragma simd
+                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                     * 
+                                     * The alignment is tied to the unpacked records, i.e. for packed class
+                                     * variants the machine's natural alignment is switched off to recude the  
+                                     * memory footprint. Do not use any SSE/AVX operations or 
+                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                     * If you rely on vectorisation, convert the underlying record 
+                                     * into the unpacked version first. 
+                                     * 
+                                     * @see convert()
+                                     */
+                                    inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _isPDEActive;
+                                    }
+                                    
+                                    
+                                    
+                                    /**
+                                     * Generated and optimized
+                                     * 
+                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                     * with -DUseManualAlignment you may add 
+                                     * \code
+                                     #pragma vector aligned
+                                     #pragma simd
+                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                     * 
+                                     * The alignment is tied to the unpacked records, i.e. for packed class
+                                     * variants the machine's natural alignment is switched off to recude the  
+                                     * memory footprint. Do not use any SSE/AVX operations or 
+                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                     * If you rely on vectorisation, convert the underlying record 
+                                     * into the unpacked version first. 
+                                     * 
+                                     * @see convert()
+                                     */
+                                    inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _isPDEActive = (isPDEActive);
+                                    }
+                                    
                                     
                                     
                                     inline int getADERDGCellDescriptionsIndex() const 
@@ -11911,12 +14173,108 @@ namespace exahype {
                                  /**
                                   * Generated
                                   */
-                                 Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                 Cell(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                  
                                  /**
                                   * Generated
                                   */
                                  virtual ~Cell();
+                                 
+                                 
+                                 /**
+                                  * Generated and optimized
+                                  * 
+                                  * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                  * with -DUseManualAlignment you may add 
+                                  * \code
+                                  #pragma vector aligned
+                                  #pragma simd
+                                  \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                  * 
+                                  * The alignment is tied to the unpacked records, i.e. for packed class
+                                  * variants the machine's natural alignment is switched off to recude the  
+                                  * memory footprint. Do not use any SSE/AVX operations or 
+                                  * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                  * If you rely on vectorisation, convert the underlying record 
+                                  * into the unpacked version first. 
+                                  * 
+                                  * @see convert()
+                                  */
+                                 inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                    return _persistentRecords._isPDEActive;
+                                 }
+                                 
+                                 
+                                 
+                                 /**
+                                  * Generated and optimized
+                                  * 
+                                  * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                  * with -DUseManualAlignment you may add 
+                                  * \code
+                                  #pragma vector aligned
+                                  #pragma simd
+                                  \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                  * 
+                                  * The alignment is tied to the unpacked records, i.e. for packed class
+                                  * variants the machine's natural alignment is switched off to recude the  
+                                  * memory footprint. Do not use any SSE/AVX operations or 
+                                  * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                  * If you rely on vectorisation, convert the underlying record 
+                                  * into the unpacked version first. 
+                                  * 
+                                  * @see convert()
+                                  */
+                                 inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                    _persistentRecords._isPDEActive = (isPDEActive);
+                                 }
+                                 
+                                 
+                                 
+                                 inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                    assertion(elementIndex>=0);
+                                    assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                                    return _persistentRecords._isPDEActive[elementIndex];
+                                    
+                                 }
+                                 
+                                 
+                                 
+                                 inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                    assertion(elementIndex>=0);
+                                    assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                                    _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+                                    
+                                 }
+                                 
+                                 
+                                 
+                                 inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                    assertion(elementIndex>=0);
+                                    assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                                    _persistentRecords._isPDEActive.flip(elementIndex);
+                                 }
+                                 
                                  
                                  
                                  inline int getADERDGCellDescriptionsIndex() const 
@@ -12305,7 +14663,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   20/01/2016 16:19
+                               * @date   21/01/2016 15:08
                                */
                               class exahype::records::CellPacked { 
                                  
@@ -12314,6 +14672,7 @@ namespace exahype {
                                     typedef exahype::records::Cell::State State;
                                     
                                     struct PersistentRecords {
+                                       std::bitset<EXAHYPE_NPROBLEMS> _isPDEActive;
                                        int _ADERDGCellDescriptionsIndex;
                                        int _level;
                                        tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
@@ -12336,7 +14695,65 @@ namespace exahype {
                                        /**
                                         * Generated
                                         */
-                                       PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                       PersistentRecords(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                       
+                                       
+                                       /**
+                                        * Generated and optimized
+                                        * 
+                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                        * with -DUseManualAlignment you may add 
+                                        * \code
+                                        #pragma vector aligned
+                                        #pragma simd
+                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                        * 
+                                        * The alignment is tied to the unpacked records, i.e. for packed class
+                                        * variants the machine's natural alignment is switched off to recude the  
+                                        * memory footprint. Do not use any SSE/AVX operations or 
+                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                        * If you rely on vectorisation, convert the underlying record 
+                                        * into the unpacked version first. 
+                                        * 
+                                        * @see convert()
+                                        */
+                                       inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          return _isPDEActive;
+                                       }
+                                       
+                                       
+                                       
+                                       /**
+                                        * Generated and optimized
+                                        * 
+                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                        * with -DUseManualAlignment you may add 
+                                        * \code
+                                        #pragma vector aligned
+                                        #pragma simd
+                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                        * 
+                                        * The alignment is tied to the unpacked records, i.e. for packed class
+                                        * variants the machine's natural alignment is switched off to recude the  
+                                        * memory footprint. Do not use any SSE/AVX operations or 
+                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                        * If you rely on vectorisation, convert the underlying record 
+                                        * into the unpacked version first. 
+                                        * 
+                                        * @see convert()
+                                        */
+                                       inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          _isPDEActive = (isPDEActive);
+                                       }
+                                       
                                        
                                        
                                        inline int getADERDGCellDescriptionsIndex() const 
@@ -12614,12 +15031,108 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                    CellPacked(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive, const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                     
                                     /**
                                      * Generated
                                      */
                                     virtual ~CellPacked();
+                                    
+                                    
+                                    /**
+                                     * Generated and optimized
+                                     * 
+                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                     * with -DUseManualAlignment you may add 
+                                     * \code
+                                     #pragma vector aligned
+                                     #pragma simd
+                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                     * 
+                                     * The alignment is tied to the unpacked records, i.e. for packed class
+                                     * variants the machine's natural alignment is switched off to recude the  
+                                     * memory footprint. Do not use any SSE/AVX operations or 
+                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                     * If you rely on vectorisation, convert the underlying record 
+                                     * into the unpacked version first. 
+                                     * 
+                                     * @see convert()
+                                     */
+                                    inline std::bitset<EXAHYPE_NPROBLEMS> getIsPDEActive() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _persistentRecords._isPDEActive;
+                                    }
+                                    
+                                    
+                                    
+                                    /**
+                                     * Generated and optimized
+                                     * 
+                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                     * with -DUseManualAlignment you may add 
+                                     * \code
+                                     #pragma vector aligned
+                                     #pragma simd
+                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                     * 
+                                     * The alignment is tied to the unpacked records, i.e. for packed class
+                                     * variants the machine's natural alignment is switched off to recude the  
+                                     * memory footprint. Do not use any SSE/AVX operations or 
+                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                     * If you rely on vectorisation, convert the underlying record 
+                                     * into the unpacked version first. 
+                                     * 
+                                     * @see convert()
+                                     */
+                                    inline void setIsPDEActive(const std::bitset<EXAHYPE_NPROBLEMS>& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _persistentRecords._isPDEActive = (isPDEActive);
+                                    }
+                                    
+                                    
+                                    
+                                    inline bool getIsPDEActive(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       assertion(elementIndex>=0);
+                                       assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                                       return _persistentRecords._isPDEActive[elementIndex];
+                                       
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setIsPDEActive(int elementIndex, const bool& isPDEActive) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       assertion(elementIndex>=0);
+                                       assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                                       _persistentRecords._isPDEActive[elementIndex]= isPDEActive;
+                                       
+                                    }
+                                    
+                                    
+                                    
+                                    inline void flipIsPDEActive(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       assertion(elementIndex>=0);
+                                       assertion(elementIndex<EXAHYPE_NPROBLEMS);
+                                       _persistentRecords._isPDEActive.flip(elementIndex);
+                                    }
+                                    
                                     
                                     
                                     inline int getADERDGCellDescriptionsIndex() const 
