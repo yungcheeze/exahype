@@ -18,26 +18,7 @@
 #define EXAHYPE_INITIAL_ADAPTIVE_REFINEMENT_LEVEL           0  //!< The initial level of the adaptive refinement.
 #define EXAHYPE_MAXIMUM_ADAPTIVE_REFINEMENT_LEVEL           0  //!< The maximum level of adaptive refinement.
 #define EXAHYPE_MAXIMUM_REFINEMENT_LEVEL                    3  //!< The sum of ::EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL and ::EXAHYPE_MAXIMUM_ADAPTIVE_REFINEMENT_LEVEL.
-
-#define EXAHYPE_PATCH_SIZE_X                                3 //!< Number of patches in each coordinate direction (+ two ghost cells).
-#define EXAHYPE_PATCH_SIZE_Y                                3 //!< Number of patches in each coordinate direction (+ two ghost cells).
-//#define EXAHYPE_PATCH_SIZE_Z                                1    //!< Number of patches in each coordinate direction (+ two ghost cells/0 ghost cells in 2D).
-#define EXAHYPE_PATCH_SIZE_TOTAL                            (EXAHYPE_PATCH_SIZE_X+2) * (EXAHYPE_PATCH_SIZE_Y+2)
-#define EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO EXAHYPE_PATCH_SIZE_TOTAL * DIMENSIONS_TIMES_TWO
 ///@}
-/*
-#define EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL             5  //!< The refinement level of the initial grid.
-#define EXAHYPE_INITIAL_ADAPTIVE_REFINEMENT_LEVEL           0  //!< The initial level of the adaptive refinement.
-#define EXAHYPE_MAXIMUM_ADAPTIVE_REFINEMENT_LEVEL           0  //!< The maximum level of adaptive refinement.
-#define EXAHYPE_MAXIMUM_REFINEMENT_LEVEL                    3  //!< The sum of ::EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL and ::EXAHYPE_MAXIMUM_ADAPTIVE_REFINEMENT_LEVEL.
-
-#define EXAHYPE_PATCH_SIZE_X                                3 //!< Number of patches in each coordinate direction (+ two ghost cells).
-#define EXAHYPE_PATCH_SIZE_Y                                3 //!< Number of patches in each coordinate direction (+ two ghost cells).
-//#define EXAHYPE_PATCH_SIZE_Z                                1 //!< Number of patches in each coordinate direction (+ two ghost cells/0 ghost cells in 2D).
-#define EXAHYPE_PATCH_SIZE_TOTAL                            (EXAHYPE_PATCH_SIZE_X+2) * (EXAHYPE_PATCH_SIZE_Y+2)
-#define EXAHYPE_PATCH_SIZE_TOTAL_TIMES_DIMENSIONS_TIMES_TWO EXAHYPE_PATCH_SIZE_TOTAL * DIMENSIONS_TIMES_TWO
-#endif
-*/
 
 /**
  * Simulation runtime parameters.
@@ -65,7 +46,7 @@
  * Visualization parameters.
  */
 ///@{
-#define EXAHYPE_PLOTTING_STRIDE 5 //!< The number of snapshots of the solution we want to create during the simulation.
+#define EXAHYPE_PLOTTING_STRIDE 40 //!< The number of snapshots of the solution we want to create during the simulation.
 ///@}
 
 #endif /* EXAHYPE_CONSTANTS_H_ */
