@@ -22,10 +22,6 @@ event-mapping:
   name: InitialGrid
 
 event-mapping:
-  name: PatchInit
-  
-
-event-mapping:
   name: GlobalTimeStepComputation
 
 event-mapping:
@@ -42,9 +38,6 @@ event-mapping:
 
 event-mapping:
   name: BoundaryConditions
-
-event-mapping:
-  name: FaceDataExchange
   
 event-mapping:
   name: RiemannSolverReset

@@ -371,7 +371,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       adjacentADERDGCellDescriptionsIndices[cellIndexR] == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex
   ) {
     noBoundaryFace       = false;
-    bothAreBoundaryFaces = bothAreBoundaryFaces && true;
+    bothAreBoundaryFaces = bothAreBoundaryFaces & true;
     cellIndex            = cellIndexL;
     faceIndex            = faceIndexL;
   }
@@ -386,9 +386,9 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
   }
 
   assertion1(
-      adjacentADERDGCellDescriptionsIndices[cellIndexL] > 0
+      adjacentADERDGCellDescriptionsIndices[cellIndexL] > multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex
       ||
-      adjacentADERDGCellDescriptionsIndices[cellIndexR] > 0
+      adjacentADERDGCellDescriptionsIndices[cellIndexR] > multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex
       ,
       adjacentADERDGCellDescriptionsIndices.toString()
   );

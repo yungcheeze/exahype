@@ -361,8 +361,12 @@ void exahype::mappings::PatchInitialisation::enterCell(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
+  logDebug("enterCell(...)","before initialising ADERDGCellDescription: " << "cell is refined: " << fineGridCell.isRefined());
+
   // ! Begin of code for multiscalelinkedcell toolbox and DG method
   if (!fineGridCell.isRefined()) {      // We only want to initialize ADERDGCellDescriptions on the initial fine grid
+    logDebug("enterCell(...)","initialising ADERDGCellDescription: " << "fine grid level: " << fineGridVerticesEnumerator.getLevel() << ", fine grid position of cell: " << fineGridPositionOfCell);
+
     fineGridCell.initCellInComputeTree(
           fineGridVerticesEnumerator.getLevel(),
           fineGridVerticesEnumerator.getCellSize(),

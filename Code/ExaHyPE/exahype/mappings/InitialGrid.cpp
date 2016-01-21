@@ -120,17 +120,7 @@ void exahype::mappings::InitialGrid::createInnerVertex(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // ! Begin of code for DG method
-  if (
-      coarseGridVerticesEnumerator.getLevel() < EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL-1
-      &&
-      fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined
-  ) {
-    fineGridVertex.refine();
-  }
-  // ! End of code for DG method
-  logTraceOutWith1Argument( "createInnerVertex(...)", fineGridVertex );
+  // do nothing
 }
 
 
@@ -143,17 +133,7 @@ void exahype::mappings::InitialGrid::createBoundaryVertex(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // ! Begin of code for DG method
-  if (
-      coarseGridVerticesEnumerator.getLevel() < EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL-1
-      &&
-      fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined
-  ) {
-    fineGridVertex.refine();
-  }
-  // ! End of code for DG method
-  logTraceOutWith1Argument( "createBoundaryVertex(...)", fineGridVertex );
+  // do nothing
 }
 
 
@@ -365,7 +345,21 @@ void exahype::mappings::InitialGrid::touchVertexLastTime(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  // do nothing
+  logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
+  logDebug("touchVertexLastTime(...)","before refining: coarse grid level: " << coarseGridVerticesEnumerator.getLevel() << ". fine grid position of vertex: "<< fineGridPositionOfVertex);
+  logDebug("touchVertexLastTime(...)","before refining: fine grid X: " << fineGridX << ". Unrefined: " << (fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined));
+  // ! Begin of code for DG method
+  if (
+      coarseGridVerticesEnumerator.getLevel() < EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL
+      &&
+      fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined
+  ) {
+    logDebug("touchVertexLastTime(...)","refining: coarse grid level: " << coarseGridVerticesEnumerator.getLevel() << ". fine grid position of vertex: "<< fineGridPositionOfVertex);
+    logDebug("touchVertexLastTime(...)","refining: fine grid X: " << fineGridX << ". Unrefined: " << (fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined));
+    fineGridVertex.refine();
+  }
+  // ! End of code for DG method
+  logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
 

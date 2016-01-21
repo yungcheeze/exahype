@@ -360,6 +360,13 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
     return;
   }
 
+  logDebug("touchVertexLastTime(...)::solveRiemannProblem(...)",
+               "Performing Riemann solve. "
+               << "faceL:" << faceL
+               << " faceR:" << faceR
+               << " cell descr. index L:" << adjacentADERDGCellDescriptionsIndices[cellIndexL]
+               << " cell descr. index R:" << adjacentADERDGCellDescriptionsIndices[cellIndexR]);
+
   records::ADERDGCellDescription&  cellDescriptionL =
       ADERDGADERDGCellDescriptionHeap::getInstance().getData(adjacentADERDGCellDescriptionsIndices[cellIndexL])[0];
   records::ADERDGCellDescription& cellDescriptionR  =
@@ -429,6 +436,13 @@ void exahype::mappings::RiemannSolver::touchVertexLastTime(
     assertion1WithExplanation(_localState.getOldTimeStepSize() < std::numeric_limits<double>::max(),_localState.getOldTimeStepSize(),"Old time step size was not initialised correctly!");
 
     tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
+    logDebug("touchVertexLastTime(...)","cell descriptions around vertex. "
+             << "coarse grid level: " << coarseGridVerticesEnumerator.getLevel()
+             << ", fine grid pos.:" << fineGridPositionOfVertex
+             << ", adjac. cell descr.:" << adjacentADERDGCellDescriptionsIndices);
+    logDebug("touchVertexLastTime(...)","cell descriptions around vertex. "
+                 << "fine grid x " << fineGridX);
+
     // todo: DEC: Reverse engineered indices from
     // PatchInitialisation2MultiscaleLinkedCell_1::touchVertexLastTime(...)
     // Not sure what happens with hanging nodes.

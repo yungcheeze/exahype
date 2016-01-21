@@ -375,12 +375,10 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
     records::ADERDGCellDescription& cellDescription =
         ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-    const double * size = &fineGridVerticesEnumerator.getCellSize()[0];
+    const double size  [2] = { fineGridVerticesEnumerator.getCellSize()  [0], fineGridVerticesEnumerator.getCellSize()  [1]};
 
     const int basisSize       = EXAHYPE_ORDER+1;
     const int nvar            = EXAHYPE_NVARS;
-    const int numberOfDof     = nvar * tarch::la::aPowI(DIMENSIONS,basisSize);
-    const int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
     double* luh = &(DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u);
     double lambda[EXAHYPE_NVARS];

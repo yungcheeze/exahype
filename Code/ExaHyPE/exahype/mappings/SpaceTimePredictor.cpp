@@ -372,7 +372,7 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
     records::ADERDGCellDescription& cellDescription =
         ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-    const double * const size = &fineGridVerticesEnumerator.getCellSize()[0];
+    const double size  [2] = { fineGridVerticesEnumerator.getCellSize()  [0], fineGridVerticesEnumerator.getCellSize()  [1]};
 
     constexpr int basisSize = EXAHYPE_ORDER+1;
     constexpr int nvar      = EXAHYPE_NVARS;
@@ -428,7 +428,7 @@ void exahype::mappings::SpaceTimePredictor::leaveCell(
     exahype::Vertex * const  coarseGridVertices,
     const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
     exahype::Cell&           coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
+    const tarch::la::Vector<DIMENSIONS,int>&     fineGridPositionOfCell
 ) {
   // do nothing
 }
