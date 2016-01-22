@@ -55,6 +55,5 @@ double exahype::aderdg::stableTimeStepSize<2>(
       dt = std::min(dt,EXAHYPE_CFL_FACTOR*PNPM[basisSize-1]/denominator); // order N = basisSize-1
     }
   }
-  //return dt;
-  return 0.1; // @Dominic Warum?
+  return dt;
 }
