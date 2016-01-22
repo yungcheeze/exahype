@@ -84,6 +84,8 @@ class exahype::State: public peano::grid::State< exahype::records::State > {
      */
     void updateMaxTimeStepSize(const double timeStepSize);
 
+    void updateTimeStamp(const double timeStamp);
+
     /**
      * Reset all accumulated values:
      *

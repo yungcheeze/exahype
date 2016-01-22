@@ -147,12 +147,11 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    */
   repository.switchToPredictorAndGlobalTimeStepComputation();
   repository.iterate();
-/*
-  logInfo("runAsMaster(...)", "[ExaHyPE] global time step="<< 0 <<", dt_max==" <<
-          repository.getState().getMaxTimeStepSize() );
-*/
 
-  for (int n=1; n<20; n++) {
+  const double simulationEndTime = _parser.getSimulationEndTime();
+  int n=1;
+
+  while ( repository.getState().getMinimalGlobalTimeStamp()<simulationEndTime ) {
     repository.getState().startNewTimeStep();
 
     /*
@@ -173,11 +172,13 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
      *    Find the minimum leaf-cell-local time step size and set it as the new current
      *    global time step size.
      */
+/*
     if (n%EXAHYPE_PLOTTING_STRIDE==0) {
       repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputationAndExport();
     } else {
+*/
       repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputation();
-    }
+//    }
     repository.iterate();
 
     logInfo(

@@ -162,3 +162,16 @@ exahype::Parser::MulticoreOracleType exahype::Parser::getMulticoreOracleType() c
   }
   return result;
 }
+
+
+double exahype::Parser::getSimulationEndTime() const {
+  assertion( isValid() );
+  std::string token = getTokenAfter("computational-domain","end-time");
+  logDebug( "getSimulationEndTime()", "found token " << token );
+  double result = atof( token.c_str() );
+  if (result<=0) {
+    logError( "getSimulationEndTime()", "Invalid simulation end-time: " << token << ". Use 1.0" );
+    result = 1.0;
+  }
+  return result;
+}

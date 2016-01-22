@@ -76,6 +76,7 @@ exahype::Cell::initCellInComputeTree(const int level,
     // Pass geometry information to the cellDescription description
     cellDescriptionForPde.setLevel (level);
     cellDescriptionForPde.setSize  (size);
+    cellDescriptionForPde.setTimeStamp(0.0);
   }
 }
 // ! End of code for DG method/multiscalelinkedcell toolbox.

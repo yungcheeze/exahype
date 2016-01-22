@@ -30,6 +30,7 @@ void exahype::State::readFromCheckpoint( const peano::grid::Checkpoint<exahype::
 
 void exahype::State::startNewTimeStep() {
   _stateData.setOldMaxTimeStepSize(_stateData.getMaxTimeStepSize());
+  _stateData.setMinTimeStamp(std::numeric_limits<double>::max());
 }
 
 
@@ -43,6 +44,11 @@ void exahype::State::updateMaxTimeStepSize(const double timeStepSize) {
 }
 
 
+void exahype::State::updateTimeStamp(const double timeStamp) {
+  _stateData.setMinTimeStamp( std::min(_stateData.getMinTimeStamp(),timeStamp) );
+}
+
+
 double exahype::State::getMaxTimeStepSize() const {
   return _stateData.getOldMaxTimeStepSize();
 }
@@ -50,9 +56,10 @@ double exahype::State::getMaxTimeStepSize() const {
 
 void exahype::State::merge(const exahype::State& anotherState) {
   _stateData.setMaxTimeStepSize(std::min(_stateData.getMaxTimeStepSize(),anotherState._stateData.getMaxTimeStepSize()));
+  _stateData.setMinTimeStamp(std::min(_stateData.getMinTimeStamp(),anotherState._stateData.getMinTimeStamp()));
 }
 
 
 double exahype::State::getMinimalGlobalTimeStamp() const {
-  return 1.0; //_stateData.getTime();
+  return _stateData.getMinTimeStamp();
 }

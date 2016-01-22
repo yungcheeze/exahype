@@ -382,6 +382,10 @@ void exahype::mappings::SolutionUpdate::enterCell(
         _localState.getMaxTimeStepSize(),
         nvar,
         basisSize);
+
+    const double newTimeStamp = cellDescription.getTimeStamp() + _localState.getMaxTimeStepSize();
+    cellDescription.setTimeStamp( newTimeStamp );
+    _localState.updateTimeStamp( newTimeStamp );
   }
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
@@ -415,7 +419,7 @@ void exahype::mappings::SolutionUpdate::beginIteration(
 void exahype::mappings::SolutionUpdate::endIteration(
     exahype::State&  solverState
 ) {
-  // do nothing
+  solverState.merge(_localState);
 }
 
 
@@ -441,8 +445,4 @@ void exahype::mappings::SolutionUpdate::ascend(
     exahype::Cell&           coarseGridCell
 ) {
   // do nothing
-}
-
-const exahype::State& exahype::mappings::SolutionUpdate::getState() const {
-  return _localState;
 }
