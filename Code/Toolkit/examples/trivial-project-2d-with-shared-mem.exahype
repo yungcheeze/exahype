@@ -1,0 +1,36 @@
+/**
+ 
+ Trivial Project
+ 
+ A trivial project without any content.
+
+ */
+exahype-project  TrivialProject
+
+  peano-path                 = ./Peano/peano
+  tarch-path                 = ./Peano/tarch
+  multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
+  exahype-path               = ./ExaHyPE
+  
+  output-directory           = ./Applications/trivialproject
+  
+  
+  computational-domain
+    dimension                = 2
+    width                    = 1.0
+    offset                   = 0.0, 0.0
+    end-time                 = 10
+  end computational-domain
+    
+  shared-memory
+    identifier               = autotuning
+    cores                    = 4
+    properties-file          = sharedmemory.properties
+  end shared-memory  
+  
+  
+  optimisation
+    fuse-algorithmic-steps   = off
+  end optimisation  
+  
+end exahype-project  
