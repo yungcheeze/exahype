@@ -19,7 +19,8 @@ exahype-project  TrivialProject
     dimension                = 2
     width                    = 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 10.0
+    end-time                 = 0.1
   end computational-domain
       
+ 
 end exahype-project  

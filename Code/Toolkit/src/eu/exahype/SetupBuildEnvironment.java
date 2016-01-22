@@ -87,12 +87,13 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
 	  System.out.println("\n\n\n\n");
       System.out.print ("please change into directory " + _directoryAndPathChecker.peanoPath.getAbsolutePath() + " and type make \n");
       System.out.print ("ensure that you set all environment variables before:\n");
-      System.out.print ("  export CC=Intel\t\tSelect Intel compiler (default)\n");
       System.out.print ("  export CC=gcc  \t\tSelect GNU compiler\n");
+      System.out.print ("  export CC=Intel\t\tSelect Intel compiler (default)\n");
       System.out.print ("\n");
-      System.out.print ("  export MODE=Debug\t\tBuild debug version of code(default)\n");
+      System.out.print ("  export MODE=Debug\t\tBuild debug version of code\n");
+      System.out.print ("  export MODE=Asserts\t\tBuild release version of code that is augmented with assertions\n");
       System.out.print ("  export MODE=Profile\t\tBuild release version of code that produces profiling information\n");
-      System.out.print ("  export MODE=Release\t\tBuild release version of code\n");
+      System.out.print ("  export MODE=Release\t\tBuild release version of code (default)\n");
       
       _writer.close();
 	} 

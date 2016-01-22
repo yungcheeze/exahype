@@ -30,7 +30,6 @@ Tokens
   token_end                   = 'end';
 
   token_project                   = 'exahype-project';
-  token_shared_memory             = 'shared-memory';
 
   token_peano_path                = 'peano-path';
   token_tarch_path                = 'tarch-path';
@@ -52,6 +51,7 @@ Tokens
   token_optimisation              = 'optimisation';
   token_fuse_algorithm_steps      = 'fuse-algorithmic-steps';
 
+  token_shared_memory             = 'shared-memory';
   
   token_on_off                    = 'on' | 'off';
   
@@ -99,7 +99,6 @@ Productions
         token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
         token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
         token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
-        token_dimension                  [dimension_equals]:token_equals                        [dimension]:int_number
         computational_domain
         shared_memory
       token_end [end_token]:token_project
@@ -124,7 +123,6 @@ Productions
         token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
         token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
         token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
-        token_dimension                  [dimension_equals]:token_equals                        [dimension]:int_number
         computational_domain
         shared_memory
         optimisation
