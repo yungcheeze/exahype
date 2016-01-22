@@ -22,6 +22,14 @@ exahype-project  TrivialProject
     end-time                 = 0.1
   end computational-domain
     
+    
+  plot-grid vtk
+    time                     = 0.02
+    repeat                   = on
+    filename                 = grid
+  end plot-grid
+
+  
   shared-memory
     identifier               = autotuning
     cores                    = 4
