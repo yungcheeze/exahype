@@ -379,7 +379,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
         luhOld,
         lduh,
         size,
-        _localState.getOldTimeStepSize(),
+        _localState.getMaxTimeStepSize(),
         nvar,
         basisSize);
   }
@@ -406,7 +406,7 @@ void exahype::mappings::SolutionUpdate::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  _localState.setOldTimeStepSize(solverState.getOldTimeStepSize());
+  _localState = solverState;
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }

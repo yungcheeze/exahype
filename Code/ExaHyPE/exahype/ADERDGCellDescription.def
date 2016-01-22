@@ -68,7 +68,9 @@ class exahype::records::ADERDGCellDescription {
   /** Grid information */
   ///@{
   parallelise persistent int    level;              // !< Space-tree level of the cell owning this cell description.
-  parallelise persistent double offset[DIMENSIONS]; // !< Offest of the "lower left" node of the lower left ghost cell from the lower left node of the cell
+  parallelise persistent double offset[DIMENSIONS]; // !< Offest of the "lower left" node of the lower left ghost cell from the lower left node of the cell.
   parallelise persistent double size  [DIMENSIONS]; // !< Dimension of the cell owning this cell description in x,y, and z direction.
   ///@}
+
+  parallelise persistent double timeStamp;          // !< Time stamp of the current solution.
 };

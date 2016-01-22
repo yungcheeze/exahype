@@ -408,7 +408,7 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
         rhs,
         tmp,
         size,
-        _localState.getTimeStepSize());
+        _localState.getMaxTimeStepSize());
 
     // clean up
     free(rhs0);
@@ -439,7 +439,7 @@ void exahype::mappings::SpaceTimePredictor::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  _localState.setTimeStepSize(solverState.getTimeStepSize());
+  _localState = solverState;
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }

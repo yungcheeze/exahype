@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   21/01/2016 15:08
+    * @date   22/01/2016 12:28
     */
    class exahype::records::State { 
       
@@ -42,9 +42,9 @@ namespace exahype {
          typedef exahype::records::StatePacked Packed;
          
          struct PersistentRecords {
-            double _timeStepSize;
-            double _oldTimeStepSize;
-            double _time;
+            double _maxTimeStepSize;
+            double _oldMaxTimeStepSize;
+            double _minTimeStamp;
             #ifdef UseManualAlignment
             tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
             #else
@@ -84,65 +84,65 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const double& timeStepSize, const double& oldTimeStepSize, const double& time, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+            PersistentRecords(const double& maxTimeStepSize, const double& oldMaxTimeStepSize, const double& minTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
             
             
-            inline double getTimeStepSize() const 
+            inline double getMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _timeStepSize;
+               return _maxTimeStepSize;
             }
             
             
             
-            inline void setTimeStepSize(const double& timeStepSize) 
+            inline void setMaxTimeStepSize(const double& maxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _timeStepSize = timeStepSize;
+               _maxTimeStepSize = maxTimeStepSize;
             }
             
             
             
-            inline double getOldTimeStepSize() const 
+            inline double getOldMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _oldTimeStepSize;
+               return _oldMaxTimeStepSize;
             }
             
             
             
-            inline void setOldTimeStepSize(const double& oldTimeStepSize) 
+            inline void setOldMaxTimeStepSize(const double& oldMaxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _oldTimeStepSize = oldTimeStepSize;
+               _oldMaxTimeStepSize = oldMaxTimeStepSize;
             }
             
             
             
-            inline double getTime() const 
+            inline double getMinTimeStamp() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _time;
+               return _minTimeStamp;
             }
             
             
             
-            inline void setTime(const double& time) 
+            inline void setMinTimeStamp(const double& minTimeStamp) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _time = time;
+               _minTimeStamp = minTimeStamp;
             }
             
             
@@ -702,7 +702,7 @@ namespace exahype {
          /**
           * Generated
           */
-         State(const double& timeStepSize, const double& oldTimeStepSize, const double& time, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+         State(const double& maxTimeStepSize, const double& oldMaxTimeStepSize, const double& minTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
          
          /**
           * Generated
@@ -710,62 +710,62 @@ namespace exahype {
          virtual ~State();
          
          
-         inline double getTimeStepSize() const 
+         inline double getMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _persistentRecords._timeStepSize;
+            return _persistentRecords._maxTimeStepSize;
          }
          
          
          
-         inline void setTimeStepSize(const double& timeStepSize) 
+         inline void setMaxTimeStepSize(const double& maxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _persistentRecords._timeStepSize = timeStepSize;
+            _persistentRecords._maxTimeStepSize = maxTimeStepSize;
          }
          
          
          
-         inline double getOldTimeStepSize() const 
+         inline double getOldMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _persistentRecords._oldTimeStepSize;
+            return _persistentRecords._oldMaxTimeStepSize;
          }
          
          
          
-         inline void setOldTimeStepSize(const double& oldTimeStepSize) 
+         inline void setOldMaxTimeStepSize(const double& oldMaxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _persistentRecords._oldTimeStepSize = oldTimeStepSize;
+            _persistentRecords._oldMaxTimeStepSize = oldMaxTimeStepSize;
          }
          
          
          
-         inline double getTime() const 
+         inline double getMinTimeStamp() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _persistentRecords._time;
+            return _persistentRecords._minTimeStamp;
          }
          
          
          
-         inline void setTime(const double& time) 
+         inline void setMinTimeStamp(const double& minTimeStamp) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _persistentRecords._time = time;
+            _persistentRecords._minTimeStamp = minTimeStamp;
          }
          
          
@@ -1434,16 +1434,16 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   21/01/2016 15:08
+       * @date   22/01/2016 12:28
        */
       class exahype::records::StatePacked { 
          
          public:
             
             struct PersistentRecords {
-               double _timeStepSize;
-               double _oldTimeStepSize;
-               double _time;
+               double _maxTimeStepSize;
+               double _oldMaxTimeStepSize;
+               double _minTimeStamp;
                tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
                tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
                double _numberOfInnerVertices;
@@ -1481,65 +1481,65 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const double& timeStepSize, const double& oldTimeStepSize, const double& time, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               PersistentRecords(const double& maxTimeStepSize, const double& oldMaxTimeStepSize, const double& minTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                
-               inline double getTimeStepSize() const 
+               inline double getMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _timeStepSize;
+                  return _maxTimeStepSize;
                }
                
                
                
-               inline void setTimeStepSize(const double& timeStepSize) 
+               inline void setMaxTimeStepSize(const double& maxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _timeStepSize = timeStepSize;
+                  _maxTimeStepSize = maxTimeStepSize;
                }
                
                
                
-               inline double getOldTimeStepSize() const 
+               inline double getOldMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _oldTimeStepSize;
+                  return _oldMaxTimeStepSize;
                }
                
                
                
-               inline void setOldTimeStepSize(const double& oldTimeStepSize) 
+               inline void setOldMaxTimeStepSize(const double& oldMaxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _oldTimeStepSize = oldTimeStepSize;
+                  _oldMaxTimeStepSize = oldMaxTimeStepSize;
                }
                
                
                
-               inline double getTime() const 
+               inline double getMinTimeStamp() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _time;
+                  return _minTimeStamp;
                }
                
                
                
-               inline void setTime(const double& time) 
+               inline void setMinTimeStamp(const double& minTimeStamp) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _time = time;
+                  _minTimeStamp = minTimeStamp;
                }
                
                
@@ -2126,7 +2126,7 @@ namespace exahype {
             /**
              * Generated
              */
-            StatePacked(const double& timeStepSize, const double& oldTimeStepSize, const double& time, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+            StatePacked(const double& maxTimeStepSize, const double& oldMaxTimeStepSize, const double& minTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
             
             /**
              * Generated
@@ -2134,62 +2134,62 @@ namespace exahype {
             virtual ~StatePacked();
             
             
-            inline double getTimeStepSize() const 
+            inline double getMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _persistentRecords._timeStepSize;
+               return _persistentRecords._maxTimeStepSize;
             }
             
             
             
-            inline void setTimeStepSize(const double& timeStepSize) 
+            inline void setMaxTimeStepSize(const double& maxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _persistentRecords._timeStepSize = timeStepSize;
+               _persistentRecords._maxTimeStepSize = maxTimeStepSize;
             }
             
             
             
-            inline double getOldTimeStepSize() const 
+            inline double getOldMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _persistentRecords._oldTimeStepSize;
+               return _persistentRecords._oldMaxTimeStepSize;
             }
             
             
             
-            inline void setOldTimeStepSize(const double& oldTimeStepSize) 
+            inline void setOldMaxTimeStepSize(const double& oldMaxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _persistentRecords._oldTimeStepSize = oldTimeStepSize;
+               _persistentRecords._oldMaxTimeStepSize = oldMaxTimeStepSize;
             }
             
             
             
-            inline double getTime() const 
+            inline double getMinTimeStamp() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _persistentRecords._time;
+               return _persistentRecords._minTimeStamp;
             }
             
             
             
-            inline void setTime(const double& time) 
+            inline void setMinTimeStamp(const double& minTimeStamp) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _persistentRecords._time = time;
+               _persistentRecords._minTimeStamp = minTimeStamp;
             }
             
             
@@ -2882,7 +2882,7 @@ namespace exahype {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   21/01/2016 15:08
+          * @date   22/01/2016 12:28
           */
          class exahype::records::State { 
             
@@ -2891,9 +2891,9 @@ namespace exahype {
                typedef exahype::records::StatePacked Packed;
                
                struct PersistentRecords {
-                  double _timeStepSize;
-                  double _oldTimeStepSize;
-                  double _time;
+                  double _maxTimeStepSize;
+                  double _oldMaxTimeStepSize;
+                  double _minTimeStamp;
                   #ifdef UseManualAlignment
                   tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
                   #else
@@ -2930,65 +2930,65 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const double& timeStepSize, const double& oldTimeStepSize, const double& time, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                  PersistentRecords(const double& maxTimeStepSize, const double& oldMaxTimeStepSize, const double& minTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                   
                   
-                  inline double getTimeStepSize() const 
+                  inline double getMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _timeStepSize;
+                     return _maxTimeStepSize;
                   }
                   
                   
                   
-                  inline void setTimeStepSize(const double& timeStepSize) 
+                  inline void setMaxTimeStepSize(const double& maxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _timeStepSize = timeStepSize;
+                     _maxTimeStepSize = maxTimeStepSize;
                   }
                   
                   
                   
-                  inline double getOldTimeStepSize() const 
+                  inline double getOldMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _oldTimeStepSize;
+                     return _oldMaxTimeStepSize;
                   }
                   
                   
                   
-                  inline void setOldTimeStepSize(const double& oldTimeStepSize) 
+                  inline void setOldMaxTimeStepSize(const double& oldMaxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _oldTimeStepSize = oldTimeStepSize;
+                     _oldMaxTimeStepSize = oldMaxTimeStepSize;
                   }
                   
                   
                   
-                  inline double getTime() const 
+                  inline double getMinTimeStamp() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _time;
+                     return _minTimeStamp;
                   }
                   
                   
                   
-                  inline void setTime(const double& time) 
+                  inline void setMinTimeStamp(const double& minTimeStamp) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _time = time;
+                     _minTimeStamp = minTimeStamp;
                   }
                   
                   
@@ -3488,7 +3488,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               State(const double& timeStepSize, const double& oldTimeStepSize, const double& time, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               State(const double& maxTimeStepSize, const double& oldMaxTimeStepSize, const double& minTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                
                /**
                 * Generated
@@ -3496,62 +3496,62 @@ namespace exahype {
                virtual ~State();
                
                
-               inline double getTimeStepSize() const 
+               inline double getMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._timeStepSize;
+                  return _persistentRecords._maxTimeStepSize;
                }
                
                
                
-               inline void setTimeStepSize(const double& timeStepSize) 
+               inline void setMaxTimeStepSize(const double& maxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._timeStepSize = timeStepSize;
+                  _persistentRecords._maxTimeStepSize = maxTimeStepSize;
                }
                
                
                
-               inline double getOldTimeStepSize() const 
+               inline double getOldMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._oldTimeStepSize;
+                  return _persistentRecords._oldMaxTimeStepSize;
                }
                
                
                
-               inline void setOldTimeStepSize(const double& oldTimeStepSize) 
+               inline void setOldMaxTimeStepSize(const double& oldMaxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._oldTimeStepSize = oldTimeStepSize;
+                  _persistentRecords._oldMaxTimeStepSize = oldMaxTimeStepSize;
                }
                
                
                
-               inline double getTime() const 
+               inline double getMinTimeStamp() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._time;
+                  return _persistentRecords._minTimeStamp;
                }
                
                
                
-               inline void setTime(const double& time) 
+               inline void setMinTimeStamp(const double& minTimeStamp) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._time = time;
+                  _persistentRecords._minTimeStamp = minTimeStamp;
                }
                
                
@@ -4160,16 +4160,16 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   21/01/2016 15:08
+             * @date   22/01/2016 12:28
              */
             class exahype::records::StatePacked { 
                
                public:
                   
                   struct PersistentRecords {
-                     double _timeStepSize;
-                     double _oldTimeStepSize;
-                     double _time;
+                     double _maxTimeStepSize;
+                     double _oldMaxTimeStepSize;
+                     double _minTimeStamp;
                      tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
                      tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
                      double _numberOfInnerVertices;
@@ -4204,65 +4204,65 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const double& timeStepSize, const double& oldTimeStepSize, const double& time, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                     PersistentRecords(const double& maxTimeStepSize, const double& oldMaxTimeStepSize, const double& minTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                      
                      
-                     inline double getTimeStepSize() const 
+                     inline double getMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _timeStepSize;
+                        return _maxTimeStepSize;
                      }
                      
                      
                      
-                     inline void setTimeStepSize(const double& timeStepSize) 
+                     inline void setMaxTimeStepSize(const double& maxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _timeStepSize = timeStepSize;
+                        _maxTimeStepSize = maxTimeStepSize;
                      }
                      
                      
                      
-                     inline double getOldTimeStepSize() const 
+                     inline double getOldMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _oldTimeStepSize;
+                        return _oldMaxTimeStepSize;
                      }
                      
                      
                      
-                     inline void setOldTimeStepSize(const double& oldTimeStepSize) 
+                     inline void setOldMaxTimeStepSize(const double& oldMaxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _oldTimeStepSize = oldTimeStepSize;
+                        _oldMaxTimeStepSize = oldMaxTimeStepSize;
                      }
                      
                      
                      
-                     inline double getTime() const 
+                     inline double getMinTimeStamp() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _time;
+                        return _minTimeStamp;
                      }
                      
                      
                      
-                     inline void setTime(const double& time) 
+                     inline void setMinTimeStamp(const double& minTimeStamp) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _time = time;
+                        _minTimeStamp = minTimeStamp;
                      }
                      
                      
@@ -4780,7 +4780,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  StatePacked(const double& timeStepSize, const double& oldTimeStepSize, const double& time, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                  StatePacked(const double& maxTimeStepSize, const double& oldMaxTimeStepSize, const double& minTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                   
                   /**
                    * Generated
@@ -4788,62 +4788,62 @@ namespace exahype {
                   virtual ~StatePacked();
                   
                   
-                  inline double getTimeStepSize() const 
+                  inline double getMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._timeStepSize;
+                     return _persistentRecords._maxTimeStepSize;
                   }
                   
                   
                   
-                  inline void setTimeStepSize(const double& timeStepSize) 
+                  inline void setMaxTimeStepSize(const double& maxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._timeStepSize = timeStepSize;
+                     _persistentRecords._maxTimeStepSize = maxTimeStepSize;
                   }
                   
                   
                   
-                  inline double getOldTimeStepSize() const 
+                  inline double getOldMaxTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._oldTimeStepSize;
+                     return _persistentRecords._oldMaxTimeStepSize;
                   }
                   
                   
                   
-                  inline void setOldTimeStepSize(const double& oldTimeStepSize) 
+                  inline void setOldMaxTimeStepSize(const double& oldMaxTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._oldTimeStepSize = oldTimeStepSize;
+                     _persistentRecords._oldMaxTimeStepSize = oldMaxTimeStepSize;
                   }
                   
                   
                   
-                  inline double getTime() const 
+                  inline double getMinTimeStamp() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._time;
+                     return _persistentRecords._minTimeStamp;
                   }
                   
                   
                   
-                  inline void setTime(const double& time) 
+                  inline void setMinTimeStamp(const double& minTimeStamp) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._time = time;
+                     _persistentRecords._minTimeStamp = minTimeStamp;
                   }
                   
                   

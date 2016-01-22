@@ -78,11 +78,10 @@ exahype::mappings::GlobalTimeStepComputation::~GlobalTimeStepComputation() {
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const GlobalTimeStepComputation&  masterThread)
-  :
-  _localState() // initialises the old and current time step size to max double value
+exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const GlobalTimeStepComputation&  masterThread):
+  _localState(masterThread._localState)
 {
-  _localState.setTimeStepSizeToMaxValue();
+  _localState.resetAccumulatedValues();
 }
 
 
@@ -390,7 +389,9 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
         nvar,
         basisSize);
 
-    _localState.setTimeStepSize(std::min(_localState.getTimeStepSize(),admissibleTimeStepSize));
+    assertion1(admissibleTimeStepSize<1.0,admissibleTimeStepSize);
+
+    _localState.updateMaxTimeStepSize(admissibleTimeStepSize);
   }
 
 
@@ -416,9 +417,7 @@ void exahype::mappings::GlobalTimeStepComputation::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  // is done once per MPI rank
-  solverState.setOldTimeStepSize(solverState.getTimeStepSize());
-  solverState.setTimeStepSizeToMaxValue();
+  _localState = solverState;
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
@@ -429,9 +428,8 @@ void exahype::mappings::GlobalTimeStepComputation::endIteration(
 ) {
   logTraceInWith1Argument( "endIteration(State)", solverState );
 
-  logInfo("endIteration(...)","local time step size: " << _localState.getTimeStepSize())
-
-  solverState.setMinimumTimeStepSizeOfBoth(_localState);
+  std::cerr << "@" << _localState.toString() << std::endl;
+  solverState.merge(_localState);
 
   logTraceOutWith1Argument( "endIteration(State)", solverState);
 }

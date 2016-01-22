@@ -25,7 +25,7 @@ tarch::logging::Log  exahype::runners::Runner::_log( "exahype::runners::Runner" 
 
 
 exahype::runners::Runner::Runner(const Parser& parser):
-          _parser(parser) {
+  _parser(parser) {
 }
 
 
@@ -84,17 +84,19 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 int exahype::runners::Runner::run() {
   initSharedMemoryConfiguration();
 
+  logInfo("run(...)", "create computational domain at " << _parser.getOffset() << " of width/size " << _parser.getSize() );
+
   peano::geometry::Hexahedron geometry(
-      tarch::la::Vector<DIMENSIONS,double>( 1.0 /*_parser.getSize()*/ ),
-      tarch::la::Vector<DIMENSIONS,double>( 0.0 ) // _parser.getOffset()
+    _parser.getSize(),
+    tarch::la::Vector<DIMENSIONS,double>( _parser.getOffset() )
   );
 
   exahype::repositories::Repository* repository = 
-      exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
-          geometry,
-          tarch::la::Vector<DIMENSIONS,double>( 1.0 /*_parser.getSize()*/ ),
-          tarch::la::Vector<DIMENSIONS,double>( 0.0 ) // _parser.getOffset()
-      );
+    exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
+      geometry,
+      tarch::la::Vector<DIMENSIONS,double>( _parser.getSize() ),
+      tarch::la::Vector<DIMENSIONS,double>( _parser.getOffset() )
+    );
 
   int result = 0;
   if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
@@ -145,12 +147,12 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    */
   repository.switchToPredictorAndGlobalTimeStepComputation();
   repository.iterate();
-  logInfo("runAsMaster(...)", "[ExaHyPE] global time step="<< 0 <<", global time step size (seconds)=" <<
-          repository.getState().getTimeStepSize() );
-  logInfo("runAsMaster(...)", "[ExaHyPE] old global time step size (seconds)=" <<
-          repository.getState().getOldTimeStepSize() );
+  logInfo("runAsMaster(...)", "[ExaHyPE] global time step="<< 0 <<", dt_max==" <<
+          repository.getState().getMaxTimeStepSize() );
 
-  for (int n=1; n<400; n++) {
+  for (int n=1; n<20; n++) {
+    repository.getState().resetAccumulatedValues();
+
     /*
      * Exchange the fluctuations.
      */
@@ -176,10 +178,12 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     }
     repository.iterate();
 
-    logInfo("runAsMaster(...)", "[ExaHyPE] global time step="<< n+1 <<", global time step size (seconds)=" <<
-            repository.getState().getTimeStepSize() );
-    logInfo("runAsMaster(...)", "[ExaHyPE] old global time step size (seconds)=" <<
-            repository.getState().getOldTimeStepSize() );
+    logInfo(
+      "runAsMaster(...)",
+      "step " << n+1 <<
+      "\t t_min="  << repository.getState().getMinimalGlobalTimeStamp() <<
+      "\t dt_max=" << repository.getState().getMaxTimeStepSize()
+    );
   }
 
   repository.logIterationStatistics();

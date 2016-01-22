@@ -439,7 +439,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
         QavR,
         lambdaL,
         lambdaR,
-        _localState.getOldTimeStepSize(),
+        _localState.getMaxTimeStepSize(),
 
         superfluousArgument,
         normal);
@@ -565,7 +565,7 @@ void exahype::mappings::BoundaryConditions::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  _localState.setOldTimeStepSize(solverState.getOldTimeStepSize());
+  _localState = solverState;
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
