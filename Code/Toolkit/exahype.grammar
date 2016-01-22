@@ -37,14 +37,21 @@ Tokens
   token_exahype_path              = 'exahype-path';
   token_multiscalelinkedcell_path = 'multiscalelinkedcell-path';
   token_output_directory          = 'output-directory';
-  token_dimensions                = 'dimensions';
+
+
   token_computational_domain      = 'computational-domain';
+  token_dimension                 = 'dimension';
+  token_width                     = 'width';
+  token_offset                    = 'offset';
+  token_end_time                  = 'end-time';
   
   token_cores                     = 'cores';
   token_properties_file           = 'properties-file';
-  token_size                      = 'size';
-  token_offset                    = 'offset';
   token_identifier                = 'identifier';
+
+  token_optimisation              = 'optimisation';
+  token_fuse_algorithm_steps      = 'fuse-algorithmic-steps';
+
   
   token_on_off                    = 'on' | 'off';
   
@@ -74,32 +81,58 @@ Ignored Tokens
 Productions
   
   project {->project} = 
-    {without_shared_mem}
+    {without_shared_mem_without_optimisation}
       [begin_token]:token_project [name]:identifier 
         token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
         token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
         token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
         token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
         token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
-        token_dimensions                 [dimensions_equals]:token_equals                       [dimensions]:int_number
         computational_domain
       token_end [end_token]:token_project
-        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, dimensions, computational_domain.computational_domain, [] ) }
+        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, computational_domain.computational_domain, Null, Null ) }
     |
-    {with_shared_mem}
+    {with_shared_mem_without_optimisation}
       [begin_token]:token_project [name]:identifier 
         token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
         token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
         token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
         token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
         token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
-        token_dimensions                 [dimensions_equals]:token_equals                       [dimensions]:int_number
+        token_dimension                  [dimension_equals]:token_equals                        [dimension]:int_number
         computational_domain
         shared_memory
       token_end [end_token]:token_project
-        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, dimensions, computational_domain.computational_domain, [shared_memory.shared_memory] ) }
-        ;
-
+        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, computational_domain.computational_domain, Null, shared_memory.shared_memory ) }
+    |
+    {without_shared_mem_with_optimisation}
+      [begin_token]:token_project [name]:identifier 
+        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
+        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
+        token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
+        token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
+        token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+        computational_domain
+        optimisation
+      token_end [end_token]:token_project
+        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, computational_domain.computational_domain, optimisation.optimisation, Null ) }
+    |
+    {with_shared_mem_with_optimisation}
+      [begin_token]:token_project [name]:identifier 
+        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
+        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
+        token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
+        token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
+        token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+        token_dimension                  [dimension_equals]:token_equals                        [dimension]:int_number
+        computational_domain
+        shared_memory
+        optimisation
+      token_end [end_token]:token_project
+        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, computational_domain.computational_domain, optimisation.optimisation, shared_memory.shared_memory ) }
+    ;    
+    
+    
   shared_memory {->shared_memory} =
     [begin_token]:token_shared_memory
       token_identifier [identifier_equals]:token_equals [identifier]:identifier
@@ -109,24 +142,49 @@ Productions
       { -> New shared_memory( cores,properties_file,identifier ) };
 
   computational_domain {->computational_domain} = 
-    [begin_token]:token_computational_domain
-      token_size    [size_equals]:token_equals     [size]:float_number
-      token_offset  [offset_equals]:token_equals   [offset_x]:float_number [comma_xy]:token_comma [offset_y]:float_number [comma_yz]:token_comma [offset_z]:float_number 
-    token_end [end_token]:token_computational_domain
-      { -> New computational_domain( size,offset_x,offset_y,offset_z ) };
-    
+     {two_dimensional}
+      [begin_token]:token_computational_domain
+       token_dimension  [dimension_equals]:token_equals    [dimension]:int_number
+       token_width      [width_equals]:token_equals        [width]:float_number
+       token_offset     [offset_equals]:token_equals       [offset_x]:float_number [comma_xy]:token_comma [offset_y]:float_number
+       token_end_time   [end_time_equals]:token_equals     [end_time]:float_number
+      token_end [end_token]:token_computational_domain
+       { -> New computational_domain.two_dimensional( dimension, width,offset_x,offset_y,end_time ) } |
+     {three_dimensional}
+      [begin_token]:token_computational_domain
+       token_dimension  [dimension_equals]:token_equals    [dimension]:int_number
+       token_width      [width_equals]:token_equals        [width]:float_number
+       token_offset     [offset_equals]:token_equals       [offset_x]:float_number [comma_xy]:token_comma [offset_y]:float_number [comma_yz]:token_comma [offset_z]:float_number 
+       token_end_time   [end_time_equals]:token_equals     [end_time]:float_number
+      token_end [end_token]:token_computational_domain
+       { -> New computational_domain.three_dimensional( dimension, width,offset_x,offset_y,offset_z,end_time ) };
+
+   optimisation {->optimisation} = 
+      [begin_token]:token_optimisation  
+        token_fuse_algorithm_steps [token_fuse_algorithm_steps_equals]:token_equals [fuse_algorithm_steps]:token_on_off
+      token_end [end_token]:token_optimisation
+        { -> New optimisation(fuse_algorithm_steps) }
+      ;
+   
 
 
 Abstract Syntax Tree
    project = 
-     [name]:identifier [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [exahype_path]:filename [output_directory]:filename [dimensions]:int_number
+     [name]:identifier [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [exahype_path]:filename [output_directory]:filename 
      computational_domain
-     shared_memory*    // grammar ensures that there is at most one
+     optimisation?
+     shared_memory?    
      ;
    
    shared_memory = 
      [cores]:int_number [properties_file]:filename [identifier]:identifier;
 
    computational_domain = 
-     [size]:float_number [offset_x]:float_number [offset_y]:float_number [offset_z]:float_number;
+     {two_dimensional}   [dimension]:int_number [width]:float_number [offset_x]:float_number [offset_y]:float_number [end_time]:float_number |
+     {three_dimensional} [dimension]:int_number [width]:float_number [offset_x]:float_number [offset_y]:float_number [offset_z]:float_number [end_time]:float_number
+     ;
+
+   optimisation = 
+     [fuse_algorithm_steps]:token_on_off;
+    
    
