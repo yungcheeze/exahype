@@ -22,4 +22,10 @@ exahype-project  TrivialProject
     end-time                 = 10
   end computational-domain
      
+     
+  optimisation
+    fuse-algorithmic-steps   = off
+  end optimisation  
+  
+     
 end exahype-project  
