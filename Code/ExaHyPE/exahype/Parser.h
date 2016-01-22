@@ -57,6 +57,8 @@ class exahype::Parser {
     MulticoreOracleType getMulticoreOracleType() const;
 
     double getSimulationEndTime() const;
+
+    bool fuseAlgorithmicSteps() const;
 };
 
 #endif

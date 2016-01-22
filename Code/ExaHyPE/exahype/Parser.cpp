@@ -175,3 +175,11 @@ double exahype::Parser::getSimulationEndTime() const {
   }
   return result;
 }
+
+
+bool exahype::Parser::fuseAlgorithmicSteps() const {
+  assertion( isValid() );
+  std::string token = getTokenAfter("optimisation","fuse-algorithmic-steps");
+  logDebug( "fuseAlgorithmicSteps()", "found token " << token );
+  return token.compare("on")==0;
+}

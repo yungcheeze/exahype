@@ -154,32 +154,12 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   while ( repository.getState().getMinimalGlobalTimeStamp()<simulationEndTime ) {
     repository.getState().startNewTimeStep();
 
-    /*
-     * Exchange the fluctuations.
-     */
-    repository.switchToFaceDataExchange();
-    repository.iterate();
-
-    /*
-     * The two adapters that are embedded in the if clause below perform the following steps:
-     *
-     * 1. Perform the corrector step using the old update and the old global time step size.
-     *    This is a leaf-cell-local operation. Thus we immediately obtain the leaf-cell-local current solution.
-     * 2. Perform the predictor step using the leaf-cell-local current solution and the current global time step size.
-     * 3. Compute the leaf-cell-local time step sizes
-     * 4. (Optionally) Export the leaf-cell-local current solution.
-     * 5. After the traversal, set the global current time step size as the new old global time step size.
-     *    Find the minimum leaf-cell-local time step size and set it as the new current
-     *    global time step size.
-     */
-/*
-    if (n%EXAHYPE_PLOTTING_STRIDE==0) {
-      repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputationAndExport();
-    } else {
-*/
-      repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputation();
-//    }
-    repository.iterate();
+    if ( _parser.fuseAlgorithmicSteps() ) {
+      runOneTimeStampWithFusedAlgorithmicSteps(repository);
+    }
+    else {
+      runOneTimeStampWithFourSeparateAlgorithmicSteps(repository);
+    }
 
     logInfo(
       "runAsMaster(...)",
@@ -197,4 +177,39 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   // ! End of code for DG method
 
   return 0;
+}
+
+
+void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository) {
+  /*
+   * Exchange the fluctuations.
+   */
+  repository.switchToFaceDataExchange();
+  repository.iterate();
+
+  /*
+   * The two adapters that are embedded in the if clause below perform the following steps:
+   *
+   * 1. Perform the corrector step using the old update and the old global time step size.
+   *    This is a leaf-cell-local operation. Thus we immediately obtain the leaf-cell-local current solution.
+   * 2. Perform the predictor step using the leaf-cell-local current solution and the current global time step size.
+   * 3. Compute the leaf-cell-local time step sizes
+   * 4. (Optionally) Export the leaf-cell-local current solution.
+   * 5. After the traversal, set the global current time step size as the new old global time step size.
+   *    Find the minimum leaf-cell-local time step size and set it as the new current
+   *    global time step size.
+   */
+/*
+  if (n%EXAHYPE_PLOTTING_STRIDE==0) {
+    repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputationAndExport();
+  } else {
+*/
+    repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputation();
+//    }
+  repository.iterate();
+}
+
+
+void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(exahype::repositories::Repository& repository) {
+  assertionMsg( false, "not implemented yet. Dominic, can you please do it?" );
 }
