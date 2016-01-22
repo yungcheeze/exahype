@@ -151,7 +151,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
           repository.getState().getMaxTimeStepSize() );
 
   for (int n=1; n<20; n++) {
-    repository.getState().resetAccumulatedValues();
+    //repository.getState().resetAccumulatedValues();
 
     /*
      * Exchange the fluctuations.
@@ -184,6 +184,9 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       "\t t_min="  << repository.getState().getMinimalGlobalTimeStamp() <<
       "\t dt_max=" << repository.getState().getMaxTimeStepSize()
     );
+    #if defined(Debug) || defined(Asserts)
+    logInfo( "runAsMaster(...)", "state=" << repository.getState().toString() );
+    #endif
   }
 
   repository.logIterationStatistics();

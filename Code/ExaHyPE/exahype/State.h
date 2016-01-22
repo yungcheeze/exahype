@@ -87,10 +87,15 @@ class exahype::State: public peano::grid::State< exahype::records::State > {
     /**
      * Reset all accumulated values:
      *
-     * - Backup the current max time step into oldMaximumTimeStepSize
      * - Set the time step size to the maximum double value.
      */
     void resetAccumulatedValues();
+
+    /**
+     * - Backup the current max time step into oldMaximumTimeStepSize
+     *
+     */
+    void startNewTimeStep();
 
     /*
      * This operation always returns the field old time step size, as the field

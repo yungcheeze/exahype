@@ -460,7 +460,7 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
   if (
       fineGridVertex.getRefinementControl()==Vertex::Records::Unrefined // todo Replace by something that works for multiple PDEs. Must possible move into applyBoundaryConditions.
   ) {
-    assertion1WithExplanation(_localState.getOldTimeStepSize() < std::numeric_limits<double>::max(),_localState.getOldTimeStepSize(),"Old time step size was not initialised correctly!");
+    assertion1WithExplanation(_localState.getMaxTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size is not initialised correctly!");
 
     tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
     // todo: DEC: Reverse engineered indices from

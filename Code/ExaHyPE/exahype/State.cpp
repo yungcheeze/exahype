@@ -28,9 +28,12 @@ void exahype::State::readFromCheckpoint( const peano::grid::Checkpoint<exahype::
 }
 
 
-void exahype::State::resetAccumulatedValues() {
+void exahype::State::startNewTimeStep() {
   _stateData.setOldMaxTimeStepSize(_stateData.getMaxTimeStepSize());
+}
 
+
+void exahype::State::resetAccumulatedValues() {
   _stateData.setMaxTimeStepSize(std::numeric_limits<double>::max());
 }
 

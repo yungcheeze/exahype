@@ -88,6 +88,7 @@ exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const Gl
 void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(const GlobalTimeStepComputation& workerThread) {
   logTraceIn( "mergeWithWorkerThread(GlobalTimeStepComputation)" );
 
+  solverState.merge(_localState);
   _localState.setMinimumTimeStepSizeOfBoth(workerThread.getState());
 
   logTraceOut( "mergeWithWorkerThread(GlobalTimeStepComputation)" );
@@ -428,7 +429,6 @@ void exahype::mappings::GlobalTimeStepComputation::endIteration(
 ) {
   logTraceInWith1Argument( "endIteration(State)", solverState );
 
-  std::cerr << "@" << _localState.toString() << std::endl;
   solverState.merge(_localState);
 
   logTraceOutWith1Argument( "endIteration(State)", solverState);
