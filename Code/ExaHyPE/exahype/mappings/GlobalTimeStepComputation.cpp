@@ -390,8 +390,6 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
         nvar,
         basisSize);
 
-    assertion1(admissibleTimeStepSize<1.0,admissibleTimeStepSize);
-
     _localState.updateMaxTimeStepSize(admissibleTimeStepSize);
   }
 

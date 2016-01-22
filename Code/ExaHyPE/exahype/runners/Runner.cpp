@@ -147,11 +147,13 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    */
   repository.switchToPredictorAndGlobalTimeStepComputation();
   repository.iterate();
+/*
   logInfo("runAsMaster(...)", "[ExaHyPE] global time step="<< 0 <<", dt_max==" <<
           repository.getState().getMaxTimeStepSize() );
+*/
 
   for (int n=1; n<20; n++) {
-    //repository.getState().resetAccumulatedValues();
+    repository.getState().startNewTimeStep();
 
     /*
      * Exchange the fluctuations.
