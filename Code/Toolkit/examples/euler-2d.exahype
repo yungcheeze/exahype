@@ -12,7 +12,7 @@ exahype-project  Euler2d
   multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
   exahype-path               = ./ExaHyPE
   
-  output-directory           = ./Applications/trivialproject
+  output-directory           = ./Applications/eulerflow2d
   
   
   computational-domain
@@ -23,10 +23,10 @@ exahype-project  Euler2d
   end computational-domain
     
     
-  plot-grid vtk
+  plot vtk
     time                     = 0.0
     repeat                   = off
-    filename                 = grid
+    filename                 = ./grid
   end plot-grid
 
   
@@ -45,14 +45,14 @@ exahype-project  Euler2d
       variable = 0 // we start to count with 0
       time     = 0.02
       repeat   = on
-      filename = q1
+      filename = ./q1
     end plot
 
     plot vtk-binary
       variable = 1
       time     = 0.02
       repeat   = on
-      filename = q2
+      filename = ./q2
     end plot
   end solver
 

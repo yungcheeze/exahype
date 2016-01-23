@@ -23,11 +23,11 @@ exahype-project  TrivialProject
   end computational-domain
     
     
-  plot-grid vtk
+  plot vtk
     time                     = 0.02
     repeat                   = on
-    filename                 = grid
-  end plot-grid
+    filename                 = ./grid
+  end plot
 
   
   shared-memory
