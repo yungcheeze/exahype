@@ -43,7 +43,20 @@ Tokens
   token_width                     = 'width';
   token_offset                    = 'offset';
   token_end_time                  = 'end-time';
+
+  token_solver                    = 'solver';
+  token_aderdg                    = 'ADER-DG';
+  token_variables                 = 'variables';
+  token_order                     = 'order';
+  token_kernel                    = 'kernel';
+
+  token_plot                      = 'plot';
+  token_variable                  = 'variable';
+  token_time                      = 'time';
+  token_repeat                    = 'repeat';
+  token_filename                  = 'filename';
   
+  token_shared_memory             = 'shared-memory';
   token_cores                     = 'cores';
   token_properties_file           = 'properties-file';
   token_identifier                = 'identifier';
@@ -51,7 +64,6 @@ Tokens
   token_optimisation              = 'optimisation';
   token_fuse_algorithm_steps      = 'fuse-algorithmic-steps';
 
-  token_shared_memory             = 'shared-memory';
   
   token_on_off                    = 'on' | 'off';
   
@@ -83,53 +95,45 @@ Productions
   project {->project} = 
     {without_shared_mem_without_optimisation}
       [begin_token]:token_project [name]:identifier 
-        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
-        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
-        token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
-        token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
-        token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+        paths 
         computational_domain
       token_end [end_token]:token_project
-        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, computational_domain.computational_domain, Null, Null ) }
+        { -> New project( name, paths.paths, computational_domain.computational_domain, Null, Null ) }
     |
     {with_shared_mem_without_optimisation}
       [begin_token]:token_project [name]:identifier 
-        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
-        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
-        token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
-        token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
-        token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+        paths
         computational_domain
         shared_memory
       token_end [end_token]:token_project
-        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, computational_domain.computational_domain, Null, shared_memory.shared_memory ) }
+        { -> New project( name, paths.paths, computational_domain.computational_domain, Null, shared_memory.shared_memory ) }
     |
     {without_shared_mem_with_optimisation}
       [begin_token]:token_project [name]:identifier 
-        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
-        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
-        token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
-        token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
-        token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+        paths
         computational_domain
         optimisation
       token_end [end_token]:token_project
-        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, computational_domain.computational_domain, optimisation.optimisation, Null ) }
+        { -> New project( name, paths.paths, computational_domain.computational_domain, optimisation.optimisation, Null ) }
     |
     {with_shared_mem_with_optimisation}
       [begin_token]:token_project [name]:identifier 
-        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
-        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
-        token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
-        token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
-        token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+        paths
         computational_domain
         shared_memory
         optimisation
       token_end [end_token]:token_project
-        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, computational_domain.computational_domain, optimisation.optimisation, shared_memory.shared_memory ) }
+        { -> New project( name, paths.paths, computational_domain.computational_domain, optimisation.optimisation, shared_memory.shared_memory ) }
     ;    
-    
+
+  paths {->paths} =
+        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
+        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
+        token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
+        token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
+        token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+     { -> New paths(peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory) }
+   ;
     
   shared_memory {->shared_memory} =
     [begin_token]:token_shared_memory
@@ -163,17 +167,79 @@ Productions
       token_end [end_token]:token_optimisation
         { -> New optimisation(fuse_algorithm_steps) }
       ;
-   
+
+   plot_grid_list {->plot_grid*} = 
+     {tail}
+      [begin_token]:token_plot [plotter_type]:identifier 
+        token_time      [time_equals]:token_equals     [time]:float_number 
+        token_repeat    [repeat_equals]:token_equals   [repeat]:token_on_off 
+        token_filename  [filename_equals]:token_equals filename
+      token_end [end_token]:token_plot
+        { -> [New plot_grid(plotter_type,time,repeat,filename)] }
+     |
+     {head}
+      [begin_token]:token_plot [plotter_type]:identifier 
+        token_time      [time_equals]:token_equals     [time]:float_number 
+        token_repeat    [repeat_equals]:token_equals   [repeat]:token_on_off 
+        token_filename  [filename_equals]:token_equals filename
+      token_end [end_token]:token_plot
+      plot_grid_list
+        { -> [New plot_grid(plotter_type,time,repeat,filename),plot_grid_list.plot_grid] }
+     ;
+
+   plot_solution_list {->plot_solution*} = 
+     {tail}
+       [begin_token]:token_plot [plotter_type]:identifier 
+         token_variable  [variable_equals]:token_equals [variable]:int_number 
+         token_time      [time_equals]:token_equals     [time]:float_number 
+         token_repeat    [repeat_equals]:token_equals   [repeat]:token_on_off 
+         token_filename  [filename_equals]:token_equals filename
+       token_end [end_token]:token_plot
+         { -> [New plot_solution(plotter_type,variable,time,repeat,filename)] }
+       |
+     {head}
+       [begin_token]:token_plot [plotter_type]:identifier 
+         token_variable  [variable_equals]:token_equals [variable]:int_number 
+         token_time      [time_equals]:token_equals     [time]:float_number 
+         token_repeat    [repeat_equals]:token_equals   [repeat]:token_on_off 
+         token_filename  [filename_equals]:token_equals filename
+       token_end [end_token]:token_plot
+       plot_solution_list
+         { -> [New plot_solution(plotter_type,variable,time,repeat,filename),plot_solution_list.plot_solution] }
+     ;
+     
+   solver {->solver} = 
+     {aderdg_without_plotter} 
+       [begin_token]:token_solver token_aderdg [name]:identifier
+         token_variables [variables_equals]:token_equals [variables]:int_number
+         token_order     [order_equals]:token_equals     [order]:int_number
+         token_kernel    [kernel_equals]:token_equals    [kernel]:identifier
+       token_end [end_token]:token_solver
+       { -> New solver.aderdg(name,variables,order,kernel,[]) }
+     |
+     {aderdg_with_plotter} 
+       [begin_token]:token_solver token_aderdg [name]:identifier
+         token_variables [variables_equals]:token_equals [variables]:int_number
+         token_order     [order_equals]:token_equals     [order]:int_number
+         token_kernel    [kernel_equals]:token_equals    [kernel]:identifier
+         plot_solution_list
+       token_end [end_token]:token_solver
+       { -> New solver.aderdg(name,variables,order,kernel,[plot_solution_list.plot_solution]) }
+     ;
 
 
 Abstract Syntax Tree
    project = 
-     [name]:identifier [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [exahype_path]:filename [output_directory]:filename 
+     [name]:identifier 
+     paths
      computational_domain
      optimisation?
      shared_memory?    
      ;
-   
+  
+   paths = 
+     [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [exahype_path]:filename [output_directory]:filename;
+    
    shared_memory = 
      [cores]:int_number [properties_file]:filename [identifier]:identifier;
 
@@ -185,4 +251,13 @@ Abstract Syntax Tree
    optimisation = 
      [fuse_algorithm_steps]:token_on_off;
     
-   
+   solver = 
+     {aderdg} [name]:identifier [variables]:int_number [order]:int_number [kernel]:identifier plot_solution*
+     ;
+     
+   plot_grid = 
+     [plotter_type]:identifier [time]:float_number [repeat]:token_on_off filename;
+
+   plot_solution = 
+     [plotter_type]:identifier [variable]:int_number [time]:float_number [repeat]:token_on_off filename;
+     
