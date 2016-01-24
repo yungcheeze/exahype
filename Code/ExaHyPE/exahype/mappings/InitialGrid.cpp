@@ -96,7 +96,7 @@ void exahype::mappings::InitialGrid::createInnerVertex(
   logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
 
   if (
-      coarseGridVerticesEnumerator.getLevel() < getMinimumTreeDepth()
+      coarseGridVerticesEnumerator.getLevel() < kernels::getMinimumTreeDepth()
       //&&
       //fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined
   ) {
@@ -119,7 +119,7 @@ void exahype::mappings::InitialGrid::createBoundaryVertex(
   logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
 
   if (
-      coarseGridVerticesEnumerator.getLevel() < getMinimumTreeDepth()
+      coarseGridVerticesEnumerator.getLevel() < kernels::getMinimumTreeDepth()
       //&&
       //fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined
   ) {

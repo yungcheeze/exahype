@@ -8,6 +8,7 @@
 #include "exahype/Parser.h"
 #include "exahype/runners/Runner.h"
 
+#include "kernels/KernelCalls.h"
 
 
 
@@ -83,6 +84,8 @@ int main(int argc, char** argv) {
   //   Run code
   // ============
   //
+  kernels::initSolvers();
+
   exahype::runners::Runner runner(parser);
   int programExitCode = runner.run();
   
