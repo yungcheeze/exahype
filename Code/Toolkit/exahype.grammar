@@ -72,6 +72,7 @@ Tokens
     
   blank                       = ( cr | lf | tab | ' ' ) +;
   identifier                  = nondigit ( digit | nondigit ) *;
+  typename                    = nondigit ( digit | nondigit | '::' ) *;
 
   int_number                  = digit+;
   float_number                = (digit+ | digit+ '.' digit+);
@@ -147,7 +148,7 @@ Productions
       ;
 
    plot_grid_list {->plot_grid*} = 
-     [begin_token]:token_plot [plotter_type]:identifier 
+     [begin_token]:token_plot [plotter_type]:typename 
        token_time      [time_equals]:token_equals     [time]:float_number 
        token_repeat    [repeat_equals]:token_equals   [repeat]:token_on_off 
        token_filename  [filename_equals]:token_equals filename
@@ -157,7 +158,7 @@ Productions
      ;
 
    plot_solution_list {->plot_solution*} = 
-     [begin_token]:token_plot [plotter_type]:identifier 
+     [begin_token]:token_plot [plotter_type]:typename 
        token_variable  [variable_equals]:token_equals [variable]:int_number 
        token_time      [time_equals]:token_equals     [time]:float_number 
        token_repeat    [repeat_equals]:token_equals   [repeat]:token_on_off 
@@ -172,7 +173,7 @@ Productions
        [begin_token]:token_solver token_aderdg [name]:identifier
          token_variables [variables_equals]:token_equals [variables]:int_number
          token_order     [order_equals]:token_equals     [order]:int_number
-         token_kernel    [kernel_equals]:token_equals    [kernel]:identifier
+         token_kernel    [kernel_equals]:token_equals    [kernel]:typename
          plot_solution_list?
        token_end [end_token]:token_solver
        solver_list?
@@ -206,12 +207,12 @@ Abstract Syntax Tree
      [fuse_algorithm_steps]:token_on_off;
     
    solver = 
-     {aderdg} [name]:identifier [variables]:int_number [order]:int_number [kernel]:identifier plot_solution*
+     {aderdg} [name]:identifier [variables]:int_number [order]:int_number [kernel]:typename plot_solution*
      ;
      
    plot_grid = 
-     [plotter_type]:identifier [time]:float_number [repeat]:token_on_off filename;
+     [plotter_type]:typename [time]:float_number [repeat]:token_on_off filename;
 
    plot_solution = 
-     [plotter_type]:identifier [variable]:int_number [time]:float_number [repeat]:token_on_off filename;
+     [plotter_type]:typename [variable]:int_number [time]:float_number [repeat]:token_on_off filename;
      

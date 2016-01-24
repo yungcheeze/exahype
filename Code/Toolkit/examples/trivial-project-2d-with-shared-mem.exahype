@@ -23,7 +23,7 @@ exahype-project  TrivialProject
   end computational-domain
     
     
-  plot vtk
+  plot vtk::binary
     time                     = 0.02
     repeat                   = on
     filename                 = ./grid

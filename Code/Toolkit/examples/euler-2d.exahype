@@ -23,38 +23,38 @@ exahype-project  Euler2d
   end computational-domain
     
     
-  plot vtk
+  plot vtk::binary
     time                     = 0.0
     repeat                   = off
     filename                 = ./grid
-  end plot-grid
+  end plot
 
   
-  shared-memory
-    identifier               = autotuning
-    cores                    = 4
-    properties-file          = sharedmemory.properties
-  end shared-memory  
-
   solver ADER-DG MyEuler2d
     variables = 5
     order     = 3
-    kernel    = USER-FLUXES
+    kernel    = user::fluxes
     
-    plot vtk-binary
-      variable = 0 // we start to count with 0
+    plot vtk::binary
+      variable = 0 
       time     = 0.02
       repeat   = on
       filename = ./q1
     end plot
 
-    plot vtk-binary
+    plot vtk::text
       variable = 1
       time     = 0.02
       repeat   = on
       filename = ./q2
     end plot
   end solver
+
+  shared-memory
+    identifier               = autotuning
+    cores                    = 4
+    properties-file          = sharedmemory.properties
+  end shared-memory  
 
 
   optimisation
