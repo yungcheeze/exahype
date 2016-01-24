@@ -4,7 +4,6 @@
 
 #include "tarch/la/ScalarOperations.h"
 
-#include "exahype/Constants.h"
 
 exahype::Cell::Cell():
 Base() {
@@ -41,6 +40,14 @@ exahype::Cell::initCellInComputeTree(const int level,
                                      const int numberOfPDEs,
                                      const int order,
                                      const int numberOfVariables) {
+  // @todo Tobias Weinzierl
+  // New Workflow
+  // Ask the solver whether there is an ADERDG cell here at this position (we might
+  // need the offset as well). If yes, take the corresponding Solver Description and ask
+  // it to create the right Cell Description.
+
+
+/*
   const int indexOfADERDGCellDescriptions = ADERDGADERDGCellDescriptionHeap::getInstance().createData(numberOfPDEs);
   assertion( indexOfADERDGCellDescriptions >= 0 );
   _cellData.setADERDGCellDescriptionsIndex(indexOfADERDGCellDescriptions);
@@ -78,6 +85,7 @@ exahype::Cell::initCellInComputeTree(const int level,
     cellDescriptionForPde.setSize  (size);
     cellDescriptionForPde.setTimeStamp(0.0);
   }
+*/
 }
 // ! End of code for DG method/multiscalelinkedcell toolbox.
 
