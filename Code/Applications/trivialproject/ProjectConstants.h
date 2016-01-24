@@ -42,11 +42,4 @@
 ///@}
 
 
-/**
- * Visualization parameters.
- */
-///@{
-#define EXAHYPE_PLOTTING_STRIDE 40 //!< The number of snapshots of the solution we want to create during the simulation.
-///@}
-
 #endif /* EXAHYPE_CONSTANTS_H_ */

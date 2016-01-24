@@ -112,6 +112,28 @@ public class Main {
 	  return;
 	}
 	
+	
+	// Create the kernel calls
+	try {
+	  GenerateKernelCalls generateKernelCalls = new GenerateKernelCalls(directoryAndPathChecker);
+
+	  document.apply( generateKernelCalls ); 
+
+	  System.out.println("\n\n\n\n");
+	  if (!generateKernelCalls.valid) {
+	    System.err.println("ERROR: Could not create ExaHyPE's kernel calls" );
+        System.err.println("ExaHyPE script failed " );
+        return;		  
+	  }
+        System.out.println("generate computational kernel calls ... ok" );
+	    waitForInteraction(interactive);
+	} 
+	catch (Exception e) {
+	  System.out.println("ERROR: " + e.toString());
+	  System.err.println("ExaHyPE script failed " );
+	  return;
+	}
+	
 
 	//
 	// Setup build environment, i.e. makefiles
@@ -127,7 +149,7 @@ public class Main {
         System.err.println("ExaHyPE script failed " );
         return;		  
 	  }
-	  System.out.println("setup build environment... ok" );
+	  System.out.println("setup build environment ... ok" );
 	  waitForInteraction(interactive);
 	} catch (Exception e) {
       System.out.println("ERROR: " + e.toString());
