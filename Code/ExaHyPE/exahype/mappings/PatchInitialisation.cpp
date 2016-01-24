@@ -1,6 +1,5 @@
 #include "exahype/mappings/PatchInitialisation.h"
 
-#include "exahype/Constants.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -363,6 +362,10 @@ void exahype::mappings::PatchInitialisation::enterCell(
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   logDebug("enterCell(...)","before initialising ADERDGCellDescription: " << "cell is refined: " << fineGridCell.isRefined());
 
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
+
+/*
   // ! Begin of code for multiscalelinkedcell toolbox and DG method
   if (!fineGridCell.isRefined()) {      // We only want to initialize ADERDGCellDescriptions on the initial fine grid
     logDebug("enterCell(...)","initialising ADERDGCellDescription: " << "fine grid level: " << fineGridVerticesEnumerator.getLevel() << ", fine grid position of cell: " << fineGridPositionOfCell);
@@ -374,6 +377,7 @@ void exahype::mappings::PatchInitialisation::enterCell(
           EXAHYPE_ORDER,
           EXAHYPE_NVARS);
   }
+*/
 
   // ! End of code for multiscalelinkedcell toolbox and DG method
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );

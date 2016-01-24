@@ -2,7 +2,6 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/Constants.h"
 #include "exahype/aderdg/ADERDG.h"
 
 /**
@@ -370,6 +369,10 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
+
+/*
   // ! Begin of code for the DG method.
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
@@ -392,7 +395,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
 
     _localState.updateMaxTimeStepSize(admissibleTimeStepSize);
   }
-
+*/
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }

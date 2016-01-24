@@ -2,7 +2,6 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/Constants.h"
 #include "exahype/aderdg/ADERDG.h"
 
 /**
@@ -363,6 +362,9 @@ void exahype::mappings::SolutionUpdate::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
+/*
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
         ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
@@ -387,6 +389,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
     cellDescription.setTimeStamp( newTimeStamp );
     _localState.updateTimeStamp( newTimeStamp );
   }
+*/
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
