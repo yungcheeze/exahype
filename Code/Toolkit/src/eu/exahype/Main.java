@@ -111,7 +111,27 @@ public class Main {
       System.err.println("ExaHyPE script failed " );
 	  return;
 	}
-	
+		
+	// Create the solvers
+	try {
+	  CreateSolverClasses createSolverClasses = new CreateSolverClasses(directoryAndPathChecker);
+
+	  document.apply( createSolverClasses ); 
+
+	  System.out.println("\n\n\n\n");
+	  if (!createSolverClasses.valid) {
+	    System.err.println("ERROR: Could not create application's solver classes" );
+        System.err.println("ExaHyPE script failed " );
+        return;		  
+	  }
+        System.out.println("generate application-specific solver classes ... ok" );
+	    waitForInteraction(interactive);
+	} 
+	catch (Exception e) {
+	  System.out.println("ERROR: " + e.toString());
+	  System.err.println("ExaHyPE script failed " );
+	  return;
+	}
 	
 	// Create the kernel calls
 	try {
@@ -133,7 +153,6 @@ public class Main {
 	  System.err.println("ExaHyPE script failed " );
 	  return;
 	}
-	
 
 	//
 	// Setup build environment, i.e. makefiles

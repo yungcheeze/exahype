@@ -2,6 +2,7 @@ package eu.exahype;
 
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AProject;
+import eu.exahype.node.PSolver;
 
 public class GenerateKernelCalls  extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -10,10 +11,14 @@ public class GenerateKernelCalls  extends DepthFirstAdapter {
 
   private DirectoryAndPathChecker   _directoryAndPathChecker;
   
+  private int                       _kernelNumber;
+  
   public GenerateKernelCalls(DirectoryAndPathChecker  directoryAndPathChecker) {
 	_directoryAndPathChecker = directoryAndPathChecker;
+	_kernelNumber            = 0;
   }
 
+  @Override
   public void inAProject(AProject node) {
 	try {
       java.io.File logFile = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/KernelCalls.cpp");
@@ -27,21 +32,19 @@ public class GenerateKernelCalls  extends DepthFirstAdapter {
       _writer.write("//   www.exahype.eu\n");
       _writer.write("// ========================\n\n\n");
       
+      _writer.write("#include \"kernels/KernelCalls.h\"\n\n\n");
+      _writer.write("#include \"exahype/SolverDescription.h\"\n\n\n");
+
       if (node.getSolver().size()==0) { 
-        _writer.write("void initSolvers() {\n");
+        _writer.write("void kernels::initSolvers() {\n");
         _writer.write("}\n");
         _writer.write("\n");
         System.out.println( "no solvers specified - create empty kernel calls ... ok" );      
-
-        _writer.write("int getMinimumTreeDepth() {\n");
-        _writer.write("  return 4;\n");
-        _writer.write("}\n");
-        System.out.println("default spacetree depth set to 4 ... ok" );      
       }
       else {
     	  // @todo I need to know all the SolverDescriptions of this very project
     	  // loop in allen Funktionen ueber diese, bevor sie in initSolvers() aufgesetzt worden sind
-        _writer.write("#error should not work yet");
+        _writer.write("void kernels::initSolvers() {\n");
       }
 	} 
 	catch (Exception exc) {
@@ -50,9 +53,45 @@ public class GenerateKernelCalls  extends DepthFirstAdapter {
 	}
   }
 
+  @Override
+  public void inAAderdgSolver(eu.exahype.node.AAderdgSolver node) {
+	try {
+      String solverName = node.getName().toString().trim();
+      _writer.write("  exahype::SolverDescription::ExistingSolvers.push_back( exahype::SolverDescription(\"" + solverName + "\"," + _kernelNumber + ") ); \n");
+      
+      _kernelNumber++;
+      
+      System.out.println( "added creation of solver " + solverName + " ... ok" );      
+	} 
+	catch (Exception exc) {
+      System.err.println( "ERROR: " + exc.toString() );
+      valid = false;
+	}
+  };
 
+  @Override
   public void outAProject(AProject node) {
 	try {
+      if (node.getSolver().size()==0) { 
+          _writer.write("int kernels::getMinimumTreeDepth() {\n");
+          _writer.write("  return 4;\n");
+          _writer.write("}\n");
+          System.out.println("default spacetree depth set to 4 ... ok" );      
+      }
+      else {
+        _writer.write("}\n");
+        System.out.println( "configured all solver solvers ... ok" );      
+
+        _writer.write("\n\n");
+        _writer.write("int kernels::getMinimumTreeDepth() {\n");
+        _writer.write("  int result = std::numeric_limits<int>::max();\n");
+        _writer.write("  for (std::vector<exahype::SolverDescription>::const_iterator p=exahype::SolverDescription::ExistingSolvers.begin(); p!=exahype::SolverDescription::ExistingSolvers.end(): p++) \n");
+        _writer.write("    result = std::min(result,p->getMinimumTreeDepth()); \n");
+        _writer.write("  }\n");
+        _writer.write("  return result;\n");
+        _writer.write("}\n");
+        System.out.println("default spacetree depth set to 4 ... ok" );      
+      }
       _writer.close();
 	} 
 	catch (Exception exc) {
