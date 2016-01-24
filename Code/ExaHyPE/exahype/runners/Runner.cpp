@@ -18,7 +18,6 @@
 
 #include "sharedmemoryoracles/OracleForOnePhaseWithGrainSizeSampling.h"
 
-#include "exahype/Constants.h"
 
 tarch::logging::Log  exahype::runners::Runner::_log( "exahype::runners::Runner" );
 
@@ -121,12 +120,11 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   userInterface.writeHeader();
 
   // The space-tree is initialised with 1 coarse grid cell on level 1 and 3^d fine grid cells on level 2.
-  for (int coarseGridLevel=1; coarseGridLevel<EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL; coarseGridLevel++) {
-    repository.switchToInitialGrid();
-    do {
-      repository.iterate();
-    } while (!repository.getState().isGridBalanced());
-  }
+  repository.switchToInitialGrid();
+  do {
+    repository.iterate();
+  } while (!repository.getState().isGridBalanced());
+
   repository.switchToGridExport();                // export the grid
   repository.iterate();
 
