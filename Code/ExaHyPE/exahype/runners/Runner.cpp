@@ -125,6 +125,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     repository.iterate();
   } while (!repository.getState().isGridBalanced());
 
+  // @todo Das muss raus!
   repository.switchToGridExport();                // export the grid
   repository.iterate();
 
