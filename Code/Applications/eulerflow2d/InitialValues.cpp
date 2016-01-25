@@ -1,3 +1,4 @@
+/*
 #include "kernels/initialvalues/PDEInitialValues.h"
 
 #include <cmath>
@@ -11,3 +12,4 @@ void exahype::pde::PDEInitialValue2d(const double x,const double y,const int nva
   value[0] = 1.;
   value[4] = 1./(GAMMA-1) + std::exp(-((x-0.5)*(x-0.5) + (y-0.5)*(y-0.5))/(0.05*0.05)) * 1.0e-3;
 }
+*/

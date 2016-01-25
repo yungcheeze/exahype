@@ -14,7 +14,7 @@ namespace exahype {
   namespace solvers {
     class Solver;
 
-    extern std::vector<Solver> RegisteredSolvers;
+    extern std::vector<Solver*> RegisteredSolvers;
   }
 }
 
@@ -24,7 +24,7 @@ namespace exahype {
  * Describes one solver.
  */
 class exahype::solvers::Solver {
-  private:
+  protected:
     /**
      * Each solver has an identifier/name. It is used for debug purposes only.
      */

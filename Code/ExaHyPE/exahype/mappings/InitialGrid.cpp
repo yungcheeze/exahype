@@ -89,11 +89,11 @@ int exahype::mappings::InitialGrid::getMinimumTreeDepth( const tarch::la::Vector
   int result = 1;
 
   for (
-    std::vector<exahype::solvers::Solver>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
+    std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
     p != exahype::solvers::RegisteredSolvers.end();
     p++
   ) {
-    result = std::max( result, p->getMinimumTreeDepth(x) );
+    result = std::max( result, (*p)->getMinimumTreeDepth(x) );
   }
 
   return result;

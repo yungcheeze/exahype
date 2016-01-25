@@ -38,11 +38,22 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 	  headerWriter.write("// \n");
 	  headerWriter.write("// ========================\n");
 	  headerWriter.write("//   www.exahype.eu\n");
-	  headerWriter.write("// ========================\n\n\n");
+	  headerWriter.write("// ========================\n");
 
+	  headerWriter.write("\n\n\n");
+	  headerWriter.write("#include \"exahype/solvers/Solver.h\"");
+      headerWriter.write("\n\n\n");
+	  
 	  headerWriter.write("namespace " + _projectName + "{\n");
 	  headerWriter.write("  class " + solverName + ";\n");
 	  headerWriter.write("}\n\n\n");
+	  
+	  headerWriter.write("class " + _projectName + "::" + solverName + ": public exahype::solvers::Solver {\n");
+	  headerWriter.write("  public:\n");
+	  headerWriter.write("    " + solverName + "(int kernelNumber); \n");
+	  headerWriter.write("    virtual int getMinimumTreeDepth( const tarch::la::Vector<DIMENSIONS,double>&  x ) const;\n");
+	  headerWriter.write("};\n\n\n");
+
 	  
 	  headerWriter.close();
 
@@ -59,5 +70,32 @@ public class CreateSolverClasses extends DepthFirstAdapter {
   public void inAAderdgSolver(AAderdgSolver node) {
 	String solverName = node.getName().toString().trim();
 	writeHeader(solverName);
+
+	try {
+	  java.io.BufferedWriter cppWriter = new java.io.BufferedWriter(new java.io.FileWriter(
+		new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + ".cpp")
+	  ));
+	  
+      cppWriter.write("#include \"" + solverName + ".h\"\n");
+
+      cppWriter.write("\n\n\n");
+      cppWriter.write(_projectName + "::" + solverName + "::" + solverName + "( int kernelNumber):\n");
+      cppWriter.write("  exahype::solvers::Solver(\"" + solverName + "\",kernelNumber) {\n");
+      cppWriter.write("  // @todo Please implement/augment if required\n");
+      cppWriter.write("}\n");
+
+      cppWriter.write("\n\n\n");
+      cppWriter.write("int " + _projectName + "::" + solverName + "::getMinimumTreeDepth( const tarch::la::Vector<DIMENSIONS,double>&  x ) const {\n");
+      cppWriter.write("  // @todo Please implement\n");
+      cppWriter.write("  return 3;\n");
+      cppWriter.write("}\n");
+
+      cppWriter.close();
+      System.out.println( "create implementation template of solver " + solverName + " ... ok" );      
+    } 
+	catch (Exception exc) {
+      System.err.println( "ERROR: " + exc.toString() );
+	  valid = false;
+	}
   }
 }
