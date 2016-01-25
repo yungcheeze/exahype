@@ -827,10 +827,10 @@ void exahype::tests::TestCase::testRiemannSolver() {
     const double nx[3]= { 1., 0., 0. }; // normal vector in x direction
 
     // local:
-    double QavL[5];
-    double QavR[5];
-    double lambdaL[5];
-    double lambdaR[5];
+    double QavL[5]    __attribute__((aligned(ALIGNMENT)));
+    double QavR[5]    __attribute__((aligned(ALIGNMENT)));
+    double lambdaL[5] __attribute__((aligned(ALIGNMENT)));
+    double lambdaR[5] __attribute__((aligned(ALIGNMENT)));
 
     // output:
     double *FL = new double[20];
