@@ -47,7 +47,7 @@ class exahype::mappings::InitialGrid {
      */
     static tarch::logging::Log  _log;
 
-    int getMinimumTreeDepth( const tarch::la::Vector<DIMENSIONS,double>&  x );
+    int getMinimumTreeDepth();
   public:
     /**
      * These flags are used to inform Peano about your operation. It tells the 

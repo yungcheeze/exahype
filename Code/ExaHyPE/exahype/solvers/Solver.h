@@ -42,21 +42,9 @@ class exahype::solvers::Solver {
      * Identify minimal mesh width at a certain point in the domain. This
      * minimal mesh width is used both as a constraint on the AMR as well
      * as to set up the initial grid. If you return 0, you indicate that
-     * this PDE might not exist in a particular part of the domain. Please
-     * note that in each location of the domain at least one PDE has to
-     * exist.
+     * this PDE might not exist in the domain.
      */
-    virtual int getMinimumTreeDepth( const tarch::la::Vector<DIMENSIONS,double>&  x ) const = 0;
-    /*        _writer.write("int kernels::getMinimumTreeDepth() {\n");
-            _writer.write("  int result = std::numeric_limits<int>::max();\n");
-            _writer.write("  for (std::vector<exahype::SolverDescription>::const_iterator p=exahype::SolverDescription::ExistingSolvers.begin(); p!=exahype::SolverDescription::ExistingSolvers.end(): p++) \n");
-            _writer.write("    result = std::min(result,p->getMinimumTreeDepth()); \n");
-            _writer.write("  }\n");
-            _writer.write("  return result;\n");
-            _writer.write("}\n");
-     */
-
-//    kernelIdentifier
+    virtual int getMinimumTreeDepth() const = 0;
 };
 
 #endif

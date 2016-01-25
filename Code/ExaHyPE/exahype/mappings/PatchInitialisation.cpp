@@ -156,11 +156,6 @@ void exahype::mappings::PatchInitialisation::createCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "createCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-
-  fineGridCell.initCellWithDefaultValues();
-
-  logTraceOutWith1Argument( "createCell(...)", fineGridCell );
 }
 
 
@@ -362,24 +357,12 @@ void exahype::mappings::PatchInitialisation::enterCell(
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
   logDebug("enterCell(...)","before initialising ADERDGCellDescription: " << "cell is refined: " << fineGridCell.isRefined());
 
-  // @todo Tobias Weinzierl
-  // Delegate to solver-specific code fragments
+  fineGridCell.init(
+    fineGridVerticesEnumerator.getLevel(),
+    fineGridVerticesEnumerator.getCellSize(),
+    fineGridVerticesEnumerator.getCellCenter()
+  );
 
-/*
-  // ! Begin of code for multiscalelinkedcell toolbox and DG method
-  if (!fineGridCell.isRefined()) {      // We only want to initialize ADERDGCellDescriptions on the initial fine grid
-    logDebug("enterCell(...)","initialising ADERDGCellDescription: " << "fine grid level: " << fineGridVerticesEnumerator.getLevel() << ", fine grid position of cell: " << fineGridPositionOfCell);
-
-    fineGridCell.initCellInComputeTree(
-          fineGridVerticesEnumerator.getLevel(),
-          fineGridVerticesEnumerator.getCellSize(),
-          EXAHYPE_NPROBLEMS,
-          EXAHYPE_ORDER,
-          EXAHYPE_NVARS);
-  }
-*/
-
-  // ! End of code for multiscalelinkedcell toolbox and DG method
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
 
