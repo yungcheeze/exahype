@@ -21,14 +21,7 @@ exahype-project  Euler2d
     offset                   = 0.0, 0.0
     end-time                 = 0.1
   end computational-domain
-    
-    
-  plot vtk::binary
-    time                     = 0.0
-    repeat                   = off
-    filename                 = ./grid
-  end plot
-
+ 
   
   solver ADER-DG MyEuler2d
     variables = 5
