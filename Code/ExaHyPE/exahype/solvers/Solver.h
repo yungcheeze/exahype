@@ -24,6 +24,15 @@ namespace exahype {
  * Describes one solver.
  */
 class exahype::solvers::Solver {
+  public:
+    struct Plot {
+      int          variable;
+      double       nextSnapshot;
+      bool         repeat;
+      std::string  filename;
+
+      Plot( int variable_, double nextSnapshot_, bool repeat_, const std::string& filename_);
+    };
   protected:
     /**
      * Each solver has an identifier/name. It is used for debug purposes only.
