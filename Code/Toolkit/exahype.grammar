@@ -97,12 +97,11 @@ Productions
       [begin_token]:token_project [name]:identifier 
         paths
         computational_domain
-        plot_grid_list?
         solver_list?
         shared_memory?
         optimisation?
       token_end [end_token]:token_project
-        { -> New project( name, paths.paths, computational_domain.computational_domain, [plot_grid_list.plot_grid], [solver_list.solver], optimisation.optimisation, shared_memory.shared_memory ) }
+        { -> New project( name, paths.paths, computational_domain.computational_domain, [solver_list.solver], optimisation.optimisation, shared_memory.shared_memory ) }
     ;    
 
   paths {->paths} =
@@ -147,16 +146,6 @@ Productions
         { -> New optimisation(fuse_algorithm_steps) }
       ;
 
-   plot_grid_list {->plot_grid*} = 
-     [begin_token]:token_plot [plotter_type]:typename 
-       token_time      [time_equals]:token_equals     [time]:float_number 
-       token_repeat    [repeat_equals]:token_equals   [repeat]:token_on_off 
-       token_filename  [filename_equals]:token_equals filename
-     token_end [end_token]:token_plot
-     plot_grid_list?
-       { -> [New plot_grid(plotter_type,time,repeat,filename),plot_grid_list.plot_grid] }
-     ;
-
    plot_solution_list {->plot_solution*} = 
      [begin_token]:token_plot [plotter_type]:typename 
        token_variable  [variable_equals]:token_equals [variable]:int_number 
@@ -186,7 +175,6 @@ Abstract Syntax Tree
      [name]:identifier 
      paths
      computational_domain
-     plot_grid*
      solver*
      optimisation?
      shared_memory?    
@@ -209,9 +197,6 @@ Abstract Syntax Tree
    solver = 
      {aderdg} [name]:identifier [variables]:int_number [order]:int_number [kernel]:typename plot_solution*
      ;
-     
-   plot_grid = 
-     [plotter_type]:typename [time]:float_number [repeat]:token_on_off filename;
 
    plot_solution = 
      [plotter_type]:typename [variable]:int_number [time]:float_number [repeat]:token_on_off filename;
