@@ -51,7 +51,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 	  headerWriter.write("class " + _projectName + "::" + solverName + ": public exahype::solvers::Solver {\n");
 	  headerWriter.write("  public:\n");
 	  headerWriter.write("    " + solverName + "(int kernelNumber); \n");
-	  headerWriter.write("    virtual int getMinimumTreeDepth( const tarch::la::Vector<DIMENSIONS,double>&  x ) const;\n");
+	  headerWriter.write("    virtual int getMinimumTreeDepth() const;\n");
 	  headerWriter.write("};\n\n\n");
 
 	  
@@ -85,13 +85,13 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       cppWriter.write("}\n");
 
       cppWriter.write("\n\n\n");
-      cppWriter.write("int " + _projectName + "::" + solverName + "::getMinimumTreeDepth( const tarch::la::Vector<DIMENSIONS,double>&  x ) const {\n");
+      cppWriter.write("int " + _projectName + "::" + solverName + "::getMinimumTreeDepth() const {\n");
       cppWriter.write("  // @todo Please implement\n");
       cppWriter.write("  return 3;\n");
       cppWriter.write("}\n");
 
       cppWriter.close();
-      System.out.println( "create implementation template of solver " + solverName + " ... ok" );      
+      System.out.println( "create implementation template of solver " + solverName + " ... please implement dummy operations in cpp file" );      
     } 
 	catch (Exception exc) {
       System.err.println( "ERROR: " + exc.toString() );
