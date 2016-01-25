@@ -5,7 +5,6 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/Constants.h"
 #include "exahype/aderdg/ADERDG.h"
 
 
@@ -364,6 +363,9 @@ void exahype::mappings::SurfaceIntegral::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
+/*
   // ! Begin of code for the DG method.
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
@@ -371,7 +373,7 @@ void exahype::mappings::SurfaceIntegral::enterCell(
 
     // todo DEC: I wonder if this works since _values is a private array member of Vector. Probably not. It
     // is probably better to pass Vector<DIMENSION,doubles> to the kernel functions.
-    const double * const size   = &fineGridVerticesEnumerator.getCellSize()[0];
+    const double size  [2] = { fineGridVerticesEnumerator.getCellSize()  [0], fineGridVerticesEnumerator.getCellSize()  [1]};
 
     const int basisSize       = EXAHYPE_ORDER+1;
     const int nvar            = EXAHYPE_NVARS;
@@ -399,6 +401,7 @@ void exahype::mappings::SurfaceIntegral::enterCell(
         lFhFront,
         lFhBack);
   }
+*/
 
 logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }

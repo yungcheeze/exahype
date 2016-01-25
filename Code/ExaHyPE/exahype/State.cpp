@@ -8,15 +8,15 @@
 
 exahype::State::State():
   Base() { 
-  _stateData.setTimeStepSize(std::numeric_limits<double>::max());
-  _stateData.setOldTimeStepSize(std::numeric_limits<double>::max());
+  _stateData.setMaxTimeStepSize(std::numeric_limits<double>::max());
+  _stateData.setOldMaxTimeStepSize(std::numeric_limits<double>::max());
 }
 
 
 exahype::State::State(const Base::PersistentState& argument):
   Base(argument) {
-  // do nothing
 }
+
 
 void exahype::State::writeToCheckpoint( peano::grid::Checkpoint<exahype::Vertex,exahype::Cell>& checkpoint ) const {
   // do nothing
@@ -27,27 +27,39 @@ void exahype::State::readFromCheckpoint( const peano::grid::Checkpoint<exahype::
   // do nothing
 }
 
-void exahype::State::setTimeStepSizeToMaxValue() {
-  _stateData.setTimeStepSize(std::numeric_limits<double>::max());
-}
 
-void exahype::State::setTimeStepSize(const double newTimeStepSize) {
-  _stateData.setTimeStepSize(newTimeStepSize);
-}
-
-double exahype::State::getTimeStepSize() const {
-  return _stateData.getTimeStepSize();
-}
-
-void exahype::State::setOldTimeStepSize(const double newOldTimeStepSize) {
-  _stateData.setOldTimeStepSize(newOldTimeStepSize);
-}
-
-double exahype::State::getOldTimeStepSize() const {
-  return _stateData.getOldTimeStepSize();
+void exahype::State::startNewTimeStep() {
+  _stateData.setOldMaxTimeStepSize(_stateData.getMaxTimeStepSize());
+  _stateData.setMinTimeStamp(std::numeric_limits<double>::max());
 }
 
 
-void exahype::State::setMinimumTimeStepSizeOfBoth(exahype::State anotherState) {
-  _stateData.setTimeStepSize(std::min(_stateData.getTimeStepSize(),anotherState.getTimeStepSize()));
+void exahype::State::resetAccumulatedValues() {
+  _stateData.setMaxTimeStepSize(std::numeric_limits<double>::max());
+}
+
+
+void exahype::State::updateMaxTimeStepSize(const double timeStepSize) {
+  _stateData.setMaxTimeStepSize( std::min(_stateData.getMaxTimeStepSize(),timeStepSize) );
+}
+
+
+void exahype::State::updateTimeStamp(const double timeStamp) {
+  _stateData.setMinTimeStamp( std::min(_stateData.getMinTimeStamp(),timeStamp) );
+}
+
+
+double exahype::State::getMaxTimeStepSize() const {
+  return _stateData.getOldMaxTimeStepSize();
+}
+
+
+void exahype::State::merge(const exahype::State& anotherState) {
+  _stateData.setMaxTimeStepSize(std::min(_stateData.getMaxTimeStepSize(),anotherState._stateData.getMaxTimeStepSize()));
+  _stateData.setMinTimeStamp(std::min(_stateData.getMinTimeStamp(),anotherState._stateData.getMinTimeStamp()));
+}
+
+
+double exahype::State::getMinimalGlobalTimeStamp() const {
+  return _stateData.getMinTimeStamp();
 }

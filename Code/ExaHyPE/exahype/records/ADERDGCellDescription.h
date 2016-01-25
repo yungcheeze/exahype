@@ -32,7 +32,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   18/01/2016 13:32
+ * @date   24/01/2016 09:43
  */
 class exahype::records::ADERDGCellDescription { 
    
@@ -41,6 +41,13 @@ class exahype::records::ADERDGCellDescription {
       typedef exahype::records::ADERDGCellDescriptionPacked Packed;
       
       struct PersistentRecords {
+         bool _isParent;
+         bool _isVirtual;
+         #ifdef UseManualAlignment
+         std::bitset<TWO_POWER_D> _riemannSolvePerformed __attribute__((aligned(VectorisationAlignment)));
+         #else
+         std::bitset<TWO_POWER_D> _riemannSolvePerformed;
+         #endif
          int _spaceTimePredictor;
          int _spaceTimeVolumeFlux;
          int _solution;
@@ -60,6 +67,7 @@ class exahype::records::ADERDGCellDescription {
          #else
          tarch::la::Vector<DIMENSIONS,double> _size;
          #endif
+         double _timeStamp;
          /**
           * Generated
           */
@@ -68,7 +76,105 @@ class exahype::records::ADERDGCellDescription {
          /**
           * Generated
           */
-         PersistentRecords(const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+         PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp);
+         
+         
+         inline bool getIsParent() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _isParent;
+         }
+         
+         
+         
+         inline void setIsParent(const bool& isParent) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _isParent = isParent;
+         }
+         
+         
+         
+         inline bool getIsVirtual() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _isVirtual;
+         }
+         
+         
+         
+         inline void setIsVirtual(const bool& isVirtual) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _isVirtual = isVirtual;
+         }
+         
+         
+         
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline std::bitset<TWO_POWER_D> getRiemannSolvePerformed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _riemannSolvePerformed;
+         }
+         
+         
+         
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline void setRiemannSolvePerformed(const std::bitset<TWO_POWER_D>& riemannSolvePerformed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _riemannSolvePerformed = (riemannSolvePerformed);
+         }
+         
          
          
          inline int getSpaceTimePredictor() const 
@@ -367,6 +473,26 @@ class exahype::records::ADERDGCellDescription {
          
          
          
+         inline double getTimeStamp() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _timeStamp;
+         }
+         
+         
+         
+         inline void setTimeStamp(const double& timeStamp) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _timeStamp = timeStamp;
+         }
+         
+         
+         
       };
       
    private: 
@@ -386,12 +512,148 @@ class exahype::records::ADERDGCellDescription {
       /**
        * Generated
        */
-      ADERDGCellDescription(const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+      ADERDGCellDescription(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp);
       
       /**
        * Generated
        */
       ~ADERDGCellDescription();
+      
+      
+      inline bool getIsParent() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         return _persistentRecords._isParent;
+      }
+      
+      
+      
+      inline void setIsParent(const bool& isParent) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         _persistentRecords._isParent = isParent;
+      }
+      
+      
+      
+      inline bool getIsVirtual() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         return _persistentRecords._isVirtual;
+      }
+      
+      
+      
+      inline void setIsVirtual(const bool& isVirtual) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         _persistentRecords._isVirtual = isVirtual;
+      }
+      
+      
+      
+      /**
+       * Generated and optimized
+       * 
+       * If you realise a for loop using exclusively arrays (vectors) and compile 
+       * with -DUseManualAlignment you may add 
+       * \code
+       #pragma vector aligned
+       #pragma simd
+       \endcode to this for loop to enforce your compiler to use SSE/AVX.
+       * 
+       * The alignment is tied to the unpacked records, i.e. for packed class
+       * variants the machine's natural alignment is switched off to recude the  
+       * memory footprint. Do not use any SSE/AVX operations or 
+       * vectorisation on the result for the packed variants, as the data is misaligned. 
+       * If you rely on vectorisation, convert the underlying record 
+       * into the unpacked version first. 
+       * 
+       * @see convert()
+       */
+      inline std::bitset<TWO_POWER_D> getRiemannSolvePerformed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         return _persistentRecords._riemannSolvePerformed;
+      }
+      
+      
+      
+      /**
+       * Generated and optimized
+       * 
+       * If you realise a for loop using exclusively arrays (vectors) and compile 
+       * with -DUseManualAlignment you may add 
+       * \code
+       #pragma vector aligned
+       #pragma simd
+       \endcode to this for loop to enforce your compiler to use SSE/AVX.
+       * 
+       * The alignment is tied to the unpacked records, i.e. for packed class
+       * variants the machine's natural alignment is switched off to recude the  
+       * memory footprint. Do not use any SSE/AVX operations or 
+       * vectorisation on the result for the packed variants, as the data is misaligned. 
+       * If you rely on vectorisation, convert the underlying record 
+       * into the unpacked version first. 
+       * 
+       * @see convert()
+       */
+      inline void setRiemannSolvePerformed(const std::bitset<TWO_POWER_D>& riemannSolvePerformed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         _persistentRecords._riemannSolvePerformed = (riemannSolvePerformed);
+      }
+      
+      
+      
+      inline bool getRiemannSolvePerformed(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         assertion(elementIndex>=0);
+         assertion(elementIndex<TWO_POWER_D);
+         return _persistentRecords._riemannSolvePerformed[elementIndex];
+         
+      }
+      
+      
+      
+      inline void setRiemannSolvePerformed(int elementIndex, const bool& riemannSolvePerformed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         assertion(elementIndex>=0);
+         assertion(elementIndex<TWO_POWER_D);
+         _persistentRecords._riemannSolvePerformed[elementIndex]= riemannSolvePerformed;
+         
+      }
+      
+      
+      
+      inline void flipRiemannSolvePerformed(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         assertion(elementIndex>=0);
+         assertion(elementIndex<TWO_POWER_D);
+         _persistentRecords._riemannSolvePerformed.flip(elementIndex);
+      }
+      
       
       
       inline int getSpaceTimePredictor() const 
@@ -741,6 +1003,26 @@ class exahype::records::ADERDGCellDescription {
       }
       
       
+      
+      inline double getTimeStamp() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         return _persistentRecords._timeStamp;
+      }
+      
+      
+      
+      inline void setTimeStamp(const double& timeStamp) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         _persistentRecords._timeStamp = timeStamp;
+      }
+      
+      
       /**
        * Generated
        */
@@ -814,13 +1096,16 @@ class exahype::records::ADERDGCellDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   18/01/2016 13:32
+          * @date   24/01/2016 09:43
           */
          class exahype::records::ADERDGCellDescriptionPacked { 
             
             public:
                
                struct PersistentRecords {
+                  bool _isParent;
+                  bool _isVirtual;
+                  std::bitset<TWO_POWER_D> _riemannSolvePerformed;
                   int _spaceTimePredictor;
                   int _spaceTimeVolumeFlux;
                   int _solution;
@@ -832,6 +1117,7 @@ class exahype::records::ADERDGCellDescription {
                   int _level;
                   tarch::la::Vector<DIMENSIONS,double> _offset;
                   tarch::la::Vector<DIMENSIONS,double> _size;
+                  double _timeStamp;
                   /**
                    * Generated
                    */
@@ -840,7 +1126,105 @@ class exahype::records::ADERDGCellDescription {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+                  PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp);
+                  
+                  
+                  inline bool getIsParent() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _isParent;
+                  }
+                  
+                  
+                  
+                  inline void setIsParent(const bool& isParent) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _isParent = isParent;
+                  }
+                  
+                  
+                  
+                  inline bool getIsVirtual() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _isVirtual;
+                  }
+                  
+                  
+                  
+                  inline void setIsVirtual(const bool& isVirtual) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _isVirtual = isVirtual;
+                  }
+                  
+                  
+                  
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline std::bitset<TWO_POWER_D> getRiemannSolvePerformed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _riemannSolvePerformed;
+                  }
+                  
+                  
+                  
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline void setRiemannSolvePerformed(const std::bitset<TWO_POWER_D>& riemannSolvePerformed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _riemannSolvePerformed = (riemannSolvePerformed);
+                  }
+                  
                   
                   
                   inline int getSpaceTimePredictor() const 
@@ -1139,6 +1523,26 @@ class exahype::records::ADERDGCellDescription {
                   
                   
                   
+                  inline double getTimeStamp() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _timeStamp;
+                  }
+                  
+                  
+                  
+                  inline void setTimeStamp(const double& timeStamp) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _timeStamp = timeStamp;
+                  }
+                  
+                  
+                  
                };
                
             private: 
@@ -1158,12 +1562,148 @@ class exahype::records::ADERDGCellDescription {
                /**
                 * Generated
                 */
-               ADERDGCellDescriptionPacked(const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+               ADERDGCellDescriptionPacked(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp);
                
                /**
                 * Generated
                 */
                ~ADERDGCellDescriptionPacked();
+               
+               
+               inline bool getIsParent() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._isParent;
+               }
+               
+               
+               
+               inline void setIsParent(const bool& isParent) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._isParent = isParent;
+               }
+               
+               
+               
+               inline bool getIsVirtual() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._isVirtual;
+               }
+               
+               
+               
+               inline void setIsVirtual(const bool& isVirtual) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._isVirtual = isVirtual;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline std::bitset<TWO_POWER_D> getRiemannSolvePerformed() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._riemannSolvePerformed;
+               }
+               
+               
+               
+               /**
+                * Generated and optimized
+                * 
+                * If you realise a for loop using exclusively arrays (vectors) and compile 
+                * with -DUseManualAlignment you may add 
+                * \code
+                #pragma vector aligned
+                #pragma simd
+                \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                * 
+                * The alignment is tied to the unpacked records, i.e. for packed class
+                * variants the machine's natural alignment is switched off to recude the  
+                * memory footprint. Do not use any SSE/AVX operations or 
+                * vectorisation on the result for the packed variants, as the data is misaligned. 
+                * If you rely on vectorisation, convert the underlying record 
+                * into the unpacked version first. 
+                * 
+                * @see convert()
+                */
+               inline void setRiemannSolvePerformed(const std::bitset<TWO_POWER_D>& riemannSolvePerformed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._riemannSolvePerformed = (riemannSolvePerformed);
+               }
+               
+               
+               
+               inline bool getRiemannSolvePerformed(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<TWO_POWER_D);
+                  return _persistentRecords._riemannSolvePerformed[elementIndex];
+                  
+               }
+               
+               
+               
+               inline void setRiemannSolvePerformed(int elementIndex, const bool& riemannSolvePerformed) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<TWO_POWER_D);
+                  _persistentRecords._riemannSolvePerformed[elementIndex]= riemannSolvePerformed;
+                  
+               }
+               
+               
+               
+               inline void flipRiemannSolvePerformed(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  assertion(elementIndex>=0);
+                  assertion(elementIndex<TWO_POWER_D);
+                  _persistentRecords._riemannSolvePerformed.flip(elementIndex);
+               }
+               
                
                
                inline int getSpaceTimePredictor() const 
@@ -1510,6 +2050,26 @@ class exahype::records::ADERDGCellDescription {
                   assertion(elementIndex<DIMENSIONS);
                   _persistentRecords._size[elementIndex]= size;
                   
+               }
+               
+               
+               
+               inline double getTimeStamp() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._timeStamp;
+               }
+               
+               
+               
+               inline void setTimeStamp(const double& timeStamp) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._timeStamp = timeStamp;
                }
                
                

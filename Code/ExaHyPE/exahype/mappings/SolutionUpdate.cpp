@@ -2,7 +2,6 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/Constants.h"
 #include "exahype/aderdg/ADERDG.h"
 
 /**
@@ -363,31 +362,34 @@ void exahype::mappings::SolutionUpdate::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
+/*
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
         ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-    const double                               dx     = fineGridVerticesEnumerator.getCellSize()(0);
-    const double                               dy     = fineGridVerticesEnumerator.getCellSize()(1);
-
-    const double dxPatch[2] = { dx/ (double) EXAHYPE_PATCH_SIZE_X,
-        dy/ (double) EXAHYPE_PATCH_SIZE_Y };
+    const double size  [2] = { fineGridVerticesEnumerator.getCellSize()  [0], fineGridVerticesEnumerator.getCellSize()  [1]};
 
     const int basisSize       = EXAHYPE_ORDER+1;
     const int nvar            = EXAHYPE_NVARS;
 
-    double* luhOld = &(DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u);
-    double* lduh   = &(DataHeap::getInstance().getData(cellDescription.getUpdate())  [0]._persistentRecords._u);
+    double * luhOld = &(DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u);
+    double * lduh   = &(DataHeap::getInstance().getData(cellDescription.getUpdate())  [0]._persistentRecords._u);
 
     aderdg::solutionUpdate<DIMENSIONS>(
         luhOld,
         lduh,
-        dxPatch,
-        _localState.getOldTimeStepSize(),
+        size,
+        _localState.getMaxTimeStepSize(),
         nvar,
         basisSize);
+
+    const double newTimeStamp = cellDescription.getTimeStamp() + _localState.getMaxTimeStepSize();
+    cellDescription.setTimeStamp( newTimeStamp );
+    _localState.updateTimeStamp( newTimeStamp );
   }
+*/
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
@@ -411,7 +413,7 @@ void exahype::mappings::SolutionUpdate::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  _localState.setOldTimeStepSize(solverState.getOldTimeStepSize());
+  _localState = solverState;
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
@@ -420,7 +422,7 @@ void exahype::mappings::SolutionUpdate::beginIteration(
 void exahype::mappings::SolutionUpdate::endIteration(
     exahype::State&  solverState
 ) {
-  // do nothing
+  solverState.merge(_localState);
 }
 
 
@@ -446,8 +448,4 @@ void exahype::mappings::SolutionUpdate::ascend(
     exahype::Cell&           coarseGridCell
 ) {
   // do nothing
-}
-
-const exahype::State& exahype::mappings::SolutionUpdate::getState() const {
-  return _localState;
 }

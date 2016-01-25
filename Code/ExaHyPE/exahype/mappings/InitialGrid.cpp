@@ -2,7 +2,9 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/Constants.h"
+#include "kernels/KernelCalls.h"
+#include "exahype/solvers/Solver.h"
+
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -12,49 +14,21 @@ peano::CommunicationSpecification   exahype::mappings::InitialGrid::communicatio
 }
 
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::InitialGrid::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::InitialGrid::touchVertexFirstTimeSpecification() { 
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::InitialGrid::enterCellSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::InitialGrid::leaveCellSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::InitialGrid::ascendSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::InitialGrid::descendSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
@@ -111,6 +85,21 @@ void exahype::mappings::InitialGrid::destroyHangingVertex(
 }
 
 
+int exahype::mappings::InitialGrid::getMinimumTreeDepth( const tarch::la::Vector<DIMENSIONS,double>&  x ) {
+  int result = 1;
+
+  for (
+    std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
+    p != exahype::solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    result = std::max( result, (*p)->getMinimumTreeDepth(x) );
+  }
+
+  return result;
+}
+
+
 void exahype::mappings::InitialGrid::createInnerVertex(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
@@ -121,15 +110,15 @@ void exahype::mappings::InitialGrid::createInnerVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // ! Begin of code for DG method
+
   if (
-      coarseGridVerticesEnumerator.getLevel() < EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL-1
-      &&
-      fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined
+      coarseGridVerticesEnumerator.getLevel() < getMinimumTreeDepth(fineGridX)
+      //&&
+      //fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined
   ) {
     fineGridVertex.refine();
   }
-  // ! End of code for DG method
+
   logTraceOutWith1Argument( "createInnerVertex(...)", fineGridVertex );
 }
 
@@ -144,15 +133,15 @@ void exahype::mappings::InitialGrid::createBoundaryVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // ! Begin of code for DG method
+
   if (
-      coarseGridVerticesEnumerator.getLevel() < EXAHYPE_INITIAL_GLOBAL_REFINEMENT_LEVEL-1
-      &&
-      fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined
+      coarseGridVerticesEnumerator.getLevel() < getMinimumTreeDepth(fineGridX)
+      //&&
+      //fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined
   ) {
     fineGridVertex.refine();
   }
-  // ! End of code for DG method
+
   logTraceOutWith1Argument( "createBoundaryVertex(...)", fineGridVertex );
 }
 

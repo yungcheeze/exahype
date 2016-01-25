@@ -5,8 +5,8 @@
 // this file and your project to your needs as long as the license is in 
 // agreement with the original Peano user constraints. A reference to/citation  
 // of  Peano and its author is highly appreciated.
-#ifndef EXAHYPE_MAPPINGS_PatchInit_H_
-#define EXAHYPE_MAPPINGS_PatchInit_H_
+#ifndef EXAHYPE_MAPPINGS_RiemannSolverReset_H_
+#define EXAHYPE_MAPPINGS_RiemannSolverReset_H_
 
 
 #include "tarch/logging/Log.h"
@@ -25,7 +25,7 @@
 
 namespace exahype {
       namespace mappings {
-        class PatchInit;
+        class RiemannSolverReset;
       } 
 }
 
@@ -37,7 +37,7 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::mappings::PatchInit {
+class exahype::mappings::RiemannSolverReset {
   private:
     /**
      * Logging device for the trace macros.
@@ -93,7 +93,7 @@ class exahype::mappings::PatchInit {
      * that your code works on a parallel machine and for any mapping/algorithm 
      * modification.
      */
-    PatchInit();
+    RiemannSolverReset();
 
     #if defined(SharedMemoryParallelisation)
     /**
@@ -106,13 +106,13 @@ class exahype::mappings::PatchInit {
      *
      * @see mergeWithWorkerThread()
      */
-    PatchInit(const PatchInit& masterThread);
+    RiemannSolverReset(const RiemannSolverReset& masterThread);
     #endif
 
     /**
      * Destructor. Typically does not implement any operation.
      */
-    virtual ~PatchInit();
+    virtual ~RiemannSolverReset();
   
     #if defined(SharedMemoryParallelisation)
     /**
@@ -143,7 +143,7 @@ class exahype::mappings::PatchInit {
      * on the heap. However, you should protect this object by a BooleanSemaphore 
      * and a lock to serialise all accesses to the plotter.    
      */   
-    void mergeWithWorkerThread(const PatchInit& workerThread);
+    void mergeWithWorkerThread(const RiemannSolverReset& workerThread);
     #endif
 
     /**
@@ -1138,7 +1138,7 @@ class exahype::mappings::PatchInit {
      * beginIteration() might not be called prior to any other event. See the 
      * documentation of CommunicationSpecification for details.
      *
-     * @see PatchInit()
+     * @see RiemannSolverReset()
      */
     void beginIteration(
       exahype::State&  solverState
@@ -1171,7 +1171,7 @@ class exahype::mappings::PatchInit {
      * might not be called after all other events. See the documentation 
      * of CommunicationSpecification for details.
      *
-     * @see PatchInit()
+     * @see RiemannSolverReset()
      */
     void endIteration(
       exahype::State&  solverState

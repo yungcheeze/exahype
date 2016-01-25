@@ -2,7 +2,6 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/Constants.h"
 #include "exahype/aderdg/ADERDG.h"
 
 /**
@@ -367,17 +366,16 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
+
+/*
   // ! Begin of code for the DG method.
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
         ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-    const tarch::la::Vector<DIMENSIONS,double> center = fineGridVerticesEnumerator.getCellCenter();  // the center of the cell
-    const double dx = fineGridVerticesEnumerator.getCellSize()(0);
-    const double dy = fineGridVerticesEnumerator.getCellSize()(1);
-
-    const double dxPatch[DIMENSIONS] = { dx/ (double) EXAHYPE_PATCH_SIZE_X,
-        dy/ (double) EXAHYPE_PATCH_SIZE_Y };
+    const double size  [2] = { fineGridVerticesEnumerator.getCellSize()  [0], fineGridVerticesEnumerator.getCellSize()  [1]};
 
     constexpr int basisSize = EXAHYPE_ORDER+1;
     constexpr int nvar      = EXAHYPE_NVARS;
@@ -412,14 +410,15 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
         rhs0,
         rhs,
         tmp,
-        dxPatch,
-        _localState.getTimeStepSize());
+        size,
+        _localState.getMaxTimeStepSize());
 
     // clean up
     free(rhs0);
     free(rhs);
     free(tmp);
   }
+*/
 
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
@@ -433,7 +432,7 @@ void exahype::mappings::SpaceTimePredictor::leaveCell(
     exahype::Vertex * const  coarseGridVertices,
     const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
     exahype::Cell&           coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
+    const tarch::la::Vector<DIMENSIONS,int>&     fineGridPositionOfCell
 ) {
   // do nothing
 }
@@ -444,7 +443,7 @@ void exahype::mappings::SpaceTimePredictor::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  _localState.setTimeStepSize(solverState.getTimeStepSize());
+  _localState = solverState;
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }

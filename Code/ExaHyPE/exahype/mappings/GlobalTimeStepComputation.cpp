@@ -2,7 +2,6 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/Constants.h"
 #include "exahype/aderdg/ADERDG.h"
 
 /**
@@ -78,17 +77,17 @@ exahype::mappings::GlobalTimeStepComputation::~GlobalTimeStepComputation() {
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const GlobalTimeStepComputation&  masterThread)
-  :
-  _localState() // initialises the old and current time step size to max double value
+exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const GlobalTimeStepComputation&  masterThread):
+  _localState(masterThread._localState)
 {
-  _localState.setTimeStepSizeToMaxValue();
+  _localState.resetAccumulatedValues();
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(const GlobalTimeStepComputation& workerThread) {
   logTraceIn( "mergeWithWorkerThread(GlobalTimeStepComputation)" );
 
+  solverState.merge(_localState);
   _localState.setMinimumTimeStepSizeOfBoth(workerThread.getState());
 
   logTraceOut( "mergeWithWorkerThread(GlobalTimeStepComputation)" );
@@ -370,31 +369,33 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
+
+/*
   // ! Begin of code for the DG method.
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
         ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-    const double * size = &fineGridVerticesEnumerator.getCellSize()[0];
+    const double size  [2] = { fineGridVerticesEnumerator.getCellSize()  [0], fineGridVerticesEnumerator.getCellSize()  [1]};
 
     const int basisSize       = EXAHYPE_ORDER+1;
     const int nvar            = EXAHYPE_NVARS;
-    const int numberOfDof     = nvar * tarch::la::aPowI(DIMENSIONS,basisSize);
-    const int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
     double* luh = &(DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u);
     double lambda[EXAHYPE_NVARS];
 
-    double admissiblePatchTimeStep = aderdg::stableTimeStepSize<DIMENSIONS>(
+    double admissibleTimeStepSize = aderdg::stableTimeStepSize<DIMENSIONS>(
         luh,
         size,
         lambda,
         nvar,
         basisSize);
 
-    _localState.setTimeStepSize(std::min(_localState.getTimeStepSize(),admissiblePatchTimeStep));
+    _localState.updateMaxTimeStepSize(admissibleTimeStepSize);
   }
-
+*/
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
@@ -418,9 +419,7 @@ void exahype::mappings::GlobalTimeStepComputation::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  // is done once per MPI rank
-  solverState.setOldTimeStepSize(solverState.getTimeStepSize());
-  solverState.setTimeStepSizeToMaxValue();
+  _localState = solverState;
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
@@ -431,9 +430,7 @@ void exahype::mappings::GlobalTimeStepComputation::endIteration(
 ) {
   logTraceInWith1Argument( "endIteration(State)", solverState );
 
-  logInfo("endIteration(...)","local time step size: " << _localState.getTimeStepSize())
-
-  solverState.setMinimumTimeStepSizeOfBoth(_localState);
+  solverState.merge(_localState);
 
   logTraceOutWith1Argument( "endIteration(State)", solverState);
 }

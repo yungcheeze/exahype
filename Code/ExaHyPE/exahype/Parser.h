@@ -55,6 +55,10 @@ class exahype::Parser {
     std::string getMulticorePropertiesFile() const;
 
     MulticoreOracleType getMulticoreOracleType() const;
+
+    double getSimulationEndTime() const;
+
+    bool fuseAlgorithmicSteps() const;
 };
 
 #endif

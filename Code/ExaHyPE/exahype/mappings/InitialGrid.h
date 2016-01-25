@@ -46,6 +46,8 @@ class exahype::mappings::InitialGrid {
      * Logging device for the trace macros.
      */
     static tarch::logging::Log  _log;
+
+    int getMinimumTreeDepth( const tarch::la::Vector<DIMENSIONS,double>&  x );
   public:
     /**
      * These flags are used to inform Peano about your operation. It tells the 

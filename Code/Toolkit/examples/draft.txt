@@ -1,3 +1,17 @@
+
+      
+  snapshot Grid
+    identifier               = vtk-grid
+    time                     = 0.1
+    reoccurs                 = off
+  end snapshot
+
+
+
+
+
+
+
 INCLUDE res/source1.exa ! defines Source1 
 INCLUDE res/source2.exa ! defines Source2 .
 INCLUDE ref_crit_1.exa  ! ...

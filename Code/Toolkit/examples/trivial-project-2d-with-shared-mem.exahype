@@ -14,17 +14,32 @@ exahype-project  TrivialProject
   
   output-directory           = ./Applications/trivialproject
   
-  dimensions                 = 2
   
   computational-domain
-    size                     = 1.0
-    offset                   = 0.0, 0.0, 0.0 
+    dimension                = 2
+    width                    = 1.0
+    offset                   = 0.0, 0.0
+    end-time                 = 0.1
   end computational-domain
     
+    
+  plot vtk::binary
+    time                     = 0.02
+    repeat                   = on
+    filename                 = ./grid
+  end plot
+
+  
   shared-memory
     identifier               = autotuning
     cores                    = 4
     properties-file          = sharedmemory.properties
   end shared-memory  
+
+
+  optimisation
+    fuse-algorithmic-steps   = on
+  end optimisation  
   
+
 end exahype-project  

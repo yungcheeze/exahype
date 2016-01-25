@@ -63,6 +63,9 @@ class exahype::runners::Runner {
      */ 
     void runGlobalStep();
     #endif
+
+    void runOneTimeStampWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository);
+    void runOneTimeStampWithFourSeparateAlgorithmicSteps(exahype::repositories::Repository& repository);
   public:
     Runner(const Parser& parser);
     virtual ~Runner();

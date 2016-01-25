@@ -18,9 +18,9 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/mappings/RiemannSolverReset.h"
  #include "exahype/mappings/SpaceTimePredictor.h"
  #include "exahype/mappings/VolumeIntegral.h"
- #include "exahype/mappings/BoundaryConditions.h"
  #include "exahype/mappings/GlobalTimeStepComputation.h"
 
 
@@ -41,14 +41,14 @@ namespace exahype {
  */
 class exahype::adapters::PredictorAndGlobalTimeStepComputation {
   private:
-    typedef mappings::SpaceTimePredictor Mapping0;
-    typedef mappings::VolumeIntegral Mapping1;
-    typedef mappings::BoundaryConditions Mapping2;
+    typedef mappings::RiemannSolverReset Mapping0;
+    typedef mappings::SpaceTimePredictor Mapping1;
+    typedef mappings::VolumeIntegral Mapping2;
     typedef mappings::GlobalTimeStepComputation Mapping3;
 
-     Mapping0  _map2SpaceTimePredictor;
-     Mapping1  _map2VolumeIntegral;
-     Mapping2  _map2BoundaryConditions;
+     Mapping0  _map2RiemannSolverReset;
+     Mapping1  _map2SpaceTimePredictor;
+     Mapping2  _map2VolumeIntegral;
      Mapping3  _map2GlobalTimeStepComputation;
 
 
