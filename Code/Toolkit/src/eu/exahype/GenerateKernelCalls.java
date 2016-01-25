@@ -33,12 +33,9 @@ public class GenerateKernelCalls  extends DepthFirstAdapter {
       _writer.write("// ========================\n\n\n");
       
       _writer.write("#include \"kernels/KernelCalls.h\"\n\n\n");
-      _writer.write("#include \"exahype/SolverDescription.h\"\n\n\n");
 
       if (node.getSolver().size()==0) { 
         _writer.write("void kernels::initSolvers() {\n");
-        _writer.write("}\n");
-        _writer.write("\n");
         System.out.println( "no solvers specified - create empty kernel calls ... ok" );      
       }
       else {
@@ -72,26 +69,12 @@ public class GenerateKernelCalls  extends DepthFirstAdapter {
   @Override
   public void outAProject(AProject node) {
 	try {
-      if (node.getSolver().size()==0) { 
-          _writer.write("int kernels::getMinimumTreeDepth() {\n");
-          _writer.write("  return 4;\n");
-          _writer.write("}\n");
-          System.out.println("default spacetree depth set to 4 ... ok" );      
-      }
-      else {
-        _writer.write("}\n");
-        System.out.println( "configured all solver solvers ... ok" );      
+      _writer.write("}\n");
+      _writer.write("\n");
 
-        _writer.write("\n\n");
-        _writer.write("int kernels::getMinimumTreeDepth() {\n");
-        _writer.write("  int result = std::numeric_limits<int>::max();\n");
-        _writer.write("  for (std::vector<exahype::SolverDescription>::const_iterator p=exahype::SolverDescription::ExistingSolvers.begin(); p!=exahype::SolverDescription::ExistingSolvers.end(): p++) \n");
-        _writer.write("    result = std::min(result,p->getMinimumTreeDepth()); \n");
-        _writer.write("  }\n");
-        _writer.write("  return result;\n");
-        _writer.write("}\n");
-        System.out.println("default spacetree depth set to 4 ... ok" );      
-      }
+      System.out.println( "configured all solver solvers ... ok" );      
+ 
+      _writer.write("\n\n");
       _writer.close();
 	} 
 	catch (Exception exc) {

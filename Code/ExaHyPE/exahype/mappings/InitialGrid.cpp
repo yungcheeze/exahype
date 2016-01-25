@@ -3,6 +3,7 @@
 #include "peano/utils/Globals.h"
 
 #include "kernels/KernelCalls.h"
+#include "exahype/solvers/Solver.h"
 
 
 /**
@@ -84,6 +85,21 @@ void exahype::mappings::InitialGrid::destroyHangingVertex(
 }
 
 
+int exahype::mappings::InitialGrid::getMinimumTreeDepth( const tarch::la::Vector<DIMENSIONS,double>&  x ) {
+  int result = 1;
+
+  for (
+    std::vector<exahype::solvers::Solver>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
+    p != exahype::solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    result = std::max( result, p->getMinimumTreeDepth(x) );
+  }
+
+  return result;
+}
+
+
 void exahype::mappings::InitialGrid::createInnerVertex(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
@@ -96,7 +112,7 @@ void exahype::mappings::InitialGrid::createInnerVertex(
   logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
 
   if (
-      coarseGridVerticesEnumerator.getLevel() < kernels::getMinimumTreeDepth()
+      coarseGridVerticesEnumerator.getLevel() < getMinimumTreeDepth(fineGridX)
       //&&
       //fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined
   ) {
@@ -119,7 +135,7 @@ void exahype::mappings::InitialGrid::createBoundaryVertex(
   logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
 
   if (
-      coarseGridVerticesEnumerator.getLevel() < kernels::getMinimumTreeDepth()
+      coarseGridVerticesEnumerator.getLevel() < getMinimumTreeDepth(fineGridX)
       //&&
       //fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined
   ) {
