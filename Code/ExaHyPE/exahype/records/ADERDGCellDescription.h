@@ -32,7 +32,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   26/01/2016 12:04
+ * @date   26/01/2016 12:14
  */
 class exahype::records::ADERDGCellDescription { 
    
@@ -68,6 +68,7 @@ class exahype::records::ADERDGCellDescription {
          tarch::la::Vector<DIMENSIONS,double> _size;
          #endif
          double _timeStamp;
+         int _solverNumber;
          /**
           * Generated
           */
@@ -76,7 +77,7 @@ class exahype::records::ADERDGCellDescription {
          /**
           * Generated
           */
-         PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp);
+         PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber);
          
          
          inline bool getIsParent() const 
@@ -493,6 +494,26 @@ class exahype::records::ADERDGCellDescription {
          
          
          
+         inline int getSolverNumber() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _solverNumber;
+         }
+         
+         
+         
+         inline void setSolverNumber(const int& solverNumber) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _solverNumber = solverNumber;
+         }
+         
+         
+         
       };
       
    private: 
@@ -512,7 +533,7 @@ class exahype::records::ADERDGCellDescription {
       /**
        * Generated
        */
-      ADERDGCellDescription(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp);
+      ADERDGCellDescription(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber);
       
       /**
        * Generated
@@ -1023,6 +1044,26 @@ class exahype::records::ADERDGCellDescription {
       }
       
       
+      
+      inline int getSolverNumber() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         return _persistentRecords._solverNumber;
+      }
+      
+      
+      
+      inline void setSolverNumber(const int& solverNumber) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         _persistentRecords._solverNumber = solverNumber;
+      }
+      
+      
       /**
        * Generated
        */
@@ -1096,7 +1137,7 @@ class exahype::records::ADERDGCellDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   26/01/2016 12:04
+          * @date   26/01/2016 12:14
           */
          class exahype::records::ADERDGCellDescriptionPacked { 
             
@@ -1118,6 +1159,7 @@ class exahype::records::ADERDGCellDescription {
                   tarch::la::Vector<DIMENSIONS,double> _offset;
                   tarch::la::Vector<DIMENSIONS,double> _size;
                   double _timeStamp;
+                  int _solverNumber;
                   /**
                    * Generated
                    */
@@ -1126,7 +1168,7 @@ class exahype::records::ADERDGCellDescription {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp);
+                  PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber);
                   
                   
                   inline bool getIsParent() const 
@@ -1543,6 +1585,26 @@ class exahype::records::ADERDGCellDescription {
                   
                   
                   
+                  inline int getSolverNumber() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _solverNumber;
+                  }
+                  
+                  
+                  
+                  inline void setSolverNumber(const int& solverNumber) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _solverNumber = solverNumber;
+                  }
+                  
+                  
+                  
                };
                
             private: 
@@ -1562,7 +1624,7 @@ class exahype::records::ADERDGCellDescription {
                /**
                 * Generated
                 */
-               ADERDGCellDescriptionPacked(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp);
+               ADERDGCellDescriptionPacked(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber);
                
                /**
                 * Generated
@@ -2070,6 +2132,26 @@ class exahype::records::ADERDGCellDescription {
  #endif 
  {
                   _persistentRecords._timeStamp = timeStamp;
+               }
+               
+               
+               
+               inline int getSolverNumber() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._solverNumber;
+               }
+               
+               
+               
+               inline void setSolverNumber(const int& solverNumber) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._solverNumber = solverNumber;
                }
                
                

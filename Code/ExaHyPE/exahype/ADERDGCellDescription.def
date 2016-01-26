@@ -73,4 +73,6 @@ class exahype::records::ADERDGCellDescription {
   ///@}
 
   parallelise persistent double timeStamp;          // !< Time stamp of the current solution.
+
+  parallelise persistent int    solverNumber;          // !< Time stamp of the current solution.
 };

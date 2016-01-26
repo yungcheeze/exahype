@@ -35,6 +35,7 @@ class exahype::solvers::Solver {
     };
 
 
+    // @todo TW Raus brauchen wir nicht
     enum Type {
       ADER_DG
     };
@@ -58,6 +59,8 @@ class exahype::solvers::Solver {
   public:
     Solver(const std::string& identifier, Type type, int kernelNumber, int numberOfVariables, int nodesPerCoordinateAxis);
 
+    virtual ~Solver() {}
+
     /**
      * Identify minimal mesh width at a certain point in the domain. This
      * minimal mesh width is used both as a constraint on the AMR as well
@@ -76,6 +79,22 @@ class exahype::solvers::Solver {
      * returns the number of cells within a patch per coordinate axis.
      */
     int getNodesPerCoordinateAxis() const;
+
+
+
+    // Nur der ADER-DG Loeser
+    virtual void spaceTimePredictor(
+        double * lQi,
+        double * lFi,
+        const double * const luh, // const
+        double * lQhi,
+        double * lFhi,
+        double * lQhbnd,
+        double * lFhbnd,
+        const tarch::la::Vector<DIMENSIONS,double>& dx,
+        const double dt
+    ) = 0;
+
 };
 
 #endif

@@ -5,7 +5,7 @@ exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords() 
 }
 
 
-exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp):
+exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber):
 _isParent(isParent),
 _isVirtual(isVirtual),
 _riemannSolvePerformed(riemannSolvePerformed),
@@ -20,7 +20,8 @@ _fluctuation(fluctuation),
 _level(level),
 _offset(offset),
 _size(size),
-_timeStamp(timeStamp) {
+_timeStamp(timeStamp),
+_solverNumber(solverNumber) {
    
 }
 
@@ -30,13 +31,13 @@ exahype::records::ADERDGCellDescription::ADERDGCellDescription() {
 
 
 exahype::records::ADERDGCellDescription::ADERDGCellDescription(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._isParent, persistentRecords._isVirtual, persistentRecords._riemannSolvePerformed, persistentRecords._spaceTimePredictor, persistentRecords._spaceTimeVolumeFlux, persistentRecords._solution, persistentRecords._update, persistentRecords._predictor, persistentRecords._volumeFlux, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._timeStamp) {
+_persistentRecords(persistentRecords._isParent, persistentRecords._isVirtual, persistentRecords._riemannSolvePerformed, persistentRecords._spaceTimePredictor, persistentRecords._spaceTimeVolumeFlux, persistentRecords._solution, persistentRecords._update, persistentRecords._predictor, persistentRecords._volumeFlux, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._timeStamp, persistentRecords._solverNumber) {
    
 }
 
 
-exahype::records::ADERDGCellDescription::ADERDGCellDescription(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp):
-_persistentRecords(isParent, isVirtual, riemannSolvePerformed, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size, timeStamp) {
+exahype::records::ADERDGCellDescription::ADERDGCellDescription(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber):
+_persistentRecords(isParent, isVirtual, riemannSolvePerformed, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size, timeStamp, solverNumber) {
    
 }
 
@@ -94,6 +95,8 @@ void exahype::records::ADERDGCellDescription::toString (std::ostream& out) const
    out << getSize(DIMENSIONS-1) << "]";
    out << ",";
    out << "timeStamp:" << getTimeStamp();
+   out << ",";
+   out << "solverNumber:" << getSolverNumber();
    out <<  ")";
 }
 
@@ -118,7 +121,8 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
       getLevel(),
       getOffset(),
       getSize(),
-      getTimeStamp()
+      getTimeStamp(),
+      getSolverNumber()
    );
 }
 
@@ -133,7 +137,7 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
       {
          ADERDGCellDescription dummyADERDGCellDescription[2];
          
-         const int Attributes = 16;
+         const int Attributes = 17;
          MPI_Datatype subtypes[Attributes] = {
             MPI_CHAR,		 //isParent
             MPI_CHAR,		 //isVirtual
@@ -150,6 +154,7 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
             MPI_DOUBLE,		 //offset
             MPI_DOUBLE,		 //size
             MPI_DOUBLE,		 //timeStamp
+            MPI_INT,		 //solverNumber
             MPI_UB		 // end/displacement flag
          };
          
@@ -169,6 +174,7 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
             DIMENSIONS,		 //offset
             DIMENSIONS,		 //size
             1,		 //timeStamp
+            1,		 //solverNumber
             1		 // end/displacement flag
          };
          
@@ -191,7 +197,8 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._offset[0]))), 		&disp[12] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._size[0]))), 		&disp[13] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._timeStamp))), 		&disp[14] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._isParent))), 		&disp[15] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solverNumber))), 		&disp[15] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._isParent))), 		&disp[16] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -206,7 +213,7 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
       {
          ADERDGCellDescription dummyADERDGCellDescription[2];
          
-         const int Attributes = 16;
+         const int Attributes = 17;
          MPI_Datatype subtypes[Attributes] = {
             MPI_CHAR,		 //isParent
             MPI_CHAR,		 //isVirtual
@@ -223,6 +230,7 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
             MPI_DOUBLE,		 //offset
             MPI_DOUBLE,		 //size
             MPI_DOUBLE,		 //timeStamp
+            MPI_INT,		 //solverNumber
             MPI_UB		 // end/displacement flag
          };
          
@@ -242,6 +250,7 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
             DIMENSIONS,		 //offset
             DIMENSIONS,		 //size
             1,		 //timeStamp
+            1,		 //solverNumber
             1		 // end/displacement flag
          };
          
@@ -264,7 +273,8 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._offset[0]))), 		&disp[12] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._size[0]))), 		&disp[13] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._timeStamp))), 		&disp[14] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._isParent))), 		&disp[15] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solverNumber))), 		&disp[15] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._isParent))), 		&disp[16] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -511,7 +521,7 @@ exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentReco
 }
 
 
-exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp):
+exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber):
 _isParent(isParent),
 _isVirtual(isVirtual),
 _riemannSolvePerformed(riemannSolvePerformed),
@@ -526,7 +536,8 @@ _fluctuation(fluctuation),
 _level(level),
 _offset(offset),
 _size(size),
-_timeStamp(timeStamp) {
+_timeStamp(timeStamp),
+_solverNumber(solverNumber) {
    
 }
 
@@ -536,13 +547,13 @@ exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked() {
 
 
 exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._isParent, persistentRecords._isVirtual, persistentRecords._riemannSolvePerformed, persistentRecords._spaceTimePredictor, persistentRecords._spaceTimeVolumeFlux, persistentRecords._solution, persistentRecords._update, persistentRecords._predictor, persistentRecords._volumeFlux, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._timeStamp) {
+_persistentRecords(persistentRecords._isParent, persistentRecords._isVirtual, persistentRecords._riemannSolvePerformed, persistentRecords._spaceTimePredictor, persistentRecords._spaceTimeVolumeFlux, persistentRecords._solution, persistentRecords._update, persistentRecords._predictor, persistentRecords._volumeFlux, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._timeStamp, persistentRecords._solverNumber) {
    
 }
 
 
-exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp):
-_persistentRecords(isParent, isVirtual, riemannSolvePerformed, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size, timeStamp) {
+exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber):
+_persistentRecords(isParent, isVirtual, riemannSolvePerformed, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size, timeStamp, solverNumber) {
    
 }
 
@@ -600,6 +611,8 @@ void exahype::records::ADERDGCellDescriptionPacked::toString (std::ostream& out)
    out << getSize(DIMENSIONS-1) << "]";
    out << ",";
    out << "timeStamp:" << getTimeStamp();
+   out << ",";
+   out << "solverNumber:" << getSolverNumber();
    out <<  ")";
 }
 
@@ -624,7 +637,8 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
       getLevel(),
       getOffset(),
       getSize(),
-      getTimeStamp()
+      getTimeStamp(),
+      getSolverNumber()
    );
 }
 
@@ -639,7 +653,7 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
       {
          ADERDGCellDescriptionPacked dummyADERDGCellDescriptionPacked[2];
          
-         const int Attributes = 16;
+         const int Attributes = 17;
          MPI_Datatype subtypes[Attributes] = {
             MPI_CHAR,		 //isParent
             MPI_CHAR,		 //isVirtual
@@ -656,6 +670,7 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
             MPI_DOUBLE,		 //offset
             MPI_DOUBLE,		 //size
             MPI_DOUBLE,		 //timeStamp
+            MPI_INT,		 //solverNumber
             MPI_UB		 // end/displacement flag
          };
          
@@ -675,6 +690,7 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
             DIMENSIONS,		 //offset
             DIMENSIONS,		 //size
             1,		 //timeStamp
+            1,		 //solverNumber
             1		 // end/displacement flag
          };
          
@@ -697,7 +713,8 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._offset[0]))), 		&disp[12] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[13] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._timeStamp))), 		&disp[14] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._isParent))), 		&disp[15] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solverNumber))), 		&disp[15] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._isParent))), 		&disp[16] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -712,7 +729,7 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
       {
          ADERDGCellDescriptionPacked dummyADERDGCellDescriptionPacked[2];
          
-         const int Attributes = 16;
+         const int Attributes = 17;
          MPI_Datatype subtypes[Attributes] = {
             MPI_CHAR,		 //isParent
             MPI_CHAR,		 //isVirtual
@@ -729,6 +746,7 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
             MPI_DOUBLE,		 //offset
             MPI_DOUBLE,		 //size
             MPI_DOUBLE,		 //timeStamp
+            MPI_INT,		 //solverNumber
             MPI_UB		 // end/displacement flag
          };
          
@@ -748,6 +766,7 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
             DIMENSIONS,		 //offset
             DIMENSIONS,		 //size
             1,		 //timeStamp
+            1,		 //solverNumber
             1		 // end/displacement flag
          };
          
@@ -770,7 +789,8 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._offset[0]))), 		&disp[12] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[13] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._timeStamp))), 		&disp[14] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._isParent))), 		&disp[15] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solverNumber))), 		&disp[15] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._isParent))), 		&disp[16] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );

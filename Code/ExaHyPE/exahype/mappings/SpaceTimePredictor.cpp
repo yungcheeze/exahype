@@ -3,6 +3,8 @@
 #include "peano/utils/Globals.h"
 
 #include "exahype/aderdg/ADERDG.h"
+#include "exahype/solvers/Solver.h"
+
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -76,13 +78,8 @@ exahype::mappings::SpaceTimePredictor::~SpaceTimePredictor() {
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::SpaceTimePredictor::SpaceTimePredictor(const SpaceTimePredictor&  masterThread)
 :
-      _localState()
+      _localState(masterThread._localState)
 {
-  logTraceIn( "SpaceTimePredictor(SpaceTimePredictor)" );
-
-  _localState.setTimeStepSize(masterThread.getState().getTimeStepSize());
-
-  logTraceOut( "SpaceTimePredictor(SpaceTimePredictor)" );
 }
 
 
@@ -356,70 +353,49 @@ void exahype::mappings::SpaceTimePredictor::touchVertexLastTime(
 }
 
 void exahype::mappings::SpaceTimePredictor::enterCell(
-    exahype::Cell&                 fineGridCell,
-    exahype::Vertex * const        fineGridVertices,
-    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-    exahype::Vertex * const        coarseGridVertices,
-    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-    exahype::Cell&                 coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+  exahype::Cell&                            fineGridCell,
+  exahype::Vertex * const                   fineGridVertices,
+  const peano::grid::VertexEnumerator&      fineGridVerticesEnumerator,
+  exahype::Vertex * const                   coarseGridVertices,
+  const peano::grid::VertexEnumerator&      coarseGridVerticesEnumerator,
+  exahype::Cell&                            coarseGridCell,
+  const tarch::la::Vector<DIMENSIONS,int>&  fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
-  // @todo Tobias Weinzierl
-  // Delegate to solver-specific code fragments
 
-/*
-  // ! Begin of code for the DG method.
-  if (!fineGridCell.isRefined()) {
-    records::ADERDGCellDescription& cellDescription =
-        ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
-
-    const double size  [2] = { fineGridVerticesEnumerator.getCellSize()  [0], fineGridVerticesEnumerator.getCellSize()  [1]};
-
-    constexpr int basisSize = EXAHYPE_ORDER+1;
-    constexpr int nvar      = EXAHYPE_NVARS;
-
-    // work vectors
-    int numberOfSpaceTimeDof  = nvar * tarch::la::aPowI(DIMENSIONS+1,basisSize);
-    double* rhs0 = (double*) std::malloc(numberOfSpaceTimeDof * sizeof(double)); // todo remove all mallocs, maximum nvar is known at compile time
-    double* rhs  = (double*) std::malloc(numberOfSpaceTimeDof * sizeof(double)); // todo remove all mallocs, maximum nvar is known at compile time
-    double* tmp  = (double*) std::malloc(nvar * basisSize * sizeof(double));     // todo remove all mallocs, maximum nvar is known at compile time
+  for (
+    ADERDGCellDescriptionHeap::HeapEntries::const_iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+    p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
+    p++
+  ) {
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
 
     // space-time DoF (basisSize**(DIMENSIONS+1))
-    double * lQi = &(DataHeap::getInstance().getData(cellDescription.getSpaceTimePredictor()) [0]._persistentRecords._u);
-    double * lFi = &(DataHeap::getInstance().getData(cellDescription.getSpaceTimeVolumeFlux())[0]._persistentRecords._u);
+    double * lQi = &(DataHeap::getInstance().getData(p->getSpaceTimePredictor()) [0]._persistentRecords._u);
+    double * lFi = &(DataHeap::getInstance().getData(p->getSpaceTimeVolumeFlux())[0]._persistentRecords._u);
 
     // volume DoF (basisSize**(DIMENSIONS))
-    double * luh  = &(DataHeap::getInstance().getData(cellDescription.getSolution())  [0]._persistentRecords._u);
-    double * lQhi = &(DataHeap::getInstance().getData(cellDescription.getPredictor()) [0]._persistentRecords._u);
-    double * lFhi = &(DataHeap::getInstance().getData(cellDescription.getVolumeFlux())[0]._persistentRecords._u);
+    double * luh  = &(DataHeap::getInstance().getData(p->getSolution())  [0]._persistentRecords._u);
+    double * lQhi = &(DataHeap::getInstance().getData(p->getPredictor()) [0]._persistentRecords._u);
+    double * lFhi = &(DataHeap::getInstance().getData(p->getVolumeFlux())[0]._persistentRecords._u);
 
     // face DoF (basisSize**(DIMENSIONS-1))
-    double * lQhbnd = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor())[0]._persistentRecords._u);
-    double * lFhbnd = &(DataHeap::getInstance().getData(cellDescription.getFluctuation())          [0]._persistentRecords._u);
+    double * lQhbnd = &(DataHeap::getInstance().getData(p->getExtrapolatedPredictor())[0]._persistentRecords._u);
+    double * lFhbnd = &(DataHeap::getInstance().getData(p->getFluctuation())          [0]._persistentRecords._u);
 
-    aderdg::spaceTimePredictor<2>(
-        lQi,
-        lFi,
-        luh,
-        lQhi,
-        lFhi,
-        lQhbnd,
-        lFhbnd,
-        rhs0,
-        rhs,
-        tmp,
-        size,
-        _localState.getMaxTimeStepSize());
-
-    // clean up
-    free(rhs0);
-    free(rhs);
-    free(tmp);
+    solver->spaceTimePredictor(
+      lQi,
+      lFi,
+      luh,
+      lQhi,
+      lFhi,
+      lQhbnd,
+      lFhbnd,
+      fineGridVerticesEnumerator.getCellSize(),
+      _localState.getMaxTimeStepSize()
+    );
   }
-*/
-
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }

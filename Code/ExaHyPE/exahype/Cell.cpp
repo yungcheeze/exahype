@@ -44,15 +44,11 @@ void exahype::Cell::init(
   assertion1( !ADERDGCellDescriptionHeap::getInstance().isValidIndex(_cellData.getADERDGCellDescriptionsIndex()), toString() );
   _cellData.setADERDGCellDescriptionsIndex( ADERDGCellDescriptionHeap::getInstance().createData(0,0) );
 
-  for (
-    std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
-    p != exahype::solvers::RegisteredSolvers.end();
-    p++
-  ) {
-    if (level==(*p)->getMinimumTreeDepth()) {
+  for ( int solverNumber = 0; solverNumber < static_cast<int>( exahype::solvers::RegisteredSolvers.size() ); solverNumber++) {
+    if (level==exahype::solvers::RegisteredSolvers[solverNumber]->getMinimumTreeDepth()) {
       logDebug( "init(...)","initialising cell description: " << "fine grid level: " << fineGridVerticesEnumerator.getLevel() << ", fine grid position of cell: " << fineGridPositionOfCell);
 
-      switch ((*p)->getType()) {
+      switch (exahype::solvers::RegisteredSolvers[solverNumber]->getType()) {
         case exahype::solvers::Solver::ADER_DG:
           {
             exahype::records::ADERDGCellDescription newCellDescription;
@@ -62,13 +58,14 @@ void exahype::Cell::init(
             newCellDescription.setSize  (size);
             newCellDescription.setTimeStamp(0.0);
             newCellDescription.setOffset(cellOffset);
+            newCellDescription.setSolverNumber(solverNumber);
 
-            int numberOfSpaceTimeDof           = (*p)->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS+1,(*p)->getNodesPerCoordinateAxis());
+            int numberOfSpaceTimeDof           = exahype::solvers::RegisteredSolvers[solverNumber]->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS+1,exahype::solvers::RegisteredSolvers[solverNumber]->getNodesPerCoordinateAxis());
             int numberOfSpaceTimeVolumeFluxDof = DIMENSIONS*numberOfSpaceTimeDof;
 
-            int numberOfDof            = (*p)->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS,(*p)->getNodesPerCoordinateAxis());
+            int numberOfDof            = exahype::solvers::RegisteredSolvers[solverNumber]->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS,exahype::solvers::RegisteredSolvers[solverNumber]->getNodesPerCoordinateAxis());
             int numberOfVolumeFluxDof  = DIMENSIONS * numberOfDof;
-            int numberOfDofOnFace      = DIMENSIONS_TIMES_TWO * (*p)->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,(*p)->getNodesPerCoordinateAxis());
+            int numberOfDofOnFace      = DIMENSIONS_TIMES_TWO * exahype::solvers::RegisteredSolvers[solverNumber]->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,exahype::solvers::RegisteredSolvers[solverNumber]->getNodesPerCoordinateAxis());
 
             // Allocate space-time DoF
             newCellDescription.setSpaceTimePredictor (DataHeap::getInstance().createData(numberOfSpaceTimeDof,numberOfSpaceTimeDof));
