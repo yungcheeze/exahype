@@ -6,7 +6,6 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/Constants.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -363,6 +362,10 @@ void exahype::mappings::InitialCondition::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
+
+/*
   // ! Begin of code for the DG method.
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
@@ -387,6 +390,7 @@ void exahype::mappings::InitialCondition::enterCell(
   }
 
   // ! End of code for the DG method.
+*/
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }

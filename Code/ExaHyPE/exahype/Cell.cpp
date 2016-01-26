@@ -4,7 +4,6 @@
 
 #include "tarch/la/ScalarOperations.h"
 
-#include "exahype/Constants.h"
 
 exahype::Cell::Cell():
 Base() {
@@ -27,20 +26,41 @@ int
 exahype::Cell::getADERDGCellDescriptionsIndex() const {
   return _cellData.getADERDGCellDescriptionsIndex();
 }
-
-void
-exahype::Cell::initCellWithDefaultValues() {
-  _cellData.setADERDGCellDescriptionsIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
-}
 // ! End of code for multiscalelinkedcell toolbox.
 
-// ! Begin of code for DG method/multiscalelinkedcell toolbox
-void
-exahype::Cell::initCellInComputeTree(const int level,
-                                     const tarch::la::Vector<DIMENSIONS,double> size,
-                                     const int numberOfPDEs,
-                                     const int order,
-                                     const int numberOfVariables) {
+
+
+
+
+
+// ! Begin of code for DG method
+
+
+void exahype::Cell::init(
+  const int                                    level,
+  const tarch::la::Vector<DIMENSIONS,double>&  size,
+  const tarch::la::Vector<DIMENSIONS,double>&  cellCentre
+) {
+  // @todo Tobias Weinzierl
+  // New Workflow
+  // Ask the solver whether there is an ADERDG cell here at this position (we might
+  // need the offset as well). If yes, take the corresponding Solver Description and ask
+  // it to create the right Cell Description.
+
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
+
+//  _cellData.setADERDGCellDescriptionsIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
+
+  /*
+  // ! Begin of code for multiscalelinkedcell toolbox and DG method
+  if (!fineGridCell.isRefined()) {      // We only want to initialize ADERDGCellDescriptions on the initial fine grid
+    logDebug("enterCell(...)","initialising ADERDGCellDescription: " << "fine grid level: " << fineGridVerticesEnumerator.getLevel() << ", fine grid position of cell: " << fineGridPositionOfCell);
+*/
+
+
+
+/*
   const int indexOfADERDGCellDescriptions = ADERDGADERDGCellDescriptionHeap::getInstance().createData(numberOfPDEs);
   assertion( indexOfADERDGCellDescriptions >= 0 );
   _cellData.setADERDGCellDescriptionsIndex(indexOfADERDGCellDescriptions);
@@ -76,7 +96,9 @@ exahype::Cell::initCellInComputeTree(const int level,
     // Pass geometry information to the cellDescription description
     cellDescriptionForPde.setLevel (level);
     cellDescriptionForPde.setSize  (size);
+    cellDescriptionForPde.setTimeStamp(0.0);
   }
+*/
 }
 // ! End of code for DG method/multiscalelinkedcell toolbox.
 

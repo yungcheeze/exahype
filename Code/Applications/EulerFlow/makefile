@@ -52,19 +52,22 @@ ifeq ($(CC),gcc)
 		# Settings for the GNU Compiler (Debug Mode)
 		# ------------------------------------------
 		CC=g++
-		COMPILER_CFLAGS=-DDebug -DAsserts $(OPTIMISED_KERNELS) -O0 -pedantic -pedantic-errors -Wall -Wstrict-aliasing -fstrict-aliasing -Drestrict=__restrict__ -ggdb -std=c++0x
+		COMPILER_CFLAGS=-DDebug -DAsserts $(OPTIMISED_KERNELS) -O0 -pedantic -pedantic-errors -Wall -Wstrict-aliasing \
+						-fstrict-aliasing -Drestrict=__restrict__ -D__assume_aligned=__builtin_assume_aligned -ggdb -std=c++0x
 		COMPILER_LFLAGS=
 	else ifeq ($(MODE),Profile)
 		# Settings for the GNU Compiler (Profile Mode)
 		# --------------------------------------------
 		CC=g++
-		COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg $(OPTIMISED_KERNELS) -O3 -fstrict-aliasing -Drestrict=__restrict__ -fno-rtti -fno-exceptions -std=c++0x
+		COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg $(OPTIMISED_KERNELS) -O3 -fstrict-aliasing -Drestrict=__restrict__ \
+						-D__assume_aligned=__builtin_assume_aligned -fno-rtti -fno-exceptions -std=c++0x
 		COMPILER_LFLAGS=-p -pg
 	else
 		# Settings for the GNU Compiler (Release Mode)
 		# --------------------------------------------
 		CC=g++
-		COMPILER_CFLAGS= $(OPTIMISED_KERNELS) -O3 -fstrict-aliasing -Drestrict=__restrict__ -fno-rtti -fno-exceptions -std=c++0x
+		COMPILER_CFLAGS= $(OPTIMISED_KERNELS) -O3 -fstrict-aliasing -Drestrict=__restrict__ \
+						-D__assume_aligned=__builtin_assume_aligned -fno-rtti -fno-exceptions -std=c++0x
 		COMPILER_LFLAGS=
 	endif
 else
@@ -78,13 +81,15 @@ else
 		# Settings for the GNU Compiler (Profile Mode)
 		# --------------------------------------------
 		CC=icpc
-		COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg $(OPTIMISED_KERNELS) -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
+		COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg $(OPTIMISED_KERNELS) -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK \
+						-fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
 		COMPILER_LFLAGS=-p -pg
         else
 		# Settings for the Intel Compiler (Release Mode)
 		# ----------------------------------------------
 		CC=icpc
-		COMPILER_CFLAGS=$(OPTIMISED_KERNELS) -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
+		COMPILER_CFLAGS=$(OPTIMISED_KERNELS) -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip \
+						-xSSE4.2 -std=c++0x
 		COMPILER_LFLAGS=
 	endif
 endif

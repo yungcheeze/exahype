@@ -1053,53 +1053,26 @@ class exahype::mappings::PatchInitialisation {
     
 
     /**
-     * Enter a cell
-     *
-     * In the Peano world, an algorithm tells the grid that the grid should be 
-     * traversed. The grid then decides how to do this and runs over all cells
-     * (and vertices). For each cell, it calls handleCell(), i.e. if you want 
-     * your algorithm to do somethin on a cell, you should implement this 
-     * operation.
-     *
-     * @image html peano/grid/geometry-cell-inside-outside.png
-     *
-     * The operation is called for each inner and boundary element and, again, 
-     * you may not access the cell's adjacent vertices directly. Instead, you 
-     * have to use the enumerator. For all adjacent vertices of this cell, 
-     * touchVertexFirstTime() already has been called. touchVertexLastTime() has 
-     * not been called yet. 
-     * More information on the interplay with ascend() and 
-     * descend() can be found in peano::grid::nodes::Refined.
+     * Enter a cell and initialise the patches
      * 
-     * If you need the position of the vertices of the cell or its size, use the 
-     * enumerator.
+     * We do this for all the cells in the tree as (potentially) all cells 
+     * might become compute cells one day.
      *
-     * !!! Optimisation
-     * 
-     * This operation is invoked if and only if the corresponding specification 
-     * flag does not hold NOP. Due to this specification flag you also can define 
-     * whether this operation works on the leaves only, whether it may be 
-     * called in parallel by multiple threads, and whether it is fail-safe or 
-     * can at least be called multiple times if a thread crashes.
-     *     
-     * @see createCell() for a description of the arguments. 
-     *
-     * @see peano::MappingSpecification for information on thread safety.
+     * @see Cell::initCellInComputeTree()
      */
     void enterCell(
-      exahype::Cell&                 fineGridCell,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+      exahype::Cell&                            fineGridCell,
+      exahype::Vertex * const                   fineGridVertices,
+      const peano::grid::VertexEnumerator&      fineGridVerticesEnumerator,
+      exahype::Vertex * const                   coarseGridVertices,
+      const peano::grid::VertexEnumerator&      coarseGridVerticesEnumerator,
+      exahype::Cell&                            coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS,int>&  fineGridPositionOfCell
     );
 
 
     /**
-     * This is the counterpart of enterCell(). See this operation for a 
-     * description of the arguments.
+     * Nop
      */
     void leaveCell(
       exahype::Cell&                          fineGridCell,
@@ -1113,34 +1086,7 @@ class exahype::mappings::PatchInitialisation {
 
 
     /**
-     * Begin an iteration
-     * 
-     * This operation is called whenever the algorithm tells Peano that the grid 
-     * is to be traversed, i.e. this operation is called before any creational 
-     * mapping operation or touchVertexFirstTime() or handleCell() is called.
-     * The operation receives a solver state that has to 
-     * encode the solver's state. Take this attribute to set the mapping's 
-     * attributes. This class' attributes will remain valid until endIteration()
-     * is called. Afterwards they might contain garbage.
-     *
-     * !!! Parallelisation
-     *
-     * If you run your code in parallel, beginIteration() and endIteration() 
-     * realise the following lifecycle together with the state object:
-     *
-     * - Receive the state from the master if there is a master.
-     * - beginIteration()
-     * - Distribute the state among the workers if there are workers.
-     * - Merge the states from the workers (if they exist) into the own state. 
-     * - endIteration()
-     * - Send the state to the master if there is a master.
-     *
-     * Please note that the beginIteration() time constraint is weakened in the 
-     * parallel case if you choose to receive data on the worker late. Then, 
-     * beginIteration() might not be called prior to any other event. See the 
-     * documentation of CommunicationSpecification for details.
-     *
-     * @see PatchInitialisation()
+     * Set the names etc. for the heaps of the cell descriptions.
      */
     void beginIteration(
       exahype::State&  solverState
@@ -1148,32 +1094,7 @@ class exahype::mappings::PatchInitialisation {
 
 
     /**
-     * Iteration is done
-     * 
-     * This operation is called at the very end, i.e. after all the handleCell() 
-     * and touchVertexLastTime() operations have been invoked. In this 
-     * operation, you have to write all the data you will need later on back to 
-     * the state object passed. Afterwards, the attributes of your mapping 
-     * object (as well as global static fields) might be overwritten.  
-     *
-     * !!! Parallelisation
-     *
-     * If you run your code in parallel, beginIteration() and endIteration() 
-     * realise the following lifecycle together with the state object:
-     *
-     * - Receive the state from the master if there is a master.
-     * - beginIteration()
-     * - Distribute the state among the workers if there are workers.
-     * - Merge the states from the workers (if they exist) into the own state. 
-     * - endIteration()
-     * - Send the state to the master if there is a master.
-     *
-     * Please note that the endIteration() time constraint is weakened in the 
-     * parallel case if you choose to send back data eagerly. Then, endIteration()
-     * might not be called after all other events. See the documentation 
-     * of CommunicationSpecification for details.
-     *
-     * @see PatchInitialisation()
+     * Nop
      */
     void endIteration(
       exahype::State&  solverState

@@ -66,7 +66,7 @@ bool exahype::Parser::isValid() const {
 std::string exahype::Parser::getTokenAfter( std::string token, int additionalTokensToSkip ) const {
   assertion( isValid() );
   int currentToken = 0;
-  while (_tokenStream[currentToken]!=token && currentToken<static_cast<int>(_tokenStream.size())) {
+  while (currentToken<static_cast<int>(_tokenStream.size()) && _tokenStream[currentToken]!=token ) {
     currentToken++;
   }
   currentToken += (additionalTokensToSkip+1);
@@ -80,10 +80,10 @@ std::string exahype::Parser::getTokenAfter( std::string token, int additionalTok
 std::string exahype::Parser::getTokenAfter( std::string token0, std::string token1, int additionalTokensToSkip ) const {
   assertion( isValid() );
   int currentToken = 0;
-  while (_tokenStream[currentToken]!=token0 && currentToken<static_cast<int>(_tokenStream.size())) {
+  while (currentToken<static_cast<int>(_tokenStream.size()) && _tokenStream[currentToken]!=token0 ) {
     currentToken++;
   }
-  while (_tokenStream[currentToken]!=token1 && currentToken<static_cast<int>(_tokenStream.size())) {
+  while (currentToken<static_cast<int>(_tokenStream.size()) && _tokenStream[currentToken]!=token1 ) {
     currentToken++;
   }
   currentToken += (additionalTokensToSkip+1);
@@ -109,12 +109,11 @@ int exahype::Parser::getNumberOfThreads() {
 
 double exahype::Parser::getSize() const {
   assertion( isValid() );
-  std::string token = getTokenAfter("computational-domain","size");
-  // @todo change into Debug
-  logInfo( "getSize()", "found token " << token );
+  std::string token = getTokenAfter("computational-domain","width");
+  logDebug( "getSize()", "found token " << token );
   double result = atof( token.c_str() );
   if (result<=0) {
-    logError( "getSize()", "Invalid size of computational domain: " << token << ". Use unit cube" );
+    logError( "getSize()", "Invalid width of computational domain: " << token << ". Use unit cube" );
     result = 1.0;
   }
   return result;
@@ -128,12 +127,11 @@ tarch::la::Vector<DIMENSIONS,double> exahype::Parser::getOffset() const {
   result(0) = atof( token.c_str() );
   token     = getTokenAfter("computational-domain","offset", 1);
   result(1) = atof( token.c_str() );
-#if DIMENSIONS==3
+  #if DIMENSIONS==3
   token     = getTokenAfter("computational-domain","offset", 2);
   result(2) = atof( token.c_str() );
-#endif
-  // @todo change into Debug
-  logInfo( "getSize()", "found offset " << result );
+  #endif
+  logDebug( "getSize()", "found offset " << result );
   return result;
 }
 
@@ -141,15 +139,13 @@ tarch::la::Vector<DIMENSIONS,double> exahype::Parser::getOffset() const {
 
 std::string exahype::Parser::getMulticorePropertiesFile() const {
   std::string result =  getTokenAfter("shared-memory","properties-file");
-  // @todo Change into Debug
-  logInfo( "getMulticorePropertiesFile()", "found token " << result );
+  logDebug( "getMulticorePropertiesFile()", "found token " << result );
   return result;
 }
 
 
 exahype::Parser::MulticoreOracleType exahype::Parser::getMulticoreOracleType() const {
   std::string token =  getTokenAfter("shared-memory","identifier");
-  // @todo Change into Debug
   exahype::Parser::MulticoreOracleType result = Dummy;
   if ( token.compare( "dummy") ) {
     result = Dummy;
@@ -165,4 +161,25 @@ exahype::Parser::MulticoreOracleType exahype::Parser::getMulticoreOracleType() c
     result = Dummy;
   }
   return result;
+}
+
+
+double exahype::Parser::getSimulationEndTime() const {
+  assertion( isValid() );
+  std::string token = getTokenAfter("computational-domain","end-time");
+  logDebug( "getSimulationEndTime()", "found token " << token );
+  double result = atof( token.c_str() );
+  if (result<=0) {
+    logError( "getSimulationEndTime()", "Invalid simulation end-time: " << token << ". Use 1.0" );
+    result = 1.0;
+  }
+  return result;
+}
+
+
+bool exahype::Parser::fuseAlgorithmicSteps() const {
+  assertion( isValid() );
+  std::string token = getTokenAfter("optimisation","fuse-algorithmic-steps");
+  logDebug( "fuseAlgorithmicSteps()", "found token " << token );
+  return token.compare("on")==0;
 }

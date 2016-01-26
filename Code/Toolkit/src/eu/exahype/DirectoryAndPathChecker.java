@@ -2,6 +2,7 @@ package eu.exahype;
 
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AProject;
+import eu.exahype.node.APaths;
 
 public class DirectoryAndPathChecker extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -11,8 +12,9 @@ public class DirectoryAndPathChecker extends DepthFirstAdapter {
   protected java.io.File multiscalelinkedcellPath;
   protected java.io.File exahypePath;
   protected java.io.File outputDirectory;
-  
-  public void inAProject(AProject node) {
+
+  @Override
+  public void inAPaths(APaths node) {
 	peanoPath                = new java.io.File(node.getPeanoPath().getText());
 	tarchPath                = new java.io.File(node.getTarchPath().getText());
 	multiscalelinkedcellPath = new java.io.File(node.getMultiscalelinkedcellPath().getText());
@@ -21,31 +23,35 @@ public class DirectoryAndPathChecker extends DepthFirstAdapter {
 
 	System.out.print ("Peano kernel path: " + peanoPath.getAbsolutePath() );
 	if ( peanoPath.isDirectory() ) {
-      System.out.println( " ... ok" );
+	  System.out.println( " ... ok" );
 	}
 	else {
 	  System.out.println( " ... not found" );
 	  valid = false;
 	}
-	
+		
 	System.out.print ("Peano tarch path: " + tarchPath.getAbsolutePath() );
 	if ( tarchPath.isDirectory() ) {
-      System.out.println( " ... ok" );
+	  System.out.println( " ... ok" );
 	}
 	else {
 	  System.out.println( " ... not found" );
 	  valid = false;
 	}
-	
+		
 	System.out.print ("multiscalelinkecell (Peano toolbox) path: " + multiscalelinkedcellPath.getAbsolutePath() );
 	if ( multiscalelinkedcellPath.isDirectory() ) {
-      System.out.println( " ... ok" );
+	  System.out.println( " ... ok" );
 	}
 	else {
 	  System.out.println( " ... not found" );
 	  valid = false;
 	}
-	
+  };
+  
+  
+  @Override
+  public void outAProject(AProject node) {
 	System.out.print ("ExaHyPE path: " + exahypePath.getAbsolutePath() );
 	if ( exahypePath.isDirectory() ) {
       System.out.println( " ... ok" );

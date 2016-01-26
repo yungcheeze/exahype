@@ -1,14 +1,12 @@
-#include "exahype/Constants.h"
-
 Packed-Type: int;
 
 Constant: EXAHYPE_NPROBLEMS;
 
 class exahype::dastgen::Cell {  
   /**
-   * Indicates if a PDE is active in the current cell.
+   * Indicates which PDEs are active in the current cell.
    */
-  parallelise persistent bool isPDEActive[EXAHYPE_NPROBLEMS];
+  parallelise persistent int isPDEActive;
 
   /**
    * We specify a ADERDGCellDescription for each PDE that should run on the grid.

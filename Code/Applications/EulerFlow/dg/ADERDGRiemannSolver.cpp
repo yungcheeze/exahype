@@ -50,8 +50,13 @@ void exahype::dg::solveRiemannProblem<2>(
   constexpr int nvar      = EXAHYPE_NVARS;
   constexpr int basisSize = EXAHYPE_ORDER+1;
 
+  __assume_aligned(QavL, ALIGNMENT);
+  __assume_aligned(QavR, ALIGNMENT);
+  __assume_aligned(lambdaL, ALIGNMENT);
+  __assume_aligned(lambdaR, ALIGNMENT);
+
   // Compute the average states from the left and the right, which we need to compute the numerical dissipation
-  double sMax = 0;
+
   memset((double *) QavL,0,nvar * sizeof(double));
   memset((double *) QavR,0,nvar * sizeof(double));
 
@@ -73,7 +78,7 @@ void exahype::dg::solveRiemannProblem<2>(
   exahype::problem::PDEEigenvalues(QavL,n,lambdaL);
   exahype::problem::PDEEigenvalues(QavR,n,lambdaR);
 
-  sMax = 0;
+  double sMax = 0;
   for(int ivar=0; ivar < nvar; ivar++) {
     sMax = std::max(sMax,std::max(fabs(lambdaL[ivar]),fabs(lambdaR[ivar])));
   }

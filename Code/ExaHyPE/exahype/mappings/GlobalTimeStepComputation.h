@@ -72,31 +72,31 @@ class exahype::mappings::GlobalTimeStepComputation {
     /**
      * Mapping constructor.
      *
-     * Mappings have to have a standard constructor and, typically, no other 
-     * constructor does exist. While the constructor may initialise a mapping, 
+     * Mappings have to have a standard constructor and, typically, no other
+     * constructor does exist. While the constructor may initialise a mapping,
      * Peano's concept requires the mapping to be semi-stateless:
      *
-     * - At construction time the mapping has no well-defined state, i.e. the 
+     * - At construction time the mapping has no well-defined state, i.e. the
      *   values set by the constructor are meaningless.
-     * - Whenever the mapping's beginIteration() operation is called, the 
-     *   mapping has to initialise itself. To do this, it has to analyse the 
-     *   passed state object. The beginIteration() operation may set attributes 
+     * - Whenever the mapping's beginIteration() operation is called, the
+     *   mapping has to initialise itself. To do this, it has to analyse the
+     *   passed state object. The beginIteration() operation may set attributes
      *   of the mapping and these attributes now have a valid state.
-     * - All the subsequent calls on the mapping can rely on valid mapping 
+     * - All the subsequent calls on the mapping can rely on valid mapping
      *   attributes until
-     * - The operation endIteration() is invoked. Afterwards, all the mapping's 
+     * - The operation endIteration() is invoked. Afterwards, all the mapping's
      *   attributes have an undefined state.
      *
-     * With this concept, you cannot ensure a consistent mapping state 
-     * in-between two iterations: While the first iteration might set some 
-     * mapping attributes, the attributes become invalid after the first 
-     * endIteration() call and might be changed from outside before the next 
+     * With this concept, you cannot ensure a consistent mapping state
+     * in-between two iterations: While the first iteration might set some
+     * mapping attributes, the attributes become invalid after the first
+     * endIteration() call and might be changed from outside before the next
      * beginIteration() is invoked.
      *
-     * To implement persistent attributes, you have to write back all these  
-     * attributes at endIteration() and reload them at the next beginIteration() 
-     * call. With this sometimes confusing persistency concept, we can ensure 
-     * that your code works on a parallel machine and for any mapping/algorithm 
+     * To implement persistent attributes, you have to write back all these
+     * attributes at endIteration() and reload them at the next beginIteration()
+     * call. With this sometimes confusing persistency concept, we can ensure
+     * that your code works on a parallel machine and for any mapping/algorithm
      * modification.
      */
     GlobalTimeStepComputation();
@@ -1117,34 +1117,9 @@ class exahype::mappings::GlobalTimeStepComputation {
 
 
     /**
-     * Begin an iteration
-     * 
-     * This operation is called whenever the algorithm tells Peano that the grid 
-     * is to be traversed, i.e. this operation is called before any creational 
-     * mapping operation or touchVertexFirstTime() or handleCell() is called.
-     * The operation receives a solver state that has to 
-     * encode the solver's state. Take this attribute to set the mapping's 
-     * attributes. This class' attributes will remain valid until endIteration()
-     * is called. Afterwards they might contain garbage.
+     * Start iteration/grid sweep
      *
-     * !!! Parallelisation
-     *
-     * If you run your code in parallel, beginIteration() and endIteration() 
-     * realise the following lifecycle together with the state object:
-     *
-     * - Receive the state from the master if there is a master.
-     * - beginIteration()
-     * - Distribute the state among the workers if there are workers.
-     * - Merge the states from the workers (if they exist) into the own state. 
-     * - endIteration()
-     * - Send the state to the master if there is a master.
-     *
-     * Please note that the beginIteration() time constraint is weakened in the 
-     * parallel case if you choose to receive data on the worker late. Then, 
-     * beginIteration() might not be called prior to any other event. See the 
-     * documentation of CommunicationSpecification for details.
-     *
-     * @see GlobalTimeStepComputation()
+     * Is called once per rank. Make the state clear its accumulated values.
      */
     void beginIteration(
       exahype::State&  solverState
@@ -1152,32 +1127,8 @@ class exahype::mappings::GlobalTimeStepComputation {
 
 
     /**
-     * Iteration is done
-     * 
-     * This operation is called at the very end, i.e. after all the handleCell() 
-     * and touchVertexLastTime() operations have been invoked. In this 
-     * operation, you have to write all the data you will need later on back to 
-     * the state object passed. Afterwards, the attributes of your mapping 
-     * object (as well as global static fields) might be overwritten.  
-     *
-     * !!! Parallelisation
-     *
-     * If you run your code in parallel, beginIteration() and endIteration() 
-     * realise the following lifecycle together with the state object:
-     *
-     * - Receive the state from the master if there is a master.
-     * - beginIteration()
-     * - Distribute the state among the workers if there are workers.
-     * - Merge the states from the workers (if they exist) into the own state. 
-     * - endIteration()
-     * - Send the state to the master if there is a master.
-     *
-     * Please note that the endIteration() time constraint is weakened in the 
-     * parallel case if you choose to send back data eagerly. Then, endIteration()
-     * might not be called after all other events. See the documentation 
-     * of CommunicationSpecification for details.
-     *
-     * @see GlobalTimeStepComputation()
+     * Merge back the local state into the solverState. This way, a new max
+     * global time step size might become active.
      */
     void endIteration(
       exahype::State&  solverState

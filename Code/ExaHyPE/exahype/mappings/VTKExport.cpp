@@ -4,9 +4,9 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/Constants.h"
-
 #include "exahype/aderdg/ADERDGIO.h"
+
+
 
 int exahype::mappings::VTKExport::_snapshotCounter = 0;
 
@@ -381,6 +381,10 @@ void exahype::mappings::VTKExport::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
+
+/*
 #ifdef Parallel
   if (!fineGridCell.isRefined() && !fineGridCell.isAssignedToRemoteRank()) {
 #else
@@ -400,6 +404,7 @@ void exahype::mappings::VTKExport::enterCell(
       double* luh = &(DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u);
       exahype::aderdg::io::exportToVTK<DIMENSIONS>(_vtkWriter,_vertexWriter,_cellWriter,_vertexValueWriter,luh,center,size,nvar,basisSize);
     }
+*/
     logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
   }
 

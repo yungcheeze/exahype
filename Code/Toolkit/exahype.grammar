@@ -30,21 +30,40 @@ Tokens
   token_end                   = 'end';
 
   token_project                   = 'exahype-project';
-  token_shared_memory             = 'shared-memory';
 
   token_peano_path                = 'peano-path';
   token_tarch_path                = 'tarch-path';
   token_exahype_path              = 'exahype-path';
   token_multiscalelinkedcell_path = 'multiscalelinkedcell-path';
   token_output_directory          = 'output-directory';
-  token_dimensions                = 'dimensions';
+
+
   token_computational_domain      = 'computational-domain';
+  token_dimension                 = 'dimension';
+  token_width                     = 'width';
+  token_offset                    = 'offset';
+  token_end_time                  = 'end-time';
+
+  token_solver                    = 'solver';
+  token_aderdg                    = 'ADER-DG';
+  token_variables                 = 'variables';
+  token_order                     = 'order';
+  token_kernel                    = 'kernel';
+
+  token_plot                      = 'plot';
+  token_variable                  = 'variable';
+  token_time                      = 'time';
+  token_repeat                    = 'repeat';
+  token_filename                  = 'filename';
   
+  token_shared_memory             = 'shared-memory';
   token_cores                     = 'cores';
   token_properties_file           = 'properties-file';
-  token_size                      = 'size';
-  token_offset                    = 'offset';
   token_identifier                = 'identifier';
+
+  token_optimisation              = 'optimisation';
+  token_fuse_algorithm_steps      = 'fuse-algorithmic-steps';
+
   
   token_on_off                    = 'on' | 'off';
   
@@ -53,6 +72,7 @@ Tokens
     
   blank                       = ( cr | lf | tab | ' ' ) +;
   identifier                  = nondigit ( digit | nondigit ) *;
+  typename                    = nondigit ( digit | nondigit | '::' ) *;
 
   int_number                  = digit+;
   float_number                = (digit+ | digit+ '.' digit+);
@@ -74,32 +94,25 @@ Ignored Tokens
 Productions
   
   project {->project} = 
-    {without_shared_mem}
       [begin_token]:token_project [name]:identifier 
-        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
-        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
-        token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
-        token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
-        token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
-        token_dimensions                 [dimensions_equals]:token_equals                       [dimensions]:int_number
+        paths
         computational_domain
+        solver_list?
+        shared_memory?
+        optimisation?
       token_end [end_token]:token_project
-        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, dimensions, computational_domain.computational_domain, [] ) }
-    |
-    {with_shared_mem}
-      [begin_token]:token_project [name]:identifier 
-        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
-        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
-        token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
-        token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
-        token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
-        token_dimensions                 [dimensions_equals]:token_equals                       [dimensions]:int_number
-        computational_domain
-        shared_memory
-      token_end [end_token]:token_project
-        { -> New project( name, peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory, dimensions, computational_domain.computational_domain, [shared_memory.shared_memory] ) }
-        ;
+        { -> New project( name, paths.paths, computational_domain.computational_domain, [solver_list.solver], optimisation.optimisation, shared_memory.shared_memory ) }
+    ;    
 
+  paths {->paths} =
+        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
+        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
+        token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename  
+        token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
+        token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+     { -> New paths(peano_path, tarch_path, multiscalelinkedcell_path, exahype_path, output_directory) }
+   ;
+    
   shared_memory {->shared_memory} =
     [begin_token]:token_shared_memory
       token_identifier [identifier_equals]:token_equals [identifier]:identifier
@@ -109,24 +122,82 @@ Productions
       { -> New shared_memory( cores,properties_file,identifier ) };
 
   computational_domain {->computational_domain} = 
-    [begin_token]:token_computational_domain
-      token_size    [size_equals]:token_equals     [size]:float_number
-      token_offset  [offset_equals]:token_equals   [offset_x]:float_number [comma_xy]:token_comma [offset_y]:float_number [comma_yz]:token_comma [offset_z]:float_number 
-    token_end [end_token]:token_computational_domain
-      { -> New computational_domain( size,offset_x,offset_y,offset_z ) };
-    
+     {two_dimensional}
+      [begin_token]:token_computational_domain
+       token_dimension  [dimension_equals]:token_equals    [dimension]:int_number
+       token_width      [width_equals]:token_equals        [width]:float_number
+       token_offset     [offset_equals]:token_equals       [offset_x]:float_number [comma_xy]:token_comma [offset_y]:float_number
+       token_end_time   [end_time_equals]:token_equals     [end_time]:float_number
+      token_end [end_token]:token_computational_domain
+       { -> New computational_domain.two_dimensional( dimension, width,offset_x,offset_y,end_time ) } |
+     {three_dimensional}
+      [begin_token]:token_computational_domain
+       token_dimension  [dimension_equals]:token_equals    [dimension]:int_number
+       token_width      [width_equals]:token_equals        [width]:float_number
+       token_offset     [offset_equals]:token_equals       [offset_x]:float_number [comma_xy]:token_comma [offset_y]:float_number [comma_yz]:token_comma [offset_z]:float_number 
+       token_end_time   [end_time_equals]:token_equals     [end_time]:float_number
+      token_end [end_token]:token_computational_domain
+       { -> New computational_domain.three_dimensional( dimension, width,offset_x,offset_y,offset_z,end_time ) };
+
+   optimisation {->optimisation} = 
+      [begin_token]:token_optimisation  
+        token_fuse_algorithm_steps [token_fuse_algorithm_steps_equals]:token_equals [fuse_algorithm_steps]:token_on_off
+      token_end [end_token]:token_optimisation
+        { -> New optimisation(fuse_algorithm_steps) }
+      ;
+
+   plot_solution_list {->plot_solution*} = 
+     [begin_token]:token_plot [plotter_type]:typename 
+       token_variable  [variable_equals]:token_equals [variable]:int_number 
+       token_time      [time_equals]:token_equals     [time]:float_number 
+       token_repeat    [repeat_equals]:token_equals   [repeat]:token_on_off 
+       token_filename  [filename_equals]:token_equals filename
+     token_end [end_token]:token_plot
+     plot_solution_list?
+       { -> [New plot_solution(plotter_type,variable,time,repeat,filename),plot_solution_list.plot_solution] }
+     ;
+     
+   solver_list {->solver*} = 
+     {aderdg} 
+       [begin_token]:token_solver token_aderdg [name]:identifier
+         token_variables [variables_equals]:token_equals [variables]:int_number
+         token_order     [order_equals]:token_equals     [order]:int_number
+         token_kernel    [kernel_equals]:token_equals    [kernel]:typename
+         plot_solution_list?
+       token_end [end_token]:token_solver
+       solver_list?
+       { -> [New solver.aderdg(name,variables,order,kernel,[plot_solution_list.plot_solution]),solver_list.solver] }
+     ;
 
 
 Abstract Syntax Tree
    project = 
-     [name]:identifier [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [exahype_path]:filename [output_directory]:filename [dimensions]:int_number
+     [name]:identifier 
+     paths
      computational_domain
-     shared_memory*    // grammar ensures that there is at most one
+     solver*
+     optimisation?
+     shared_memory?    
      ;
-   
+  
+   paths = 
+     [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [exahype_path]:filename [output_directory]:filename;
+    
    shared_memory = 
      [cores]:int_number [properties_file]:filename [identifier]:identifier;
 
    computational_domain = 
-     [size]:float_number [offset_x]:float_number [offset_y]:float_number [offset_z]:float_number;
-   
+     {two_dimensional}   [dimension]:int_number [width]:float_number [offset_x]:float_number [offset_y]:float_number [end_time]:float_number |
+     {three_dimensional} [dimension]:int_number [width]:float_number [offset_x]:float_number [offset_y]:float_number [offset_z]:float_number [end_time]:float_number
+     ;
+
+   optimisation = 
+     [fuse_algorithm_steps]:token_on_off;
+    
+   solver = 
+     {aderdg} [name]:identifier [variables]:int_number [order]:int_number [kernel]:typename plot_solution*
+     ;
+
+   plot_solution = 
+     [plotter_type]:typename [variable]:int_number [time]:float_number [repeat]:token_on_off filename;
+     

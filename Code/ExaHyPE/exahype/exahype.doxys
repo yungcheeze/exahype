@@ -8,7 +8,7 @@
   
   <pre>
   rm -rf adapters repositories dastgen 
-  java -jar ~/workspace/peano/pdt/pdt.jar --generate-gluecode exahype.peano-specification . ~/workspace/peano/pdt/usrtemplates:../../Peano/multiscalelinkedcell
+  java -jar ~/workspace/peano/pdt/pdt.jar --generate-gluecode exahype.specification . ~/workspace/peano/pdt/usrtemplates:../../Peano/multiscalelinkedcell
   </pre>
   
   

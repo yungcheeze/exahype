@@ -6,7 +6,6 @@
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
-#include "exahype/Constants.h"
 #include "exahype/aderdg/ADERDG.h"
 
 /**
@@ -353,6 +352,10 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
     const int numberOfFaceDof,
     const double * const normal
 ) {
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
+
+/*
   bool noBoundaryFace       = true;
   bool bothAreBoundaryFaces = false;
   int  cellIndex            = multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex;
@@ -439,11 +442,12 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
         QavR,
         lambdaL,
         lambdaR,
-        _localState.getOldTimeStepSize(),
+        _localState.getMaxTimeStepSize(),
 
         superfluousArgument,
         normal);
   }
+*/
 }
 
 void exahype::mappings::BoundaryConditions::touchVertexLastTime(
@@ -457,17 +461,22 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
 ) {
   logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
 
+
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
+
+/*
   if (
       fineGridVertex.getRefinementControl()==Vertex::Records::Unrefined // todo Replace by something that works for multiple PDEs. Must possible move into applyBoundaryConditions.
   ) {
-    assertion1WithExplanation(_localState.getOldTimeStepSize() < std::numeric_limits<double>::max(),_localState.getOldTimeStepSize(),"Old time step size was not initialised correctly!");
+    assertion1WithExplanation(_localState.getMaxTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size is not initialised correctly!");
 
     tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
     // todo: DEC: Reverse engineered indices from
     // PatchInitialisation2MultiscaleLinkedCell_1::touchVertexLastTime(...)
     // Not sure what happens with hanging nodes.
 
-    /*
+
      * Right cell-left cell   pair indices: 0,1; 2,3;   4,5; 6;7
      * Front cell-back cell   pair indices: 0,2; 1,3;   4,6; 5;7
      * Top   cell-bottom cell pair indices: 0,4; 1,5;   2,6; 3;7
@@ -476,7 +485,7 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
      * has always the "opposite" index, i.e., we solve a Riemann
      * problem on the left face of the right cell (which
      * is the right face of the left cell).
-     */
+
 
     constexpr int basisSize   = EXAHYPE_ORDER+1;
     constexpr int nvar        = EXAHYPE_NVARS;
@@ -531,6 +540,7 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
 #endif
     }
   }
+*/
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
@@ -565,7 +575,7 @@ void exahype::mappings::BoundaryConditions::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  _localState.setOldTimeStepSize(solverState.getOldTimeStepSize());
+  _localState = solverState;
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }

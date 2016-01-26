@@ -31,11 +31,17 @@ namespace exahype {
 
 
 /**
- * This is a mapping from the spacetree traversal events to your user-defined activities.
- * The latter are realised within the mappings. 
+ * Update the solution
+ *
+ * We run over all cells of the local spacetree
+ *
+ * - take the predicted data within each cell
+ * - add the contribution from the Riemann solve to the predicted data
+ * - mark the cell with the new time stamp
+ *
+ * All this is done in enterCell(). As the
  * 
- * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
- * @version $Revision: 1.10 $
+ * @author Dominic Charrier Tobias Weinzierl
  */
 class exahype::mappings::SolutionUpdate {
   private:
@@ -46,6 +52,9 @@ class exahype::mappings::SolutionUpdate {
 
     /**
      * Local copy of the state.
+     *
+     * Is set in beginIteration() and yields the maximal time step size we may
+     * do. We use the local state to determine the global minimum time stamp.
      */
     exahype::State _localState;
 
@@ -70,47 +79,13 @@ class exahype::mappings::SolutionUpdate {
 
 
     /**
-     * Mapping constructor.
-     *
-     * Mappings have to have a standard constructor and, typically, no other 
-     * constructor does exist. While the constructor may initialise a mapping, 
-     * Peano's concept requires the mapping to be semi-stateless:
-     *
-     * - At construction time the mapping has no well-defined state, i.e. the 
-     *   values set by the constructor are meaningless.
-     * - Whenever the mapping's beginIteration() operation is called, the 
-     *   mapping has to initialise itself. To do this, it has to analyse the 
-     *   passed state object. The beginIteration() operation may set attributes 
-     *   of the mapping and these attributes now have a valid state.
-     * - All the subsequent calls on the mapping can rely on valid mapping 
-     *   attributes until
-     * - The operation endIteration() is invoked. Afterwards, all the mapping's 
-     *   attributes have an undefined state.
-     *
-     * With this concept, you cannot ensure a consistent mapping state 
-     * in-between two iterations: While the first iteration might set some 
-     * mapping attributes, the attributes become invalid after the first 
-     * endIteration() call and might be changed from outside before the next 
-     * beginIteration() is invoked.
-     *
-     * To implement persistent attributes, you have to write back all these  
-     * attributes at endIteration() and reload them at the next beginIteration() 
-     * call. With this sometimes confusing persistency concept, we can ensure 
-     * that your code works on a parallel machine and for any mapping/algorithm 
-     * modification.
+     * Nop
      */
     SolutionUpdate();
 
     #if defined(SharedMemoryParallelisation)
     /**
-     * Copy constructor for multithreaded code
-     *
-     * If Peano uses several cores, the mappings are duplicated due to this 
-     * copy constructor.
-     *
-     * This operation is thread-safe, i.e. you need no semaphores here. 
-     *
-     * @see mergeWithWorkerThread()
+     * Copy the local state object over to the worker thread.
      */
     SolutionUpdate(const SolutionUpdate& masterThread);
     #endif
@@ -1117,34 +1092,10 @@ class exahype::mappings::SolutionUpdate {
 
 
     /**
-     * Begin an iteration
-     * 
-     * This operation is called whenever the algorithm tells Peano that the grid 
-     * is to be traversed, i.e. this operation is called before any creational 
-     * mapping operation or touchVertexFirstTime() or handleCell() is called.
-     * The operation receives a solver state that has to 
-     * encode the solver's state. Take this attribute to set the mapping's 
-     * attributes. This class' attributes will remain valid until endIteration()
-     * is called. Afterwards they might contain garbage.
+     * Local iteration is about to start
      *
-     * !!! Parallelisation
-     *
-     * If you run your code in parallel, beginIteration() and endIteration() 
-     * realise the following lifecycle together with the state object:
-     *
-     * - Receive the state from the master if there is a master.
-     * - beginIteration()
-     * - Distribute the state among the workers if there are workers.
-     * - Merge the states from the workers (if they exist) into the own state. 
-     * - endIteration()
-     * - Send the state to the master if there is a master.
-     *
-     * Please note that the beginIteration() time constraint is weakened in the 
-     * parallel case if you choose to receive data on the worker late. Then, 
-     * beginIteration() might not be called prior to any other event. See the 
-     * documentation of CommunicationSpecification for details.
-     *
-     * @see SolutionUpdate()
+     * Copy the passed state solverState into _localState. We need the copy as
+     * we have to know the time step size
      */
     void beginIteration(
       exahype::State&  solverState
@@ -1154,30 +1105,8 @@ class exahype::mappings::SolutionUpdate {
     /**
      * Iteration is done
      * 
-     * This operation is called at the very end, i.e. after all the handleCell() 
-     * and touchVertexLastTime() operations have been invoked. In this 
-     * operation, you have to write all the data you will need later on back to 
-     * the state object passed. Afterwards, the attributes of your mapping 
-     * object (as well as global static fields) might be overwritten.  
-     *
-     * !!! Parallelisation
-     *
-     * If you run your code in parallel, beginIteration() and endIteration() 
-     * realise the following lifecycle together with the state object:
-     *
-     * - Receive the state from the master if there is a master.
-     * - beginIteration()
-     * - Distribute the state among the workers if there are workers.
-     * - Merge the states from the workers (if they exist) into the own state. 
-     * - endIteration()
-     * - Send the state to the master if there is a master.
-     *
-     * Please note that the endIteration() time constraint is weakened in the 
-     * parallel case if you choose to send back data eagerly. Then, endIteration()
-     * might not be called after all other events. See the documentation 
-     * of CommunicationSpecification for details.
-     *
-     * @see SolutionUpdate()
+     * We merge back the local state into solverState. It might have changed as we
+     * update _localState with the minimal time stamp we find in the grid.
      */
     void endIteration(
       exahype::State&  solverState
@@ -1255,11 +1184,6 @@ class exahype::mappings::SolutionUpdate {
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
     );
-
-    /**
-     * @brief Returns this mapping's local copy of the state.
-     */
-    const exahype::State& getState() const;
 };
 
 

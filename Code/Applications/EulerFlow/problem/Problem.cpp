@@ -2,6 +2,8 @@
 
 #include "EulerFlow/Constants.h"
 
+#include "string.h"
+
 #include "cmath"
 
 // UNCOMMENT FOR DEBUGGING PURPOSES
@@ -31,7 +33,7 @@ void exahype::problem::PDEFlux(const double * restrict const /*in*/ Q,
   const double irho = 1.0/Q[0];
   const double p = (GAMMA-1)*( Q[4] - 0.5* (Q[1]*Q[1] + Q[2]*Q[2]) * irho );
 
-  f[0] = Q[1];
+  /*f[0] = Q[1];
   f[1] = irho*Q[1]*Q[1] + p;
   f[2] = irho*Q[1]*Q[2];
   f[3] = irho*Q[1]*Q[3];
@@ -41,7 +43,26 @@ void exahype::problem::PDEFlux(const double * restrict const /*in*/ Q,
   g[1] = irho*Q[2]*Q[1];
   g[2] = irho*Q[2]*Q[2] + p;
   g[3] = irho*Q[2]*Q[3];
-  g[4] = irho*Q[2]*(Q[4]+p);
+  g[4] = irho*Q[2]*(Q[4]+p);*/
+
+  f[0] = Q[1];
+  for(int i=1;i<5;i++) {
+    f[i] = irho*Q[1];
+  }
+  f[1] = f[1] * Q[1] + p;
+  f[2] = f[2] * Q[2];
+  f[3] = f[3] * Q[3];
+  f[4] = f[4] * (Q[4]+p);
+
+  g[0] = Q[2];
+  for(int i=1; i<5; i++) {
+    g[i] = irho*Q[2];
+  }
+  g[1] = g[1]*Q[1];
+  g[2] = g[2]*Q[2]+p;
+  g[3] = g[3]*Q[3];
+  g[4] = g[4] * (Q[4]+p);
+
 }
 
 void exahype::problem::PDEFlux(const double * restrict const /*in*/ Q,

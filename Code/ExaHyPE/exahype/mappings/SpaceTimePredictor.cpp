@@ -2,7 +2,6 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/Constants.h"
 #include "exahype/aderdg/ADERDG.h"
 
 /**
@@ -367,6 +366,10 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
+
+/*
   // ! Begin of code for the DG method.
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
@@ -408,13 +411,14 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
         rhs,
         tmp,
         size,
-        _localState.getTimeStepSize());
+        _localState.getMaxTimeStepSize());
 
     // clean up
     free(rhs0);
     free(rhs);
     free(tmp);
   }
+*/
 
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
@@ -439,7 +443,7 @@ void exahype::mappings::SpaceTimePredictor::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  _localState.setTimeStepSize(solverState.getTimeStepSize());
+  _localState = solverState;
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }

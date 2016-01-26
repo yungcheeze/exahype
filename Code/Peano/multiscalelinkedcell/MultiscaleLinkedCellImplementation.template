@@ -6,7 +6,7 @@
 #include "peano/grid/CellFlags.h"
 
 
-#include "ExaHyPeDataStructure/multiscalelinkedcell/HangingVertexBookkeeper.h"
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 #include "__PROJECT_PATH__/VertexOperations.h"
 
 

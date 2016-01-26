@@ -79,35 +79,46 @@ class exahype::State: public peano::grid::State< exahype::records::State > {
       **/
     ///@{
     /*
-     * Set the time step size of this state.
+     * Set the time step size of this state. It is the minimum of the
+     * current time step size and the argument.
      */
-    void setTimeStepSize(const double newTimeStepSize);
+    void updateMaxTimeStepSize(const double timeStepSize);
+
+    void updateTimeStamp(const double timeStamp);
 
     /**
-     * Set the time step size to the maximum double value.
+     * Reset all accumulated values:
+     *
+     * - Set the time step size to the maximum double value.
      */
-    void setTimeStepSizeToMaxValue();
+    void resetAccumulatedValues();
+
+    /**
+     * - Backup the current max time step into oldMaximumTimeStepSize
+     *
+     */
+    void startNewTimeStep();
 
     /*
-     * Get the time step size of this state.
+     * This operation always returns the field old time step size, as the field
+     * maxTimeStepSize is actually used to determine the new/upcoming max time
+     * step size through global reduction.
      */
-    double getTimeStepSize(void) const;
-
-    /*
-     * Set the old time step size of this state.
-     */
-    void setOldTimeStepSize(const double newOldTimeStepSize);
-
-    /*
-     * Get the old time step size of this state.
-     */
-    double getOldTimeStepSize(void) const;
+    double getMaxTimeStepSize() const;
 
     /*
      * Set the minimum time step size of this state and another state as the time
      * step size of this state.
+     *
+     * @todo Clarify which stuff has to be merged
      */
-    void setMinimumTimeStepSizeOfBoth(State anotherState);
+    void merge(const State& anotherState);
+
+    /**
+     * @return Minimum of global time stamps. If you do not use local time
+     *         stepping, this value equals the global time of the simulation.
+     */
+    double getMinimalGlobalTimeStamp() const;
     ///@}
 };
 

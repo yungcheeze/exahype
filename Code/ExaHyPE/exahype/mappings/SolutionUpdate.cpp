@@ -2,7 +2,6 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/Constants.h"
 #include "exahype/aderdg/ADERDG.h"
 
 /**
@@ -363,6 +362,9 @@ void exahype::mappings::SolutionUpdate::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
+/*
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
         ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
@@ -379,10 +381,15 @@ void exahype::mappings::SolutionUpdate::enterCell(
         luhOld,
         lduh,
         size,
-        _localState.getOldTimeStepSize(),
+        _localState.getMaxTimeStepSize(),
         nvar,
         basisSize);
+
+    const double newTimeStamp = cellDescription.getTimeStamp() + _localState.getMaxTimeStepSize();
+    cellDescription.setTimeStamp( newTimeStamp );
+    _localState.updateTimeStamp( newTimeStamp );
   }
+*/
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
@@ -406,7 +413,7 @@ void exahype::mappings::SolutionUpdate::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  _localState.setOldTimeStepSize(solverState.getOldTimeStepSize());
+  _localState = solverState;
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
@@ -415,7 +422,7 @@ void exahype::mappings::SolutionUpdate::beginIteration(
 void exahype::mappings::SolutionUpdate::endIteration(
     exahype::State&  solverState
 ) {
-  // do nothing
+  solverState.merge(_localState);
 }
 
 
@@ -441,8 +448,4 @@ void exahype::mappings::SolutionUpdate::ascend(
     exahype::Cell&           coarseGridCell
 ) {
   // do nothing
-}
-
-const exahype::State& exahype::mappings::SolutionUpdate::getState() const {
-  return _localState;
 }

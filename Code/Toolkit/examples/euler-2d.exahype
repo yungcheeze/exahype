@@ -1,0 +1,58 @@
+/**
+ 
+ Trivial Project
+ 
+ A trivial project without any content.
+
+ */
+exahype-project  Euler2d
+
+  peano-path                 = ./Peano/peano
+  tarch-path                 = ./Peano/tarch
+  multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
+  exahype-path               = ./ExaHyPE
+  
+  output-directory           = ./Applications/eulerflow2d
+  
+  
+  computational-domain
+    dimension                = 2
+    width                    = 1.0
+    offset                   = 0.0, 0.0
+    end-time                 = 0.1
+  end computational-domain
+ 
+  
+  solver ADER-DG MyEuler2d
+    variables = 5
+    order     = 3
+    kernel    = user::fluxes
+    
+    plot vtk::binary
+      variable = 0 
+      time     = 0.02
+      repeat   = on
+      filename = ./q1
+    end plot
+
+    plot vtk::text
+      variable = 1
+      time     = 0.02
+      repeat   = on
+      filename = ./q2
+    end plot
+  end solver
+
+  shared-memory
+    identifier               = autotuning
+    cores                    = 4
+    properties-file          = sharedmemory.properties
+  end shared-memory  
+
+
+  optimisation
+    fuse-algorithmic-steps   = on
+  end optimisation  
+  
+
+end exahype-project  

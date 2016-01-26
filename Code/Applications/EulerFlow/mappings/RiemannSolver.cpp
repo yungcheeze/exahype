@@ -397,10 +397,10 @@ void exahype::mappings::RiemannSolver::enterCell(
     const double ny[3]= { 0., 1., 0. };
 
     // work vectors
-    double QavL   [EXAHYPE_NVARS]; // av: average
-    double QavR   [EXAHYPE_NVARS];
-    double lambdaL[EXAHYPE_NVARS];
-    double lambdaR[EXAHYPE_NVARS];
+    double QavL   [EXAHYPE_NVARS] __attribute__((aligned(ALIGNMENT))); // av: average
+    double QavR   [EXAHYPE_NVARS] __attribute__((aligned(ALIGNMENT)));
+    double lambdaL[EXAHYPE_NVARS] __attribute__((aligned(ALIGNMENT)));
+    double lambdaR[EXAHYPE_NVARS] __attribute__((aligned(ALIGNMENT)));
 
     assertion1WithExplanation(_localState.getOldTimeStepSize() < std::numeric_limits<double>::max(),_localState.getOldTimeStepSize(),"Old time step size was not initialised correctly!");
 

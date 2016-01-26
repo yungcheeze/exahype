@@ -70,14 +70,17 @@ public:
     return ADERDGADERDGCellDescriptionHeap::getInstance().getData(getADERDGCellDescriptionsIndex())[pdeIndex];
   }
 
-  void initCellWithDefaultValues();
-
-  void initCellInComputeTree(
-      const int level,
-      const tarch::la::Vector<DIMENSIONS,double> size,
-      const int numberOfPDEs,
-      const int order,
-      const int numberOfVariables);
+  /**
+   * Per existing cell, the initialisation has to run over all solvers that
+   * shall be realised. For a given solver/PDE a patch is to be created if
+   * the cell's level equals getMinimumTreeDepth() of if the tree is
+   * unrefined.
+   */
+  void init(
+    const int                                    level,
+    const tarch::la::Vector<DIMENSIONS,double>&  size,
+    const tarch::la::Vector<DIMENSIONS,double>&  cellCentre
+  );
   // ! End of code for multiscalelinkedcell toolbox
 };
 

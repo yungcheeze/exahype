@@ -2,8 +2,8 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/Constants.h"
 #include "exahype/aderdg/ADERDG.h"
+
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -359,6 +359,9 @@ void exahype::mappings::VolumeIntegral::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
+/*
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
         ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
@@ -374,6 +377,7 @@ void exahype::mappings::VolumeIntegral::enterCell(
         size);
 
   }
+*/
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
