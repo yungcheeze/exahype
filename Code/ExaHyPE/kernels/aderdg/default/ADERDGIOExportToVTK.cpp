@@ -107,7 +107,7 @@ double exahype::aderdg::io::exportToVTK<2>(
       const double s = uniformCoordinates[1][nodeIndex];
 
       // ADERDG VTK export kernel
-      geometry::mapping2d(center[0],center[1],dx[0],dx[0],r,s,&x,&y);
+      geometry::mapping2d(center[0],center[1],dx[0],dx[1],r,s,&x,&y);
       tarch::la::Vector<DIMENSIONS,double> currentVertexPosition(x,y);
 
       // input basisSize,nvar,vertexWriter*,cellWriter*,VertexValueWriter*
