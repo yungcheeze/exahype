@@ -277,7 +277,7 @@ void exahype::dg::spaceTimePredictor<2>(
 
   for (int ii=0; ii<basisSize; ii++) { // loop over dof
     for (int jj=0; jj<basisSize; jj++) {
-      const int nodeIndex         = ii + basisSize * jj;
+      const int nodeIndex         = jj + basisSize * ii;
       const int dofStartIndex     = nodeIndex * nvar;
       //const int fluxDofStartIndex = dim * dofStartIndex;
 
@@ -297,8 +297,8 @@ void exahype::dg::spaceTimePredictor<2>(
         for(int ivar=0; ivar < nvar; ivar++) {
           lQhi[dofStartIndex+ivar] += weight * Q[ivar];
 
-          lFhi_x[dofStartIndex+ivar] += weight * f[ivar];
-          lFhi_y[dofStartIndex+ivar] += weight * g[ivar];
+          lFhi_x[dofStartIndex+ivar] += weight * f[ivar]; // lFhi_x(i,j,nVar)
+          lFhi_y[dofStartIndex+ivar] += weight * g[ivar]; // lFhi_y(i,j,nVar)
         }
       }
     }
