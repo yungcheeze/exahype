@@ -19,7 +19,7 @@
 namespace exahype {
   class Cell;
   // ! Begin of code for multiscalelinkedcell toolbox..
-  typedef peano::heap::PlainHeap< exahype::records::ADERDGCellDescription > ADERDGADERDGCellDescriptionHeap;
+  typedef peano::heap::PlainHeap< exahype::records::ADERDGCellDescription >  ADERDGCellDescriptionHeap;
   typedef peano::heap::PlainDoubleHeap DataHeap;
   // ! End of code for multiscalelinkedcell toolbox.
 }
@@ -35,6 +35,7 @@ class exahype::Cell: public peano::grid::Cell< exahype::records::Cell > {
 private:
   typedef class peano::grid::Cell< exahype::records::Cell >  Base;
 
+  static tarch::logging::Log _log;
 public:
   /**
    * Default Constructor
@@ -67,7 +68,7 @@ public:
   int getADERDGCellDescriptionsIndex() const;
 
   inline exahype::records::ADERDGCellDescription& getADERDGCellDescription(int pdeIndex) {
-    return ADERDGADERDGCellDescriptionHeap::getInstance().getData(getADERDGCellDescriptionsIndex())[pdeIndex];
+    return ADERDGCellDescriptionHeap::getInstance().getData(getADERDGCellDescriptionsIndex())[pdeIndex];
   }
 
   /**

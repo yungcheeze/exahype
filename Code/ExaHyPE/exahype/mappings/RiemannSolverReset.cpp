@@ -358,6 +358,8 @@ void exahype::mappings::RiemannSolverReset::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
+  // @todo Wieder reinnehmen
+/*
   if (!fineGridCell.isRefined()) {
     records::ADERDGCellDescription& cellDescription =
         ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
@@ -367,6 +369,7 @@ void exahype::mappings::RiemannSolverReset::enterCell(
 
     assertion1(cellDescription.getRiemannSolvePerformed().none(),cellDescription.toString());
   }
+*/
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }

@@ -385,10 +385,8 @@ void exahype::mappings::PatchInitialisation::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  // ! Begin of code for multiscalelinkedcell toolbox.
-  ADERDGADERDGCellDescriptionHeap::getInstance().setName("cell-description-heap");
+  ADERDGCellDescriptionHeap::getInstance().setName("cell-description-heap");
   DataHeap::getInstance().setName("data-heap");
-  // ! End of code for multiscalelinkedcell toolbox.
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }

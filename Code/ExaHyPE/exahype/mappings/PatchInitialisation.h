@@ -32,9 +32,6 @@ namespace exahype {
   namespace mappings {
     class PatchInitialisation;
   }
-
-  typedef peano::heap::PlainHeap< exahype::records::ADERDGCellDescription > ADERDGADERDGCellDescriptionHeap;
-  typedef peano::heap::PlainDoubleHeap DataHeap;
 }
 
 
