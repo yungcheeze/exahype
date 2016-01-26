@@ -17,23 +17,22 @@
 #ifndef GAUSSLEGENDRE_H_
 #define GAUSSLEGENDRE_H_
 
-#include "exahype/Constants.h"
+
 
 namespace exahype {
   namespace quad {
-    /** \brief The maximum number of supported nodes.**/
-    extern const double gaussLegendreMaxNodes;
+    void initGaussLegendreNodesAndWeights();
 
     /**
-     * \brief The Gauss-Legendre weights mapped onto [0,1]
+     * The Gauss-Legendre weights mapped onto [0,1]. Array of arrays. The first entry is the order, the second entry the Legendre point.
      **/
-    extern const double gaussLegendreWeights[EXAHYPE_ORDER+1];
+    extern double** gaussLegendreWeights;
 
     /**
-     * \brief The Gauss-Legendre nodes mapped onto [0,1]
+     * The Gauss-Legendre nodes mapped onto [0,1]. Array of arrays. The first entry is the order, the second entry the Legendre point.
      **/
-    extern const double gaussLegendreNodes[EXAHYPE_ORDER+1];
+    extern double** gaussLegendreNodes;
   }
 }
 
-#endif /* GAUSSLEGENDRE_H_ */
+#endif

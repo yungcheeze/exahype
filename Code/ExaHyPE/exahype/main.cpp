@@ -9,6 +9,7 @@
 #include "exahype/runners/Runner.h"
 
 #include "kernels/KernelCalls.h"
+#include "kernels/quad/GaussLegendre.h"
 
 
 
@@ -85,6 +86,7 @@ int main(int argc, char** argv) {
   // ============
   //
   kernels::initSolvers();
+  kernels::quad::initGaussLegendreNodesAndWeights();
 
   exahype::runners::Runner runner(parser);
   int programExitCode = runner.run();

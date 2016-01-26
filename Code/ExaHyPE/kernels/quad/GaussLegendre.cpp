@@ -1,7 +1,21 @@
 #include "kernels/quad/GaussLegendre.h"
 
-const double exahype::quad::gaussLegendreMaxNodes = 10;
+void exahype::quad::initGaussLegendreNodesAndWeights() {
+  const int MaxOrder = 9;
 
+  gaussLegendreNodes   = new double*[MaxOrder];
+  gaussLegendreWeights = new double*[MaxOrder];
+
+  for (int i=0; i<MaxOrder; i++) {
+    gaussLegendreNodes[i]   = new double[i+1];
+    gaussLegendreWeights[i] = new double[i+1];
+  }
+
+  gaussLegendreWeights[0][0] = {1.0000000000000000};
+  gaussLegendreNodes[0][0]   = {0.5000000000000000};
+}
+
+/*
 #if EXAHYPE_ORDER==0
     const double exahype::quad::gaussLegendreWeights[EXAHYPE_ORDER+1] =
         {1.0000000000000000};
@@ -54,3 +68,5 @@ const double exahype::quad::gaussLegendreMaxNodes = 10;
         {0.0130467357414141, 0.0674683166555077, 0.1602952158504878, 0.2833023029353764, 0.4255628305091844, 0.5744371694908156, 0.7166976970646236, 0.8397047841495122, 0.9325316833444923, 0.9869532642585859};
 #endif
 
+
+*/
