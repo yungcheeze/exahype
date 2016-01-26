@@ -63,26 +63,20 @@ class exahype::repositories::Repository {
      * Switch to another event handle.
      */
     virtual void switchToInitialGrid() = 0;    
-    virtual void switchToGridExport() = 0;    
     virtual void switchToPatchInitialisation() = 0;    
-    virtual void switchToPatchInitialisationAndExport() = 0;    
     virtual void switchToFaceDataExchange() = 0;    
     virtual void switchToInitialConditionAndGlobalTimeStepComputation() = 0;    
-    virtual void switchToInitialConditionAndExportAndGlobalTimeStepComputation() = 0;    
     virtual void switchToPredictorAndGlobalTimeStepComputation() = 0;    
     virtual void switchToCorrectorAndPredictorAndGlobalTimeStepComputation() = 0;    
-    virtual void switchToCorrectorAndPredictorAndGlobalTimeStepComputationAndExport() = 0;    
+    virtual void switchToPlot() = 0;    
 
     virtual bool isActiveAdapterInitialGrid() const = 0;
-    virtual bool isActiveAdapterGridExport() const = 0;
     virtual bool isActiveAdapterPatchInitialisation() const = 0;
-    virtual bool isActiveAdapterPatchInitialisationAndExport() const = 0;
     virtual bool isActiveAdapterFaceDataExchange() const = 0;
     virtual bool isActiveAdapterInitialConditionAndGlobalTimeStepComputation() const = 0;
-    virtual bool isActiveAdapterInitialConditionAndExportAndGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterPredictorAndGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterCorrectorAndPredictorAndGlobalTimeStepComputation() const = 0;
-    virtual bool isActiveAdapterCorrectorAndPredictorAndGlobalTimeStepComputationAndExport() const = 0;
+    virtual bool isActiveAdapterPlot() const = 0;
 
 
     /**

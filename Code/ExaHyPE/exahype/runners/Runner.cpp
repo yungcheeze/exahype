@@ -125,10 +125,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     repository.iterate();
   } while (!repository.getState().isGridBalanced());
 
-  // @todo Das muss raus!
-  repository.switchToGridExport();                // export the grid
-  repository.iterate();
-
   repository.switchToPatchInitialisation();       // initialise the cell descriptions;
   repository.iterate();
 
@@ -136,7 +132,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    * Apply the initial conditions.
    * Then, compute the the initial current time step size.
    */
-  repository.switchToInitialConditionAndExportAndGlobalTimeStepComputation();
+  repository.switchToInitialConditionAndGlobalTimeStepComputation();
   repository.iterate();
 
   /*

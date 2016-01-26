@@ -14,15 +14,12 @@
 #include "peano/stacks/VertexSTDStack.h"
 
  #include "exahype/adapters/InitialGrid.h" 
- #include "exahype/adapters/GridExport.h" 
  #include "exahype/adapters/PatchInitialisation.h" 
- #include "exahype/adapters/PatchInitialisationAndExport.h" 
  #include "exahype/adapters/FaceDataExchange.h" 
  #include "exahype/adapters/InitialConditionAndGlobalTimeStepComputation.h" 
- #include "exahype/adapters/InitialConditionAndExportAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/CorrectorAndPredictorAndGlobalTimeStepComputation.h" 
- #include "exahype/adapters/CorrectorAndPredictorAndGlobalTimeStepComputationAndExport.h" 
+ #include "exahype/adapters/Plot.h" 
 
 
 namespace peano {

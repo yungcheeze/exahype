@@ -17,15 +17,12 @@
 
 
  #include "exahype/adapters/InitialGrid.h" 
- #include "exahype/adapters/GridExport.h" 
  #include "exahype/adapters/PatchInitialisation.h" 
- #include "exahype/adapters/PatchInitialisationAndExport.h" 
  #include "exahype/adapters/FaceDataExchange.h" 
  #include "exahype/adapters/InitialConditionAndGlobalTimeStepComputation.h" 
- #include "exahype/adapters/InitialConditionAndExportAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/CorrectorAndPredictorAndGlobalTimeStepComputation.h" 
- #include "exahype/adapters/CorrectorAndPredictorAndGlobalTimeStepComputationAndExport.h" 
+ #include "exahype/adapters/Plot.h" 
 
 
 
@@ -52,40 +49,31 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::TraversalOrderOnTopLevel                                         _traversalOrderOnTopLevel;
 
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialGrid> _gridWithInitialGrid;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GridExport> _gridWithGridExport;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PatchInitialisation> _gridWithPatchInitialisation;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PatchInitialisationAndExport> _gridWithPatchInitialisationAndExport;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::FaceDataExchange> _gridWithFaceDataExchange;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialConditionAndGlobalTimeStepComputation> _gridWithInitialConditionAndGlobalTimeStepComputation;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialConditionAndExportAndGlobalTimeStepComputation> _gridWithInitialConditionAndExportAndGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictorAndGlobalTimeStepComputation> _gridWithPredictorAndGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::CorrectorAndPredictorAndGlobalTimeStepComputation> _gridWithCorrectorAndPredictorAndGlobalTimeStepComputation;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::CorrectorAndPredictorAndGlobalTimeStepComputationAndExport> _gridWithCorrectorAndPredictorAndGlobalTimeStepComputationAndExport;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Plot> _gridWithPlot;
 
      
    exahype::records::RepositoryState               _repositoryState;
    
     tarch::timing::Measurement _measureInitialGridCPUTime;
-    tarch::timing::Measurement _measureGridExportCPUTime;
     tarch::timing::Measurement _measurePatchInitialisationCPUTime;
-    tarch::timing::Measurement _measurePatchInitialisationAndExportCPUTime;
     tarch::timing::Measurement _measureFaceDataExchangeCPUTime;
     tarch::timing::Measurement _measureInitialConditionAndGlobalTimeStepComputationCPUTime;
-    tarch::timing::Measurement _measureInitialConditionAndExportAndGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measurePredictorAndGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measureCorrectorAndPredictorAndGlobalTimeStepComputationCPUTime;
-    tarch::timing::Measurement _measureCorrectorAndPredictorAndGlobalTimeStepComputationAndExportCPUTime;
+    tarch::timing::Measurement _measurePlotCPUTime;
 
     tarch::timing::Measurement _measureInitialGridCalendarTime;
-    tarch::timing::Measurement _measureGridExportCalendarTime;
     tarch::timing::Measurement _measurePatchInitialisationCalendarTime;
-    tarch::timing::Measurement _measurePatchInitialisationAndExportCalendarTime;
     tarch::timing::Measurement _measureFaceDataExchangeCalendarTime;
     tarch::timing::Measurement _measureInitialConditionAndGlobalTimeStepComputationCalendarTime;
-    tarch::timing::Measurement _measureInitialConditionAndExportAndGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measurePredictorAndGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measureCorrectorAndPredictorAndGlobalTimeStepComputationCalendarTime;
-    tarch::timing::Measurement _measureCorrectorAndPredictorAndGlobalTimeStepComputationAndExportCalendarTime;
+    tarch::timing::Measurement _measurePlotCalendarTime;
 
    
   public:
@@ -126,26 +114,20 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual peano::grid::Checkpoint<exahype::Vertex, exahype::Cell>* createEmptyCheckpoint(); 
 
     virtual void switchToInitialGrid();    
-    virtual void switchToGridExport();    
     virtual void switchToPatchInitialisation();    
-    virtual void switchToPatchInitialisationAndExport();    
     virtual void switchToFaceDataExchange();    
     virtual void switchToInitialConditionAndGlobalTimeStepComputation();    
-    virtual void switchToInitialConditionAndExportAndGlobalTimeStepComputation();    
     virtual void switchToPredictorAndGlobalTimeStepComputation();    
     virtual void switchToCorrectorAndPredictorAndGlobalTimeStepComputation();    
-    virtual void switchToCorrectorAndPredictorAndGlobalTimeStepComputationAndExport();    
+    virtual void switchToPlot();    
 
     virtual bool isActiveAdapterInitialGrid() const;
-    virtual bool isActiveAdapterGridExport() const;
     virtual bool isActiveAdapterPatchInitialisation() const;
-    virtual bool isActiveAdapterPatchInitialisationAndExport() const;
     virtual bool isActiveAdapterFaceDataExchange() const;
     virtual bool isActiveAdapterInitialConditionAndGlobalTimeStepComputation() const;
-    virtual bool isActiveAdapterInitialConditionAndExportAndGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterPredictorAndGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterCorrectorAndPredictorAndGlobalTimeStepComputation() const;
-    virtual bool isActiveAdapterCorrectorAndPredictorAndGlobalTimeStepComputationAndExport() const;
+    virtual bool isActiveAdapterPlot() const;
 
    
     #ifdef Parallel

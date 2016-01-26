@@ -38,22 +38,19 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case Terminate: return "Terminate";
       case RunOnAllNodes: return "RunOnAllNodes";
       case UseAdapterInitialGrid: return "UseAdapterInitialGrid";
-      case UseAdapterGridExport: return "UseAdapterGridExport";
       case UseAdapterPatchInitialisation: return "UseAdapterPatchInitialisation";
-      case UseAdapterPatchInitialisationAndExport: return "UseAdapterPatchInitialisationAndExport";
       case UseAdapterFaceDataExchange: return "UseAdapterFaceDataExchange";
       case UseAdapterInitialConditionAndGlobalTimeStepComputation: return "UseAdapterInitialConditionAndGlobalTimeStepComputation";
-      case UseAdapterInitialConditionAndExportAndGlobalTimeStepComputation: return "UseAdapterInitialConditionAndExportAndGlobalTimeStepComputation";
       case UseAdapterPredictorAndGlobalTimeStepComputation: return "UseAdapterPredictorAndGlobalTimeStepComputation";
       case UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputation: return "UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputation";
-      case UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputationAndExport: return "UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputationAndExport";
+      case UseAdapterPlot: return "UseAdapterPlot";
       case NumberOfAdapters: return "NumberOfAdapters";
    }
    return "undefined";
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterInitialGrid=4,UseAdapterGridExport=5,UseAdapterPatchInitialisation=6,UseAdapterPatchInitialisationAndExport=7,UseAdapterFaceDataExchange=8,UseAdapterInitialConditionAndGlobalTimeStepComputation=9,UseAdapterInitialConditionAndExportAndGlobalTimeStepComputation=10,UseAdapterPredictorAndGlobalTimeStepComputation=11,UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputation=12,UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputationAndExport=13,NumberOfAdapters=14)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterInitialGrid=4,UseAdapterPatchInitialisation=5,UseAdapterFaceDataExchange=6,UseAdapterInitialConditionAndGlobalTimeStepComputation=7,UseAdapterPredictorAndGlobalTimeStepComputation=8,UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputation=9,UseAdapterPlot=10,NumberOfAdapters=11)";
 }
 
 
