@@ -64,6 +64,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       _writer.write("MULTISCALELINKEDCELL_PATH=" + _directoryAndPathChecker.multiscalelinkedcellPath.getAbsolutePath() + "\n");
       _writer.write("EXAHYPE_PATH=" + _directoryAndPathChecker.exahypePath.getAbsolutePath() + "\n");
       _writer.write("PROJECT_PATH=" + _directoryAndPathChecker.outputDirectory.getAbsolutePath()  + "\n" );
+      _writer.write("EXECUTABLE=ExaHyPE-" + node.getName() + "\n");
       _writer.write("\n\n");
 	} 
 	catch (Exception exc) {
