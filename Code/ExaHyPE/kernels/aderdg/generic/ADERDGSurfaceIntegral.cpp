@@ -1,3 +1,4 @@
+/*
 #include "exahype/aderdg/ADERDG.h"
 
 #include "kernels/quad/GaussLegendre.h"
@@ -68,3 +69,4 @@ void exahype::aderdg::surfaceIntegral(
   }
   // Above seems okay!
 }
+*/

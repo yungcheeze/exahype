@@ -1,3 +1,4 @@
+/*
 #include "exahype/aderdg/ADERDGIO.h"
 
 #include "string.h"
@@ -123,3 +124,4 @@ double exahype::aderdg::io::exportToVTK<2>(
     }
   }
 }
+*/

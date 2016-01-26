@@ -1,3 +1,4 @@
+/*
 #include "exahype/aderdg/ADERDG.h"
 
 #include "string.h"
@@ -6,8 +7,8 @@
 
 #include "kernels/quad/GaussLegendre.h"
 #include "kernels/aderdg/DGMatrices.h"
+#include "Kernels.h"
 
-#include "kernels/aderdg/default/PDEFluxes.h"
 
 // explicit specialisation
 template <>
@@ -93,3 +94,4 @@ void exahype::aderdg::riemannSolver<2>(
     }
   }
 }
+*/

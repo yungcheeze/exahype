@@ -19,8 +19,7 @@
 
 
 
-namespace exahype {
-  namespace quad {
+namespace kernels {
     void initGaussLegendreNodesAndWeights();
 
     /**
@@ -32,7 +31,6 @@ namespace exahype {
      * The Gauss-Legendre nodes mapped onto [0,1]. Array of arrays. The first entry is the order, the second entry the Legendre point.
      **/
     extern double** gaussLegendreNodes;
-  }
 }
 
 #endif

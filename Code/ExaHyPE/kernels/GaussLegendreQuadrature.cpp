@@ -1,6 +1,12 @@
-#include "kernels/quad/GaussLegendre.h"
+#include "kernels/GaussLegendreQuadrature.h"
 
-void exahype::quad::initGaussLegendreNodesAndWeights() {
+
+double** kernels::gaussLegendreWeights;
+
+double** kernels::gaussLegendreNodes;
+
+
+void kernels::initGaussLegendreNodesAndWeights() {
   const int MaxOrder = 9;
 
   gaussLegendreNodes   = new double*[MaxOrder];

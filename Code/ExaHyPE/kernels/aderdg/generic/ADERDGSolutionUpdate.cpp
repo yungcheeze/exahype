@@ -1,3 +1,4 @@
+/*
 #include "exahype/aderdg/ADERDG.h"
 
 #include "kernels/quad/GaussLegendre.h"
@@ -38,3 +39,4 @@ void exahype::aderdg::solutionUpdate<2>(
     }
   }
 }
+*/

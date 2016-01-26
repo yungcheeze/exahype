@@ -1,3 +1,4 @@
+/*
 #include "exahype/aderdg/ADERDG.h"
 
 #include "string.h"
@@ -10,7 +11,7 @@
 // 3D specialisation
 template <>
 void exahype::aderdg::volumeIntegral<3>(
-    double* /*out*/ lduh,
+    double* out lduh,
     const double * const lFhi,
     const double * const dx
 ) {
@@ -25,7 +26,7 @@ void exahype::aderdg::volumeIntegral<3>(
 // 2D specialisation
 template <>
 void exahype::aderdg::volumeIntegral<2>(
-    double* /*out*/ lduh,
+    double* out lduh,
     const double * const lFhi,
     const double * const dx
 ) {
@@ -88,3 +89,4 @@ void exahype::aderdg::volumeIntegral<2>(
   }
   // Above seems okay!
 }
+*/

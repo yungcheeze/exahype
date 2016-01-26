@@ -1,3 +1,4 @@
+/*
 #include "exahype/aderdg/ADERDG.h"
 
 #include "math.h"
@@ -6,8 +7,8 @@
 #include "limits"
 
 #include "exahype/Constants.h"
+#include "Kernels.h"
 
-#include "kernels/aderdg/default/PDEFluxes.h"
 
 // 3D specialisation
 template <>
@@ -57,3 +58,4 @@ double exahype::aderdg::stableTimeStepSize<2>(
   }
   return dt;
 }
+*/

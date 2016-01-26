@@ -1,4 +1,11 @@
-#include "kernels/aderdg/DGMatrices.h"
+#include "kernels/DGMatrices.h"
+
+
+void kernels::initDGMatrices() {
+  // @todo
+}
+
+/*
 
 #if EXAHYPE_ORDER==3
   const double exahype::aderdg::Kxi[4][4] =
@@ -617,3 +624,4 @@
   };
 
 #endif
+*/
