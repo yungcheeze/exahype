@@ -5,11 +5,6 @@
 -include files.mk
 
 
-# Name of executable
-# ------------------
-EXECUTABLE=ExaHyPE
-
-
 
 # Configure System
 # ----------------
