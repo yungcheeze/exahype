@@ -5,14 +5,23 @@
 #include "tarch/la/ScalarOperations.h"
 
 
+#include "kernels/KernelCalls.h"
+#include "exahype/solvers/Solver.h"
+
+#include "exahype/records/ADERDGCellDescription.h"
+
+
+tarch::logging::Log exahype::Cell::_log( "exahype::Cell" );
+
+
 exahype::Cell::Cell():
-Base() {
-  // do nothing
+  Base() {
+  _cellData.setADERDGCellDescriptionsIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 }
 
 
 exahype::Cell::Cell(const Base::DoNotCallStandardConstructor& value):
-                  Base(value) {
+  Base(value) {
   _cellData.setADERDGCellDescriptionsIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 }
 
@@ -21,85 +30,64 @@ exahype::Cell::Cell(const Base::PersistentCell& argument):
   // do nothing
 }
 
-// ! Begin of code for multiscalelinkedcell toolbox.
-int
-exahype::Cell::getADERDGCellDescriptionsIndex() const {
+
+int exahype::Cell::getADERDGCellDescriptionsIndex() const {
   return _cellData.getADERDGCellDescriptionsIndex();
 }
-// ! End of code for multiscalelinkedcell toolbox.
-
-
-
-
-
-
-// ! Begin of code for DG method
 
 
 void exahype::Cell::init(
   const int                                    level,
   const tarch::la::Vector<DIMENSIONS,double>&  size,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellCentre
+  const tarch::la::Vector<DIMENSIONS,double>&  cellOffset
 ) {
-  // @todo Tobias Weinzierl
-  // New Workflow
-  // Ask the solver whether there is an ADERDG cell here at this position (we might
-  // need the offset as well). If yes, take the corresponding Solver Description and ask
-  // it to create the right Cell Description.
+  assertion1( !ADERDGCellDescriptionHeap::getInstance().isValidIndex(_cellData.getADERDGCellDescriptionsIndex()), toString() );
+  _cellData.setADERDGCellDescriptionsIndex( ADERDGCellDescriptionHeap::getInstance().createData(0,0) );
 
-  // @todo Tobias Weinzierl
-  // Delegate to solver-specific code fragments
+  for (
+    std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
+    p != exahype::solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    if (level==(*p)->getMinimumTreeDepth()) {
+      logDebug( "init(...)","initialising cell description: " << "fine grid level: " << fineGridVerticesEnumerator.getLevel() << ", fine grid position of cell: " << fineGridPositionOfCell);
 
-//  _cellData.setADERDGCellDescriptionsIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
+      switch ((*p)->getType()) {
+        case exahype::solvers::Solver::ADER_DG:
+          {
+            exahype::records::ADERDGCellDescription newCellDescription;
 
-  /*
-  // ! Begin of code for multiscalelinkedcell toolbox and DG method
-  if (!fineGridCell.isRefined()) {      // We only want to initialize ADERDGCellDescriptions on the initial fine grid
-    logDebug("enterCell(...)","initialising ADERDGCellDescription: " << "fine grid level: " << fineGridVerticesEnumerator.getLevel() << ", fine grid position of cell: " << fineGridPositionOfCell);
-*/
+            // Pass geometry information to the cellDescription description
+            newCellDescription.setLevel (level);
+            newCellDescription.setSize  (size);
+            newCellDescription.setTimeStamp(0.0);
+            newCellDescription.setOffset(cellOffset);
 
+            int numberOfSpaceTimeDof           = (*p)->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS+1,(*p)->getNodesPerCoordinateAxis());
+            int numberOfSpaceTimeVolumeFluxDof = DIMENSIONS*numberOfSpaceTimeDof;
 
+            int numberOfDof            = (*p)->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS,(*p)->getNodesPerCoordinateAxis());
+            int numberOfVolumeFluxDof  = DIMENSIONS * numberOfDof;
+            int numberOfDofOnFace      = DIMENSIONS_TIMES_TWO * (*p)->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,(*p)->getNodesPerCoordinateAxis());
 
-/*
-  const int indexOfADERDGCellDescriptions = ADERDGADERDGCellDescriptionHeap::getInstance().createData(numberOfPDEs);
-  assertion( indexOfADERDGCellDescriptions >= 0 );
-  _cellData.setADERDGCellDescriptionsIndex(indexOfADERDGCellDescriptions);
+            // Allocate space-time DoF
+            newCellDescription.setSpaceTimePredictor (DataHeap::getInstance().createData(numberOfSpaceTimeDof,numberOfSpaceTimeDof));
+            newCellDescription.setSpaceTimeVolumeFlux(DataHeap::getInstance().createData(numberOfSpaceTimeVolumeFluxDof,numberOfSpaceTimeVolumeFluxDof));
 
-  for (int pde = 0; pde < numberOfPDEs; pde++) {
-    int basisSize = EXAHYPE_ORDER+1;
+            // Allocate volume DoF
+            newCellDescription.setSolution   (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
+            newCellDescription.setUpdate     (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
+            newCellDescription.setPredictor  (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
+            newCellDescription.setVolumeFlux (DataHeap::getInstance().createData(numberOfVolumeFluxDof,numberOfVolumeFluxDof));
 
-    //  @todo: consider to precompute these values/to use a lookup table at this point
-    int numberOfSpaceTimeDof           = EXAHYPE_NVARS * tarch::la::aPowI(DIMENSIONS+1,basisSize);
-    int numberOfSpaceTimeVolumeFluxDof = DIMENSIONS*numberOfSpaceTimeDof;
+            // Allocate face DoF
+            newCellDescription.setExtrapolatedPredictor(DataHeap::getInstance().createData(numberOfDofOnFace,numberOfDofOnFace));
+            newCellDescription.setFluctuation          (DataHeap::getInstance().createData(numberOfDofOnFace,numberOfDofOnFace));
 
-    int numberOfDof            = EXAHYPE_NVARS * tarch::la::aPowI(DIMENSIONS  ,basisSize);
-    int numberOfVolumeFluxDof  = DIMENSIONS * numberOfDof;
-    int numberOfDofOnFace      = DIMENSIONS_TIMES_TWO * EXAHYPE_NVARS * tarch::la::aPowI(DIMENSIONS-1,basisSize);
-
-    records::ADERDGCellDescription& cellDescriptionForPde =
-        ADERDGADERDGCellDescriptionHeap::getInstance().getData(indexOfADERDGCellDescriptions)[pde];
-
-    // Allocate space-time DoF
-    cellDescriptionForPde.setSpaceTimePredictor (DataHeap::getInstance().createData(numberOfSpaceTimeDof,numberOfSpaceTimeDof));
-    cellDescriptionForPde.setSpaceTimeVolumeFlux(DataHeap::getInstance().createData(numberOfSpaceTimeVolumeFluxDof,numberOfSpaceTimeVolumeFluxDof));
-
-    // Allocate volume DoF
-    cellDescriptionForPde.setSolution   (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
-    cellDescriptionForPde.setUpdate     (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
-    cellDescriptionForPde.setPredictor  (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
-    cellDescriptionForPde.setVolumeFlux (DataHeap::getInstance().createData(numberOfVolumeFluxDof,numberOfVolumeFluxDof));
-
-    // Allocate face DoF
-    cellDescriptionForPde.setExtrapolatedPredictor(DataHeap::getInstance().createData(numberOfDofOnFace,numberOfDofOnFace));
-    cellDescriptionForPde.setFluctuation          (DataHeap::getInstance().createData(numberOfDofOnFace,numberOfDofOnFace));
-
-    // Pass geometry information to the cellDescription description
-    cellDescriptionForPde.setLevel (level);
-    cellDescriptionForPde.setSize  (size);
-    cellDescriptionForPde.setTimeStamp(0.0);
+            ADERDGCellDescriptionHeap::getInstance().getData( _cellData.getADERDGCellDescriptionsIndex() ).push_back( newCellDescription );
+          }
+          break;
+      }
+    }
   }
-*/
 }
-// ! End of code for DG method/multiscalelinkedcell toolbox.
-
-

@@ -93,6 +93,7 @@ int exahype::mappings::InitialGrid::getMinimumTreeDepth() {
     p != exahype::solvers::RegisteredSolvers.end();
     p++
   ) {
+      // @todo Ortsabhaengig wieder machen!!! Sonst macht Funktion keinen Sinn
     result = std::max( result, (*p)->getMinimumTreeDepth() );
   }
 

@@ -33,19 +33,30 @@ class exahype::solvers::Solver {
 
       Plot( int variable_, double nextSnapshot_, bool repeat_, const std::string& filename_);
     };
+
+
+    enum Type {
+      ADER_DG
+    };
   protected:
     /**
      * Each solver has an identifier/name. It is used for debug purposes only.
      */
     const std::string _identifier;
 
+    const Type        _type;
+
     /**
      * Each solver has a kernel number that says which kernel is to be
      * executed. Typically this is an ascending index starting from 0.
      */
     const int         _kernelNumber;
+
+    const int         _numberOfVariables;
+
+    const int         _nodesPerCoordinateAxis;
   public:
-    Solver(const std::string& identifier, int kernelNumber);
+    Solver(const std::string& identifier, Type type, int kernelNumber, int numberOfVariables, int nodesPerCoordinateAxis);
 
     /**
      * Identify minimal mesh width at a certain point in the domain. This
@@ -54,6 +65,17 @@ class exahype::solvers::Solver {
      * this PDE might not exist in the domain.
      */
     virtual int getMinimumTreeDepth() const = 0;
+
+    Type getType() const;
+
+    int getNumberOfVariables() const;
+
+    /**
+     * If you use a higher order method, then this operation returns the
+     * polynomial degree plus one. If you use a Finite Volume method, it
+     * returns the number of cells within a patch per coordinate axis.
+     */
+    int getNodesPerCoordinateAxis() const;
 };
 
 #endif
