@@ -403,7 +403,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
         const int patchIndex = i + (EXAHYPE_PATCH_SIZE_X+2) * j;
 
         double* luh = &(DataHeap::getInstance().getData(cellDescription.getSolution(patchIndex))[0]._persistentRecords._u);
-        double lambda[EXAHYPE_NVARS];
+        double lambda[EXAHYPE_NVARS] __attribute__((aligned(ALIGNMENT)));
 
         double admissiblePatchTimeStep = dg::stableTimeStepSize<DIMENSIONS>(
             luh,

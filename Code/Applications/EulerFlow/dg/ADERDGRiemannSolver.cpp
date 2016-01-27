@@ -57,8 +57,8 @@ void exahype::dg::solveRiemannProblem<2>(
 
   // Compute the average states from the left and the right, which we need to compute the numerical dissipation
 
-  memset((double *) QavL,0,nvar * sizeof(double));
-  memset((double *) QavR,0,nvar * sizeof(double));
+  memset((double *) QavL,0,sizeWithPadding(nvar) * sizeof(double));
+  memset((double *) QavR,0,sizeWithPadding(nvar) * sizeof(double));
 
   for (int ii=0; ii<basisSize; ii++) { // loop over dof
     const int nodeIndex     = ii;

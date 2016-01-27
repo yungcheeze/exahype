@@ -26,7 +26,7 @@ DIM=-DDim2
 
 # Use original or optimised kernels
 #OPTIMISED_KERNELS =
-#OPTIMISED_KERNELS = -DUseOptimisedKernels
+OPTIMISED_KERNELS = -DUseOptimisedKernels
 
 # Configure System
 # ----------------
@@ -53,21 +53,23 @@ ifeq ($(CC),gcc)
 		# ------------------------------------------
 		CC=g++
 		COMPILER_CFLAGS=-DDebug -DAsserts $(OPTIMISED_KERNELS) -O0 -pedantic -pedantic-errors -Wall -Wstrict-aliasing \
-						-fstrict-aliasing -Drestrict=__restrict__ -D__assume_aligned=__builtin_assume_aligned -ggdb -std=c++0x
+						-fstrict-aliasing -Drestrict=__restrict__ -D__assume_aligned=__builtin_assume_aligned -ggdb -std=c++0x -pipe
 		COMPILER_LFLAGS=
 	else ifeq ($(MODE),Profile)
 		# Settings for the GNU Compiler (Profile Mode)
 		# --------------------------------------------
 		CC=g++
 		COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg $(OPTIMISED_KERNELS) -O3 -fstrict-aliasing -Drestrict=__restrict__ \
-						-D__assume_aligned=__builtin_assume_aligned -fno-rtti -fno-exceptions -std=c++0x
+						-D__assume_aligned=__builtin_assume_aligned -fno-rtti -fno-exceptions -std=c++0x -pipe \
+						-march=native
 		COMPILER_LFLAGS=-p -pg
 	else
 		# Settings for the GNU Compiler (Release Mode)
 		# --------------------------------------------
 		CC=g++
 		COMPILER_CFLAGS= $(OPTIMISED_KERNELS) -O3 -fstrict-aliasing -Drestrict=__restrict__ \
-						-D__assume_aligned=__builtin_assume_aligned -fno-rtti -fno-exceptions -std=c++0x
+						-D__assume_aligned=__builtin_assume_aligned -fno-rtti -fno-exceptions -std=c++0x -pipe \
+						-march=native
 		COMPILER_LFLAGS=
 	endif
 else
@@ -82,14 +84,14 @@ else
 		# --------------------------------------------
 		CC=icpc
 		COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg $(OPTIMISED_KERNELS) -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK \
-						-fast -fno-rtti -no-ipo -ip -xSSE4.2 -std=c++0x
+						-fast -fno-rtti -no-ipo -ip -xHost -std=c++0x
 		COMPILER_LFLAGS=-p -pg
         else
 		# Settings for the Intel Compiler (Release Mode)
 		# ----------------------------------------------
 		CC=icpc
 		COMPILER_CFLAGS=$(OPTIMISED_KERNELS) -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip \
-						-xSSE4.2 -std=c++0x
+						-xHost -std=c++0x
 		COMPILER_LFLAGS=
 	endif
 endif

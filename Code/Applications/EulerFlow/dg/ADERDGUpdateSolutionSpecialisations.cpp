@@ -5,9 +5,9 @@
 // 3D specialisation
 template <>
 void exahype::dg::updateSolution<3>(
-    double * restrict luh,
-    const double * restrict const lduh,
-    const double dt
+    double * restrict /*inout*/ luh,
+    const double * restrict const /*in*/ lduh,
+    const double /*in*/ dt
 ) {
   // todo insert your code here
 }
@@ -24,13 +24,14 @@ void exahype::dg::updateSolution<2>(
 
   for (int ii=0; ii<basisSize; ii++) {
     for (int jj=0; jj<basisSize; jj++) {
-      const int nodeIndex     = ii + basisSize * jj;
+      const int nodeIndex     = jj + basisSize * ii;
       const int dofStartIndex = nodeIndex * nvar;
 
       double weight =  exahype::quad::gaussLegendreWeights[ii] * exahype::quad::gaussLegendreWeights[jj];
+      const double updateSize = dt/weight;
 
       for(int ivar=0; ivar < nvar; ivar++) {
-        luh[dofStartIndex+ivar] +=  (lduh[dofStartIndex+ivar] * dt)/weight;
+        luh[dofStartIndex+ivar] +=  lduh[dofStartIndex+ivar]*updateSize;
       }
     }
   }
