@@ -98,6 +98,8 @@ void exahype::problem::PDEEigenvalues(const double * restrict const /*in*/ Q,
   constexpr int d    = DIMENSIONS;
   constexpr int nvar = EXAHYPE_NVARS;
 
+  __assume_aligned(lambda, ALIGNMENT);
+
   double irho = 1.0/Q[0];
   double p = (GAMMA-1)*( Q[4] - 0.5* (Q[1]*Q[1] + Q[2]*Q[2]) * irho );
 

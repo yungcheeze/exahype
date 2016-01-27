@@ -393,12 +393,12 @@ void exahype::mappings::RiemannSolver::enterCell(
     const int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
     // normal vectors
-    const double nx[3]= { 1., 0., 0. };
-    const double ny[3]= { 0., 1., 0. };
+    const double nx[2]= { 1., 0. };
+    const double ny[2]= { 0., 1. };
 
     // work vectors
-    double QavL   [EXAHYPE_NVARS] __attribute__((aligned(ALIGNMENT))); // av: average
-    double QavR   [EXAHYPE_NVARS] __attribute__((aligned(ALIGNMENT)));
+    double QavL   [sizeWithPadding(EXAHYPE_NVARS)] __attribute__((aligned(ALIGNMENT))); // av: average
+    double QavR   [sizeWithPadding(EXAHYPE_NVARS)] __attribute__((aligned(ALIGNMENT)));
     double lambdaL[EXAHYPE_NVARS] __attribute__((aligned(ALIGNMENT)));
     double lambdaR[EXAHYPE_NVARS] __attribute__((aligned(ALIGNMENT)));
 

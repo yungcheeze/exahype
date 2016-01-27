@@ -41,12 +41,37 @@
 
 /**
  * Microarchitecture-specific alignment.
- * - wsm: 16
- * - snb: 32
- * - hsw: 32
- * - knc: 64
+ *   Architecture   Alignment   Flag        Padding
+ *   wsm            16          SSE3        2 (2 doubles, 4 floats)
+ *   snb            32          AVX         4 (4 doubles, 8 floats)
+ *   hsw            32          AVX2        4
+ *   knl            64          AVX512F     8
  */
-#define ALIGNMENT 32
+#if defined(__AVX512F__)
+  #define ALIGNMENT 64                        // 512 bits, 64 byte aligned
+  #define SIMD_SIZE 8                         // 8 doubles at a time can be processed
+#elif defined(__AVX__) || defined(__AVX2__)
+  #define ALIGNMENT 32                        // 256 bits, 32 byte aligned
+  #define SIMD_SIZE 4                         // 4 doubles at a time
+#elif defined(__SSE3__)
+  #define ALIGNMENT 16                        // 16 byte aligned
+  #define SIMD_SIZE 2                         // 2 doubles/4 floats at a time
+#else // fallback solution
+  #define ALIGNMENT 16                        // some alignment doesn't harm, 8 is also feasible
+  #define SIMD_SIZE 1                         // no padding
+#endif
+
+/**
+ *  Computes the eventual size of an array after padding has been applied. The size
+ *  of the vectors are known at compile time; hence we compute the size incorporating
+ *  padding also at compile time.
+ *  \param[in]  vectorSize  the size of the vector in its bare form, i.e. without padding
+ *  \returns    the original vector size plus padding
+ */
+constexpr int sizeWithPadding(const int vectorSize) {
+  return SIMD_SIZE * ((vectorSize + (SIMD_SIZE-1)) / SIMD_SIZE);
+}
+
 
 /**
  * Simulation runtime parameters.

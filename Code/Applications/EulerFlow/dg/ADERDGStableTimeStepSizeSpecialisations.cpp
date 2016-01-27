@@ -31,7 +31,7 @@ double exahype::dg::stableTimeStepSize<2>(
   constexpr int nvar        = EXAHYPE_NVARS;
   constexpr int basisSize   = EXAHYPE_ORDER+1;
 
-  // todo insert your code here
+  __assume_aligned(lambda, ALIGNMENT);
 
   const double normal[dim][dim]= {
       { 1., 0.},
