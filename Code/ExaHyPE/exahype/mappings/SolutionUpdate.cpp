@@ -4,6 +4,9 @@
 
 #include "exahype/aderdg/ADERDG.h"
 
+#include "exahype/solvers/Solver.h"
+
+
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
@@ -363,7 +366,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
   for (
-      ADERDGCellDescriptionHeap::HeapEntries::const_iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+      ADERDGCellDescriptionHeap::HeapEntries::iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
       p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
       p++
   ) {

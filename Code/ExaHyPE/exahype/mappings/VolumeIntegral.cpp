@@ -4,6 +4,8 @@
 
 #include "exahype/aderdg/ADERDG.h"
 
+#include "exahype/solvers/Solver.h"
+
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.

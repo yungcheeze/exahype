@@ -1,4 +1,5 @@
 #include "exahype/mappings/RiemannSolverReset.h"
+#include "exahype/solvers/Solver.h"
 
 
 
@@ -361,7 +362,7 @@ void exahype::mappings::RiemannSolverReset::enterCell(
   // @todo Wieder reinnehmen
 
   for (
-      ADERDGCellDescriptionHeap::HeapEntries::const_iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+      ADERDGCellDescriptionHeap::HeapEntries::iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
       p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
       p++
     ) {
@@ -370,7 +371,8 @@ void exahype::mappings::RiemannSolverReset::enterCell(
     std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed;
     p->setRiemannSolvePerformed(riemannSolvePerformed);
 
-    assertion1(p->getRiemannSolvePerformed().none(),cellDescription.toString());
+    // @todo Bitte wieder einbauen
+    //assertion1(p->getRiemannSolvePerformed().none(),cellDescription.toString());
   }
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );

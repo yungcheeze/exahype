@@ -6,6 +6,8 @@
 
 #include "peano/utils/Globals.h"
 
+#include "exahype/solvers/Solver.h"
+
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -371,18 +373,14 @@ void exahype::mappings::InitialCondition::enterCell(
 
     logDebug("enterCell","center: " << center[0] << "," << center[1]);
 
-    const int basisSize       = EXAHYPE_ORDER+1;
-    const int nvar            = EXAHYPE_NVARS;
-    const int numberOfDof     = nvar * tarch::la::aPowI(DIMENSIONS,basisSize);
-
     // zero update
-    double* lduh = &(DataHeap::getInstance().getData(p->getUpdate())[0]._persistentRecords._u);
-    memset(lduh,0,sizeof(double) * numberOfDof);
+    // @todo Entfernen - sollte Loeser machen. Bitte erst mal validieren
+    //double* lduh = &(DataHeap::getInstance().getData(p->getUpdate())[0]._persistentRecords._u);
+    //memset(lduh,0,sizeof(double) * numberOfDof);
 
     // apply initial condition
     double* luh    = &(DataHeap::getInstance().getData(p->getSolution())[0]._persistentRecords._u);
-    exahype::aderdg::initialValues<DIMENSIONS>(luh,center,size,nvar,basisSize);
-
+    solver->initialValues(luh,fineGridVerticesEnumerator.getCellCenter(),fineGridVerticesEnumerator.getCellSize());
   }
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
