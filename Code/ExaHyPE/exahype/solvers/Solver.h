@@ -7,7 +7,7 @@
 
 
 #include "peano/utils/Globals.h"
-#include "tarch/la/Vector<DIMENSIONS,double>.h"
+#include "tarch/la/Vector.h"
 
 
 namespace exahype {
@@ -32,8 +32,6 @@ public:
     Plot( int variable_, double nextSnapshot_, bool repeat_, const std::string& filename_);
   };
 
-
-  // @todo TW Raus brauchen wir nicht
   enum Type {
     ADER_DG
   };
@@ -78,8 +76,6 @@ public:
    */
   int getNodesPerCoordinateAxis() const;
 
-  // todo TW: Nur der ADER-DG Loeser
-
   /**
    * @brief Adds the solution update to the solution.
    *
@@ -88,10 +84,10 @@ public:
    * @param[in]    dx   Extent of the cell in each coordinate direction.
    * @param[dt]    dt   Time step size.
    */
-  void solutionUpdate(
+  virtual void solutionUpdate(
       double * luh,
       const double * const lduh,
-      const tarch::la::Vector<DIMENSIONS,double> dx,
+      const tarch::la::Vector<DIMENSIONS,double>&  dx,
       const double dt
   ) = 0;
 
@@ -102,10 +98,10 @@ public:
    * @param[in]    dx   Extent of the cell in each coordinate direction.
    * @param[dt]    dt   Time step size.
    */
-  void volumeIntegral(
+  virtual void volumeIntegral(
       double * lduh,
       const double * const lFhi,
-      const tarch::la::Vector<DIMENSIONS,double> dx
+      const tarch::la::Vector<DIMENSIONS,double>&  dx
   ) = 0;
 
   /**
@@ -116,10 +112,10 @@ public:
    * @param[in]    lFhbnd Cell-local DoF of the boundary extrapolated fluxes.
    * @param[in]    dx     Extent of the cell in each coordinate direction.
    */
-  void surfaceIntegral(
+  virtual void surfaceIntegral(
       double * lduh,
       const double * const lFhbnd,
-      const tarch::la::Vector<DIMENSIONS,double> dx
+      const tarch::la::Vector<DIMENSIONS,double>&  dx
   ) = 0;
 
   /**
@@ -132,14 +128,14 @@ public:
    * @param[in]    hFace The (d-1)-measure of the interface: Length of an edge in 2D, area of a face in 3D, etc.
    * @param[in]    n     Unit vector normal to the interface.
    */
-  void riemannSolver(
+  virtual void riemannSolver(
       double * FL,
       double * FR,
       const double * const QL,
       const double * const QR,
       const double dt,
       const double hFace,
-      const tarch::la::Vector<DIMENSIONS,double> n
+      const tarch::la::Vector<DIMENSIONS,double>&  n
   ) = 0;
 
   /**
@@ -159,7 +155,7 @@ public:
    * @param[in]    dx     Extent of the cell in each coordinate direction.
    * @param[in]    dt     Time step size.
    */
-  void spaceTimePredictor(
+  virtual void spaceTimePredictor(
       double * lQi,
       double * lFi,
       double * lQhi,
@@ -167,7 +163,7 @@ public:
       double * lQhbnd,
       double * lFhbnd,
       const double * const luh,
-      const tarch::la::Vector<DIMENSIONS,double> dx,
+      const tarch::la::Vector<DIMENSIONS,double>&  dx,
       const double dt
   ) = 0;
 
@@ -177,22 +173,9 @@ public:
    * @param[in] luh       Cell-local solution dof
    * @param[in] dx        Extent of the cell in each coordinate direction.
    */
-  double stableTimeStepSize(
+  virtual double stableTimeStepSize(
       const double * const luh,
-      const tarch::la::Vector<DIMENSIONS,double> dx,
-  );
-
-  /**
-   * Sets the initial values.
-   *
-   * @param[inout] luh     Cell-local solution DoF.
-   * @param[in]    center  Element center.
-   * @param[in]    dx      Extent of the cell in each coordinate direction.
-   */
-  void initialValues(
-      double * luh,
-      const tarch::la::Vector<DIMENSIONS,double> center,
-      const tarch::la::Vector<DIMENSIONS,double> dx,
+      const tarch::la::Vector<DIMENSIONS,double>&  dx
   ) = 0;
 
   /**
@@ -202,11 +185,13 @@ public:
    * @param[in]    center  Element center.
    * @param[in]    dx      Extent of the cell in each coordinate direction.
    */
-  void initialValues(
+  virtual void initialValues(
       double * luh,
-      const tarch::la::Vector<DIMENSIONS,double> center,
-      const tarch::la::Vector<DIMENSIONS,double> dx,
+      const tarch::la::Vector<DIMENSIONS,double>&  center,
+      const tarch::la::Vector<DIMENSIONS,double>&  dx
   ) = 0;
+
+  // @todo eher raus
 
   /**
    * Plot the solution.
@@ -215,10 +200,10 @@ public:
    * @param[in]    center  Element center.
    * @param[in]    dx      Extent of the cell in each coordinate direction.
    */
-  void plot(
+  virtual void plot(
       const double * luh,
-      const tarch::la::Vector<DIMENSIONS,double> center,
-      const tarch::la::Vector<DIMENSIONS,double> dx
+      const tarch::la::Vector<DIMENSIONS,double>&  center,
+      const tarch::la::Vector<DIMENSIONS,double>&  dx
   ) = 0;
 };
 
