@@ -363,6 +363,11 @@ void exahype::mappings::PatchInitialisation::enterCell(
     fineGridVerticesEnumerator.getCellCenter()
   );
 
+  assertion1(
+    !fineGridCell.isRefined() || !ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).empty(),
+    fineGridCell.toString()
+  );
+
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
 
