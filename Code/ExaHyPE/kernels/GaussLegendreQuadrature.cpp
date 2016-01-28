@@ -20,14 +20,16 @@ void kernels::initGaussLegendreNodesAndWeights() {
   gaussLegendreWeights[0][0] = {1.0000000000000000};
   gaussLegendreNodes[0][0]   = {0.5000000000000000};
 
-  // nur Ordnung drei
-#elif EXAHYPE_ORDER==3
-    const double exahype::quad::gaussLegendreWeights[EXAHYPE_ORDER+1] =
-        {0.1739274225687273, 0.3260725774312732, 0.3260725774312732, 0.1739274225687273};
-    const double exahype::quad::gaussLegendreNodes[EXAHYPE_ORDER+1]   =
-        {0.0694318442029737, 0.3300094782075719, 0.6699905217924281, 0.9305681557970262};
-
+  gaussLegendreWeights[3][0] = {0.1739274225687273};
+  gaussLegendreWeights[3][1] = {0.3260725774312732};
+  gaussLegendreWeights[3][2] = {0.3260725774312732};
+  gaussLegendreWeights[3][3] = {0.1739274225687273};
+  gaussLegendreNodes[3][0]   = {0.0694318442029737};
+  gaussLegendreNodes[3][1]   = {0.3300094782075719};
+  gaussLegendreNodes[3][2]   = {0.6699905217924281};
+  gaussLegendreNodes[3][3]   = {0.9305681557970262};
 }
+
 
 /*
 #if EXAHYPE_ORDER==0

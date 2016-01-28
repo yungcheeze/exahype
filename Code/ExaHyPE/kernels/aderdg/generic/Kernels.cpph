@@ -3,7 +3,20 @@
 #include "tarch/la/Scalar.h"
 
 
-template <void PDEFlux2d(const double * const Q,const int nvar,double * f,double * g)>
+
+template <void PDEEigenvalues2d(const double * const Q, const tarch::la::Vector<DIMENSIONS,double>& n, const int d, double * lambda)>
+double kernels::aderdg::generic::stableTimeStepSize(const double * const luh, const tarch::la::Vector<DIMENSIONS,double>&  dx) {
+  return 0.2;
+}
+
+
+template <void PDEFlux2d(const double * const Q, double * f, double * g)>
+void kernels::aderdg::generic::riemannSolver(double * FL, double * FR, const double * const QL, const double * const QR, const double dt, const double hFace, const tarch::la::Vector<DIMENSIONS,double>&  n) {
+
+}
+
+
+template <void PDEFlux2d(const double * const Q, double * f, double * g)>
 void kernels::aderdg::generic::spaceTimePredictor(
   double * lQi,
   double * lFi,
@@ -12,7 +25,7 @@ void kernels::aderdg::generic::spaceTimePredictor(
   double * lFhi,
   double * lQhbnd,
   double * lFhbnd,
-  const double * const dx,
+  const tarch::la::Vector<DIMENSIONS,double>&  dx,
   const double dt,
   int          order,
   int          numberOfVariables
