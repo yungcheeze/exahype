@@ -359,17 +359,19 @@ void exahype::mappings::RiemannSolverReset::enterCell(
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
   // @todo Wieder reinnehmen
-/*
-  if (!fineGridCell.isRefined()) {
-    records::ADERDGCellDescription& cellDescription =
-        ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
 
-    std::bitset<TWO_POWER_D> riemannSolvePerformed;
-    cellDescription.setRiemannSolvePerformed(riemannSolvePerformed);
+  for (
+      ADERDGCellDescriptionHeap::HeapEntries::const_iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+      p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
+      p++
+    ) {
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
 
-    assertion1(cellDescription.getRiemannSolvePerformed().none(),cellDescription.toString());
+    std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed;
+    p->setRiemannSolvePerformed(riemannSolvePerformed);
+
+    assertion1(p->getRiemannSolvePerformed().none(),cellDescription.toString());
   }
-*/
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }

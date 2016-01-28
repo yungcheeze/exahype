@@ -363,47 +363,24 @@ void exahype::mappings::SurfaceIntegral::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
-  // @todo Tobias Weinzierl
-  // Delegate to solver-specific code fragments
-/*
-  // ! Begin of code for the DG method.
-  if (!fineGridCell.isRefined()) {
-    records::ADERDGCellDescription& cellDescription =
-        ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
+  for (
+      ADERDGCellDescriptionHeap::HeapEntries::const_iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+      p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
+      p++
+  ) {
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
 
-    // todo DEC: I wonder if this works since _values is a private array member of Vector. Probably not. It
-    // is probably better to pass Vector<DIMENSION,doubles> to the kernel functions.
-    const double size  [2] = { fineGridVerticesEnumerator.getCellSize()  [0], fineGridVerticesEnumerator.getCellSize()  [1]};
+    double * lduh   = &(DataHeap::getInstance().getData( p->getUpdate() )     [0]._persistentRecords._u);
+    double * lFhbnd = &(DataHeap::getInstance().getData( p->getFluctuation() )[0]._persistentRecords._u);
 
-    const int basisSize       = EXAHYPE_ORDER+1;
-    const int nvar            = EXAHYPE_NVARS;
-    const int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
-
-    const int dofStartIndexLeft  = EXAHYPE_FACE_LEFT  * numberOfFaceDof;
-    const int dofStartIndexRight = EXAHYPE_FACE_RIGHT * numberOfFaceDof;
-    const int dofStartIndexFront = EXAHYPE_FACE_FRONT * numberOfFaceDof;
-    const int dofStartIndexBack  = EXAHYPE_FACE_BACK  * numberOfFaceDof;
-
-    double * lduh     = &(DataHeap::getInstance().getData(cellDescription.getUpdate())     [0]._persistentRecords._u);
-
-    double * lFhLeft  = &(DataHeap::getInstance().getData(cellDescription.getFluctuation())[dofStartIndexLeft ]._persistentRecords._u);
-    double * lFhRight = &(DataHeap::getInstance().getData(cellDescription.getFluctuation())[dofStartIndexRight]._persistentRecords._u);
-    double * lFhFront = &(DataHeap::getInstance().getData(cellDescription.getFluctuation())[dofStartIndexFront]._persistentRecords._u);
-    double * lFhBack  = &(DataHeap::getInstance().getData(cellDescription.getFluctuation())[dofStartIndexBack ]._persistentRecords._u);
-
-    aderdg::surfaceIntegral(
+    solver->surfaceIntegral(
         lduh,
-        size,
-        nvar,
-        basisSize,
-        lFhLeft,
-        lFhRight,
-        lFhFront,
-        lFhBack);
+        lFhbnd,
+        fineGridVerticesEnumerator.getCellSize()
+    );
   }
-*/
 
-logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
+  logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
 
 

@@ -76,7 +76,7 @@ exahype::mappings::SolutionUpdate::~SolutionUpdate() {
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::SolutionUpdate::SolutionUpdate(const SolutionUpdate&  masterThread)
 :
-      _localState()
+              _localState()
 {
   _localState.setOldTimeStepSize(masterThread.getState().getOldTimeStepSize());
 }
@@ -362,34 +362,27 @@ void exahype::mappings::SolutionUpdate::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
-  // @todo Tobias Weinzierl
-  // Delegate to solver-specific code fragments
-/*
-  if (!fineGridCell.isRefined()) {
-    records::ADERDGCellDescription& cellDescription =
-        ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
+  for (
+      ADERDGCellDescriptionHeap::HeapEntries::const_iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+      p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
+      p++
+  ) {
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
 
-    const double size  [2] = { fineGridVerticesEnumerator.getCellSize()  [0], fineGridVerticesEnumerator.getCellSize()  [1]};
+    double * luhOld = &(DataHeap::getInstance().getData(p->getSolution())[0]._persistentRecords._u);
+    double * lduh   = &(DataHeap::getInstance().getData(p->getUpdate())  [0]._persistentRecords._u);
 
-    const int basisSize       = EXAHYPE_ORDER+1;
-    const int nvar            = EXAHYPE_NVARS;
-
-    double * luhOld = &(DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u);
-    double * lduh   = &(DataHeap::getInstance().getData(cellDescription.getUpdate())  [0]._persistentRecords._u);
-
-    aderdg::solutionUpdate<DIMENSIONS>(
+    solver->solutionUpdate(
         luhOld,
         lduh,
-        size,
-        _localState.getMaxTimeStepSize(),
-        nvar,
-        basisSize);
+        fineGridVerticesEnumerator.getCellSize(),
+        _localState.getMaxTimeStepSize()
+    );
 
-    const double newTimeStamp = cellDescription.getTimeStamp() + _localState.getMaxTimeStepSize();
-    cellDescription.setTimeStamp( newTimeStamp );
+    const double newTimeStamp = p->getTimeStamp() + _localState.getMaxTimeStepSize();
+    p->setTimeStamp( newTimeStamp );
     _localState.updateTimeStamp( newTimeStamp );
   }
-*/
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
