@@ -46,11 +46,13 @@ void exahype::Cell::init(
 
   for ( int solverNumber = 0; solverNumber < static_cast<int>( exahype::solvers::RegisteredSolvers.size() ); solverNumber++) {
     if (level==exahype::solvers::RegisteredSolvers[solverNumber]->getMinimumTreeDepth()) {
-      logDebug( "init(...)","initialising cell description: " << "fine grid level: " << fineGridVerticesEnumerator.getLevel() << ", fine grid position of cell: " << fineGridPositionOfCell);
+      logDebug( "init(...)","initialising cell description: " << "level=" << level << ", size=" << size << ",offset=" << cellOffset << ",solverNumber=" << solverNumber);
 
       switch (exahype::solvers::RegisteredSolvers[solverNumber]->getType()) {
         case exahype::solvers::Solver::ADER_DG:
           {
+            logDebug( "init(...)","create ADER-DG cell description");
+
             exahype::records::ADERDGCellDescription newCellDescription;
 
             // Pass geometry information to the cellDescription description
