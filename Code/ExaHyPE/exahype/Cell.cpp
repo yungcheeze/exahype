@@ -42,17 +42,17 @@ void exahype::Cell::init(
   const tarch::la::Vector<DIMENSIONS,double>&  cellOffset
 ) {
   assertion1( !ADERDGCellDescriptionHeap::getInstance().isValidIndex(_cellData.getADERDGCellDescriptionsIndex()), toString() );
-  _cellData.setADERDGCellDescriptionsIndex( ADERDGCellDescriptionHeap::getInstance().createData(0,0) );
+  const int ADERDGCellDescriptionIndex = ADERDGCellDescriptionHeap::getInstance().createData(0,0);
+  _cellData.setADERDGCellDescriptionsIndex( ADERDGCellDescriptionIndex );
 
   for ( int solverNumber = 0; solverNumber < static_cast<int>( exahype::solvers::RegisteredSolvers.size() ); solverNumber++) {
-    if (level==exahype::solvers::RegisteredSolvers[solverNumber]->getMinimumTreeDepth()) {
-      logDebug( "init(...)","initialising cell description: " << "level=" << level << ", size=" << size << ",offset=" << cellOffset << ",solverNumber=" << solverNumber);
+    // Has to be +1 here
+    if (level==exahype::solvers::RegisteredSolvers[solverNumber]->getMinimumTreeDepth()+1) {
+      logDebug( "init(...)","initialising cell description: " << "level=" << level << ", size=" << size << ",offset=" << cellOffset << ",solverNumber=" << solverNumber << ",ADER-DG index=" << ADERDGCellDescriptionIndex);
 
       switch (exahype::solvers::RegisteredSolvers[solverNumber]->getType()) {
         case exahype::solvers::Solver::ADER_DG:
           {
-            logDebug( "init(...)","create ADER-DG cell description");
-
             exahype::records::ADERDGCellDescription newCellDescription;
 
             // Pass geometry information to the cellDescription description
@@ -87,6 +87,9 @@ void exahype::Cell::init(
           }
           break;
       }
+    }
+    else {
+      logDebug( "init(...)","cell is not associated with any solver. cell=" << toString() << ", level=" << level << ", size=" << size << ",offset=" << cellOffset );
     }
   }
 }

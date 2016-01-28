@@ -355,7 +355,6 @@ void exahype::mappings::PatchInitialisation::enterCell(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  logDebug("enterCell(...)","before initialising ADERDGCellDescription: " << "cell is refined: " << fineGridCell.isRefined());
 
   fineGridCell.init(
     fineGridVerticesEnumerator.getLevel(),
@@ -364,7 +363,7 @@ void exahype::mappings::PatchInitialisation::enterCell(
   );
 
   assertion1(
-    !fineGridCell.isRefined() || !ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).empty(),
+    fineGridCell.isRefined() || !ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).empty(),
     fineGridCell.toString()
   );
 
