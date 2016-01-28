@@ -278,8 +278,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     writer.write("   kernels::aderdg::generic::riemannSolver<flux>(FL, FR, QL, QR, dt, hFace, n);\n");
     writer.write("}\n");
     writer.write("\n\n\n");
-    writer.write( "void " + _projectName + "::" + solverName + "::stableTimeStepSize(const double * const luh, const tarch::la::Vector<DIMENSIONS,double>&  dx) {\n");
-    writer.write("   kernels::aderdg::generic::stableTimeStepSize<eigenvalues>(luh, dx);\n");
+    writer.write( "double " + _projectName + "::" + solverName + "::stableTimeStepSize(const double * const luh, const tarch::la::Vector<DIMENSIONS,double>&  dx) {\n");
+    writer.write("   return kernels::aderdg::generic::stableTimeStepSize<eigenvalues>(luh, dx);\n");
     writer.write("}\n");
     writer.write("\n\n\n");
   }
