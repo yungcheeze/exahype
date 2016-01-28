@@ -200,11 +200,13 @@ public:
    * @param[in]    center  Element center.
    * @param[in]    dx      Extent of the cell in each coordinate direction.
    */
+/*
   virtual void plot(
       const double * luh,
       const tarch::la::Vector<DIMENSIONS,double>&  center,
       const tarch::la::Vector<DIMENSIONS,double>&  dx
   ) = 0;
+*/
 };
 
 #endif

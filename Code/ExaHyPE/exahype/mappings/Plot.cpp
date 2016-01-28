@@ -369,6 +369,7 @@ void exahype::mappings::Plot::enterCell(
       p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
       p++
   ) {
+/*
     exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
 
     double * luh  = &(DataHeap::getInstance().getData(p->getSolution())  [0]._persistentRecords._u);
@@ -378,6 +379,7 @@ void exahype::mappings::Plot::enterCell(
         fineGridVerticesEnumerator.getCellCenter(),
         fineGridVerticesEnumerator.getCellSize()
     );
+*/
   }
 }
 
