@@ -4,6 +4,8 @@
 
 #include "exahype/aderdg/ADERDG.h"
 
+#include "exahype/solvers/Solver.h"
+
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -359,25 +361,22 @@ void exahype::mappings::VolumeIntegral::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
-  // @todo Tobias Weinzierl
-  // Delegate to solver-specific code fragments
-/*
-  if (!fineGridCell.isRefined()) {
-    records::ADERDGCellDescription& cellDescription =
-        ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
+  for (
+    ADERDGCellDescriptionHeap::HeapEntries::const_iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+    p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
+    p++
+  ) {
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
 
-    const double size[2] = { fineGridVerticesEnumerator.getCellSize()[0], fineGridVerticesEnumerator.getCellSize()[1] };
+    double * lFhi = &(DataHeap::getInstance().getData(p->getVolumeFlux())[0]._persistentRecords._u);
+    double * lduh = &(DataHeap::getInstance().getData(p->getUpdate())    [0]._persistentRecords._u);
 
-    double * lFhi = &(DataHeap::getInstance().getData(cellDescription.getVolumeFlux())[0]._persistentRecords._u);
-    double * lduh = &(DataHeap::getInstance().getData(cellDescription.getUpdate())    [0]._persistentRecords._u);
-
-    aderdg::volumeIntegral<DIMENSIONS>(
+    solver->volumeIntegral(
         lduh,
         lFhi,
-        size);
-
+        fineGridVerticesEnumerator.getCellSize()
+    );
   }
-*/
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }

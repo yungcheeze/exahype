@@ -5,7 +5,7 @@ exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords() 
 }
 
 
-exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber):
+exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber):
 _isParent(isParent),
 _isVirtual(isVirtual),
 _riemannSolvePerformed(riemannSolvePerformed),
@@ -36,7 +36,7 @@ _persistentRecords(persistentRecords._isParent, persistentRecords._isVirtual, pe
 }
 
 
-exahype::records::ADERDGCellDescription::ADERDGCellDescription(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber):
+exahype::records::ADERDGCellDescription::ADERDGCellDescription(const bool& isParent, const bool& isVirtual, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber):
 _persistentRecords(isParent, isVirtual, riemannSolvePerformed, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size, timeStamp, solverNumber) {
    
 }
@@ -59,10 +59,10 @@ void exahype::records::ADERDGCellDescription::toString (std::ostream& out) const
    out << "isVirtual:" << getIsVirtual();
    out << ",";
    out << "riemannSolvePerformed:[";
-   for (int i = 0; i < TWO_POWER_D-1; i++) {
+   for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
       out << getRiemannSolvePerformed(i) << ",";
    }
-   out << getRiemannSolvePerformed(TWO_POWER_D-1) << "]";
+   out << getRiemannSolvePerformed(DIMENSIONS_TIMES_TWO-1) << "]";
    out << ",";
    out << "spaceTimePredictor:" << getSpaceTimePredictor();
    out << ",";
@@ -161,7 +161,7 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
          int blocklen[Attributes] = {
             1,		 //isParent
             1,		 //isVirtual
-            TWO_POWER_D,		 //riemannSolvePerformed
+            DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
             1,		 //spaceTimePredictor
             1,		 //spaceTimeVolumeFlux
             1,		 //solution
@@ -237,7 +237,7 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
          int blocklen[Attributes] = {
             1,		 //isParent
             1,		 //isVirtual
-            TWO_POWER_D,		 //riemannSolvePerformed
+            DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
             1,		 //spaceTimePredictor
             1,		 //spaceTimeVolumeFlux
             1,		 //solution
@@ -521,7 +521,7 @@ exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentReco
 }
 
 
-exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber):
+exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber):
 _isParent(isParent),
 _isVirtual(isVirtual),
 _riemannSolvePerformed(riemannSolvePerformed),
@@ -552,7 +552,7 @@ _persistentRecords(persistentRecords._isParent, persistentRecords._isVirtual, pe
 }
 
 
-exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber):
+exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const bool& isParent, const bool& isVirtual, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber):
 _persistentRecords(isParent, isVirtual, riemannSolvePerformed, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size, timeStamp, solverNumber) {
    
 }
@@ -575,10 +575,10 @@ void exahype::records::ADERDGCellDescriptionPacked::toString (std::ostream& out)
    out << "isVirtual:" << getIsVirtual();
    out << ",";
    out << "riemannSolvePerformed:[";
-   for (int i = 0; i < TWO_POWER_D-1; i++) {
+   for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
       out << getRiemannSolvePerformed(i) << ",";
    }
-   out << getRiemannSolvePerformed(TWO_POWER_D-1) << "]";
+   out << getRiemannSolvePerformed(DIMENSIONS_TIMES_TWO-1) << "]";
    out << ",";
    out << "spaceTimePredictor:" << getSpaceTimePredictor();
    out << ",";
@@ -677,7 +677,7 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
          int blocklen[Attributes] = {
             1,		 //isParent
             1,		 //isVirtual
-            TWO_POWER_D,		 //riemannSolvePerformed
+            DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
             1,		 //spaceTimePredictor
             1,		 //spaceTimeVolumeFlux
             1,		 //solution
@@ -753,7 +753,7 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
          int blocklen[Attributes] = {
             1,		 //isParent
             1,		 //isVirtual
-            TWO_POWER_D,		 //riemannSolvePerformed
+            DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
             1,		 //spaceTimePredictor
             1,		 //spaceTimeVolumeFlux
             1,		 //solution

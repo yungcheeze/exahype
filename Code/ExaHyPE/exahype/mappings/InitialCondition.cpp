@@ -6,6 +6,8 @@
 
 #include "peano/utils/Globals.h"
 
+#include "exahype/solvers/Solver.h"
+
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -362,36 +364,24 @@ void exahype::mappings::InitialCondition::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
-  // @todo Tobias Weinzierl
-  // Delegate to solver-specific code fragments
-
-/*
-  // ! Begin of code for the DG method.
-  if (!fineGridCell.isRefined()) {
-    records::ADERDGCellDescription& cellDescription =
-             ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
-
-    const double center[2] = { fineGridVerticesEnumerator.getCellCenter()[0], fineGridVerticesEnumerator.getCellCenter()[1] };
-    const double size  [2] = { fineGridVerticesEnumerator.getCellSize()[0], fineGridVerticesEnumerator.getCellSize()[1] };
+  for (
+      ADERDGCellDescriptionHeap::HeapEntries::const_iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+      p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
+      p++
+    ) {
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
 
     logDebug("enterCell","center: " << center[0] << "," << center[1]);
 
-    constexpr int basisSize       = EXAHYPE_ORDER+1;
-    constexpr int nvar            = EXAHYPE_NVARS;
-    const     int numberOfDof     = nvar * tarch::la::aPowI(DIMENSIONS,basisSize);
-
     // zero update
-    double* lduh = &(DataHeap::getInstance().getData(cellDescription.getUpdate())[0]._persistentRecords._u);
-    memset(lduh,0,sizeof(double) * numberOfDof);
+    // @todo Entfernen - sollte Loeser machen. Bitte erst mal validieren
+    //double* lduh = &(DataHeap::getInstance().getData(p->getUpdate())[0]._persistentRecords._u);
+    //memset(lduh,0,sizeof(double) * numberOfDof);
 
     // apply initial condition
-    double* luh    = &(DataHeap::getInstance().getData(cellDescription.getSolution())[0]._persistentRecords._u);
-    exahype::aderdg::initialValues<DIMENSIONS>(luh,center,size,nvar,basisSize);
+    double* luh    = &(DataHeap::getInstance().getData(p->getSolution())[0]._persistentRecords._u);
+    solver->initialValues(luh,fineGridVerticesEnumerator.getCellCenter(),fineGridVerticesEnumerator.getCellSize());
   }
-
-  // ! End of code for the DG method.
-*/
-
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
 

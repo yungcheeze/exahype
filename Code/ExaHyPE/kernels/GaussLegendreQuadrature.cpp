@@ -19,6 +19,14 @@ void kernels::initGaussLegendreNodesAndWeights() {
 
   gaussLegendreWeights[0][0] = {1.0000000000000000};
   gaussLegendreNodes[0][0]   = {0.5000000000000000};
+
+  // nur Ordnung drei
+#elif EXAHYPE_ORDER==3
+    const double exahype::quad::gaussLegendreWeights[EXAHYPE_ORDER+1] =
+        {0.1739274225687273, 0.3260725774312732, 0.3260725774312732, 0.1739274225687273};
+    const double exahype::quad::gaussLegendreNodes[EXAHYPE_ORDER+1]   =
+        {0.0694318442029737, 0.3300094782075719, 0.6699905217924281, 0.9305681557970262};
+
 }
 
 /*
@@ -37,11 +45,6 @@ void kernels::initGaussLegendreNodesAndWeights() {
         {0.2777777777777778, 0.4444444444444444, 0.2777777777777778};
     const double exahype::quad::gaussLegendreNodes[EXAHYPE_ORDER+1]   =
         {0.1127016653792583, 0.5000000000000000, 0.8872983346207417};
-#elif EXAHYPE_ORDER==3
-    const double exahype::quad::gaussLegendreWeights[EXAHYPE_ORDER+1] =
-        {0.1739274225687273, 0.3260725774312732, 0.3260725774312732, 0.1739274225687273};
-    const double exahype::quad::gaussLegendreNodes[EXAHYPE_ORDER+1]   =
-        {0.0694318442029737, 0.3300094782075719, 0.6699905217924281, 0.9305681557970262};
 #elif EXAHYPE_ORDER==4
     const double exahype::quad::gaussLegendreWeights[EXAHYPE_ORDER+1] =
         {0.1184634425280953, 0.2393143352496831, 0.2844444444444444, 0.2393143352496831, 0.1184634425280953};
