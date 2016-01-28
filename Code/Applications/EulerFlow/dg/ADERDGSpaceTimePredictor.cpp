@@ -270,7 +270,15 @@ void exahype::dg::spaceTimePredictor<2>(
   // memory layout of lFhi:
   // lFhi = [ lFhi_x | lFhi_y ] ordered as
   // (a) lFhi_x[nDOF_y][nDOF_x][nVar]
-  // (b) lFhi_y[nDOF_y][nDOF_x][nVar]
+  // (b) lFhi_y[nDOF_x][nDOF_y][nVar]
+  // Note the order of lFhi_y. Rationale is that matrix multiplications
+  // then no longer have strided access pattern
+  //
+  // For 3D the variables should be as follows.
+  // lFhi = [ lFhi_x | lFhi_y | lFhi_z ] where
+  // (a) lFhi_x[nDOF_z][nDOF_y][nDOF_x][nVar]
+  // (b) lFhi_y[nDOF_z][nDOF_x][nDOF_y][nVar]
+  // (c) lFhi_z[nDOF_x][nDOF_y][nDOF_z][nVar]
   //
   double * lFhi_x = &lFhi[0];
   double * lFhi_y = &lFhi[numberOfDof];
@@ -297,18 +305,13 @@ void exahype::dg::spaceTimePredictor<2>(
         for(int ivar=0; ivar < nvar; ivar++) {
           lQhi[dofStartIndex+ivar] += weight * Q[ivar];
 
-          lFhi_x[dofStartIndex+ivar] += weight * f[ivar]; // lFhi_x(i,j,nVar)
-          lFhi_y[dofStartIndex+ivar] += weight * g[ivar]; // lFhi_y(i,j,nVar)
+          lFhi_x[dofStartIndex+ivar] += weight * f[ivar];   // lFhi_x[nDOF_y][nDOF_x][nVar]
+          //lFhi_y[dofStartIndex+ivar] += weight * g[ivar]; // lFhi_y[nDOF_y][nDOF_x][nVar] (former version)
+          lFhi_y[(ii + basisSize * jj) * nvar+ivar] += weight * g[ivar];  // lFhi_y(DOFx,DOFy,nVar)
         }
       }
     }
   }
-
-  // TODO
-  // Ideas for improvement
-  // (a) reorder lFhi_y, lFhi_z do have better access mechanism
-  //     in SurfaceIntegral??? e.g. lFhi_y(nvar, i,j,k) becomes lFhi_y(nvar,j,i,k)
-  //     and then the usual access mechanism
 
 
   /////////////////////////////////////////////////
@@ -334,8 +337,8 @@ void exahype::dg::spaceTimePredictor<2>(
       Q = &lQhi[mmDofStartIndex];
 
       for(int ivar=0; ivar < nvar; ivar++) {
-        lQhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * Q[ivar];
-        lQhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * Q[ivar];
+        lQhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * Q[ivar]; // lQhbnd(Facei,nDOF,nVar)
+        lQhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * Q[ivar]; // lQhbnd(Facei,nDOF,nVar)
 
         lFhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * lFhi_x[mmDofStartIndex+ivar]; // lFhi_x * FLCoeff
         lFhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * lFhi_x[mmDofStartIndex+ivar]; // lFhi_x * FRCoeff
@@ -362,9 +365,12 @@ void exahype::dg::spaceTimePredictor<2>(
         lQhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * Q[ivar];
         lQhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * Q[ivar];
 
-        lFhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * lFhi_y[mmDofStartIndex+ivar]; // lFhi_y * FLCoeff
-        lFhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * lFhi_y[mmDofStartIndex+ivar]; // lFhi_y * FRCoeff
-      }
+        // without reordering of lFhi_y
+        //lFhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * lFhi_y[mmDofStartIndex+ivar]; // lFhi_y * FLCoeff
+        //lFhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * lFhi_y[mmDofStartIndex+ivar]; // lFhi_y * FRCoeff
+        lFhbnd[dofStartIndexL+ivar] += dg::FLCoeff[mm] * lFhi_y[(mm  + basisSize * ii) * nvar+ivar]; // lFhi_y * FLCoeff
+        lFhbnd[dofStartIndexR+ivar] += dg::FRCoeff[mm] * lFhi_y[(mm  + basisSize * ii) * nvar+ivar]; // lFhi_y * FRCoeff
+      }// mmDOfStartIndex = (mm  + basisSize * ii) * nvar
     }
     continue;
   }

@@ -38,7 +38,8 @@ void exahype::dg::volumeIntegral<2>(
   // memory layout of lFhi:
   // lFhi = [ lFhi_x | lFhi_y ] ordered as follows
   // (a) lFhi_x[nDOF_y][nDOF_x][nVar]
-  // (b) lFhi_y[nDOF_y][nDOF_x][nVar]
+  // (b) lFhi_y[nDOF_x][nDOF_y][nVar]
+  // Note the variable order of lFhi_y
   // let's not bother with offsets and define separate flux matrices
   const double * lFhi_x = &lFhi[0];            // f flux
   const double * lFhi_y = &lFhi[numberOfDof];  // g flux
@@ -78,9 +79,13 @@ void exahype::dg::volumeIntegral<2>(
 
       // MATMUL: Kxi * lFhi_y
       for(int mm=0; mm < basisSize; mm++) {
-        const int mmNodeIndex         = jj + basisSize * mm;
+        // without reordering:
+        //const int mmNodeIndex         = jj + basisSize * mm;
+        //const int mmDofStartIndex     = mmNodeIndex * nvar;
+        const int mmNodeIndex         = mm + basisSize * jj;
         const int mmDofStartIndex     = mmNodeIndex * nvar;
 
+        // now we benefit from the reordering of lFhi_y
         for(int ivar=0; ivar < nvar; ivar++) {
           lduh3D[ii][jj][ivar] += weight/dx[1] * dg::Kxi[ii][mm] * lFhi_y[mmDofStartIndex+ivar];
         }
