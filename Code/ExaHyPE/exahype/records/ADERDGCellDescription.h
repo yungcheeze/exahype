@@ -32,7 +32,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   26/01/2016 12:14
+ * @date   28/01/2016 08:58
  */
 class exahype::records::ADERDGCellDescription { 
    
@@ -44,9 +44,9 @@ class exahype::records::ADERDGCellDescription {
          bool _isParent;
          bool _isVirtual;
          #ifdef UseManualAlignment
-         std::bitset<TWO_POWER_D> _riemannSolvePerformed __attribute__((aligned(VectorisationAlignment)));
+         std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed __attribute__((aligned(VectorisationAlignment)));
          #else
-         std::bitset<TWO_POWER_D> _riemannSolvePerformed;
+         std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
          #endif
          int _spaceTimePredictor;
          int _spaceTimeVolumeFlux;
@@ -77,7 +77,7 @@ class exahype::records::ADERDGCellDescription {
          /**
           * Generated
           */
-         PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber);
+         PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber);
          
          
          inline bool getIsParent() const 
@@ -139,7 +139,7 @@ class exahype::records::ADERDGCellDescription {
           * 
           * @see convert()
           */
-         inline std::bitset<TWO_POWER_D> getRiemannSolvePerformed() const 
+         inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -168,7 +168,7 @@ class exahype::records::ADERDGCellDescription {
           * 
           * @see convert()
           */
-         inline void setRiemannSolvePerformed(const std::bitset<TWO_POWER_D>& riemannSolvePerformed) 
+         inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -533,7 +533,7 @@ class exahype::records::ADERDGCellDescription {
       /**
        * Generated
        */
-      ADERDGCellDescription(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber);
+      ADERDGCellDescription(const bool& isParent, const bool& isVirtual, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber);
       
       /**
        * Generated
@@ -600,7 +600,7 @@ class exahype::records::ADERDGCellDescription {
        * 
        * @see convert()
        */
-      inline std::bitset<TWO_POWER_D> getRiemannSolvePerformed() const 
+      inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -629,7 +629,7 @@ class exahype::records::ADERDGCellDescription {
        * 
        * @see convert()
        */
-      inline void setRiemannSolvePerformed(const std::bitset<TWO_POWER_D>& riemannSolvePerformed) 
+      inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -645,7 +645,7 @@ class exahype::records::ADERDGCellDescription {
  #endif 
  {
          assertion(elementIndex>=0);
-         assertion(elementIndex<TWO_POWER_D);
+         assertion(elementIndex<DIMENSIONS_TIMES_TWO);
          return _persistentRecords._riemannSolvePerformed[elementIndex];
          
       }
@@ -658,7 +658,7 @@ class exahype::records::ADERDGCellDescription {
  #endif 
  {
          assertion(elementIndex>=0);
-         assertion(elementIndex<TWO_POWER_D);
+         assertion(elementIndex<DIMENSIONS_TIMES_TWO);
          _persistentRecords._riemannSolvePerformed[elementIndex]= riemannSolvePerformed;
          
       }
@@ -671,7 +671,7 @@ class exahype::records::ADERDGCellDescription {
  #endif 
  {
          assertion(elementIndex>=0);
-         assertion(elementIndex<TWO_POWER_D);
+         assertion(elementIndex<DIMENSIONS_TIMES_TWO);
          _persistentRecords._riemannSolvePerformed.flip(elementIndex);
       }
       
@@ -1137,7 +1137,7 @@ class exahype::records::ADERDGCellDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   26/01/2016 12:14
+          * @date   28/01/2016 08:58
           */
          class exahype::records::ADERDGCellDescriptionPacked { 
             
@@ -1146,7 +1146,7 @@ class exahype::records::ADERDGCellDescription {
                struct PersistentRecords {
                   bool _isParent;
                   bool _isVirtual;
-                  std::bitset<TWO_POWER_D> _riemannSolvePerformed;
+                  std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
                   int _spaceTimePredictor;
                   int _spaceTimeVolumeFlux;
                   int _solution;
@@ -1168,7 +1168,7 @@ class exahype::records::ADERDGCellDescription {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber);
+                  PersistentRecords(const bool& isParent, const bool& isVirtual, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber);
                   
                   
                   inline bool getIsParent() const 
@@ -1230,7 +1230,7 @@ class exahype::records::ADERDGCellDescription {
                    * 
                    * @see convert()
                    */
-                  inline std::bitset<TWO_POWER_D> getRiemannSolvePerformed() const 
+                  inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1259,7 +1259,7 @@ class exahype::records::ADERDGCellDescription {
                    * 
                    * @see convert()
                    */
-                  inline void setRiemannSolvePerformed(const std::bitset<TWO_POWER_D>& riemannSolvePerformed) 
+                  inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1624,7 +1624,7 @@ class exahype::records::ADERDGCellDescription {
                /**
                 * Generated
                 */
-               ADERDGCellDescriptionPacked(const bool& isParent, const bool& isVirtual, const std::bitset<TWO_POWER_D>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber);
+               ADERDGCellDescriptionPacked(const bool& isParent, const bool& isVirtual, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const double& timeStamp, const int& solverNumber);
                
                /**
                 * Generated
@@ -1691,7 +1691,7 @@ class exahype::records::ADERDGCellDescription {
                 * 
                 * @see convert()
                 */
-               inline std::bitset<TWO_POWER_D> getRiemannSolvePerformed() const 
+               inline std::bitset<DIMENSIONS_TIMES_TWO> getRiemannSolvePerformed() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1720,7 +1720,7 @@ class exahype::records::ADERDGCellDescription {
                 * 
                 * @see convert()
                 */
-               inline void setRiemannSolvePerformed(const std::bitset<TWO_POWER_D>& riemannSolvePerformed) 
+               inline void setRiemannSolvePerformed(const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1736,7 +1736,7 @@ class exahype::records::ADERDGCellDescription {
  #endif 
  {
                   assertion(elementIndex>=0);
-                  assertion(elementIndex<TWO_POWER_D);
+                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                   return _persistentRecords._riemannSolvePerformed[elementIndex];
                   
                }
@@ -1749,7 +1749,7 @@ class exahype::records::ADERDGCellDescription {
  #endif 
  {
                   assertion(elementIndex>=0);
-                  assertion(elementIndex<TWO_POWER_D);
+                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                   _persistentRecords._riemannSolvePerformed[elementIndex]= riemannSolvePerformed;
                   
                }
@@ -1762,7 +1762,7 @@ class exahype::records::ADERDGCellDescription {
  #endif 
  {
                   assertion(elementIndex>=0);
-                  assertion(elementIndex<TWO_POWER_D);
+                  assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                   _persistentRecords._riemannSolvePerformed.flip(elementIndex);
                }
                

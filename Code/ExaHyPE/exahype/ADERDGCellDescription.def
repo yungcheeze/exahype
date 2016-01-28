@@ -9,7 +9,6 @@ Packed-Type: int;
 
 Constant: DIMENSIONS;
 Constant: DIMENSIONS_TIMES_TWO;
-Constant: TWO_POWER_D;
 
 class exahype::records::ADERDGCellDescription {
   /** 
@@ -27,7 +26,7 @@ class exahype::records::ADERDGCellDescription {
    * We hold a bool for each face belonging to this ADER-DG cell stating
    * if a Riemann solve has already performed on it.
    */
-  parallelise persistent bool riemannSolvePerformed[TWO_POWER_D];
+  parallelise persistent bool riemannSolvePerformed[DIMENSIONS_TIMES_TWO];
   
   /** Space-time data on each patch. Size: #var*(N+1)^(d+1)
    * 
