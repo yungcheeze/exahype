@@ -3,8 +3,8 @@
 #include "tarch/la/Scalar.h"
 
 
-template <typename PDEFlux2d>
-void exahype::kernels::aderdg::generic::spaceTimePredictor(
+template <void PDEFlux2d(const double * const Q,const int nvar,double * f,double * g)>
+void kernels::aderdg::generic::spaceTimePredictor(
   double * lQi,
   double * lFi,
   const double * const luh,
@@ -17,6 +17,7 @@ void exahype::kernels::aderdg::generic::spaceTimePredictor(
   int          order,
   int          numberOfVariables
 ) {
+
   constexpr int dim         = 2;
   constexpr int dimTimesTwo = (2*dim);     // 4
 
@@ -30,6 +31,8 @@ void exahype::kernels::aderdg::generic::spaceTimePredictor(
   double* rhs0 = new double[numberOfSpaceTimeDof];
   double* rhs  = new double[numberOfSpaceTimeDof];
   double* tmp  = new double[nvar * basisSize];
+
+  /*
 
   for (int ii=0; ii<basisSize; ii++) { // loop over dof
     for (int jj=0; jj<basisSize; jj++) {
@@ -100,7 +103,7 @@ void exahype::kernels::aderdg::generic::spaceTimePredictor(
 
           double weight = ::kernels::gaussLegendreWeights[order][ll] *
               ::kernels::gaussLegendreWeights[order][jj];
-
+ */
 // COMPUTE SPATIAL DERIVATIVES FOR TESTING PURPOSES
 //for (int ll=0; ll < basisSize; ll++) { // set tmp = 0
 //  for(int ivar=0; ivar < nvar; ivar++) {
@@ -119,6 +122,8 @@ void exahype::kernels::aderdg::generic::spaceTimePredictor(
 //    tmp[ivar] += 1./dxPatch * aderdg::dudx[ii][mm] * Q[ivar];
 //  }
 //}
+
+  /*
           for(int ivar=0; ivar < nvar; ivar++) {
             rhs[spaceTimeDofStartIndex+ivar] = rhs0[spaceTimeDofStartIndex+ivar];
           }
@@ -202,8 +207,9 @@ void exahype::kernels::aderdg::generic::spaceTimePredictor(
             lQi[spaceTimeDofStartIndex+ivar] = tmp[ivar + nvar*ll];
           }
         }
+*/
 
-// UNCOMMENT FOR DEBUGGING PURPOSES
+// UNCOMMENT FOR DEBUGGING PURPOSES @todo Debug
 //        // dqdt
 //        for (int ll=0; ll < basisSize; ll++) { // set tmp = 0
 //          for(int ivar=0; ivar < nvar; ivar++) {
@@ -224,9 +230,13 @@ void exahype::kernels::aderdg::generic::spaceTimePredictor(
 //            }
 //          }
 //        }
+
+
+  /*
       }
     }
   } // end of Picard iteration
+*/
 
  /*
 

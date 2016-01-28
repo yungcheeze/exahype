@@ -4,25 +4,23 @@
 //#define GAMMA 1.4
 
 
-namespace exahype {
-  namespace kernels {
-    namespace aderdg {
-      namespace generic {
-        template <typename PDEFlux2d>
-        void spaceTimePredictor(
-          double * lQi,
-          double * lFi,
-          const double * const luh,
-          double * lQhi,
-          double * lFhi,
-          double * lQhbnd,
-          double * lFhbnd,
-          const double * const dx,
-          const double dt,
-          int          order,
-          int          numberOfVariables
-        );
-      }
+namespace kernels {
+  namespace aderdg {
+    namespace generic {
+      template <void (*PDEFlux2d)(const double * const Q,const int nvar,double * f,double * g)>
+      void spaceTimePredictor(
+        double * lQi,
+        double * lFi,
+        const double * const luh,
+        double * lQhi,
+        double * lFhi,
+        double * lQhbnd,
+        double * lFhbnd,
+        const double * const dx,
+        const double dt,
+        int          order,
+        int          numberOfVariables
+      );
     }
   }
 }
