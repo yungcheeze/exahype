@@ -370,7 +370,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
   std::vector<records::ADERDGCellDescription>&  cellDescriptionsR =
       ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexR] );
 
-  assertion1WithExplanation( cellDescriptionsL.size() == cellDescriptionR.size(), cellDescriptionsL.size(), "The number of ADERDGCellDescriptions is not the same for both cells!" );
+  assertion1WithExplanation( cellDescriptionsL.size() == cellDescriptionsR.size(), cellDescriptionsL.size(), "The number of ADERDGCellDescriptions is not the same for both cells!" );
 
   for (
       int p = 0;

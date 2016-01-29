@@ -152,7 +152,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     if (exahype::solvers::isAPlotterActive(repository.getState().getMinimalGlobalTimeStamp())) {
       repository.switchToPlot();
       repository.iterate();
-      exahype::solvers::finishedPlotting(repository.getState().getMinimalGlobalTimeStamp());
+      exahype::solvers::finishedPlotting();
     }
 
     repository.getState().startNewTimeStep();

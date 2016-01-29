@@ -8,6 +8,7 @@
 
 #include "exahype/solvers/Solver.h"
 
+#include "exahype/solvers/Plotter.h"
 
 
 /**
@@ -18,51 +19,23 @@ peano::CommunicationSpecification   exahype::mappings::Plot::communicationSpecif
 }
 
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::Plot::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::Plot::touchVertexFirstTimeSpecification() { 
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::Plot::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::Serial);
 }
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::Plot::leaveCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::Plot::ascendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::Plot::descendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
@@ -356,30 +329,33 @@ void exahype::mappings::Plot::touchVertexLastTime(
 
 
 void exahype::mappings::Plot::enterCell(
-    exahype::Cell&                 fineGridCell,
-    exahype::Vertex * const        fineGridVertices,
-    const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-    exahype::Vertex * const        coarseGridVertices,
-    const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-    exahype::Cell&                 coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+  exahype::Cell&                            fineGridCell,
+  exahype::Vertex * const                   fineGridVertices,
+  const peano::grid::VertexEnumerator&      fineGridVerticesEnumerator,
+  exahype::Vertex * const                   coarseGridVertices,
+  const peano::grid::VertexEnumerator&      coarseGridVerticesEnumerator,
+  exahype::Cell&                            coarseGridCell,
+  const tarch::la::Vector<DIMENSIONS,int>&  fineGridPositionOfCell
 ) {
   for (
-      ADERDGCellDescriptionHeap::HeapEntries::const_iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
-      p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
-      p++
+    std::vector<exahype::solvers::Plotter*>::iterator pPlotter = exahype::solvers::RegisteredPlotters.begin();
+    pPlotter != exahype::solvers::RegisteredPlotters.end();
+    pPlotter++
   ) {
-/*
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
-
-    double * luh  = &(DataHeap::getInstance().getData(p->getSolution())  [0]._persistentRecords._u);
-
-    solver->plot(
-        luh,
-        fineGridVerticesEnumerator.getCellCenter(),
-        fineGridVerticesEnumerator.getCellSize()
-    );
-*/
+    for (
+      ADERDGCellDescriptionHeap::HeapEntries::const_iterator pPatch = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+      pPatch != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
+      pPatch++
+    ) {
+      if ( (*pPlotter)->plotDataFromSolver(pPatch->getSolverNumber()) ) {
+        double * u = &(DataHeap::getInstance().getData(pPatch->getSolution())  [0]._persistentRecords._u);
+        (*pPlotter)->plotPatch(
+          fineGridVerticesEnumerator.getVertexPosition(),
+          fineGridVerticesEnumerator.getCellSize(),
+          u
+        );
+      }
+    }
   }
 }
 
@@ -399,14 +375,30 @@ void exahype::mappings::Plot::leaveCell(
 void exahype::mappings::Plot::beginIteration(
     exahype::State&  solverState
 ) {
-  // do nothing
+  for (
+    std::vector<exahype::solvers::Plotter*>::iterator p = exahype::solvers::RegisteredPlotters.begin();
+    p != exahype::solvers::RegisteredPlotters.end();
+    p++
+  ) {
+    if ( (*p)->isActive() ) {
+      (*p)->open();
+    }
+  }
 }
 
 
 void exahype::mappings::Plot::endIteration(
     exahype::State&  solverState
 ) {
-  // do nothing
+  for (
+    std::vector<exahype::solvers::Plotter*>::iterator p = exahype::solvers::RegisteredPlotters.begin();
+    p != exahype::solvers::RegisteredPlotters.end();
+    p++
+  ) {
+    if ( (*p)->isActive() ) {
+      (*p)->close();
+    }
+  }
 }
 
 
