@@ -41,7 +41,7 @@ public class GenerateSolverRegistration  extends DepthFirstAdapter {
       
       _writer.write("#include \"kernels/KernelCalls.h\"\n");
       _writer.write("#include \"exahype/solvers/Plotter.h\"\n");
-      _writer.write("#include \"exahype/solvers/Solver.h\"\n\n\n");
+      _writer.write("#include \"exahype/plotters/Solver.h\"\n\n\n");
       
       _methodBodyWriter.write("void kernels::initSolvers() {\n");
       if (node.getSolver().size()==0) { 
@@ -76,7 +76,7 @@ public class GenerateSolverRegistration  extends DepthFirstAdapter {
   @Override
   public void inAPlotSolution(eu.exahype.node.APlotSolution node) {
 	try {
-      _methodBodyWriter.write("  exahype::solvers::RegisteredPlotters.push_back( new exahype::solvers::Plotter(" + (_kernelNumber-1) + ",\"" + node.getPlotterType().toString().trim() + "\"," + node.getTime().toString().trim() + "," + node.getRepeat().toString().trim() + ",\"" + node.getFilename().toString().trim() + "\")); \n");
+      _methodBodyWriter.write("  exahype::plotters::RegisteredPlotters.push_back( new exahype::solvers::Plotter(" + (_kernelNumber-1) + ",\"" + node.getPlotterType().toString().trim() + "\"," + node.getTime().toString().trim() + "," + node.getRepeat().toString().trim() + ",\"" + node.getFilename().toString().trim() + "\")); \n");
       System.out.println( "added plotter ... ok" );      
 	} 
 	catch (Exception exc) {
