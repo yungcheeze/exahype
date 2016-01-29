@@ -23,23 +23,15 @@ exahype-project  Euler2d
   end computational-domain
  
   
-  solver ADER-DG MyEuler2d
+  solver ADER-DG MyEulerSolver
     variables = 5
     order     = 3
     kernel    = user::fluxes
     
     plot vtk::binary
-      variable = 0 
-      time     = 0.02
-      repeat   = on
-      filename = ./q1
-    end plot
-
-    plot vtk::text
-      variable = 1
-      time     = 0.02
-      repeat   = on
-      filename = ./q2
+      time     = 0.0
+      repeat   = 0.02
+      filename = ./solution
     end plot
   end solver
 
