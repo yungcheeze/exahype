@@ -40,8 +40,8 @@ public class GenerateSolverRegistration  extends DepthFirstAdapter {
       _writer.write("// ========================\n\n\n");
       
       _writer.write("#include \"kernels/KernelCalls.h\"\n");
-      _writer.write("#include \"exahype/solvers/Plotter.h\"\n");
-      _writer.write("#include \"exahype/plotters/Solver.h\"\n\n\n");
+      _writer.write("#include \"exahype/plotters/Plotter.h\"\n");
+      _writer.write("#include \"exahype/solvers/Solver.h\"\n\n\n");
       
       _methodBodyWriter.write("void kernels::initSolvers() {\n");
       if (node.getSolver().size()==0) { 
