@@ -28,6 +28,12 @@ int exahype::solvers::Solver::getNodesPerCoordinateAxis() const {
 }
 
 
+std::string exahype::solvers::Solver::getIdentifier() const {
+  return _identifier;
+}
+
+
+
 // @todo Dominic Charrier
 // Just to have the definition headers ready for the sub classes.
 // I will delete them later on.
