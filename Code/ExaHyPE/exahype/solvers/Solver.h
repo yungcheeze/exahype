@@ -118,11 +118,11 @@ public:
   /**
    * @brief Computes the normal fluxes (or fluctuations) at the interface of two cells.
    *
-   * @param[inout] FL    Flux DoF belonging to the left cell.
-   * @param[inout] FR    Flux DoF belonging the right cell.
-   * @param[in]    QL    DoF of the boundary extrapolated predictor belonging to the left cell.
-   * @param[in]    QR    DoF of the boundary extrapolated predictor belonging to the right cell.
-   * @param[in]    n     Unit vector normal to the interface.
+   * @param[inout] FL             Flux DoF belonging to the left cell.
+   * @param[inout] FR             Flux DoF belonging the right cell.
+   * @param[in]    QL             DoF of the boundary extrapolated predictor belonging to the left cell.
+   * @param[in]    QR             DoF of the boundary extrapolated predictor belonging to the right cell.
+   * @param[in]    normalNonZero  Index of the nonzero normal vector component, i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
    */
   virtual void riemannSolver(
       double * FL,
@@ -130,7 +130,7 @@ public:
       const double * const QL,
       const double * const QR,
       const double dt,
-      const double * const n
+      const int normalNonZero,
   ) = 0;
 
   /**
