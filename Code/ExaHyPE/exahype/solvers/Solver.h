@@ -132,7 +132,7 @@ public:
       const double * const QL,
       const double * const QR,
       const double dt,
-      const int normalNonZero,
+      const int normalNonZero
   ) = 0;
 
   /**
