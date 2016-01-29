@@ -347,7 +347,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
     const int cellIndexR,
     const int faceL,
     const int faceR,
-    const double * const normal
+    const int normalNonZero
 ) {
   // Only continue if this is an internal face. See multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex.
   if (
@@ -410,7 +410,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
           QL,
           QR,
           _localState.getMaxTimeStepSize(),
-          normal
+          normalNonZero
       );
 */
     }
@@ -463,14 +463,6 @@ void exahype::mappings::RiemannSolver::touchVertexLastTime(
   constexpr int cellIndicesBottom [4] = { 0, 1, 2, 3 };
   constexpr int cellIndicesTop    [4] = { 4, 5, 6, 7 };
 #endif
-
-  // normal vectors
-  const double nx[3]= { 1., 0., 0. };
-  const double ny[3]= { 0., 1., 0. };
-#if DIMENSIONS==3
-  const double nz[3]= { 0., 0., 1. };
-#endif
-
   // Left/right face
   for (int i=0; i<TWO_POWER_D_DIVIDED_BY_TWO; i++) {
     solveRiemannProblem(
@@ -479,7 +471,7 @@ void exahype::mappings::RiemannSolver::touchVertexLastTime(
         cellIndicesRight[i],
         EXAHYPE_FACE_RIGHT,
         EXAHYPE_FACE_LEFT,
-        nx);
+        0);
 
     solveRiemannProblem(
         adjacentADERDGCellDescriptionsIndices,
@@ -487,7 +479,7 @@ void exahype::mappings::RiemannSolver::touchVertexLastTime(
         cellIndicesBack [i],
         EXAHYPE_FACE_BACK,
         EXAHYPE_FACE_FRONT,
-        ny);
+        1);
 
 #if DIMENSIONS==3
     solveRiemannProblem(
@@ -496,7 +488,7 @@ void exahype::mappings::RiemannSolver::touchVertexLastTime(
         cellIndicesTop   [i],
         EXAHYPE_FACE_TOP,
         EXAHYPE_FACE_BOTTOM,
-        nz);
+        2);
 #endif
   }
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );

@@ -75,7 +75,7 @@ private:
       const int cellIndexR,
       const int faceL,
       const int faceR,
-      const double * const normal);
+      const int normalNonZero);
 public:
   /**
    * These flags are used to inform Peano about your operation. It tells the

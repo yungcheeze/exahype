@@ -349,7 +349,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
     const int cellIndexR,
     const int faceIndexL,
     const int faceIndexR,
-    const double * const normal
+    const int normalNonZero
 )
 {
   bool noBoundaryFace       = true;
@@ -430,15 +430,14 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       // Do not solve a Riemann problem here:
       // Invoke user defined boundary condition function
       // At the moment, we simply copy the cell solution to the boundary.
-/*
+
       solver->riemannSolver(
           Fhbnd,
           Fhbnd,
           Qhbnd,
           Qhbnd,
           _localState.getMaxTimeStepSize(),
-          normal);
-*/
+          normalNonZero);
     }
   }
 }
@@ -481,13 +480,6 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
   constexpr int cellIndicesTop    [4] = { 4, 5, 6, 7 };
 #endif
 
-  // normal vectors
-  const double nx[3]= { 1., 0., 0. };
-  const double ny[3]= { 0., 1., 0. };
-#if DIMENSIONS==3
-  const double nz[3]= { 0., 0., 1. };
-#endif
-
   // Left/right face
   for (int i=0; i<TWO_POWER_D_DIVIDED_BY_TWO; i++) {
     applyBoundaryConditions(
@@ -496,7 +488,7 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
         cellIndicesRight[i],
         EXAHYPE_FACE_RIGHT,
         EXAHYPE_FACE_LEFT,
-        nx);
+        0);
 
     applyBoundaryConditions(
         adjacentADERDGCellDescriptionsIndices,
@@ -504,7 +496,7 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
         cellIndicesBack [i],
         EXAHYPE_FACE_BACK,
         EXAHYPE_FACE_FRONT,
-        ny);
+        1);
 
 #if DIMENSIONS==3
     applyBoundaryConditions(
@@ -513,7 +505,7 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
         cellIndicesTop   [i],
         EXAHYPE_FACE_TOP,
         EXAHYPE_FACE_BOTTOM,
-        nz);
+        2);
 #endif
   }
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
