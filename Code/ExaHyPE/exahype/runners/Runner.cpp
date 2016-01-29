@@ -153,6 +153,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       repository.switchToPlot();
       repository.iterate();
       exahype::solvers::finishedPlotting();
+      logInfo( "runAsMaster(...)", "all snapshots written" );
     }
 
     repository.getState().startNewTimeStep();
