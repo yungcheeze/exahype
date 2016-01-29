@@ -1,7 +1,6 @@
 #include "exahype/solvers/Solver.h"
 
 
-//std::vector<exahype::solvers::Solver>  exahype::solvers::Solver::RegisteredSolvers;
 std::vector<exahype::solvers::Solver*>  exahype::solvers::RegisteredSolvers;
 
 

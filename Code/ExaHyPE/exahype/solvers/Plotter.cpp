@@ -1,6 +1,9 @@
 #include "exahype/solvers/Plotter.h"
 
 
+std::vector<exahype::solvers::Plotter*>  exahype::solvers::RegisteredPlotters;
+
+
 exahype::solvers::Plotter::Plotter( int solver, const std::string& identifier, double time, double repeat, const std::string& filename ):
   _solver(solver),
   _identifier(identifier),
