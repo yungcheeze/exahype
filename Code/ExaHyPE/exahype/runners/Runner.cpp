@@ -150,6 +150,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
   while ( repository.getState().getMinimalGlobalTimeStamp()<simulationEndTime ) {
     if (exahype::solvers::isAPlotterActive(repository.getState().getMinimalGlobalTimeStamp())) {
+      logInfo( "runAsMaster(...)", "write snapshot(s)" );
       repository.switchToPlot();
       repository.iterate();
       exahype::solvers::finishedPlotting();
