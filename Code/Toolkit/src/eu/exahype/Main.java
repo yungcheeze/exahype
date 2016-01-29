@@ -135,7 +135,7 @@ public class Main {
 	
 	// Create the kernel calls
 	try {
-	  GenerateKernelCalls generateKernelCalls = new GenerateKernelCalls(directoryAndPathChecker);
+	  GenerateSolverRegistration generateKernelCalls = new GenerateSolverRegistration(directoryAndPathChecker);
 
 	  document.apply( generateKernelCalls ); 
 

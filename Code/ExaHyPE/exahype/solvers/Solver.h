@@ -23,15 +23,6 @@ namespace exahype {
  */
 class exahype::solvers::Solver {
 public:
-  struct Plot {
-    int          variable;
-    double       nextSnapshot;
-    bool         repeat;
-    std::string  filename;
-
-    Plot( int variable_, double nextSnapshot_, bool repeat_, const std::string& filename_);
-  };
-
   enum Type {
     ADER_DG
   };

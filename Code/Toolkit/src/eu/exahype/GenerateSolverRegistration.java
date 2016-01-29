@@ -4,7 +4,7 @@ import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AProject;
 import eu.exahype.node.PSolver;
 
-public class GenerateKernelCalls  extends DepthFirstAdapter {
+public class GenerateSolverRegistration  extends DepthFirstAdapter {
   public Boolean valid = true;
 
   private java.io.BufferedWriter    _writer; 
@@ -16,7 +16,7 @@ public class GenerateKernelCalls  extends DepthFirstAdapter {
 
   private String                    _projectName;
 
-  public GenerateKernelCalls(DirectoryAndPathChecker  directoryAndPathChecker) {
+  public GenerateSolverRegistration(DirectoryAndPathChecker  directoryAndPathChecker) {
 	_directoryAndPathChecker = directoryAndPathChecker;
 	_kernelNumber            = 0;
   }
@@ -40,6 +40,7 @@ public class GenerateKernelCalls  extends DepthFirstAdapter {
       _writer.write("// ========================\n\n\n");
       
       _writer.write("#include \"kernels/KernelCalls.h\"\n");
+      _writer.write("#include \"exahype/solvers/Plotter.h\"\n");
       _writer.write("#include \"exahype/solvers/Solver.h\"\n\n\n");
       
       _methodBodyWriter.write("void kernels::initSolvers() {\n");
@@ -65,6 +66,18 @@ public class GenerateKernelCalls  extends DepthFirstAdapter {
       _kernelNumber++;
       
       System.out.println( "added creation of solver " + solverName + " ... ok" );      
+	} 
+	catch (Exception exc) {
+      System.err.println( "ERROR: " + exc.toString() );
+      valid = false;
+	}
+  };
+  
+  @Override
+  public void inAPlotSolution(eu.exahype.node.APlotSolution node) {
+	try {
+      _methodBodyWriter.write("  exahype::solvers::RegisteredPlotters.push_back( new exahype::solvers::Plotter(" + (_kernelNumber-1) + ",\"" + node.getPlotterType().toString().trim() + "\"," + node.getTime().toString().trim() + "," + node.getRepeat().toString().trim() + ",\"" + node.getFilename().toString().trim() + "\")); \n");
+      System.out.println( "added plotter ... ok" );      
 	} 
 	catch (Exception exc) {
       System.err.println( "ERROR: " + exc.toString() );
