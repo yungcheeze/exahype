@@ -1,51 +1,150 @@
+#include "Kernels.h"
+
+#include "string.h"
+
+#include "tarch/la/Scalar.h"
+#include "tarch/la/ScalarOperations.h"
+
 #include "kernels/GaussLegendreQuadrature.h"
 #include "kernels/DGMatrices.h"
-#include "tarch/la/Scalar.h"
 
+#define EXAHYPE_CFL_FACTOR 0.9
 
+// todo Dominic Etienne Charrier
+// Possibly redundant definition of face indices
+// see exahype/solvers/Solver.h
+// On the other hand, the kernels should be
+// more or less independent of ExaHyPE/exahype.
+#define EXAHYPE_FACE_LEFT   0
+#define EXAHYPE_FACE_RIGHT  1
+#define EXAHYPE_FACE_FRONT  2
+#define EXAHYPE_FACE_BACK   3
+#define EXAHYPE_FACE_BOTTOM 4
+#define EXAHYPE_FACE_TOP    5
 
-template <void PDEEigenvalues2d(const double * const Q, const tarch::la::Vector<DIMENSIONS,double>& n, const int d, double * lambda)>
-double kernels::aderdg::generic::stableTimeStepSize(const double * const luh, const tarch::la::Vector<DIMENSIONS,double>&  dx) {
-  return 0.2;
+template <void PDEEigenvalues2d(const double * const Q,const int normalNonZero,double * lambda)>
+double kernels::aderdg::generic::stableTimeStepSize(
+    const double * const luh, const tarch::la::Vector<DIMENSIONS,double>& dx,
+    const int numberOfVariables,
+    const int basisSize
+) {
+  const double PNPM[10] = {
+      1.0, 0.33, 0.17, 0.1, 0.069, 0.045,  0.038, 0.03, 0.02, 0.015
+  };
+  double lambda[basisSize];
+
+  double dt=std::numeric_limits<double>::max();
+  for(int ii=0; ii < basisSize; ii++) {
+    for (int jj=0; jj<basisSize; jj++) {
+      const int nodeIndex     = ii + basisSize * jj;
+      const int dofStartIndex = nodeIndex * numberOfVariables;
+
+      double denominator=0.0;
+      for (int d=0; d<DIMENSIONS; d++) {
+        PDEEigenvalues2d(&luh[dofStartIndex],d,lambda);
+
+        double maxEigenvalue=0.0;
+        for (int ivar=0; ivar<numberOfVariables; ivar++) {
+          maxEigenvalue = std::max(fabs(lambda[ivar]),maxEigenvalue);
+        }
+        denominator += maxEigenvalue/dx[d];
+      }
+
+      // todo Dominic Etienne Charrier
+      // move stuff around
+      dt = std::min(dt,EXAHYPE_CFL_FACTOR*PNPM[basisSize-1]/denominator); // order N = basisSize-1
+    }
+  }
+  return dt;
 }
 
 
-template <void PDEFlux2d(const double * const Q, double * f, double * g)>
-void kernels::aderdg::generic::riemannSolver(double * FL, double * FR, const double * const QL, const double * const QR, const double dt, const double hFace, const tarch::la::Vector<DIMENSIONS,double>&  n) {
+// todo change template parameter in header and generator
+// template <void PDEFlux2d(const double * const Q, double * f, double * g)>
+template <void PDEEigenvalues(const double * const Q,const int normalNonZero,double * lambda)>
+void kernels::aderdg::generic::riemannSolver(
+    double * FL,
+    double * FR,
+    const double * const QL,
+    const double * const QR,
+    const double dt,
+    const int normalNonZero,
+    const int numberOfVariables,
+    const int basisSize
+){
+  double QavL   [numberOfVariables];
+  double QavR   [numberOfVariables];
+  double lambdaL[numberOfVariables];
+  double lambdaR[numberOfVariables];
 
+  // Compute the average states from the left and the right, which we need to compute the numerical dissipation
+  memset((double *) QavL,0,numberOfVariables * sizeof(double));
+  memset((double *) QavR,0,numberOfVariables * sizeof(double));
+
+  for (int ii=0; ii<basisSize; ii++) { // loop over dof
+    const int nodeIndex     = ii;
+    const int dofStartIndex = nodeIndex * numberOfVariables;
+
+    double weight =  kernels::gaussLegendreWeights[basisSize-1][ii];
+
+    for(int ivar=0; ivar < numberOfVariables; ivar++) {
+      QavL[ivar] +=  weight * QL[dofStartIndex+ivar];
+      QavR[ivar] +=  weight * QR[dofStartIndex+ivar];
+    }
+  }
+  //
+  // Here, we implement a very simple Rusanov scheme with scalar dissipation (smax*Id).
+  // We can change this into a more sophisticated Osher or HLLEM Riemann solver whenever needed.
+  //
+  PDEEigenvalues(QavL,normalNonZero,lambdaL);
+  PDEEigenvalues(QavR,normalNonZero,lambdaR);
+
+  double sMax = 0;
+  for(int ivar=0; ivar < numberOfVariables; ivar++) {
+    sMax = std::max(sMax,std::max(fabs(lambdaL[ivar]),fabs(lambdaR[ivar])));
+  }
+  //
+  // We now compute the numerical flux. Note that the scheme is at the moment written in
+  // CONSERVATION FORM => no fluctuations, but real fluxes.
+  // Later, this will be converted into the left and right fluctuations.
+  //
+  for (int ii=0; ii<basisSize; ii++) { // loop over dof
+    const int nodeIndex     = ii;
+    const int dofStartIndex = nodeIndex * numberOfVariables;
+
+    for(int ivar=0; ivar < numberOfVariables; ivar++) {
+      FL[dofStartIndex+ivar] = 0.5 * (FL[dofStartIndex+ivar] + FR[dofStartIndex+ivar])
+                                        -0.5 * sMax *  (QR[dofStartIndex+ivar] - QL[dofStartIndex+ivar]);
+
+      FR[dofStartIndex+ivar] = FL[dofStartIndex+ivar];
+    }
+  }
 }
 
 
 template <void PDEFlux2d(const double * const Q, double * f, double * g)>
 void kernels::aderdg::generic::spaceTimePredictor(
-  double * lQi,
-  double * lFi,
-  const double * const luh,
-  double * lQhi,
-  double * lFhi,
-  double * lQhbnd,
-  double * lFhbnd,
-  const tarch::la::Vector<DIMENSIONS,double>&  dx,
-  const double dt,
-  int          order,
-  int          numberOfVariables
+    double * lQi,
+    double * lFi,
+    const double * const luh,
+    double * lQhi,
+    double * lFhi,
+    double * lQhbnd,
+    double * lFhbnd,
+    const tarch::la::Vector<DIMENSIONS,double>&  dx,
+    const double dt,
+    int          numberOfVariables,
+    int          basisSize
 ) {
-
-  constexpr int dim         = 2;
-  constexpr int dimTimesTwo = (2*dim);     // 4
-
-  const int basisSize   = order+1;
-  const int nvar        = numberOfVariables;
+  const int order = basisSize-1;
 
   // helper variables
-  const int numberOfSpaceTimeDof  = numberOfVariables * tarch::la::aPowI(dim+1,basisSize);
-  const int numberOfDof           = numberOfVariables * tarch::la::aPowI(dim,basisSize);
+  const int numberOfSpaceTimeDof  = numberOfVariables * tarch::la::aPowI(DIMENSIONS+1,basisSize);
+  const int numberOfDof           = numberOfVariables * tarch::la::aPowI(DIMENSIONS,basisSize);
 
   double* rhs0 = new double[numberOfSpaceTimeDof];
   double* rhs  = new double[numberOfSpaceTimeDof];
-  double* tmp  = new double[nvar * basisSize];
-
-  /*
+  double* tmp  = new double[numberOfVariables * basisSize];
 
   for (int ii=0; ii<basisSize; ii++) { // loop over dof
     for (int jj=0; jj<basisSize; jj++) {
@@ -54,10 +153,10 @@ void kernels::aderdg::generic::spaceTimePredictor(
         const int nodeIndex          = ii + basisSize * jj;
         const int spaceTimeNodeIndex = ii + basisSize * jj  + basisSize * basisSize * ll;
 
-        const int dofStartIndex           = nodeIndex * nvar;
-        const int spaceTimeDofStartIndex  = spaceTimeNodeIndex * nvar;
+        const int dofStartIndex           = nodeIndex * numberOfVariables;
+        const int spaceTimeDofStartIndex  = spaceTimeNodeIndex * numberOfVariables;
 
-        for (int ivar=0; ivar < nvar; ivar++) {
+        for (int ivar=0; ivar < numberOfVariables; ivar++) {
           // Trivial initial guess (can be significantly improved)
           lQi[spaceTimeDofStartIndex+ivar] = luh[dofStartIndex+ivar];
 
@@ -65,9 +164,9 @@ void kernels::aderdg::generic::spaceTimePredictor(
           // and store it in rhs0, but if you think it is faster, you can also recompute this contribution
           // inside the Picard loop (DO iter = 1, N+1)
           rhs0[spaceTimeDofStartIndex+ivar] =
-              ::kernels::gaussLegendreWeights[order][ii] *
-               ::kernels::gaussLegendreWeights[order][jj] *
-                ::kernels::F0[order][ll] *
+              kernels::gaussLegendreWeights[order][ii] *
+              kernels::gaussLegendreWeights[order][jj] *
+              kernels::F0[order][ll] *
               luh[dofStartIndex+ivar];
         }
       }
@@ -79,7 +178,7 @@ void kernels::aderdg::generic::spaceTimePredictor(
   double*    f;
   double*    g;
 
-  //double* dqdt = (double*) std::malloc(nvar * basisSize * sizeof(double)); // todo this is just for debugging; in general, do not use mallocs
+  //double* dqdt = (double*) std::malloc(numberOfVariables * basisSize * sizeof(double)); // todo this is just for debugging; in general, do not use mallocs
 
   // Discrete Picard iterations. This set of nested loops should (theoretically) be a dream for vectorization, since they are rather independent...
   for (int iter=1; iter < basisSize+1; iter++) {
@@ -91,20 +190,19 @@ void kernels::aderdg::generic::spaceTimePredictor(
           const int nodeIndex          = ii + basisSize * jj;
           const int spaceTimeNodeIndex = nodeIndex  + basisSize * basisSize * ll;
 
-          const int spaceTimeDofStartIndex     = spaceTimeNodeIndex * nvar;
-          const int spaceTimeFluxDofStartIndex = spaceTimeDofStartIndex * dim;
+          const int spaceTimeDofStartIndex     = spaceTimeNodeIndex * numberOfVariables;
+          const int spaceTimeFluxDofStartIndex = spaceTimeDofStartIndex * DIMENSIONS;
 
           Q = &lQi[spaceTimeDofStartIndex        ];
           f = &lFi[spaceTimeFluxDofStartIndex     ];
-          g = &lFi[spaceTimeFluxDofStartIndex+nvar];
-          PDEFlux2d(Q,nvar,f,g);
+          g = &lFi[spaceTimeFluxDofStartIndex+numberOfVariables];
+          PDEFlux2d(Q,f,g);
         }
       }
-      // Above seems okay!
 
       // x direction (independent from the y and z derivatives)
       // Kxi : basisSize * basisSize
-      // lFh : nvar * basisSize
+      // lFh : numberOfVariables * basisSize
 
       // Compute the "derivatives" (contributions of the stiffness matrix)
       // x direction (independent from the y and z derivatives)
@@ -112,51 +210,30 @@ void kernels::aderdg::generic::spaceTimePredictor(
         for (int jj=0; jj<basisSize; jj++) {
           const int nodeIndex              = ii + basisSize * jj;
           const int spaceTimeNodeIndex     = nodeIndex  + basisSize * basisSize * ll;
-          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * nvar;
+          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * numberOfVariables;
 
-          double weight = ::kernels::gaussLegendreWeights[order][ll] *
-              ::kernels::gaussLegendreWeights[order][jj];
- */
-// COMPUTE SPATIAL DERIVATIVES FOR TESTING PURPOSES
-//for (int ll=0; ll < basisSize; ll++) { // set tmp = 0
-//  for(int ivar=0; ivar < nvar; ivar++) {
-//    tmp[ivar + nvar*ll] = 0.;
-//  }
-//}
-//
-//for(int mm=0; mm < basisSize; mm++) {
-//  const int mmNodeIndex        = mm + basisSize * jj;
-//  const int mmSpaceTimeNodeIndex         = mmNodeIndex  + basisSize * basisSize * ll;
-//  const int mmSpaceTimeDofStartIndex     = mmSpaceTimeNodeIndex * nvar;
-//  const int mmSpaceTimeFluxDofStartIndex = mmSpaceTimeDofStartIndex * dim;
-//
-//  Q = &(lQi [mmSpaceTimeDofStartIndex]);
-//  for(int ivar=0; ivar < nvar; ivar++) {
-//    tmp[ivar] += 1./dxPatch * aderdg::dudx[ii][mm] * Q[ivar];
-//  }
-//}
+          double weight = kernels::gaussLegendreWeights[order][ll] *
+              kernels::gaussLegendreWeights[order][jj];
 
-  /*
-          for(int ivar=0; ivar < nvar; ivar++) {
+          for(int ivar=0; ivar < numberOfVariables; ivar++) {
             rhs[spaceTimeDofStartIndex+ivar] = rhs0[spaceTimeDofStartIndex+ivar];
           }
 
           for(int mm=0; mm < basisSize; mm++) {
             const int mmNodeIndex                  = mm + basisSize * jj;
             const int mmSpaceTimeNodeIndex         = mmNodeIndex  + basisSize * basisSize * ll;
-            const int mmSpaceTimeDofStartIndex     = mmSpaceTimeNodeIndex * nvar;
-            const int mmSpaceTimeFluxDofStartIndex = mmSpaceTimeDofStartIndex * dim;
+            const int mmSpaceTimeDofStartIndex     = mmSpaceTimeNodeIndex * numberOfVariables;
+            const int mmSpaceTimeFluxDofStartIndex = mmSpaceTimeDofStartIndex * DIMENSIONS;
 
             f = &lFi[mmSpaceTimeFluxDofStartIndex];
 
-            for(int ivar=0; ivar < nvar; ivar++) {
+            for(int ivar=0; ivar < numberOfVariables; ivar++) {
               rhs[spaceTimeDofStartIndex+ivar]
-                  -= weight * dt/dx[0] * ::kernels::Kxi[order][mm][ii] * f[ivar];
+                  -= weight * dt/dx[0] * kernels::Kxi[order][mm][ii] * f[ivar];
             }
           }
         }
       }
-      // Above seems okay!
 
       // Compute the "derivatives" (contributions of the stiffness matrix)
       // y direction (independent from the x and z derivatives)
@@ -164,7 +241,7 @@ void kernels::aderdg::generic::spaceTimePredictor(
         for (int jj=0; jj<basisSize; jj++) {
           const int nodeIndex              = ii + basisSize * jj;
           const int spaceTimeNodeIndex     = nodeIndex  + basisSize * basisSize * ll;
-          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * nvar;
+          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * numberOfVariables;
 
           double weight = ::kernels::gaussLegendreWeights[order][ll] *
               ::kernels::gaussLegendreWeights[order][ii];
@@ -172,14 +249,14 @@ void kernels::aderdg::generic::spaceTimePredictor(
           for(int mm=0; mm < basisSize; mm++) {
             const int mmNodeIndex                  = ii + basisSize * mm;
             const int mmSpaceTimeNodeIndex         = mmNodeIndex  + basisSize * basisSize * ll;
-            const int mmSpaceTimeDofStartIndex     = mmSpaceTimeNodeIndex * nvar;
-            const int mmSpaceTimeFluxDofStartIndex = mmSpaceTimeDofStartIndex * dim;
+            const int mmSpaceTimeDofStartIndex     = mmSpaceTimeNodeIndex * numberOfVariables;
+            const int mmSpaceTimeFluxDofStartIndex = mmSpaceTimeDofStartIndex * DIMENSIONS;
 
-            g = &lFi[mmSpaceTimeFluxDofStartIndex+nvar];
+            g = &lFi[mmSpaceTimeFluxDofStartIndex+numberOfVariables];
 
-            for(int ivar=0; ivar < nvar; ivar++) {
+            for(int ivar=0; ivar < numberOfVariables; ivar++) {
               rhs[spaceTimeDofStartIndex+ivar]
-                  -= weight * dt/dx[1] * ::kernels::Kxi[order][mm][jj] * g[ivar];
+                  -= weight * dt/dx[1] * kernels::Kxi[order][mm][jj] * g[ivar];
             }
           }
         }
@@ -195,8 +272,8 @@ void kernels::aderdg::generic::spaceTimePredictor(
         double iWeight = 1./(::kernels::gaussLegendreWeights[order][ii] * ::kernels::gaussLegendreWeights[order][jj]);
 
         for (int ll=0; ll < basisSize; ll++) { // set tmp = 0
-          for(int ivar=0; ivar < nvar; ivar++) {
-            tmp[ivar + nvar*ll] = 0.;
+          for(int ivar=0; ivar < numberOfVariables; ivar++) {
+            tmp[ivar + numberOfVariables*ll] = 0.;
           }
         }
 
@@ -204,62 +281,35 @@ void kernels::aderdg::generic::spaceTimePredictor(
 
           for(int nn=0; nn < basisSize; nn++) {
             const int nnSpaceTimeNodeIndex     = nodeIndex  + basisSize * basisSize * nn;
-            const int nnSpaceTimeDofStartIndex = nnSpaceTimeNodeIndex * nvar;
+            const int nnSpaceTimeDofStartIndex = nnSpaceTimeNodeIndex * numberOfVariables;
 
-            for(int ivar=0; ivar < nvar; ivar++) {
-              tmp[ivar + nvar*ll] += iWeight * ::kernels::iK1[order][ll][nn] * rhs[nnSpaceTimeDofStartIndex+ivar];
+            for(int ivar=0; ivar < numberOfVariables; ivar++) {
+              tmp[ivar + numberOfVariables*ll] += iWeight * kernels::iK1[order][ll][nn] * rhs[nnSpaceTimeDofStartIndex+ivar];
             }
           }
         }
 
         for (int ll=0; ll<basisSize; ll++) { // loop over dof
           const int spaceTimeNodeIndex     = nodeIndex  + basisSize * basisSize * ll;
-          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * nvar;
+          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * numberOfVariables;
 
-          for(int ivar=0; ivar < nvar; ivar++) {
-            lQi[spaceTimeDofStartIndex+ivar] = tmp[ivar + nvar*ll];
+          for(int ivar=0; ivar < numberOfVariables; ivar++) {
+            lQi[spaceTimeDofStartIndex+ivar] = tmp[ivar + numberOfVariables*ll];
           }
         }
-*/
-
-// UNCOMMENT FOR DEBUGGING PURPOSES @todo Debug
-//        // dqdt
-//        for (int ll=0; ll < basisSize; ll++) { // set tmp = 0
-//          for(int ivar=0; ivar < nvar; ivar++) {
-//            dqdt[ivar + nvar*ll] = 0.;
-//          }
-//        }
-//
-//        for (int ll=0; ll<basisSize; ll++) { // loop over dof
-//
-//          for(int ivar=0; ivar < nvar; ivar++) {
-//
-//            for(int nn=0; nn < basisSize; nn++) {
-//              const int nnSpaceTimeNodeIndex         = nodeIndex  + basisSize * basisSize * nn;
-//              const int nnSpaceTimeDofStartIndex     = nnSpaceTimeNodeIndex * nvar;
-//
-//              dqdt[ivar + nvar*ll] += 1./dt * aderdg::dudx[ll][nn] *
-//                  lQi[nnSpaceTimeDofStartIndex+ivar];
-//            }
-//          }
-//        }
 
 
-  /*
       }
     }
   } // end of Picard iteration
-*/
-
- /*
 
 
   /////////////////////////////////////////////////
   // Post processing of the predictor:
   // Immediately compute the time-averaged space-time polynomials
   /////////////////////////////////////////////////
-  //int numberOfDof      = nvar * tarch::la::aPowI(dim,basisSize);
-  constexpr int numberOfFluxDof  = numberOfDof * dim;
+  //int numberOfDof      = numberOfVariables * tarch::la::aPowI(DIMENSIONS,basisSize);
+  const int numberOfFluxDof  = numberOfDof * DIMENSIONS;
 
   memset((double *) lQhi,0,sizeof(double) * numberOfDof);
   memset((double *) lFhi,0,sizeof(double) * numberOfFluxDof);
@@ -267,27 +317,27 @@ void kernels::aderdg::generic::spaceTimePredictor(
   for (int ii=0; ii<basisSize; ii++) { // loop over dof
     for (int jj=0; jj<basisSize; jj++) {
       const int nodeIndex     = ii + basisSize * jj;
-      const int dofStartIndex = nodeIndex * nvar;
-      const int fluxDofStartIndex = dim * dofStartIndex;
+      const int dofStartIndex = nodeIndex * numberOfVariables;
+      const int fluxDofStartIndex = DIMENSIONS * dofStartIndex;
 
       for (int ll=0; ll<basisSize; ll++) { // loop over dof
         const int spaceTimeNodeIndex         = nodeIndex  + basisSize * basisSize * ll;
-        const int spaceTimeDofStartIndex     = spaceTimeNodeIndex * nvar;
-        const int spaceTimeFluxDofStartIndex = spaceTimeDofStartIndex * dim;
+        const int spaceTimeDofStartIndex     = spaceTimeNodeIndex * numberOfVariables;
+        const int spaceTimeFluxDofStartIndex = spaceTimeDofStartIndex * DIMENSIONS;
 
         Q = &lQi[spaceTimeDofStartIndex];
 
         f = &lFi[spaceTimeFluxDofStartIndex     ];
-        g = &lFi[spaceTimeFluxDofStartIndex+nvar];
+        g = &lFi[spaceTimeFluxDofStartIndex+numberOfVariables];
 
-        double weight = quad::gaussLegendreWeights[order][ll];
+        double weight = kernels::gaussLegendreWeights[order][ll];
 
         double * temp = &(lQhi[dofStartIndex]);
-        for(int ivar=0; ivar < nvar; ivar++) {
+        for(int ivar=0; ivar < numberOfVariables; ivar++) {
           lQhi[dofStartIndex+ivar] += weight * Q[ivar];
 
           lFhi[fluxDofStartIndex+ivar     ] += weight * f[ivar];
-          lFhi[fluxDofStartIndex+nvar+ivar] += weight * g[ivar];
+          lFhi[fluxDofStartIndex+numberOfVariables+ivar] += weight * g[ivar];
         }
       }
     }
@@ -296,16 +346,16 @@ void kernels::aderdg::generic::spaceTimePredictor(
   /////////////////////////////////////////////////
   // Compute the bounday-extrapolated values for Q and F*n
   /////////////////////////////////////////////////
-  constexpr int numberOfFaceDof = numberOfVariables * power(basisSize, dim-1); // tarch::la::aPowI(dim-1,basisSize);
+  const int numberOfFaceDof = numberOfVariables * tarch::la::aPowI(basisSize, DIMENSIONS-1); // tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
-  memset((double *) &lQhbnd[0],0,sizeof(double) * numberOfFaceDof * dimTimesTwo);
-  memset((double *) &lFhbnd[0],0,sizeof(double) * numberOfFaceDof * dimTimesTwo);
+  memset((double *) &lQhbnd[0],0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
+  memset((double *) &lFhbnd[0],0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
 
   // x-direction: face 0 (left) and face 1 (right)
   for (int jj=0; jj<basisSize; jj++) {
     const int nodeIndex      = jj;
-    const int dofStartIndexL = EXAHYPE_FACE_LEFT  * numberOfFaceDof + nodeIndex * nvar;
-    const int dofStartIndexR = EXAHYPE_FACE_RIGHT * numberOfFaceDof + nodeIndex * nvar;
+    const int dofStartIndexL = EXAHYPE_FACE_LEFT  * numberOfFaceDof + nodeIndex * numberOfVariables;
+    const int dofStartIndexR = EXAHYPE_FACE_RIGHT * numberOfFaceDof + nodeIndex * numberOfVariables;
 
     double * tempQL = &lQhbnd[dofStartIndexL];
     double * tempQR = &lQhbnd[dofStartIndexR];
@@ -314,18 +364,18 @@ void kernels::aderdg::generic::spaceTimePredictor(
 
     for (int mm=0; mm<basisSize; mm++) { // loop over dof
       const int mmNodeIndex         = mm  + basisSize * jj;
-      const int mmDofStartIndex     = mmNodeIndex * nvar;
-      const int mmFluxDofStartIndex = mmDofStartIndex * dim;
+      const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
+      const int mmFluxDofStartIndex = mmDofStartIndex * DIMENSIONS;
 
       Q = &lQhi[mmDofStartIndex    ];
       f = &lFhi[mmFluxDofStartIndex];
 
-      for(int ivar=0; ivar < nvar; ivar++) {
-        lQhbnd[dofStartIndexL+ivar] += aderdg::FLCoeff[mm] * Q[ivar];
-        lQhbnd[dofStartIndexR+ivar] += aderdg::FRCoeff[mm] * Q[ivar];
+      for(int ivar=0; ivar < numberOfVariables; ivar++) {
+        lQhbnd[dofStartIndexL+ivar] += kernels::FLCoeff[order][mm] * Q[ivar];
+        lQhbnd[dofStartIndexR+ivar] += kernels::FRCoeff[order][mm] * Q[ivar];
 
-        lFhbnd[dofStartIndexL+ivar] += aderdg::FLCoeff[mm] * f[ivar];
-        lFhbnd[dofStartIndexR+ivar] += aderdg::FRCoeff[mm] * f[ivar];
+        lFhbnd[dofStartIndexL+ivar] += kernels::FLCoeff[order][mm] * f[ivar];
+        lFhbnd[dofStartIndexR+ivar] += kernels::FRCoeff[order][mm] * f[ivar];
       }
     }
     continue;
@@ -339,25 +389,24 @@ void kernels::aderdg::generic::spaceTimePredictor(
 
     for (int mm=0; mm<basisSize; mm++) {
       const int mmNodeIndex         = ii  + basisSize * mm;
-      const int mmDofStartIndex     = mmNodeIndex * nvar;
-      const int mmFluxDofStartIndex = mmDofStartIndex * dim;
+      const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
+      const int mmFluxDofStartIndex = mmDofStartIndex * DIMENSIONS;
 
       Q = &lQhi [mmDofStartIndex         ];
-      g = &lFhi[mmFluxDofStartIndex+nvar];
+      g = &lFhi[mmFluxDofStartIndex+numberOfVariables];
 
-      for(int ivar=0; ivar < nvar; ivar++) {
-        lQhbnd[dofStartIndexL+ivar] += ::kernels::FLCoeff[order][mm] * Q[ivar];
-        lQhbnd[dofStartIndexR+ivar] += ::kernels::FRCoeff[order][mm] * Q[ivar];
+      for(int ivar=0; ivar < numberOfVariables; ivar++) {
+        lQhbnd[dofStartIndexL+ivar] += kernels::FLCoeff[order][mm] * Q[ivar];
+        lQhbnd[dofStartIndexR+ivar] += kernels::FRCoeff[order][mm] * Q[ivar];
 
-        lFhbnd[dofStartIndexL+ivar] += ::kernels::FLCoeff[order][mm] * g[ivar];
-        lFhbnd[dofStartIndexR+ivar] += ::kernels::FRCoeff[order][mm] * g[ivar];
+        lFhbnd[dofStartIndexL+ivar] += kernels::FLCoeff[order][mm] * g[ivar];
+        lFhbnd[dofStartIndexR+ivar] += kernels::FRCoeff[order][mm] * g[ivar];
       }
     }
     continue;
   }
-*/
   // clean up
-//  std::free(dqdt);
+  //  std::free(dqdt);
   delete[] rhs0;
   delete[] rhs;
   delete[] tmp;

@@ -15,49 +15,65 @@
 namespace kernels {
   void initDGMatrices();
 
-  /**
-      * \brief Element stiffness matrix
-      */
-    extern const double Kxi[EXAHYPE_ORDER+1][EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
+    /**
+     * \brief Element stiffness matrix
+     */
+    // order,row,column
+    // [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1][EXAHYPE_ORDER+1]
+    extern const double*** Kxi;
 
     /**
      * \brief Time flux matrix (left)
      */
-    extern const double F0[EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
+    // order, row
+    // [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1]
+    extern const double** F0;
 
     /**
      * \brief Time flux matrix (right)
      * \note Unused.
      */
-    extern const double F1[EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
+    // order, row
+    // [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1]
+    extern const double** F1;
 
     /**
      * \brief Inverse stiffness matrix
      */
-    extern const double iK1[EXAHYPE_ORDER+1][EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
+    // order, row, column
+    // [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1][EXAHYPE_ORDER+1]
+    extern const double*** iK1;
 
     /**
      * \brief Left extrapolation coefficients
      */
-    extern const double FLCoeff[EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
+    // order, row,
+    // [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1]
+    extern const double** FLCoeff;
 
     /**
      * \brief Right extrapolation coefficients
      */
-    extern const double FRCoeff[EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
+    // order, row
+    // [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
+    extern const double** FRCoeff;
 
     /**
      * \brief Joint extrapolation coefficients
      *
      * FCoeff = [[FLCoeff];[FRCoeff]]
      */
-    extern const double FCoeff[EXAHYPE_ORDER+1][2][EXAHYPE_ORDER+1];
+    // order, left/right, row
+    // [EXAHYPE_ORDER+1][2][EXAHYPE_ORDER+1];
+    extern const double*** FCoeff;
 
     /**
      * \brief derivative operator
      * \note for debugging purposes
      */
-    extern const double dudx[EXAHYPE_ORDER+1][EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
+    // order, row, column
+    // [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
+    extern const double*** dudx;
 }
 
 #endif
