@@ -75,7 +75,6 @@ private:
       const int cellIndexR,
       const int faceL,
       const int faceR,
-      const int numberOfFaceDof,
       const double * const normal);
 public:
   /**

@@ -347,7 +347,6 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
     const int cellIndexR,
     const int faceL,
     const int faceR,
-    const int numberOfFaceDof,
     const double * const normal
 ) {
   // Only continue if this is an internal face. See multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex.
@@ -366,19 +365,19 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
            << " cell descr. index L:" << adjacentADERDGCellDescriptionsIndices[cellIndexL]
                                                                                << " cell descr. index R:" << adjacentADERDGCellDescriptionsIndices[cellIndexR]);
 
-  std::vector<records::ADERDGCellDescription&>  cellDescriptionsL =
-      ADERDGADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexL] );
-  std::vector<records::ADERDGCellDescription&>  cellDescriptionsR =
-      ADERDGADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexR] );
+  std::vector<records::ADERDGCellDescription>&  cellDescriptionsL =
+      ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexL] );
+  std::vector<records::ADERDGCellDescription>&  cellDescriptionsR =
+      ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexR] );
 
-  assertion1WithExplanation( cellDescriptionsL.size() == cellDescriptionR.size(), "The number of ADERDGCellDescriptions is not the same for both cells!" );
+  assertion1WithExplanation( cellDescriptionsL.size() == cellDescriptionR.size(), cellDescriptionsL.size(), "The number of ADERDGCellDescriptions is not the same for both cells!" );
 
   for (
       int p = 0;
       p < cellDescriptionsL.size();
       p++
   ) {
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ cellDescriptionsL[p]->getSolverNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ cellDescriptionsL[p].getSolverNumber() ];
 
 
     bool riemannSolveNotPerformed = false;
@@ -386,8 +385,8 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       // Lock the critical multithreading area.
       tarch::multicore::Lock lock(_semaphore);
       riemannSolveNotPerformed = !cellDescriptionsL[p].getRiemannSolvePerformed(faceL)
-                                               &&
-                                               !cellDescriptionsR[p].getRiemannSolvePerformed(faceR);
+                                                               &&
+                                                               !cellDescriptionsR[p].getRiemannSolvePerformed(faceR);
 
       if(riemannSolveNotPerformed==true) {
         cellDescriptionsL[p].setRiemannSolvePerformed(faceL,true);
@@ -395,6 +394,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       }
     } // Unlock the critical multithreading area by letting lock go out of scope.
 
+    const int numberOfFaceDof = tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
 
     if (riemannSolveNotPerformed) {
       double * QL = &(DataHeap::getInstance().getData(cellDescriptionsL[p].getExtrapolatedPredictor())[faceL * numberOfFaceDof]._persistentRecords._u);
@@ -410,93 +410,92 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
           QR,
           _localState.getMaxTimeStepSize(),
           normal
-       );
+      );
     }
   }
+}
 
+void exahype::mappings::RiemannSolver::touchVertexLastTime(
+    exahype::Vertex&         fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
+) {
+  logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
 
-  void exahype::mappings::RiemannSolver::touchVertexLastTime(
-      exahype::Vertex&         fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
-  ) {
-    logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
+  // @todo Tobias Weinzierl
+  // Delegate to solver-specific code fragments
 
-    // @todo Tobias Weinzierl
-    // Delegate to solver-specific code fragments
+  //
+  assertion1WithExplanation(_localState.getMaxTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size was not initialised correctly!");
 
-    //
-    assertion1WithExplanation(_localState.getMaxTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size was not initialised correctly!");
+  tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
+  logDebug("touchVertexLastTime(...)","cell descriptions around vertex. "
+           << "coarse grid level: " << coarseGridVerticesEnumerator.getLevel()
+           << ", fine grid pos.:" << fineGridPositionOfVertex
+           << ", adjac. cell descr.:" << adjacentADERDGCellDescriptionsIndices);
+  logDebug("touchVertexLastTime(...)","cell descriptions around vertex. "
+           << "fine grid x " << fineGridX);
 
-    tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
-    logDebug("touchVertexLastTime(...)","cell descriptions around vertex. "
-             << "coarse grid level: " << coarseGridVerticesEnumerator.getLevel()
-             << ", fine grid pos.:" << fineGridPositionOfVertex
-             << ", adjac. cell descr.:" << adjacentADERDGCellDescriptionsIndices);
-    logDebug("touchVertexLastTime(...)","cell descriptions around vertex. "
-             << "fine grid x " << fineGridX);
-
-    // todo: Dominic Etienne Charrier: Reverse engineered indices from
-    // PatchInitialisation2MultiscaleLinkedCell_1::touchVertexLastTime(...)
-    // Not sure what happens with hanging nodes.
-    /* Right cell-left cell   pair indices: 0,1; 2,3;   4,5; 6;7
-     * Front cell-back cell   pair indices: 0,2; 1,3;   4,6; 5;7
-     * Top   cell-bottom cell pair indices: 0,4; 1,5;   2,6; 3;7
-     *
-     * Note that from the viewpoint of a cell, the face
-     * has always the "opposite" index, i.e., we solve a Riemann
-     * problem on the left face of the right cell (which
-     * is the right face of the left cell).
-     */
-    // index maps (
-    constexpr int cellIndicesLeft   [4] = { 0, 2, 4, 6 };
-    constexpr int cellIndicesRight  [4] = { 1, 3, 5, 7 };
-    constexpr int cellIndicesFront  [4] = { 0, 1, 4, 5 };
-    constexpr int cellIndicesBack   [4] = { 2, 3, 6, 7 };
+  // todo: Dominic Etienne Charrier: Reverse engineered indices from
+  // PatchInitialisation2MultiscaleLinkedCell_1::touchVertexLastTime(...)
+  // Not sure what happens with hanging nodes.
+  /* Right cell-left cell   pair indices: 0,1; 2,3;   4,5; 6;7
+   * Front cell-back cell   pair indices: 0,2; 1,3;   4,6; 5;7
+   * Top   cell-bottom cell pair indices: 0,4; 1,5;   2,6; 3;7
+   *
+   * Note that from the viewpoint of a cell, the face
+   * has always the "opposite" index, i.e., we solve a Riemann
+   * problem on the left face of the right cell (which
+   * is the right face of the left cell).
+   */
+  // index maps (
+  constexpr int cellIndicesLeft   [4] = { 0, 2, 4, 6 };
+  constexpr int cellIndicesRight  [4] = { 1, 3, 5, 7 };
+  constexpr int cellIndicesFront  [4] = { 0, 1, 4, 5 };
+  constexpr int cellIndicesBack   [4] = { 2, 3, 6, 7 };
 #if DIMENSIONS==3
-    constexpr int cellIndicesBottom [4] = { 0, 1, 2, 3 };
-    constexpr int cellIndicesTop    [4] = { 4, 5, 6, 7 };
+  constexpr int cellIndicesBottom [4] = { 0, 1, 2, 3 };
+  constexpr int cellIndicesTop    [4] = { 4, 5, 6, 7 };
 #endif
 
-    // normal vectors
-    const double nx[3]= { 1., 0., 0. };
-    const double ny[3]= { 0., 1., 0. };
+  // normal vectors
+  const double nx[3]= { 1., 0., 0. };
+  const double ny[3]= { 0., 1., 0. };
 #if DIMENSIONS==3
-    const double nz[3]= { 0., 0., 1. };
+  const double nz[3]= { 0., 0., 1. };
 #endif
 
-    // Left/right face
-    for (int i=0; i<TWO_POWER_D_DIVIDED_BY_TWO; i++) {
-      solveRiemannProblem(
-          adjacentADERDGCellDescriptionsIndices,
-          cellIndicesLeft [i],
-          cellIndicesRight[i],
-          EXAHYPE_FACE_RIGHT,
-          EXAHYPE_FACE_LEFT,
-          nx);
+  // Left/right face
+  for (int i=0; i<TWO_POWER_D_DIVIDED_BY_TWO; i++) {
+    solveRiemannProblem(
+        adjacentADERDGCellDescriptionsIndices,
+        cellIndicesLeft [i],
+        cellIndicesRight[i],
+        EXAHYPE_FACE_RIGHT,
+        EXAHYPE_FACE_LEFT,
+        nx);
 
-      solveRiemannProblem(
-          adjacentADERDGCellDescriptionsIndices,
-          cellIndicesFront[i],
-          cellIndicesBack [i],
-          EXAHYPE_FACE_BACK,
-          EXAHYPE_FACE_FRONT,
-          ny);
+    solveRiemannProblem(
+        adjacentADERDGCellDescriptionsIndices,
+        cellIndicesFront[i],
+        cellIndicesBack [i],
+        EXAHYPE_FACE_BACK,
+        EXAHYPE_FACE_FRONT,
+        ny);
 
 #if DIMENSIONS==3
-      solveRiemannProblem(
-          adjacentADERDGCellDescriptionsIndices,
-          cellIndicesBottom[i],
-          cellIndicesTop   [i],
-          EXAHYPE_FACE_TOP,
-          EXAHYPE_FACE_BOTTOM,
-          nz);
+    solveRiemannProblem(
+        adjacentADERDGCellDescriptionsIndices,
+        cellIndicesBottom[i],
+        cellIndicesTop   [i],
+        EXAHYPE_FACE_TOP,
+        EXAHYPE_FACE_BOTTOM,
+        nz);
 #endif
-    }
   }
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }

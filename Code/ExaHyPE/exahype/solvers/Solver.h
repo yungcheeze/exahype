@@ -9,6 +9,12 @@
 #include "peano/utils/Globals.h"
 #include "tarch/la/Vector.h"
 
+#define EXAHYPE_FACE_LEFT   0
+#define EXAHYPE_FACE_RIGHT  1
+#define EXAHYPE_FACE_FRONT  2
+#define EXAHYPE_FACE_BACK   3
+#define EXAHYPE_FACE_BOTTOM 4
+#define EXAHYPE_FACE_TOP    5
 
 namespace exahype {
   namespace solvers {
