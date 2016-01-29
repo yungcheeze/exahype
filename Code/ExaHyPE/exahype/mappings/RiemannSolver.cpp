@@ -402,6 +402,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
 
       double * FL = &(DataHeap::getInstance().getData(cellDescriptionsL[p].getFluctuation())[faceL * numberOfFaceDof]._persistentRecords._u);
       double * FR = &(DataHeap::getInstance().getData(cellDescriptionsR[p].getFluctuation())[faceR * numberOfFaceDof]._persistentRecords._u);
+/*
 
       solver->riemannSolver(
           FL,
@@ -411,6 +412,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
           _localState.getMaxTimeStepSize(),
           normal
       );
+*/
     }
   }
 }

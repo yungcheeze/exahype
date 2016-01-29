@@ -430,6 +430,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       // Do not solve a Riemann problem here:
       // Invoke user defined boundary condition function
       // At the moment, we simply copy the cell solution to the boundary.
+/*
       solver->riemannSolver(
           Fhbnd,
           Fhbnd,
@@ -437,6 +438,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
           Qhbnd,
           _localState.getMaxTimeStepSize(),
           normal);
+*/
     }
   }
 }

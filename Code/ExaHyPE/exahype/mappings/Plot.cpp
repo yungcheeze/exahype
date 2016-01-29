@@ -338,8 +338,8 @@ void exahype::mappings::Plot::enterCell(
   const tarch::la::Vector<DIMENSIONS,int>&  fineGridPositionOfCell
 ) {
   for (
-    std::vector<exahype::solvers::Plotter*>::iterator pPlotter = exahype::solvers::RegisteredPlotters.begin();
-    pPlotter != exahype::solvers::RegisteredPlotters.end();
+    std::vector<exahype::plotters::Plotter*>::iterator pPlotter = exahype::plotters::RegisteredPlotters.begin();
+    pPlotter != exahype::plotters::RegisteredPlotters.end();
     pPlotter++
   ) {
     for (
@@ -352,7 +352,8 @@ void exahype::mappings::Plot::enterCell(
         (*pPlotter)->plotPatch(
           fineGridVerticesEnumerator.getVertexPosition(),
           fineGridVerticesEnumerator.getCellSize(),
-          u
+          u,
+          pPatch->getTimeStamp()
         );
       }
     }
@@ -375,30 +376,14 @@ void exahype::mappings::Plot::leaveCell(
 void exahype::mappings::Plot::beginIteration(
     exahype::State&  solverState
 ) {
-  for (
-    std::vector<exahype::solvers::Plotter*>::iterator p = exahype::solvers::RegisteredPlotters.begin();
-    p != exahype::solvers::RegisteredPlotters.end();
-    p++
-  ) {
-    if ( (*p)->isActive() ) {
-      (*p)->open();
-    }
-  }
+  // nop
 }
 
 
 void exahype::mappings::Plot::endIteration(
     exahype::State&  solverState
 ) {
-  for (
-    std::vector<exahype::solvers::Plotter*>::iterator p = exahype::solvers::RegisteredPlotters.begin();
-    p != exahype::solvers::RegisteredPlotters.end();
-    p++
-  ) {
-    if ( (*p)->isActive() ) {
-      (*p)->close();
-    }
-  }
+  // nop
 }
 
 

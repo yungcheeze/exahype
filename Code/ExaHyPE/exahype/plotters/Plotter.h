@@ -1,5 +1,5 @@
-#ifndef _EXAHYPE_SOLVERS_PLOTTER_H_
-#define _EXAHYPE_SOLVERS_PLOTTER_H_
+#ifndef _EXAHYPE_PLOTTERS_PLOTTER_H_
+#define _EXAHYPE_PLOTTERS_PLOTTER_H_
 
 #include <string>
 #include <vector>
@@ -23,7 +23,7 @@ namespace exahype {
 
 
 class exahype::plotters::Plotter {
-  protected:
+  public:
     class Device {
       public:
         virtual ~Device() {}
@@ -31,7 +31,8 @@ class exahype::plotters::Plotter {
         virtual void plotPatch(
           const tarch::la::Vector<DIMENSIONS,double>&  offsetOfPatch,
           const tarch::la::Vector<DIMENSIONS,double>&  sizeOfPatch,
-          double* u
+          double* u,
+          double timeStamp
         ) = 0;
     };
   private:
@@ -59,7 +60,8 @@ class exahype::plotters::Plotter {
     void plotPatch(
       const tarch::la::Vector<DIMENSIONS,double>&  offsetOfPatch,
       const tarch::la::Vector<DIMENSIONS,double>&  sizeOfPatch,
-      double* u
+      double* u,
+      double timeStamp
     );
 };
 

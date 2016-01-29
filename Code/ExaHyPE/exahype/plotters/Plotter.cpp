@@ -1,6 +1,8 @@
 #include "exahype/plotters/Plotter.h"
 #include "exahype/solvers/Solver.h"
 
+#include "exahype/plotters/ADERDG2BinaryVTK.h"
+
 
 std::vector<exahype::plotters::Plotter*>  exahype::plotters::RegisteredPlotters;
 
@@ -26,6 +28,7 @@ bool exahype::plotters::Plotter::checkWetherSolverBecomesActive( double currentT
       case solvers::Solver::ADER_DG:
         if ( _identifier.compare( "vtk::binary" )==0 ) {
           logInfo( "open()", "create vtk::binary plotter for " << solvers::RegisteredSolvers[ _solver ]->getIdentifier() );
+          _device = new ADERDG2BinaryVTK( _filename, solvers::RegisteredSolvers[ _solver ]->getNodesPerCoordinateAxis()-1, solvers::RegisteredSolvers[ _solver ]->getNumberOfVariables() );
         }
         else {
           logError( "open()", "unknown plotter type " << _identifier << " for " << solvers::RegisteredSolvers[ _solver ]->getIdentifier() );
@@ -50,9 +53,10 @@ bool exahype::plotters::Plotter::plotDataFromSolver( int solver ) const {
 void exahype::plotters::Plotter::plotPatch(
   const tarch::la::Vector<DIMENSIONS,double>&  offsetOfPatch,
   const tarch::la::Vector<DIMENSIONS,double>&  sizeOfPatch,
-  double* u
+  double* u, double timeStamp
 ) {
-
+  assertion( _device!=nullptr );
+  _device->plotPatch( offsetOfPatch, sizeOfPatch, u, timeStamp );
 }
 
 
