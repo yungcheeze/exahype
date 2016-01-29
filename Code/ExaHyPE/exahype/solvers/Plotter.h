@@ -14,13 +14,27 @@ namespace exahype {
     class Plotter;
 
     extern std::vector<Plotter*> RegisteredPlotters;
+
+    bool isAPlotterActive(double currentTimeStep);
+    void finishedPlotting();
   }
 }
 
 
 class exahype::solvers::Plotter {
+  private:
+    const int          _solver;
+    const std::string  _identifier;
+    const double       _time;
+    const double       _repeat;
+    const std::string  _filename;
   public:
     Plotter( int solver, const std::string& identifier, double time, double repeat, const std::string& filename );
+
+    /**
+     * Checks whether there should be a plotter according to this class.
+     */
+    bool isActive( double currentTimeStamp ) const;
 };
 
 #endif
