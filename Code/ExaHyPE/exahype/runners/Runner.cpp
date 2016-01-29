@@ -18,7 +18,7 @@
 
 #include "sharedmemoryoracles/OracleForOnePhaseWithGrainSizeSampling.h"
 
-#include "exahype/solvers/Plotter.h"
+#include "exahype/plotters/Plotter.h"
 
 
 tarch::logging::Log  exahype::runners::Runner::_log( "exahype::runners::Runner" );

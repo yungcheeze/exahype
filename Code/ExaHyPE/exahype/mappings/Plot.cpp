@@ -8,7 +8,7 @@
 
 #include "exahype/solvers/Solver.h"
 
-#include "exahype/solvers/Plotter.h"
+#include "exahype/plotters/Plotter.h"
 
 
 /**

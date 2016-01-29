@@ -64,6 +64,8 @@ public:
 
   Type getType() const;
 
+  std::string getIdentifier() const;
+
   int getNumberOfVariables() const;
 
   /**
