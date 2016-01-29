@@ -16,7 +16,7 @@ namespace exahype {
     extern std::vector<Plotter*> RegisteredPlotters;
 
     bool isAPlotterActive(double currentTimeStep);
-    void finishedPlotting();
+    void finishedPlotting(double currentTimeStep);
   }
 }
 
@@ -25,7 +25,7 @@ class exahype::solvers::Plotter {
   private:
     const int          _solver;
     const std::string  _identifier;
-    const double       _time;
+    double             _time;
     const double       _repeat;
     const std::string  _filename;
   public:
@@ -35,6 +35,7 @@ class exahype::solvers::Plotter {
      * Checks whether there should be a plotter according to this class.
      */
     bool isActive( double currentTimeStamp ) const;
+    void finishedPlotting();
 };
 
 #endif

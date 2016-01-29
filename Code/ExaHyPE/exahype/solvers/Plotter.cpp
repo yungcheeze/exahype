@@ -7,16 +7,27 @@ exahype::solvers::Plotter::Plotter( int solver, const std::string& identifier, d
   _time(time),
   _repeat(repeat),
   _filename(filename) {
+  assertion( _time>=0.0 );
 }
 
 
 bool exahype::solvers::Plotter::isActive( double currentTimeStamp ) const {
-  return tarch::la::greaterEquals( currentTimeStamp, _time );
+  return (_time>=0.0) && tarch::la::greaterEquals( currentTimeStamp, _time );
+}
+
+
+void exahype::solvers::Plotter::finishedPlotting() {
+  if (_repeat>0.0) {
+
+  }
+  else {
+    _time = -1.0;
+  }
 }
 
 
 bool exahype::solvers::isAPlotterActive(double currentTimeStep) {
-  result = false;
+  bool result = false;
   for (
     std::vector<Plotter*>::const_iterator p = RegisteredPlotters.begin();
     p!=RegisteredPlotters.end();
@@ -28,6 +39,14 @@ bool exahype::solvers::isAPlotterActive(double currentTimeStep) {
 }
 
 
-void exahype::solvers::finishedPlotting() {
-
+void exahype::solvers::finishedPlotting(double currentTimeStep) {
+  for (
+    std::vector<Plotter*>::iterator p = RegisteredPlotters.begin();
+    p!=RegisteredPlotters.end();
+    p++
+  ) {
+    if ((*p)->isActive(currentTimeStep)) {
+      (*p)->finishedPlotting();
+    }
+  }
 }
