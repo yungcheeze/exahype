@@ -87,7 +87,7 @@ public:
   virtual void solutionUpdate(
       double * luh,
       const double * const lduh,
-      const tarch::la::Vector<DIMENSIONS,double>&  dx,
+      const tarch::la::Vector<DIMENSIONS,double>& dx,
       const double dt
   ) = 0;
 
@@ -101,7 +101,7 @@ public:
   virtual void volumeIntegral(
       double * lduh,
       const double * const lFhi,
-      const tarch::la::Vector<DIMENSIONS,double>&  dx
+      const tarch::la::Vector<DIMENSIONS,double>& dx
   ) = 0;
 
   /**
@@ -115,7 +115,7 @@ public:
   virtual void surfaceIntegral(
       double * lduh,
       const double * const lFhbnd,
-      const tarch::la::Vector<DIMENSIONS,double>&  dx
+      const tarch::la::Vector<DIMENSIONS,double>& dx
   ) = 0;
 
   /**
@@ -125,7 +125,6 @@ public:
    * @param[inout] FR    Flux DoF belonging the right cell.
    * @param[in]    QL    DoF of the boundary extrapolated predictor belonging to the left cell.
    * @param[in]    QR    DoF of the boundary extrapolated predictor belonging to the right cell.
-   * @param[in]    hFace The (d-1)-measure of the interface: Length of an edge in 2D, area of a face in 3D, etc.
    * @param[in]    n     Unit vector normal to the interface.
    */
   virtual void riemannSolver(
@@ -134,8 +133,7 @@ public:
       const double * const QL,
       const double * const QR,
       const double dt,
-      const double hFace,
-      const tarch::la::Vector<DIMENSIONS,double>&  n
+      const double * const n
   ) = 0;
 
   /**
@@ -163,7 +161,7 @@ public:
       double * lQhbnd,
       double * lFhbnd,
       const double * const luh,
-      const tarch::la::Vector<DIMENSIONS,double>&  dx,
+      const tarch::la::Vector<DIMENSIONS,double>& dx,
       const double dt
   ) = 0;
 
@@ -175,7 +173,7 @@ public:
    */
   virtual double stableTimeStepSize(
       const double * const luh,
-      const tarch::la::Vector<DIMENSIONS,double>&  dx
+      const tarch::la::Vector<DIMENSIONS,double>& dx
   ) = 0;
 
   /**
@@ -187,8 +185,8 @@ public:
    */
   virtual void initialValues(
       double * luh,
-      const tarch::la::Vector<DIMENSIONS,double>&  center,
-      const tarch::la::Vector<DIMENSIONS,double>&  dx
+      const tarch::la::Vector<DIMENSIONS,double>& center,
+      const tarch::la::Vector<DIMENSIONS,double>& dx
   ) = 0;
 
   // @todo eher raus
@@ -203,8 +201,8 @@ public:
 /*
   virtual void plot(
       const double * luh,
-      const tarch::la::Vector<DIMENSIONS,double>&  center,
-      const tarch::la::Vector<DIMENSIONS,double>&  dx
+      const tarch::la::Vector<DIMENSIONS,double>& center,
+      const tarch::la::Vector<DIMENSIONS,double>& dx
   ) = 0;
 */
 };
