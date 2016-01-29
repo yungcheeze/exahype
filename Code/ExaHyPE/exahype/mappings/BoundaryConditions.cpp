@@ -352,10 +352,6 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
     const int numberOfFaceDof,
     const double * const normal
 ) {
-  // @todo Tobias Weinzierl
-  // Delegate to solver-specific code fragments
-
-/*
   bool noBoundaryFace       = true;
   bool bothAreBoundaryFaces = false;
   int  cellIndex            = multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex;
@@ -396,79 +392,63 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       adjacentADERDGCellDescriptionsIndices.toString()
   );
 
-
-  records::ADERDGCellDescription&  cellDescription =
-      ADERDGADERDGCellDescriptionHeap::getInstance().getData(adjacentADERDGCellDescriptionsIndices[cellIndex])[0];
-
-  bool riemannSolveNotPerformed = false;
-  {
-    // Lock the critical multithreading area.
-    // Note that two boundary vertices can operate on the same face at the same time.
-    tarch::multicore::Lock lock(_semaphore);
-    riemannSolveNotPerformed = !cellDescription.getRiemannSolvePerformed(faceIndex);
-
-    if(riemannSolveNotPerformed) {
-      cellDescription.setRiemannSolvePerformed(faceIndex,true);
-    }
-  } // Unlock the critical multithreading area by letting lock go out of scope.
-
-  // Apply the boundary conditions.
-  // todo Copy and periodic boundary conditions should be configured by additional mappings after
-  // the initial grid refinement and the initialisation of the cell descriptions.
-  // The configuration should only involve an edit of the index maps generated
-  // by the multiscalelinkedcell toolbox. In case of consequent mesh-refinement,
-  // these indices should be propagated down to the finer cells.
-  // The resulting Riemann problems are then simply solved
-  // by exahype::mappings::RiemannSolver.
-  if (riemannSolveNotPerformed) {
-    constexpr double superfluousArgument = 0;
-    // work vectors
-    double QavL   [EXAHYPE_NVARS]; // av: average
-    double QavR   [EXAHYPE_NVARS]; // need Qav twice!
-    double lambdaL[EXAHYPE_NVARS];
-    double lambdaR[EXAHYPE_NVARS];
-
-    double * Qhbnd = &(DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor())[faceIndex * numberOfFaceDof]._persistentRecords._u);
-    double * Fhbnd = &(DataHeap::getInstance().getData(cellDescription.getFluctuation())          [faceIndex * numberOfFaceDof]._persistentRecords._u);
-
-    // Invoke user defined boundary condition function todo
-    // At the moment, we simply copy the cell solution to the boundary.
-    aderdg::riemannSolver<DIMENSIONS>(
-        Fhbnd,
-        Fhbnd,
-        Qhbnd,
-        Qhbnd,
-        QavL,
-        QavR,
-        lambdaL,
-        lambdaR,
-        _localState.getMaxTimeStepSize(),
-
-        superfluousArgument,
-        normal);
-  }
-*/
-}
-
-void exahype::mappings::BoundaryConditions::touchVertexLastTime(
-    exahype::Vertex&         fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
-    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
-    exahype::Vertex * const  coarseGridVertices,
-    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-    exahype::Cell&           coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
-) {
-  logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-
-
-  // @todo Tobias Weinzierl
-  // Delegate to solver-specific code fragments
-
-/*
-  if (
-      fineGridVertex.getRefinementControl()==Vertex::Records::Unrefined // todo Replace by something that works for multiple PDEs. Must possible move into applyBoundaryConditions.
+  for (
+      ADERDGCellDescriptionHeap::HeapEntries::const_iterator p = ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndex] ).begin();
+      p != ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndex] ).end();
+      p++
   ) {
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
+
+
+    bool riemannSolveNotPerformed = false;
+    {
+      // Lock the critical multithreading area.
+      // Note that two boundary vertices can operate on the same face at the same time.
+      tarch::multicore::Lock lock(_semaphore);
+      riemannSolveNotPerformed = !p->getRiemannSolvePerformed(faceIndex);
+
+      if(riemannSolveNotPerformed) {
+        p->setRiemannSolvePerformed(faceIndex,true);
+      }
+    } // Unlock the critical multithreading area by letting lock go out of scope.
+
+    // Apply the boundary conditions.
+    // todo Copy and periodic boundary conditions should be configured by additional mappings after
+    // the initial grid refinement and the initialisation of the cell descriptions.
+    // The configuration should only involve an edit of the index maps generated
+    // by the multiscalelinkedcell toolbox. In case of consequent mesh-refinement,
+    // these indices should be propagated down to the finer cells.
+    // The resulting Riemann problems are then simply solved
+    // by exahype::mappings::RiemannSolver.
+    if (riemannSolveNotPerformed) {
+      double * Qhbnd = &(DataHeap::getInstance().getData(p->getExtrapolatedPredictor())[faceIndex * numberOfFaceDof]._persistentRecords._u);
+      double * Fhbnd = &(DataHeap::getInstance().getData(p->getFluctuation())          [faceIndex * numberOfFaceDof]._persistentRecords._u);
+
+      // todo Dominic Charrier
+      // Do not solve a Riemann problem here:
+      // Invoke user defined boundary condition function
+      // At the moment, we simply copy the cell solution to the boundary.
+      solver->riemannSolver(
+          Fhbnd,
+          Fhbnd,
+          Qhbnd,
+          Qhbnd,
+          _localState.getMaxTimeStepSize(),
+          normal);
+    }
+  }
+
+  void exahype::mappings::BoundaryConditions::touchVertexLastTime(
+      exahype::Vertex&         fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
+      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
+      exahype::Vertex * const  coarseGridVertices,
+      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+      exahype::Cell&           coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
+  ) {
+    logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
+
     assertion1WithExplanation(_localState.getMaxTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size is not initialised correctly!");
 
     tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
@@ -476,7 +456,7 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
     // PatchInitialisation2MultiscaleLinkedCell_1::touchVertexLastTime(...)
     // Not sure what happens with hanging nodes.
 
-
+    /*
      * Right cell-left cell   pair indices: 0,1; 2,3;   4,5; 6;7
      * Front cell-back cell   pair indices: 0,2; 1,3;   4,6; 5;7
      * Top   cell-bottom cell pair indices: 0,4; 1,5;   2,6; 3;7
@@ -485,12 +465,7 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
      * has always the "opposite" index, i.e., we solve a Riemann
      * problem on the left face of the right cell (which
      * is the right face of the left cell).
-
-
-    constexpr int basisSize   = EXAHYPE_ORDER+1;
-    constexpr int nvar        = EXAHYPE_NVARS;
-    const int numberOfFaceDof = nvar * tarch::la::aPowI(DIMENSIONS-1,basisSize);
-
+     */
     // index maps (
     constexpr int cellIndicesLeft   [4] = { 0, 2, 4, 6 };
     constexpr int cellIndicesRight  [4] = { 1, 3, 5, 7 };
@@ -516,7 +491,6 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
           cellIndicesRight[i],
           EXAHYPE_FACE_RIGHT,
           EXAHYPE_FACE_LEFT,
-          numberOfFaceDof,
           nx);
 
       applyBoundaryConditions(
@@ -525,7 +499,6 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
           cellIndicesBack [i],
           EXAHYPE_FACE_BACK,
           EXAHYPE_FACE_FRONT,
-          numberOfFaceDof,
           ny);
 
 #if DIMENSIONS==3
@@ -535,12 +508,10 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
           cellIndicesTop   [i],
           EXAHYPE_FACE_TOP,
           EXAHYPE_FACE_BOTTOM,
-          numberOfFaceDof,
           nz);
 #endif
     }
   }
-*/
   logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
