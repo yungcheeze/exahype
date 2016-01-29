@@ -86,7 +86,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
 
       System.out.print ("store pathes and default settings in makefile ... ok" );      
 	  System.out.println("\n\n\n\n");
-      System.out.print ("please change into directory " + _directoryAndPathChecker.peanoPath.getAbsolutePath() + " and type make \n");
+      System.out.print ("please change into directory " + _directoryAndPathChecker.outputDirectory.getAbsolutePath() + " and type make \n");
       System.out.print ("ensure that you set all environment variables before:\n");
       System.out.print ("  export CC=gcc  \t\tSelect GNU compiler\n");
       System.out.print ("  export CC=Intel\t\tSelect Intel compiler (default)\n");
