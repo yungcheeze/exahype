@@ -149,10 +149,10 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   int n=1;
 
   while ( repository.getState().getMinimalGlobalTimeStamp()<simulationEndTime ) {
-    if (exahype::solvers::isAPlotterActive(repository.getState().getMinimalGlobalTimeStamp())) {
+    if (exahype::plotters::isAPlotterActive(repository.getState().getMinimalGlobalTimeStamp())) {
       repository.switchToPlot();
       repository.iterate();
-      exahype::solvers::finishedPlotting();
+      exahype::plotters::finishedPlotting();
       logInfo( "runAsMaster(...)", "all snapshots written" );
     }
 
