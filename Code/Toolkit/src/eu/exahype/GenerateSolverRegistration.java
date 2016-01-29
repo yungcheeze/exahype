@@ -76,7 +76,7 @@ public class GenerateSolverRegistration  extends DepthFirstAdapter {
   @Override
   public void inAPlotSolution(eu.exahype.node.APlotSolution node) {
 	try {
-      _methodBodyWriter.write("  exahype::plotters::RegisteredPlotters.push_back( new exahype::solvers::Plotter(" + (_kernelNumber-1) + ",\"" + node.getPlotterType().toString().trim() + "\"," + node.getTime().toString().trim() + "," + node.getRepeat().toString().trim() + ",\"" + node.getFilename().toString().trim() + "\")); \n");
+      _methodBodyWriter.write("  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter(" + (_kernelNumber-1) + ",\"" + node.getPlotterType().toString().trim() + "\"," + node.getTime().toString().trim() + "," + node.getRepeat().toString().trim() + ",\"" + node.getFilename().toString().trim() + "\")); \n");
       System.out.println( "added plotter ... ok" );      
 	} 
 	catch (Exception exc) {
