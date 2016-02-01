@@ -26,7 +26,7 @@ exahype-project MyEuler
   solver ADER-DG MySolver
     variables = 5
     order     = 3
-    kernel    = user::defined
+    kernel    = kernel::euler2d
     
     plot vtk::binary
       time     = 0.0
