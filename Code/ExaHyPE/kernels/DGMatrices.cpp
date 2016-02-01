@@ -46,7 +46,7 @@ void kernels::initDGMatrices() {
   // Only working for 2D at the moment.
   subOutputMatrix = new double**[MaxOrder+1]; // ***
 
-  for (int iii=0; iii<MaxOrder; iii++) {
+  for (int iii=0; iii<MaxOrder+1; iii++) {
     subOutputMatrix[iii] = new double*[(iii+1)*(iii+1)];
 
     for (int jjj=0; jjj<(iii+1)*(iii+1); jjj++) {
