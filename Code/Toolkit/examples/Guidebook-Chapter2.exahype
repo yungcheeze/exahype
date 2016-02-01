@@ -1,0 +1,43 @@
+/**
+ 
+ Trivial Project
+ 
+ A trivial project without any content.
+
+ */
+exahype-project MyEuler
+
+  peano-path                 = ./Peano/peano
+  tarch-path                 = ./Peano/tarch
+  multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
+  exahype-path               = ./ExaHyPE
+  
+  output-directory           = ./Applications/guidebook-chapter-2
+  
+  
+  computational-domain
+    dimension                = 2
+    width                    = 1.0
+    offset                   = 0.0, 0.0
+    end-time                 = 0.1
+  end computational-domain
+ 
+  
+  solver ADER-DG MySolver
+    variables = 5
+    order     = 3
+    kernel    = user::defined
+    
+    plot vtk::binary
+      time     = 0.0
+      repeat   = 0.02
+      filename = ./solution
+    end plot
+  end solver
+
+
+  optimisation
+    fuse-algorithmic-steps   = on
+  end optimisation  
+  
+end exahype-project  
