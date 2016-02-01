@@ -8,72 +8,76 @@
 #ifndef EXAHYPE_KERNELS_DGMATRICES_H
 #define EXAHYPE_KERNELS_DGMATRICES_H
 
-
-
-#define EXAHYPE_ORDER 9
-
 namespace kernels {
   void initDGMatrices();
 
     /**
      * \brief Element stiffness matrix
      */
+    // todo Dominic Etienne Charrier
     // order,row,column
     // [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1][EXAHYPE_ORDER+1]
-    extern const double*** Kxi;
+    extern double*** Kxi;
 
     /**
      * \brief Time flux matrix (left)
      */
+    // todo Dominic Etienne Charrier
     // order, row
     // [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1]
-    extern const double** F0;
+    extern double** F0;
 
     /**
      * \brief Time flux matrix (right)
      * \note Unused.
      */
+    // todo Dominic Etienne Charrier
     // order, row
     // [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1]
-    extern const double** F1;
+    extern double** F1;
 
     /**
      * \brief Inverse stiffness matrix
      */
+    // todo Dominic Etienne Charrier
     // order, row, column
     // [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1][EXAHYPE_ORDER+1]
-    extern const double*** iK1;
+    extern double*** iK1;
 
     /**
      * \brief Left extrapolation coefficients
      */
+    // todo Dominic Etienne Charrier
     // order, row,
     // [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1]
-    extern const double** FLCoeff;
+    extern double** FLCoeff;
 
     /**
      * \brief Right extrapolation coefficients
      */
+    // todo Dominic Etienne Charrier
     // order, row
     // [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
-    extern const double** FRCoeff;
+    extern double** FRCoeff;
 
     /**
      * \brief Joint extrapolation coefficients
      *
      * FCoeff = [[FLCoeff];[FRCoeff]]
      */
+    // todo Dominic Etienne Charrier
     // order, left/right, row
     // [EXAHYPE_ORDER+1][2][EXAHYPE_ORDER+1];
-    extern const double*** FCoeff;
+    extern double*** FCoeff;
 
     /**
-     * \brief derivative operator
-     * \note for debugging purposes
+     * \brief Projects the nodal DoF located at the Gauss-Legendre nodes
+     * onto an uniform grid.
      */
+    // todo Dominic Etienne Charrier
     // order, row, column
     // [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
-    extern const double*** dudx;
+    extern double*** subOutputMatrix;
 }
 
 #endif
