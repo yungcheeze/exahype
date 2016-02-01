@@ -24,14 +24,15 @@
 
 template <void PDEEigenvalues2d(const double * const Q,const int normalNonZero,double * lambda)>
 double kernels::aderdg::generic::stableTimeStepSize(
-    const double * const luh, const tarch::la::Vector<DIMENSIONS,double>& dx,
+    const double * const luh,
+    const tarch::la::Vector<DIMENSIONS,double>& dx,
     const int numberOfVariables,
     const int basisSize
 ) {
   const double PNPM[10] = {
       1.0, 0.33, 0.17, 0.1, 0.069, 0.045,  0.038, 0.03, 0.02, 0.015
   };
-  double lambda[basisSize];
+  double* lambda = new double[numberOfVariables];
 
   double dt=std::numeric_limits<double>::max();
   for(int ii=0; ii < basisSize; ii++) {
@@ -50,14 +51,11 @@ double kernels::aderdg::generic::stableTimeStepSize(
         denominator += maxEigenvalue/dx[d];
       }
 
-      // todo Dominic Etienne Charrier
-      // move stuff around
       dt = std::min(dt,EXAHYPE_CFL_FACTOR*PNPM[basisSize-1]/denominator); // order N = basisSize-1
     }
   }
   return dt;
 }
-
 
 // todo change template parameter in header and generator
 // template <void PDEFlux2d(const double * const Q, double * f, double * g)>
@@ -72,10 +70,10 @@ void kernels::aderdg::generic::riemannSolver(
     const int numberOfVariables,
     const int basisSize
 ){
-  double QavL   [numberOfVariables];
-  double QavR   [numberOfVariables];
-  double lambdaL[numberOfVariables];
-  double lambdaR[numberOfVariables];
+  double* QavL    = new double[numberOfVariables];
+  double* QavR    = new double[numberOfVariables];
+  double* lambdaL = new double[numberOfVariables];
+  double* lambdaR = new double[numberOfVariables];
 
   // Compute the average states from the left and the right, which we need to compute the numerical dissipation
   memset((double *) QavL,0,numberOfVariables * sizeof(double));
@@ -121,6 +119,34 @@ void kernels::aderdg::generic::riemannSolver(
   }
 }
 
+template <void PDEInitialValues(const double* const x,double* Q)>
+void kernels::aderdg::generic::initialCondition(
+    double* luh,
+    const tarch::la::Vector<DIMENSIONS,double>& center,
+    const tarch::la::Vector<DIMENSIONS,double>& dx,
+    const int numberOfVariables,
+    const int basisSize
+) {
+  double x[2];
+
+  for (int ii=0; ii<basisSize; ii++) { // loop over dof
+    const double qr = kernels::gaussLegendreNodes[basisSize-1][ii];
+
+    for (int jj=0; jj<basisSize; jj++) {
+      // location and index of nodal degrees of freedom
+      const int nodeIndex = ii + basisSize * jj;
+
+      const double qs = kernels::gaussLegendreNodes[basisSize-1][jj];
+      x[0]=center[0] + dx[0]*(qr-0.5);
+      x[1]=center[1] + dx[1]*(qs-0.5);
+
+      // read initial condition
+      const int dofStartIndex  = nodeIndex * numberOfVariables;
+      PDEInitialValues(x,&luh[dofStartIndex]);
+    }
+  }
+}
+
 
 template <void PDEFlux2d(const double * const Q, double * f, double * g)>
 void kernels::aderdg::generic::spaceTimePredictor(
@@ -136,11 +162,14 @@ void kernels::aderdg::generic::spaceTimePredictor(
     int          numberOfVariables,
     int          basisSize
 ) {
+  // todo Angelika
+  // Please remove the typedefs in generic kernels again since numberOf(...)Dof is not
+  // a compile time variable anymore
+  // helper variables
   const int order = basisSize-1;
 
-  // helper variables
-  const int numberOfSpaceTimeDof  = numberOfVariables * tarch::la::aPowI(DIMENSIONS+1,basisSize);
-  const int numberOfDof           = numberOfVariables * tarch::la::aPowI(DIMENSIONS,basisSize);
+  constexpr int numberOfSpaceTimeDof  = 5 * (3+1)*(3+1)*(3+1);//tarch::la::aPowI(DIMENSIONS+1,3+1);
+  constexpr int numberOfDof           = 5 * (3+1)*(3+1);//tarch::la::aPowI(DIMENSIONS,3+1);
 
   double* rhs0 = new double[numberOfSpaceTimeDof];
   double* rhs  = new double[numberOfSpaceTimeDof];

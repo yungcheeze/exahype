@@ -69,6 +69,30 @@ public:
 
   /**
    * If you use a higher order method, then this operation returns the
+   * nodes per coordinate axis power the space dimension plus one.
+   */
+  // @todo Dominic Etienne Charrier
+  // Describe meaning for FVM
+  int getSpaceTimeNodesPerCell() const;
+
+  /**
+   * If you use a higher order method, then this operation returns the
+   * nodes per coordinate axis power the space dimension.
+   */
+  // @todo Dominic Etienne Charrier
+  // Describe meaning for FVM
+  int getNodesPerCell() const;
+
+  /**
+   * If you use a higher order method, then this operation returns the
+   * nodes per coordinate axis power the space dimension minus one.
+   */
+  // @todo Dominic Etienne Charrier
+  // Describe meaning for FVM
+  int getNodesPerFace() const;
+
+  /**
+   * If you use a higher order method, then this operation returns the
    * polynomial degree plus one. If you use a Finite Volume method, it
    * returns the number of cells within a patch per coordinate axis.
    */
@@ -166,7 +190,7 @@ public:
   /**
    * @brief Returns a stable time step size.
    *
-   * @param[in] luh       Cell-local solution dof
+   * @param[in] luh       Cell-local solution DoF.
    * @param[in] dx        Extent of the cell in each coordinate direction.
    */
   virtual double stableTimeStepSize(
@@ -175,13 +199,13 @@ public:
   ) = 0;
 
   /**
-   * Sets the initial values.
+   * @brief Sets the initial values.
    *
-   * @param[inout] luh     Cell-local solution DoF.
-   * @param[in]    center  Element center.
-   * @param[in]    dx      Extent of the cell in each coordinate direction.
+   * @param[in] luh    Cell-local solution DoF.
+   * @param[in] center Element center.
+   * @param[in] dx     Extent of the cell in each coordinate direction.
    */
-  virtual void initialValues(
+  virtual void initialCondition(
       double * luh,
       const tarch::la::Vector<DIMENSIONS,double>& center,
       const tarch::la::Vector<DIMENSIONS,double>& dx

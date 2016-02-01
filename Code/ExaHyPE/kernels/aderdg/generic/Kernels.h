@@ -8,15 +8,18 @@ namespace kernels {
   namespace aderdg {
     namespace generic {
 
-      template <void PDEFlux2d(const double * const Q,double * f,double * g)>
+      // @todo Dominic Etienne Charrier
+      // Inconsistent ordering of inout and in arguments for
+      // template argument functions and non-template argument function.
+      template <void PDEFlux(const double* const Q,double* f,double* g)>
       void spaceTimePredictor(
-          double * lQi,
-          double * lFi,
-          const double * const luh,
-          double * lQhi,
-          double * lFhi,
-          double * lQhbnd,
-          double * lFhbnd,
+          double* lQi,
+          double* lFi,
+          const double* const luh,
+          double* lQhi,
+          double* lFhi,
+          double* lQhbnd,
+          double* lFhbnd,
           const tarch::la::Vector<DIMENSIONS,double>&  dx,
           const double dt,
           int          numberOfVariables,
@@ -29,8 +32,8 @@ namespace kernels {
       // If we replace it by scalar mesh size, we have to add a template argument "int dim".
 
       void solutionUpdate(
-          double * luh,
-          const double * const lduh,
+          double* luh,
+          const double* const lduh,
           const tarch::la::Vector<DIMENSIONS,double>&  dx,
           const double dt,
           const int numberOfVariables,
@@ -38,39 +41,55 @@ namespace kernels {
       );
 
       void volumeIntegral(
-          double * lduh,
-          const double * const lFhi,
+          double* lduh,
+          const double* const lFhi,
           const tarch::la::Vector<DIMENSIONS,double>&  dx,
           const int numberOfVariables,
           const int basisSize
 
       );
       void surfaceIntegral(
-          double * lduh,
-          const double * const lFhbnd,
+          double* lduh,
+          const double* const lFhbnd,
           const tarch::la::Vector<DIMENSIONS,double>&  dx,
           const int numberOfVariables,
           const int basisSize
       );
 
       // @todo Dominic Etienne Charrier
-      // Fix corresponding stuff in generator.
+      // Inconsistent ordering of inout and in arguments for
+      // template argument functions and non-template argument function.
+      template <void PDEInitialValues(const double* const x,double* Q)>
+      void initialCondition(
+          double* luh,
+          const tarch::la::Vector<DIMENSIONS,double>& center,
+          const tarch::la::Vector<DIMENSIONS,double>& dx,
+          const int numberOfVariables,
+          const int basisSize
+      );
 
-      template <void PDEEigenvalues(const double * const Q,const int normalNonZero,double * lambda)>
+      // @todo Dominic Etienne Charrier
+      // Inconsistent ordering of inout and in arguments
+      // template argument functions and non-template argument function.
+      template <void PDEEigenvalues(const double* const Q,const int normalNonZero,double* lambda)>
       void riemannSolver(
-          double * FL,
-          double * FR,
-          const double * const QL,
-          const double * const QR,
+          double* FL,
+          double* FR,
+          const double* const QL,
+          const double* const QR,
           const double dt,
           const int normalNonZero,
           const int numberOfVariables,
           const int basisSize
       );
 
-      template <void PDEEigenvalues2d(const double * const Q,const int normalNonZero,double * lambda)>
+      // @todo Dominic Etienne Charrier
+      // Inconsistent ordering of inout and in arguments for
+      // template argument functions and non-template argument function.
+      template <void PDEEigenvalues(const double* const Q,const int normalNonZero,double* lambda)>
       double stableTimeStepSize(
-          const double * const luh, const tarch::la::Vector<DIMENSIONS,double>& dx,
+          const double* const luh,
+          const tarch::la::Vector<DIMENSIONS,double>& dx,
           const int numberOfVariables,
           const int basisSize
       );

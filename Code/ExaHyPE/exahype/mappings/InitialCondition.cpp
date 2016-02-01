@@ -371,8 +371,6 @@ void exahype::mappings::InitialCondition::enterCell(
     ) {
     exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
 
-    logDebug("enterCell","center: " << center[0] << "," << center[1]);
-
     // zero update
     // @todo Entfernen - sollte Loeser machen. Bitte erst mal validieren
     //double* lduh = &(DataHeap::getInstance().getData(p->getUpdate())[0]._persistentRecords._u);
@@ -380,7 +378,7 @@ void exahype::mappings::InitialCondition::enterCell(
 
     // apply initial condition
     double* luh    = &(DataHeap::getInstance().getData(p->getSolution())[0]._persistentRecords._u);
-    solver->initialValues(luh,fineGridVerticesEnumerator.getCellCenter(),fineGridVerticesEnumerator.getCellSize());
+    solver->initialCondition(luh,fineGridVerticesEnumerator.getCellCenter(),fineGridVerticesEnumerator.getCellSize());
   }
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }

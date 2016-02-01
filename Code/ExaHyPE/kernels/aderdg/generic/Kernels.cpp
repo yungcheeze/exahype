@@ -39,8 +39,11 @@ void kernels::aderdg::generic::volumeIntegral(
     const int numberOfVariables,
     const int basisSize
 ) {
-  const int numberOfDof = numberOfVariables * tarch::la::aPowI(basisSize,DIMENSIONS);
-  const int order       = basisSize-1;
+  // todo Angelika
+  // Please remove the typedefs in generic kernels again since numberOf(...)Dof is not
+  // a compile time variable anymore
+  constexpr int numberOfDof = 5 * (3+1)*(3+1); //tarch::la::aPowI(3+1,DIMENSIONS);
+  constexpr int order       = 3+1-1;
 
   // memory layout of lFhi:
   // lFhi = [ lFhi_x | lFhi_y ] ordered as follows
@@ -54,7 +57,8 @@ void kernels::aderdg::generic::volumeIntegral(
   memset(lduh,0,sizeof(double) * numberOfDof);
 
   // access lduh(nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array manner
-  typedef double tensor_t[basisSize][numberOfVariables];
+  // @todo Angelika
+  typedef double tensor_t[3+1][5];
   tensor_t *lduh3D = (tensor_t *)lduh;
 
   // Compute the "derivatives" (contributions of the stiffness matrix)
@@ -108,8 +112,11 @@ void kernels::aderdg::generic::surfaceIntegral(
     const int numberOfVariables,
     const int basisSize
 ){
-  const int order           = basisSize-1;
-  const int numberOfFaceDof = tarch::la::aPowI(DIMENSIONS-1,basisSize);
+  // todo Angelika
+  // Please remove the typedefs in generic kernels again since numberOf(...)Dof is not
+  // a compile time variable anymore
+  constexpr int numberOfFaceDof = (3+1);//tarch::la::aPowI(DIMENSIONS-1,3+1);
+  constexpr int order       = 3+1-1;
 
   const double * FLeft  = &(lFhbnd[EXAHYPE_FACE_LEFT  * numberOfFaceDof]);
   const double * FRight = &(lFhbnd[EXAHYPE_FACE_RIGHT * numberOfFaceDof]);
@@ -117,7 +124,7 @@ void kernels::aderdg::generic::surfaceIntegral(
   const double * FBack  = &(lFhbnd[EXAHYPE_FACE_BACK  * numberOfFaceDof]);
 
   // access lduh(nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array manner
-  typedef double tensor_t[basisSize][numberOfVariables];
+  typedef double tensor_t[3+1][5];
   tensor_t *lduh3D = (tensor_t *)lduh;
 
   // x direction (independent from the y and z)
