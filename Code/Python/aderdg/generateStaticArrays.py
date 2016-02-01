@@ -2,7 +2,7 @@
 .. module:: generateLookupTable
   :platform: Unix, Windows, Mac
   :synopsis: Generates header files defining static arrays up to a specific order.
-.. moduleauthor:: Angelika Schwarz <angelika.schwarz@tum.de>,Dominic Etienne Charrier <dominic.e.charrier@durham.ac.uk>
+.. moduleauthor:: Angelika Schwarz <angelika.schwarz@tum.de>
 
 :synopsis: Generates header files defining static arrays up to a specific order.
 """

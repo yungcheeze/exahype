@@ -203,13 +203,7 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(exahype:
    *    Find the minimum leaf-cell-local time step size and set it as the new current
    *    global time step size.
    */
-/*
-  if (n%EXAHYPE_PLOTTING_STRIDE==0) {
-    repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputationAndExport();
-  } else {
-*/
-    repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputation();
-//    }
+  repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputation();
   repository.iterate();
 }
 

@@ -15,7 +15,7 @@
 #ifndef EXAHYPE_GEOMETRY_ELEMENT_MAPPING_H_
 #define EXAHYPE_GEOMETRY_ELEMENT_MAPPING_H_
 
-namespace exahype {
+namespace kernels {
   namespace geometry {
     /**
      * @brief: Maps reference coordinates to physical coordinates.
