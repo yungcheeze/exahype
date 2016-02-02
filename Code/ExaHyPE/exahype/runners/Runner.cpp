@@ -167,10 +167,11 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
     logInfo(
       "runAsMaster(...)",
-      "step " << n+1 <<
+      "step " << n <<
       "\t t_min="  << repository.getState().getMinimalGlobalTimeStamp() <<
       "\t dt_max=" << repository.getState().getMaxTimeStepSize()
     );
+    n++;
     #if defined(Debug) || defined(Asserts)
     logInfo( "runAsMaster(...)", "state=" << repository.getState().toString() );
     #endif
@@ -195,12 +196,12 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(exahype:
    * The two adapters that are embedded in the if clause below perform the following steps:
    *
    * 1. Perform the corrector step using the old update and the old global time step size.
-   *    This is a leaf-cell-local operation. Thus we immediately obtain the leaf-cell-local current solution.
-   * 2. Perform the predictor step using the leaf-cell-local current solution and the current global time step size.
-   * 3. Compute the leaf-cell-local time step sizes
-   * 4. (Optionally) Export the leaf-cell-local current solution.
+   *    This is a cell-local operation. Thus we immediately obtain the cell-local current solution.
+   * 2. Perform the predictor step using the cell-local current solution and the current global time step size.
+   * 3. Compute the cell-local time step sizes
+   * 4. (Optionally) Export the cell-local current solution.
    * 5. After the traversal, set the global current time step size as the new old global time step size.
-   *    Find the minimum leaf-cell-local time step size and set it as the new current
+   *    Find the minimum cell-local time step size and set it as the new current
    *    global time step size.
    */
   repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputation();
@@ -210,4 +211,7 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(exahype:
 
 void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(exahype::repositories::Repository& repository) {
   assertionMsg( false, "not implemented yet. Dominic, can you please do it?" );
+
+  // todo Dominic Etienne Charrier
+  // Only one time step (group) is used in this case.
 }
