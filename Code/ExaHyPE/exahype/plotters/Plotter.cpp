@@ -10,6 +10,7 @@ std::vector<exahype::plotters::Plotter*>  exahype::plotters::RegisteredPlotters;
 tarch::logging::Log  exahype::plotters::Plotter::_log( "exahype::solvers::Plotter" );
 
 
+/*
 exahype::plotters::Plotter::Plotter( int solver, const std::string& identifier, double time, double repeat, const std::string& filename ):
   _solver(solver),
   _identifier(identifier),
@@ -18,6 +19,23 @@ exahype::plotters::Plotter::Plotter( int solver, const std::string& identifier, 
   _filename(filename),
   _device(nullptr) {
   assertion( _time>=0.0 );
+}
+*/
+
+exahype::plotters::Plotter::Plotter( int solver, int plotterCount, const exahype::Parser& parser ):
+  _solver(solver),
+  _identifier(parser.getIdentifierForPlotter(solver,plotterCount)),
+  _time(parser.getFirstSnapshotTimeForPlotter(solver,plotterCount)),
+  _repeat(parser.getRepeatTimeForPlotter(solver,plotterCount)),
+  _filename(parser.getFilenameForPlotter(solver,plotterCount)),
+  _device(nullptr) {
+ if (_time<0.0) {
+   logError( "Plotter(...)", "plotter's first snapshot time is set to negative value " << _time );
+ }
+ if (_repeat<0.0) {
+   logError( "Plotter(...)", "plotter's repeat time is set to negative value " << _repeat );
+ }
+ logInfo( "Plotter(...)", "write snapshot to file " << _filename << " every " << _repeat << " time units with first snapshot at " << _time << ". plotter type is " << _identifier );
 }
 
 

@@ -14,7 +14,7 @@ tarch::logging::Log exahype::Parser::_log( "exahype::Parser" );
 void exahype::Parser::readFile( const std::string& filename ) {
   const int MAX_CHARS_PER_LINE = 512;
   const int MAX_TOKENS_PER_LINE = 20;
-  const char* const DELIMITER = " =";
+  const char* const DELIMITER = " =\t";
 
   _tokenStream.clear();
 
@@ -183,3 +183,24 @@ bool exahype::Parser::fuseAlgorithmicSteps() const {
   logDebug( "fuseAlgorithmicSteps()", "found token " << token );
   return token.compare("on")==0;
 }
+
+
+double exahype::Parser::getFirstSnapshotTimeForPlotter( int solverNumber, int plotterNumber ) const {
+  return 1.0;
+}
+
+
+double exahype::Parser::getRepeatTimeForPlotter( int solverNumber, int plotterNumber ) const {
+  return 1.0;
+}
+
+
+std::string exahype::Parser::getIdentifierForPlotter( int solverNumber, int plotterNumber ) const {
+  return "test";
+}
+
+
+std::string exahype::Parser::getFilenameForPlotter( int solverNumber, int plotterNumber ) const {
+  return "test";
+}
+

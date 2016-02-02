@@ -13,6 +13,7 @@ public class GenerateSolverRegistration  extends DepthFirstAdapter {
   private DirectoryAndPathChecker   _directoryAndPathChecker;
   
   private int                       _kernelNumber;
+  private int                       _plotterNumber;
 
   private String                    _projectName;
 
@@ -43,7 +44,7 @@ public class GenerateSolverRegistration  extends DepthFirstAdapter {
       _writer.write("#include \"exahype/plotters/Plotter.h\"\n");
       _writer.write("#include \"exahype/solvers/Solver.h\"\n\n\n");
       
-      _methodBodyWriter.write("void kernels::initSolvers() {\n");
+      _methodBodyWriter.write("void kernels::initSolvers(const exahype::Parser& parser) {\n");
       if (node.getSolver().size()==0) { 
         System.out.println( "no solvers specified - create empty kernel calls ... ok" );      
       }
@@ -64,6 +65,7 @@ public class GenerateSolverRegistration  extends DepthFirstAdapter {
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName + "::" + solverName + "(" + _kernelNumber + ") ); \n");
       
       _kernelNumber++;
+      _plotterNumber = 0;
       
       System.out.println( "added creation of solver " + solverName + " ... ok" );      
 	} 
@@ -76,7 +78,7 @@ public class GenerateSolverRegistration  extends DepthFirstAdapter {
   @Override
   public void inAPlotSolution(eu.exahype.node.APlotSolution node) {
 	try {
-      _methodBodyWriter.write("  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter(" + (_kernelNumber-1) + ",\"" + node.getPlotterType().toString().trim() + "\"," + node.getTime().toString().trim() + "," + node.getRepeat().toString().trim() + ",\"" + node.getFilename().toString().trim() + "\")); \n");
+      _methodBodyWriter.write("  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter(" + (_kernelNumber-1) + "," + _plotterNumber + ",parser)); \n");
       System.out.println( "added plotter ... ok" );      
 	} 
 	catch (Exception exc) {

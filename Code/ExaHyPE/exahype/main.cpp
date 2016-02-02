@@ -87,7 +87,7 @@ int main(int argc, char** argv) {
   //   Run code
   // ============
   //
-  kernels::initSolvers();
+  kernels::initSolvers(parser);
   kernels::initGaussLegendreNodesAndWeights();
   kernels::initDGMatrices();
 

@@ -5,7 +5,9 @@
 #include <vector>
 
 
+#include "exahype/Parser.h"
 #include "peano/utils/Globals.h"
+
 #include "tarch/la/Vector.h"
 #include "tarch/logging/Log.h"
 
@@ -46,7 +48,7 @@ class exahype::plotters::Plotter {
 
     Device*            _device;
   public:
-    Plotter( int solver, const std::string& identifier, double time, double repeat, const std::string& filename );
+    Plotter( int solver, int plotterCount, const exahype::Parser& parser );
 
     /**
      * Checks whether there should be a plotter according to this class.
