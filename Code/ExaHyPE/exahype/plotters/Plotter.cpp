@@ -23,7 +23,7 @@ exahype::plotters::Plotter::Plotter( int solver, const std::string& identifier, 
 
 bool exahype::plotters::Plotter::checkWetherSolverBecomesActive( double currentTimeStamp ) {
   if ( (_time>=0.0) && tarch::la::greaterEquals( currentTimeStamp, _time ) ) {
-    assertion( _solver<solvers::RegisteredSolvers.size() );
+    assertion( _solver < static_cast<int>(solvers::RegisteredSolvers.size()) );
     switch ( solvers::RegisteredSolvers[ _solver ]->getType() ) {
       case solvers::Solver::ADER_DG:
         if ( _identifier.compare( "vtk::binary" )==0 ) {
@@ -63,6 +63,7 @@ void exahype::plotters::Plotter::plotPatch(
 void exahype::plotters::Plotter::finishedPlotting() {
   assertion(isActive());
   if (_repeat>0.0) {
+    std::cerr << _repeat << std::endl;
     _time += _repeat;
   }
   else {
