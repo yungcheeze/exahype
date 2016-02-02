@@ -23,6 +23,7 @@ exahype::plotters::Plotter::Plotter( int solver, const std::string& identifier, 
 }
 */
 
+
 exahype::plotters::Plotter::Plotter( int solver, int plotterCount, const exahype::Parser& parser ):
   _solver(solver),
   _identifier(parser.getIdentifierForPlotter(solver,plotterCount)),

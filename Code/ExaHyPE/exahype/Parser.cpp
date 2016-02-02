@@ -94,6 +94,28 @@ std::string exahype::Parser::getTokenAfter( std::string token0, std::string toke
 }
 
 
+std::string exahype::Parser::getTokenAfter( std::string token0, int occurance0, std::string token1, int occurance1, int additionalTokensToSkip ) const {
+  assertion( isValid() );
+  assertion(occurance0>0);
+  assertion(occurance1>0);
+  int currentToken = 0;
+  while (currentToken<static_cast<int>(_tokenStream.size()) && (_tokenStream[currentToken]!=token0 || occurance0>1) ) {
+    if (_tokenStream[currentToken]==token0) occurance0--;
+    currentToken++;
+  }
+  while (currentToken<static_cast<int>(_tokenStream.size()) && (_tokenStream[currentToken]!=token1 || occurance1>1) ) {
+    if (_tokenStream[currentToken]==token1) occurance1--;
+    currentToken++;
+  }
+  currentToken += (additionalTokensToSkip+1);
+  if ( currentToken<static_cast<int>(_tokenStream.size())) {
+    return _tokenStream[currentToken];
+  }
+  else return "notoken";
+}
+
+
+
 int exahype::Parser::getNumberOfThreads() {
   assertion( isValid() );
   std::string token = getTokenAfter("shared-memory","cores");
@@ -186,21 +208,41 @@ bool exahype::Parser::fuseAlgorithmicSteps() const {
 
 
 double exahype::Parser::getFirstSnapshotTimeForPlotter( int solverNumber, int plotterNumber ) const {
-  return 1.0;
+  assertion( isValid() );
+  // We have to multiply with two as the token solver occurs twice (to open and close the section)
+  std::string token = getTokenAfter("solver",solverNumber*2+1,"plot",plotterNumber*2+1,2);
+  logInfo( "fuseAlgorithmicSteps()", "found token " << token );
+  assertion3(token.compare("notoken")!=0,token,solverNumber,plotterNumber);
+  return atof(token.c_str());
 }
 
 
 double exahype::Parser::getRepeatTimeForPlotter( int solverNumber, int plotterNumber ) const {
-  return 1.0;
+  assertion( isValid() );
+  // We have to multiply with two as the token solver occurs twice (to open and close the section)
+  std::string token = getTokenAfter("solver",solverNumber*2+1,"plot",plotterNumber*2+1,4);
+  logInfo( "fuseAlgorithmicSteps()", "found token " << token );
+  assertion3(token.compare("notoken")!=0,token,solverNumber,plotterNumber);
+  return atof(token.c_str());
 }
 
 
 std::string exahype::Parser::getIdentifierForPlotter( int solverNumber, int plotterNumber ) const {
-  return "test";
+  assertion( isValid() );
+  // We have to multiply with two as the token solver occurs twice (to open and close the section)
+  std::string token = getTokenAfter("solver",solverNumber*2+1,"plot",plotterNumber*2+1);
+  logInfo( "fuseAlgorithmicSteps()", "found token " << token );
+  assertion3(token.compare("notoken")!=0,token,solverNumber,plotterNumber);
+  return token;
 }
 
 
 std::string exahype::Parser::getFilenameForPlotter( int solverNumber, int plotterNumber ) const {
-  return "test";
+  assertion( isValid() );
+  // We have to multiply with two as the token solver occurs twice (to open and close the section)
+  std::string token = getTokenAfter("solver",solverNumber*2+1,"plot",plotterNumber*2+1,6);
+  logInfo( "fuseAlgorithmicSteps()", "found token " << token );
+  assertion3(token.compare("notoken")!=0,token,solverNumber,plotterNumber);
+  return token;
 }
 

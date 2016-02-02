@@ -28,6 +28,7 @@ class exahype::Parser {
      */
     std::string getTokenAfter( std::string token, int additionalTokensToSkip=0 ) const;
     std::string getTokenAfter( std::string token0, std::string token1, int additionalTokensToSkip=0 ) const;
+    std::string getTokenAfter( std::string token0, int occurance0, std::string token1, int occurance1, int additionalTokensToSkip=0 ) const;
   public:
     enum MulticoreOracleType {
       Dummy,
