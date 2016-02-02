@@ -271,7 +271,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     writer.write("\n\n\n");
     writer.write( "#include \"kernels/aderdg/generic/Kernels.h\"\n\n\n");
     writer.write( "void " + _projectName + "::" + solverName + "::spaceTimePredictor( double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {\n");
-    writer.write("   kernels::aderdg::generic::spaceTimePredictor<flux>( lQi,lFi,luh,lQhi,lFhi,lQhbnd,lFhbnd,dx,dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("   kernels::aderdg::generic::spaceTimePredictor<flux>( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write( "void " + _projectName + "::" + solverName + "::solutionUpdate(double* luh, const double* const lduh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt) {\n");

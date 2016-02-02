@@ -391,11 +391,11 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
     solver->spaceTimePredictor(
       lQi,
       lFi,
-      luh,
       lQhi,
       lFhi,
       lQhbnd,
       lFhbnd,
+      luh,
       fineGridVerticesEnumerator.getCellSize(),
       _localState.getMaxTimeStepSize()
     );

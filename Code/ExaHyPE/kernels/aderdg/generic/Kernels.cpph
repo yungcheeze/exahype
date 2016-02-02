@@ -152,11 +152,11 @@ template <void PDEFlux2d(const double * const Q, double * f, double * g)>
 void kernels::aderdg::generic::spaceTimePredictor(
     double * lQi,
     double * lFi,
-    const double * const luh,
     double * lQhi,
     double * lFhi,
     double * lQhbnd,
     double * lFhbnd,
+    const double * const luh,
     const tarch::la::Vector<DIMENSIONS,double>&  dx,
     const double dt,
     int          numberOfVariables,
@@ -272,8 +272,8 @@ void kernels::aderdg::generic::spaceTimePredictor(
           const int spaceTimeNodeIndex     = nodeIndex  + basisSize * basisSize * ll;
           const int spaceTimeDofStartIndex = spaceTimeNodeIndex * numberOfVariables;
 
-          double weight = ::kernels::gaussLegendreWeights[order][ll] *
-              ::kernels::gaussLegendreWeights[order][ii];
+          double weight = kernels::gaussLegendreWeights[order][ll] *
+              kernels::gaussLegendreWeights[order][ii];
 
           for(int mm=0; mm < basisSize; mm++) {
             const int mmNodeIndex                  = ii + basisSize * mm;

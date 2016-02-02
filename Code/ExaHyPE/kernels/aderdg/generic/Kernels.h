@@ -15,11 +15,11 @@ namespace kernels {
       void spaceTimePredictor(
           double* lQi,
           double* lFi,
-          const double* const luh,
           double* lQhi,
           double* lFhi,
           double* lQhbnd,
           double* lFhbnd,
+          const double* const luh,
           const tarch::la::Vector<DIMENSIONS,double>&  dx,
           const double dt,
           int          numberOfVariables,
