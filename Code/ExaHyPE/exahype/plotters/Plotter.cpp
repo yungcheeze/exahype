@@ -2,6 +2,7 @@
 #include "exahype/solvers/Solver.h"
 
 #include "exahype/plotters/ADERDG2BinaryVTK.h"
+#include "exahype/plotters/ADERDG2AsciiVTK.h"
 
 
 std::vector<exahype::plotters::Plotter*>  exahype::plotters::RegisteredPlotters;
@@ -29,6 +30,10 @@ bool exahype::plotters::Plotter::checkWetherSolverBecomesActive( double currentT
         if ( _identifier.compare( "vtk::binary" )==0 ) {
           logInfo( "open()", "create vtk::binary plotter for " << solvers::RegisteredSolvers[ _solver ]->getIdentifier() );
           _device = new ADERDG2BinaryVTK( _filename, solvers::RegisteredSolvers[ _solver ]->getNodesPerCoordinateAxis()-1, solvers::RegisteredSolvers[ _solver ]->getNumberOfVariables() );
+        }
+        else if( _identifier.compare( "vtk::ascii" )==0 ) {
+          logInfo( "open()", "create vtk::ascii plotter for " << solvers::RegisteredSolvers[ _solver ]->getIdentifier() );
+          _device = new ADERDG2AsciiVTK( _filename, solvers::RegisteredSolvers[ _solver ]->getNodesPerCoordinateAxis()-1, solvers::RegisteredSolvers[ _solver ]->getNumberOfVariables() );
         }
         else {
           logError( "open()", "unknown plotter type " << _identifier << " for " << solvers::RegisteredSolvers[ _solver ]->getIdentifier() );
