@@ -144,45 +144,33 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::loadStatistic
 }
 
 
-void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::plotStatistics(const std::string& filename) const {
+void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::plotStatistics(std::ostream& out) const {
   if (_currentMeasurement.getNumberOfMeasurements()>0 || !_oracleIsSearching) {
     if (_biggestProblemSize < _currentGrainSize && _oracleIsSearching) {
-      logInfo(
-        "plotStatistics()",
-        "(method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter" <<
+      out << "(method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter" <<
         ",t=" << _currentMeasurement.toString() <<
         ",biggest-problem=" << _biggestProblemSize <<
         ",current-grain-size=" << _currentGrainSize <<
-        "): still determining serial runtime"
-      );
+        "): still determining serial runtime";
     }
     else if (_oracleIsSearching) {
-      logInfo(
-        "plotStatistics()",
-        "(method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter" <<
+      out << "(method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter" <<
         ",grain-size=" << _currentGrainSize <<
         ",biggest-problem-size=" << _biggestProblemSize <<
         ",t[prev]=" << _previousMeasuredTime <<
         ",t[current]=" << _currentMeasurement.getValue() <<
-        "): still searching of optimal grain size"
-      );
+        "): still searching of optimal grain size";
     }
     else if (_biggestProblemSize<=_currentGrainSize) {
-      logInfo(
-        "plotStatistics()",
-        "(method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter" <<
-        "): does not scale, oracle is not searching anymore"
-      );
+      out << "(method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter" <<
+        "): does not scale, oracle is not searching anymore";
     }
     else {
-      logInfo(
-        "plotStatistics()",
-        "(method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter" <<
+      out << "(method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter" <<
         ",grain-size=" << _currentGrainSize <<
         ",biggest-problem-size=" << _biggestProblemSize <<
         ",t=" << _previousMeasuredTime <<
-        "): oracle is not searching anymore"
-      );
+        "): oracle is not searching anymore";
     }
   }
 }

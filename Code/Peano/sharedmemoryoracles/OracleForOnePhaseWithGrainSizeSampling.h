@@ -85,7 +85,7 @@ class sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling: public peano:
      */
     virtual void parallelSectionHasTerminated(double elapsedCalendarTime);
 
-    virtual void plotStatistics(const std::string& filename) const;
+    virtual void plotStatistics(std::ostream& out) const;
     virtual void loadStatistics(const std::string& filename);
 
     virtual void informAboutElapsedTimeOfLastTraversal(double elapsedTime);
