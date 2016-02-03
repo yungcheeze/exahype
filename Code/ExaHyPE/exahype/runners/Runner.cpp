@@ -168,7 +168,11 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n=1;
 
-  while ( repository.getState().getMinimalGlobalTimeStamp()<simulationEndTime ) {
+  while (
+    (repository.getState().getMinimalGlobalTimeStamp()<simulationEndTime)
+    &&
+    tarch::la::greater(repository.getState().getMaxTimeStepSize(), 0.0)
+  ) {
     if (exahype::plotters::isAPlotterActive(repository.getState().getMinimalGlobalTimeStamp())) {
       repository.switchToPlot();
       repository.iterate();
