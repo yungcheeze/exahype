@@ -2,6 +2,7 @@ package eu.exahype;
 
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AProject;
+import eu.exahype.node.ASharedMemory;
 import eu.exahype.node.ATwoDimensionalComputationalDomain;
 import eu.exahype.node.AThreeDimensionalComputationalDomain;
 
@@ -54,6 +55,25 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
   }
   
   @Override
+  public void inASharedMemory(ASharedMemory node) {
+	try {
+	  _writer.write("SHAREDMEM=TBB\n" );
+      System.out.print ("shared memory ... TBB (switch to OpenMP manually as indicated below)\n" );   
+      
+      if (!System.getenv().containsKey("TBB_INC")) {
+        System.out.print ("WARNING: environment variable TBB_INC not set but required if code is built with TBB\n" );      
+      }
+      if (!System.getenv().containsKey("TBB_SHLIB")) {
+          System.out.print ("WARNING: environment variable TBB_SHLIB not set but required if code is built with TBB\n" );      
+        }
+    }
+  	catch (Exception exc) {
+      System.err.println( "ERROR: " + exc.toString() );
+      valid = false;
+  	}
+  }  
+  
+  @Override
   public void inAProject(AProject node) {
 	try {
       java.io.File logFile = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/Makefile");
@@ -95,7 +115,14 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       System.out.print ("  export MODE=Asserts\t\tBuild release version of code that is augmented with assertions\n");
       System.out.print ("  export MODE=Profile\t\tBuild release version of code that produces profiling information\n");
       System.out.print ("  export MODE=Release\t\tBuild release version of code (default)\n");
-      
+      System.out.print ("\n");
+      System.out.print ("  export SHAREDMEM=TBB\t\tUse Intel's Threading Building Blocks (TBB) for shared memory parallelisation\n");
+      System.out.print ("  export SHAREDMEM=OMP\t\tUse OpenMP for shared memory parallelisation\n");
+      System.out.print ("  export SHAREDMEM=\t\tDo not use shared memory (default if not indicated otherwise by \"shared memory ...\" message above)\n");
+      System.out.print ("\n");
+      System.out.print ("  export TBB_INC=...\t\tIndicate where to find TBB headers (only required if SHAREDMEM=TBB)\n");
+      System.out.print ("  export TBB_SHLIB=...\t\tIndicate where to find TBB's shared libraries (only required if SHAREDMEM=TBB)\n");
+
       _writer.close();
 	} 
 	catch (Exception exc) {
