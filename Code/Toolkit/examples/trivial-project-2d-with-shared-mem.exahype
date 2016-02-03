@@ -10,6 +10,7 @@ exahype-project  TrivialProject
   peano-path                 = ./Peano/peano
   tarch-path                 = ./Peano/tarch
   multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
+  sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
   exahype-path               = ./ExaHyPE
   
   output-directory           = ./Applications/trivialproject

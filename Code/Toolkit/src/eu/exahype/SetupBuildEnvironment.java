@@ -82,6 +82,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       _writer.write("PEANO_PATH=" + _directoryAndPathChecker.peanoPath.getAbsolutePath() + "\n");
       _writer.write("TARCH_PATH=" + _directoryAndPathChecker.tarchPath.getAbsolutePath() + "\n");
       _writer.write("MULTISCALELINKEDCELL_PATH=" + _directoryAndPathChecker.multiscalelinkedcellPath.getAbsolutePath() + "\n");
+      _writer.write("SHAREDMEMORYORACLES_PATH=" + _directoryAndPathChecker.sharedMemoryOraclesPath.getAbsolutePath() + "\n");
       _writer.write("EXAHYPE_PATH=" + _directoryAndPathChecker.exahypePath.getAbsolutePath() + "\n");
       _writer.write("PROJECT_PATH=" + _directoryAndPathChecker.outputDirectory.getAbsolutePath()  + "\n" );
       _writer.write("EXECUTABLE=ExaHyPE-" + node.getName() + "\n");

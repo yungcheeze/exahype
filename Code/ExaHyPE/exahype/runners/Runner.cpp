@@ -36,22 +36,25 @@ exahype::runners::Runner::~Runner() {
 
 void exahype::runners::Runner::initSharedMemoryConfiguration() {
 #ifdef SharedMemoryParallelisation
-  const int numberOfThreads = parser.getNumberOfThreads();
+  const int numberOfThreads = _parser.getNumberOfThreads();
   tarch::multicore::Core::getInstance().configure(numberOfThreads);
 
-  ifstream f(_parser.getMulticorePropertiesFile().c_str());
+  std::ifstream f(_parser.getMulticorePropertiesFile().c_str());
   bool multicorePropertiesFileDoesExist = f.good();
   f.close();
 
   switch (_parser.getMulticoreOracleType()) {
     case Parser::Dummy:
+      logInfo( "initSharedMemoryConfiguration()", "use dummy shared memory oracle" );
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
           new peano::datatraversal::autotuning::OracleForOnePhaseDummy(true)
       );
       break;
     case Parser::Autotuning:
+      logInfo( "initSharedMemoryConfiguration()", "use autotuning shared memory oracle" );
       break;
     case Parser::GrainSizeSampling:
+      logInfo( "initSharedMemoryConfiguration()", "use shared memory oracle sampling" );
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
           new sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling(
               10,
@@ -73,8 +76,8 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
     case Parser::Autotuning:
       break;
     case Parser::GrainSizeSampling:
-      // @todo Das muss aber jetzt in das File gehen und oben brauchen wir ein loadStatistics
-      peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics();
+      logInfo( "shutdownSharedMemoryConfiguration()", "wrote statistics into file " << _parser.getMulticorePropertiesFile() );
+      peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics(_parser.getMulticorePropertiesFile());
       break;
   }
 #endif

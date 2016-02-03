@@ -144,7 +144,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::loadStatistic
 }
 
 
-void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::plotStatistics() const {
+void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::plotStatistics(const std::string& filename) const {
   if (_currentMeasurement.getNumberOfMeasurements()>0 || !_oracleIsSearching) {
     if (_biggestProblemSize < _currentGrainSize && _oracleIsSearching) {
       logInfo(

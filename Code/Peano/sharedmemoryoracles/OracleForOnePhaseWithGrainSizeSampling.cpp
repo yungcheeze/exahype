@@ -81,7 +81,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::loadStatistics
 }
 
 
-void sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::plotStatistics() const {
+void sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::plotStatistics(const std::string& filename) const {
   for (ExecutionTimeSamplingDatabase::const_iterator p=_executionTimes.begin(); p!=_executionTimes.end(); p++) {
     logInfo(
       "plotStatistics",

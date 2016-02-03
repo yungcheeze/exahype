@@ -12,12 +12,14 @@ public class DirectoryAndPathChecker extends DepthFirstAdapter {
   protected java.io.File multiscalelinkedcellPath;
   protected java.io.File exahypePath;
   protected java.io.File outputDirectory;
+  protected java.io.File sharedMemoryOraclesPath;
 
   @Override
   public void inAPaths(APaths node) {
 	peanoPath                = new java.io.File(node.getPeanoPath().getText());
 	tarchPath                = new java.io.File(node.getTarchPath().getText());
 	multiscalelinkedcellPath = new java.io.File(node.getMultiscalelinkedcellPath().getText());
+	sharedMemoryOraclesPath  = new java.io.File(node.getSharedmemoryoraclesPath().getText());
 	exahypePath              = new java.io.File(node.getExahypePath().getText());
 	outputDirectory          = new java.io.File(node.getOutputDirectory().getText());
 
@@ -47,6 +49,16 @@ public class DirectoryAndPathChecker extends DepthFirstAdapter {
 	  System.out.println( " ... not found" );
 	  valid = false;
 	}
+	
+    System.out.print ("sharedmemoryoracles (Peano toolbox) path: " + sharedMemoryOraclesPath.getAbsolutePath() );
+    if ( multiscalelinkedcellPath.isDirectory() ) {
+      System.out.println( " ... ok" );
+    }
+    else {
+      System.out.println( " ... not found" );
+      valid = false;
+    }
+	
   };
   
   
