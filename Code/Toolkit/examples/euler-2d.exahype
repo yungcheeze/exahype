@@ -28,16 +28,18 @@ exahype-project  Euler2d
     variables = 5
     order     = 3
     kernel    = user::fluxes
-    
+
+/*    
     plot vtk::binary
       time     = 0.0
       repeat   = 0.02
       filename = ./solution
     end plot
+    */
   end solver
 
   shared-memory
-    identifier               = autotuning
+    identifier               = sampling
     cores                    = 4
     properties-file          = sharedmemory.properties
   end shared-memory  
