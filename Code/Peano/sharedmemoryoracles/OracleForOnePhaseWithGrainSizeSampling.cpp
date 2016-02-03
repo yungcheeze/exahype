@@ -4,6 +4,7 @@
 
 #include <cstdlib>
 #include <math.h>
+#include <fstream>
 
 
 tarch::logging::Log  sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::_log( "sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling" );
@@ -82,19 +83,45 @@ void sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::loadStatistics
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::plotStatistics(const std::string& filename) const {
-  for (ExecutionTimeSamplingDatabase::const_iterator p=_executionTimes.begin(); p!=_executionTimes.end(); p++) {
-    logInfo(
-      "plotStatistics",
-      "runtimes for (" << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter, method " <<
-      peano::datatraversal::autotuning::toString(_methodTrace) <<
-      ", problem size " << p->first << ") [" << _numberOfSamples << " grain size(s) studied]:"
-    );
-    for (
-      ExecutionTimeDatabase::const_iterator measurements = p->second.begin();
-      measurements != p->second.end();
-      measurements++
-    ) {
-      logInfo( "plotStatistics", "  grain-size: " << measurements->first << "; runtime: " << measurements->second.toString());
+  if (filename.empty()) {
+    for (ExecutionTimeSamplingDatabase::const_iterator p=_executionTimes.begin(); p!=_executionTimes.end(); p++) {
+      logInfo(
+        "plotStatistics",
+        "runtimes for (" << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter, method " <<
+        peano::datatraversal::autotuning::toString(_methodTrace) <<
+        ", problem size " << p->first << ") [" << _numberOfSamples << " grain size(s) studied]:"
+      );
+      for (
+        ExecutionTimeDatabase::const_iterator measurements = p->second.begin();
+        measurements != p->second.end();
+        measurements++
+      ) {
+        logInfo( "plotStatistics", "  grain-size: " << measurements->first << "; runtime: " << measurements->second.toString());
+      }
+    }
+  }
+  else {
+    std::ofstream f(filename.c_str(),std::ios::out );
+    if (f.is_open()) {
+      f << "Grain size file" << std::endl;
+      for (ExecutionTimeSamplingDatabase::const_iterator p=_executionTimes.begin(); p!=_executionTimes.end(); p++) {
+        f << "runtimes for (" << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter, method " <<
+           peano::datatraversal::autotuning::toString(_methodTrace) <<
+            ", problem size " << p->first << ") [" << _numberOfSamples << " grain size(s) studied]:" <<
+            std::endl;
+        for (
+          ExecutionTimeDatabase::const_iterator measurements = p->second.begin();
+          measurements != p->second.end();
+          measurements++
+        ) {
+          f << "  grain-size: " << measurements->first << "; runtime: " << measurements->second.toString() << std::endl;
+        }
+      }
+      f.flush();
+      f.close();
+    }
+    else {
+      logError("plotStatistics", "could not write into " << filename);
     }
   }
 }
