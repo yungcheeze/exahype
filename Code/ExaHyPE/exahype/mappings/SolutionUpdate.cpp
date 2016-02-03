@@ -372,16 +372,21 @@ void exahype::mappings::SolutionUpdate::enterCell(
     double * luhOld = &(DataHeap::getInstance().getData(p->getSolution())[0]._persistentRecords._u);
     double * lduh   = &(DataHeap::getInstance().getData(p->getUpdate())  [0]._persistentRecords._u);
 
+    assertion1WithExplanation(_localState.getOldMaxTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size is not initialised correctly!");
+
     solver->solutionUpdate(
         luhOld,
         lduh,
         fineGridVerticesEnumerator.getCellSize(),
-        _localState.getMaxTimeStepSize()
+        _localState.getOldMaxTimeStepSize()
     );
 
-    const double newTimeStamp = p->getTimeStamp() + _localState.getMaxTimeStepSize();
-    p->setTimeStamp( newTimeStamp );
-    _localState.updateTimeStamp( newTimeStamp );
+    // @todo Dominic Etienne Charrier
+    // Analyse side effects
+    // I have doubts that this works.
+//    const double newTimeStamp = p->getTimeStamp() + _localState.getMaxTimeStepSize();
+//    p->setTimeStamp( newTimeStamp );
+//    _localState.updateTimeStamp( newTimeStamp );
   }
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );

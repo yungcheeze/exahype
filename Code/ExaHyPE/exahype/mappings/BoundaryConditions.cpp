@@ -432,7 +432,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
           Fhbnd,
           Qhbnd,
           Qhbnd,
-          _localState.getMaxTimeStepSize(),
+          _localState.getOldMaxTimeStepSize(),
           normalNonZero);
     }
   }
@@ -449,7 +449,7 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
 ) {
   logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
 
-  assertion1WithExplanation(_localState.getMaxTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size is not initialised correctly!");
+  assertion1WithExplanation(_localState.getOldMaxTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size is not initialised correctly!");
 
   tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
   // todo: DEC: Reverse engineered indices from

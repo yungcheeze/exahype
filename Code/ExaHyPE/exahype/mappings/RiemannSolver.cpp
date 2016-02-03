@@ -370,7 +370,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
 
   for (
       int p = 0;
-      p < cellDescriptionsL.size();
+      p < static_cast<int>(cellDescriptionsL.size());
       p++
   ) {
     exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ cellDescriptionsL[p].getSolverNumber() ];
@@ -403,7 +403,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
           FR,
           QL,
           QR,
-          _localState.getMaxTimeStepSize(),
+          _localState.getOldMaxTimeStepSize(),
           normalNonZero
       );
     }
@@ -425,7 +425,7 @@ void exahype::mappings::RiemannSolver::touchVertexLastTime(
   // Delegate to solver-specific code fragments
 
   //
-  assertion1WithExplanation(_localState.getMaxTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size was not initialised correctly!");
+  assertion1WithExplanation(_localState.getOldMaxTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size was not initialised correctly!");
 
   tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
   logDebug("touchVertexLastTime(...)","cell descriptions around vertex. "

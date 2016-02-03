@@ -409,6 +409,11 @@ void exahype::mappings::GlobalTimeStepComputation::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
+  // todo Dominic Etienne Charrier
+  // Changed code here.
+
+  solverState.startNewTimeStep();          // swap time step sizes
+  solverState.resetAccumulatedValues();    // set new time step size to max value
   _localState = solverState;
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
