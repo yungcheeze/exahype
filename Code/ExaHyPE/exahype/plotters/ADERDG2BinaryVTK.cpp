@@ -5,7 +5,9 @@ int exahype::plotters::ADERDG2BinaryVTK::FileCounter(0);
 
 exahype::plotters::ADERDG2BinaryVTK::ADERDG2BinaryVTK(const std::string& filename, int order, int unknowns):
   _filename(filename),
-  _order(order) {
+  _order(order),
+  _unknowns(unknowns)
+  {
   _patchWriter = new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
     new tarch::plotter::griddata::unstructured::vtk::VTKBinaryFileWriter()
   );
@@ -76,10 +78,9 @@ void exahype::plotters::ADERDG2BinaryVTK::plotPatch(
       p!=_vertexDataWriter.end();
       p++
     ) {
-      (*p)->plotVertex(vertexIndex,u[unknown]);
+      (*p)->plotVertex(vertexIndex,u[i*_unknowns + unknown]);
       unknown++;
     }
-
     vertexIndex++;
   }
 }

@@ -23,6 +23,7 @@ class exahype::plotters::ADERDG2AsciiVTK: public exahype::plotters::Plotter::Dev
 
     const std::string _filename;
     const int         _order;
+    const int         _unknowns;
 
     tarch::plotter::griddata::blockstructured::PatchWriterUnstructured*           _patchWriter;
     tarch::plotter::griddata::blockstructured::PatchWriter::SinglePatchWriter*    _gridWriter;

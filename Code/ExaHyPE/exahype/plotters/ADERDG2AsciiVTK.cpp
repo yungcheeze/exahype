@@ -5,7 +5,9 @@ int exahype::plotters::ADERDG2AsciiVTK::FileCounter(0);
 
 exahype::plotters::ADERDG2AsciiVTK::ADERDG2AsciiVTK(const std::string& filename, int order, int unknowns):
   _filename(filename),
-  _order(order) {
+  _order(order),
+  _unknowns(unknowns)
+{
   _patchWriter = new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
     new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter()
   );
@@ -76,7 +78,7 @@ void exahype::plotters::ADERDG2AsciiVTK::plotPatch(
       p!=_vertexDataWriter.end();
       p++
     ) {
-      (*p)->plotVertex(vertexIndex,u[unknown]);
+      (*p)->plotVertex(vertexIndex,u[i*_unknowns + unknown]);
       unknown++;
     }
 
