@@ -58,7 +58,7 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
           new sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling(
               10,
-              true, // useThreadPipelining,
+              false, // useThreadPipelining,
               true  // logarithmicDistribution
           )
       );
