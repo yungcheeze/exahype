@@ -14,9 +14,9 @@ int Euler2d::MyEulerSolver::getMinimumTreeDepth() const {
   return 3;
 }
 
-#define GAMMA 1.4
-
 void Euler2d::MyEulerSolver::flux(const double* const Q, double* f, double* g) {
+  const double GAMMA = 1.4;
+  
   const double irho = 1.0/Q[0];
   const double p = (GAMMA-1)*( Q[4] - 0.5* (Q[1]*Q[1] + Q[2]*Q[2]) * irho );
 
@@ -35,29 +35,32 @@ void Euler2d::MyEulerSolver::flux(const double* const Q, double* f, double* g) {
 
 
 void Euler2d::MyEulerSolver::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
+  const double GAMMA = 1.4;
+  
   double irho = 1.0/Q[0];
   double p    = (GAMMA-1)*( Q[4] - 0.5* (Q[1]*Q[1] + Q[2]*Q[2]) * irho );
 
   double u_n = Q[normalNonZeroIndex+1] * irho;
-
   double c = std::sqrt(GAMMA * p * irho);
 
   lambda[0] = u_n-c;
-
   lambda[1] = u_n;
   lambda[2] = u_n;
   lambda[3] = u_n;
-
   lambda[4] = u_n+c;
 }
 
 
 void Euler2d::MyEulerSolver::initialValues(const double* const x, double* Q) {
+  const double GAMMA = 1.4;
+  
   Q[0] = 1.;
   Q[1] = 0.;
   Q[2] = 0.;
   Q[3] = 0.;
-  Q[4] = 1./(GAMMA-1) + std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5))/(0.05*0.05)) * 1.0e-3;
+  Q[4] = 1./(GAMMA-1) + std::exp(
+         -((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5))/(0.05*0.05)
+         ) * 1.0e-3;
 }
 
 
