@@ -45,13 +45,16 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
 
   switch (_parser.getMulticoreOracleType()) {
     case Parser::Dummy:
+      logInfo( "initSharedMemoryConfiguration()", "use dummy shared memory oracle" );
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
           new peano::datatraversal::autotuning::OracleForOnePhaseDummy(true)
       );
       break;
     case Parser::Autotuning:
+      logInfo( "initSharedMemoryConfiguration()", "use autotuning shared memory oracle" );
       break;
     case Parser::GrainSizeSampling:
+      logInfo( "initSharedMemoryConfiguration()", "use shared memory oracle sampling" );
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
           new sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling(
               10,
@@ -73,6 +76,7 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
     case Parser::Autotuning:
       break;
     case Parser::GrainSizeSampling:
+      logInfo( "shutdownSharedMemoryConfiguration()", "wrote statistics into file " << _parser.getMulticorePropertiesFile() );
       peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics(_parser.getMulticorePropertiesFile());
       break;
   }

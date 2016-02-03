@@ -169,13 +169,13 @@ std::string exahype::Parser::getMulticorePropertiesFile() const {
 exahype::Parser::MulticoreOracleType exahype::Parser::getMulticoreOracleType() const {
   std::string token =  getTokenAfter("shared-memory","identifier");
   exahype::Parser::MulticoreOracleType result = Dummy;
-  if ( token.compare( "dummy") ) {
+  if ( token.compare( "dummy")==0 ) {
     result = Dummy;
   }
-  else if ( token.compare( "autotuning") ) {
+  else if ( token.compare( "autotuning")==0 ) {
     result = Autotuning;
   }
-  else if ( token.compare( "sampling") ) {
+  else if ( token.compare( "sampling")==0 ) {
     result = GrainSizeSampling;
   }
   else {
