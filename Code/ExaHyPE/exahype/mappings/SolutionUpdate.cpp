@@ -77,11 +77,8 @@ exahype::mappings::SolutionUpdate::~SolutionUpdate() {
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::SolutionUpdate::SolutionUpdate(const SolutionUpdate&  masterThread)
-:
-              _localState()
-{
-  _localState.setOldTimeStepSize(masterThread.getState().getOldTimeStepSize());
+exahype::mappings::SolutionUpdate::SolutionUpdate(const SolutionUpdate&  masterThread):
+  _localState( masterThread._localState ) {
 }
 
 

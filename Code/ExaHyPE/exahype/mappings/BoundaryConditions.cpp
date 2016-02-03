@@ -78,12 +78,8 @@ exahype::mappings::BoundaryConditions::~BoundaryConditions() {
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::BoundaryConditions::BoundaryConditions(const BoundaryConditions&  masterThread) {
-  logTraceIn( "RiemannSolver(RiemannSolver)" );
-
-  _localState.setOldTimeStepSize(masterThread.getState().getOldTimeStepSize());
-
-  logTraceOut( "RiemannSolver(RiemannSolver)" );
+exahype::mappings::BoundaryConditions::BoundaryConditions(const BoundaryConditions&  masterThread):
+  _localState( masterThread._localState ) {
 }
 
 

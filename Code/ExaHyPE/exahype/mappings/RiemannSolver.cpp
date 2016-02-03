@@ -76,12 +76,8 @@ exahype::mappings::RiemannSolver::~RiemannSolver() {
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::RiemannSolver::RiemannSolver(const RiemannSolver&  masterThread) {
-  logTraceIn( "RiemannSolver(RiemannSolver)" );
-
-  _localState.setOldTimeStepSize(masterThread.getState().getOldTimeStepSize());
-
-  logTraceOut( "RiemannSolver(RiemannSolver)" );
+exahype::mappings::RiemannSolver::RiemannSolver(const RiemannSolver&  masterThread):
+  _localState( masterThread._localState ) {
 }
 
 

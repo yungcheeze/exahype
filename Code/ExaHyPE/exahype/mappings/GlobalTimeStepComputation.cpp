@@ -81,8 +81,7 @@ exahype::mappings::GlobalTimeStepComputation::~GlobalTimeStepComputation() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const GlobalTimeStepComputation&  masterThread):
-      _localState(masterThread._localState)
-{
+  _localState(masterThread._localState) {
   _localState.resetAccumulatedValues();
 }
 
@@ -90,8 +89,7 @@ exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const Gl
 void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(const GlobalTimeStepComputation& workerThread) {
   logTraceIn( "mergeWithWorkerThread(GlobalTimeStepComputation)" );
 
-  solverState.merge(_localState);
-  _localState.setMinimumTimeStepSizeOfBoth(workerThread.getState());
+  _localState.merge(workerThread._localState);
 
   logTraceOut( "mergeWithWorkerThread(GlobalTimeStepComputation)" );
 }
