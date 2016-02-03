@@ -129,6 +129,7 @@ files.mk:
 	find -H $(PEANO_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
 	find -H $(TARCH_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
 	find -H $(MULTISCALELINKEDCELL_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
+	find -H $(SHAREDMEMORYORACLES_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
 	find -H $(EXAHYPE_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
 	find -H $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
 
