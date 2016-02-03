@@ -108,20 +108,20 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
 	  System.out.println("\n\n\n\n");
       System.out.print ("please change into directory " + _directoryAndPathChecker.outputDirectory.getAbsolutePath() + " and type make \n");
       System.out.print ("ensure that you set all environment variables before:\n");
-      System.out.print ("  export CC=gcc  \t\tSelect GNU compiler\n");
-      System.out.print ("  export CC=Intel\t\tSelect Intel compiler (default)\n");
+      System.out.print ("  export CC=gcc  \t\t\tSelect GNU compiler\n");
+      System.out.print ("  export CC=Intel\t\t\tSelect Intel compiler (default)\n");
       System.out.print ("\n");
-      System.out.print ("  export MODE=Debug\t\tBuild debug version of code\n");
-      System.out.print ("  export MODE=Asserts\t\tBuild release version of code that is augmented with assertions\n");
-      System.out.print ("  export MODE=Profile\t\tBuild release version of code that produces profiling information\n");
-      System.out.print ("  export MODE=Release\t\tBuild release version of code (default)\n");
+      System.out.print ("  export MODE=Debug\t\t\tBuild debug version of code\n");
+      System.out.print ("  export MODE=Asserts\t\t\tBuild release version of code that is augmented with assertions\n");
+      System.out.print ("  export MODE=Profile\t\t\tBuild release version of code that produces profiling information\n");
+      System.out.print ("  export MODE=Release\t\t\tBuild release version of code (default)\n");
       System.out.print ("\n");
-      System.out.print ("  export SHAREDMEM=TBB\t\tUse Intel's Threading Building Blocks (TBB) for shared memory parallelisation\n");
-      System.out.print ("  export SHAREDMEM=OMP\t\tUse OpenMP for shared memory parallelisation\n");
-      System.out.print ("  export SHAREDMEM=\t\tDo not use shared memory (default if not indicated otherwise by \"shared memory ...\" message above)\n");
+      System.out.print ("  export SHAREDMEM=TBB\t\t\tUse Intel's Threading Building Blocks (TBB) for shared memory parallelisation\n");
+      System.out.print ("  export SHAREDMEM=OMP\t\t\tUse OpenMP for shared memory parallelisation\n");
+      System.out.print ("  export SHAREDMEM=\t\t\tDo not use shared memory (default if not indicated otherwise by \"shared memory ...\" message above)\n");
       System.out.print ("\n");
-      System.out.print ("  export TBB_INC=...\t\tIndicate where to find TBB headers (only required if SHAREDMEM=TBB)\n");
-      System.out.print ("  export TBB_SHLIB=...\t\tIndicate where to find TBB's shared libraries (only required if SHAREDMEM=TBB)\n");
+      System.out.print ("  export TBB_INC=-I...\t\t\tIndicate where to find TBB headers (only required if SHAREDMEM=TBB). Please add -I (Linux) prefix to path\n");
+      System.out.print ("  export TBB_SHLIB=\"-L... -ltbb\"\tIndicate where to find TBB's shared libraries (only required if SHAREDMEM=TBB). Variable has to comprise both search path and library name\n");
 
       _writer.close();
 	} 
