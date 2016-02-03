@@ -116,7 +116,7 @@ std::string exahype::Parser::getTokenAfter( std::string token0, int occurance0, 
 
 
 
-int exahype::Parser::getNumberOfThreads() {
+int exahype::Parser::getNumberOfThreads() const {
   assertion( isValid() );
   std::string token = getTokenAfter("shared-memory","cores");
   logDebug( "getNumberOfThreads()", "found token " << token );

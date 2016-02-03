@@ -36,10 +36,10 @@ exahype::runners::Runner::~Runner() {
 
 void exahype::runners::Runner::initSharedMemoryConfiguration() {
 #ifdef SharedMemoryParallelisation
-  const int numberOfThreads = parser.getNumberOfThreads();
+  const int numberOfThreads = _parser.getNumberOfThreads();
   tarch::multicore::Core::getInstance().configure(numberOfThreads);
 
-  ifstream f(_parser.getMulticorePropertiesFile().c_str());
+  std::ifstream f(_parser.getMulticorePropertiesFile().c_str());
   bool multicorePropertiesFileDoesExist = f.good();
   f.close();
 
@@ -73,8 +73,7 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
     case Parser::Autotuning:
       break;
     case Parser::GrainSizeSampling:
-      // @todo Das muss aber jetzt in das File gehen und oben brauchen wir ein loadStatistics
-      peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics();
+      peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics(_parser.getMulticorePropertiesFile());
       break;
   }
 #endif

@@ -44,7 +44,7 @@ class exahype::Parser {
     /**
      * @return How many threads is the code supposed to use?
      */
-    int getNumberOfThreads();
+    int getNumberOfThreads() const;
 
     /**
      * Our domain always is cubic.
