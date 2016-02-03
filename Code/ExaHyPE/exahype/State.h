@@ -75,13 +75,15 @@ class exahype::State: public peano::grid::State< exahype::records::State > {
     State(const Base::PersistentState& argument);
 
     /**
-      * Required for the explicit DG method
+      * Additional methods for ExaHyPE.
       **/
     ///@{
     /*
      * Set the time step size of this state. It is the minimum of the
      * current time step size and the argument.
      */
+    // todo Dominic Etienne Charrier
+    // setMinTimeStepSizeOfBoth
     void updateMaxTimeStepSize(const double timeStepSize);
 
     void updateTimeStamp(const double timeStamp);
@@ -100,11 +102,25 @@ class exahype::State: public peano::grid::State< exahype::records::State > {
     void startNewTimeStep();
 
     /*
-     * This operation always returns the field old time step size, as the field
+     * This operation returns the field max time step size.
+     *
+     * todo Dominic Etienne Charrier
+     * Introduce better names for the time step sizes.
+     * Note that I changed the definition of this method.
+     *
+     * Previous definition of the method:
+     * "This operation always returns the field old time step size, as the field
      * maxTimeStepSize is actually used to determine the new/upcoming max time
-     * step size through global reduction.
+     * step size through global reduction."
      */
     double getMaxTimeStepSize() const;
+
+    /*
+     * Returns the old max time step size.
+     * todo Dominic Etienne Charrier
+     * * Introduce better names for the time step sizes.
+     */
+    double getOldMaxTimeStepSize() const;
 
     /*
      * Set the minimum time step size of this state and another state as the time

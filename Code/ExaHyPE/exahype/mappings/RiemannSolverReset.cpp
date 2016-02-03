@@ -364,8 +364,6 @@ void exahype::mappings::RiemannSolverReset::enterCell(
       p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
       p++
     ) {
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
-
     std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed;
     p->setRiemannSolvePerformed(riemannSolvePerformed);
 

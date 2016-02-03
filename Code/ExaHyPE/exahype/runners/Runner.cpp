@@ -137,16 +137,33 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    * Apply the initial conditions.
    * Then, compute the the initial current time step size.
    */
+  repository.getState().updateTimeStamp(0.0);
   repository.switchToInitialConditionAndGlobalTimeStepComputation();
   repository.iterate();
+
+  logInfo(
+    "runAsMaster(...)",
+    "\t t_min     ="  << repository.getState().getMinimalGlobalTimeStamp() <<
+    "\t dt_max    =" << repository.getState().getMaxTimeStepSize() <<
+    "\t dt_max_old=" << repository.getState().getOldMaxTimeStepSize()
+  );
 
   /*
    * Compute current first predictor based on current time step size.
    * Set current time step size as old time step size of next iteration.
    * Compute the current time step size of the next iteration.
    */
+  // todo Dominic Etienne Charrier
+  // I changed code here
   repository.switchToPredictorAndGlobalTimeStepComputation();
   repository.iterate();
+
+  logInfo(
+    "runAsMaster(...)",
+    "\t t_min     ="  << repository.getState().getMinimalGlobalTimeStamp() <<
+    "\t dt_max    =" << repository.getState().getMaxTimeStepSize() <<
+    "\t dt_max_old=" << repository.getState().getOldMaxTimeStepSize()
+  );
 
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n=1;
@@ -159,8 +176,9 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       logInfo( "runAsMaster(...)", "all snapshots written" );
     }
 
-    repository.getState().startNewTimeStep();
-
+    // todo Dominic Etienne Charrier
+    // Swap of time steps has to be performed by adapter
+    // since it already computes the new time step size.
     if ( _parser.fuseAlgorithmicSteps() ) {
       runOneTimeStampWithFusedAlgorithmicSteps(repository);
     }
@@ -171,9 +189,11 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     logInfo(
       "runAsMaster(...)",
       "step " << n <<
-      "\t t_min="  << repository.getState().getMinimalGlobalTimeStamp() <<
-      "\t dt_max=" << repository.getState().getMaxTimeStepSize()
+      "\t t_min     ="  << repository.getState().getMinimalGlobalTimeStamp() <<
+      "\t dt_max    =" << repository.getState().getMaxTimeStepSize() <<
+      "\t dt_max_old=" << repository.getState().getOldMaxTimeStepSize()
     );
+
     n++;
     #if defined(Debug) || defined(Asserts)
     logInfo( "runAsMaster(...)", "state=" << repository.getState().toString() );
