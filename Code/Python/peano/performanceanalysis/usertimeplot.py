@@ -53,8 +53,9 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
     '''
     n_root_dir       = len(root_dir)
     
-    colors  = ['b', 'r']
-    markers = ['s','^']
+    colors           = ['k','k','k','k','k','k']
+    markerfacecolors = ['None','None','None','k','k','k']
+    markers          = ['o','s','^','o','s','^']
     
     n_process_counts = len(process_counts)
     n_thread_counts  = len(thread_counts)
@@ -94,7 +95,7 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
         speedup_measured = speedup_measured[0];
     
         # Measured speedup
-        sp.plot_scaling(ax,p,speedup_measured,legend[i],colors[i],markers[i],hyperthreading,annotate)
+        sp.plot_scaling(ax,p,speedup_measured,legend[i],colors[i],markers[i],markerfacecolors[i],hyperthreading,annotate)
 
     plt.ylabel(r'speedup', fontsize=12)    
     plt.xlabel(r'number of cores', fontsize=12)
@@ -138,20 +139,20 @@ Sample usage:\n
 python usertimeplot.py -path \'examples/151217_phi1_node\' -prefix \'151217\' -legend \'2x Xeon  5-2650 @ 2.00GHz\' -mode tbb -cc icpc -ylim 16 -per_iteration -adapter \'Predictor+Corrector\' -t 1 2 4 6 8 10 12 16 32 -hyperthreading'''
 
 parser = argparse.ArgumentParser(description=help,formatter_class=RawTextHelpFormatter)
-parser.add_argument('-path',nargs='+',required=True,help='Directories containing the Peano output files. The times read from the file in the first specified directory corresponding to the smallest thread count are considered as reference values.')
-parser.add_argument('-prefix',default=[''],nargs='+',required=True,help='Prefix of the files - usually the date of the test and an identifier for the machine and the MPI process that has written the output files. Must be supplied once per \'root_dir\' entry.')
-parser.add_argument('-legend',nargs='+',required=True,help='Legend entry for the each data set - usually an identifier for the machine and the MPI process that has written the output files. Must be supplied once per \'root_dir\' entry.')
-parser.add_argument('-adapter',default=['Total'],nargs='+',help='Name of the adapters separated by a '+'. (Use \'Total\' for the  cumulative time of all specified adapters. Does not make sense with \'per_iteration\' switched on.)')
-parser.add_argument('-n',default=[1],nargs='+',help='MPI process counts [default=1].')
-parser.add_argument('-t',default=[1],nargs='+',required=True,help='Threads per MPI process [default=1].')
-parser.add_argument('-r',default=1,help='Number of runs for all \'n\' and \'t\' combinations [default=1].')
-parser.add_argument('-cc',default='icpc',nargs='+',help='Compiler [default=\'icpc\']')
-parser.add_argument('-mode',default='tbb',nargs='+',help='Shared memory mode [default=\'tbb\']')
-parser.add_argument('-ylim',required=True,help='Upper limit for the y-Axis.')
-parser.add_argument('-hyperthreading', action='store_true', default=False,help='The last thread count corresponds to a hyperthreading run.')
-parser.add_argument('-annotate', action='store_true', default=False,help='Annotate the plots with the speedup values.')
-parser.add_argument('-per_iteration', action='store_true', default=False,help='Use the adapter times per iteration instead of the total times.')
-parser.add_argument('-create_pdf', action='store_true', default=False,help='Creates a PDF plot in the working directory.')
+parser.add_argument('-path',nargs='+',required=True,help="Directories containing the Peano output files. The times read from the file in the first specified directory corresponding to the smallest thread count are considered as reference values.")
+parser.add_argument('-prefix',default=[''],nargs='+',required=True,help="Prefix of the files - usually the date of the test and an identifier for the machine and the MPI process that has written the output files. Must be supplied once per \'root_dir\' entry.")
+parser.add_argument('-legend',nargs='+',required=True,help="Legend entry for the each data set - usually an identifier for the machine and the MPI process that has written the output files. Must be supplied once per \'root_dir\' entry.")
+parser.add_argument('-adapter',default=['Total'],nargs='+',help="Name of the adapters separated by a \'+\'. (Use \'Total\' for the  cumulative time of all specified adapters. Does not make sense with \'per_iteration\' switched on.)")
+parser.add_argument('-n',default=[1],nargs='+',help="MPI process counts [default=1].")
+parser.add_argument('-t',default=[1],nargs='+',required=True,help="Threads per MPI process [default=1].")
+parser.add_argument('-r',default=1,help="Number of runs for all \'n\' and \'t\' combinations [default=1].")
+parser.add_argument('-cc',default='icpc',nargs='+',help="Compiler [default=\'icpc\']")
+parser.add_argument('-mode',default='tbb',nargs='+',help="Shared memory mode [default=\'tbb\']")
+parser.add_argument('-ylim',required=True,help="Upper limit for the y-Axis.")
+parser.add_argument('-hyperthreading', action='store_true', default=False,help="The last thread count corresponds to a hyperthreading run.")
+parser.add_argument('-annotate', action='store_true', default=False,help="Annotate the plots with the speedup values.")
+parser.add_argument('-per_iteration', action='store_true', default=False,help="Use the adapter times per iteration instead of the total times.")
+parser.add_argument('-create_pdf', action='store_true', default=False,help="Creates a PDF plot in the working directory.")
 
 args           = parser.parse_args();
 
