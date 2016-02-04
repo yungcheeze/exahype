@@ -57,6 +57,9 @@ double kernels::aderdg::generic::stableTimeStepSize(
   return dt;
 }
 
+// todo remove
+#include "tarch/tests/TestMacros.h"
+
 // todo change template parameter in header and generator
 // template <void PDEFlux2d(const double * const Q, double * f, double * g)>
 template <void PDEEigenvalues(const double * const Q,const int normalNonZero,double * lambda)>
@@ -117,6 +120,13 @@ void kernels::aderdg::generic::riemannSolver(
       FR[dofStartIndex+ivar] = FL[dofStartIndex+ivar];
     }
   }
+
+//  // @todo 04/02/16:Dominic Etienne Charrier
+//  // for debugging purposes
+//  int _errors = 0;
+//  bool _error = false;
+//  std::cout << "sMax" << sMax << std::endl;
+//  validateNumericalEqualsWithEps(sMax, 1.18321595661992, 1e-10);
 }
 
 template <void PDEInitialValues(const double* const x,double* Q)>
