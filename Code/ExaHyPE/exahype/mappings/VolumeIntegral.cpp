@@ -371,11 +371,16 @@ void exahype::mappings::VolumeIntegral::enterCell(
     double * lduh = &(DataHeap::getInstance().getData(p->getUpdate())    [0]._persistentRecords._u);
     double * lFhi = &(DataHeap::getInstance().getData(p->getVolumeFlux())[0]._persistentRecords._u);
 
+    logDebug("enterCell(...)::debug::before::lduh[0]",lduh[0]);
+    logDebug("enterCell(...)::debug::before::lFhi[0]",lFhi[0]);
+
     solver->volumeIntegral(
         lduh,
         lFhi,
         fineGridVerticesEnumerator.getCellSize()
     );
+
+    logDebug("enterCell(...)::debug::after::lduh[0]",lduh[0]);
   }
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );

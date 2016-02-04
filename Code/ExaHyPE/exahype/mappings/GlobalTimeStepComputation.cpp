@@ -384,6 +384,8 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
         fineGridVerticesEnumerator.getCellSize()
     );
 
+    logDebug("endIteration(...)::dt_adm",admissibleTimeStepSize);
+
     _localState.updateMaxTimeStepSize(admissibleTimeStepSize);
   }
 
@@ -424,6 +426,9 @@ void exahype::mappings::GlobalTimeStepComputation::endIteration(
     exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "endIteration(State)", solverState );
+
+  logDebug("endIteration(...)::dt_max::solverState",_localState.getMaxTimeStepSize());
+  logDebug("endIteration(...)::dt_max::localState",_localState.getMaxTimeStepSize());
 
   solverState.merge(_localState);
 

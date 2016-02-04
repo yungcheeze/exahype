@@ -369,21 +369,27 @@ void exahype::mappings::SolutionUpdate::enterCell(
   ) {
     exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
 
-    double * luhOld = &(DataHeap::getInstance().getData(p->getSolution())[0]._persistentRecords._u);
-    double * lduh   = &(DataHeap::getInstance().getData(p->getUpdate())  [0]._persistentRecords._u);
+    double * luh  = &(DataHeap::getInstance().getData(p->getSolution())[0]._persistentRecords._u);
+    double * lduh = &(DataHeap::getInstance().getData(p->getUpdate())  [0]._persistentRecords._u);
 
     assertion1WithExplanation(_localState.getOldMaxTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size is not initialised correctly!");
 
+    logDebug("enterCell(...)::debug::dt_max_old",_localState.getMaxTimeStepSize());
+    logDebug("enterCell(...)::debug::before::luh[0]",luh[0]);
+    logDebug("enterCell(...)::debug::before::lduh[0]",lduh[0]);
+
     solver->solutionUpdate(
-        luhOld,
+        luh,
         lduh,
         fineGridVerticesEnumerator.getCellSize(),
         _localState.getOldMaxTimeStepSize()
     );
 
-    // @todo Dominic Etienne Charrier
-    // Analyse side effects
-    // I have doubts that this works.
+    logDebug("enterCell(...)::debug::after::luh[0]",luh[0]);
+    logDebug("enterCell(...)::debug::after::lduh[0]",lduh[0]);
+
+    // todo 03/02/16:Dominic Etienne Charrier
+    // Xommented out
 //    const double newTimeStamp = p->getTimeStamp() + _localState.getMaxTimeStepSize();
 //    p->setTimeStamp( newTimeStamp );
 //    _localState.updateTimeStamp( newTimeStamp );
@@ -420,7 +426,9 @@ void exahype::mappings::SolutionUpdate::beginIteration(
 void exahype::mappings::SolutionUpdate::endIteration(
     exahype::State&  solverState
 ) {
-  solverState.merge(_localState);
+  // todo 03/02/16:Dominic Etienne Charrier
+  // Commented line out
+  // solverState.merge(_localState);
 }
 
 

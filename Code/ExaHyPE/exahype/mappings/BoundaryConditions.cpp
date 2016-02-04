@@ -417,7 +417,10 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
     // The resulting Riemann problems are then simply solved
     // by exahype::mappings::RiemannSolver.
     if (riemannSolveNotPerformed) {
-      const int numberOfFaceDof = tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
+      // @todo 03/02/16:Dominic Etienne Charrier
+      // Fixed bug
+      // There was a solver->getNumberOfVariables() missing below:
+      const int numberOfFaceDof = solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
 
       double * Qhbnd = &(DataHeap::getInstance().getData(p->getExtrapolatedPredictor())[faceIndex * numberOfFaceDof]._persistentRecords._u);
       double * Fhbnd = &(DataHeap::getInstance().getData(p->getFluctuation())          [faceIndex * numberOfFaceDof]._persistentRecords._u);
@@ -427,6 +430,10 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       // Invoke user defined boundary condition function
       // At the moment, we simply copy the cell solution to the boundary.
 
+      logDebug("touchVertexLastTime(...)::debug::before::dt_max*",_localState.getOldMaxTimeStepSize());
+      logDebug("touchVertexLastTime(...)::debug::before::Qhbnd[0]*",Qhbnd[0]);
+      logDebug("touchVertexLastTime(...)::debug::before::Fhbnd[0]",Fhbnd[0]);
+
       solver->riemannSolver(
           Fhbnd,
           Fhbnd,
@@ -434,6 +441,9 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
           Qhbnd,
           _localState.getOldMaxTimeStepSize(),
           normalNonZero);
+
+      logDebug("touchVertexLastTime(...)::debug::after::Qhbnd[0]*",Qhbnd[0]);
+      logDebug("touchVertexLastTime(...)::debug::after::Fhbnd[0]",Fhbnd[0]);
     }
   }
 }

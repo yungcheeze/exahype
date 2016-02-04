@@ -399,6 +399,15 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
       fineGridVerticesEnumerator.getCellSize(),
       _localState.getMaxTimeStepSize()
     );
+
+    logDebug("enterCell(...)::debug::after::dt_max",_localState.getMaxTimeStepSize());
+    logDebug("enterCell(...)::debug::after::luh[0]",luh[0]);
+    logDebug("enterCell(...)::debug::after::lQi[0]",lQi[0]);
+    logDebug("enterCell(...)::debug::after::lFi[0]",lFi[0]);
+    logDebug("enterCell(...)::debug::after::lQhi[0]",lQhi[0]);
+    logDebug("enterCell(...)::debug::after::lFhi[0]",lFhi[0]);
+    logDebug("enterCell(...)::debug::after::lQhbnd[0]",lQhbnd[0]);
+    logDebug("enterCell(...)::debug::after::lFhbnd[0]",lFhbnd[0]);
   }
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
