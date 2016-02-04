@@ -171,8 +171,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   int n=1;
 
   while (
-    n<2000
-    &&
     (repository.getState().getMinimalGlobalTimeStamp()<simulationEndTime)
     &&
     tarch::la::greater(repository.getState().getMaxTimeStepSize(), 0.0)
