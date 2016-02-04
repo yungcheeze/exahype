@@ -196,7 +196,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 	  
 	  if (_dimensions==2) {
         writer.write("    virtual void spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ); \n");
-        writer.write("    virtual void solutionUpdate(double* luh, const double* const lduh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt);\n");
+        writer.write("    virtual void solutionUpdate(double* luh, const double* const lduh, const double dt);\n");
         writer.write("    virtual void volumeIntegral(double* lduh, const double* const lFhi, const tarch::la::Vector<DIMENSIONS,double>& dx);\n" );
         writer.write("    virtual void surfaceIntegral(double* lduh, const double* const lFhbnd, const tarch::la::Vector<DIMENSIONS,double>& dx);\n" );
         writer.write("    virtual void riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex);\n" );
@@ -274,8 +274,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     writer.write("   kernels::aderdg::generic::spaceTimePredictor<flux>( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
-    writer.write( "void " + _projectName + "::" + solverName + "::solutionUpdate(double* luh, const double* const lduh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt) {\n");
-    writer.write("   kernels::aderdg::generic::solutionUpdate( luh, lduh,dx, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write( "void " + _projectName + "::" + solverName + "::solutionUpdate(double* luh, const double* const lduh, const double dt) {\n");
+    writer.write("   kernels::aderdg::generic::solutionUpdate( luh, lduh, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write( "void " + _projectName + "::" + solverName + "::volumeIntegral(double* lduh, const double* const lFhi, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
@@ -316,7 +316,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     writer.write("   // @todo Vasco/Angelika;\n");
     writer.write("}\n");
     writer.write("\n\n\n");
-    writer.write( "void " + _projectName + "::" + solverName + "::solutionUpdate(double* luh, const double* const lduh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt) {\n");
+    writer.write( "void " + _projectName + "::" + solverName + "::solutionUpdate(double* luh, const double* const lduh, const double dt) {\n");
     writer.write("   // @todo Vasco/Angelika;\n");
   writer.write("}\n");
   writer.write("\n\n\n");
@@ -397,7 +397,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       writer.write("  // @todo Please implement\n");
       writer.write("}\n");
       writer.write("\n\n\n");
-      writer.write("void " + _projectName + "::" + solverName + "::solutionUpdate(double* luh, const double* const lduh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt) {\n");
+      writer.write("void " + _projectName + "::" + solverName + "::solutionUpdate(double* luh, const double* const lduh, const double dt) {\n");
       writer.write("  // @todo Please implement\n");
       writer.write("}\n");
       writer.write("\n\n\n");

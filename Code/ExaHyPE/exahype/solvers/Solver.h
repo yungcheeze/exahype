@@ -103,13 +103,11 @@ public:
    *
    * @param[inout] luh  Cell-local solution DoF.
    * @param[in]    lduh Cell-local update DoF.
-   * @param[in]    dx   Extent of the cell in each coordinate direction.
    * @param[dt]    dt   Time step size.
    */
   virtual void solutionUpdate(
       double * luh,
       const double * const lduh,
-      const tarch::la::Vector<DIMENSIONS,double>& dx,
       const double dt
   ) = 0;
 

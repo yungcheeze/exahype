@@ -11,7 +11,6 @@
 
 void kernels::aderdg::generic::solutionUpdate(double * luh,
                                               const double * const lduh,
-                                              const tarch::la::Vector<DIMENSIONS,double>&  dx,/*superfluous argument*/
                                               const double dt,
                                               const int numberOfVariables,
                                               const int basisSize) {

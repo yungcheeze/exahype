@@ -34,7 +34,6 @@ namespace kernels {
       void solutionUpdate(
           double* luh,
           const double* const lduh,
-          const tarch::la::Vector<DIMENSIONS,double>&  dx,
           const double dt,
           const int numberOfVariables,
           const int basisSize

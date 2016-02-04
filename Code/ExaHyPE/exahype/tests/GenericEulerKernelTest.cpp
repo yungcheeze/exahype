@@ -213,7 +213,7 @@ void exahype::tests::GenericEulerKernelTest::testSolutionUpdate2d() {
 
   // Angelika's old code.
   // dg::updateSolution<2>(luh,lduh,dt);
-  kernels::aderdg::generic::solutionUpdate( luh, lduh, 0.0, dt,
+  kernels::aderdg::generic::solutionUpdate( luh, lduh, dt,
                                             5,   //getNumberOfVariables(),
                                             4   // getNodesPerCoordinateAxis()
   );
