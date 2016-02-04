@@ -59,6 +59,17 @@ int main(int argc, char** argv) {
     return -2;
   }
 
+  // @todo 04/02/16:Dominic Etienne Charrier
+  // initGauss.. and initDG.. must be called before
+  // we can run any kernel tests.
+  //
+  //   Init registries and lookup tables
+  // =====================================
+  //
+  kernels::initSolvers(parser);
+  kernels::initGaussLegendreNodesAndWeights();
+  kernels::initDGMatrices();
+
   //
   //   Run tests
   // =============
@@ -82,14 +93,6 @@ int main(int argc, char** argv) {
     return -2;
   }
   #endif
-
-  //
-  //   Run code
-  // ============
-  //
-  kernels::initSolvers(parser);
-  kernels::initGaussLegendreNodesAndWeights();
-  kernels::initDGMatrices();
 
   exahype::runners::Runner runner(parser);
   int programExitCode = runner.run();

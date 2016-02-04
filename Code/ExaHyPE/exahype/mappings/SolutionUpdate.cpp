@@ -381,7 +381,6 @@ void exahype::mappings::SolutionUpdate::enterCell(
     solver->solutionUpdate(
         luh,
         lduh,
-        fineGridVerticesEnumerator.getCellSize(),
         _localState.getOldMaxTimeStepSize()
     );
 
