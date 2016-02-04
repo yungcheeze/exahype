@@ -15,8 +15,8 @@ void Euler2d::MyEulerSolver::spaceTimePredictor( double* lQi, double* lFi, doubl
 
 
 
-void Euler2d::MyEulerSolver::solutionUpdate(double* luh, const double* const lduh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt) {
-   kernels::aderdg::generic::solutionUpdate( luh, lduh,dx, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );
+void Euler2d::MyEulerSolver::solutionUpdate(double* luh, const double* const lduh, const double dt) {
+   kernels::aderdg::generic::solutionUpdate( luh, lduh, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );
 }
 
 

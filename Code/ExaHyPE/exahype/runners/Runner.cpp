@@ -143,6 +143,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
   logInfo(
     "runAsMaster(...)",
+    "step " << -1 <<
     "\t t_min     ="  << repository.getState().getMinimalGlobalTimeStamp() <<
     "\t dt_max    =" << repository.getState().getMaxTimeStepSize() <<
     "\t dt_max_old=" << repository.getState().getOldMaxTimeStepSize()
@@ -160,6 +161,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
   logInfo(
     "runAsMaster(...)",
+    "step " << 0 <<
     "\t t_min     ="  << repository.getState().getMinimalGlobalTimeStamp() <<
     "\t dt_max    =" << repository.getState().getMaxTimeStepSize() <<
     "\t dt_max_old=" << repository.getState().getOldMaxTimeStepSize()
@@ -169,7 +171,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   int n=1;
 
   while (
-    n<10
+    n<2000
     &&
     (repository.getState().getMinimalGlobalTimeStamp()<simulationEndTime)
     &&

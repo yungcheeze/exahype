@@ -21,7 +21,7 @@ class Euler2d::MyEulerSolver: public exahype::solvers::Solver {
     MyEulerSolver(int kernelNumber); 
     virtual int getMinimumTreeDepth() const;
     virtual void spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ); 
-    virtual void solutionUpdate(double* luh, const double* const lduh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt);
+    virtual void solutionUpdate(double* luh, const double* const lduh, const double dt);
     virtual void volumeIntegral(double* lduh, const double* const lFhi, const tarch::la::Vector<DIMENSIONS,double>& dx);
     virtual void surfaceIntegral(double* lduh, const double* const lFhbnd, const tarch::la::Vector<DIMENSIONS,double>& dx);
     virtual void riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex);
