@@ -77,7 +77,7 @@ exahype::mappings::RiemannSolver::~RiemannSolver() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::RiemannSolver::RiemannSolver(const RiemannSolver&  masterThread):
-  _localState( masterThread._localState ) {
+      _localState( masterThread._localState ) {
 }
 
 
@@ -380,8 +380,8 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       // Lock the critical multithreading area.
       tarch::multicore::Lock lock(_semaphore);
       riemannSolveNotPerformed = !cellDescriptionsL[p].getRiemannSolvePerformed(faceL)
-                                                               &&
-                                                               !cellDescriptionsR[p].getRiemannSolvePerformed(faceR);
+                                 &&
+                                 !cellDescriptionsR[p].getRiemannSolvePerformed(faceR);
 
       if(riemannSolveNotPerformed==true) {
         cellDescriptionsL[p].setRiemannSolvePerformed(faceL,true);
@@ -389,7 +389,11 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       }
     } // Unlock the critical multithreading area by letting lock go out of scope.
 
-    const int numberOfFaceDof = tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
+
+    // @todo 03/02/16:Dominic Etienne Charrier
+    // Fixed bug
+    // There was a solver->getNumberOfVariables() missing below:
+    const int numberOfFaceDof = solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
 
     if (riemannSolveNotPerformed) {
       double * QL = &(DataHeap::getInstance().getData(cellDescriptionsL[p].getExtrapolatedPredictor())[faceL * numberOfFaceDof]._persistentRecords._u);
@@ -397,6 +401,12 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
 
       double * FL = &(DataHeap::getInstance().getData(cellDescriptionsL[p].getFluctuation())[faceL * numberOfFaceDof]._persistentRecords._u);
       double * FR = &(DataHeap::getInstance().getData(cellDescriptionsR[p].getFluctuation())[faceR * numberOfFaceDof]._persistentRecords._u);
+
+      logDebug("touchVertexLastTime(...)::debug::before::dt_max*",_localState.getOldMaxTimeStepSize());
+      logDebug("touchVertexLastTime(...)::debug::before::QL[0]*",QL[0]);
+      logDebug("touchVertexLastTime(...)::debug::before::QR[0]*",QR[0]);
+      logDebug("touchVertexLastTime(...)::debug::before::FL[0]",FL[0]);
+      logDebug("touchVertexLastTime(...)::debug::before::FR[0]",FR[0]);
 
       solver->riemannSolver(
           FL,
@@ -406,6 +416,11 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
           _localState.getOldMaxTimeStepSize(),
           normalNonZero
       );
+
+      logDebug("touchVertexLastTime(...)::debug::after::QL[0]*",QL[0]);
+      logDebug("touchVertexLastTime(...)::debug::after::QR[0]*",QR[0]);
+      logDebug("touchVertexLastTime(...)::debug::after::FL[0]",FL[0]);
+      logDebug("touchVertexLastTime(...)::debug::after::FR[0]",FR[0]);
     }
   }
 }

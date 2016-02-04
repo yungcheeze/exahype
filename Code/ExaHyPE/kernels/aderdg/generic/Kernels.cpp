@@ -22,7 +22,7 @@ void kernels::aderdg::generic::solutionUpdate(double * luh,
       const int nodeIndex     = jj + basisSize * ii;
       const int dofStartIndex = nodeIndex * numberOfVariables;
 
-      double weight =  kernels::gaussLegendreWeights[order][ii] * kernels::gaussLegendreWeights[order][jj];
+      const double weight     =  kernels::gaussLegendreWeights[order][ii] * kernels::gaussLegendreWeights[order][jj];
       const double updateSize = dt/weight;
 
       for(int ivar=0; ivar < numberOfVariables; ivar++) {
@@ -43,7 +43,7 @@ void kernels::aderdg::generic::volumeIntegral(
   // Please remove the typedefs in generic kernels again since numberOf(...)Dof is not
   // a compile time variable anymore
   constexpr int numberOfDof = 5 * (3+1)*(3+1); //tarch::la::aPowI(3+1,DIMENSIONS);
-  constexpr int order       = 3+1-1;
+  constexpr int order       = 3;
 
   // memory layout of lFhi:
   // lFhi = [ lFhi_x | lFhi_y ] ordered as follows
@@ -112,11 +112,14 @@ void kernels::aderdg::generic::surfaceIntegral(
     const int numberOfVariables,
     const int basisSize
 ){
-  // todo Angelika
+  // @todo Angelika
   // Please remove the typedefs in generic kernels again since numberOf(...)Dof is not
   // a compile time variable anymore
-  constexpr int numberOfFaceDof = (3+1);//tarch::la::aPowI(DIMENSIONS-1,3+1);
-  constexpr int order       = 3+1-1;
+
+  // @todo 03/02/16:Dominic Etienne Charrier
+  // Fixed bug: Number of variables was missing
+  constexpr int numberOfFaceDof = 5 * (3+1);//numberOfVariables * tarch::la::aPowI(DIMENSIONS-1,basisSize);
+  constexpr int order           = 3;
 
   const double * FLeft  = &(lFhbnd[EXAHYPE_FACE_LEFT  * numberOfFaceDof]);
   const double * FRight = &(lFhbnd[EXAHYPE_FACE_RIGHT * numberOfFaceDof]);

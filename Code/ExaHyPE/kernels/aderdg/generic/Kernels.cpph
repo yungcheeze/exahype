@@ -168,8 +168,28 @@ void kernels::aderdg::generic::spaceTimePredictor(
   // helper variables
   const int order = basisSize-1;
 
-  constexpr int numberOfSpaceTimeDof  = 5 * (3+1)*(3+1)*(3+1);//tarch::la::aPowI(DIMENSIONS+1,3+1);
-  constexpr int numberOfDof           = 5 * (3+1)*(3+1);//tarch::la::aPowI(DIMENSIONS,3+1);
+// UNCOMMENT FOR DEBUGGING PURPOSES
+//  lQi[0] = 1;
+//  lFi[0] = 2;
+//  lQhi[0] = 3;
+//  lFhi[0] = 4;
+//
+//  constexpr int numberOfFaceDof = 5 * (3+1);
+//
+//  lQhbnd[EXAHYPE_FACE_LEFT*numberOfFaceDof] = 11;
+//  lFhbnd[EXAHYPE_FACE_LEFT*numberOfFaceDof] = 21;
+//
+//  lQhbnd[EXAHYPE_FACE_RIGHT*numberOfFaceDof] = 12;
+//  lFhbnd[EXAHYPE_FACE_RIGHT*numberOfFaceDof] = 22;
+//
+//  lQhbnd[EXAHYPE_FACE_FRONT*numberOfFaceDof] = 13;
+//  lFhbnd[EXAHYPE_FACE_FRONT*numberOfFaceDof] = 23;
+//
+//  lQhbnd[EXAHYPE_FACE_BACK*numberOfFaceDof] = 14;
+//  lFhbnd[EXAHYPE_FACE_BACK*numberOfFaceDof] = 24;
+
+  constexpr int numberOfSpaceTimeDof  = 5 * (3+1)*(3+1)*(3+1);//numberOfVariables * tarch::la::aPowI(DIMENSIONS+1,basisSize);
+  constexpr int numberOfDof           = 5 * (3+1)*(3+1);//numberOfVariables * tarch::la::aPowI(DIMENSIONS,basisSize);
 
   double* rhs0 = new double[numberOfSpaceTimeDof];
   double* rhs  = new double[numberOfSpaceTimeDof];
@@ -222,8 +242,8 @@ void kernels::aderdg::generic::spaceTimePredictor(
           const int spaceTimeDofStartIndex     = spaceTimeNodeIndex * numberOfVariables;
           const int spaceTimeFluxDofStartIndex = spaceTimeDofStartIndex * DIMENSIONS;
 
-          Q = &lQi[spaceTimeDofStartIndex        ];
-          f = &lFi[spaceTimeFluxDofStartIndex     ];
+          Q = &lQi[spaceTimeDofStartIndex                      ];
+          f = &lFi[spaceTimeFluxDofStartIndex                  ];
           g = &lFi[spaceTimeFluxDofStartIndex+numberOfVariables];
           PDEFlux2d(Q,f,g);
         }
@@ -337,8 +357,7 @@ void kernels::aderdg::generic::spaceTimePredictor(
   // Post processing of the predictor:
   // Immediately compute the time-averaged space-time polynomials
   /////////////////////////////////////////////////
-  //int numberOfDof      = numberOfVariables * tarch::la::aPowI(DIMENSIONS,basisSize);
-  const int numberOfFluxDof  = numberOfDof * DIMENSIONS;
+  const int numberOfFluxDof = numberOfDof * DIMENSIONS;
 
   memset((double *) lQhi,0,sizeof(double) * numberOfDof);
   memset((double *) lFhi,0,sizeof(double) * numberOfFluxDof);
@@ -375,10 +394,14 @@ void kernels::aderdg::generic::spaceTimePredictor(
   /////////////////////////////////////////////////
   // Compute the bounday-extrapolated values for Q and F*n
   /////////////////////////////////////////////////
-  const int numberOfFaceDof = numberOfVariables * tarch::la::aPowI(basisSize, DIMENSIONS-1); // tarch::la::aPowI(DIMENSIONS-1,basisSize);
+  const int numberOfFaceDof = 5 * (3+1); // tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
-  memset((double *) &lQhbnd[0],0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
-  memset((double *) &lFhbnd[0],0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
+
+  // @todo 03/02/16:Dominic Etienne Charrier
+  // Changed this memset call
+  // Before: memset((double*) &(lQhbnd[0]),0,...
+  memset((double*) lQhbnd,0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
+  memset((double*) lFhbnd,0,sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
 
   // x-direction: face 0 (left) and face 1 (right)
   for (int jj=0; jj<basisSize; jj++) {
