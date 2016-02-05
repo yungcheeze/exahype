@@ -11,7 +11,7 @@ Euler2d::MyEulerSolver::MyEulerSolver( int kernelNumber):
 
 int Euler2d::MyEulerSolver::getMinimumTreeDepth() const {
   // @todo Please implement
-  return 3;
+  return 4;
 }
 void Euler2d::MyEulerSolver::flux(const double* const Q, double* f, double* g) {
   // @todo Please implement
