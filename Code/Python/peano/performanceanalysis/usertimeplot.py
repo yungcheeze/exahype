@@ -55,7 +55,7 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
     
     colors           = ['k','k','k','k','k','k']
     markerfacecolors = ['None','None','None','k','k','k']
-    markers          = ['o','s','^','o','s','^']
+    markers          = ['o','^','s','o','^','s']
     
     n_process_counts = len(process_counts)
     n_thread_counts  = len(thread_counts)
