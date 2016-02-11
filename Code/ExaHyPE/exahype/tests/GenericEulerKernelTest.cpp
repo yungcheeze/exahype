@@ -414,9 +414,15 @@ void exahype::tests::GenericEulerKernelTest::testSurfaceIntegral2d() {
 
   // Angelika's original code
   //    dg::surfaceIntegral(lduh, dx, FLeft, FRight, FFront, FBack);
-  kernels::aderdg::generic::surfaceIntegral( lduh, lFhbnd, dx[0],
-                                             5,   //getNumberOfVariables(),
-                                             4   // getNodesPerCoordinateAxis()
+
+//    kernels::aderdg::generic::surfaceIntegral( lduh, lFhbnd, dx[0],
+//                                               5,   //getNumberOfVariables(),
+//                                               4   // getNodesPerCoordinateAxis()
+//    );
+
+  kernels::aderdg::generic::surfaceIntegral2( lduh, lFhbnd, dx[0],
+                                              5,   //getNumberOfVariables(),
+                                              4   // getNodesPerCoordinateAxis()
   );
 
   validateNumericalEqualsWithEps(lduh[0],3.40976703141e-17, eps);
@@ -838,10 +844,28 @@ void exahype::tests::GenericEulerKernelTest::testSpaceTimePredictor2d() {
   // Original aus Angelikas Code
   //dg::spaceTimePredictor<2>(lQi, lFi, luh, lQhi, lFhi, lQhbnd, lFhbnd, rhs0, rhs, tmp, dx, timeStepSize);
 
+  // todo 10/02/16:Dominic Etienne Charrier
+  // REMOVED
+  /*
   kernels::aderdg::generic::spaceTimePredictor<testFlux>( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx[0], timeStepSize,
                                                           5, // getNumberOfVariables(),
                                                           4  // getNodesPerCoordinateAxis()
   );
+  */
+  // ADDED
+  kernels::aderdg::generic::spaceTimePredictor<testFlux>( lQi, lFi, luh, dx[0], timeStepSize,
+                                                          5, // getNumberOfVariables(),
+                                                          4  // getNodesPerCoordinateAxis()
+  );
+  kernels::aderdg::generic::predictor( lQhi, lFhi, lQi, lFi, timeStepSize,
+                                                          5, // getNumberOfVariables(),
+                                                          4  // getNodesPerCoordinateAxis()
+  );
+  kernels::aderdg::generic::extrapolatedPredictor( lQhbnd, lFhbnd, lQhi, lFhi, timeStepSize,
+                                                          5, // getNumberOfVariables(),
+                                                          4  // getNodesPerCoordinateAxis()
+  );
+
 
   //validateNumericalEquals(<return vector>, <referencesolution>);
   validateNumericalEqualsWithEps(lQhi[0], 1, eps);
