@@ -68,16 +68,18 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
     p2      = p
     p_ticks = map(str,p)
     
+    p_ideal = [x / p[0] for x in p]
+    
     # Ideal speedup
     # In the hyper-threading case, we only want to plot a line
     # for the 'real' threads.
     if not hyperthreading: 
-        plt.plot(p,p,label=r'ideal',markersize=4,marker='',markevery=1,lw=1.2,linestyle='dashed',color='grey')
+        plt.plot(p,p_ideal,label=r'ideal',markersize=4,marker='',markevery=1,lw=1.2,linestyle='dashed',color='grey')
     else:
         p2        = p[0:-1] # [inclusive:exclusive]
         p2.append(p2[-1]+2)
         p_ticks[-1] = '%d+HT' % p[-2]
-        plt.plot(p[0:-1],p[0:-1],label=r'ideal',markersize=4,marker='',markevery=1,lw=1.2,linestyle='dashed',color='grey')
+        plt.plot(p[0:-1],p_ideal[0:-1],label=r'ideal',markersize=4,marker='',markevery=1,lw=1.2,linestyle='dashed',color='grey')
     
     t_ref = 0
     
@@ -103,7 +105,7 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
 
     ax.set_xlim(0.8,p2[-1]+0.2)
     plt.xticks(p2,p_ticks)
-    plt.yticks(p,map(str,p))
+    plt.yticks(p_ideal,map(str,p_ideal))
     ax.set_ylim(0.8,ylim+0.2)
 
     plt.suptitle('',fontsize=12)
