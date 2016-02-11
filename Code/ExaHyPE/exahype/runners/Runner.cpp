@@ -26,7 +26,7 @@ tarch::logging::Log  exahype::runners::Runner::_log( "exahype::runners::Runner" 
 
 
 exahype::runners::Runner::Runner(const Parser& parser):
-  _parser(parser) {
+      _parser(parser) {
 }
 
 
@@ -91,16 +91,16 @@ int exahype::runners::Runner::run() {
   logInfo("run(...)", "create computational domain at " << _parser.getOffset() << " of width/size " << _parser.getSize() );
 
   peano::geometry::Hexahedron geometry(
-    _parser.getSize(),
-    tarch::la::Vector<DIMENSIONS,double>( _parser.getOffset() )
+      _parser.getSize(),
+      tarch::la::Vector<DIMENSIONS,double>( _parser.getOffset() )
   );
 
   exahype::repositories::Repository* repository = 
-    exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
-      geometry,
-      tarch::la::Vector<DIMENSIONS,double>( _parser.getSize() ),
-      tarch::la::Vector<DIMENSIONS,double>( _parser.getOffset() )
-    );
+      exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
+          geometry,
+          tarch::la::Vector<DIMENSIONS,double>( _parser.getSize() ),
+          tarch::la::Vector<DIMENSIONS,double>( _parser.getOffset() )
+      );
 
   int result = 0;
   if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
@@ -141,13 +141,15 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.switchToInitialConditionAndGlobalTimeStepComputation();
   repository.iterate();
 
+#if defined(Debug) || defined(Asserts)
   logInfo(
-    "runAsMaster(...)",
-    "step " << -1 <<
-    "\t t_min     ="  << repository.getState().getMinimalGlobalTimeStamp() <<
-    "\t dt_max    =" << repository.getState().getMaxTimeStepSize() <<
-    "\t dt_max_old=" << repository.getState().getOldMaxTimeStepSize()
+      "runAsMaster(...)",
+      "step " << -1 <<
+      "\t t_min     ="  << repository.getState().getMinimalGlobalTimeStamp() <<
+      "\t dt_max    =" << repository.getState().getMaxTimeStepSize() <<
+      "\t dt_max_old=" << repository.getState().getOldMaxTimeStepSize()
   );
+#endif
 
   /*
    * Compute current first predictor based on current time step size.
@@ -159,21 +161,23 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.switchToPredictorAndGlobalTimeStepComputation();
   repository.iterate();
 
+#if defined(Debug) || defined(Asserts)
   logInfo(
-    "runAsMaster(...)",
-    "step " << 0 <<
-    "\t t_min     ="  << repository.getState().getMinimalGlobalTimeStamp() <<
-    "\t dt_max    =" << repository.getState().getMaxTimeStepSize() <<
-    "\t dt_max_old=" << repository.getState().getOldMaxTimeStepSize()
+      "runAsMaster(...)",
+      "step " << 0 <<
+      "\t t_min     ="  << repository.getState().getMinimalGlobalTimeStamp() <<
+      "\t dt_max    =" << repository.getState().getMaxTimeStepSize() <<
+      "\t dt_max_old=" << repository.getState().getOldMaxTimeStepSize()
   );
+#endif
 
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n=1;
 
   while (
-    (repository.getState().getMinimalGlobalTimeStamp()<simulationEndTime)
-    &&
-    tarch::la::greater(repository.getState().getMaxTimeStepSize(), 0.0)
+      (repository.getState().getMinimalGlobalTimeStamp()<simulationEndTime)
+      &&
+      tarch::la::greater(repository.getState().getMaxTimeStepSize(), 0.0)
   ) {
     if (exahype::plotters::isAPlotterActive(repository.getState().getMinimalGlobalTimeStamp())) {
       repository.switchToPlot();
@@ -192,18 +196,20 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       runOneTimeStampWithFourSeparateAlgorithmicSteps(repository);
     }
 
+#if defined(Debug) || defined(Asserts)
     logInfo(
-      "runAsMaster(...)",
-      "step " << n <<
-      "\t t_min     ="  << repository.getState().getMinimalGlobalTimeStamp() <<
-      "\t dt_max    =" << repository.getState().getMaxTimeStepSize() <<
-      "\t dt_max_old=" << repository.getState().getOldMaxTimeStepSize()
+        "runAsMaster(...)",
+        "step " << n <<
+        "\t t_min     ="  << repository.getState().getMinimalGlobalTimeStamp() <<
+        "\t dt_max    =" << repository.getState().getMaxTimeStepSize() <<
+        "\t dt_max_old=" << repository.getState().getOldMaxTimeStepSize()
     );
+#endif
 
     n++;
-    #if defined(Debug) || defined(Asserts)
+#if defined(Debug) || defined(Asserts)
     logInfo( "runAsMaster(...)", "state=" << repository.getState().toString() );
-    #endif
+#endif
   }
 
   repository.logIterationStatistics();
