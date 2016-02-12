@@ -1,4 +1,4 @@
-#include "exahype/tests/GenericEulerKernelTest.h"
+#include "exahype/tests/kernels/GenericEulerKernelTest.h"
 
 
 #include "tarch/compiler/CompilerSpecificSettings.h"
