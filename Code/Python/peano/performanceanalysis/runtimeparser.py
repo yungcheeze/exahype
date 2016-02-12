@@ -56,10 +56,11 @@ def parse_all_adapter_times(rootdir,prefix,process_counts,thread_counts,n_runs=1
     result = { }
     for n in range(n_process_counts):
         for t in range(n_thread_counts):
+            _mode = mode
+            if int(thread_counts[t])==1:
+                _mode = 'none'
+            
             for r in range(n_runs):
-                _mode = mode
-                if thread_counts[t]==0:
-                    _mode = 'none'
                 file_path = '%s/%s_n%s_t%s_r%d_%s_%s.txt' % (rootdir,prefix,str(process_counts[n]),str(thread_counts[t]),r+1,cc,_mode)
                 result_r = parse_adapter_times(file_path,per_iteration)
                 
