@@ -112,6 +112,10 @@ void exahype::solvers::Solve::setPredictorTimeStepSize (double predictorTimeStep
   _predictorTimeStepSize = predictorTimeStepSize;
 }
 
+double exahype::solvers::Solve::getNextPredictorTimeStepSize() const {
+  return _nextPredictorTimeStepSize;
+}
+
 void exahype::solvers::Solve::updateNextPredictorTimeStepSize(const double& nextPredictorTimeStepSize) {
   _nextPredictorTimeStepSize = std::min( _nextPredictorTimeStepSize, nextPredictorTimeStepSize );
 }
@@ -128,9 +132,9 @@ void exahype::solvers::Solve::startNewTimeStep() {
 
 void exahype::solvers::Solve::merge(const exahype::solvers::Solve& otherSolve) {
 #if defined(Debug) || defined(Asserts)
-  assertionMsg(otherSolve._solverNumber         != _solverNumber   ,"Solver numbers must be the same!");
-  assertionMsg(otherSolve._timeStepping         != _timeStepping    ,"Time stepping mode must be the same!");
-  assertionMsg(otherSolve._correctorTimeLagging != _correctorTimeLagging,"Time step size selection must be the same!");
+  assertionMsg(otherSolve._solverNumber         == _solverNumber        ,"Solver numbers must be the same!");
+  assertionMsg(otherSolve._timeStepping         == _timeStepping        ,"Time stepping mode must be the same!");
+  assertionMsg(otherSolve._correctorTimeLagging == _correctorTimeLagging,"Time step size selection must be the same!");
 #endif
 //  _parentSolve               = otherSolve._parentSolve;
 //  _type                      = otherSolve._type;

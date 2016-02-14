@@ -116,8 +116,8 @@ void exahype::tests::solvers::SolveTest::testSolve() {
       true  // active
   );
 
-  otherSolve.setCorrectorTimeStepSize(0.1);
-  otherSolve.setCorrectorTimeStamp(0.2);
+  otherSolve.setCorrectorTimeStamp(0.1);
+  otherSolve.setCorrectorTimeStepSize(0.2);
 
   otherSolve.setPredictorTimeStamp(0.3);
   otherSolve.setPredictorTimeStepSize(0.4);
@@ -128,13 +128,13 @@ void exahype::tests::solvers::SolveTest::testSolve() {
 
   // check properties of solve again
   validate(solve.isActive()==false);
-  validateNumericalEqualsWithEps(solveCopy.getCorrectorTimeStepSize()    ,0.1,1e-10);
-  validateNumericalEqualsWithEps(solveCopy.getCorrectorTimeStamp()       ,0.2,1e-10);
+  validateNumericalEqualsWithEps(solve.getCorrectorTimeStamp()       ,0.1,1e-10);
+  validateNumericalEqualsWithEps(solve.getCorrectorTimeStepSize()    ,0.2,1e-10);
 
-  validateNumericalEqualsWithEps(solveCopy.getPredictorTimeStepSize()    ,0.3,1e-10);
-  validateNumericalEqualsWithEps(solveCopy.getPredictorTimeStamp()       ,0.4,1e-10);
+  validateNumericalEqualsWithEps(solve.getPredictorTimeStamp()       ,0.3,1e-10);
+  validateNumericalEqualsWithEps(solve.getPredictorTimeStepSize()    ,0.4,1e-10);
 
-  validateNumericalEqualsWithEps(solveCopy.getNextPredictorTimeStepSize(),0.5,1e-10);
+  validateNumericalEqualsWithEps(solve.getNextPredictorTimeStepSize(),0.5,1e-10);
 }
 
 #ifdef UseTestSpecificCompilerSettings
