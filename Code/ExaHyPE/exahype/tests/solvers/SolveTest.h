@@ -29,7 +29,8 @@ namespace exahype {
 class exahype::tests::solvers::SolveTest: public tarch::tests::TestCase {
   private:
     /**
-     * These operation usually implement the real tests.
+     * Tests the properties of a Solve
+     * under various conditions.
      */
     void testSolve();
 

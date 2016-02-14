@@ -1,6 +1,8 @@
 //$<EXAHYPE_SOURCE_FILE_COPYRIGHT_NOTE>$
 #include "exahype/solvers/Solve.h"
 
+#include "tarch/Assertions.h"
+
 #include <limits>
 
 exahype::solvers::Solve::Solve (
@@ -12,33 +14,33 @@ exahype::solvers::Solve::Solve (
     bool active
 ):
   _solverNumber    (solverNumber),
-  _parentSolve     (parentSolve),
   _timeStepping    (timeStepping),
-  _sameTimeStepSize(sameTimeStepSize)
+  _correctorTimeLagging(sameTimeStepSize)
 {
+  _parentSolve               = parentSolve;
   _active                    = active;
   _type                      = type;
-  _predictorMinTimeStamp     = std::numeric_limits<double>::max();
-  _correctorMinTimeStamp     = std::numeric_limits<double>::max();
+  _predictorTimeStamp        = std::numeric_limits<double>::max();
+  _correctorTimeStamp        = std::numeric_limits<double>::max();
   _correctorTimeStepSize     = std::numeric_limits<double>::max();
   _predictorTimeStepSize     = std::numeric_limits<double>::max();
   _nextPredictorTimeStepSize = std::numeric_limits<double>::max();
 }
 
-exahype::solvers::Solve::Solve (const exahype::solvers::Solve& anotherSolve):
-  _solverNumber    (anotherSolve._solverNumber),
-  _timeStepping    (anotherSolve._timeStepping),
-  _sameTimeStepSize(anotherSolve._sameTimeStepSize)
+exahype::solvers::Solve::Solve (const exahype::solvers::Solve& otherSolve):
+  _solverNumber    (otherSolve._solverNumber),
+  _timeStepping    (otherSolve._timeStepping),
+  _correctorTimeLagging(otherSolve._correctorTimeLagging)
 {
-  _parentSolve               = anotherSolve._parentSolve;
-  _active                    = anotherSolve._active;
-  _type                      = anotherSolve._type;
-  _timeStepping              = anotherSolve._timeStepping;
-  _correctorMinTimeStamp     = anotherSolve._correctorMinTimeStamp;
-  _correctorTimeStepSize     = anotherSolve._correctorTimeStepSize;
-  _predictorMinTimeStamp     = anotherSolve._predictorMinTimeStamp;
-  _predictorTimeStepSize     = anotherSolve._predictorTimeStepSize;
-  _nextPredictorTimeStepSize = anotherSolve._nextPredictorTimeStepSize;
+  _parentSolve               = otherSolve._parentSolve;
+  _active                    = otherSolve._active;
+  _type                      = otherSolve._type;
+  _timeStepping              = otherSolve._timeStepping;
+  _correctorTimeStamp        = otherSolve._correctorTimeStamp;
+  _correctorTimeStepSize     = otherSolve._correctorTimeStepSize;
+  _predictorTimeStamp        = otherSolve._predictorTimeStamp;
+  _predictorTimeStepSize     = otherSolve._predictorTimeStepSize;
+  _nextPredictorTimeStepSize = otherSolve._nextPredictorTimeStepSize;
 }
 
 const int exahype::solvers::Solve::getSolverNumber () const {
@@ -73,39 +75,41 @@ exahype::solvers::Solve::TimeStepping exahype::solvers::Solve::getTimeStepping()
   return _timeStepping;
 }
 
-bool exahype::solvers::Solve::isSameTimeStepSize() const {
-  return _sameTimeStepSize;
+bool exahype::solvers::Solve::isCorrectorTimeLagging() const {
+  return _correctorTimeLagging;
 }
 
-double exahype::solvers::Solve::getPredictorMinTimeStamp () const {
-  return _predictorMinTimeStamp;
+double exahype::solvers::Solve::getPredictorTimeStamp () const {
+  return _predictorTimeStamp;
 }
 
-void exahype::solvers::Solve::setPredictorMinTimeStamp (
-    double predictorMinTimeStamp) {
-  _predictorMinTimeStamp = predictorMinTimeStamp;
+void exahype::solvers::Solve::setPredictorTimeStamp (
+    double predictorTimeStamp) {
+  _predictorTimeStamp = predictorTimeStamp;
 }
 
-double exahype::solvers::Solve::getCorrectorMinTimeStamp () const {
-  if (_sameTimeStepSize)
-    return _predictorMinTimeStamp;
-
-  return _correctorMinTimeStamp;
+double exahype::solvers::Solve::getCorrectorTimeStamp () const {
+    return _correctorTimeStamp;
 }
 
-void exahype::solvers::Solve::setCorrectorMinTimeStamp (double correctorMinTimeStamp) {
-  _correctorMinTimeStamp = correctorMinTimeStamp;
+void exahype::solvers::Solve::setCorrectorTimeStamp (double correctorTimeStamp) {
+  _correctorTimeStamp = correctorTimeStamp;
 }
 
 double exahype::solvers::Solve::getCorrectorTimeStepSize() const {
-  if (_sameTimeStepSize)
-    return _predictorTimeStepSize;
+    return _correctorTimeStepSize;
+}
 
-  return _correctorTimeStepSize;
+void exahype::solvers::Solve::setCorrectorTimeStepSize (double correctorTimeStepSize) {
+  _correctorTimeStepSize = correctorTimeStepSize;
 }
 
 double exahype::solvers::Solve::getPredictorTimeStepSize() const {
   return _predictorTimeStepSize;
+}
+
+void exahype::solvers::Solve::setPredictorTimeStepSize (double predictorTimeStepSize) {
+  _predictorTimeStepSize = predictorTimeStepSize;
 }
 
 void exahype::solvers::Solve::updateNextPredictorTimeStepSize(const double& nextPredictorTimeStepSize) {
@@ -113,11 +117,27 @@ void exahype::solvers::Solve::updateNextPredictorTimeStepSize(const double& next
 }
 
 void exahype::solvers::Solve::startNewTimeStep() {
-  _correctorMinTimeStamp     = _predictorMinTimeStamp;
+  _correctorTimeStamp        = _predictorTimeStamp;
   _correctorTimeStepSize     = _predictorTimeStepSize;
 
   _predictorTimeStepSize     = _nextPredictorTimeStepSize;
-  _predictorMinTimeStamp     = _predictorMinTimeStamp+_nextPredictorTimeStepSize;
+  _predictorTimeStamp        = _predictorTimeStamp+_nextPredictorTimeStepSize;
 
   _nextPredictorTimeStepSize = std::numeric_limits<double>::max();
+}
+
+void exahype::solvers::Solve::merge(const exahype::solvers::Solve& otherSolve) {
+#if defined(Debug) || defined(Asserts)
+  assertionMsg(otherSolve._solverNumber         != _solverNumber   ,"Solver numbers must be the same!");
+  assertionMsg(otherSolve._timeStepping         != _timeStepping    ,"Time stepping mode must be the same!");
+  assertionMsg(otherSolve._correctorTimeLagging != _correctorTimeLagging,"Time step size selection must be the same!");
+#endif
+//  _parentSolve               = otherSolve._parentSolve;
+//  _type                      = otherSolve._type;
+  _active                    = _active & otherSolve._active;
+  _correctorTimeStamp        = std::min( _correctorTimeStamp       , otherSolve._correctorTimeStamp        );
+  _correctorTimeStepSize     = std::min( _correctorTimeStepSize    , otherSolve._correctorTimeStepSize     );
+  _predictorTimeStamp        = std::min( _predictorTimeStamp       , otherSolve._predictorTimeStamp        );
+  _predictorTimeStepSize     = std::min( _predictorTimeStepSize    , otherSolve._predictorTimeStepSize     );
+  _nextPredictorTimeStepSize = std::min( _nextPredictorTimeStepSize, otherSolve._nextPredictorTimeStepSize );
 }

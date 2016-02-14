@@ -42,6 +42,19 @@ public:
    */
   const int getSolverNumber() const;
 
+  // @todo 13/02/16:Dominic Etienne Charrier
+  // This is just a dummy entry.
+  // I think we need a tree-like structure of Solves
+  // tracking which solve is a sub solve of which
+  // other solve.
+  //
+  // In an uncertainty identification scenario,
+  // sub solves in one cell can request data from
+  // their parents in neighbouring cells if they
+  // want to perform the Riemann solve.
+  // In this case, we probably also have to
+  // register new cell descriptions in the neighbouring
+  // cells.
   int getParentSolve () const;
 
   void setParentSolve (int parentSolve);
@@ -50,7 +63,7 @@ public:
 
   bool isActive() const;
 
-  bool isSameTimeStepSize() const;
+  bool isCorrectorTimeLagging() const;
 
   Type getType() const;
 
@@ -58,13 +71,13 @@ public:
 
   TimeStepping getTimeStepping() const;
 
-  double getPredictorMinTimeStamp () const;
+  double getPredictorTimeStamp () const;
 
-  void setPredictorMinTimeStamp (double predictorMinTimeStamp);
+  void setPredictorTimeStamp (double predictorTimeStamp);
 
-  double getCorrectorMinTimeStamp () const;
+  double getCorrectorTimeStamp () const;
 
-  void setCorrectorMinTimeStamp (double correctorMinTimeStamp);
+  void setCorrectorTimeStamp (double correctorTimeStamp);
 
   /**
    * Returns the maximum stable global corrector time step size for the current sweep.
@@ -72,14 +85,24 @@ public:
    */
   double getCorrectorTimeStepSize() const;
 
+  void setCorrectorTimeStepSize (double correctorTimeStepSize);
+
   /**
    * Returns the maximum stable global predictor time step size for the current sweep.
    * For the FV method, this represents the time step size.
    */
   double getPredictorTimeStepSize() const;
 
+  void setPredictorTimeStepSize (double predictorTimeStepSize);
+
   /**
-   * Computes the maximum stable global predictor time step size for the next solve
+   * Returns the maximum stable global predictor time step size for the next sweep.
+   * For the FV method, this represents the next time step size.
+   */
+    double getNextPredictorTimeStepSize() const;
+
+  /**
+   * Computes the maximum stable global predictor time step size for the next sweep
    * as the minimum of the stored next predictor time step size of this Solve
    * and the argument.
    */
@@ -94,16 +117,15 @@ public:
   /**
    * Merges this solve with another solve
    */
-  void merge(const Solve& anotherSolve);
+  void merge(const Solve& otherSolve);
 
   virtual ~Solve () {}
 
 private:
-
   /**
    * Each solve has an identifier/name. It is used for debug purposes only.
    */
-  const std::string  _identifier;
+  const std::string  _name;
 
   /**
    *  Refers to a Solver in the solver registry.
@@ -126,7 +148,7 @@ private:
 
   TimeStepping       _timeStepping;
 
-  bool               _sameTimeStepSize;
+  bool               _correctorTimeLagging;
 
   /**
    * Indicates if this solve is active.
@@ -137,12 +159,12 @@ private:
    * Minimum predictor time stamp. Always equal or larger
    * than the minimum corrector time stamp.
    */
-  double             _predictorMinTimeStamp;
+  double             _predictorTimeStamp;
 
   /**
    * Minimum corrector time stamp.
    */
-  double             _correctorMinTimeStamp;
+  double             _correctorTimeStamp;
 
   /**
    * Predictor time step size.
