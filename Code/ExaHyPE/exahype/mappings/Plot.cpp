@@ -6,6 +6,7 @@
 
 #include "exahype/aderdg/ADERDGIO.h"
 
+#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
 #include "exahype/plotters/Plotter.h"
@@ -53,7 +54,9 @@ exahype::mappings::Plot::~Plot() {
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::Plot::Plot(const Plot&  masterThread) {
+exahype::mappings::Plot::Plot(const Plot&  masterThread):
+    _localState(masterThread._localState)
+{
   // do nothing
 }
 
@@ -347,13 +350,15 @@ void exahype::mappings::Plot::enterCell(
       pPatch != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
       pPatch++
     ) {
-      if ( (*pPlotter)->plotDataFromSolver(pPatch->getSolverNumber()) ) {
+      const exahype::State::shared_ptr_Solve solve = _localState.getSolveRegistry()[ pPatch->getSolveNumber() ];
+
+      if ( (*pPlotter)->plotDataFromSolver(solve->getSolverNumber()) ) {
         double * u = &(DataHeap::getInstance().getData(pPatch->getSolution())  [0]._persistentRecords._u);
         (*pPlotter)->plotPatch(
           fineGridVerticesEnumerator.getVertexPosition(),
           fineGridVerticesEnumerator.getCellSize(),
           u,
-          pPatch->getTimeStamp()
+          pPatch->getCorrectorTimeStamp()
         );
       }
     }
@@ -376,14 +381,18 @@ void exahype::mappings::Plot::leaveCell(
 void exahype::mappings::Plot::beginIteration(
     exahype::State&  solverState
 ) {
-  // nop
+  logTraceInWith1Argument( "beginIteration(State)", solverState );
+
+  _localState = solverState;
+
+  logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
 
 
 void exahype::mappings::Plot::endIteration(
     exahype::State&  solverState
 ) {
-  // nop
+  // do nothing
 }
 
 
@@ -409,4 +418,8 @@ void exahype::mappings::Plot::ascend(
     exahype::Cell&           coarseGridCell
 ) {
   // do nothing
+}
+
+const exahype::State& exahype::mappings::Plot::getState() const {
+  return _localState;
 }

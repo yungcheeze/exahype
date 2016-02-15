@@ -20,13 +20,15 @@
 
 #include "exahype/plotters/Plotter.h"
 
+#include "exahype/solvers/Solve.h"
+#include "exahype/solvers/Solver.h"
 
 tarch::logging::Log  exahype::runners::Runner::_log( "exahype::runners::Runner" );
 
 
 
 exahype::runners::Runner::Runner(const Parser& parser):
-      _parser(parser) {
+          _parser(parser) {
 }
 
 
@@ -119,10 +121,42 @@ int exahype::runners::Runner::run() {
   return result;
 }
 
+void exahype::runners::Runner::initialiseSolveRegistry(State& state,bool correctorTimeLagging) {
+  int solverNumber=0;
+  for (
+      std::vector<exahype::solvers::Solver*>::iterator p = exahype::solvers::RegisteredSolvers.begin();
+      p != exahype::solvers::RegisteredSolvers.end();
+      p++
+  ){
+    state.getSolveRegistry().push_back(
+        exahype::State::shared_ptr_Solve (
+        new exahype::solvers::Solve (
+        solverNumber, // solverNumber
+        exahype::solvers::Solve::SOLVE,
+        exahype::solvers::Solve::GLOBAL,
+        correctorTimeLagging, // corrector time lagging
+        true  // active
+    )));
+
+    solverNumber++;
+  }
+
+#if defined(Debug) || defined(Asserts)
+    logInfo(
+        "runAsMaster(...)",
+        "registered solvers=" << exahype::solvers::RegisteredSolvers.size() <<
+        "\t registered solves =" << state.getSolveRegistry().size()
+    );
+#endif
+
+  assertion(state.getSolveRegistry().size()==exahype::solvers::RegisteredSolvers.size());
+}
 
 int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& repository) {
   peano::utils::UserInterface userInterface;
   userInterface.writeHeader();
+
+  initialiseSolveRegistry(repository.getState(),_parser.fuseAlgorithmicSteps());
 
   // The space-tree is initialised with 1 coarse grid cell on level 1 and 3^d fine grid cells on level 2.
   repository.switchToInitialGrid();
@@ -137,18 +171,19 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    * Apply the initial conditions.
    * Then, compute the the initial current time step size.
    */
-  repository.getState().updateTimeStamp(0.0);
+  repository.getState().setCurrentMinTimeStamp(0.0);
   repository.switchToInitialConditionAndGlobalTimeStepComputation();
   repository.iterate();
+  repository.getState().startNewTimeStep();
 
 #if defined(Debug) || defined(Asserts)
-  logInfo(
-      "runAsMaster(...)",
-      "step " << -1 <<
-      "\t t_min     ="  << repository.getState().getMinimalGlobalTimeStamp() <<
-      "\t dt_max    =" << repository.getState().getMaxTimeStepSize() <<
-      "\t dt_max_old=" << repository.getState().getOldMaxTimeStepSize()
-  );
+    logInfo(
+        "runAsMaster(...)",
+        "step " << -1 <<
+        "\t t_min     =" << repository.getState().getCurrentMinTimeStamp() <<
+        "\t dt_max    =" << repository.getState().getCurrentMinTimeStepSize() <<
+        "\t dt_max_old=" << repository.getState().getPreviousMinTimeStepSize()
+    );
 #endif
 
   /*
@@ -160,49 +195,48 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   // I changed code here
   repository.switchToPredictorAndGlobalTimeStepComputation();
   repository.iterate();
+  repository.getState().startNewTimeStep();
 
 #if defined(Debug) || defined(Asserts)
-  logInfo(
-      "runAsMaster(...)",
-      "step " << 0 <<
-      "\t t_min     ="  << repository.getState().getMinimalGlobalTimeStamp() <<
-      "\t dt_max    =" << repository.getState().getMaxTimeStepSize() <<
-      "\t dt_max_old=" << repository.getState().getOldMaxTimeStepSize()
-  );
+    logInfo(
+        "runAsMaster(...)",
+        "step " << 0 <<
+        "\t t_min     ="  << repository.getState().getCurrentMinTimeStamp() <<
+        "\t dt_max    =" << repository.getState().getCurrentMinTimeStepSize() <<
+        "\t dt_max_old=" << repository.getState().getPreviousMinTimeStepSize()
+    );
 #endif
 
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n=1;
 
   while (
-      (repository.getState().getMinimalGlobalTimeStamp()<simulationEndTime)
+      (repository.getState().getCurrentMinTimeStamp()<simulationEndTime)
       &&
-      tarch::la::greater(repository.getState().getMaxTimeStepSize(), 0.0)
+      tarch::la::greater(repository.getState().getCurrentMinTimeStepSize(), 0.0)
   ) {
-    if (exahype::plotters::isAPlotterActive(repository.getState().getMinimalGlobalTimeStamp())) {
+    if (exahype::plotters::isAPlotterActive(repository.getState().getCurrentMinTimeStamp())) {
       repository.switchToPlot();
       repository.iterate();
       exahype::plotters::finishedPlotting();
       logInfo( "runAsMaster(...)", "all snapshots written" );
     }
 
-    // todo Dominic Etienne Charrier
-    // Swap of time steps has to be performed by adapter
-    // since it already computes the new time step size.
     if ( _parser.fuseAlgorithmicSteps() ) {
       runOneTimeStampWithFusedAlgorithmicSteps(repository);
     }
     else {
       runOneTimeStampWithFourSeparateAlgorithmicSteps(repository);
     }
+    repository.getState().startNewTimeStep();
 
 #if defined(Debug) || defined(Asserts)
     logInfo(
         "runAsMaster(...)",
         "step " << n <<
-        "\t t_min     ="  << repository.getState().getMinimalGlobalTimeStamp() <<
-        "\t dt_max    =" << repository.getState().getMaxTimeStepSize() <<
-        "\t dt_max_old=" << repository.getState().getOldMaxTimeStepSize()
+        "\t t_min     ="  << repository.getState().getCurrentMinTimeStamp() <<
+        "\t dt_max    =" << repository.getState().getCurrentMinTimeStepSize() <<
+        "\t dt_max_old=" << repository.getState().getPreviousMinTimeStepSize()
     );
 #endif
 
@@ -249,4 +283,12 @@ void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(e
 
   // todo Dominic Etienne Charrier
   // Only one time step (group) is used in this case.
+    repository.switchToFaceDataExchange();
+    repository.iterate();
+    repository.switchToCorrector();
+    repository.iterate();
+    repository.switchToGlobalTimeStepComputation();
+    repository.iterate();
+    repository.switchToPredictor();
+    repository.iterate();
 }

@@ -4,6 +4,7 @@
 
 #include "exahype/aderdg/ADERDG.h"
 
+#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
 
@@ -367,28 +368,29 @@ void exahype::mappings::SolutionUpdate::enterCell(
       p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
       p++
   ) {
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
+    const exahype::State::shared_ptr_Solve solve  = _localState.getSolveRegistry()     [ p->getSolveNumber()       ];
+    exahype::solvers::Solver*              solver = exahype::solvers::RegisteredSolvers[ solve->getSolverNumber() ];
 
     double * luh  = &(DataHeap::getInstance().getData(p->getSolution())[0]._persistentRecords._u);
     double * lduh = &(DataHeap::getInstance().getData(p->getUpdate())  [0]._persistentRecords._u);
 
-    assertion1WithExplanation(_localState.getOldMaxTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size is not initialised correctly!");
+    assertion1WithExplanation(_localState.getPreviousMinTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size is not initialised correctly!");
 
-    logDebug("enterCell(...)::debug::dt_max_old",_localState.getMaxTimeStepSize());
+    logDebug("enterCell(...)::debug::dt_max_old",_localState.getCurrentMinTimeStepSize());
     logDebug("enterCell(...)::debug::before::luh[0]",luh[0]);
     logDebug("enterCell(...)::debug::before::lduh[0]",lduh[0]);
 
     solver->solutionUpdate(
         luh,
         lduh,
-        _localState.getOldMaxTimeStepSize()
+        p->getCorrectorTimeStepSize()//solve->getCorrectorTimeStepSize()//_localState.getPreviousMinTimeStepSize() // todo replace by patch time step size
     );
 
     logDebug("enterCell(...)::debug::after::luh[0]",luh[0]);
     logDebug("enterCell(...)::debug::after::lduh[0]",lduh[0]);
 
     // todo 03/02/16:Dominic Etienne Charrier
-    // Xommented out
+    // Commented out
 //    const double newTimeStamp = p->getTimeStamp() + _localState.getMaxTimeStepSize();
 //    p->setTimeStamp( newTimeStamp );
 //    _localState.updateTimeStamp( newTimeStamp );

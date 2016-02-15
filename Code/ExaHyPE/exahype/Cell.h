@@ -8,6 +8,8 @@
 #ifndef _EXAHYPE_CELL_H_ 
 #define _EXAHYPE_CELL_H_
 
+#include "exahype/State.h"
+
 #include "exahype/records/Cell.h"
 #include "peano/grid/Cell.h"
 
@@ -78,6 +80,7 @@ public:
    * unrefined.
    */
   void init(
+    const exahype::State::SolveRegistry          solveRegistry,
     const int                                    level,
     const tarch::la::Vector<DIMENSIONS,double>&  size,
     const tarch::la::Vector<DIMENSIONS,double>&  cellCentre

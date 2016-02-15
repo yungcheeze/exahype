@@ -5,8 +5,8 @@
 // this file and your project to your needs as long as the license is in 
 // agreement with the original Peano user constraints. A reference to/citation  
 // of  Peano and its author is highly appreciated.
-#ifndef EXAHYPE_MAPPINGS_Plot_H_
-#define EXAHYPE_MAPPINGS_Plot_H_
+#ifndef EXAHYPE_MAPPINGS_NewTimeStep_H_
+#define EXAHYPE_MAPPINGS_NewTimeStep_H_
 
 
 #include "tarch/logging/Log.h"
@@ -25,7 +25,7 @@
 
 namespace exahype {
       namespace mappings {
-        class Plot;
+        class NewTimeStep;
       } 
 }
 
@@ -37,7 +37,7 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::mappings::Plot {
+class exahype::mappings::NewTimeStep {
   private:
     /**
      * Logging device for the trace macros.
@@ -98,7 +98,7 @@ class exahype::mappings::Plot {
      * that your code works on a parallel machine and for any mapping/algorithm 
      * modification.
      */
-    Plot();
+    NewTimeStep();
 
     #if defined(SharedMemoryParallelisation)
     /**
@@ -111,13 +111,13 @@ class exahype::mappings::Plot {
      *
      * @see mergeWithWorkerThread()
      */
-    Plot(const Plot& masterThread);
+    NewTimeStep(const NewTimeStep& masterThread);
     #endif
 
     /**
      * Destructor. Typically does not implement any operation.
      */
-    virtual ~Plot();
+    virtual ~NewTimeStep();
   
     #if defined(SharedMemoryParallelisation)
     /**
@@ -148,7 +148,7 @@ class exahype::mappings::Plot {
      * on the heap. However, you should protect this object by a BooleanSemaphore 
      * and a lock to serialise all accesses to the plotter.    
      */   
-    void mergeWithWorkerThread(const Plot& workerThread);
+    void mergeWithWorkerThread(const NewTimeStep& workerThread);
     #endif
 
     /**
@@ -1143,7 +1143,7 @@ class exahype::mappings::Plot {
      * beginIteration() might not be called prior to any other event. See the 
      * documentation of CommunicationSpecification for details.
      *
-     * @see Plot()
+     * @see NewTimeStep()
      */
     void beginIteration(
       exahype::State&  solverState
@@ -1176,7 +1176,7 @@ class exahype::mappings::Plot {
      * might not be called after all other events. See the documentation 
      * of CommunicationSpecification for details.
      *
-     * @see Plot()
+     * @see NewTimeStep()
      */
     void endIteration(
       exahype::State&  solverState
@@ -1255,6 +1255,9 @@ class exahype::mappings::Plot {
       exahype::Cell&           coarseGridCell
     );    
 
+    /**
+     * @brief Returns this mapping's local copy of the state.
+     */
     const exahype::State& getState() const;
 };
 

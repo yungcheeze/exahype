@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_FaceDataExchange_H_
-#define EXAHYPE_ADAPTERS_FaceDataExchange_H_
+#ifndef EXAHYPE_ADAPTERS_Predictor_H_
+#define EXAHYPE_ADAPTERS_Predictor_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,15 +18,14 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/NewTimeStep.h"
- #include "exahype/mappings/RiemannSolver.h"
- #include "exahype/mappings/BoundaryConditions.h"
+ #include "exahype/mappings/SpaceTimePredictor.h"
+ #include "exahype/mappings/VolumeIntegral.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class FaceDataExchange;
+        class Predictor;
       } 
 }
 
@@ -38,15 +37,13 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::FaceDataExchange {
+class exahype::adapters::Predictor {
   private:
-    typedef mappings::NewTimeStep Mapping0;
-    typedef mappings::RiemannSolver Mapping1;
-    typedef mappings::BoundaryConditions Mapping2;
+    typedef mappings::SpaceTimePredictor Mapping0;
+    typedef mappings::VolumeIntegral Mapping1;
 
-     Mapping0  _map2NewTimeStep;
-     Mapping1  _map2RiemannSolver;
-     Mapping2  _map2BoundaryConditions;
+     Mapping0  _map2SpaceTimePredictor;
+     Mapping1  _map2VolumeIntegral;
 
 
   public:
@@ -58,16 +55,16 @@ class exahype::adapters::FaceDataExchange {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    FaceDataExchange();
+    Predictor();
 
     #if defined(SharedMemoryParallelisation)
-    FaceDataExchange(const FaceDataExchange& masterThread);
+    Predictor(const Predictor& masterThread);
     #endif
 
-    virtual ~FaceDataExchange();
+    virtual ~Predictor();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const FaceDataExchange& workerThread);
+    void mergeWithWorkerThread(const Predictor& workerThread);
     #endif
 
     void createInnerVertex(

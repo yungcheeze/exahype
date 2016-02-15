@@ -11,26 +11,37 @@
 #include "exahype/records/State.h"
 #include "peano/grid/State.h"
 
+#include <vector>
+#include <memory>
+
 #include "peano/grid/Checkpoint.h"
 
 namespace exahype { 
-      class State;
-      /**
-       * Forward declaration
-       */
-      class Vertex;
-      /**
-       * Forward declaration
-       */
-      class Cell;
-      
-      namespace repositories {
-        /** 
-         * Forward declaration
-         */
-        class RepositoryArrayStack;
-        class RepositorySTDStack;
-      }
+  class State;
+
+  /**
+   * Forward declaration
+   */
+  class Vertex;
+  /**
+   * Forward declaration
+   */
+  class Cell;
+
+  namespace repositories {
+    /**
+     * Forward declaration
+     */
+    class RepositoryArrayStack;
+    class RepositorySTDStack;
+  }
+
+  /**
+   * Forward declaration
+   */
+  namespace solvers {
+    class Solve;
+  }
 }
 
 
@@ -41,101 +52,115 @@ namespace exahype {
  * the needs of your application. We do not recommend to remove anything!
  */
 class exahype::State: public peano::grid::State< exahype::records::State > { 
-  private: 
-    typedef class peano::grid::State< exahype::records::State >  Base;
+private:
+  typedef class peano::grid::State< exahype::records::State >  Base;
 
-    /**
-     * Needed for checkpointing.
-     */
-    friend class exahype::repositories::RepositoryArrayStack;
-    friend class exahype::repositories::RepositorySTDStack;
-  
-    void writeToCheckpoint( peano::grid::Checkpoint<Vertex,Cell>&  checkpoint ) const;    
-    void readFromCheckpoint( const peano::grid::Checkpoint<Vertex,Cell>&  checkpoint );    
-  
-  public:
-    /**
-     * Default Constructor
-     *
-     * This constructor is required by the framework's data container. Do not 
-     * remove it.
-     */
-    State();
+  /**
+   * Needed for checkpointing.
+   */
+  friend class exahype::repositories::RepositoryArrayStack;
+  friend class exahype::repositories::RepositorySTDStack;
 
-    /**
-     * Constructor
-     *
-     * This constructor is required by the framework's data container. Do not 
-     * remove it. It is kind of a copy constructor that converts an object which 
-     * comprises solely persistent attributes into a full attribute. This very 
-     * functionality is implemented within the super type, i.e. this constructor 
-     * has to invoke the correponsing super type's constructor and not the super 
-     * type standard constructor.
-     */
-    State(const Base::PersistentState& argument);
+  void writeToCheckpoint( peano::grid::Checkpoint<Vertex,Cell>&  checkpoint ) const;
+  void readFromCheckpoint( const peano::grid::Checkpoint<Vertex,Cell>&  checkpoint );
 
-    /**
-      * Additional methods for ExaHyPE.
-      **/
-    ///@{
-    /*
-     * Set the time step size of this state. It is the minimum of the
-     * current time step size and the argument.
-     */
-    // todo Dominic Etienne Charrier
-    // setMinTimeStepSizeOfBoth
-    void updateMaxTimeStepSize(const double timeStepSize);
+  std::vector< std::shared_ptr<solvers::Solve> > _solveRegistry;
+public:
+  typedef std::shared_ptr<solvers::Solve> shared_ptr_Solve;
+  typedef std::vector<shared_ptr_Solve> SolveRegistry;
+  /**
+   * Default Constructor
+   *
+   * This constructor is required by the framework's data container. Do not
+   * remove it.
+   */
+  State();
 
-    void updateTimeStamp(const double timeStamp);
+  /**
+   * Constructor
+   *
+   * This constructor is required by the framework's data container. Do not
+   * remove it. It is kind of a copy constructor that converts an object which
+   * comprises solely persistent attributes into a full attribute. This very
+   * functionality is implemented within the super type, i.e. this constructor
+   * has to invoke the correponsing super type's constructor and not the super
+   * type standard constructor.
+   */
+  State(const Base::PersistentState& argument);
 
-    /**
-     * Reset all accumulated values:
-     *
-     * - Set the time step size to the maximum double value.
-     */
-    void resetAccumulatedValues();
+  void setCurrentMinTimeStepSize (double currentMinTimeStepSize);
 
-    /**
-     * - Backup the current max time step into oldMaximumTimeStepSize
-     *
-     */
-    void startNewTimeStep();
+  /*
+   * This operation returns the field max time step size.
+   *
+   * todo Dominic Etienne Charrier
+   * Introduce better names for the time step sizes.
+   * Note that I changed the definition of this method.
+   *
+   * Previous definition of the method:
+   * "This operation always returns the field old time step size, as the field
+   * maxTimeStepSize is actually used to determine the new/upcoming max time
+   * step size through global reduction."
+   */
+  double getCurrentMinTimeStepSize () const;
 
-    /*
-     * This operation returns the field max time step size.
-     *
-     * todo Dominic Etienne Charrier
-     * Introduce better names for the time step sizes.
-     * Note that I changed the definition of this method.
-     *
-     * Previous definition of the method:
-     * "This operation always returns the field old time step size, as the field
-     * maxTimeStepSize is actually used to determine the new/upcoming max time
-     * step size through global reduction."
-     */
-    double getMaxTimeStepSize() const;
+  void setCurrentMinTimeStamp (double currentMinTimeStamp);
 
-    /*
-     * Returns the old max time step size.
-     * todo Dominic Etienne Charrier
-     * * Introduce better names for the time step sizes.
-     */
-    double getOldMaxTimeStepSize() const;
+  /**
+   * @return Minimum of global time stamps. If you do not use local time
+   *         stepping, this value equals the global time of the simulation.
+   */
+  double getCurrentMinTimeStamp () const;
 
-    /*
-     * Set the minimum time step size of this state and another state as the time
-     * step size of this state.
-     *
-     * @todo Clarify which stuff has to be merged
-     */
-    void merge(const State& anotherState);
+  double setPreviousMinTimeStepSize (double previousMinTimeStepSize);
 
-    /**
-     * @return Minimum of global time stamps. If you do not use local time
-     *         stepping, this value equals the global time of the simulation.
-     */
-    double getMinimalGlobalTimeStamp() const;
-    ///@}
+  /*
+   * Returns the max time step size of the previous sweep.
+   */
+  double getPreviousMinTimeStepSize () const;
+
+  /**
+   * Additional methods for ExaHyPE.
+   **/
+  ///@{
+  /*
+   * Set the time step size of this state. It is the minimum of the
+   * current time step size and the argument.
+   *
+   * @todo        08/02/16:Dominic Etienne Charrier
+   * @deprecated: Replaced by updateNextMaxTimeStepSize
+   */
+  // todo Dominic Etienne Charrier
+  // setMinTimeStepSizeOfBoth
+  void updateNextMinTimeStepSize (const double nextMinTimeStepSize);
+
+  double getNextMinTimeStepSize () const;
+
+  /**
+   * - Backup the current max time step into oldMaximumTimeStepSize
+   *
+   * todo 08/02/16:Dominic Etienne Charrier
+   * Future meaning
+   * max_double         -> newMaxTimeStepSize
+   * newMaxTimeStepSize -> maxTimeStepSize
+   * maxTimeStepSize    -> previousTimeStepSize
+   *
+   */
+  void startNewTimeStep();
+
+  /*
+   * Set the minimum time step size of this state and another state as the time
+   * step size of this state.
+   *
+   * @todo Clarify which stuff has to be merged
+   */
+  void merge(const State& anotherState);
+
+  /*
+   * @return the solve registry. Either a vector or tree like structure.
+   */
+  SolveRegistry& getSolveRegistry();
+  ///@}
 };
 
 

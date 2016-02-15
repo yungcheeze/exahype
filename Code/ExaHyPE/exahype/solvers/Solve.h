@@ -24,10 +24,9 @@ public:
 
   Solve (
       int solverNumber,
-      int parentSolve,
       exahype::solvers::Solve::Type type,
       exahype::solvers::Solve::TimeStepping timeStepping,
-      bool useSameTimeStepSize,
+      bool correctorTimeLagging,
       bool active
   );
 
@@ -37,10 +36,31 @@ public:
   Solve (const Solve& anotherSolve);
 
   /**
+   * Copy constructor.
+   */
+  Solve (
+      std::string name,
+      int solverNumber,
+      exahype::solvers::Solve::Type type,
+      exahype::solvers::Solve::TimeStepping timeStepping,
+      bool correctorTimeLagging,
+      bool active,
+      double correctorTimeStamp,
+      double predictorTimeStamp,
+      double correctorTimeStepSize,
+      double predictorTimeStepSize,
+      double nextPredictorTimeStepSize);
+
+  /**
+   * Each solve has an identifier/name. It is used for debug purposes only.
+   */
+  const std::string getName () const;
+
+  /**
    * Each solve has a solver number that says which solver is to be
    * used. Typically this is an ascending index starting from 0.
    */
-  const int getSolverNumber() const;
+  const int getSolverNumber () const;
 
   // @todo 13/02/16:Dominic Etienne Charrier
   // This is just a dummy entry.
@@ -59,17 +79,17 @@ public:
 
   void setParentSolve (int parentSolve);
 
-  void setActive(bool active);
+  void setActive (bool active);
 
-  bool isActive() const;
+  bool isActive () const;
 
-  bool isCorrectorTimeLagging() const;
+  bool isCorrectorTimeLagging () const;
 
-  Type getType() const;
+  Type getType () const;
 
   void setType (Type type);
 
-  TimeStepping getTimeStepping() const;
+  TimeStepping getTimeStepping () const;
 
   double getPredictorTimeStamp () const;
 
@@ -83,7 +103,7 @@ public:
    * Returns the maximum stable global corrector time step size for the current sweep.
    * Has no use in the FV method.
    */
-  double getCorrectorTimeStepSize() const;
+  double getCorrectorTimeStepSize () const;
 
   void setCorrectorTimeStepSize (double correctorTimeStepSize);
 
@@ -91,7 +111,7 @@ public:
    * Returns the maximum stable global predictor time step size for the current sweep.
    * For the FV method, this represents the time step size.
    */
-  double getPredictorTimeStepSize() const;
+  double getPredictorTimeStepSize () const;
 
   void setPredictorTimeStepSize (double predictorTimeStepSize);
 
@@ -99,25 +119,25 @@ public:
    * Returns the maximum stable global predictor time step size for the next sweep.
    * For the FV method, this represents the next time step size.
    */
-    double getNextPredictorTimeStepSize() const;
+    double getNextPredictorTimeStepSize () const;
 
   /**
    * Computes the maximum stable global predictor time step size for the next sweep
    * as the minimum of the stored next predictor time step size of this Solve
    * and the argument.
    */
-  void updateNextPredictorTimeStepSize(const double& nextPredictorTimeStepSize);
+  void updateNextPredictorTimeStepSize (const double& nextPredictorTimeStepSize);
 
   /**
    * Prepares the corrector, predictor, and next predictor time
    * step size for the next sweep.
    */
-  void startNewTimeStep();
+  void startNewTimeStep ();
 
   /**
    * Merges this solve with another solve
    */
-  void merge(const Solve& otherSolve);
+  void merge (const Solve& otherSolve);
 
   virtual ~Solve () {}
 
@@ -156,15 +176,20 @@ private:
   bool               _active;
 
   /**
+   * Minimum corrector time stamp.
+   */
+  double             _correctorTimeStamp;
+
+  /**
    * Minimum predictor time stamp. Always equal or larger
    * than the minimum corrector time stamp.
    */
   double             _predictorTimeStamp;
 
   /**
-   * Minimum corrector time stamp.
+   * Corrector time step size.
    */
-  double             _correctorTimeStamp;
+  double             _correctorTimeStepSize;
 
   /**
    * Predictor time step size.
@@ -175,11 +200,6 @@ private:
    * Predictor time step size.
    */
   double             _nextPredictorTimeStepSize;
-
-  /**
-   * Corrector time step size.
-   */
-  double             _correctorTimeStepSize;
 };
 
 #endif /* SOLVE_H_ */

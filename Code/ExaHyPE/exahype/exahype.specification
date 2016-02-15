@@ -41,13 +41,16 @@ event-mapping:
   
 event-mapping:
   name: RiemannSolverReset
-  
+
 event-mapping:
   name: RiemannSolver
   
 event-mapping:
   name: SurfaceIntegral
-  
+ 
+event-mapping:
+  name: NewTimeStep
+ 
 event-mapping:
   name: Plot
 
@@ -67,19 +70,21 @@ adapter:
 // The space-time predictor must be computed before the FaceDataExchange, i.e., the corrector step!
 adapter: 
   name: FaceDataExchange
+  merge-with-user-defined-mapping: NewTimeStep
   merge-with-user-defined-mapping: RiemannSolver
   merge-with-user-defined-mapping: BoundaryConditions
 
 adapter:
   name: InitialConditionAndGlobalTimeStepComputation
   merge-with-user-defined-mapping: InitialCondition
-  // needs current time step
+  // needs current time step size
   merge-with-user-defined-mapping: GlobalTimeStepComputation
 
 adapter:
   name: PredictorAndGlobalTimeStepComputation
+  merge-with-user-defined-mapping: NewTimeStep
   merge-with-user-defined-mapping: RiemannSolverReset
-  // needs current time step
+  // needs current time step size
   merge-with-user-defined-mapping: SpaceTimePredictor // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: GlobalTimeStepComputation
@@ -87,10 +92,10 @@ adapter:
 adapter:
   name: CorrectorAndPredictorAndGlobalTimeStepComputation
   merge-with-user-defined-mapping: RiemannSolverReset
-  // needs old time step
+  // needs previous time step size
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
-  // needs current time step
+  // needs current time step size
   merge-with-user-defined-mapping: SpaceTimePredictor  // DEC: after predictor we can start the face data exchange 
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: GlobalTimeStepComputation
@@ -98,4 +103,18 @@ adapter:
 adapter:
   name: Plot
   merge-with-user-defined-mapping: Plot
-  
+ 
+// Additional adapters for the 4 phases
+adapter:
+  name: GlobalTimeStepComputation
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
+
+adapter:
+  name: Predictor
+  merge-with-user-defined-mapping: SpaceTimePredictor 
+  merge-with-user-defined-mapping: VolumeIntegral
+
+adapter:
+  name: Corrector
+  merge-with-user-defined-mapping: SurfaceIntegral
+  merge-with-user-defined-mapping: SolutionUpdate 

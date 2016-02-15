@@ -4,8 +4,11 @@
 
 #include "exahype/aderdg/ADERDG.h"
 
+#include "exahype/solvers/Solve.h"
+
 #include "exahype/solvers/Solver.h"
 
+#include <limits>
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -371,11 +374,12 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
   for (
-      ADERDGCellDescriptionHeap::HeapEntries::const_iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+      ADERDGCellDescriptionHeap::HeapEntries::iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
       p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
       p++
   ) {
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
+    exahype::State::shared_ptr_Solve  solve  = _localState.getSolveRegistry()[ p->getSolveNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers   [ solve->getSolverNumber() ];
 
     double * luh  = &(DataHeap::getInstance().getData( p->getSolution() )[0]._persistentRecords._u);
 
@@ -386,7 +390,18 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
 
     logDebug("endIteration(...)::dt_adm",admissibleTimeStepSize);
 
-    _localState.updateMaxTimeStepSize(admissibleTimeStepSize);
+    // direct update of the cell description time steps
+    p->setCorrectorTimeStamp   (p->getPredictorTimeStamp());
+    p->setCorrectorTimeStepSize(p->getPredictorTimeStepSize());
+    p->setPredictorTimeStamp   (p->getPredictorTimeStamp()+admissibleTimeStepSize);
+    p->setPredictorTimeStepSize(admissibleTimeStepSize);
+
+    // indirect update of the solve and local state time step sizes
+    solve->updateNextPredictorTimeStepSize(admissibleTimeStepSize);
+    _localState.updateNextMinTimeStepSize(admissibleTimeStepSize);
+
+    assertion(solve->getNextPredictorTimeStepSize() <= p->getPredictorTimeStepSize());
+    assertion(_localState.getNextMinTimeStepSize()  <= solve->getNextPredictorTimeStepSize());
   }
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
@@ -411,11 +426,6 @@ void exahype::mappings::GlobalTimeStepComputation::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
-  // todo Dominic Etienne Charrier
-  // Changed code here.
-
-  solverState.startNewTimeStep();          // swap time step sizes
-  solverState.resetAccumulatedValues();    // set new time step size to max value
   _localState = solverState;
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
@@ -427,8 +437,8 @@ void exahype::mappings::GlobalTimeStepComputation::endIteration(
 ) {
   logTraceInWith1Argument( "endIteration(State)", solverState );
 
-  logDebug("endIteration(...)::dt_max::solverState",_localState.getMaxTimeStepSize());
-  logDebug("endIteration(...)::dt_max::localState",_localState.getMaxTimeStepSize());
+  logDebug("endIteration(...)::dt_max::solverState",solverState.getCurrentMinTimeStepSize());
+  logDebug("endIteration(...)::dt_max::localState",_localState.getCurrentMinTimeStepSize());
 
   solverState.merge(_localState);
 

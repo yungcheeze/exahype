@@ -1,3 +1,5 @@
+//$<EXAHYPE_HEADER_FILE_COPYRIGHT_NOTE>$
+
 #ifndef _EXAHYPE_SOLVERS_SOLVER_H_
 #define _EXAHYPE_SOLVERS_SOLVER_H_
 
@@ -15,6 +17,13 @@
 #define EXAHYPE_FACE_BOTTOM 4
 #define EXAHYPE_FACE_TOP    5
 
+// todo 08/02/16:Dominic Etienne Charrier
+// move somewhere else
+// is evaluated at compile time
+constexpr int power(int basis, int exp) {
+  return (exp==0)? 1 : basis * power(basis, exp-1);
+}
+
 namespace exahype {
   namespace solvers {
     class Solver;
@@ -31,13 +40,18 @@ public:
   enum Type {
     ADER_DG
   };
+
+  enum TimeStepping {
+    GLOBAL, // ANARCHIC
+  };
+
 protected:
   /**
    * Each solver has an identifier/name. It is used for debug purposes only.
    */
-  const std::string _identifier;
+  const std::string  _identifier;
 
-  const Type        _type;
+  const Type         _type;
 
   /**
    * Each solver has a kernel number that says which kernel is to be
@@ -48,6 +62,18 @@ protected:
   const int         _numberOfVariables;
 
   const int         _nodesPerCoordinateAxis;
+
+  const int         _unknownsPerFace;
+
+  const int         _unknownsPerCellBoundary;
+
+  const int         _unknownsPerCell;
+
+  const int         _fluxUnknownsPerCell;
+
+  const int         _spaceTimeUnknownsPerCell;
+
+  const int         _spaceTimeFluxUnknownsPerCell;
 public:
   Solver(const std::string& identifier, Type type, int kernelNumber, int numberOfVariables, int nodesPerCoordinateAxis);
 
@@ -61,35 +87,55 @@ public:
    */
   virtual int getMinimumTreeDepth() const = 0;
 
+  std::string getIdentifier() const;
+
   Type getType() const;
 
-  std::string getIdentifier() const;
+  TimeStepping getTimeStepping() const;
 
   int getNumberOfVariables() const;
 
   /**
-   * If you use a higher order method, then this operation returns the
-   * nodes per coordinate axis power the space dimension plus one.
+   * This operation returns the number of space time
+   * unknowns per cell.
+   *
+   * Note that this operation might only have a meaning for space-time type
+   * discretisation methods.
    */
-  // @todo Dominic Etienne Charrier
-  // Describe meaning for FVM
-  int getSpaceTimeNodesPerCell() const;
+  int getSpaceTimeUnknownsPerCell() const;
 
   /**
-   * If you use a higher order method, then this operation returns the
-   * nodes per coordinate axis power the space dimension.
+   * This operation returns the number of space time
+   * flux unknowns per cell.
+   *
+   * Note that this operation might only have a meaning for space-time type
+   * discretisation methods.
    */
-  // @todo Dominic Etienne Charrier
-  // Describe meaning for FVM
-  int getNodesPerCell() const;
+  int getSpaceTimeFluxUnknownsPerCell() const;
 
   /**
-   * If you use a higher order method, then this operation returns the
-   * nodes per coordinate axis power the space dimension minus one.
+   * This operation returns the number of unknowns per cell located in
+   * the interior of a cell.
    */
-  // @todo Dominic Etienne Charrier
-  // Describe meaning for FVM
-  int getNodesPerFace() const;
+  int getUnknownsPerCell() const;
+
+  /**
+   * This operation returns the number of flux unknowns per cell
+   * located in the interior of a cell.
+   */
+  int getFluxUnknownsPerCell() const;
+
+  /**
+   * This operation returns the number of unknowns that are located
+   * on or in the vicinity of the boundary of a cell.
+   */
+  int getUnknownsPerCellBoundary() const;
+
+  /**
+   * This operation returns the number of unknowns that are located
+   * on or in the vicinity of each face of a cell.
+   */
+  int getUnknownsPerFace() const;
 
   /**
    * If you use a higher order method, then this operation returns the
@@ -97,6 +143,26 @@ public:
    * returns the number of cells within a patch per coordinate axis.
    */
   int getNodesPerCoordinateAxis() const;
+
+//  /**
+//   * @brief Prolongates coarse grid face unknowns
+//   * \p levelDifference levels down to the fine grid unknowns.
+//   */
+//  virtual void prolongateCoarseGridFaceUnknowns(
+//      double* fineGridUnknowns,
+//      const double* const coarseGridUnknowns,
+//      const int levelDifference
+//  ) = 0;
+//
+//  /**
+//   * @brief Restricts fine grid face unknowns
+//   * \p levelDifference levels up to the coarse grid unknowns.
+//   */
+//  virtual void updateFineGridFaceUnknowns(
+//      double* fineGridUnknowns,
+//      const double* const fineGridUnknowns,
+//      const int levelDifference
+//  ) = 0;
 
   /**
    * @brief Adds the solution update to the solution.
@@ -208,23 +274,6 @@ public:
       const tarch::la::Vector<DIMENSIONS,double>& center,
       const tarch::la::Vector<DIMENSIONS,double>& dx
   ) = 0;
-
-  // @todo eher raus
-
-  /**
-   * Plot the solution.
-   *
-   * @param[inout] luh     Cell-local solution DoF.
-   * @param[in]    center  Element center.
-   * @param[in]    dx      Extent of the cell in each coordinate direction.
-   */
-/*
-  virtual void plot(
-      const double * luh,
-      const tarch::la::Vector<DIMENSIONS,double>& center,
-      const tarch::la::Vector<DIMENSIONS,double>& dx
-  ) = 0;
-*/
 };
 
 #endif
