@@ -374,7 +374,7 @@ void exahype::mappings::Plot::leaveCell(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
-  // do nothing
+  // do nothing at all
 }
 
 
