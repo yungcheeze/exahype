@@ -279,10 +279,7 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(exahype:
 
 
 void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(exahype::repositories::Repository& repository) {
-  assertionMsg( false, "not implemented yet. Dominic, can you please do it?" );
-
-  // todo Dominic Etienne Charrier
-  // Only one time step (group) is used in this case.
+  // Only one time step (predictor vs. corrector) is used in this case.
     repository.switchToFaceDataExchange();
     repository.iterate();
     repository.switchToCorrector();

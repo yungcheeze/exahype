@@ -151,11 +151,11 @@ void exahype::solvers::Solve::updateNextPredictorTimeStepSize (const double& nex
 }
 
 void exahype::solvers::Solve::startNewTimeStep () {
-  _correctorTimeStamp        = _predictorTimeStamp;
-  _correctorTimeStepSize     = _predictorTimeStepSize;
+  _correctorTimeStamp     = _predictorTimeStamp;
+  _correctorTimeStepSize  = _predictorTimeStepSize;
 
-  _predictorTimeStepSize     = _nextPredictorTimeStepSize;
-  _predictorTimeStamp        = _predictorTimeStamp+_nextPredictorTimeStepSize;
+  _predictorTimeStepSize  = _nextPredictorTimeStepSize;
+  _predictorTimeStamp     = _predictorTimeStamp+_nextPredictorTimeStepSize;
 
   _nextPredictorTimeStepSize = std::numeric_limits<double>::max();
 }

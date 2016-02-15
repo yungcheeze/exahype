@@ -376,9 +376,9 @@ void exahype::mappings::NewTimeStep::enterCell(
 
     // todo remove
     assertion(solve->getTimeStepping()==exahype::solvers::Solve::GLOBAL);
-    assertion(solve->isCorrectorTimeLagging()==true);
-    assertion(p->getCorrectorTimeStamp()   ==solve->getCorrectorTimeStamp());
-    assertion(p->getCorrectorTimeStepSize()==solve->getCorrectorTimeStepSize());
+//    assertion(solve->isCorrectorTimeLagging()==true);
+//    assertion(p->getCorrectorTimeStamp()   ==solve->getCorrectorTimeStamp());
+//    assertion(p->getCorrectorTimeStepSize()==solve->getCorrectorTimeStepSize());
   }
 }
 
