@@ -357,6 +357,7 @@ void exahype::mappings::PatchInitialisation::enterCell(
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
   fineGridCell.init(
+    _localState.getSolveRegistry(),
     fineGridVerticesEnumerator.getLevel(),
     fineGridVerticesEnumerator.getCellSize(),
     fineGridVerticesEnumerator.getCellCenter()
@@ -388,6 +389,8 @@ void exahype::mappings::PatchInitialisation::beginIteration(
   exahype::State&  solverState
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
+
+  _localState = solverState;
 
   ADERDGCellDescriptionHeap::getInstance().setName("cell-description-heap");
   DataHeap::getInstance().setName("data-heap");

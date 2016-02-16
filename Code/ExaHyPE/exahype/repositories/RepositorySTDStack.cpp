@@ -40,6 +40,9 @@ exahype::repositories::RepositorySTDStack::RepositorySTDStack(
   _gridWithPredictorAndGlobalTimeStepComputation(_vertexStack,_cellStack,_geometry,_solverState,domainSize,computationalDomainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithCorrectorAndPredictorAndGlobalTimeStepComputation(_vertexStack,_cellStack,_geometry,_solverState,domainSize,computationalDomainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithPlot(_vertexStack,_cellStack,_geometry,_solverState,domainSize,computationalDomainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithGlobalTimeStepComputation(_vertexStack,_cellStack,_geometry,_solverState,domainSize,computationalDomainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithPredictor(_vertexStack,_cellStack,_geometry,_solverState,domainSize,computationalDomainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithCorrector(_vertexStack,_cellStack,_geometry,_solverState,domainSize,computationalDomainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
 
   _repositoryState() {
   logTraceIn( "RepositorySTDStack(...)" );
@@ -69,6 +72,9 @@ exahype::repositories::RepositorySTDStack::RepositorySTDStack(
   _gridWithPredictorAndGlobalTimeStepComputation(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithCorrectorAndPredictorAndGlobalTimeStepComputation(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithPlot(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithGlobalTimeStepComputation(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithPredictor(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithCorrector(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
 
   _repositoryState() {
   logTraceIn( "RepositorySTDStack(Geometry&)" );
@@ -114,6 +120,9 @@ void exahype::repositories::RepositorySTDStack::restart(
   _gridWithPredictorAndGlobalTimeStepComputation.restart(domainSize,domainOffset,domainLevel, positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithCorrectorAndPredictorAndGlobalTimeStepComputation.restart(domainSize,domainOffset,domainLevel, positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithPlot.restart(domainSize,domainOffset,domainLevel, positionOfCentralElementWithRespectToCoarserRemoteLevel);
+  _gridWithGlobalTimeStepComputation.restart(domainSize,domainOffset,domainLevel, positionOfCentralElementWithRespectToCoarserRemoteLevel);
+  _gridWithPredictor.restart(domainSize,domainOffset,domainLevel, positionOfCentralElementWithRespectToCoarserRemoteLevel);
+  _gridWithCorrector.restart(domainSize,domainOffset,domainLevel, positionOfCentralElementWithRespectToCoarserRemoteLevel);
 
 
   _solverState.restart();
@@ -144,6 +153,9 @@ void exahype::repositories::RepositorySTDStack::terminate() {
   _gridWithPredictorAndGlobalTimeStepComputation.terminate();
   _gridWithCorrectorAndPredictorAndGlobalTimeStepComputation.terminate();
   _gridWithPlot.terminate();
+  _gridWithGlobalTimeStepComputation.terminate();
+  _gridWithPredictor.terminate();
+  _gridWithCorrector.terminate();
 
 
   logTraceOut( "terminate()" );
@@ -201,6 +213,9 @@ void exahype::repositories::RepositorySTDStack::iterate(int numberOfIterations, 
       case exahype::records::RepositoryState::UseAdapterPredictorAndGlobalTimeStepComputation: watch.startTimer(); _gridWithPredictorAndGlobalTimeStepComputation.iterate(); watch.stopTimer(); _measurePredictorAndGlobalTimeStepComputationCPUTime.setValue( watch.getCPUTime() ); _measurePredictorAndGlobalTimeStepComputationCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputation: watch.startTimer(); _gridWithCorrectorAndPredictorAndGlobalTimeStepComputation.iterate(); watch.stopTimer(); _measureCorrectorAndPredictorAndGlobalTimeStepComputationCPUTime.setValue( watch.getCPUTime() ); _measureCorrectorAndPredictorAndGlobalTimeStepComputationCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterPlot: watch.startTimer(); _gridWithPlot.iterate(); watch.stopTimer(); _measurePlotCPUTime.setValue( watch.getCPUTime() ); _measurePlotCalendarTime.setValue( watch.getCalendarTime() ); break;
+      case exahype::records::RepositoryState::UseAdapterGlobalTimeStepComputation: watch.startTimer(); _gridWithGlobalTimeStepComputation.iterate(); watch.stopTimer(); _measureGlobalTimeStepComputationCPUTime.setValue( watch.getCPUTime() ); _measureGlobalTimeStepComputationCalendarTime.setValue( watch.getCalendarTime() ); break;
+      case exahype::records::RepositoryState::UseAdapterPredictor: watch.startTimer(); _gridWithPredictor.iterate(); watch.stopTimer(); _measurePredictorCPUTime.setValue( watch.getCPUTime() ); _measurePredictorCalendarTime.setValue( watch.getCalendarTime() ); break;
+      case exahype::records::RepositoryState::UseAdapterCorrector: watch.startTimer(); _gridWithCorrector.iterate(); watch.stopTimer(); _measureCorrectorCPUTime.setValue( watch.getCPUTime() ); _measureCorrectorCalendarTime.setValue( watch.getCalendarTime() ); break;
 
       case exahype::records::RepositoryState::Terminate:
         assertionMsg( false, "this branch/state should never be reached" ); 
@@ -234,6 +249,9 @@ void exahype::repositories::RepositorySTDStack::iterate(int numberOfIterations, 
  void exahype::repositories::RepositorySTDStack::switchToPredictorAndGlobalTimeStepComputation() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterPredictorAndGlobalTimeStepComputation); }
  void exahype::repositories::RepositorySTDStack::switchToCorrectorAndPredictorAndGlobalTimeStepComputation() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputation); }
  void exahype::repositories::RepositorySTDStack::switchToPlot() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterPlot); }
+ void exahype::repositories::RepositorySTDStack::switchToGlobalTimeStepComputation() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterGlobalTimeStepComputation); }
+ void exahype::repositories::RepositorySTDStack::switchToPredictor() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterPredictor); }
+ void exahype::repositories::RepositorySTDStack::switchToCorrector() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterCorrector); }
 
 
 
@@ -244,6 +262,9 @@ void exahype::repositories::RepositorySTDStack::iterate(int numberOfIterations, 
  bool exahype::repositories::RepositorySTDStack::isActiveAdapterPredictorAndGlobalTimeStepComputation() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterPredictorAndGlobalTimeStepComputation; }
  bool exahype::repositories::RepositorySTDStack::isActiveAdapterCorrectorAndPredictorAndGlobalTimeStepComputation() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterCorrectorAndPredictorAndGlobalTimeStepComputation; }
  bool exahype::repositories::RepositorySTDStack::isActiveAdapterPlot() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterPlot; }
+ bool exahype::repositories::RepositorySTDStack::isActiveAdapterGlobalTimeStepComputation() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterGlobalTimeStepComputation; }
+ bool exahype::repositories::RepositorySTDStack::isActiveAdapterPredictor() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterPredictor; }
+ bool exahype::repositories::RepositorySTDStack::isActiveAdapterCorrector() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterCorrector; }
 
 
 
@@ -327,6 +348,9 @@ void exahype::repositories::RepositorySTDStack::logIterationStatistics() const {
    logInfo( "logIterationStatistics()", "| PredictorAndGlobalTimeStepComputation \t |  " << _measurePredictorAndGlobalTimeStepComputationCPUTime.getNumberOfMeasurements() << " \t |  " << _measurePredictorAndGlobalTimeStepComputationCPUTime.getAccumulatedValue() << " \t |  " << _measurePredictorAndGlobalTimeStepComputationCPUTime.getValue()  << " \t |  " << _measurePredictorAndGlobalTimeStepComputationCalendarTime.getAccumulatedValue() << " \t |  " << _measurePredictorAndGlobalTimeStepComputationCalendarTime.getValue() << " \t |  " << _measurePredictorAndGlobalTimeStepComputationCPUTime.toString() << " \t |  " << _measurePredictorAndGlobalTimeStepComputationCalendarTime.toString() );
    logInfo( "logIterationStatistics()", "| CorrectorAndPredictorAndGlobalTimeStepComputation \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationCPUTime.getNumberOfMeasurements() << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationCPUTime.getAccumulatedValue() << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationCPUTime.getValue()  << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationCalendarTime.getAccumulatedValue() << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationCalendarTime.getValue() << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationCPUTime.toString() << " \t |  " << _measureCorrectorAndPredictorAndGlobalTimeStepComputationCalendarTime.toString() );
    logInfo( "logIterationStatistics()", "| Plot \t |  " << _measurePlotCPUTime.getNumberOfMeasurements() << " \t |  " << _measurePlotCPUTime.getAccumulatedValue() << " \t |  " << _measurePlotCPUTime.getValue()  << " \t |  " << _measurePlotCalendarTime.getAccumulatedValue() << " \t |  " << _measurePlotCalendarTime.getValue() << " \t |  " << _measurePlotCPUTime.toString() << " \t |  " << _measurePlotCalendarTime.toString() );
+   logInfo( "logIterationStatistics()", "| GlobalTimeStepComputation \t |  " << _measureGlobalTimeStepComputationCPUTime.getNumberOfMeasurements() << " \t |  " << _measureGlobalTimeStepComputationCPUTime.getAccumulatedValue() << " \t |  " << _measureGlobalTimeStepComputationCPUTime.getValue()  << " \t |  " << _measureGlobalTimeStepComputationCalendarTime.getAccumulatedValue() << " \t |  " << _measureGlobalTimeStepComputationCalendarTime.getValue() << " \t |  " << _measureGlobalTimeStepComputationCPUTime.toString() << " \t |  " << _measureGlobalTimeStepComputationCalendarTime.toString() );
+   logInfo( "logIterationStatistics()", "| Predictor \t |  " << _measurePredictorCPUTime.getNumberOfMeasurements() << " \t |  " << _measurePredictorCPUTime.getAccumulatedValue() << " \t |  " << _measurePredictorCPUTime.getValue()  << " \t |  " << _measurePredictorCalendarTime.getAccumulatedValue() << " \t |  " << _measurePredictorCalendarTime.getValue() << " \t |  " << _measurePredictorCPUTime.toString() << " \t |  " << _measurePredictorCalendarTime.toString() );
+   logInfo( "logIterationStatistics()", "| Corrector \t |  " << _measureCorrectorCPUTime.getNumberOfMeasurements() << " \t |  " << _measureCorrectorCPUTime.getAccumulatedValue() << " \t |  " << _measureCorrectorCPUTime.getValue()  << " \t |  " << _measureCorrectorCalendarTime.getAccumulatedValue() << " \t |  " << _measureCorrectorCalendarTime.getValue() << " \t |  " << _measureCorrectorCPUTime.toString() << " \t |  " << _measureCorrectorCalendarTime.toString() );
 
 }
 
@@ -339,6 +363,9 @@ void exahype::repositories::RepositorySTDStack::clearIterationStatistics() {
    _measurePredictorAndGlobalTimeStepComputationCPUTime.erase();
    _measureCorrectorAndPredictorAndGlobalTimeStepComputationCPUTime.erase();
    _measurePlotCPUTime.erase();
+   _measureGlobalTimeStepComputationCPUTime.erase();
+   _measurePredictorCPUTime.erase();
+   _measureCorrectorCPUTime.erase();
 
    _measureInitialGridCalendarTime.erase();
    _measurePatchInitialisationCalendarTime.erase();
@@ -347,5 +374,8 @@ void exahype::repositories::RepositorySTDStack::clearIterationStatistics() {
    _measurePredictorAndGlobalTimeStepComputationCalendarTime.erase();
    _measureCorrectorAndPredictorAndGlobalTimeStepComputationCalendarTime.erase();
    _measurePlotCalendarTime.erase();
+   _measureGlobalTimeStepComputationCalendarTime.erase();
+   _measurePredictorCalendarTime.erase();
+   _measureCorrectorCalendarTime.erase();
 
 }

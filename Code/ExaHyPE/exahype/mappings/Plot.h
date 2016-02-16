@@ -43,6 +43,11 @@ class exahype::mappings::Plot {
      * Logging device for the trace macros.
      */
     static tarch::logging::Log  _log;
+
+    /**
+     * Local copy of the state.
+     */
+    exahype::State _localState;
   public:
     /**
      * These flags are used to inform Peano about your operation. It tells the 
@@ -1249,6 +1254,8 @@ class exahype::mappings::Plot {
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
     );    
+
+    const exahype::State& getState() const;
 };
 
 

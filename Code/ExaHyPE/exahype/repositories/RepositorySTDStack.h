@@ -23,6 +23,9 @@
  #include "exahype/adapters/PredictorAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/CorrectorAndPredictorAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/Plot.h" 
+ #include "exahype/adapters/GlobalTimeStepComputation.h" 
+ #include "exahype/adapters/Predictor.h" 
+ #include "exahype/adapters/Corrector.h" 
 
 
 
@@ -55,6 +58,9 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictorAndGlobalTimeStepComputation> _gridWithPredictorAndGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::CorrectorAndPredictorAndGlobalTimeStepComputation> _gridWithCorrectorAndPredictorAndGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Plot> _gridWithPlot;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GlobalTimeStepComputation> _gridWithGlobalTimeStepComputation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Predictor> _gridWithPredictor;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Corrector> _gridWithCorrector;
 
      
    exahype::records::RepositoryState               _repositoryState;
@@ -66,6 +72,9 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measurePredictorAndGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measureCorrectorAndPredictorAndGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measurePlotCPUTime;
+    tarch::timing::Measurement _measureGlobalTimeStepComputationCPUTime;
+    tarch::timing::Measurement _measurePredictorCPUTime;
+    tarch::timing::Measurement _measureCorrectorCPUTime;
 
     tarch::timing::Measurement _measureInitialGridCalendarTime;
     tarch::timing::Measurement _measurePatchInitialisationCalendarTime;
@@ -74,6 +83,9 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measurePredictorAndGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measureCorrectorAndPredictorAndGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measurePlotCalendarTime;
+    tarch::timing::Measurement _measureGlobalTimeStepComputationCalendarTime;
+    tarch::timing::Measurement _measurePredictorCalendarTime;
+    tarch::timing::Measurement _measureCorrectorCalendarTime;
 
    
   public:
@@ -120,6 +132,9 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToPredictorAndGlobalTimeStepComputation();    
     virtual void switchToCorrectorAndPredictorAndGlobalTimeStepComputation();    
     virtual void switchToPlot();    
+    virtual void switchToGlobalTimeStepComputation();    
+    virtual void switchToPredictor();    
+    virtual void switchToCorrector();    
 
     virtual bool isActiveAdapterInitialGrid() const;
     virtual bool isActiveAdapterPatchInitialisation() const;
@@ -128,6 +143,9 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual bool isActiveAdapterPredictorAndGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterCorrectorAndPredictorAndGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterPlot() const;
+    virtual bool isActiveAdapterGlobalTimeStepComputation() const;
+    virtual bool isActiveAdapterPredictor() const;
+    virtual bool isActiveAdapterCorrector() const;
 
    
     #ifdef Parallel

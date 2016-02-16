@@ -7,6 +7,7 @@
 
 #include "exahype/aderdg/ADERDG.h"
 
+#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
 /**
@@ -79,10 +80,11 @@ exahype::mappings::SurfaceIntegral::~SurfaceIntegral() {
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::SurfaceIntegral::SurfaceIntegral(const SurfaceIntegral&  masterThread) {
+exahype::mappings::SurfaceIntegral::SurfaceIntegral(const SurfaceIntegral&  masterThread):
+    _localState(masterThread._localState)
+{
   // do nothing
 }
-
 
 void exahype::mappings::SurfaceIntegral::mergeWithWorkerThread(const SurfaceIntegral& workerThread) {
   // do nothing
@@ -369,7 +371,8 @@ void exahype::mappings::SurfaceIntegral::enterCell(
       p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
       p++
   ) {
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
+    exahype::State::shared_ptr_Solve solve  = _localState.getSolveRegistry()     [ p->getSolveNumber()      ];
+    exahype::solvers::Solver* solver        = exahype::solvers::RegisteredSolvers[ solve->getSolverNumber() ];
 
     double * lduh   = &(DataHeap::getInstance().getData( p->getUpdate() )     [0]._persistentRecords._u);
     double * lFhbnd = &(DataHeap::getInstance().getData( p->getFluctuation() )[0]._persistentRecords._u);
@@ -401,7 +404,11 @@ void exahype::mappings::SurfaceIntegral::leaveCell(
 void exahype::mappings::SurfaceIntegral::beginIteration(
     exahype::State&  solverState
 ) {
-  // do nothing
+  logTraceInWith1Argument( "beginIteration(State)", solverState );
+
+  _localState = solverState;
+
+  logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
 
 
@@ -434,4 +441,8 @@ void exahype::mappings::SurfaceIntegral::ascend(
     exahype::Cell&           coarseGridCell
 ) {
   // do nothing
+}
+
+const exahype::State& exahype::mappings::SurfaceIntegral::getState() const {
+  return _localState;
 }

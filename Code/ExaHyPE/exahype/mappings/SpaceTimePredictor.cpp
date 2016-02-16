@@ -3,6 +3,8 @@
 #include "peano/utils/Globals.h"
 
 #include "exahype/aderdg/ADERDG.h"
+
+#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
 
@@ -76,10 +78,10 @@ exahype::mappings::SpaceTimePredictor::~SpaceTimePredictor() {
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::SpaceTimePredictor::SpaceTimePredictor(const SpaceTimePredictor&  masterThread)
-:
+exahype::mappings::SpaceTimePredictor::SpaceTimePredictor(const SpaceTimePredictor&  masterThread):
       _localState(masterThread._localState)
 {
+  // do nothing
 }
 
 
@@ -373,7 +375,8 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
     p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
     p++
   ) {
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
+    exahype::State::shared_ptr_Solve solve  = _localState.getSolveRegistry()[ p->getSolveNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers  [ solve->getSolverNumber() ];
 
     // space-time DoF (basisSize**(DIMENSIONS+1))
     double * lQi = &(DataHeap::getInstance().getData(p->getSpaceTimePredictor()) [0]._persistentRecords._u);
@@ -388,6 +391,8 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
     double * lQhbnd = &(DataHeap::getInstance().getData(p->getExtrapolatedPredictor())[0]._persistentRecords._u);
     double * lFhbnd = &(DataHeap::getInstance().getData(p->getFluctuation())          [0]._persistentRecords._u);
 
+    double predictorTimeStepSize = p->getPredictorTimeStepSize();
+
     solver->spaceTimePredictor(
       lQi,
       lFi,
@@ -397,10 +402,10 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
       lFhbnd,
       luh,
       fineGridVerticesEnumerator.getCellSize(),
-      _localState.getMaxTimeStepSize()
+      p->getPredictorTimeStepSize()
     );
 
-    logDebug("enterCell(...)::debug::after::dt_max",_localState.getMaxTimeStepSize());
+    logDebug("enterCell(...)::debug::after::dt_max",_localState.getCurrentMinTimeStepSize());
     logDebug("enterCell(...)::debug::after::luh[0]",luh[0]);
     logDebug("enterCell(...)::debug::after::lQi[0]",lQi[0]);
     logDebug("enterCell(...)::debug::after::lFi[0]",lFi[0]);

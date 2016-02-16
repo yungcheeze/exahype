@@ -2,17 +2,23 @@ Packed-Type: short int;
 
 class exahype::dastgen::State {  
   /**
-   * Identify max time step size for next sweep.
+   * The minimum time step size of all solves for the previous sweep.
    */
-  parallelise persistent double maxTimeStepSize;
+  parallelise persistent double previousMinTimeStepSize;
+
+  /**
+   * The minimum time step size of all solves for the current sweep.
+   */
+  parallelise persistent double currentMinTimeStepSize;
   
   /**
-   * Copy of maxTimeStepSize that is used for the current sweep.
+   * Estimate of the minimum time step size of all solves
+   * for the next sweep.
    */
-  parallelise persistent double oldMaxTimeStepSize;
+  parallelise persistent double nextMinTimeStepSize;
   
   /**
-   * Minimum of all time stamps of all cells. 
+   * Minimum of the time stamps of all solves. 
    */
-  parallelise persistent double minTimeStamp;
+  parallelise persistent double currentMinTimeStamp;
 };

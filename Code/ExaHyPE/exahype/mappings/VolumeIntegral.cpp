@@ -4,8 +4,8 @@
 
 #include "exahype/aderdg/ADERDG.h"
 
+#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
-
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -77,10 +77,11 @@ exahype::mappings::VolumeIntegral::~VolumeIntegral() {
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::VolumeIntegral::VolumeIntegral(const VolumeIntegral&  masterThread) {
+exahype::mappings::VolumeIntegral::VolumeIntegral(const VolumeIntegral&  masterThread):
+    _localState(masterThread._localState)
+{
   // do nothing
 }
-
 
 void exahype::mappings::VolumeIntegral::mergeWithWorkerThread(const VolumeIntegral& workerThread) {
   // do nothing
@@ -366,7 +367,8 @@ void exahype::mappings::VolumeIntegral::enterCell(
     p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
     p++
   ) {
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
+    exahype::State::shared_ptr_Solve solve  = _localState.getSolveRegistry()     [ p->getSolveNumber()      ];
+    exahype::solvers::Solver* solver        = exahype::solvers::RegisteredSolvers[ solve->getSolverNumber() ];
 
     double * lduh = &(DataHeap::getInstance().getData(p->getUpdate())    [0]._persistentRecords._u);
     double * lFhi = &(DataHeap::getInstance().getData(p->getVolumeFlux())[0]._persistentRecords._u);
@@ -403,7 +405,11 @@ void exahype::mappings::VolumeIntegral::leaveCell(
 void exahype::mappings::VolumeIntegral::beginIteration(
     exahype::State&  solverState
 ) {
-  // do nothing
+  logTraceInWith1Argument( "beginIteration(State)", solverState );
+
+  _localState = solverState;
+
+  logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
 
 
@@ -434,4 +440,8 @@ void exahype::mappings::VolumeIntegral::ascend(
     exahype::Cell&           coarseGridCell
 ) {
   // do nothing
+}
+
+const exahype::State& exahype::mappings::VolumeIntegral::getState() const {
+  return _localState;
 }

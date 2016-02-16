@@ -20,6 +20,9 @@
  #include "exahype/adapters/PredictorAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/CorrectorAndPredictorAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/Plot.h" 
+ #include "exahype/adapters/GlobalTimeStepComputation.h" 
+ #include "exahype/adapters/Predictor.h" 
+ #include "exahype/adapters/Corrector.h" 
 
 
 namespace peano {

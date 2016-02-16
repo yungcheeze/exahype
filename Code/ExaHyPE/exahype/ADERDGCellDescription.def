@@ -11,6 +11,8 @@ Constant: DIMENSIONS;
 Constant: DIMENSIONS_TIMES_TWO;
 
 class exahype::records::ADERDGCellDescription {
+  parallelise persistent int    solveNumber;          // !< Time stamp of the current solution.
+  
   /** 
    * Indicates if this a parent cell (true) or a leaf cell that holds data.
    */
@@ -20,13 +22,46 @@ class exahype::records::ADERDGCellDescription {
    * Indicates if this a real cell (false) that holds space-time, volume, and face data
    * or a virtual cell that holds only face data.
    */
-  parallelise persistent bool isVirtual; 
+  parallelise persistent bool isGhost; 
   
   /** 
    * We hold a bool for each face belonging to this ADER-DG cell stating
    * if a Riemann solve has already performed on it.
    */
   parallelise persistent bool riemannSolvePerformed[DIMENSIONS_TIMES_TWO];
+  
+  /**
+   * Time integration.
+   */
+   ///@{
+   /**  
+   * The time step size the time lagging corrector is working with, i.e.,
+   * the predictor time step size of the previous sweep.
+   */
+  parallelise persistent double correctorTimeStepSize;
+ 
+  /**  
+   * The time stamp the time lagging corrector is working with.
+   * the predictor time stamp of the previous sweep.
+   */
+  parallelise persistent double correctorTimeStamp;
+  
+  /** 
+   * The time step size the predictor is working with.
+   */
+  parallelise persistent double predictorTimeStepSize;
+ 
+  /** 
+   * The time stamp the predictor is working with.
+   */
+  parallelise persistent double predictorTimeStamp;
+  
+  /** 
+   * The predictor time step size for the next sweep.
+   */
+  parallelise persistent double nextPredictorTimeStepSize;
+   ///@}
+  
   
   /** Space-time data on each patch. Size: #var*(N+1)^(d+1)
    * 
@@ -69,9 +104,5 @@ class exahype::records::ADERDGCellDescription {
   parallelise persistent int    level;              // !< Space-tree level of the cell owning this cell description.
   parallelise persistent double offset[DIMENSIONS]; // !< Offest of the "lower left" node of the lower left ghost cell from the lower left node of the cell.
   parallelise persistent double size  [DIMENSIONS]; // !< Dimension of the cell owning this cell description in x,y, and z direction.
-  ///@}
-
-  parallelise persistent double timeStamp;          // !< Time stamp of the current solution.
-
-  parallelise persistent int    solverNumber;          // !< Time stamp of the current solution.
+  ///@}s
 };
