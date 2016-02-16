@@ -87,7 +87,6 @@ void exahype::plotters::Plotter::plotPatch(
 void exahype::plotters::Plotter::finishedPlotting() {
   assertion(isActive());
   if (_repeat>0.0) {
-    std::cerr << _repeat << std::endl;
     _time += _repeat;
   }
   else {
