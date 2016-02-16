@@ -59,7 +59,7 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
       logInfo( "initSharedMemoryConfiguration()", "use shared memory oracle sampling" );
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
           new sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling(
-              10,
+              32,
               false, // useThreadPipelining,
               true  // logarithmicDistribution
           )
