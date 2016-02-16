@@ -37,6 +37,7 @@ Tokens
   token_multiscalelinkedcell_path = 'multiscalelinkedcell-path';
   token_sharedmemoryoracles_path  = 'sharedmemoryoracles-path';
   token_output_directory          = 'output-directory';
+  token_architecture              = 'architecture';
 
 
   token_computational_domain      = 'computational-domain';
@@ -97,12 +98,13 @@ Productions
   project {->project} = 
       [begin_token]:token_project [name]:identifier 
         paths
+        token_architecture token_equals [architecture]:identifier
         computational_domain
         solver_list?
         shared_memory?
         optimisation?
       token_end [end_token]:token_project
-        { -> New project( name, paths.paths, computational_domain.computational_domain, [solver_list.solver], optimisation.optimisation, shared_memory.shared_memory ) }
+        { -> New project( name, paths.paths, architecture, computational_domain.computational_domain, [solver_list.solver], optimisation.optimisation, shared_memory.shared_memory ) }
     ;    
 
   paths {->paths} =
@@ -175,6 +177,7 @@ Abstract Syntax Tree
    project = 
      [name]:identifier 
      paths
+     [architecture]:identifier
      computational_domain
      solver*
      optimisation?
