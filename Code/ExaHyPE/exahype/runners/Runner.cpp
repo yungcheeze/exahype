@@ -180,9 +180,9 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     logInfo(
         "runAsMaster(...)",
         "step " << -1 <<
-        "\t t_min     =" << repository.getState().getCurrentMinTimeStamp() <<
-        "\t dt_max    =" << repository.getState().getCurrentMinTimeStepSize() <<
-        "\t dt_max_old=" << repository.getState().getPreviousMinTimeStepSize()
+        "\t t_min          =" << repository.getState().getCurrentMinTimeStamp() <<
+        "\t dt_min         =" << repository.getState().getCurrentMinTimeStepSize() <<
+        "\t previous dt_min=" << repository.getState().getPreviousMinTimeStepSize()
     );
 #endif
 
@@ -191,8 +191,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    * Set current time step size as old time step size of next iteration.
    * Compute the current time step size of the next iteration.
    */
-  // todo Dominic Etienne Charrier
-  // I changed code here
   repository.switchToPredictorAndGlobalTimeStepComputation();
   repository.iterate();
   repository.getState().startNewTimeStep();
@@ -201,9 +199,9 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     logInfo(
         "runAsMaster(...)",
         "step " << 0 <<
-        "\t t_min     ="  << repository.getState().getCurrentMinTimeStamp() <<
-        "\t dt_max    =" << repository.getState().getCurrentMinTimeStepSize() <<
-        "\t dt_max_old=" << repository.getState().getPreviousMinTimeStepSize()
+        "\t t_min          =" << repository.getState().getCurrentMinTimeStamp() <<
+        "\t dt_min         =" << repository.getState().getCurrentMinTimeStepSize() <<
+        "\t previous dt_min=" << repository.getState().getPreviousMinTimeStepSize()
     );
 #endif
 
@@ -234,9 +232,9 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     logInfo(
         "runAsMaster(...)",
         "step " << n <<
-        "\t t_min     ="  << repository.getState().getCurrentMinTimeStamp() <<
-        "\t dt_max    =" << repository.getState().getCurrentMinTimeStepSize() <<
-        "\t dt_max_old=" << repository.getState().getPreviousMinTimeStepSize()
+        "\t t_min          =" << repository.getState().getCurrentMinTimeStamp() <<
+        "\t dt_min         =" << repository.getState().getCurrentMinTimeStepSize() <<
+        "\t previous dt_min=" << repository.getState().getPreviousMinTimeStepSize()
     );
 #endif
 

@@ -126,25 +126,13 @@ public:
   /*
    * Set the time step size of this state. It is the minimum of the
    * current time step size and the argument.
-   *
-   * @todo        08/02/16:Dominic Etienne Charrier
-   * @deprecated: Replaced by updateNextMaxTimeStepSize
    */
-  // todo Dominic Etienne Charrier
-  // setMinTimeStepSizeOfBoth
   void updateNextMinTimeStepSize (const double nextMinTimeStepSize);
 
   double getNextMinTimeStepSize () const;
 
   /**
-   * - Backup the current max time step into oldMaximumTimeStepSize
-   *
-   * todo 08/02/16:Dominic Etienne Charrier
-   * Future meaning
-   * max_double         -> newMaxTimeStepSize
-   * newMaxTimeStepSize -> maxTimeStepSize
-   * maxTimeStepSize    -> previousTimeStepSize
-   *
+   * Prepares the time step sizes and time stamps for the next sweep.
    */
   void startNewTimeStep();
 

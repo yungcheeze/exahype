@@ -376,7 +376,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       p < static_cast<int>(cellDescriptionsL.size());
       p++
   ) {
-    exahype::State::shared_ptr_Solve solve   = _localState.getSolveRegistry() [ cellDescriptionsL[p].getSolveNumber() ];
+    exahype::State::shared_ptr_Solve solve   = _localState.getSolveRegistry()     [ cellDescriptionsL[p].getSolveNumber() ];
     exahype::solvers::Solver* solver         = exahype::solvers::RegisteredSolvers[ solve->getSolverNumber() ];
 
     bool riemannSolveNotPerformed = false;
@@ -393,13 +393,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       }
     } // Unlock the critical multithreading area by letting lock go out of scope.
 
-
-    // @todo 03/02/16:Dominic Etienne Charrier
-    // Fixed bug
-    // There was a solver->getNumberOfVariables() missing below:
-    const int numberOfFaceDof = solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
-    assertion1(solver->getUnknownsPerFace()==numberOfFaceDof,solver->getUnknownsPerFace());
-
+    const int numberOfFaceDof = solver->getUnknownsPerFace();//solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
 
     if (riemannSolveNotPerformed) {
       double * QL = &(DataHeap::getInstance().getData(cellDescriptionsL[p].getExtrapolatedPredictor())[faceL * numberOfFaceDof]._persistentRecords._u);
@@ -418,7 +412,12 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       // if left or right is coarse grid cell
       //  gather contributions of fine grid cells
 
+      // todo remove; works only for one solve with no corrector time lagging
       assertionNumericalEquals(_localState.getPreviousMinTimeStepSize(),solve->getCorrectorTimeStepSize());
+      assertionNumericalEquals(cellDescriptionsL[p].getCorrectorTimeStepSize(),solve->getPredictorTimeStepSize());
+      assertionNumericalEquals(cellDescriptionsR[p].getCorrectorTimeStepSize(),solve->getPredictorTimeStepSize());
+      assertionNumericalEquals(cellDescriptionsL[p].getPredictorTimeStepSize(),solve->getPredictorTimeStepSize());
+      assertionNumericalEquals(cellDescriptionsR[p].getPredictorTimeStepSize(),solve->getPredictorTimeStepSize());
 
       solver->riemannSolver(
           FL,

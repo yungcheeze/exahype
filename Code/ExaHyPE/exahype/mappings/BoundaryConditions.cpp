@@ -419,8 +419,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
     // by exahype::mappings::RiemannSolver.
     if (riemannSolveNotPerformed) {
       // @todo 03/02/16:Dominic Etienne Charrier
-      // Fixed bug
-      // There was a solver->getNumberOfVariables() missing below:
+      // Change to solver->getUnknownsPerFace()
       const int numberOfFaceDof = solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
 
       double * Qhbnd = &(DataHeap::getInstance().getData(p->getExtrapolatedPredictor())[faceIndex * numberOfFaceDof]._persistentRecords._u);

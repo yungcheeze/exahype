@@ -388,12 +388,6 @@ void exahype::mappings::SolutionUpdate::enterCell(
 
     logDebug("enterCell(...)::debug::after::luh[0]",luh[0]);
     logDebug("enterCell(...)::debug::after::lduh[0]",lduh[0]);
-
-    // todo 03/02/16:Dominic Etienne Charrier
-    // Commented out
-//    const double newTimeStamp = p->getTimeStamp() + _localState.getMaxTimeStepSize();
-//    p->setTimeStamp( newTimeStamp );
-//    _localState.updateTimeStamp( newTimeStamp );
   }
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
@@ -427,9 +421,7 @@ void exahype::mappings::SolutionUpdate::beginIteration(
 void exahype::mappings::SolutionUpdate::endIteration(
     exahype::State&  solverState
 ) {
-  // todo 03/02/16:Dominic Etienne Charrier
-  // Commented line out
-  // solverState.merge(_localState);
+  // do nothing
 }
 
 
