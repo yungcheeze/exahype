@@ -8,10 +8,10 @@ double** kernels::gaussLegendreNodes;
 void kernels::initGaussLegendreNodesAndWeights() {
   const int MaxOrder = 9;
 
-  gaussLegendreNodes   = new double*[MaxOrder];
-  gaussLegendreWeights = new double*[MaxOrder];
+  gaussLegendreNodes   = new double*[MaxOrder+1];
+  gaussLegendreWeights = new double*[MaxOrder+1];
 
-  for (int i=0; i<MaxOrder; i++) {
+  for (int i=0; i<MaxOrder+1; i++) {
     gaussLegendreNodes[i]   = new double[i+1];
     gaussLegendreWeights[i] = new double[i+1];
   }
