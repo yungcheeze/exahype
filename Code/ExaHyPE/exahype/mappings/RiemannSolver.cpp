@@ -412,13 +412,6 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       // if left or right is coarse grid cell
       //  gather contributions of fine grid cells
 
-      // todo remove; works only for one solve with no corrector time lagging
-      assertionNumericalEquals(_localState.getPreviousMinTimeStepSize(),solve->getCorrectorTimeStepSize());
-      assertionNumericalEquals(cellDescriptionsL[p].getCorrectorTimeStepSize(),solve->getPredictorTimeStepSize());
-      assertionNumericalEquals(cellDescriptionsR[p].getCorrectorTimeStepSize(),solve->getPredictorTimeStepSize());
-      assertionNumericalEquals(cellDescriptionsL[p].getPredictorTimeStepSize(),solve->getPredictorTimeStepSize());
-      assertionNumericalEquals(cellDescriptionsR[p].getPredictorTimeStepSize(),solve->getPredictorTimeStepSize());
-
       solver->riemannSolver(
           FL,
           FR,
