@@ -49,7 +49,7 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
     case Parser::Dummy:
       logInfo( "initSharedMemoryConfiguration()", "use dummy shared memory oracle" );
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
-          new peano::datatraversal::autotuning::OracleForOnePhaseDummy(true)
+          new peano::datatraversal::autotuning::OracleForOnePhaseDummy(true,false,0) // @todo Vasco bitte mal auf 1 setzen und nochmal durchjagen
       );
       break;
     case Parser::Autotuning:
