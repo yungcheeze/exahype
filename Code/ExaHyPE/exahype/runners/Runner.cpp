@@ -138,6 +138,7 @@ void exahype::runners::Runner::initialiseSolveRegistry(State& state,bool correct
         true  // active
     )));
 
+    state.getSolveRegistry()[solverNumber]->setPredictorTimeStamp( state.getCurrentMinTimeStamp() );
     solverNumber++;
   }
 
@@ -156,22 +157,28 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   peano::utils::UserInterface userInterface;
   userInterface.writeHeader();
 
+  /*
+   * Initialise the state and the solves.
+   */
+  repository.getState().setCurrentMinTimeStamp(0.0);
   initialiseSolveRegistry(repository.getState(),_parser.fuseAlgorithmicSteps());
 
+  /*
+   * Build up the initial space tree.
+   */
   // The space-tree is initialised with 1 coarse grid cell on level 1 and 3^d fine grid cells on level 2.
   repository.switchToInitialGrid();
   do {
     repository.iterate();
   } while (!repository.getState().isGridBalanced());
-
-  repository.switchToPatchInitialisation();       // initialise the cell descriptions;
+  // initialise the cell descriptions;
+  repository.switchToPatchInitialisation();
   repository.iterate();
 
   /*
-   * Apply the initial conditions.
+   * Apply the initial conditions (first corrector).
    * Then, compute the the initial current time step size.
    */
-  repository.getState().setCurrentMinTimeStamp(0.0);
   repository.switchToInitialConditionAndGlobalTimeStepComputation();
   repository.iterate();
   repository.getState().startNewTimeStep();
@@ -246,7 +253,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
   repository.logIterationStatistics();
   repository.terminate();
-  // ! End of code for DG method
 
   return 0;
 }
