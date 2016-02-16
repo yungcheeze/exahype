@@ -26,6 +26,23 @@ namespace sharedmemoryoracles {
  * In practice it probably should not be used - it will not give you a fast
  * code.
  *
+ * <h1>Postprocessing</h1>
+ *
+ * Though the sampling writes text output (on demand), it is not that easy to
+ * understand. With the oracle comes a Pylab script that creates a couple of
+ * plots that visualise the sampled data. It accepts the sampling output file
+ * as argument and gives a new file with the additional extension .html.
+ *
+ * @todo
+ *
+ * adapters:6,methods:10
+ *
+ * 4th method
+ *
+ * There is an example sampling file in this directory called
+ * sampling.example-properties. It can be used to check what the output should
+ * look like.
+ *
  * @author Tobias Weinzierl
  */
 class sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling: public peano::datatraversal::autotuning::OracleForOnePhase {
