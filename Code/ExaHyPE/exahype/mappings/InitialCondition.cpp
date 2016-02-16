@@ -1,13 +1,13 @@
-#include "exahype/aderdg/ADERDG.h"
-
 #include "exahype/mappings/InitialCondition.h"
+
+#include "exahype/aderdg/ADERDG.h"
 
 #include "string.h"
 
 #include "peano/utils/Globals.h"
 
+#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
-
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -79,7 +79,9 @@ exahype::mappings::InitialCondition::~InitialCondition() {
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::InitialCondition::InitialCondition(const InitialCondition&  masterThread) {
+exahype::mappings::InitialCondition::InitialCondition(const InitialCondition&  masterThread):
+    _localState(masterThread._localState)
+{
   // do nothing
 }
 
@@ -369,7 +371,8 @@ void exahype::mappings::InitialCondition::enterCell(
       p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
       p++
     ) {
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
+    exahype::State::shared_ptr_Solve  solve  = _localState.getSolveRegistry()     [ p->getSolveNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ solve->getSolverNumber() ];
 
     // @todo Dominic Etienne Charrier
     // 03/02/16:
@@ -403,7 +406,7 @@ void exahype::mappings::InitialCondition::leaveCell(
 void exahype::mappings::InitialCondition::beginIteration(
     exahype::State&  solverState
 ) {
-  // do nothing
+  _localState = solverState;
 }
 
 

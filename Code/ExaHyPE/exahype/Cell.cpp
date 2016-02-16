@@ -1,4 +1,5 @@
 #include "exahype/Cell.h"
+#include "exahype/State.h"
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
@@ -6,6 +7,8 @@
 
 
 #include "kernels/KernelCalls.h"
+
+#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
 #include "exahype/records/ADERDGCellDescription.h"
@@ -15,18 +18,18 @@ tarch::logging::Log exahype::Cell::_log( "exahype::Cell" );
 
 
 exahype::Cell::Cell():
-  Base() {
+      Base() {
   _cellData.setADERDGCellDescriptionsIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 }
 
 
 exahype::Cell::Cell(const Base::DoNotCallStandardConstructor& value):
-  Base(value) {
+      Base(value) {
   _cellData.setADERDGCellDescriptionsIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 }
 
 exahype::Cell::Cell(const Base::PersistentCell& argument):
-                  Base(argument) {
+                      Base(argument) {
   // do nothing
 }
 
@@ -37,55 +40,58 @@ int exahype::Cell::getADERDGCellDescriptionsIndex() const {
 
 
 void exahype::Cell::init(
-  const int                                    level,
-  const tarch::la::Vector<DIMENSIONS,double>&  size,
-  const tarch::la::Vector<DIMENSIONS,double>&  cellOffset
+    const exahype::State::SolveRegistry          solveRegistry,
+    const int                                    level,
+    const tarch::la::Vector<DIMENSIONS,double>&  size,
+    const tarch::la::Vector<DIMENSIONS,double>&  cellOffset
 ) {
   assertion1( !ADERDGCellDescriptionHeap::getInstance().isValidIndex(_cellData.getADERDGCellDescriptionsIndex()), toString() );
   const int ADERDGCellDescriptionIndex = ADERDGCellDescriptionHeap::getInstance().createData(0,0);
   _cellData.setADERDGCellDescriptionsIndex( ADERDGCellDescriptionIndex );
 
-  for ( int solverNumber = 0; solverNumber < static_cast<int>( exahype::solvers::RegisteredSolvers.size() ); solverNumber++) {
+  for (unsigned int solveNumber=0; solveNumber < solveRegistry.size(); solveNumber++) {
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ solveRegistry[solveNumber]->getSolverNumber() ];
+
     // Has to be +1 here
-    if (level==exahype::solvers::RegisteredSolvers[solverNumber]->getMinimumTreeDepth()+1) {
-      logDebug( "init(...)","initialising cell description: " << "level=" << level << ", size=" << size << ",offset=" << cellOffset << ",solverNumber=" << solverNumber << ",ADER-DG index=" << ADERDGCellDescriptionIndex);
+    if (level==solver->getMinimumTreeDepth()+1) {
+      logDebug( "init(...)","initialising cell description: " << "level=" << level << ", size=" << size << ",offset=" << cellOffset << ",solveNumber=" << solveNumber << ",ADER-DG index=" << ADERDGCellDescriptionIndex);
 
-      switch (exahype::solvers::RegisteredSolvers[solverNumber]->getType()) {
+      switch (solver->getType()) {
         case exahype::solvers::Solver::ADER_DG:
-          {
-            exahype::records::ADERDGCellDescription newCellDescription;
+        {
+          exahype::records::ADERDGCellDescription newCellDescription;
 
-            // Pass geometry information to the cellDescription description
-            newCellDescription.setLevel (level);
-            newCellDescription.setSize  (size);
-            newCellDescription.setTimeStamp(0.0);
-            newCellDescription.setOffset(cellOffset);
-            newCellDescription.setSolverNumber(solverNumber);
+          // Pass geometry information to the cellDescription description
+          newCellDescription.setLevel (level);
+          newCellDescription.setSize  (size);
+          newCellDescription.setOffset(cellOffset);
 
-            int numberOfSpaceTimeDof           = exahype::solvers::RegisteredSolvers[solverNumber]->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS+1,exahype::solvers::RegisteredSolvers[solverNumber]->getNodesPerCoordinateAxis());
-            int numberOfSpaceTimeVolumeFluxDof = DIMENSIONS*numberOfSpaceTimeDof;
+          newCellDescription.setPredictorTimeStamp(0.0);
+          newCellDescription.setSolveNumber ( solveNumber);
 
-            int numberOfDof            = exahype::solvers::RegisteredSolvers[solverNumber]->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS,exahype::solvers::RegisteredSolvers[solverNumber]->getNodesPerCoordinateAxis());
-            int numberOfVolumeFluxDof  = DIMENSIONS * numberOfDof;
-            int numberOfDofOnFace      = DIMENSIONS_TIMES_TWO * exahype::solvers::RegisteredSolvers[solverNumber]->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,exahype::solvers::RegisteredSolvers[solverNumber]->getNodesPerCoordinateAxis());
+          const int spaceTimeUnknownsPerCell     = solver->getSpaceTimeUnknownsPerCell();
+          const int SpaceTimeFluxUnknownsPerCell = solver->getSpaceTimeFluxUnknownsPerCell();
+          const int unknownsPerCell              = solver->getUnknownsPerCell();
+          const int fluxUnknownsPerCell          = solver->getFluxUnknownsPerCell();
+          const int unknownsPerCellBoundary      = solver->getUnknownsPerCellBoundary();
 
-            // Allocate space-time DoF
-            newCellDescription.setSpaceTimePredictor (DataHeap::getInstance().createData(numberOfSpaceTimeDof,numberOfSpaceTimeDof));
-            newCellDescription.setSpaceTimeVolumeFlux(DataHeap::getInstance().createData(numberOfSpaceTimeVolumeFluxDof,numberOfSpaceTimeVolumeFluxDof));
+          // Allocate space-time DoF
+          newCellDescription.setSpaceTimePredictor (DataHeap::getInstance().createData(spaceTimeUnknownsPerCell,spaceTimeUnknownsPerCell));
+          newCellDescription.setSpaceTimeVolumeFlux(DataHeap::getInstance().createData(SpaceTimeFluxUnknownsPerCell,SpaceTimeFluxUnknownsPerCell));
 
-            // Allocate volume DoF
-            newCellDescription.setSolution   (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
-            newCellDescription.setUpdate     (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
-            newCellDescription.setPredictor  (DataHeap::getInstance().createData(numberOfDof,numberOfDof));
-            newCellDescription.setVolumeFlux (DataHeap::getInstance().createData(numberOfVolumeFluxDof,numberOfVolumeFluxDof));
+          // Allocate volume DoF
+          newCellDescription.setSolution   (DataHeap::getInstance().createData(unknownsPerCell,unknownsPerCell));
+          newCellDescription.setUpdate     (DataHeap::getInstance().createData(unknownsPerCell,unknownsPerCell));
+          newCellDescription.setPredictor  (DataHeap::getInstance().createData(unknownsPerCell,unknownsPerCell));
+          newCellDescription.setVolumeFlux (DataHeap::getInstance().createData(fluxUnknownsPerCell,fluxUnknownsPerCell));
 
-            // Allocate face DoF
-            newCellDescription.setExtrapolatedPredictor(DataHeap::getInstance().createData(numberOfDofOnFace,numberOfDofOnFace));
-            newCellDescription.setFluctuation          (DataHeap::getInstance().createData(numberOfDofOnFace,numberOfDofOnFace));
+          // Allocate face DoF
+          newCellDescription.setExtrapolatedPredictor(DataHeap::getInstance().createData(unknownsPerCellBoundary,unknownsPerCellBoundary));
+          newCellDescription.setFluctuation          (DataHeap::getInstance().createData(unknownsPerCellBoundary,unknownsPerCellBoundary));
 
-            ADERDGCellDescriptionHeap::getInstance().getData( _cellData.getADERDGCellDescriptionsIndex() ).push_back( newCellDescription );
-          }
-          break;
+          ADERDGCellDescriptionHeap::getInstance().getData( _cellData.getADERDGCellDescriptionsIndex() ).push_back( newCellDescription );
+        }
+        break;
       }
     }
     else {

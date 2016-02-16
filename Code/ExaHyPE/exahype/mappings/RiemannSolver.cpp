@@ -4,6 +4,7 @@
 
 #include "peano/utils/Globals.h"
 
+#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
 /**
@@ -366,6 +367,8 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
   std::vector<records::ADERDGCellDescription>&  cellDescriptionsR =
       ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexR] );
 
+  // @todo 08/03/16:Dominic Etienne Charrier
+  // Assumes that the both elements hold the same (number of) solvers
   assertion1WithExplanation( cellDescriptionsL.size() == cellDescriptionsR.size(), cellDescriptionsL.size(), "The number of ADERDGCellDescriptions is not the same for both cells!" );
 
   for (
@@ -373,7 +376,8 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       p < static_cast<int>(cellDescriptionsL.size());
       p++
   ) {
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ cellDescriptionsL[p].getSolverNumber() ];
+    exahype::State::shared_ptr_Solve solve   = _localState.getSolveRegistry()     [ cellDescriptionsL[p].getSolveNumber() ];
+    exahype::solvers::Solver* solver         = exahype::solvers::RegisteredSolvers[ solve->getSolverNumber() ];
 
     bool riemannSolveNotPerformed = false;
     {
@@ -389,11 +393,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       }
     } // Unlock the critical multithreading area by letting lock go out of scope.
 
-
-    // @todo 03/02/16:Dominic Etienne Charrier
-    // Fixed bug
-    // There was a solver->getNumberOfVariables() missing below:
-    const int numberOfFaceDof = solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
+    const int numberOfFaceDof = solver->getUnknownsPerFace();//solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
 
     if (riemannSolveNotPerformed) {
       double * QL = &(DataHeap::getInstance().getData(cellDescriptionsL[p].getExtrapolatedPredictor())[faceL * numberOfFaceDof]._persistentRecords._u);
@@ -402,18 +402,29 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       double * FL = &(DataHeap::getInstance().getData(cellDescriptionsL[p].getFluctuation())[faceL * numberOfFaceDof]._persistentRecords._u);
       double * FR = &(DataHeap::getInstance().getData(cellDescriptionsR[p].getFluctuation())[faceR * numberOfFaceDof]._persistentRecords._u);
 
-      logDebug("touchVertexLastTime(...)::debug::before::dt_max*",_localState.getOldMaxTimeStepSize());
+      logDebug("touchVertexLastTime(...)::debug::before::dt_max*",_localState.getPreviousMinTimeStepSize());
       logDebug("touchVertexLastTime(...)::debug::before::QL[0]*",QL[0]);
       logDebug("touchVertexLastTime(...)::debug::before::QR[0]*",QR[0]);
       logDebug("touchVertexLastTime(...)::debug::before::FL[0]",FL[0]);
       logDebug("touchVertexLastTime(...)::debug::before::FR[0]",FR[0]);
+
+      // @todo 08/02/16:Dominic Etienne Charrier
+      // if left or right is coarse grid cell
+      //  gather contributions of fine grid cells
+
+      // todo remove; works only for one solve with no corrector time lagging
+      assertionNumericalEquals(_localState.getPreviousMinTimeStepSize(),solve->getCorrectorTimeStepSize());
+      assertionNumericalEquals(cellDescriptionsL[p].getCorrectorTimeStepSize(),solve->getPredictorTimeStepSize());
+      assertionNumericalEquals(cellDescriptionsR[p].getCorrectorTimeStepSize(),solve->getPredictorTimeStepSize());
+      assertionNumericalEquals(cellDescriptionsL[p].getPredictorTimeStepSize(),solve->getPredictorTimeStepSize());
+      assertionNumericalEquals(cellDescriptionsR[p].getPredictorTimeStepSize(),solve->getPredictorTimeStepSize());
 
       solver->riemannSolver(
           FL,
           FR,
           QL,
           QR,
-          _localState.getOldMaxTimeStepSize(),
+          std::min( cellDescriptionsL[p].getCorrectorTimeStepSize(), cellDescriptionsR[p].getCorrectorTimeStepSize() ),
           normalNonZero
       );
 
@@ -440,7 +451,7 @@ void exahype::mappings::RiemannSolver::touchVertexLastTime(
   // Delegate to solver-specific code fragments
 
   //
-  assertion1WithExplanation(_localState.getOldMaxTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size was not initialised correctly!");
+  assertion1WithExplanation(_localState.getPreviousMinTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Previous time step size was not initialised correctly!");
 
   tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
   logDebug("touchVertexLastTime(...)","cell descriptions around vertex. "

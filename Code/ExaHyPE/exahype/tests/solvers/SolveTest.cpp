@@ -33,7 +33,6 @@ void exahype::tests::solvers::SolveTest::run() {
 void exahype::tests::solvers::SolveTest::testSolve() {
   exahype::solvers::Solve solve(
       0, // solverNumber
-      exahype::solvers::Solve::InvalidParentSolveIdentifier,
       exahype::solvers::Solve::SOLVE,
       exahype::solvers::Solve::GLOBAL,
       true, // corrector time lagging
@@ -41,7 +40,6 @@ void exahype::tests::solvers::SolveTest::testSolve() {
   );
 
   validateEquals(solve.getSolverNumber()       ,0);
-  validateEquals(solve.getParentSolve()        ,exahype::solvers::Solve::InvalidParentSolveIdentifier);
   validateEquals(solve.getType()               ,exahype::solvers::Solve::SOLVE);
   validateEquals(solve.getTimeStepping()       ,exahype::solvers::Solve::GLOBAL);
   validateEquals(solve.isCorrectorTimeLagging(),true);
@@ -109,7 +107,6 @@ void exahype::tests::solvers::SolveTest::testSolve() {
   // create an additional solver
   exahype::solvers::Solve otherSolve(
       0, // solverNumber
-      exahype::solvers::Solve::InvalidParentSolveIdentifier,
       exahype::solvers::Solve::SOLVE,
       exahype::solvers::Solve::GLOBAL,
       true, // corrector time lagging

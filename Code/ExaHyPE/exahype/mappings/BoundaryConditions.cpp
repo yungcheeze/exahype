@@ -6,6 +6,7 @@
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
+#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
 /**
@@ -393,8 +394,8 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       p != ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndex] ).end();
       p++
   ) {
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
-
+    exahype::State::shared_ptr_Solve solve = _localState.getSolveRegistry()     [ p->getSolveNumber() ];
+    exahype::solvers::Solver* solver       = exahype::solvers::RegisteredSolvers[ solve->getSolverNumber() ];
 
     bool riemannSolveNotPerformed = false;
     {
@@ -418,8 +419,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
     // by exahype::mappings::RiemannSolver.
     if (riemannSolveNotPerformed) {
       // @todo 03/02/16:Dominic Etienne Charrier
-      // Fixed bug
-      // There was a solver->getNumberOfVariables() missing below:
+      // Change to solver->getUnknownsPerFace()
       const int numberOfFaceDof = solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
 
       double * Qhbnd = &(DataHeap::getInstance().getData(p->getExtrapolatedPredictor())[faceIndex * numberOfFaceDof]._persistentRecords._u);
@@ -430,7 +430,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       // Invoke user defined boundary condition function
       // At the moment, we simply copy the cell solution to the boundary.
 
-      logDebug("touchVertexLastTime(...)::debug::before::dt_max*",_localState.getOldMaxTimeStepSize());
+      logDebug("touchVertexLastTime(...)::debug::before::dt_max*",_localState.getPreviousMinTimeStepSize());
       logDebug("touchVertexLastTime(...)::debug::before::Qhbnd[0]*",Qhbnd[0]);
       logDebug("touchVertexLastTime(...)::debug::before::Fhbnd[0]",Fhbnd[0]);
 
@@ -439,7 +439,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
           Fhbnd,
           Qhbnd,
           Qhbnd,
-          _localState.getOldMaxTimeStepSize(),
+          p->getCorrectorTimeStepSize(),//solve->getCorrectorTimeStepSize(),//_localState.getPreviousMinTimeStepSize(),
           normalNonZero);
 
       logDebug("touchVertexLastTime(...)::debug::after::Qhbnd[0]*",Qhbnd[0]);
@@ -459,7 +459,7 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
 ) {
   logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
 
-  assertion1WithExplanation(_localState.getOldMaxTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size is not initialised correctly!");
+  assertion1WithExplanation(_localState.getPreviousMinTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size is not initialised correctly!");
 
   tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
   // todo: DEC: Reverse engineered indices from

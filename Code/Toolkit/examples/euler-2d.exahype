@@ -31,7 +31,7 @@ exahype-project  Euler2d
    
     plot vtk::binary
       time     = 0.0
-      repeat   = 0.0001
+      repeat   = 0.005
       filename = ./solution
     end plot
   end solver
@@ -44,7 +44,7 @@ exahype-project  Euler2d
 */
 
   optimisation
-    fuse-algorithmic-steps   = on
+    fuse-algorithmic-steps   = off
   end optimisation  
   
 
