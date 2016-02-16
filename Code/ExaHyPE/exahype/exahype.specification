@@ -116,5 +116,6 @@ adapter:
 
 adapter:
   name: Corrector
+  merge-with-user-defined-mapping: RiemannSolverReset
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate 
