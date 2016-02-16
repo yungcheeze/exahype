@@ -22,6 +22,7 @@
 #define EXAHYPE_FACE_BOTTOM 4
 #define EXAHYPE_FACE_TOP    5
 
+/*
 template <void PDEEigenvalues2d(const double * const Q,const int normalNonZero,double * lambda)>
 double kernels::aderdg::generic::stableTimeStepSize(
     const double * const luh,
@@ -32,8 +33,7 @@ double kernels::aderdg::generic::stableTimeStepSize(
   const double PNPM[10] = {
       1.0, 0.33, 0.17, 0.1, 0.069, 0.045,  0.038, 0.03, 0.02, 0.015
   };
-  double* lambda = new double[numberOfVariables];
-
+  double lambda[numberOfVariables];
   double dt=std::numeric_limits<double>::max();
   for(int ii=0; ii < basisSize; ii++) {
     for (int jj=0; jj<basisSize; jj++) {
@@ -55,10 +55,7 @@ double kernels::aderdg::generic::stableTimeStepSize(
     }
   }
   return dt;
-}
-
-// todo remove
-#include "tarch/tests/TestMacros.h"
+}*/
 
 // todo change template parameter in header and generator
 // template <void PDEFlux2d(const double * const Q, double * f, double * g)>
@@ -128,6 +125,11 @@ void kernels::aderdg::generic::riemannSolver(
   //  bool _error = false;
   //  std::cout << "sMax" << sMax << std::endl;
   //  validateNumericalEqualsWithEps(sMax, 1.18321595661992, 1e-10);
+
+  delete[] QavL;
+  delete[] QavR;
+  delete[] lambdaL;
+  delete[] lambdaR;
 }
 
 template <void PDEInitialValues(const double* const x,double* Q)>
@@ -545,6 +547,7 @@ void kernels::aderdg::generic::spaceTimePredictor(
     int          numberOfVariables,
     int          basisSize
 ) {
+std::cout << "spaceTimePredictor Picard only" << std::endl;
   // todo Angelika
   // Please remove the typedefs in generic kernels again since numberOf(...)Dof is not
   // a compile time variable anymore

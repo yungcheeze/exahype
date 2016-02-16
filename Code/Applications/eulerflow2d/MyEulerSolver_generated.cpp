@@ -3,10 +3,7 @@
 // =============================---==============
 #include "MyEulerSolver.h"
 #include "kernels/aderdg/generic/Kernels.h"
-
-
-
-#include "kernels/aderdg/generic/Kernels.h"
+#include "kernels/aderdg/generic/stableTimeStepSize.cpp"
 
 
 void Euler2d::MyEulerSolver::spaceTimePredictor( double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {
