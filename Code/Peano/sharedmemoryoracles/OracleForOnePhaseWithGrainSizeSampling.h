@@ -33,11 +33,7 @@ namespace sharedmemoryoracles {
  * plots that visualise the sampled data. It accepts the sampling output file
  * as argument and gives a new file with the additional extension .html.
  *
- * @todo
- *
- * adapters:6,methods:10
- *
- * 4th method
+ * adapters=6,phases=10  fehlt noch
  *
  * There is an example sampling file in this directory called
  * sampling.example-properties. It can be used to check what the output should

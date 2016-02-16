@@ -5,13 +5,10 @@ import os
 
 
 
-Colours   = [ "#ff0000", "#00ff00", "#0000ff", "#ffff00", "#ff00ff", "#00ffff", "#232323", "#aaaaaa" ]
-Symbols   = [ "-s",      "-o",      "-^",      "-v",      "-<",      "->",      "-D",      "-1" ]
-
-
 
 def processMeasurement(adapter,phase):
   substring    = line.split( "adapter=" + str(adapter) + ", phase=" + str(phase) )[1]
+  substring    = substring.split( "adapter" )[0]
 
   name         = substring.split("name=")[1].split(",")[0] 
   problemSize  = substring.split("problem-size=")[1].split(")")[0] 
@@ -20,92 +17,58 @@ def processMeasurement(adapter,phase):
   htmlOverview.write( "name=" + name + "<br />" );
   htmlOverview.write( "max problem size=" + problemSize + "<br />" );
   htmlOverview.write( "grain sizes studied=" + str(grainSizes) + "<br />" );
+
+  
+  xValues = []
+  yValues = []
+  zValues = []
   
   for measurement in substring.split( "(grain-size=" )[1:-1]:
-    #htmlOverview.write( "<pre>" );
-    #htmlOverview.write( measurement  );
-    #htmlOverview.write( "</pre>" );
     grainSize  = float(measurement.split( "," )[0])
-    htmlOverview.write( "grain size=" + str(grainSize) + "<br />" );
     time       = float(measurement.split( "(" )[1].split( "," )[0])
-    htmlOverview.write( "time=" + str(time) + "<br />" );
     deviation  = float(measurement.split( "deviation=" )[1].split( ")" )[0])
-    htmlOverview.write( "deviation=" + str(deviation) + "<br />" );
-   
+    if xValues==[] or xValues[-1]<grainSize:
+      #htmlOverview.write( "grain size=" + str(grainSize) + "<br />" );
+      #htmlOverview.write( "time=" + str(time) + "<br />" );
+      #htmlOverview.write( "deviation=" + str(deviation) + "<br />" );
+      xValues.append( grainSize )
+      yValues.append( time )
+      zValues.append( deviation  )
 
-
-#
-#
-#   Compare the different solvers
-# =================================
-#
-#    
-def plotSolverDependencies(hMax,hMin,omega,theta):
   pylab.clf()
-  
-  outputFileName = "solvers-" + str(hMax) + "-" + str(hMin) + "-" + str(omega) + "-" + str(theta) + "-res2"
-  
-  print "create " + outputFileName 
-
-  symbolAndColourCounter = 0
-  
-  for solver in Solvers:
-    inputFile = getFilename(hMax,hMin,solver,omega,theta) + ".table"
-    pylab.plot(readColumnFromTable(inputFile,0), readColumnFromTable(inputFile,5), Symbols[symbolAndColourCounter], markersize=10, label=solver, color=Colours[symbolAndColourCounter], markevery=MarkEveryOffset-symbolAndColourCounter, alpha=AlphaValue)
-    symbolAndColourCounter = symbolAndColourCounter + 1
+  outputFileName = "adapter-" + str(adapter) + "-phase-" + str(phase)
+  print "write file " + outputFileName
     
-  try:
-    pylab.grid(True)
-    pylab.title( "$h_{max}$=" + "%-4.2e" % hMax + ", $h_{min}$=" + "%-4.2e" % hMin + ", $\omega=$" + str(omega) + ", $\\theta=$" + str(theta) )
-    pylab.ylabel('$|r(n)|_{2}/|r(0)|_{2}$')
-    pylab.yscale( 'log' )
-    pylab.ylim([1e-14,2])
-    pylab.xlabel('iteration $n$')
-    pylab.legend(fontsize=9, framealpha=0.5)
-    pylab.legend(loc='lower left',framealpha=0.5)
-  
-    pylab.savefig( convertIntoImageFileName(outputFileName) + ".png")
-    pylab.savefig( convertIntoImageFileName(outputFileName) + ".pdf")
-    htmlOverview.write( "<img src=\"" + convertIntoImageFileName(outputFileName) + ".png\" />" );
-    pylab.legend().set_visible(False)
-    pylab.savefig( convertIntoImageFileName(outputFileName) + "-no-legend.png")
-    pylab.savefig( convertIntoImageFileName(outputFileName) + "-no-legend.pdf")
-  except:
-    print "Unexpected error:", sys.exc_info()[0]
-        
-
-  pylab.clf()
-  
-  outputFileName = "solvers-" + str(hMax) + "-" + str(hMin) + "-" + str(omega) + "-" + str(theta) + "-resmax"
-  
-  print "create " + outputFileName 
-
   symbolAndColourCounter = 0
   
-  for solver in Solvers:
-    inputFile = getFilename(hMax,hMin,solver,omega,theta) + ".table"
-    pylab.plot(readColumnFromTable(inputFile,0), readColumnFromTable(inputFile,6), Symbols[symbolAndColourCounter], markersize=10, label=solver, color=Colours[symbolAndColourCounter], markevery=MarkEveryOffset-symbolAndColourCounter, alpha=AlphaValue)
-    symbolAndColourCounter = symbolAndColourCounter + 1
-
   try:     
+    #, alpha=AlphaValue, label=solver
+    pylab.plot(xValues, yValues, "-s",  markersize=10, color="#0000ff" )
+    pylab.plot(xValues, zValues, "o",   markersize=12, color="#ff0000" )
     pylab.grid(True)
-    pylab.title( "$h_{max}$=" + "%-4.2e" % hMax + ", $h_{min}$=" + "%-4.2e" % hMin + ", $\omega=$" + str(omega) + ", $\\theta=$" + str(theta) )
-    pylab.ylabel('$|r(n)|_{max}/|r(0)|_{max}$')
+    #pylab.title( "$h_{max}$=" + "%-4.2e" % hMax + ", $h_{min}$=" + "%-4.2e" % hMin + ", $\omega=$" + str(omega) + ", $\\theta=$" + str(theta) )
+    pylab.ylabel('[t]=s')
     pylab.yscale( 'log' )
-    pylab.ylim([1e-14,2])
-    pylab.xlabel('iteration $n$')
+    #pylab.ylim([1e-14,2])
+    pylab.xlabel('grain size')
     pylab.legend(fontsize=9, framealpha=0.5)
-    pylab.legend(loc='lower left',framealpha=0.5)
+    pylab.legend(loc='upper left',framealpha=0.5)
   
-    pylab.savefig( convertIntoImageFileName(outputFileName) + ".png")
-    pylab.savefig( convertIntoImageFileName(outputFileName) + ".pdf")
-    htmlOverview.write( "<img src=\"" + convertIntoImageFileName(outputFileName) + ".png\" /> <br />" );
-    htmlOverview.write( "<a href=\"#toc\">Up to table of content</a><br />" );
-    pylab.legend().set_visible(False)
-    pylab.savefig( convertIntoImageFileName(outputFileName) + "-no-legend.png")
-    pylab.savefig( convertIntoImageFileName(outputFileName) + "-no-legend.pdf")
+    pylab.savefig( outputFileName + ".png")
+    pylab.savefig( outputFileName + ".pdf")
+    htmlOverview.write( "<img src=\"" + outputFileName + ".png\" /> <br />" );
   except:
     print "Unexpected error:", sys.exc_info()[0]
+
+
+
+
+
+
+
+  #  symbolAndColourCounter = symbolAndColourCounter + 1
+    
+
 
 
 
@@ -115,8 +78,10 @@ def plotSolverDependencies(hMax,hMin,omega,theta):
 # ========
 #
 #    
-if (len(sys.argv)!=2):
-  print "usage: python ../postprocess-sampling-output.py outputfile"
+if (len(sys.argv)!=4):
+  print "usage: python ../postprocess-sampling-output.py outputfile no-of-adapter no-of-phases"
+  print "  no-of-adapter  number of adapters you have in your project (see your specification file)"
+  print "  no-of-phases   number of code phases that are tuned via an oracle. 19 by default (cmp OracleForOnePhase)"
   quit()
 
 htmlOverview = open( sys.argv[1] + ".html",  "w" )
@@ -124,26 +89,20 @@ htmlOverview.write( "<h1>" + sys.argv[1] + "</h1>" );
 
 inputFile = open(sys.argv[1], "r" )
 line      = inputFile.readline()
-numberOfAdapters = int(line.split( "adapters:" )[1].split(",")[0])
-numberOfMethods  = int(line.split( "phases:" )[1].split(",")[0])
+numberOfAdapters = int(sys.argv[2])
+numberOfPhases   = int(sys.argv[3])
 
 htmlOverview.write( "Number of adapters=" + str(numberOfAdapters) );
 htmlOverview.write( "<br />" );
-htmlOverview.write( "Number of phases=" + str(numberOfMethods) );
+htmlOverview.write( "Number of phases=" + str(numberOfPhases) );
+
+htmlOverview.write( "<p>The blue lines present timings for particular grain sizes. The red dots denote the standard deviation belonging to the measurements.</p>" );
 
 for adapter in range(0,numberOfAdapters):
   htmlOverview.write( "<h2>Adapter " + str(adapter) + "</h2>" );
-  for phase in range(0,numberOfMethods):
-    htmlOverview.write( "<h3>Method " + str(phase) + "</h3>" );
-    processMeasurement(adapter,phase)
-#  processAdapter()
-#for hMin in Hs:
-#  for omega in Omegas:
-#    for theta in Thetas:
-#      hMax = Hs[0]
-#      currentHMin = hMin
-#      if (sys.argv[2]=="only-adaptive-mg"):
-#        currentHMin = hMax
-#      while hMax >= currentHMin:
-#        plotSolverDependencies(hMax,hMin,omega,theta)
-#        hMax = hMax / 3
+  for phase in range(0,numberOfPhases):
+    htmlOverview.write( "<h3>Phase " + str(phase) + "</h3>" );
+    try:
+      processMeasurement(adapter,phase)
+    except:
+      pass
