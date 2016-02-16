@@ -370,9 +370,8 @@ void exahype::mappings::NewTimeStep::enterCell(
   //  p++
   //) {
   const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size();
-  const int  grainSize                      = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-    numberOfADERDGCellDescriptions,peano::datatraversal::autotuning::UserDefined0 // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
-  );
+  const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined0; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
+  const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
   pfor(i,0,numberOfADERDGCellDescriptions,grainSize)
     // This is not beautiful and should be replaced by a reference next. I just
     // use it to mirror the aforementioned realisation. Dominic, please change
@@ -410,7 +409,7 @@ void exahype::mappings::NewTimeStep::enterCell(
     }
 #endif
   endpfor
-  peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated();
+  peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
 }
 
 
