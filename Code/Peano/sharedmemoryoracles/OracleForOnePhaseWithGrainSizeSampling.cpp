@@ -86,7 +86,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::plotStatistics
   for (ExecutionTimeSamplingDatabase::const_iterator p=_executionTimes.begin(); p!=_executionTimes.end(); p++) {
     out << "(adapter=" << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters
         << ", phase="  << _methodTrace
-        << ", name="   << peano::datatraversal::autotuning::toString(_methodTrace) <<
+        << ", name="   << peano::datatraversal::autotuning::toString(_methodTrace) 
         << ", problem-size=" << p->first << ") [" << _numberOfSamples << " grain size(s) studied]:";
     for (
       ExecutionTimeDatabase::const_iterator measurements = p->second.begin();
