@@ -142,13 +142,13 @@ namespace kernels {
           const int basisSize
       );
 
-      void surfaceIntegral2(
+      /*void surfaceIntegral2(
           double* lduh,
           const double* const lFhbnd,
           const tarch::la::Vector<DIMENSIONS,double>&  dx,
           const int numberOfVariables,
           const int basisSize
-      );
+      );*/
 
       void surfaceIntegralXDirection(
           double * lduh,

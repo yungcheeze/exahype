@@ -420,7 +420,7 @@ void exahype::tests::GenericEulerKernelTest::testSurfaceIntegral2d() {
 //                                               4   // getNodesPerCoordinateAxis()
 //    );
 
-  kernels::aderdg::generic::surfaceIntegral2( lduh, lFhbnd, dx[0],
+  kernels::aderdg::generic::surfaceIntegral( lduh, lFhbnd, dx[0],
                                               5,   //getNumberOfVariables(),
                                               4   // getNodesPerCoordinateAxis()
   );
