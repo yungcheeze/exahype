@@ -19,7 +19,7 @@ from aderdg import *
 #-----------------------------------------------------------
 # main
 #-----------------------------------------------------------
-maxOrder = 3;
+maxOrder = 9;
 minOrder = 0;
 minDim   = 2;
 maxDim   = 3;
@@ -57,11 +57,15 @@ for fileName in os.listdir(outputDirectory):
 # later on there may be several output files, 
 # one for each padding scheme
 filename=outputDirectory+"/matrices.cpp"
+filename2=outputDirectory+"/gausPoints.cpp"
 
 # file setup
 with open(filename,"a+") as out:
     out.write("#include \"EulerFlow/dg/DGMatrices.h\" \n\n")
 out.close
+with open(filename2,"a+") as out2:
+    out2.write("#include \"EulerFlow/dg/DGMatrices.h\" \n\n")
+out2.close
 
 
 # we process one order after another
@@ -70,6 +74,7 @@ out.close
 # (3) compute the system matrices and write them to the output file
 
 out = open("generatedCode/lookupTableInit.csnippet", "w")
+out2 = open("generatedCode/gausPoints.csnippet", "w")
 
 order = minOrder
 while (order <= maxOrder):    
@@ -82,6 +87,20 @@ while (order <= maxOrder):
     wGPN = 0.5*w
     
     weights = np.outer(xGPN, xGPN)
+	
+    text = ""
+    for l in range(0,order+1):
+        line = "gaussLegendreWeights[%d][%d] = %.16g;\n" % (order,l,wGPN[l])
+        text += line
+    out2.write(text)
+
+    text = ""
+    for l in range(0,order+1):
+        line = "gaussLegendreNodes  [%d][%d] = %.16g;\n" % (order,l,xGPN[l])
+        text += line
+    out2.write(text)
+	
+    out2.write("\n")
     
     #----------------------------------------------------------------
     # compute matrices and export
