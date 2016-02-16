@@ -56,21 +56,21 @@ else
 			# Settings for the GNU Compiler (Debug Mode)
 			# ------------------------------------------
 			CC=g++
-			COMPILER_CFLAGS=-DDebug -DAsserts -O0 -pedantic -pedantic-errors -Wall -Wstrict-aliasing -fstrict-aliasing -ggdb -std=c++0x \
+			COMPILER_CFLAGS=-DDebug -DAsserts -O0 -pedantic -Wall -Wstrict-aliasing -fstrict-aliasing -ggdb -std=c++0x \
 											-Drestrict=__restrict__ -D__assume_aligned=__builtin_assume_aligned -pipe
 			COMPILER_LFLAGS=
 		else ifeq ($(MODE),Asserts)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
 			CC=g++
-			COMPILER_CFLAGS=-DAsserts -p -pg -O3 -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x -march=native -pipe \
+			COMPILER_CFLAGS=-DAsserts -p -pg -O3 -pedantic -Wall -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x -march=native -pipe \
 											-Drestrict=__restrict__ -D__assume_aligned=__builtin_assume_aligned
 			COMPILER_LFLAGS=-p -pg
 		else ifeq ($(MODE),Profile)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
 			CC=g++
-			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -O3 -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x -march=native -pipe \
+			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -O3 -pedantic -Wall -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x -march=native -pipe \
 																	-Drestrict=__restrict__ -D__assume_aligned=__builtin_assume_aligned 
 			COMPILER_LFLAGS=-p -pg
 
@@ -78,7 +78,7 @@ else
 			# Settings for the GNU Compiler (Release Mode)
 			# --------------------------------------------
 			CC=g++
-			COMPILER_CFLAGS=-O3 -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x -march=native -pipe \
+			COMPILER_CFLAGS=-O3 -pedantic -pedantic-errors -Wall -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x -march=native -pipe \
 											-Drestrict=__restrict__ -D__assume_aligned=__builtin_assume_aligned 
 			COMPILER_LFLAGS=
 		endif
