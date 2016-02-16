@@ -66,7 +66,7 @@ void exahype::Cell::init(
           newCellDescription.setSize  (size);
           newCellDescription.setOffset(cellOffset);
 
-          newCellDescription.setPredictorTimeStamp(0.0);
+          newCellDescription.setPredictorTimeStamp( solveRegistry[solveNumber]->getPredictorTimeStamp() );
           newCellDescription.setSolveNumber ( solveNumber);
 
           const int spaceTimeUnknownsPerCell     = solver->getSpaceTimeUnknownsPerCell();
