@@ -2,6 +2,12 @@
 
 #include "exahype/solvers/Solve.h"
 
+#include "peano/datatraversal/autotuning/Oracle.h"
+
+
+#include "tarch/multicore/Loop.h"
+
+
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
@@ -356,11 +362,24 @@ void exahype::mappings::NewTimeStep::enterCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  for (
-    ADERDGCellDescriptionHeap::HeapEntries::iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
-    p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
-    p++
-  ) {
+  // We want to run this in parallel
+  //
+  //for (
+  //  ADERDGCellDescriptionHeap::HeapEntries::iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+  //  p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
+  //  p++
+  //) {
+  const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size();
+  const int  grainSize                      = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+    numberOfADERDGCellDescriptions,peano::datatraversal::autotuning::UserDefined0 // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
+  );
+  pfor(i,0,numberOfADERDGCellDescriptions,grainSize)
+    // This is not beautiful and should be replaced by a reference next. I just
+    // use it to mirror the aforementioned realisation. Dominic, please change
+    // successively to a simpler scheme with just references. Pointers are
+    // ugly.
+    records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i]);
+
     const exahype::State::shared_ptr_Solve solve = _localState.getSolveRegistry()[ p->getSolveNumber() ];
 
     if (solve->getTimeStepping()==exahype::solvers::Solve::GLOBAL) {
@@ -390,7 +409,8 @@ void exahype::mappings::NewTimeStep::enterCell(
       assertionNumericalEquals1(p->getCorrectorTimeStepSize(),solve->getPredictorTimeStepSize(),1e-12);
     }
 #endif
-  }
+  endpfor
+  peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated();
 }
 
 
