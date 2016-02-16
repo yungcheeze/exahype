@@ -2,12 +2,9 @@
 #include "exahype/Cell.h"
 #include "exahype/Vertex.h"
 
-#include "exahype/solvers/Solve.h"
-
 #include "peano/grid/Checkpoint.h"
 
 #include <limits>
-#include <memory>
 
 exahype::State::State():
 Base() {
@@ -27,20 +24,20 @@ exahype::State::State(const Base::PersistentState& argument):
       p++
   ) {
 
-    _solveRegistry.push_back( std::shared_ptr<exahype::solvers::Solve>(
-        new exahype::solvers::Solve(
-        (*p)->getName(),
-        (*p)->getSolverNumber(),
-        (*p)->getType(),
-        (*p)->getTimeStepping(),
-        (*p)->isActive(),
-        (*p)->getCorrectorTimeStamp(),
-        (*p)->getPredictorTimeStamp(),
-        (*p)->getCorrectorTimeStepSize(),
-        (*p)->getPredictorTimeStamp(),
-        (*p)->getPredictorTimeStepSize(),
-        (*p)->getNextPredictorTimeStepSize()
-    )));
+    _solveRegistry.push_back(
+        exahype::solvers::Solve(
+        (*p).getName(),
+        (*p).getSolverNumber(),
+        (*p).getType(),
+        (*p).getTimeStepping(),
+        (*p).isActive(),
+        (*p).getCorrectorTimeStamp(),
+        (*p).getPredictorTimeStamp(),
+        (*p).getCorrectorTimeStepSize(),
+        (*p).getPredictorTimeStamp(),
+        (*p).getPredictorTimeStepSize(),
+        (*p).getNextPredictorTimeStepSize()
+    ));
   }
 }
 
@@ -81,7 +78,7 @@ void exahype::State::startNewTimeStep() {
       p != _solveRegistry.end();
       p++
   ){
-    (*p)->startNewTimeStep();
+    (*p).startNewTimeStep();
   }
 }
 
@@ -101,12 +98,12 @@ void exahype::State::merge(const exahype::State& anotherState) {
       p != _solveRegistry.end();
       p++
   ){
-    _solveRegistry[ solveNumber ]->merge( *(anotherState._solveRegistry[solveNumber]) );
+    _solveRegistry[ solveNumber ].merge( anotherState._solveRegistry[solveNumber] );
     solveNumber++;
 
-    assertion(_stateData.getNextMinTimeStepSize()     <= (*p)->getNextPredictorTimeStepSize());
-    assertion(_stateData.getCurrentMinTimeStepSize()  <= (*p)->getPredictorTimeStepSize());
-    assertion(_stateData.getPreviousMinTimeStepSize() <= (*p)->getCorrectorTimeStepSize());
+    assertion(_stateData.getNextMinTimeStepSize()     <= (*p).getNextPredictorTimeStepSize());
+    assertion(_stateData.getCurrentMinTimeStepSize()  <= (*p).getPredictorTimeStepSize());
+    assertion(_stateData.getPreviousMinTimeStepSize() <= (*p).getCorrectorTimeStepSize());
   }
 }
 

@@ -367,8 +367,8 @@ void exahype::mappings::VolumeIntegral::enterCell(
     p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
     p++
   ) {
-    exahype::State::shared_ptr_Solve solve  = _localState.getSolveRegistry()     [ p->getSolveNumber()      ];
-    exahype::solvers::Solver* solver        = exahype::solvers::RegisteredSolvers[ solve->getSolverNumber() ];
+    exahype::solvers::Solve& solve  = _localState.getSolveRegistry()     [ p->getSolveNumber()      ];
+    exahype::solvers::Solver* solver        = exahype::solvers::RegisteredSolvers[ solve.getSolverNumber() ];
 
     double * lduh = &(DataHeap::getInstance().getData(p->getUpdate())    [0]._persistentRecords._u);
     double * lFhi = &(DataHeap::getInstance().getData(p->getVolumeFlux())[0]._persistentRecords._u);

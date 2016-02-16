@@ -394,8 +394,8 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       p != ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndex] ).end();
       p++
   ) {
-    exahype::State::shared_ptr_Solve solve = _localState.getSolveRegistry()     [ p->getSolveNumber() ];
-    exahype::solvers::Solver* solver       = exahype::solvers::RegisteredSolvers[ solve->getSolverNumber() ];
+    exahype::solvers::Solve& solve = _localState.getSolveRegistry()     [ p->getSolveNumber() ];
+    exahype::solvers::Solver* solver       = exahype::solvers::RegisteredSolvers[ solve.getSolverNumber() ];
 
     bool riemannSolveNotPerformed = false;
     {
@@ -439,7 +439,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
           Fhbnd,
           Qhbnd,
           Qhbnd,
-          p->getCorrectorTimeStepSize(),//solve->getCorrectorTimeStepSize(),//_localState.getPreviousMinTimeStepSize(),
+          p->getCorrectorTimeStepSize(),//solve.getCorrectorTimeStepSize(),//_localState.getPreviousMinTimeStepSize(),
           normalNonZero);
 
       logDebug("touchVertexLastTime(...)::debug::after::Qhbnd[0]*",Qhbnd[0]);

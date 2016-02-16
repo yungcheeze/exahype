@@ -376,8 +376,8 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       p < static_cast<int>(cellDescriptionsL.size());
       p++
   ) {
-    exahype::State::shared_ptr_Solve solve   = _localState.getSolveRegistry()     [ cellDescriptionsL[p].getSolveNumber() ];
-    exahype::solvers::Solver* solver         = exahype::solvers::RegisteredSolvers[ solve->getSolverNumber() ];
+    exahype::solvers::Solve& solve   = _localState.getSolveRegistry()     [ cellDescriptionsL[p].getSolveNumber() ];
+    exahype::solvers::Solver* solver         = exahype::solvers::RegisteredSolvers[ solve.getSolverNumber() ];
 
     bool riemannSolveNotPerformed = false;
     {

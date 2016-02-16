@@ -145,12 +145,12 @@ private:
   /**
    * Each solve has an identifier/name. It is used for debug purposes only.
    */
-  const std::string  _name;
+  std::string        _name;
 
   /**
    *  Refers to a Solver in the solver registry.
    */
-  const int          _solverNumber;
+  int                _solverNumber;
 
   /**
    * Refers to the Solve that spawned this solve if this a sub solve.

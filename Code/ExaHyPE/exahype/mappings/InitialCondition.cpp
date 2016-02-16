@@ -371,8 +371,8 @@ void exahype::mappings::InitialCondition::enterCell(
       p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
       p++
     ) {
-    exahype::State::shared_ptr_Solve  solve  = _localState.getSolveRegistry()     [ p->getSolveNumber() ];
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ solve->getSolverNumber() ];
+    exahype::solvers::Solve&  solve  = _localState.getSolveRegistry()     [ p->getSolveNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ solve.getSolverNumber() ];
 
     // @todo Dominic Etienne Charrier
     // 03/02/16:

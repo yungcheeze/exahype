@@ -50,7 +50,7 @@ void exahype::Cell::init(
   _cellData.setADERDGCellDescriptionsIndex( ADERDGCellDescriptionIndex );
 
   for (unsigned int solveNumber=0; solveNumber < solveRegistry.size(); solveNumber++) {
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ solveRegistry[solveNumber]->getSolverNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ solveRegistry[solveNumber].getSolverNumber() ];
 
     // Has to be +1 here
     if (level==solver->getMinimumTreeDepth()+1) {
@@ -66,7 +66,7 @@ void exahype::Cell::init(
           newCellDescription.setSize  (size);
           newCellDescription.setOffset(cellOffset);
 
-          newCellDescription.setPredictorTimeStamp( solveRegistry[solveNumber]->getPredictorTimeStamp() );
+          newCellDescription.setPredictorTimeStamp( solveRegistry[solveNumber].getPredictorTimeStamp() );
           newCellDescription.setSolveNumber ( solveNumber);
 
           const int spaceTimeUnknownsPerCell     = solver->getSpaceTimeUnknownsPerCell();

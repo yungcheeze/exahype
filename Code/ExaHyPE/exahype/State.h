@@ -16,6 +16,8 @@
 
 #include "peano/grid/Checkpoint.h"
 
+#include "exahype/solvers/Solve.h"
+
 namespace exahype { 
   class State;
 
@@ -34,13 +36,6 @@ namespace exahype {
      */
     class RepositoryArrayStack;
     class RepositorySTDStack;
-  }
-
-  /**
-   * Forward declaration
-   */
-  namespace solvers {
-    class Solve;
   }
 }
 
@@ -64,10 +59,9 @@ private:
   void writeToCheckpoint( peano::grid::Checkpoint<Vertex,Cell>&  checkpoint ) const;
   void readFromCheckpoint( const peano::grid::Checkpoint<Vertex,Cell>&  checkpoint );
 
-  std::vector< std::shared_ptr<solvers::Solve> > _solveRegistry;
+  std::vector< solvers::Solve > _solveRegistry;
 public:
-  typedef std::shared_ptr<solvers::Solve> shared_ptr_Solve;
-  typedef std::vector<shared_ptr_Solve> SolveRegistry;
+  typedef std::vector<solvers::Solve> SolveRegistry;
   /**
    * Default Constructor
    *

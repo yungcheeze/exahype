@@ -350,9 +350,9 @@ void exahype::mappings::Plot::enterCell(
       pPatch != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
       pPatch++
     ) {
-      const exahype::State::shared_ptr_Solve solve = _localState.getSolveRegistry()[ pPatch->getSolveNumber() ];
+      const exahype::solvers::Solve& solve = _localState.getSolveRegistry()[ pPatch->getSolveNumber() ];
 
-      if ( (*pPlotter)->plotDataFromSolver(solve->getSolverNumber()) ) {
+      if ( (*pPlotter)->plotDataFromSolver(solve.getSolverNumber()) ) {
         double * u = &(DataHeap::getInstance().getData(pPatch->getSolution())  [0]._persistentRecords._u);
         (*pPlotter)->plotPatch(
           fineGridVerticesEnumerator.getVertexPosition(),

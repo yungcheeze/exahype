@@ -12,7 +12,6 @@
 #include "peano/utils/UserInterface.h"
 #include "peano/geometry/Hexahedron.h"
 
-
 #include "peano/datatraversal/autotuning/Oracle.h"
 #include "peano/datatraversal/autotuning/OracleForOnePhaseDummy.h"
 
@@ -129,16 +128,15 @@ void exahype::runners::Runner::initialiseSolveRegistry(State& state,bool correct
       p++
   ){
     state.getSolveRegistry().push_back(
-        exahype::State::shared_ptr_Solve (
-        new exahype::solvers::Solve (
+        exahype::solvers::Solve (
         solverNumber, // solverNumber
         exahype::solvers::Solve::SOLVE,
         exahype::solvers::Solve::GLOBAL,
         correctorTimeLagging, // corrector time lagging
         true  // active
-    )));
+    ));
 
-    state.getSolveRegistry()[solverNumber]->setPredictorTimeStamp( state.getCurrentMinTimeStamp() );
+    state.getSolveRegistry()[solverNumber].setPredictorTimeStamp( state.getCurrentMinTimeStamp() );
     solverNumber++;
   }
 

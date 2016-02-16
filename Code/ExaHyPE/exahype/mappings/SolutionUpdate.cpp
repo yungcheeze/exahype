@@ -368,8 +368,8 @@ void exahype::mappings::SolutionUpdate::enterCell(
       p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
       p++
   ) {
-    const exahype::State::shared_ptr_Solve solve  = _localState.getSolveRegistry()     [ p->getSolveNumber()       ];
-    exahype::solvers::Solver*              solver = exahype::solvers::RegisteredSolvers[ solve->getSolverNumber() ];
+    const exahype::solvers::Solve& solve  = _localState.getSolveRegistry()     [ p->getSolveNumber()       ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ solve.getSolverNumber() ];
 
     double * luh  = &(DataHeap::getInstance().getData(p->getSolution())[0]._persistentRecords._u);
     double * lduh = &(DataHeap::getInstance().getData(p->getUpdate())  [0]._persistentRecords._u);
@@ -383,7 +383,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
     solver->solutionUpdate(
         luh,
         lduh,
-        p->getCorrectorTimeStepSize()//solve->getCorrectorTimeStepSize()//_localState.getPreviousMinTimeStepSize() // todo replace by patch time step size
+        p->getCorrectorTimeStepSize()//solve.getCorrectorTimeStepSize()//_localState.getPreviousMinTimeStepSize() // todo replace by patch time step size
     );
 
     logDebug("enterCell(...)::debug::after::luh[0]",luh[0]);

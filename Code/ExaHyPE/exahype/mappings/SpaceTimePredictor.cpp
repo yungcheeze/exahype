@@ -375,8 +375,8 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
     p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
     p++
   ) {
-    exahype::State::shared_ptr_Solve solve  = _localState.getSolveRegistry()[ p->getSolveNumber() ];
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers  [ solve->getSolverNumber() ];
+    exahype::solvers::Solve& solve  = _localState.getSolveRegistry()[ p->getSolveNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers  [ solve.getSolverNumber() ];
 
     // space-time DoF (basisSize**(DIMENSIONS+1))
     double * lQi = &(DataHeap::getInstance().getData(p->getSpaceTimePredictor()) [0]._persistentRecords._u);
@@ -390,8 +390,6 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
     // face DoF (basisSize**(DIMENSIONS-1))
     double * lQhbnd = &(DataHeap::getInstance().getData(p->getExtrapolatedPredictor())[0]._persistentRecords._u);
     double * lFhbnd = &(DataHeap::getInstance().getData(p->getFluctuation())          [0]._persistentRecords._u);
-
-    double predictorTimeStepSize = p->getPredictorTimeStepSize();
 
     solver->spaceTimePredictor(
       lQi,
