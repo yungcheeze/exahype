@@ -55,6 +55,12 @@ private:
    */
   exahype::State _localState;
 
+  // todo17/02/16:Dominic Etienne Charrier DRY; Same code in RiemannSolver.
+  // We should maybe combine both mappings
+  // Complexity of the mappings (esp. RiemannSolver) will increase further
+  // due to adaptive mesh refinement
+  void startNewTimeStep(records::ADERDGCellDescription& p);
+
   /**
    * Solve the Riemann problem at the interface between two cells ("left" and "right").
    *

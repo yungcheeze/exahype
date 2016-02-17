@@ -21,7 +21,7 @@ peano::CommunicationSpecification   exahype::mappings::BoundaryConditions::commu
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::BoundaryConditions::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::OnlyLeaves,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -29,7 +29,7 @@ peano::MappingSpecification   exahype::mappings::BoundaryConditions::touchVertex
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::BoundaryConditions::touchVertexFirstTimeSpecification() { 
-  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::OnlyLeaves,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -338,7 +338,64 @@ void exahype::mappings::BoundaryConditions::touchVertexFirstTime(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  // do nothing
+  logTraceInWith6Arguments( "touchVertextFirstTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
+
+  assertion1WithExplanation(_localState.getPreviousMinTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size is not initialised correctly!");
+
+  tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
+  // todo: DEC: Reverse engineered indices from
+  // PatchInitialisation2MultiscaleLinkedCell_1::touchVertextFirstTime(...)
+  // Not sure what happens with hanging nodes.
+
+  /*
+   * Right cell-left cell   pair indices: 0,1; 2,3;   4,5; 6;7
+   * Front cell-back cell   pair indices: 0,2; 1,3;   4,6; 5;7
+   * Top   cell-bottom cell pair indices: 0,4; 1,5;   2,6; 3;7
+   *
+   * Note that from the viewpoint of a cell, the face
+   * has always the "opposite" index, i.e., we solve a Riemann
+   * problem on the left face of the right cell (which
+   * is the right face of the left cell).
+   */
+  // index maps (
+  constexpr int cellIndicesLeft   [4] = { 0, 2, 4, 6 };
+  constexpr int cellIndicesRight  [4] = { 1, 3, 5, 7 };
+  constexpr int cellIndicesFront  [4] = { 0, 1, 4, 5 };
+  constexpr int cellIndicesBack   [4] = { 2, 3, 6, 7 };
+#if DIMENSIONS==3
+  constexpr int cellIndicesBottom [4] = { 0, 1, 2, 3 };
+  constexpr int cellIndicesTop    [4] = { 4, 5, 6, 7 };
+#endif
+
+  // Left/right face
+  for (int i=0; i<TWO_POWER_D_DIVIDED_BY_TWO; i++) {
+    applyBoundaryConditions(
+        adjacentADERDGCellDescriptionsIndices,
+        cellIndicesLeft [i],
+        cellIndicesRight[i],
+        EXAHYPE_FACE_RIGHT,
+        EXAHYPE_FACE_LEFT,
+        0);
+
+    applyBoundaryConditions(
+        adjacentADERDGCellDescriptionsIndices,
+        cellIndicesFront[i],
+        cellIndicesBack [i],
+        EXAHYPE_FACE_BACK,
+        EXAHYPE_FACE_FRONT,
+        1);
+
+#if DIMENSIONS==3
+    applyBoundaryConditions(
+        adjacentADERDGCellDescriptionsIndices,
+        cellIndicesBottom[i],
+        cellIndicesTop   [i],
+        EXAHYPE_FACE_TOP,
+        EXAHYPE_FACE_BOTTOM,
+        2);
+#endif
+  }
+  logTraceOutWith1Argument( "touchVertextFirstTime(...)", fineGridVertex );
 }
 
 void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
@@ -408,6 +465,12 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       if(riemannSolveNotPerformed) {
         p->setRiemannSolvePerformed(faceIndex,true);
       }
+
+      // if first thread that operators on cell,
+      // update the patch time step with the global/local solve time step if necessary
+      if (p->getRiemannSolvePerformed().none()) {
+        startNewTimeStep(*p);
+      }
     } // Unlock the critical multithreading area by letting lock go out of scope.
 
     // Apply the boundary conditions.
@@ -449,6 +512,37 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
   }
 }
 
+void exahype::mappings::BoundaryConditions::startNewTimeStep(records::ADERDGCellDescription& p) {
+    const exahype::solvers::Solve& solve = _localState.getSolveRegistry()[ p.getSolveNumber() ];
+    if (solve.getTimeStepping()==exahype::solvers::Solve::GLOBAL) {
+      p.setCorrectorTimeStamp   (solve.getCorrectorTimeStamp   ());
+      p.setCorrectorTimeStepSize(solve.getCorrectorTimeStepSize());
+      p.setPredictorTimeStamp   (solve.getPredictorTimeStamp   ());
+      p.setPredictorTimeStepSize(solve.getPredictorTimeStepSize());
+
+      assertionNumericalEquals1(p.getCorrectorTimeStamp()   ,solve.getCorrectorTimeStamp(),   1e-12); // todo precision
+      assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solve.getCorrectorTimeStepSize(),1e-12);
+      assertionNumericalEquals1(p.getPredictorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12);
+      assertionNumericalEquals1(p.getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
+    }
+    if (!solve.isCorrectorTimeLagging()) {
+      p.setCorrectorTimeStamp   (p.getPredictorTimeStamp   ());
+      p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
+    }
+
+#if defined(Debug) || defined(Asserts)
+    if (solve.getTimeStepping()==exahype::solvers::Solve::GLOBAL && !solve.isCorrectorTimeLagging()) {
+      // Note that the solve time stamps and time step sizes are not modified if corrector time lagging
+      // is deactivated. Thus, solve.getPredictor... and solve.getCorrector... are not the same in general
+      // for any value of solve.isCorrectorTimeLagging().
+      assertionNumericalEquals1(p.getPredictorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12); // todo precision
+      assertionNumericalEquals1(p.getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
+      assertionNumericalEquals1(p.getCorrectorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12);
+      assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
+    }
+#endif
+}
+
 void exahype::mappings::BoundaryConditions::touchVertexLastTime(
     exahype::Vertex&         fineGridVertex,
     const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
@@ -458,64 +552,7 @@ void exahype::mappings::BoundaryConditions::touchVertexLastTime(
     exahype::Cell&           coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-
-  assertion1WithExplanation(_localState.getPreviousMinTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size is not initialised correctly!");
-
-  tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
-  // todo: DEC: Reverse engineered indices from
-  // PatchInitialisation2MultiscaleLinkedCell_1::touchVertexLastTime(...)
-  // Not sure what happens with hanging nodes.
-
-  /*
-   * Right cell-left cell   pair indices: 0,1; 2,3;   4,5; 6;7
-   * Front cell-back cell   pair indices: 0,2; 1,3;   4,6; 5;7
-   * Top   cell-bottom cell pair indices: 0,4; 1,5;   2,6; 3;7
-   *
-   * Note that from the viewpoint of a cell, the face
-   * has always the "opposite" index, i.e., we solve a Riemann
-   * problem on the left face of the right cell (which
-   * is the right face of the left cell).
-   */
-  // index maps (
-  constexpr int cellIndicesLeft   [4] = { 0, 2, 4, 6 };
-  constexpr int cellIndicesRight  [4] = { 1, 3, 5, 7 };
-  constexpr int cellIndicesFront  [4] = { 0, 1, 4, 5 };
-  constexpr int cellIndicesBack   [4] = { 2, 3, 6, 7 };
-#if DIMENSIONS==3
-  constexpr int cellIndicesBottom [4] = { 0, 1, 2, 3 };
-  constexpr int cellIndicesTop    [4] = { 4, 5, 6, 7 };
-#endif
-
-  // Left/right face
-  for (int i=0; i<TWO_POWER_D_DIVIDED_BY_TWO; i++) {
-    applyBoundaryConditions(
-        adjacentADERDGCellDescriptionsIndices,
-        cellIndicesLeft [i],
-        cellIndicesRight[i],
-        EXAHYPE_FACE_RIGHT,
-        EXAHYPE_FACE_LEFT,
-        0);
-
-    applyBoundaryConditions(
-        adjacentADERDGCellDescriptionsIndices,
-        cellIndicesFront[i],
-        cellIndicesBack [i],
-        EXAHYPE_FACE_BACK,
-        EXAHYPE_FACE_FRONT,
-        1);
-
-#if DIMENSIONS==3
-    applyBoundaryConditions(
-        adjacentADERDGCellDescriptionsIndices,
-        cellIndicesBottom[i],
-        cellIndicesTop   [i],
-        EXAHYPE_FACE_TOP,
-        EXAHYPE_FACE_BOTTOM,
-        2);
-#endif
-  }
-  logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
+  // do nothing
 }
 
 void exahype::mappings::BoundaryConditions::enterCell(

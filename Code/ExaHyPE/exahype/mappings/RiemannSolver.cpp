@@ -19,7 +19,7 @@ peano::CommunicationSpecification   exahype::mappings::RiemannSolver::communicat
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::RiemannSolver::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::OnlyLeaves,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -27,7 +27,7 @@ peano::MappingSpecification   exahype::mappings::RiemannSolver::touchVertexLastT
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification   exahype::mappings::RiemannSolver::touchVertexFirstTimeSpecification() { 
-  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::OnlyLeaves,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
@@ -78,8 +78,8 @@ exahype::mappings::RiemannSolver::~RiemannSolver() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::RiemannSolver::RiemannSolver(const RiemannSolver&  masterThread):
-  _localState(masterThread._localState
-) {
+      _localState(masterThread._localState
+      ) {
   _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
@@ -337,127 +337,20 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
     exahype::Cell&                 coarseGridCell,
     const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  // do nothing
-}
+  logTraceInWith6Arguments( "touchVertexFirstTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
 
-void exahype::mappings::RiemannSolver::solveRiemannProblem(
-    tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices,
-    const int cellIndexL,
-    const int cellIndexR,
-    const int faceL,
-    const int faceR,
-    const int normalNonZero
-) {
-  // Only continue if this is an internal face. See multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex.
-  if (
-      adjacentADERDGCellDescriptionsIndices[cellIndexL] < 0
-      ||
-      adjacentADERDGCellDescriptionsIndices[cellIndexR] < 0
-  ) {
-    return;
-  }
-
-  logDebug("touchVertexLastTime(...)::solveRiemannProblem(...)",
-           "Performing Riemann solve. "
-           << "faceL:" << faceL
-           << " faceR:" << faceR
-           << " cell descr. index L:" << adjacentADERDGCellDescriptionsIndices[cellIndexL]
-                                                                               << " cell descr. index R:" << adjacentADERDGCellDescriptionsIndices[cellIndexR]);
-
-  std::vector<records::ADERDGCellDescription>&  cellDescriptionsL =
-      ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexL] );
-  std::vector<records::ADERDGCellDescription>&  cellDescriptionsR =
-      ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexR] );
-
-  // @todo 08/03/16:Dominic Etienne Charrier
-  // Assumes that the both elements hold the same (number of) solvers
-  assertion1WithExplanation( cellDescriptionsL.size() == cellDescriptionsR.size(), cellDescriptionsL.size(), "The number of ADERDGCellDescriptions is not the same for both cells!" );
-
-  for (
-      int p = 0;
-      p < static_cast<int>(cellDescriptionsL.size());
-      p++
-  ) {
-    exahype::solvers::Solve& solve   = _localState.getSolveRegistry()     [ cellDescriptionsL[p].getSolveNumber() ];
-    exahype::solvers::Solver* solver         = exahype::solvers::RegisteredSolvers[ solve.getSolverNumber() ];
-
-    bool riemannSolveNotPerformed = false;
-    {
-      // Lock the critical multithreading area.
-      tarch::multicore::Lock lock(_semaphore);
-      riemannSolveNotPerformed = !cellDescriptionsL[p].getRiemannSolvePerformed(faceL)
-                                 &&
-                                 !cellDescriptionsR[p].getRiemannSolvePerformed(faceR);
-
-      if(riemannSolveNotPerformed==true) {
-        cellDescriptionsL[p].setRiemannSolvePerformed(faceL,true);
-        cellDescriptionsR[p].setRiemannSolvePerformed(faceR,true);
-      }
-    } // Unlock the critical multithreading area by letting lock go out of scope.
-
-    const int numberOfFaceDof = solver->getUnknownsPerFace();//solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
-
-    if (riemannSolveNotPerformed) {
-      double * QL = &(DataHeap::getInstance().getData(cellDescriptionsL[p].getExtrapolatedPredictor())[faceL * numberOfFaceDof]._persistentRecords._u);
-      double * QR = &(DataHeap::getInstance().getData(cellDescriptionsR[p].getExtrapolatedPredictor())[faceR * numberOfFaceDof]._persistentRecords._u);
-
-      double * FL = &(DataHeap::getInstance().getData(cellDescriptionsL[p].getFluctuation())[faceL * numberOfFaceDof]._persistentRecords._u);
-      double * FR = &(DataHeap::getInstance().getData(cellDescriptionsR[p].getFluctuation())[faceR * numberOfFaceDof]._persistentRecords._u);
-
-      logDebug("touchVertexLastTime(...)::debug::before::dt_max*",_localState.getPreviousMinTimeStepSize());
-      logDebug("touchVertexLastTime(...)::debug::before::QL[0]*",QL[0]);
-      logDebug("touchVertexLastTime(...)::debug::before::QR[0]*",QR[0]);
-      logDebug("touchVertexLastTime(...)::debug::before::FL[0]",FL[0]);
-      logDebug("touchVertexLastTime(...)::debug::before::FR[0]",FR[0]);
-
-      // @todo 08/02/16:Dominic Etienne Charrier
-      // if left or right is coarse grid cell
-      //  gather contributions of fine grid cells
-
-      solver->riemannSolver(
-          FL,
-          FR,
-          QL,
-          QR,
-          std::min( cellDescriptionsL[p].getCorrectorTimeStepSize(), cellDescriptionsR[p].getCorrectorTimeStepSize() ),
-          normalNonZero
-      );
-
-      logDebug("touchVertexLastTime(...)::debug::after::QL[0]*",QL[0]);
-      logDebug("touchVertexLastTime(...)::debug::after::QR[0]*",QR[0]);
-      logDebug("touchVertexLastTime(...)::debug::after::FL[0]",FL[0]);
-      logDebug("touchVertexLastTime(...)::debug::after::FR[0]",FR[0]);
-    }
-  }
-}
-
-void exahype::mappings::RiemannSolver::touchVertexLastTime(
-    exahype::Vertex&         fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
-    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
-    exahype::Vertex * const  coarseGridVertices,
-    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-    exahype::Cell&           coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
-) {
-  logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-
-  // @todo Tobias Weinzierl
-  // Delegate to solver-specific code fragments
-
-  //
   assertion1WithExplanation(_localState.getPreviousMinTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Previous time step size was not initialised correctly!");
 
   tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
-  logDebug("touchVertexLastTime(...)","cell descriptions around vertex. "
+  logDebug("touchVertexFirstTime(...)","cell descriptions around vertex. "
            << "coarse grid level: " << coarseGridVerticesEnumerator.getLevel()
            << ", fine grid pos.:" << fineGridPositionOfVertex
            << ", adjac. cell descr.:" << adjacentADERDGCellDescriptionsIndices);
-  logDebug("touchVertexLastTime(...)","cell descriptions around vertex. "
+  logDebug("touchVertexFirstTime(...)","cell descriptions around vertex. "
            << "fine grid x " << fineGridX);
 
   // todo: Dominic Etienne Charrier: Reverse engineered indices from
-  // PatchInitialisation2MultiscaleLinkedCell_1::touchVertexLastTime(...)
+  // PatchInitialisation2MultiscaleLinkedCell_1::touchVertexFirstTime(...)
   // Not sure what happens with hanging nodes.
   /* Right cell-left cell   pair indices: 0,1; 2,3;   4,5; 6;7
    * Front cell-back cell   pair indices: 0,2; 1,3;   4,6; 5;7
@@ -505,7 +398,153 @@ void exahype::mappings::RiemannSolver::touchVertexLastTime(
         2);
 #endif
   }
-  logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
+  logTraceOutWith1Argument( "touchVertexFirstTime(...)", fineGridVertex );
+}
+
+void exahype::mappings::RiemannSolver::solveRiemannProblem(
+    tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices,
+    const int cellIndexL,
+    const int cellIndexR,
+    const int faceL,
+    const int faceR,
+    const int normalNonZero
+) {
+  // Only continue if this is an internal face. See multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex.
+  if (
+      adjacentADERDGCellDescriptionsIndices[cellIndexL] < 0
+      ||
+      adjacentADERDGCellDescriptionsIndices[cellIndexR] < 0
+  ) {
+    return;
+  }
+
+  logDebug("touchVertexLastTime(...)::solveRiemannProblem(...)",
+           "Performing Riemann solve. "
+           << "faceL:" << faceL
+           << " faceR:" << faceR
+           << " cell descr. index L:" << adjacentADERDGCellDescriptionsIndices[cellIndexL]
+                                                                               << " cell descr. index R:" << adjacentADERDGCellDescriptionsIndices[cellIndexR]);
+
+  std::vector<records::ADERDGCellDescription>&  cellDescriptionsL =
+      ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexL] );
+  std::vector<records::ADERDGCellDescription>&  cellDescriptionsR =
+      ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexR] );
+
+  // @todo 08/03/16:Dominic Etienne Charrier
+  // Assumes that the both elements hold the same (number of) solvers
+  assertion1WithExplanation( cellDescriptionsL.size() == cellDescriptionsR.size(), cellDescriptionsL.size(), "The number of ADERDGCellDescriptions is not the same for both cells!" );
+
+  for (
+      int p = 0;
+      p < static_cast<int>(cellDescriptionsL.size());
+      p++
+  ) {
+    exahype::solvers::Solve& solve   = _localState.getSolveRegistry()     [ cellDescriptionsL[p].getSolveNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ solve.getSolverNumber() ];
+
+    bool riemannSolveNotPerformed = false;
+    {
+      // Lock the critical multithreading area.
+      tarch::multicore::Lock lock(_semaphore);
+      riemannSolveNotPerformed = !cellDescriptionsL[p].getRiemannSolvePerformed(faceL)
+                                     &&
+                                     !cellDescriptionsR[p].getRiemannSolvePerformed(faceR);
+
+      if(riemannSolveNotPerformed==true) {
+        cellDescriptionsL[p].setRiemannSolvePerformed(faceL,true);
+        cellDescriptionsR[p].setRiemannSolvePerformed(faceR,true);
+      }
+
+      // if first thread that operators on cell,
+      // update the patch time step with the global/local solve time step if necessary
+      if (cellDescriptionsL[p].getRiemannSolvePerformed().none()) {
+        startNewTimeStep(cellDescriptionsL[p]);
+      }
+
+      if (cellDescriptionsR[p].getRiemannSolvePerformed().none()) {
+        startNewTimeStep(cellDescriptionsR[p]);
+      }
+    } // Unlock the critical multithreading area by letting lock go out of scope.
+
+    const int numberOfFaceDof = solver->getUnknownsPerFace();//solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
+
+    if (riemannSolveNotPerformed) {
+      double * QL = &(DataHeap::getInstance().getData(cellDescriptionsL[p].getExtrapolatedPredictor())[faceL * numberOfFaceDof]._persistentRecords._u);
+      double * QR = &(DataHeap::getInstance().getData(cellDescriptionsR[p].getExtrapolatedPredictor())[faceR * numberOfFaceDof]._persistentRecords._u);
+
+      double * FL = &(DataHeap::getInstance().getData(cellDescriptionsL[p].getFluctuation())[faceL * numberOfFaceDof]._persistentRecords._u);
+      double * FR = &(DataHeap::getInstance().getData(cellDescriptionsR[p].getFluctuation())[faceR * numberOfFaceDof]._persistentRecords._u);
+
+      logDebug("touchVertexLastTime(...)::debug::before::dt_max*",_localState.getPreviousMinTimeStepSize());
+      logDebug("touchVertexLastTime(...)::debug::before::QL[0]*",QL[0]);
+      logDebug("touchVertexLastTime(...)::debug::before::QR[0]*",QR[0]);
+      logDebug("touchVertexLastTime(...)::debug::before::FL[0]",FL[0]);
+      logDebug("touchVertexLastTime(...)::debug::before::FR[0]",FR[0]);
+
+      // @todo 08/02/16:Dominic Etienne Charrier
+      // if left or right is coarse grid cell
+      //  gather contributions of fine grid cells
+
+      // todo startNewStep for both cell descriptions
+
+      solver->riemannSolver(
+          FL,
+          FR,
+          QL,
+          QR,
+          std::min( cellDescriptionsL[p].getCorrectorTimeStepSize(), cellDescriptionsR[p].getCorrectorTimeStepSize() ),
+          normalNonZero
+      );
+
+      logDebug("touchVertexLastTime(...)::debug::after::QL[0]*",QL[0]);
+      logDebug("touchVertexLastTime(...)::debug::after::QR[0]*",QR[0]);
+      logDebug("touchVertexLastTime(...)::debug::after::FL[0]",FL[0]);
+      logDebug("touchVertexLastTime(...)::debug::after::FR[0]",FR[0]);
+    }
+  }
+}
+
+void exahype::mappings::RiemannSolver::startNewTimeStep(records::ADERDGCellDescription& p) {
+  const exahype::solvers::Solve& solve = _localState.getSolveRegistry()[ p.getSolveNumber() ];
+  if (solve.getTimeStepping()==exahype::solvers::Solve::GLOBAL) {
+    p.setCorrectorTimeStamp   (solve.getCorrectorTimeStamp   ());
+    p.setCorrectorTimeStepSize(solve.getCorrectorTimeStepSize());
+    p.setPredictorTimeStamp   (solve.getPredictorTimeStamp   ());
+    p.setPredictorTimeStepSize(solve.getPredictorTimeStepSize());
+
+    assertionNumericalEquals1(p.getCorrectorTimeStamp()   ,solve.getCorrectorTimeStamp(),   1e-12); // todo precision
+    assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solve.getCorrectorTimeStepSize(),1e-12);
+    assertionNumericalEquals1(p.getPredictorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12);
+    assertionNumericalEquals1(p.getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
+  }
+  if (!solve.isCorrectorTimeLagging()) {
+    p.setCorrectorTimeStamp   (p.getPredictorTimeStamp   ());
+    p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
+  }
+
+#if defined(Debug) || defined(Asserts)
+  if (solve.getTimeStepping()==exahype::solvers::Solve::GLOBAL && !solve.isCorrectorTimeLagging()) {
+    // Note that the solve time stamps and time step sizes are not modified if corrector time lagging
+    // is deactivated. Thus, solve.getPredictor... and solve.getCorrector... are not the same in general
+    // for any value of solve.isCorrectorTimeLagging().
+    assertionNumericalEquals1(p.getPredictorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12); // todo precision
+    assertionNumericalEquals1(p.getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
+    assertionNumericalEquals1(p.getCorrectorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12);
+    assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
+  }
+#endif
+}
+
+void exahype::mappings::RiemannSolver::touchVertexLastTime(
+    exahype::Vertex&         fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
+    const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
+    exahype::Vertex * const  coarseGridVertices,
+    const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+    exahype::Cell&           coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
+) {
+  // do nothing
 }
 
 void exahype::mappings::RiemannSolver::enterCell(
