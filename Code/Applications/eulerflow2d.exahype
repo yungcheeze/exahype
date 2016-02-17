@@ -38,7 +38,7 @@ exahype-project  Euler2d
   end solver
 
   shared-memory
-    identifier               = sampling
+    identifier               = dummy
     cores                    = 2
     properties-file          = sharedmemory.properties
   end shared-memory  
