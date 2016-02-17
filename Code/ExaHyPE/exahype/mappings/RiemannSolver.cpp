@@ -442,43 +442,32 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
     exahype::solvers::Solve& solve   = _localState.getSolveRegistry()     [ cellDescriptionsL[p].getSolveNumber() ];
     exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ solve.getSolverNumber() ];
 
-    bool riemannSolveNotPerformed = false;
-
     // Lock the critical multithreading area.
+    bool riemannSolveNotPerformed = false;
     tarch::multicore::Lock lock(_semaphore);
-
     assertionEquals(cellDescriptionsL[p].getRiemannSolvePerformed(faceL),cellDescriptionsR[p].getRiemannSolvePerformed(faceR));
-    riemannSolveNotPerformed = !cellDescriptionsL[p].getRiemannSolvePerformed(faceL);
 
+    riemannSolveNotPerformed = !cellDescriptionsL[p].getRiemannSolvePerformed(faceL);
     if (riemannSolveNotPerformed) {
       cellDescriptionsL[p].setRiemannSolvePerformed(faceL,true);
       cellDescriptionsR[p].setRiemannSolvePerformed(faceR,true);
     }
-
     lock.free();
 
-      // @todo: Fixen
-
-      // if first thread that operators on cell,
-      // update the patch time step with the global/local solve time step if necessary
-      if (cellDescriptionsL[p].getRiemannSolvePerformed().none()) {
-        startNewTimeStep(cellDescriptionsL[p]);
-      }
-
-      if (cellDescriptionsR[p].getRiemannSolvePerformed().none()) {
-        startNewTimeStep(cellDescriptionsR[p]);
-      }
-
-    const int numberOfFaceDof = solver->getUnknownsPerFace();//solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
-
     if (riemannSolveNotPerformed) {
+      const int numberOfFaceDof = solver->getUnknownsPerFace();//solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
+
       double * QL = &(DataHeap::getInstance().getData(cellDescriptionsL[p].getExtrapolatedPredictor())[faceL * numberOfFaceDof]._persistentRecords._u);
       double * QR = &(DataHeap::getInstance().getData(cellDescriptionsR[p].getExtrapolatedPredictor())[faceR * numberOfFaceDof]._persistentRecords._u);
 
       double * FL = &(DataHeap::getInstance().getData(cellDescriptionsL[p].getFluctuation())[faceL * numberOfFaceDof]._persistentRecords._u);
       double * FR = &(DataHeap::getInstance().getData(cellDescriptionsR[p].getFluctuation())[faceR * numberOfFaceDof]._persistentRecords._u);
 
-      logDebug("touchVertexLastTime(...)::debug::before::dt_max*",_localState.getPreviousMinTimeStepSize());
+      synchroniseTimeStepping(cellDescriptionsR[p]);
+      synchroniseTimeStepping(cellDescriptionsL[p]);
+
+      logDebug("touchVertexLastTime(...)::debug::before::dt_min(previous ) of State*",_localState.getPreviousMinTimeStepSize());
+      logDebug("touchVertexLastTime(...)::debug::before::dt_min(corrector) of Solve*",solve.getCorrectorTimeStepSize());
       logDebug("touchVertexLastTime(...)::debug::before::QL[0]*",QL[0]);
       logDebug("touchVertexLastTime(...)::debug::before::QR[0]*",QR[0]);
       logDebug("touchVertexLastTime(...)::debug::before::FL[0]",FL[0]);
@@ -487,8 +476,6 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       // @todo 08/02/16:Dominic Etienne Charrier
       // if left or right is coarse grid cell
       //  gather contributions of fine grid cells
-
-      // todo startNewStep for both cell descriptions
 
       solver->riemannSolver(
           FL,
@@ -507,7 +494,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
   }
 }
 
-void exahype::mappings::RiemannSolver::startNewTimeStep(records::ADERDGCellDescription& p) {
+void exahype::mappings::RiemannSolver::synchroniseTimeStepping(records::ADERDGCellDescription& p) {
   const exahype::solvers::Solve& solve = _localState.getSolveRegistry()[ p.getSolveNumber() ];
   if (solve.getTimeStepping()==exahype::solvers::Solve::GLOBAL) {
     p.setCorrectorTimeStamp   (solve.getCorrectorTimeStamp   ());

@@ -80,7 +80,7 @@ exahype::mappings::BoundaryConditions::~BoundaryConditions() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::BoundaryConditions::BoundaryConditions(const BoundaryConditions&  masterThread):
-  _localState( masterThread._localState ) {
+      _localState( masterThread._localState ) {
   _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
@@ -455,23 +455,16 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
     exahype::solvers::Solve& solve = _localState.getSolveRegistry()     [ p->getSolveNumber() ];
     exahype::solvers::Solver* solver       = exahype::solvers::RegisteredSolvers[ solve.getSolverNumber() ];
 
+
+    // Lock the critical multithreading area.
+    // Note that two boundary vertices can operate on the same face at the same time.
     bool riemannSolveNotPerformed = false;
-    {
-      // Lock the critical multithreading area.
-      // Note that two boundary vertices can operate on the same face at the same time.
-      tarch::multicore::Lock lock(_semaphore);
-      riemannSolveNotPerformed = !p->getRiemannSolvePerformed(faceIndex);
-
-      if(riemannSolveNotPerformed) {
-        p->setRiemannSolvePerformed(faceIndex,true);
-      }
-
-      // if first thread that operators on cell,
-      // update the patch time step with the global/local solve time step if necessary
-      if (p->getRiemannSolvePerformed().none()) {
-        startNewTimeStep(*p);
-      }
-    } // Unlock the critical multithreading area by letting lock go out of scope.
+    tarch::multicore::Lock lock(_semaphore);
+    riemannSolveNotPerformed = !p->getRiemannSolvePerformed(faceIndex);
+    if(riemannSolveNotPerformed) {
+      p->setRiemannSolvePerformed(faceIndex,true);
+    }
+    lock.free();
 
     // Apply the boundary conditions.
     // todo Copy and periodic boundary conditions should be configured by additional mappings after
@@ -494,7 +487,10 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       // Invoke user defined boundary condition function
       // At the moment, we simply copy the cell solution to the boundary.
 
-      logDebug("touchVertexLastTime(...)::debug::before::dt_max*",_localState.getPreviousMinTimeStepSize());
+      synchroniseTimeStepping(*p);
+
+      logDebug("touchVertexLastTime(...)::debug::before::dt_min(previous ) of State*",_localState.getPreviousMinTimeStepSize());
+      logDebug("touchVertexLastTime(...)::debug::before::dt_min(corrector) of Solve*",solve.getCorrectorTimeStepSize());
       logDebug("touchVertexLastTime(...)::debug::before::Qhbnd[0]*",Qhbnd[0]);
       logDebug("touchVertexLastTime(...)::debug::before::Fhbnd[0]",Fhbnd[0]);
 
@@ -512,34 +508,34 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
   }
 }
 
-void exahype::mappings::BoundaryConditions::startNewTimeStep(records::ADERDGCellDescription& p) {
-    const exahype::solvers::Solve& solve = _localState.getSolveRegistry()[ p.getSolveNumber() ];
-    if (solve.getTimeStepping()==exahype::solvers::Solve::GLOBAL) {
-      p.setCorrectorTimeStamp   (solve.getCorrectorTimeStamp   ());
-      p.setCorrectorTimeStepSize(solve.getCorrectorTimeStepSize());
-      p.setPredictorTimeStamp   (solve.getPredictorTimeStamp   ());
-      p.setPredictorTimeStepSize(solve.getPredictorTimeStepSize());
+void exahype::mappings::BoundaryConditions::synchroniseTimeStepping(records::ADERDGCellDescription& p) {
+  const exahype::solvers::Solve& solve = _localState.getSolveRegistry()[ p.getSolveNumber() ];
+  if (solve.getTimeStepping()==exahype::solvers::Solve::GLOBAL) {
+    p.setCorrectorTimeStamp   (solve.getCorrectorTimeStamp   ());
+    p.setCorrectorTimeStepSize(solve.getCorrectorTimeStepSize());
+    p.setPredictorTimeStamp   (solve.getPredictorTimeStamp   ());
+    p.setPredictorTimeStepSize(solve.getPredictorTimeStepSize());
 
-      assertionNumericalEquals1(p.getCorrectorTimeStamp()   ,solve.getCorrectorTimeStamp(),   1e-12); // todo precision
-      assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solve.getCorrectorTimeStepSize(),1e-12);
-      assertionNumericalEquals1(p.getPredictorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12);
-      assertionNumericalEquals1(p.getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
-    }
-    if (!solve.isCorrectorTimeLagging()) {
-      p.setCorrectorTimeStamp   (p.getPredictorTimeStamp   ());
-      p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
-    }
+    assertionNumericalEquals1(p.getCorrectorTimeStamp()   ,solve.getCorrectorTimeStamp(),   1e-12); // todo precision
+    assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solve.getCorrectorTimeStepSize(),1e-12);
+    assertionNumericalEquals1(p.getPredictorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12);
+    assertionNumericalEquals1(p.getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
+  }
+  if (!solve.isCorrectorTimeLagging()) {
+    p.setCorrectorTimeStamp   (p.getPredictorTimeStamp   ());
+    p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
+  }
 
 #if defined(Debug) || defined(Asserts)
-    if (solve.getTimeStepping()==exahype::solvers::Solve::GLOBAL && !solve.isCorrectorTimeLagging()) {
-      // Note that the solve time stamps and time step sizes are not modified if corrector time lagging
-      // is deactivated. Thus, solve.getPredictor... and solve.getCorrector... are not the same in general
-      // for any value of solve.isCorrectorTimeLagging().
-      assertionNumericalEquals1(p.getPredictorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12); // todo precision
-      assertionNumericalEquals1(p.getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
-      assertionNumericalEquals1(p.getCorrectorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12);
-      assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
-    }
+  if (solve.getTimeStepping()==exahype::solvers::Solve::GLOBAL && !solve.isCorrectorTimeLagging()) {
+    // Note that the solve time stamps and time step sizes are not modified if corrector time lagging
+    // is deactivated. Thus, solve.getPredictor... and solve.getCorrector... are not the same in general
+    // for any value of solve.isCorrectorTimeLagging().
+    assertionNumericalEquals1(p.getPredictorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12); // todo precision
+    assertionNumericalEquals1(p.getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
+    assertionNumericalEquals1(p.getCorrectorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12);
+    assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
+  }
 #endif
 }
 
