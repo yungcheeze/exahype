@@ -194,18 +194,13 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("    " + solverName + "(int kernelNumber); \n");
         writer.write("    virtual int getMinimumTreeDepth() const;\n");
 
-        if (_dimensions==2) {
-            writer.write("    virtual void spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ); \n");
-            writer.write("    virtual void solutionUpdate(double* luh, const double* const lduh, const double dt);\n");
-            writer.write("    virtual void volumeIntegral(double* lduh, const double* const lFhi, const tarch::la::Vector<DIMENSIONS,double>& dx);\n" );
-            writer.write("    virtual void surfaceIntegral(double* lduh, const double* const lFhbnd, const tarch::la::Vector<DIMENSIONS,double>& dx);\n" );
-            writer.write("    virtual void riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex);\n" );
-            writer.write("    virtual double stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx );\n" );
-            writer.write("    virtual void initialCondition(double* luh, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx);\n" );
-        }
-        else {
-            writer.write("ERROR\n");
-        }
+        writer.write("    virtual void spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ); \n");
+        writer.write("    virtual void solutionUpdate(double* luh, const double* const lduh, const double dt);\n");
+        writer.write("    virtual void volumeIntegral(double* lduh, const double* const lFhi, const tarch::la::Vector<DIMENSIONS,double>& dx);\n" );
+        writer.write("    virtual void surfaceIntegral(double* lduh, const double* const lFhbnd, const tarch::la::Vector<DIMENSIONS,double>& dx);\n" );
+        writer.write("    virtual void riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex);\n" );
+        writer.write("    virtual double stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx );\n" );
+        writer.write("    virtual void initialCondition(double* luh, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx);\n" );
     }
 
     private void writeMinimalADERDGSolverHeader(
@@ -229,14 +224,9 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writeHeaderMinimalADERDGClassSignature(writer,solverName);
 
         writer.write("  private:\n");
-        if (_dimensions==2) {
-            writer.write("    static void flux(const double* const Q, double* f, double* g);\n");
-            writer.write("    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
-            writer.write("    static void initialValues(const double* const x, double* Q);\n" );
-        }
-        else {
-            writer.write("ERROR\n");
-        }
+        writer.write("    static void flux(const double* const Q, double* f, double* g);\n");
+        writer.write("    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
+        writer.write("    static void initialValues(const double* const x, double* Q);\n" );
 
         writer.write("};\n\n\n");
     }
@@ -355,7 +345,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
             ) throws IOException {
         writeMinimalADERDGSolverUserImplementation(solverName,numberOfVariables,order,writer);
 
-        if (_dimensions==2) {
             int digits = String.valueOf(numberOfVariables).length();
             writer.write("void " + _projectName + "::" + solverName + "::flux(const double* const Q, double* f, double* g) {\n");
             writer.write("  // Dimensions             = "+_dimensions      +"\n");
@@ -390,11 +379,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
             }
             writer.write("}\n");
             writer.write("\n\n\n");
-        }
-        else {
-            writer.write("ERROR"); 
-            writer.write("\n\n\n"); 
-        }
     }
 
 
@@ -417,7 +401,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("}\n");
         writer.write("\n\n\n");
 
-        if (_dimensions==2) {
             writer.write("void " + _projectName + "::" + solverName + "::spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {\n");
             writer.write("  // @todo Please implement\n");
             writer.write("}\n");
@@ -447,10 +430,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
             writer.write("  // @todo Please implement\n");
             writer.write("}\n");
             writer.write("\n\n\n");
-        }
-        else {
-            writer.write("ERROR\n");
-        }
     }
 
 

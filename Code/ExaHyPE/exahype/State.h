@@ -130,7 +130,7 @@ public:
    */
   void startNewTimeStep();
 
-  /*
+  /**
    * Set the minimum time step size of this state and another state as the time
    * step size of this state.
    *
@@ -138,10 +138,15 @@ public:
    */
   void merge(const State& anotherState);
 
-  /*
+  /**
    * @return the solve registry. Either a vector or tree like structure.
    */
   SolveRegistry& getSolveRegistry();
+
+  /**
+   * Deep copies the solve registry of another state.
+   */
+  void deepCopySolveRegistry(const State& anotherState);
   ///@}
 };
 

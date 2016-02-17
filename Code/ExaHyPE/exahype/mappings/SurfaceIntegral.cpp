@@ -81,9 +81,9 @@ exahype::mappings::SurfaceIntegral::~SurfaceIntegral() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::SurfaceIntegral::SurfaceIntegral(const SurfaceIntegral&  masterThread):
-    _localState(masterThread._localState)
-{
-  // do nothing
+  _localState(masterThread._localState
+) {
+  _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 void exahype::mappings::SurfaceIntegral::mergeWithWorkerThread(const SurfaceIntegral& workerThread) {

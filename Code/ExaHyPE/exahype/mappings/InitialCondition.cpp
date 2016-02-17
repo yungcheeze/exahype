@@ -80,9 +80,9 @@ exahype::mappings::InitialCondition::~InitialCondition() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::InitialCondition::InitialCondition(const InitialCondition&  masterThread):
-    _localState(masterThread._localState)
-{
-  // do nothing
+    _localState(masterThread._localState
+) {
+  _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 
