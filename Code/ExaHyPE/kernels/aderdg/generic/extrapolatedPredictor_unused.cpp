@@ -67,8 +67,8 @@ void kernels::aderdg::generic::extrapolatedPredictorXDirection(
     const int basisSize
 ){
   constexpr int direction = 0;
-  constexpr int dim                = DIMENSIONS;         // 2
-  constexpr int dimTimesTwo        = (2*DIMENSIONS);     // 4
+  constexpr int dim                = 2;         // 2
+  constexpr int dimTimesTwo        = (2*2);     // 4
   constexpr int BASISSIZE          = (3+1); // basisSize=order+1
   constexpr int NVAR               = 5;     // numberOfVariables
 
@@ -134,8 +134,8 @@ void kernels::aderdg::generic::extrapolatedPredictorYDirection(
     const int basisSize
 ){
   constexpr int direction       = 1;
-  constexpr int dim             = DIMENSIONS;         // 2
-  constexpr int dimTimesTwo     = (2*DIMENSIONS);     // 4
+  constexpr int dim             = 2;         // 2
+  constexpr int dimTimesTwo     = (2*2);     // 4
   constexpr int BASISSIZE       = (3+1); // basisSize=order+1
   constexpr int NVAR            = 5;     // numberOfVariables
 
