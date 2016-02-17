@@ -27,7 +27,7 @@ tarch::logging::Log  exahype::runners::Runner::_log( "exahype::runners::Runner" 
 
 
 exahype::runners::Runner::Runner(const Parser& parser):
-          _parser(parser) {
+              _parser(parser) {
 }
 
 
@@ -129,23 +129,23 @@ void exahype::runners::Runner::initialiseSolveRegistry(State& state,bool correct
   ){
     state.getSolveRegistry().push_back(
         exahype::solvers::Solve (
-        solverNumber, // solverNumber
-        exahype::solvers::Solve::SOLVE,
-        exahype::solvers::Solve::GLOBAL,
-        correctorTimeLagging, // corrector time lagging
-        true  // active
-    ));
+            solverNumber, // solverNumber
+            exahype::solvers::Solve::SOLVE,
+            exahype::solvers::Solve::GLOBAL,
+            correctorTimeLagging, // corrector time lagging
+            true  // active
+        ));
 
     state.getSolveRegistry()[solverNumber].setPredictorTimeStamp( state.getCurrentMinTimeStamp() );
     solverNumber++;
   }
 
 #if defined(Debug) || defined(Asserts)
-    logInfo(
-        "runAsMaster(...)",
-        "registered solvers=" << exahype::solvers::RegisteredSolvers.size() <<
-        "\t registered solves =" << state.getSolveRegistry().size()
-    );
+  logInfo(
+      "runAsMaster(...)",
+      "registered solvers=" << exahype::solvers::RegisteredSolvers.size() <<
+      "\t registered solves =" << state.getSolveRegistry().size()
+  );
 #endif
 
   assertion(state.getSolveRegistry().size()==exahype::solvers::RegisteredSolvers.size());
@@ -181,15 +181,13 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.iterate();
   repository.getState().startNewTimeStep();
 
-#if defined(Debug) || defined(Asserts)
-    logInfo(
-        "runAsMaster(...)",
-        "step " << -1 <<
-        "\t t_min          =" << repository.getState().getCurrentMinTimeStamp() <<
-        "\t dt_min         =" << repository.getState().getCurrentMinTimeStepSize() <<
-        "\t previous dt_min=" << repository.getState().getPreviousMinTimeStepSize()
-    );
-#endif
+  logInfo(
+      "runAsMaster(...)",
+      "step " << -1 <<
+      "\t t_min          =" << repository.getState().getCurrentMinTimeStamp() <<
+      "\t dt_min         =" << repository.getState().getCurrentMinTimeStepSize() <<
+      "\t previous dt_min=" << repository.getState().getPreviousMinTimeStepSize()
+  );
 
   /*
    * Compute current first predictor based on current time step size.
@@ -200,15 +198,13 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.iterate();
   repository.getState().startNewTimeStep();
 
-#if defined(Debug) || defined(Asserts)
-    logInfo(
-        "runAsMaster(...)",
-        "step " << 0 <<
-        "\t t_min          =" << repository.getState().getCurrentMinTimeStamp() <<
-        "\t dt_min         =" << repository.getState().getCurrentMinTimeStepSize() <<
-        "\t previous dt_min=" << repository.getState().getPreviousMinTimeStepSize()
-    );
-#endif
+  logInfo(
+      "runAsMaster(...)",
+      "step " << 0 <<
+      "\t t_min          =" << repository.getState().getCurrentMinTimeStamp() <<
+      "\t dt_min         =" << repository.getState().getCurrentMinTimeStepSize() <<
+      "\t previous dt_min=" << repository.getState().getPreviousMinTimeStepSize()
+  );
 
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n=1;
@@ -231,9 +227,11 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     else {
       runOneTimeStampWithFourSeparateAlgorithmicSteps(repository);
     }
+    /*
+    * After the traversal, set the global current time step size as the previous global time step size.
+    */
     repository.getState().startNewTimeStep();
 
-#if defined(Debug) || defined(Asserts)
     logInfo(
         "runAsMaster(...)",
         "step " << n <<
@@ -241,7 +239,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
         "\t dt_min         =" << repository.getState().getCurrentMinTimeStepSize() <<
         "\t previous dt_min=" << repository.getState().getPreviousMinTimeStepSize()
     );
-#endif
 
     n++;
 #if defined(Debug) || defined(Asserts)
@@ -258,36 +255,28 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
 void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository) {
   /*
-   * Exchange the fluctuations.
-   */
-  repository.switchToFaceDataExchange();
-  repository.iterate();
-
-  /*
-   * The two adapters that are embedded in the if clause below perform the following steps:
+   * The adapter below performs the following steps:
    *
-   * 1. Perform the corrector step using the old update and the old global time step size.
+   * 1. Exchange the fluctuations using the predictor computed in the previous sweep
+   *    and the corrector time stemp size.
+   * 2. Perform the corrector step using the corrector update and the corrector time step size.
    *    This is a cell-local operation. Thus we immediately obtain the cell-local current solution.
-   * 2. Perform the predictor step using the cell-local current solution and the current global time step size.
-   * 3. Compute the cell-local time step sizes
-   * 4. (Optionally) Export the cell-local current solution.
-   * 5. After the traversal, set the global current time step size as the new old global time step size.
-   *    Find the minimum cell-local time step size and set it as the new current
-   *    global time step size.
+   * 3. Perform the predictor step using the cell-local current solution and the predictor time step size.
+   * 4. Compute the cell-local time step sizes
    */
-  repository.switchToCorrectorAndPredictorAndGlobalTimeStepComputation();
+  repository.switchToADERDGTimeStep();
   repository.iterate();
 }
 
 
 void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(exahype::repositories::Repository& repository) {
   // Only one time step (predictor vs. corrector) is used in this case.
-    repository.switchToFaceDataExchange();
-    repository.iterate();
-    repository.switchToCorrector();
-    repository.iterate();
-    repository.switchToGlobalTimeStepComputation();
-    repository.iterate();
-    repository.switchToPredictor();
-    repository.iterate();
+  repository.switchToFaceDataExchange();
+  repository.iterate();
+  repository.switchToCorrector();
+  repository.iterate();
+  repository.switchToGlobalTimeStepComputation();
+  repository.iterate();
+  repository.switchToPredictor();
+  repository.iterate();
 }
