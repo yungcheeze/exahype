@@ -1,8 +1,10 @@
 #include "exahype/mappings/RiemannSolver.h"
 
-#include "tarch/multicore/Lock.h"
-
 #include "peano/utils/Globals.h"
+
+#include "tarch/multicore/Lock.h"
+#include "tarch/multicore/Loop.h"
+#include "peano/datatraversal/autotuning/Oracle.h"
 
 #include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
@@ -434,37 +436,49 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
   // Assumes that the both elements hold the same (number of) solvers
   assertion1WithExplanation( cellDescriptionsL.size() == cellDescriptionsR.size(), cellDescriptionsL.size(), "The number of ADERDGCellDescriptions is not the same for both cells!" );
 
-  for (
-      int p = 0;
-      p < static_cast<int>(cellDescriptionsL.size());
-      p++
-  ) {
-    exahype::solvers::Solve& solve   = _localState.getSolveRegistry()     [ cellDescriptionsL[p].getSolveNumber() ];
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ solve.getSolverNumber() ];
+//  for (
+//      int i = 0;
+//      i < static_cast<int>(cellDescriptionsL.size());
+//      i++
+//  ) {
+
+  const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexL] ).size();
+  const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined2; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
+  const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
+  pfor(i,0,numberOfADERDGCellDescriptions,grainSize)
+    // todo ugly
+    // This is not beautiful and should be replaced by a reference next. I just
+    // use it to mirror the aforementioned realisation. Dominic, please change
+    // successively to a simpler scheme with just references. Pointers are
+    // ugly.
+    records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexL] )[i]);
+
+    exahype::solvers::Solve& solve   = _localState.getSolveRegistry()       [ p->getSolveNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers  [ solve.getSolverNumber() ];
 
     // Lock the critical multithreading area.
     bool riemannSolveNotPerformed = false;
     tarch::multicore::Lock lock(_semaphore);
-    assertionEquals(cellDescriptionsL[p].getRiemannSolvePerformed(faceL),cellDescriptionsR[p].getRiemannSolvePerformed(faceR));
+    assertionEquals(cellDescriptionsL[i].getRiemannSolvePerformed(faceL),cellDescriptionsR[i].getRiemannSolvePerformed(faceR));
 
-    riemannSolveNotPerformed = !cellDescriptionsL[p].getRiemannSolvePerformed(faceL);
+    riemannSolveNotPerformed = !cellDescriptionsL[i].getRiemannSolvePerformed(faceL);
     if (riemannSolveNotPerformed) {
-      cellDescriptionsL[p].setRiemannSolvePerformed(faceL,true);
-      cellDescriptionsR[p].setRiemannSolvePerformed(faceR,true);
+      cellDescriptionsL[i].setRiemannSolvePerformed(faceL,true);
+      cellDescriptionsR[i].setRiemannSolvePerformed(faceR,true);
     }
     lock.free();
 
     if (riemannSolveNotPerformed) {
       const int numberOfFaceDof = solver->getUnknownsPerFace();//solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
 
-      double * QL = &(DataHeap::getInstance().getData(cellDescriptionsL[p].getExtrapolatedPredictor())[faceL * numberOfFaceDof]._persistentRecords._u);
-      double * QR = &(DataHeap::getInstance().getData(cellDescriptionsR[p].getExtrapolatedPredictor())[faceR * numberOfFaceDof]._persistentRecords._u);
+      double * QL = &(DataHeap::getInstance().getData(cellDescriptionsL[i].getExtrapolatedPredictor())[faceL * numberOfFaceDof]._persistentRecords._u);
+      double * QR = &(DataHeap::getInstance().getData(cellDescriptionsR[i].getExtrapolatedPredictor())[faceR * numberOfFaceDof]._persistentRecords._u);
 
-      double * FL = &(DataHeap::getInstance().getData(cellDescriptionsL[p].getFluctuation())[faceL * numberOfFaceDof]._persistentRecords._u);
-      double * FR = &(DataHeap::getInstance().getData(cellDescriptionsR[p].getFluctuation())[faceR * numberOfFaceDof]._persistentRecords._u);
+      double * FL = &(DataHeap::getInstance().getData(cellDescriptionsL[i].getFluctuation())[faceL * numberOfFaceDof]._persistentRecords._u);
+      double * FR = &(DataHeap::getInstance().getData(cellDescriptionsR[i].getFluctuation())[faceR * numberOfFaceDof]._persistentRecords._u);
 
-      synchroniseTimeStepping(cellDescriptionsR[p]);
-      synchroniseTimeStepping(cellDescriptionsL[p]);
+      synchroniseTimeStepping(cellDescriptionsR[i]);
+      synchroniseTimeStepping(cellDescriptionsL[i]);
 
       logDebug("touchVertexLastTime(...)::debug::before::dt_min(previous ) of State*",_localState.getPreviousMinTimeStepSize());
       logDebug("touchVertexLastTime(...)::debug::before::dt_min(corrector) of Solve*",solve.getCorrectorTimeStepSize());
@@ -482,7 +496,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
           FR,
           QL,
           QR,
-          std::min( cellDescriptionsL[p].getCorrectorTimeStepSize(), cellDescriptionsR[p].getCorrectorTimeStepSize() ),
+          std::min( cellDescriptionsL[i].getCorrectorTimeStepSize(), cellDescriptionsR[i].getCorrectorTimeStepSize() ),
           normalNonZero
       );
 
@@ -491,7 +505,9 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       logDebug("touchVertexLastTime(...)::debug::after::FL[0]",FL[0]);
       logDebug("touchVertexLastTime(...)::debug::after::FR[0]",FR[0]);
     }
-  }
+//  }
+    endpfor
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
 }
 
 void exahype::mappings::RiemannSolver::synchroniseTimeStepping(records::ADERDGCellDescription& p) {
