@@ -64,23 +64,23 @@ class exahype::repositories::Repository {
      */
     virtual void switchToInitialGrid() = 0;    
     virtual void switchToPatchInitialisation() = 0;    
-    virtual void switchToFaceDataExchange() = 0;    
+    virtual void switchToPlot() = 0;    
     virtual void switchToInitialConditionAndGlobalTimeStepComputation() = 0;    
     virtual void switchToPredictorAndGlobalTimeStepComputation() = 0;    
-    virtual void switchToCorrectorAndPredictorAndGlobalTimeStepComputation() = 0;    
-    virtual void switchToPlot() = 0;    
+    virtual void switchToADERDGTimeStep() = 0;    
     virtual void switchToGlobalTimeStepComputation() = 0;    
+    virtual void switchToFaceDataExchange() = 0;    
     virtual void switchToPredictor() = 0;    
     virtual void switchToCorrector() = 0;    
 
     virtual bool isActiveAdapterInitialGrid() const = 0;
     virtual bool isActiveAdapterPatchInitialisation() const = 0;
-    virtual bool isActiveAdapterFaceDataExchange() const = 0;
+    virtual bool isActiveAdapterPlot() const = 0;
     virtual bool isActiveAdapterInitialConditionAndGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterPredictorAndGlobalTimeStepComputation() const = 0;
-    virtual bool isActiveAdapterCorrectorAndPredictorAndGlobalTimeStepComputation() const = 0;
-    virtual bool isActiveAdapterPlot() const = 0;
+    virtual bool isActiveAdapterADERDGTimeStep() const = 0;
     virtual bool isActiveAdapterGlobalTimeStepComputation() const = 0;
+    virtual bool isActiveAdapterFaceDataExchange() const = 0;
     virtual bool isActiveAdapterPredictor() const = 0;
     virtual bool isActiveAdapterCorrector() const = 0;
 

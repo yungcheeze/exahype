@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_CorrectorAndPredictorAndGlobalTimeStepComputation_H_
-#define EXAHYPE_ADAPTERS_CorrectorAndPredictorAndGlobalTimeStepComputation_H_
+#ifndef EXAHYPE_ADAPTERS_ADERDGTimeStep_H_
+#define EXAHYPE_ADAPTERS_ADERDGTimeStep_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,6 +18,8 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/mappings/RiemannSolver.h"
+ #include "exahype/mappings/BoundaryConditions.h"
  #include "exahype/mappings/RiemannSolverReset.h"
  #include "exahype/mappings/SurfaceIntegral.h"
  #include "exahype/mappings/SolutionUpdate.h"
@@ -29,7 +31,7 @@
 
 namespace exahype {
       namespace adapters {
-        class CorrectorAndPredictorAndGlobalTimeStepComputation;
+        class ADERDGTimeStep;
       } 
 }
 
@@ -41,21 +43,25 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::CorrectorAndPredictorAndGlobalTimeStepComputation {
+class exahype::adapters::ADERDGTimeStep {
   private:
-    typedef mappings::RiemannSolverReset Mapping0;
-    typedef mappings::SurfaceIntegral Mapping1;
-    typedef mappings::SolutionUpdate Mapping2;
-    typedef mappings::SpaceTimePredictor Mapping3;
-    typedef mappings::VolumeIntegral Mapping4;
-    typedef mappings::GlobalTimeStepComputation Mapping5;
+    typedef mappings::RiemannSolver Mapping0;
+    typedef mappings::BoundaryConditions Mapping1;
+    typedef mappings::RiemannSolverReset Mapping2;
+    typedef mappings::SurfaceIntegral Mapping3;
+    typedef mappings::SolutionUpdate Mapping4;
+    typedef mappings::SpaceTimePredictor Mapping5;
+    typedef mappings::VolumeIntegral Mapping6;
+    typedef mappings::GlobalTimeStepComputation Mapping7;
 
-     Mapping0  _map2RiemannSolverReset;
-     Mapping1  _map2SurfaceIntegral;
-     Mapping2  _map2SolutionUpdate;
-     Mapping3  _map2SpaceTimePredictor;
-     Mapping4  _map2VolumeIntegral;
-     Mapping5  _map2GlobalTimeStepComputation;
+     Mapping0  _map2RiemannSolver;
+     Mapping1  _map2BoundaryConditions;
+     Mapping2  _map2RiemannSolverReset;
+     Mapping3  _map2SurfaceIntegral;
+     Mapping4  _map2SolutionUpdate;
+     Mapping5  _map2SpaceTimePredictor;
+     Mapping6  _map2VolumeIntegral;
+     Mapping7  _map2GlobalTimeStepComputation;
 
 
   public:
@@ -67,16 +73,16 @@ class exahype::adapters::CorrectorAndPredictorAndGlobalTimeStepComputation {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    CorrectorAndPredictorAndGlobalTimeStepComputation();
+    ADERDGTimeStep();
 
     #if defined(SharedMemoryParallelisation)
-    CorrectorAndPredictorAndGlobalTimeStepComputation(const CorrectorAndPredictorAndGlobalTimeStepComputation& masterThread);
+    ADERDGTimeStep(const ADERDGTimeStep& masterThread);
     #endif
 
-    virtual ~CorrectorAndPredictorAndGlobalTimeStepComputation();
+    virtual ~ADERDGTimeStep();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const CorrectorAndPredictorAndGlobalTimeStepComputation& workerThread);
+    void mergeWithWorkerThread(const ADERDGTimeStep& workerThread);
     #endif
 
     void createInnerVertex(

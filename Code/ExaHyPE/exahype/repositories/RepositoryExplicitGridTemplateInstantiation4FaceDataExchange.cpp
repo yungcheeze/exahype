@@ -15,12 +15,12 @@
 
  #include "exahype/adapters/InitialGrid.h" 
  #include "exahype/adapters/PatchInitialisation.h" 
- #include "exahype/adapters/FaceDataExchange.h" 
+ #include "exahype/adapters/Plot.h" 
  #include "exahype/adapters/InitialConditionAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndGlobalTimeStepComputation.h" 
- #include "exahype/adapters/CorrectorAndPredictorAndGlobalTimeStepComputation.h" 
- #include "exahype/adapters/Plot.h" 
+ #include "exahype/adapters/ADERDGTimeStep.h" 
  #include "exahype/adapters/GlobalTimeStepComputation.h" 
+ #include "exahype/adapters/FaceDataExchange.h" 
  #include "exahype/adapters/Predictor.h" 
  #include "exahype/adapters/Corrector.h" 
 

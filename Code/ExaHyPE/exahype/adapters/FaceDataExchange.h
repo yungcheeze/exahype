@@ -18,7 +18,6 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/NewTimeStep.h"
  #include "exahype/mappings/RiemannSolver.h"
  #include "exahype/mappings/BoundaryConditions.h"
 
@@ -40,13 +39,11 @@ namespace exahype {
  */
 class exahype::adapters::FaceDataExchange {
   private:
-    typedef mappings::NewTimeStep Mapping0;
-    typedef mappings::RiemannSolver Mapping1;
-    typedef mappings::BoundaryConditions Mapping2;
+    typedef mappings::RiemannSolver Mapping0;
+    typedef mappings::BoundaryConditions Mapping1;
 
-     Mapping0  _map2NewTimeStep;
-     Mapping1  _map2RiemannSolver;
-     Mapping2  _map2BoundaryConditions;
+     Mapping0  _map2RiemannSolver;
+     Mapping1  _map2BoundaryConditions;
 
 
   public:
