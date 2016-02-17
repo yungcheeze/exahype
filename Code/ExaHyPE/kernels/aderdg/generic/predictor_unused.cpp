@@ -22,8 +22,8 @@ void kernels::aderdg::generic::predictor(
   // Post processing of the predictor:
   // Immediately compute the time-averaged space-time polynomials
   /////////////////////////////////////////////////
-  constexpr int dim         = DIMENSIONS;         // 2
-  constexpr int dimTimesTwo = (2*DIMENSIONS);     // 4
+  constexpr int dim         = 2;         // 2
+  constexpr int dimTimesTwo = (2*2);     // 4
   constexpr int BASISSIZE   = (3+1); // basisSize=order+1
   constexpr int NVAR        = 5;     // numberOfVariables
   constexpr int numberOfDof           = NVAR * BASISSIZE * BASISSIZE;/*tarch::la::aPowI(dim,BASISSIZE);*/

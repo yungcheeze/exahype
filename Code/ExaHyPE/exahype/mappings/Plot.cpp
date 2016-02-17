@@ -55,9 +55,9 @@ exahype::mappings::Plot::~Plot() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::Plot::Plot(const Plot&  masterThread):
-    _localState(masterThread._localState)
-{
-  // do nothing
+  _localState(masterThread._localState
+) {
+  _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 

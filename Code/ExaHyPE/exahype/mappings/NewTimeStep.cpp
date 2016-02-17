@@ -79,9 +79,9 @@ exahype::mappings::NewTimeStep::~NewTimeStep() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::NewTimeStep::NewTimeStep(const NewTimeStep&  masterThread):
-    _localState(masterThread._localState)
-{
-  // do nothing
+  _localState(masterThread._localState
+) {
+   _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 

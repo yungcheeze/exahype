@@ -78,7 +78,9 @@ exahype::mappings::RiemannSolver::~RiemannSolver() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::RiemannSolver::RiemannSolver(const RiemannSolver&  masterThread):
-      _localState( masterThread._localState ) {
+  _localState(masterThread._localState
+) {
+  _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 

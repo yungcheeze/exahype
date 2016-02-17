@@ -16,30 +16,7 @@ Base() {
 }
 
 exahype::State::State(const Base::PersistentState& argument):
-      Base(argument) {
-  // deep copy of solve registry
-  for (
-      exahype::State::SolveRegistry::const_iterator p = static_cast<const exahype::State>(argument)._solveRegistry.begin();
-      p != static_cast<const exahype::State>(argument)._solveRegistry.end();
-      p++
-  ) {
-
-    _solveRegistry.push_back(
-        exahype::solvers::Solve(
-        (*p).getName(),
-        (*p).getSolverNumber(),
-        (*p).getType(),
-        (*p).getTimeStepping(),
-        (*p).isActive(),
-        (*p).getCorrectorTimeStamp(),
-        (*p).getPredictorTimeStamp(),
-        (*p).getCorrectorTimeStepSize(),
-        (*p).getPredictorTimeStamp(),
-        (*p).getPredictorTimeStepSize(),
-        (*p).getNextPredictorTimeStepSize()
-    ));
-  }
-}
+      Base(argument) {}
 
 double exahype::State::getCurrentMinTimeStepSize() const {
   return _stateData.getCurrentMinTimeStepSize();
@@ -109,6 +86,10 @@ void exahype::State::merge(const exahype::State& anotherState) {
 
 exahype::State::SolveRegistry& exahype::State::getSolveRegistry() {
   return _solveRegistry;
+}
+
+void exahype::State::deepCopySolveRegistry(const State& anotherState) {
+  _solveRegistry = anotherState._solveRegistry;
 }
 
 void exahype::State::writeToCheckpoint( peano::grid::Checkpoint<exahype::Vertex,exahype::Cell>& checkpoint ) const {
