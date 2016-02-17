@@ -5,7 +5,7 @@
  A simple project 
 
  */
-exahype-project  Euler3D
+exahype-project  Euler3d
 
   peano-path                 = ./Peano/peano
   tarch-path                 = ./Peano/tarch
