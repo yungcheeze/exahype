@@ -211,7 +211,7 @@ double exahype::Parser::getFirstSnapshotTimeForPlotter( int solverNumber, int pl
   assertion( isValid() );
   // We have to multiply with two as the token solver occurs twice (to open and close the section)
   std::string token = getTokenAfter("solver",solverNumber*2+1,"plot",plotterNumber*2+1,2);
-  logInfo( "fuseAlgorithmicSteps()", "found token " << token );
+  logDebug( "fuseAlgorithmicSteps()", "found token " << token );
   assertion3(token.compare("notoken")!=0,token,solverNumber,plotterNumber);
   return atof(token.c_str());
 }
@@ -221,7 +221,7 @@ double exahype::Parser::getRepeatTimeForPlotter( int solverNumber, int plotterNu
   assertion( isValid() );
   // We have to multiply with two as the token solver occurs twice (to open and close the section)
   std::string token = getTokenAfter("solver",solverNumber*2+1,"plot",plotterNumber*2+1,4);
-  logInfo( "fuseAlgorithmicSteps()", "found token " << token );
+  logDebug( "fuseAlgorithmicSteps()", "found token " << token );
   assertion3(token.compare("notoken")!=0,token,solverNumber,plotterNumber);
   return atof(token.c_str());
 }
@@ -231,7 +231,7 @@ std::string exahype::Parser::getIdentifierForPlotter( int solverNumber, int plot
   assertion( isValid() );
   // We have to multiply with two as the token solver occurs twice (to open and close the section)
   std::string token = getTokenAfter("solver",solverNumber*2+1,"plot",plotterNumber*2+1);
-  logInfo( "fuseAlgorithmicSteps()", "found token " << token );
+  logDebug( "fuseAlgorithmicSteps()", "found token " << token );
   assertion3(token.compare("notoken")!=0,token,solverNumber,plotterNumber);
   return token;
 }
@@ -241,7 +241,7 @@ std::string exahype::Parser::getFilenameForPlotter( int solverNumber, int plotte
   assertion( isValid() );
   // We have to multiply with two as the token solver occurs twice (to open and close the section)
   std::string token = getTokenAfter("solver",solverNumber*2+1,"plot",plotterNumber*2+1,6);
-  logInfo( "fuseAlgorithmicSteps()", "found token " << token );
+  logDebug( "fuseAlgorithmicSteps()", "found token " << token );
   assertion3(token.compare("notoken")!=0,token,solverNumber,plotterNumber);
   return token;
 }

@@ -218,7 +218,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       repository.switchToPlot();
       repository.iterate();
       exahype::plotters::finishedPlotting();
-      logInfo( "runAsMaster(...)", "all snapshots written" );
+      logDebug( "runAsMaster(...)", "all snapshots written" );
     }
 
     if ( _parser.fuseAlgorithmicSteps() ) {
