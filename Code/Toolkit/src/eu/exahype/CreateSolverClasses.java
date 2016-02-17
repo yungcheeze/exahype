@@ -16,6 +16,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     private DirectoryAndPathChecker   _directoryAndPathChecker;
 
     private String                    _projectName;
+    
+    private String                    _microarchitecture;
 
     private int                       _dimensions;
 
@@ -31,7 +33,27 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         if (node.getSolver().size()==0) { 
             System.out.println( "there are no solvers in the specification file ... nothing to be done" );      
         }
-    }
+        
+        _microarchitecture = node.getArchitecture().toString().trim().toLowerCase();
+        
+        switch(_microarchitecture) {
+            case "wsm":
+                break;
+            case "snb":
+                break;
+            case "hsw":
+                break;
+            case "knc":
+                break;
+            case "knl":
+                break;
+            case "noarch":
+                break;
+            default: 
+                System.out.println( "Unknown architecture specified ... fallback solution taken" );
+                _microarchitecture = "noarch";
+        }
+    } 
 
 
     @Override
@@ -142,6 +164,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
                 System.out.println( "create generated implementation of solver " + solverName + " ... ok" );     
 
                 writeADERDGSolverGeneratedImplementationForKernelEuler2d(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), generatedImplementationWriter);
+                invokeCodeGenerator(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim());
             }
             else {
                 System.err.println( "ERROR: unknown ADER-DG kernel type " + kernel + " ... failed" );      
@@ -301,7 +324,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     }
 
 
-    void writeADERDGSolverGeneratedImplementationForKernelEuler2d(
+    private void writeADERDGSolverGeneratedImplementationForKernelEuler2d(
             String                 solverName,
             String                 numberOfVariables,
             String                 order,
@@ -471,5 +494,40 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("  // @todo Please implement\n");
         writer.write("  return 3;\n");
         writer.write("}\n");
+    }
+
+    private void invokeCodeGenerator(
+            String                 solverName,
+            String                 numberOfVariables,
+            String                 order
+            ) throws IOException {
+        // TODO adapt path
+        String currentDirectory = System.getProperty("user.dir");
+        java.nio.file.Path pathToCodeGenerator = java.nio.file.Paths.get(currentDirectory+"/Miscellaneous/CodeGenerator/dummy.py");
+		    if(java.nio.file.Files.notExists(pathToCodeGenerator)) {
+			    System.err.println("ERROR: Code generator not found. Can't generated optimised kernels.");
+			    return;
+		    }
+
+		    // set up the command to execute the code generator
+		    String args          = " " + solverName         + " "
+		                               + numberOfVariables  + " "
+		                               + order              + " "
+		                               + _microarchitecture + " "
+		                               + "DP"               + " " //double precision
+		                               + Integer.toString(_dimensions);
+		    String bashCommand   = "python " + pathToCodeGenerator + args ;
+
+		    Runtime runtime = Runtime.getRuntime();
+
+	      // execute the command line program
+	      Process codeGenerator = runtime.exec(bashCommand);
+
+	      // catch any output that is produced by the code generator and print line-by-line
+	      java.io.BufferedReader codeGeneratorsOutputReader = new java.io.BufferedReader(new java.io.InputStreamReader(codeGenerator.getInputStream()));
+	      String line = "";
+	      while((line = codeGeneratorsOutputReader.readLine()) != null) {
+		        System.out.println(line);
+	      }
     }
 } 
