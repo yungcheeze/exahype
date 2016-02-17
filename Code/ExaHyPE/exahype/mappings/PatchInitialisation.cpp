@@ -71,8 +71,10 @@ exahype::mappings::PatchInitialisation::~PatchInitialisation() {
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::PatchInitialisation::PatchInitialisation(const PatchInitialisation&  masterThread) {
-  // do nothing
+exahype::mappings::PatchInitialisation::PatchInitialisation(const PatchInitialisation&  masterThread):
+  _localState(masterThread._localState
+) {
+  _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 
