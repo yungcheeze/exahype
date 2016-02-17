@@ -4,8 +4,6 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/aderdg/ADERDGIO.h"
-
 #include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 

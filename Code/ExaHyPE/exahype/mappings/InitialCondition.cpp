@@ -1,7 +1,5 @@
 #include "exahype/mappings/InitialCondition.h"
 
-#include "exahype/aderdg/ADERDG.h"
-
 #include "string.h"
 
 #include "peano/utils/Globals.h"

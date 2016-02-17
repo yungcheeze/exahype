@@ -364,11 +364,12 @@ void exahype::mappings::NewTimeStep::enterCell(
 ) {
   // We want to run this in parallel
   //
-  //for (
-  //  ADERDGCellDescriptionHeap::HeapEntries::iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
-  //  p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
-  //  p++
-  //) {
+  for (
+      ADERDGCellDescriptionHeap::HeapEntries::iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+      p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
+      p++
+  ) {
+    /*
   const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size();
   const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined0; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
   const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
@@ -379,6 +380,7 @@ void exahype::mappings::NewTimeStep::enterCell(
     // ugly.
     records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i]);
 
+     */
     const exahype::solvers::Solve& solve = _localState.getSolveRegistry()[ p->getSolveNumber() ];
 
     if (solve.getTimeStepping()==exahype::solvers::Solve::GLOBAL) {
@@ -408,8 +410,9 @@ void exahype::mappings::NewTimeStep::enterCell(
       assertionNumericalEquals1(p->getCorrectorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
     }
 #endif
-  endpfor
-  peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    //  endpfor
+    //  peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+  }
 }
 
 
