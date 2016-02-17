@@ -78,9 +78,9 @@ exahype::mappings::VolumeIntegral::~VolumeIntegral() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::VolumeIntegral::VolumeIntegral(const VolumeIntegral&  masterThread):
-    _localState(masterThread._localState)
-{
-  // do nothing
+  _localState(masterThread._localState
+) {
+  _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 void exahype::mappings::VolumeIntegral::mergeWithWorkerThread(const VolumeIntegral& workerThread) {

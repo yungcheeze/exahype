@@ -85,6 +85,7 @@ exahype::mappings::GlobalTimeStepComputation::~GlobalTimeStepComputation() {
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const GlobalTimeStepComputation&  masterThread):
   _localState(masterThread._localState) {
+  _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(const GlobalTimeStepComputation& workerThread) {
