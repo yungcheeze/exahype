@@ -19,11 +19,14 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     
     private String                    _microarchitecture;
 
+    private java.util.List<String>    _supportedMicroarchitectures;
+
     private int                       _dimensions;
 
 
     public CreateSolverClasses(DirectoryAndPathChecker  directoryAndPathChecker) {
         _directoryAndPathChecker = directoryAndPathChecker;
+        _supportedMicroarchitectures = java.util.Arrays.asList("wsm", "snb", "hsw", "knc", "knl", "noarch");
     }
 
     @Override
@@ -35,24 +38,11 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         }
         
         _microarchitecture = node.getArchitecture().toString().trim().toLowerCase();
-        
-        switch(_microarchitecture) {
-            case "wsm":
-                break;
-            case "snb":
-                break;
-            case "hsw":
-                break;
-            case "knc":
-                break;
-            case "knl":
-                break;
-            case "noarch":
-                break;
-            default: 
-                System.out.println( "Unknown architecture specified ... fallback solution taken" );
-                _microarchitecture = "noarch";
+        if(!_supportedMicroarchitectures.contains(_microarchitecture)) {
+            System.out.println( "Unknown architecture specified ... fallback solution \"noarch\" taken" );
+            _microarchitecture = "noarch";
         }
+
     } 
 
 
@@ -292,7 +282,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("#include \"" + solverName + ".h\"\n");
         writer.write("#include \"kernels/aderdg/generic/Kernels.h\"\n");
         writer.write("\n\n\n");
-        writer.write( "#include \"kernels/aderdg/generic/Kernels.h\"\n\n\n");
         writer.write( "void " + _projectName + "::" + solverName + "::spaceTimePredictor( double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {\n");
         writer.write("   kernels::aderdg::generic::spaceTimePredictor<flux>( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
         writer.write("}\n");
@@ -334,9 +323,9 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("// Please do not change the implementations below\n");
         writer.write("// =============================---==============\n");
         writer.write("#include \"" + solverName + ".h\"\n");
+        writer.write( "#include \"kernels/aderdg/optimised/defines.h\"\n");
+        writer.write( "#include \"kernels/aderdg/optimised/Kernels.h\"\n");
         writer.write("\n\n\n");
-        writer.write( "#include \"kernels/aderdg/optimised/Kernels.h\"\n\n\n");
-        // TODO Vasco/Angelika: call code generator
         writer.write( "void " + _projectName + "::" + solverName + "::spaceTimePredictor( double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {\n");
         writer.write("   kernels::aderdg::optimised::picard<flux>( lQi, lFi, luh, dx, dt );\n");
         writer.write("   kernels::aderdg::optimised::average<flux>( lQhi, lFhi, lQi, lFi );\n");
