@@ -13,6 +13,7 @@ exahype-project  Euler2d
   sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
   exahype-path               = ./ExaHyPE
   output-directory           = ./Applications/eulerflow2d
+  architecture               = noarch
   
   
   
