@@ -21,7 +21,7 @@ exahype-project  Euler3d
     dimension                = 3
     width                    = 1.0
     offset                   = 0.0, 0.0, 0.0
-    end-time                 = 0.4
+    end-time                 = 0.05
   end computational-domain
  
   
