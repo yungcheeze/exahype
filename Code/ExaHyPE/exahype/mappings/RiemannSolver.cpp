@@ -443,17 +443,21 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
     exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ solve.getSolverNumber() ];
 
     bool riemannSolveNotPerformed = false;
-    {
-      // Lock the critical multithreading area.
-      tarch::multicore::Lock lock(_semaphore);
-      riemannSolveNotPerformed = !cellDescriptionsL[p].getRiemannSolvePerformed(faceL)
-                                     &&
-                                     !cellDescriptionsR[p].getRiemannSolvePerformed(faceR);
 
-      if(riemannSolveNotPerformed==true) {
-        cellDescriptionsL[p].setRiemannSolvePerformed(faceL,true);
-        cellDescriptionsR[p].setRiemannSolvePerformed(faceR,true);
-      }
+    // Lock the critical multithreading area.
+    tarch::multicore::Lock lock(_semaphore);
+
+    assertionEquals(cellDescriptionsL[p].getRiemannSolvePerformed(faceL),cellDescriptionsR[p].getRiemannSolvePerformed(faceR));
+    riemannSolveNotPerformed = !cellDescriptionsL[p].getRiemannSolvePerformed(faceL);
+
+    if (riemannSolveNotPerformed) {
+      cellDescriptionsL[p].setRiemannSolvePerformed(faceL,true);
+      cellDescriptionsR[p].setRiemannSolvePerformed(faceR,true);
+    }
+
+    lock.free();
+
+      // @todo: Fixen
 
       // if first thread that operators on cell,
       // update the patch time step with the global/local solve time step if necessary
@@ -464,7 +468,6 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       if (cellDescriptionsR[p].getRiemannSolvePerformed().none()) {
         startNewTimeStep(cellDescriptionsR[p]);
       }
-    } // Unlock the critical multithreading area by letting lock go out of scope.
 
     const int numberOfFaceDof = solver->getUnknownsPerFace();//solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
 
