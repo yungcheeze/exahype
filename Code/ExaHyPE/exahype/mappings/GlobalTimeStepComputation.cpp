@@ -69,7 +69,7 @@ tarch::logging::Log                exahype::mappings::GlobalTimeStepComputation:
 
 exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation()
 :
-      _localState() // initialises the old and current time step size to max double value
+          _localState() // initialises the old and current time step size to max double value
 {
   // do nothing
 }
@@ -82,7 +82,7 @@ exahype::mappings::GlobalTimeStepComputation::~GlobalTimeStepComputation() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const GlobalTimeStepComputation&  masterThread):
-  _localState(masterThread._localState) {
+      _localState(masterThread._localState) {
   _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
@@ -397,8 +397,31 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
     solve.updateNextPredictorTimeStepSize(admissibleTimeStepSize);
     _localState.updateNextMinTimeStepSize(admissibleTimeStepSize);
 
-    assertion(solve.getNextPredictorTimeStepSize() <= p->getPredictorTimeStepSize());
-    assertion(_localState.getNextMinTimeStepSize()  <= solve.getNextPredictorTimeStepSize());
+#if defined(Debug) || defined(Asserts)
+    // todo Write AssertionNumericalSmaller(lhs,rhs,a)
+    if (
+      std::fabs(p->getPredictorTimeStepSize()        - solve.getNextPredictorTimeStepSize()) > 1e-12 // not equal // todo precision
+      &&
+      (p->getPredictorTimeStepSize()                 - solve.getNextPredictorTimeStepSize()) < 1e-12 // smaller
+   ) {
+      logError("enterCell(...)","(p->getPredictorTimeStepSize() - solve.getNextPredictorTimeStepSize()) <= 1e-12");
+      logError("enterCell(...)","p->getPredictorTimeStepSize()" <<  p->getPredictorTimeStepSize());
+      logError("enterCell(...)","solve.getNextPredictorTimeStepSize()" <<  solve.getNextPredictorTimeStepSize());
+      exit(1);
+    }
+    if (
+      std::fabs(solve.getNextPredictorTimeStepSize() - _localState.getNextMinTimeStepSize()) > 1e-12 // not equal // todo precision
+      &&
+      (solve.getNextPredictorTimeStepSize() - _localState.getNextMinTimeStepSize())          < 1e-12 // smaller
+    )  {
+      logError("enterCell(...)","(solve->getPredictorTimeStepSize() - _localState.getNextMinTimeStepSize()) <= 1e-12");
+      logError("enterCell(...)","solve.getPredictorTimeStepSize()" <<  solve.getNextPredictorTimeStepSize());
+      logError("enterCell(...)","_localState.getNextMinTimeStepSize()" <<  _localState.getNextMinTimeStepSize());
+      exit(1);
+    }
+#endif
+//    assertion(solve.getNextPredictorTimeStepSize() <= p->getPredictorTimeStepSize());
+//    assertion(_localState.getNextMinTimeStepSize() <= solve.getNextPredictorTimeStepSize());
   }
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
