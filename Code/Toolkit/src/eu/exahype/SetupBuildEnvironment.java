@@ -21,7 +21,8 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
   @Override
   public void inATwoDimensionalComputationalDomain(ATwoDimensionalComputationalDomain node) {
 	if (!node.getDimension().toString().trim().equals("2")) {
-      System.err.println( "WARNING: please set dimension to 2 instead of " + node.getDimension() + " if you specify a three-dimensional offset");
+      System.err.println( "ERROR: please set dimension to 2 instead of " + node.getDimension() + " if you specify a three-dimensional offset");
+      valid = false;
 	}
 	else {
       System.out.print ("2d experiment ... ok\n" );      
@@ -39,7 +40,8 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
   @Override
   public void inAThreeDimensionalComputationalDomain(AThreeDimensionalComputationalDomain node) {
     if (!node.getDimension().toString().trim().equals("3")) {
-	  System.err.println( "WARNING: please set dimension to 3 instead of " + node.getDimension() + " if you specify a three-dimensional offset");
+	  System.err.println( "ERROR: please set dimension to 3 instead of " + node.getDimension() + " if you specify a three-dimensional offset");
+	  valid = false;
 	}
 	else {
       System.out.print ("3d experiment ... ok\n" );      
