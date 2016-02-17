@@ -1,8 +1,10 @@
 #include "exahype/mappings/BoundaryConditions.h"
 
-#include "tarch/multicore/Lock.h"
-
 #include "peano/utils/Globals.h"
+
+#include "tarch/multicore/Lock.h"
+#include "tarch/multicore/Loop.h"
+#include "peano/datatraversal/autotuning/Oracle.h"
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
@@ -447,14 +449,24 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       adjacentADERDGCellDescriptionsIndices.toString()
   );
 
-  for (
-      ADERDGCellDescriptionHeap::HeapEntries::iterator p = ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndex] ).begin();
-      p != ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndex] ).end();
-      p++
-  ) {
-    exahype::solvers::Solve& solve = _localState.getSolveRegistry()     [ p->getSolveNumber() ];
-    exahype::solvers::Solver* solver       = exahype::solvers::RegisteredSolvers[ solve.getSolverNumber() ];
+//  for (
+//      ADERDGCellDescriptionHeap::HeapEntries::iterator p = ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndex] ).begin();
+//      p != ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndex] ).end();
+//      p++
+//  ) {
+  const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndex] ).size();
+  const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined0; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
+  const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
+  pfor(i,0,numberOfADERDGCellDescriptions,grainSize)
+    // todo ugly
+    // This is not beautiful and should be replaced by a reference next. I just
+    // use it to mirror the aforementioned realisation. Dominic, please change
+    // successively to a simpler scheme with just references. Pointers are
+    // ugly.
+    records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndex] )[i]);
 
+    exahype::solvers::Solve& solve   = _localState.getSolveRegistry()       [ p->getSolveNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers  [ solve.getSolverNumber() ];
 
     // Lock the critical multithreading area.
     // Note that two boundary vertices can operate on the same face at the same time.
@@ -505,7 +517,9 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       logDebug("touchVertexLastTime(...)::debug::after::Qhbnd[0]*",Qhbnd[0]);
       logDebug("touchVertexLastTime(...)::debug::after::Fhbnd[0]",Fhbnd[0]);
     }
-  }
+//  }
+  endpfor
+  peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
 }
 
 void exahype::mappings::BoundaryConditions::synchroniseTimeStepping(records::ADERDGCellDescription& p) {
