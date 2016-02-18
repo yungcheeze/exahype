@@ -15,10 +15,12 @@
 import argparse
 from Backend import validateLibxsmmGenerator
 from SpaceTimePredictorGenerator import SpaceTimePredictorGenerator
+from Backend import prepareOutputDirectory
 
-#
+
+# --------------------------------------------------------
 # Process the command line arguments
-#
+# --------------------------------------------------------
 l_parser = argparse.ArgumentParser(description='This is the frontend of the ExaHyPE code generator.')
 
 l_parser.add_argument('solverName', 
@@ -87,6 +89,14 @@ config = {
            "precision"         : precision
           }
 
+
+
+# clean up output directory
+pathToOutputDirectory = "../../ExaHyPE/kernels/aderdg/optimised"
+prepareOutputDirectory(pathToOutputDirectory)
+
+# TODO verify that Kernels.h exists
+# create from scratch?
 
 # --------------------------------------------------------
 # Now let's generate the compute kernels.
