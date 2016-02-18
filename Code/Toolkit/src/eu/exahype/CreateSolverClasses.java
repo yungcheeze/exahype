@@ -237,7 +237,12 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writeHeaderMinimalADERDGClassSignature(writer,solverName);
 
         writer.write("  private:\n");
-        writer.write("    static void flux(const double* const Q, double* f, double* g);\n");
+        if (_dimensions==2) {
+          writer.write("    static void flux(const double* const Q, double* f, double* g);\n");
+        }
+        else {
+         writer.write("    static void flux(const double* const Q, double* f, double* g, double* h);\n");
+        }
         writer.write("    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
         writer.write("    static void initialValues(const double* const x, double* Q);\n" );
 
@@ -358,7 +363,13 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writeMinimalADERDGSolverUserImplementation(solverName,numberOfVariables,order,writer);
 
             int digits = String.valueOf(numberOfVariables).length();
-            writer.write("void " + _projectName + "::" + solverName + "::flux(const double* const Q, double* f, double* g) {\n");
+
+            if (_dimensions==2) {
+              writer.write("void " + _projectName + "::" + solverName + "::flux(const double* const Q, double* f, double* g) {\n");
+            }
+            else {
+              writer.write("void " + _projectName + "::" + solverName + "::flux(const double* const Q, double* f, double* g, double* h) {\n");
+            }
             writer.write("  // Dimensions             = "+_dimensions      +"\n");
             writer.write("  // Number of variables    = "+numberOfVariables+"\n");
             writer.write("  // f\n");
