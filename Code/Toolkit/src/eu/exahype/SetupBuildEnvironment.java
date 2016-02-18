@@ -29,7 +29,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
 	}
 
     try {
-      _writer.write("DIM=-DDim2\n" );
+      _writer.write("PROJECT_CFLAGS+=-DDim2\n" );
     }
   	catch (Exception exc) {
       System.err.println( "ERROR: " + exc.toString() );
@@ -48,7 +48,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
     }
 
 	try {
-	  _writer.write("DIM=-DDim3\n" );
+	  _writer.write("PROJECT_CFLAGS+=-DDim3\n" );
     }
   	catch (Exception exc) {
       System.err.println( "ERROR: " + exc.toString() );
@@ -89,6 +89,15 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       _writer.write("PROJECT_PATH=" + _directoryAndPathChecker.outputDirectory.getAbsolutePath()  + "\n" );
       _writer.write("EXECUTABLE=ExaHyPE-" + node.getName() + "\n");
       _writer.write("\n\n");
+      
+      String architecture = node.getArchitecture().toString().trim();
+      
+      if (architecture.equals( "noarch" )) {
+        _writer.write("PROJECT_CFLAGS+=-DAngelikaSagtNoArch\n");
+      }
+      else {
+        _writer.write("PROJECT_CFLAGS+=-DAngelikaSagtNichtNoArch\n");
+      }
 	} 
 	catch (Exception exc) {
       System.err.println( "ERROR: " + exc.toString() );
