@@ -68,7 +68,7 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
     p2      = p
     p_ticks = map(str,p)
     
-    p_ideal = [x / p[0] for x in p]
+    p_ideal = [float(x) / float(p[0]) for x in p]
     
     # Ideal speedup
     # In the hyper-threading case, we only want to plot a line
@@ -169,7 +169,7 @@ for i in range(0,n_root_dir):
 
 process_counts = args.n
 thread_counts  = args.t
-n_runs         = args.r
+n_runs         = int(args.r)
 cc             = args.cc
 mode           = args.mode
 ylim           = float(args.ylim)
