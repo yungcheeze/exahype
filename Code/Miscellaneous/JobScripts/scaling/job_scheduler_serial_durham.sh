@@ -75,7 +75,7 @@ do
   sed "s/cores                    =.*/cores                    = ${t}/" ${EXAHYPE_SPEC_FILE} > ${EXAHYPE_SPEC_FILE}_$t
   for r in $(seq 1 ${EXAHYPE_RUNS})
   do  
-    OUTPUT_FILE=${OUTPUT_DIR}/${PREFIX}_n${n}_t${t}_r${r}_${CC}_${SHAREDMEM}.txt
+    OUTPUT_FILE=${OUTPUT_DIR}/${PREFIX}_n1_t${t}_r${r}_${CC}_${SHAREDMEM}.txt
       
     printf "Writing file \'$OUTPUT_FILE\'... "
     # RUN THE EXECUTABLE AND PIPE IT INTO OUTPUT FILE 
