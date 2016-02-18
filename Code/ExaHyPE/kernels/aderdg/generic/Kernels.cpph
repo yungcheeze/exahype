@@ -70,6 +70,7 @@ void kernels::aderdg::generic::riemannSolver(
     const int numberOfVariables,
     const int basisSize
 ){
+
   double* QavL    = new double[numberOfVariables];
   double* QavR    = new double[numberOfVariables];
   double* lambdaL = new double[numberOfVariables];
@@ -79,6 +80,7 @@ void kernels::aderdg::generic::riemannSolver(
   memset((double *) QavL,0,numberOfVariables * sizeof(double));
   memset((double *) QavR,0,numberOfVariables * sizeof(double));
 
+#if DIMENSIONS == 2
   for (int ii=0; ii<basisSize; ii++) { // loop over dof
     const int nodeIndex     = ii;
     const int dofStartIndex = nodeIndex * numberOfVariables;
@@ -90,6 +92,21 @@ void kernels::aderdg::generic::riemannSolver(
       QavR[ivar] +=  weight * QR[dofStartIndex+ivar];
     }
   }
+#else
+  for (int ii=0; ii<basisSize; ii++) { // loop over dof
+    for (int jj=0; jj<basisSize; jj++) { // loop over dof
+      const int nodeIndex     = ii + basisSize * jj;
+      const int dofStartIndex = nodeIndex * numberOfVariables;
+
+      double weight =  kernels::gaussLegendreWeights[basisSize-1][ii] * kernels::gaussLegendreWeights[basisSize-1][jj];
+
+      for(int ivar=0; ivar < numberOfVariables; ivar++) {
+        QavL[ivar] +=  weight * QL[dofStartIndex+ivar];
+        QavR[ivar] +=  weight * QR[dofStartIndex+ivar];
+      }
+    }
+  }
+#endif
   //
   // Here, we implement a very simple Rusanov scheme with scalar dissipation (smax*Id).
   // We can change this into a more sophisticated Osher or HLLEM Riemann solver whenever needed.
@@ -106,6 +123,7 @@ void kernels::aderdg::generic::riemannSolver(
   // CONSERVATION FORM => no fluctuations, but real fluxes.
   // Later, this will be converted into the left and right fluctuations.
   //
+#if DIMENSIONS == 2
   for (int ii=0; ii<basisSize; ii++) { // loop over dof
     const int nodeIndex     = ii;
     const int dofStartIndex = nodeIndex * numberOfVariables;
@@ -118,7 +136,22 @@ void kernels::aderdg::generic::riemannSolver(
       FR[dofStartIndex+ivar] = FL[dofStartIndex+ivar];
     }
   }
+#else
+  for (int ii=0; ii<basisSize; ii++) { // loop over dof
+    for (int jj=0; jj<basisSize; jj++) { // loop over dof
+      const int nodeIndex     = ii + basisSize * jj;
+      const int dofStartIndex = nodeIndex * numberOfVariables;
 
+      // sum can only be done if all contributions are up
+      for(int ivar=0; ivar < numberOfVariables; ivar++) {
+        FL[dofStartIndex+ivar] = 0.5 * (FL[dofStartIndex+ivar] + FR[dofStartIndex+ivar])
+                                                  -0.5 * sMax *  (QR[dofStartIndex+ivar] - QL[dofStartIndex+ivar]);
+
+        FR[dofStartIndex+ivar] = FL[dofStartIndex+ivar];
+      }
+    }  
+  }
+#endif
   //  // @todo 04/02/16:Dominic Etienne Charrier
   //  // for debugging purposes
   //  int _errors = 0;
@@ -130,6 +163,7 @@ void kernels::aderdg::generic::riemannSolver(
   delete[] QavR;
   delete[] lambdaL;
   delete[] lambdaR;
+  
 }
 
 template <void PDEInitialValues(const double* const x,double* Q)>
@@ -564,6 +598,15 @@ void kernels::aderdg::generic::spaceTimePredictor(
   delete[] tmp;
 }
 
+
+
+
+
+
+/******************************************************************************************************
+*******************************************************************************************************
+******************************************************************************************************/
+
 template <void PDEFlux2d(const double * const Q, double * f, double * g)>
 void kernels::aderdg::generic::spaceTimePredictor(
     double * lQi,
@@ -791,6 +834,20 @@ std::cout << "spaceTimePredictor Picard only" << std::endl;
     }
   } // end of Picard iteration
 }
+
+/******************************************************************************************************
+*******************************************************************************************************
+******************************************************************************************************/
+
+
+
+
+
+
+
+
+
+
 
 template <void PDEEigenvalues(const double * const Q,const int normalNonZero,double * lambda)>
 double kernels::aderdg::generic::stableTimeStepSize(
