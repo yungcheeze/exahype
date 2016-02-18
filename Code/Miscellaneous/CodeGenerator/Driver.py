@@ -14,6 +14,7 @@
 
 import argparse
 from Backend import validateLibxsmmGenerator
+from SpaceTimePredictorGenerator import SpaceTimePredictorGenerator
 
 #
 # Process the command line arguments
@@ -86,4 +87,10 @@ config = {
            "precision"         : precision
           }
 
-# We're done. Now let's generate the compute kernels.
+
+# --------------------------------------------------------
+# Now let's generate the compute kernels.
+# --------------------------------------------------------
+
+spaceTimePredictorGenerator = SpaceTimePredictorGenerator(config)
+spaceTimePredictorGenerator.generateCode()

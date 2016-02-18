@@ -1,0 +1,53 @@
+/**
+ 
+ 2D Euler Flow
+ 
+ using optimised kernels
+ 
+ A simple project 
+
+ */
+exahype-project  Euler2d
+
+  peano-path                 = ./Peano/peano
+  tarch-path                 = ./Peano/tarch
+  multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
+  sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
+  exahype-path               = ./ExaHyPE
+  output-directory           = ./Applications/eulerflow2d
+  architecture               = hsw
+  
+  
+  
+  computational-domain
+    dimension                = 2
+    width                    = 1.0
+    offset                   = 0.0, 0.0
+    end-time                 = 0.4
+  end computational-domain
+ 
+  
+  solver ADER-DG MyEulerSolver
+    variables = 5
+    order     = 3
+    kernel    = kernel::euler2d
+   
+    plot vtk::ascii
+      time     = 0.0
+      repeat   = 0.05
+      filename = ./solution
+    end plot
+  end solver
+
+  shared-memory
+    identifier               = dummy
+    cores                    = 2
+    properties-file          = sharedmemory.properties
+  end shared-memory  
+
+  optimisation
+    fuse-algorithmic-steps   = on
+  end optimisation  
+  
+
+end exahype-project  

@@ -492,7 +492,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 	      // execute the command line program
 	      Process codeGenerator = runtime.exec(bashCommand);
 
-	      // catch any output that is produced by the code generator and print line-by-line
+	      // capture any output that is produced by the code generator and print it line-by-line
 	      java.io.BufferedReader codeGeneratorsOutputReader = new java.io.BufferedReader(new java.io.InputStreamReader(codeGenerator.getInputStream()));
 	      String line = "";
 	      while((line = codeGeneratorsOutputReader.readLine()) != null) {
