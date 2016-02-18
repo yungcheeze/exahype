@@ -109,6 +109,20 @@ namespace kernels {
           const int numberOfVariables,
           const int basisSize
       );
+#if DIMENSIONS == 3
+
+      void extrapolatedPredictorZDirection(
+          double* lQhbnd,
+          double* lFhbnd,
+          const double* const lQhi,
+          const double* const lFhi,
+          const int facePosition, // 0 for "left" face, 1 far "right" face
+          const double evaluationTimeStepSize,
+          const double predictorTimeStepSize,
+          const int numberOfVariables,
+          const int basisSize
+      );
+#endif
 
       // todo Dominic Etienne Charrier:
       // The DIMENSIONS depending mesh size vector enables overloading at the moment.
@@ -169,6 +183,19 @@ namespace kernels {
           const int numberOfVariables,
           const int basisSize
       );
+
+#if DIMENSIONS == 3
+
+      void surfaceIntegralZDirection(
+          double * lduh,
+          const double * const lFhbnd,
+          const double area,
+          const int facePosition,  // 0 for "left" face, 1 for "right" face.
+          const double updateSign, // -1 for "left" face, 1 for "right" face.
+          const int numberOfVariables,
+          const int basisSize
+      );
+#endif
 
       // @todo Dominic Etienne Charrier
       // Inconsistent ordering of inout and in arguments for
