@@ -7,7 +7,7 @@ import errno
 
 def executeLibxsmmGenerator(i_pathToLibxsmmGenerator,
                             i_commandLineParameters):
-    l_bashCommand = i_pathToLibxsmmGenerator + '/libxsmm_generator ' + i_commandLineParameters
+    l_bashCommand = i_pathToLibxsmmGenerator + '/libxsmm_gemm_generator ' + i_commandLineParameters
     subprocess.call(l_bashCommand.split())
     
     
@@ -34,7 +34,7 @@ def executeBashCommand(i_command, i_commandLineParameters):
 
 
 def validateLibxsmmGenerator(i_pathToLibxsmm):
-    l_pathToLibxsmmGenerator = i_pathToLibxsmm + "/bin/libxsmm_generator"
+    l_pathToLibxsmmGenerator = i_pathToLibxsmm + "/bin/libxsmm_gemm_generator"
     return os.path.isfile(l_pathToLibxsmmGenerator)
      
     
