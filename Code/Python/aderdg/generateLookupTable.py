@@ -133,7 +133,13 @@ while (order <= maxOrder):
 ##    writeMatrixToFile(dudx, order+1, order+1, "dudx", True, "exahype::dg::", filename)
     
     # dim == 2 only
-    subOutputMatrix = assembleSubOutputMatrix(xGPN, order, dim)
+    subOutputMatrix  = assembleSubOutputMatrix(xGPN, order, dim)
+    subOutputMatrix2 = assembleEquidistantGridProjector2D(xGPN, order, dim)
+    
+#    for j in range(0, order+1):
+#        for i in range(0, order+1):
+#            print (subOutputMatrix[i][j] - subOutputMatrix2[i][j])
+
     writeMatrixLookupTableInitToFile(out, "", subOutputMatrix, (order+1)**dim, (order+1)**dim, "subOutputMatrix[%d]" % order)
 
     
