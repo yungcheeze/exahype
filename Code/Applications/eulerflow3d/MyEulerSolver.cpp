@@ -13,7 +13,8 @@ int Euler3d::MyEulerSolver::getMinimumTreeDepth() const {
   // @todo Please implement
   return 0;
 }
-void Euler3d::MyEulerSolver::flux(const double* const Q, double* f, double* g) {
+
+void Euler3d::MyEulerSolver::flux(const double* const Q, double* f, double* g, double* h) {
   // Dimensions             = 3
   // Number of variables    = 5
   // f
