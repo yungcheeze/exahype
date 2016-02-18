@@ -471,19 +471,20 @@ public class CreateSolverClasses extends DepthFirstAdapter {
             ) throws IOException {
         // TODO adapt path
         String currentDirectory = System.getProperty("user.dir");
-        java.nio.file.Path pathToCodeGenerator = java.nio.file.Paths.get(currentDirectory+"/Miscellaneous/CodeGenerator/dummy.py");
+        java.nio.file.Path pathToCodeGenerator = java.nio.file.Paths.get(currentDirectory+"/Miscellaneous/CodeGenerator/Driver.py");
 		    if(java.nio.file.Files.notExists(pathToCodeGenerator)) {
 			    System.err.println("ERROR: Code generator not found. Can't generated optimised kernels.");
 			    return;
 		    }
 
 		    // set up the command to execute the code generator
-		    String args          = " " + solverName         + " "
-		                               + numberOfVariables  + " "
-		                               + order              + " "
-		                               + _microarchitecture + " "
-		                               + "DP"               + " " //double precision
-		                               + Integer.toString(_dimensions);
+		    String args          = " " + solverName                    + " "
+		                               + numberOfVariables             + " "
+		                               + order                         + " "
+		                               + Integer.toString(_dimensions) + " "
+		                               + _microarchitecture            + " "
+		                               + "--precision=DP";  //double precision
+		                               
 		    String bashCommand   = "python " + pathToCodeGenerator + args ;
 
 		    Runtime runtime = Runtime.getRuntime();
@@ -491,7 +492,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 	      // execute the command line program
 	      Process codeGenerator = runtime.exec(bashCommand);
 
-	      // catch any output that is produced by the code generator and print line-by-line
+	      // capture any output that is produced by the code generator and print it line-by-line
 	      java.io.BufferedReader codeGeneratorsOutputReader = new java.io.BufferedReader(new java.io.InputStreamReader(codeGenerator.getInputStream()));
 	      String line = "";
 	      while((line = codeGeneratorsOutputReader.readLine()) != null) {

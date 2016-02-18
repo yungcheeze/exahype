@@ -1,0 +1,4 @@
+#!/bin/bash
+export EXAHYPE_RUNS=1
+export EXAHYPE_SYSTEM_ID=mic
+export EXAHYPE_PREFIX=${EXAHYPE_SYSTEM_ID}
