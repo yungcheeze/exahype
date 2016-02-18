@@ -103,26 +103,27 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
     plt.xlabel(r'number of cores', fontsize=12)
     plt.grid(True)
 
-    ax.set_xlim(0.8,p2[-1]+0.2)
-    ax.set_ylim(0.8,ylim+0.2)
-
     p_ticks_filtered = p_ticks
     for ip in range(0,len(p_ticks)):
-       if p_ticks_filtered[ip] not in ticks:
-         p_ticks_filtered[ip] = ''
+        if 'HT' not in p_ticks_filtered[ip]:
+            if p_ticks_filtered[ip] not in ticks:
+                p_ticks_filtered[ip] = ''
     plt.xticks(p2,p_ticks_filtered)
 
     p_ideal_filtered = map(int,p_ideal)
     p_ideal_filtered = map(str,p_ideal_filtered)
-    print p_ideal_filtered
     for ip in range(0,len(p_ideal)):
        if p_ideal_filtered[ip] not in ticks:
          p_ideal_filtered[ip] = ''
     plt.yticks(p_ideal,p_ideal_filtered)
 
-    plt.suptitle('',fontsize=12)
     plt.tick_params(axis='both', which='major', labelsize=10)
     plt.tick_params(axis='both', which='minor', labelsize=10)
+    
+    ax.set_xlim(0.8,p2[-1]+0.2)
+    ax.set_ylim(0.8,ylim+0.2)
+    
+    plt.suptitle('',fontsize=12)
     
     fig = plt.gcf()
     matplotlib.pylab.legend(loc='best',fontsize='10')	
