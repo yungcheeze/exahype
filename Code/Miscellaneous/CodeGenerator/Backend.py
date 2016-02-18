@@ -2,8 +2,9 @@
 
 import os
 import subprocess
-from os import remove
 import errno
+from matplotlib.cbook import dedent
+
 
 def executeLibxsmmGenerator(i_pathToLibxsmmGenerator,
                             i_commandLineParameters):
@@ -22,8 +23,7 @@ def prepareOutputDirectory(i_outputDirectory):
     # remove all .cpp files (we are in append mode!) 
     for fileName in os.listdir(i_outputDirectory):
         if fileName.endswith(".cpp"):
-            remove(i_outputDirectory + "/" + fileName)    
-
+            os.remove(i_outputDirectory + "/" + fileName)    
 
 
 def executeBashCommand(i_command, i_commandLineParameters):
@@ -37,4 +37,27 @@ def validateLibxsmmGenerator(i_pathToLibxsmm):
     l_pathToLibxsmmGenerator = i_pathToLibxsmm + "/bin/libxsmm_gemm_generator"
     return os.path.isfile(l_pathToLibxsmmGenerator)
      
+     
+def writeIntrinsicsInclude(i_pathToFile):
+    l_includeStatement = dedent(  """
+                                  #if defined( __SSE3__) || defined(__MIC__) 
+                                  #include <immintrin.h>
+                                  #endif                                  
+                                  """)
+    l_includeStatement += "\n\n"
+    l_sourceFile = open(i_pathToFile, 'a')
+    l_sourceFile.write(l_includeStatement)
+    l_sourceFile.close()
+     
+    
+def writeCommonKernelsHeaderInclude(i_pathToFile):
+    l_includeStatement = dedent(  """
+                                  #include "kernels/aderdg/optimised/Kernels.h"                                 
+                                  """)
+    l_includeStatement += "\n\n"
+    l_sourceFile = open(i_pathToFile, 'a')
+    l_sourceFile.write(l_includeStatement)
+    l_sourceFile.close()
+   
+    
     
