@@ -11,7 +11,7 @@ Euler3d::MyEulerSolver::MyEulerSolver( int kernelNumber):
 
 int Euler3d::MyEulerSolver::getMinimumTreeDepth() const {
   // @todo Please implement
-  return 2;
+  return 0;
 }
 void Euler3d::MyEulerSolver::flux(const double* const Q, double* f, double* g) {
   // Dimensions             = 3
@@ -21,7 +21,7 @@ void Euler3d::MyEulerSolver::flux(const double* const Q, double* f, double* g) {
   const double GAMMA = 1.4;
   
   const double irho = 1.0/Q[0];
-  const double p = (GAMMA-1)*( Q[4] - 0.5* (Q[1]*Q[1] + Q[2]*Q[2]) * irho );
+  const double p = (GAMMA-1)*( Q[4] - 0.5* (Q[1]*Q[1] + Q[2]*Q[2] + Q[3]*Q[3]) * irho );
 
   f[0] = Q[1];
   f[1] = irho*Q[1]*Q[1] + p;
@@ -34,6 +34,12 @@ void Euler3d::MyEulerSolver::flux(const double* const Q, double* f, double* g) {
   g[2] = irho*Q[2]*Q[2] + p;
   g[3] = irho*Q[2]*Q[3];
   g[4] = irho*Q[2]*(Q[4]+p);
+
+  // h[0] = Q[3];
+  // h[1] = irho*Q[3]*Q[1];
+  // h[2] = irho*Q[3]*Q[2];
+  // h[3] = irho*Q[3]*Q[3] + p;
+  // h[4] = irho*Q[3]*(Q[4]+p);
 }
 
 
@@ -45,7 +51,7 @@ void Euler3d::MyEulerSolver::eigenvalues(const double* const Q, const int normal
   const double GAMMA = 1.4;
   
   double irho = 1.0/Q[0];
-  double p    = (GAMMA-1)*( Q[4] - 0.5* (Q[1]*Q[1] + Q[2]*Q[2]) * irho );
+  double p    = (GAMMA-1)*( Q[4] - 0.5* (Q[1]*Q[1] + Q[2]*Q[2] + Q[3]*Q[3]) * irho );
 
   double u_n = Q[normalNonZeroIndex+1] * irho;
   double c = std::sqrt(GAMMA * p * irho);
@@ -69,7 +75,8 @@ void Euler3d::MyEulerSolver::initialValues(const double* const x, double* Q) {
   Q[1] = 0.;
   Q[2] = 0.;
   Q[3] = 0.;
-  Q[4] = 1./(GAMMA-1) + std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/(0.05*0.05)) * 1.0e-3;
+//  Q[4] = 1./(GAMMA-1) + std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/(0.05*0.05)) * 1.0e-3;
+  Q[4] = (x[0] + x[1] + x[2]);
 }
 
 
