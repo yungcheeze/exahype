@@ -18,7 +18,7 @@ from plotting import scalingplot as sp
 :synopsis: Creates a speedup plot based on  Peano output files with specific file naming pattern.
 '''
 
-def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_counts,thread_counts,n_runs,cc,mode,ylim,per_iteration=False,hyperthreading=False,annotate=False,create_pdf=False):
+def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_counts,thread_counts,n_runs,cc,mode,ticks,ylim,per_iteration=False,hyperthreading=False,annotate=False,create_pdf=False):
     '''
     Creates a scaling plot for the cumulative user time spent within the 
     specified adapters.
@@ -104,9 +104,21 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
     plt.grid(True)
 
     ax.set_xlim(0.8,p2[-1]+0.2)
-    plt.xticks(p2,p_ticks)
-    plt.yticks(p_ideal,map(str,p_ideal))
     ax.set_ylim(0.8,ylim+0.2)
+
+    p_ticks_filtered = p_ticks
+    for ip in range(0,len(p_ticks)):
+       if p_ticks_filtered[ip] not in ticks:
+         p_ticks_filtered[ip] = ''
+    plt.xticks(p2,p_ticks_filtered)
+
+    p_ideal_filtered = map(int,p_ideal)
+    p_ideal_filtered = map(str,p_ideal_filtered)
+    print p_ideal_filtered
+    for ip in range(0,len(p_ideal)):
+       if p_ideal_filtered[ip] not in ticks:
+         p_ideal_filtered[ip] = ''
+    plt.yticks(p_ideal,p_ideal_filtered)
 
     plt.suptitle('',fontsize=12)
     plt.tick_params(axis='both', which='major', labelsize=10)
@@ -138,7 +150,7 @@ Creates a speedup plot based on Peano output files with specific file naming pat
 If multiple adapters are specified, then the cumulative user times are used to compute the speedup.
 \n\n
 Sample usage:\n
-python usertimeplot.py -path \'examples/151217_phi1_node\' -prefix \'151217\' -legend \'2x Xeon  5-2650 @ 2.00GHz\' -mode tbb -cc icpc -ylim 16 -per_iteration -adapter \'Predictor+Corrector\' -t 1 2 4 6 8 10 12 16 32 -hyperthreading'''
+python usertimeplot.py -path \'examples/151217_phi1_node\' -prefix \'151217\' -legend \'2x Xeon  5-2650 @ 2.00GHz\' -mode TBB -cc icpc -ylim 16 -per_iteration -adapter \'Predictor+Corrector\' -t 1 2 4 6 8 10 12 16 32 -hyperthreading'''
 
 parser = argparse.ArgumentParser(description=help,formatter_class=RawTextHelpFormatter)
 parser.add_argument('-path',nargs='+',required=True,help="Directories containing the Peano output files. The times read from the file in the first specified directory corresponding to the smallest thread count are considered as reference values.")
@@ -149,8 +161,9 @@ parser.add_argument('-n',default=[1],nargs='+',help="MPI process counts [default
 parser.add_argument('-t',default=[1],nargs='+',required=True,help="Threads per MPI process [default=1].")
 parser.add_argument('-r',default=1,help="Number of runs for all \'n\' and \'t\' combinations [default=1].")
 parser.add_argument('-cc',default='icpc',nargs='+',help="Compiler [default=\'icpc\']")
-parser.add_argument('-mode',default='tbb',nargs='+',help="Shared memory mode [default=\'tbb\']")
-parser.add_argument('-ylim',required=True,help="Upper limit for the y-Axis.")
+parser.add_argument('-mode',default='TBB',nargs='+',help="Shared memory mode [default=\'TBB\']")
+parser.add_argument('-ticks',nargs='+',required=False,help="Ticks for the x- and y-axis.")
+parser.add_argument('-ylim',required=True,help="Upper limit for the y-axis.")
 parser.add_argument('-hyperthreading', action='store_true', default=False,help="The last thread count corresponds to a hyperthreading run.")
 parser.add_argument('-annotate', action='store_true', default=False,help="Annotate the plots with the speedup values.")
 parser.add_argument('-per_iteration', action='store_true', default=False,help="Use the adapter times per iteration instead of the total times.")
@@ -178,4 +191,8 @@ annotate       = args.annotate
 per_iteration  = args.per_iteration
 create_pdf     = args.create_pdf
 
-plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapter,process_counts,thread_counts,n_runs,cc,mode,ylim,per_iteration,hyperthreading,annotate,create_pdf)
+ticks          = args.ticks
+if args.ticks is None:
+    ticks=thread_counts
+
+plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapter,process_counts,thread_counts,n_runs,cc,mode,ticks,ylim,per_iteration,hyperthreading,annotate,create_pdf)
