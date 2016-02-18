@@ -7,7 +7,7 @@
 :synopsis: Provides functions to read the CPU and user times of a set of Peano output files.
 """
 
-def parse_all_adapter_times(rootdir,prefix,process_counts,thread_counts,n_runs=1,cc='icpc',mode='tbb',per_iteration=False):
+def parse_all_adapter_times(rootdir,prefix,process_counts,thread_counts,n_runs=1,cc='icpc',mode='TBB',per_iteration=False):
     """
     Reads multiple Peano output files with the naming pattern
        '<prefix>_n<#MPI proc.>_t<#threads/MPI proc.>_r<#run>_<cc>_<mode>.txt'
@@ -19,7 +19,7 @@ def parse_all_adapter_times(rootdir,prefix,process_counts,thread_counts,n_runs=1
     Note:
        If the input array 'thread_counts' contains the entry 1,
        then the script looks for an output file
-       with suffix 'none.txt' for this particular
+       with suffix 'None.txt' for this particular
        number of threads.
 
     Args:
@@ -36,7 +36,7 @@ def parse_all_adapter_times(rootdir,prefix,process_counts,thread_counts,n_runs=1
        cc (str):
           Compiler [default=gcc]. 
        mode (str):
-          Shared memory mode [default=tbb].
+          Shared memory mode [default=TBB].
        per_iteration (bool):
           Specifies if the times per iteration should be read in instead of the total times.
 
@@ -58,7 +58,7 @@ def parse_all_adapter_times(rootdir,prefix,process_counts,thread_counts,n_runs=1
         for t in range(n_thread_counts):
             _mode = mode
             if int(thread_counts[t])==1:
-                _mode = 'none'
+                _mode = 'None'
             
             for r in range(n_runs):
                 file_path = '%s/%s_n%s_t%s_r%d_%s_%s.txt' % (rootdir,prefix,str(process_counts[n]),str(thread_counts[t]),r+1,cc,_mode)
