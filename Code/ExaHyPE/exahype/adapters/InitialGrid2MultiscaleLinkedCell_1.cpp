@@ -169,6 +169,7 @@ void exahype::adapters::InitialGrid2MultiscaleLinkedCell_1::mergeWithNeighbour(
   int                                           level
 ) {
   VertexOperations::writeADERDGCellDescriptionsIndex(
+    vertex,
     multiscalelinkedcell::HangingVertexBookkeeper::getInstance().updateCellIndicesInMergeWithNeighbour(
       vertex.getAdjacentRanks(),
       VertexOperations::readADERDGCellDescriptionsIndex(vertex)

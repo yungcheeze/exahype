@@ -169,6 +169,7 @@ void exahype::adapters::PatchInitialisation2MultiscaleLinkedCell_1::mergeWithNei
   int                                           level
 ) {
   VertexOperations::writeADERDGCellDescriptionsIndex(
+    vertex,
     multiscalelinkedcell::HangingVertexBookkeeper::getInstance().updateCellIndicesInMergeWithNeighbour(
       vertex.getAdjacentRanks(),
       VertexOperations::readADERDGCellDescriptionsIndex(vertex)

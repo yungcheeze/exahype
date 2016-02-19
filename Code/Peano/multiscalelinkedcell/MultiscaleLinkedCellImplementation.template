@@ -169,6 +169,7 @@ void __THIS_QUALIFIED_TYPENAME__::mergeWithNeighbour(
   int                                           level
 ) {
   VertexOperations::writePARAM0(
+    vertex,
     multiscalelinkedcell::HangingVertexBookkeeper::getInstance().updateCellIndicesInMergeWithNeighbour(
       vertex.getAdjacentRanks(),
       VertexOperations::readPARAM0(vertex)
