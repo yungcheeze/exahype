@@ -51,12 +51,19 @@ void Euler3d::MyEulerSolver::flux(const double* const Q, double* f, double* g, d
 void Euler3d::MyEulerSolver::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
   // Dimensions             = 3
   // Number of variables    = 5
+  const double GAMMA = 1.4;
+  
+  double irho = 1.0/Q[0];
+  double p    = (GAMMA-1)*( Q[4] - 0.5* (Q[1]*Q[1] + Q[2]*Q[2] + Q[3]*Q[3]) * irho );
+
+  double u_n = Q[normalNonZeroIndex+1] * irho;
+  double c = std::sqrt(GAMMA * p * irho);
   // @todo Please implement
-  lambda[0] = 0.0;
-  lambda[1] = 0.0;
-  lambda[2] = 0.0;
-  lambda[3] = 0.0;
-  lambda[4] = 0.0;
+  lambda[0] = u_n-c;
+  lambda[1] = u_n;
+  lambda[2] = u_n;
+  lambda[3] = u_n;
+  lambda[4] = u_n+c;
 }
 
 
@@ -64,12 +71,14 @@ void Euler3d::MyEulerSolver::eigenvalues(const double* const Q, const int normal
 void Euler3d::MyEulerSolver::initialValues(const double* const x, double* Q) {
   // Dimensions             = 3
   // Number of variables    = 5
+  const double GAMMA = 1.4;
   // @todo Please implement
-  Q[0] = 0.0;
-  Q[1] = 0.0;
-  Q[2] = 0.0;
-  Q[3] = 0.0;
-  Q[4] = 0.0;
+  Q[0] = 1.;
+  Q[1] = 0.;
+  Q[2] = 0.;
+  Q[3] = 0.;
+//  Q[4] = 1./(GAMMA-1) + std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/(0.05*0.05)) * 1.0e-3;
+  Q[4] = (x[0] + x[1] + x[2]);
 }
 
 
