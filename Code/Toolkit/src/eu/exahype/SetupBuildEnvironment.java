@@ -90,14 +90,31 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       _writer.write("EXECUTABLE=ExaHyPE-" + node.getName() + "\n");
       _writer.write("\n\n");
       
-      String architecture = node.getArchitecture().toString().trim();
+      String architecture = node.getArchitecture().toString().trim().toLowerCase();
       
-      if (architecture.equals( "noarch" )) {
-        _writer.write("PROJECT_CFLAGS+=-DAngelikaSagtNoArch\n");
+      switch(architecture) {
+          case "wsm": 
+              _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=16");
+              break;
+          case "snb":
+              _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=32");
+              break; 
+          case "hsw": 
+              _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=32");
+              break;
+          case "knc":
+              _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=64");
+              break;
+          case "knl":
+              _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=64");
+              break;
+          default: 
+              // noarch or unknown
+              _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=16");
+              break;
       }
-      else {
-        _writer.write("PROJECT_CFLAGS+=-DAngelikaSagtNichtNoArch\n");
-      }
+      _writer.write("\n");
+      
 	} 
 	catch (Exception exc) {
       System.err.println( "ERROR: " + exc.toString() );
