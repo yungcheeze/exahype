@@ -168,7 +168,12 @@ void exahype::adapters::PatchInitialisation2MultiscaleLinkedCell_1::mergeWithNei
   const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
   int                                           level
 ) {
-  multiscalelinkedcell::HangingVertexBookkeeper::getInstance().updateCellIndicesInMergeWithNeighbour(vertex);
+  VertexOperations::writeADERDGCellDescriptionsIndex(
+    multiscalelinkedcell::HangingVertexBookkeeper::getInstance().updateCellIndicesInMergeWithNeighbour(
+      vertex.getAdjacentRanks(),
+      VertexOperations::readADERDGCellDescriptionsIndex(vertex)
+    )
+  );
 }
 
 
