@@ -127,8 +127,12 @@ endif
 # Assemble Compiler Flags depending on the environment variable [DISTRIBUTEDMEM]={MPI, None}
 # -----------------------
 ifeq ($(DISTRIBUTEDMEM),MPI)
-	CC = mpicxx 
 	COMPILER_CFLAGS += -DParallel -DMPICH_IGNORE_CXX_SEEK
+	ifeq ($(CC),gcc)
+		CC = mpiCC
+	else
+		CC = mpiicpc
+	endif
 endif
 
 
