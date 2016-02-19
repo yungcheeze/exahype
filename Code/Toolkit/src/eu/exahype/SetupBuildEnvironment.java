@@ -5,6 +5,8 @@ import eu.exahype.node.AProject;
 import eu.exahype.node.ASharedMemory;
 import eu.exahype.node.ATwoDimensionalComputationalDomain;
 import eu.exahype.node.AThreeDimensionalComputationalDomain;
+import eu.exahype.node.ADistributedMemory;
+
 
 public class SetupBuildEnvironment extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -74,6 +76,18 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       valid = false;
   	}
   }  
+  
+  @Override
+  public void inADistributedMemory(ADistributedMemory node) {
+    try {
+      _writer.write("DISTRIBUTEDMEM=MPI\n" );
+      System.out.print ("mpi ... switched on \n" );   
+    }
+  	catch (Exception exc) {
+      System.err.println( "ERROR: " + exc.toString() );
+      valid = false;
+  	}
+  }
   
   @Override
   public void inAProject(AProject node) {
@@ -149,10 +163,17 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       System.out.print ("\n");
       System.out.print ("  export SHAREDMEM=TBB\t\t\tUse Intel's Threading Building Blocks (TBB) for shared memory parallelisation\n");
       System.out.print ("  export SHAREDMEM=OMP\t\t\tUse OpenMP for shared memory parallelisation\n");
-      System.out.print ("  export SHAREDMEM=\t\t\tDo not use shared memory (default if not indicated otherwise by \"shared memory ...\" message above)\n");
+      System.out.print ("  export SHAREDMEM=None\t\t\tDo not use shared memory (default if not indicated otherwise by \"shared memory ...\" message above)\n");
+      System.out.print ("\n");
+      System.out.print ("  export DISTRIBUTEDMEM=MPI\t\tUse MPI\n");
+      System.out.print ("  export DISTRIBUTEDMEM=None\t\tDo not use MPI (default)\n");
       System.out.print ("\n");
       System.out.print ("  export TBB_INC=-I...\t\t\tIndicate where to find TBB headers (only required if SHAREDMEM=TBB). Please add -I (Linux) prefix to path\n");
       System.out.print ("  export TBB_SHLIB=\"-L... -ltbb\"\tIndicate where to find TBB's shared libraries (only required if SHAREDMEM=TBB). Variable has to comprise both search path and library name\n");
+      System.out.print ("\n\n");
+      System.out.print ("  If SHAREDMEM or DISTRIBUTEDMEM are not specified, they fall back to \"None\".\n");
+      System.out.print ("\n");
+      System.out.print ("  If you run CSH, please replace \"export ARG=VALUE\" with \"setenv ARG VALUE\".\n");
 
       _writer.close();
 	} 

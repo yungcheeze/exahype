@@ -63,6 +63,8 @@ Tokens
   token_properties_file           = 'properties-file';
   token_identifier                = 'identifier';
 
+  token_distributed_memory        = 'distributed-memory';
+
   token_optimisation              = 'optimisation';
   token_fuse_algorithm_steps      = 'fuse-algorithmic-steps';
 
@@ -102,9 +104,10 @@ Productions
         computational_domain
         solver_list?
         shared_memory?
+        distributed_memory?
         optimisation?
       token_end [end_token]:token_project
-        { -> New project( name, paths.paths, architecture, computational_domain.computational_domain, [solver_list.solver], optimisation.optimisation, shared_memory.shared_memory ) }
+        { -> New project( name, paths.paths, architecture, computational_domain.computational_domain, [solver_list.solver], shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation ) }
     ;    
 
   paths {->paths} =
@@ -117,13 +120,19 @@ Productions
      { -> New paths(peano_path, tarch_path, multiscalelinkedcell_path, sharedmemoryoracles_path, exahype_path, output_directory) }
    ;
     
+  distributed_memory {->distributed_memory} =
+    [begin_token]:token_distributed_memory
+      token_identifier [identifier_equals]:token_equals [identifier]:identifier
+    token_end [end_token]:token_distributed_memory
+      { -> New distributed_memory( identifier ) };
+    
   shared_memory {->shared_memory} =
     [begin_token]:token_shared_memory
       token_identifier [identifier_equals]:token_equals [identifier]:identifier
       token_cores [cores_equals]:token_equals [cores]:int_number 
       token_properties_file [properties_equals]:token_equals [properties_file]:filename
     token_end [end_token]:token_shared_memory
-      { -> New shared_memory( cores,properties_file,identifier ) };
+      { -> New shared_memory( identifier,cores,properties_file ) };
 
   computational_domain {->computational_domain} = 
      {two_dimensional}
@@ -180,15 +189,19 @@ Abstract Syntax Tree
      [architecture]:identifier
      computational_domain
      solver*
+     shared_memory?
+     distributed_memory?
      optimisation?
-     shared_memory?    
      ;
   
    paths = 
      [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [sharedmemoryoracles_path]:filename [exahype_path]:filename [output_directory]:filename;
     
    shared_memory = 
-     [cores]:int_number [properties_file]:filename [identifier]:identifier;
+     [identifier]:identifier [cores]:int_number [properties_file]:filename;
+     
+   distributed_memory =
+     [identifier]:identifier;
 
    computational_domain = 
      {two_dimensional}   [dimension]:int_number [width]:float_number [offset_x]:float_number [offset_y]:float_number [end_time]:float_number |
