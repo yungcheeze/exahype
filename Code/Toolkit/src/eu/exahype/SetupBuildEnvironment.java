@@ -108,9 +108,11 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
           case "knl":
               _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=64");
               break;
-          default: 
-              // noarch or unknown
+          case "noarch":
               _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=16");
+              break;
+          default:
+              // unknown or undefined
               break;
       }
       _writer.write("\n");

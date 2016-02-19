@@ -157,7 +157,11 @@ files.mk:
 	find -H $(TARCH_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
 	find -H $(MULTISCALELINKEDCELL_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
 	find -H $(SHAREDMEMORYORACLES_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
-	find -H $(EXAHYPE_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
+ifndef USE_OPTIMISED_KERNELS
+	find -H $(EXAHYPE_PATH) -name '*.cpp' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/optimised/*' | tr '\n' ' ' >> files.mk
+else
+	find -H $(EXAHYPE_PATH) -name '*.cpp' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/*' | tr '\n' ' ' >> files.mk
+endif
 	find -H $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
 
 
