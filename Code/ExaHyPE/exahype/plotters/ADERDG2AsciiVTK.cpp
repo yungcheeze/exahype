@@ -1,4 +1,5 @@
 #include "exahype/plotters/ADERDG2AsciiVTK.h"
+#include "tarch/parallel/Node.h"
 
 
 int exahype::plotters::ADERDG2AsciiVTK::FileCounter(0);

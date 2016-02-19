@@ -1,4 +1,5 @@
 #include "exahype/plotters/ADERDG2BinaryVTK.h"
+#include "tarch/parallel/Node.h"
 
 
 int exahype::plotters::ADERDG2BinaryVTK::FileCounter(0);
