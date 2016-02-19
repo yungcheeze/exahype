@@ -382,6 +382,13 @@ public class CreateSolverClasses extends DepthFirstAdapter {
             for (int i=0; i < Integer.parseInt(numberOfVariables); i++) {
                 writer.write("  g["+String.format("%"+digits+"d",i)+"] = 0.0;\n");    
             }
+            if (_dimensions==3) {
+              writer.write("  // h\n");
+              writer.write("  // @todo Please implement\n");
+              for (int i=0; i < Integer.parseInt(numberOfVariables); i++) {
+                  writer.write("  h["+String.format("%"+digits+"d",i)+"] = 0.0;\n");    
+              }
+            }
             writer.write("}\n");
             writer.write("\n\n\n");
             writer.write("void " + _projectName + "::" + solverName + "::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {\n");
