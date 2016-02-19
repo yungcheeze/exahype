@@ -16,7 +16,7 @@
 # EXAHYPE_OUTPUT_DIR    (string)
 # EXAHYPE_MPI           (array)
 # EXAHYPE_CORES         (array)
-# EXAHYPE_NRUNS         (number)
+# EXAHYPE_RUNS          (number)
 
 ###############################################################################
 # READ IN PARAMETERS
@@ -33,8 +33,8 @@ printf "EXAHYPE_SPEC_FILE=${EXAHYPE_SPEC_FILE}\n"
 printf "EXAHYPE_SYSTEM_ID=${EXAHYPE_SYSTEM_ID}\n"
 printf "EXAHYPE_PREFIX=${EXAHYPE_PREFIX}\n"
 printf "EXAHYPE_OUTPUT_DIR=${EXAHYPE_OUTPUT_DIR}\n"
-printf "EXAHYPE_INTERACTIVE=${EXAHYPE_INTERACTIVE}\n\n"
 printf "EXAHYPE_RUNS=${EXAHYPE_RUNS}\n"
+printf "EXAHYPE_INTERACTIVE=${EXAHYPE_INTERACTIVE}\n\n"
 printf "\n"
 
 if [ "${SHAREDMEM}" != "None" ]
