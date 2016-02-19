@@ -26,50 +26,46 @@ LINK_MPI=
 # Decide on compiler and flags depending on the environment variables [ARCHITECTURE]={Phi, CPU}, [CC]={gcc, Intel} and [MODE]={Debug, Profile, Release}
 # -----------------------
 ifeq ($(ARCHITECTURE),Phi)
+		CC=icpc
 		ifeq ($(MODE),Debug)
 			# Settings for the Intel Compiler (Debug Mode)
 			# --------------------------------------------
-			CC=icpc
 			COMPILER_CFLAGS=-DDebug -mmic -DAsserts -O0 -fstrict-aliasing -restrict -std=c++0x
 			COMPILER_LFLAGS=-mmic
 		else ifeq ($(MODE),Profile)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			CC=icpc
 			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -mmic -std=c++0x
 			COMPILER_LFLAGS=-p -pg -mmic
 		else ifeq ($(MODE),Asserts)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			CC=icpc
 			COMPILER_CFLAGS=-DAsserts -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -mmic -std=c++0x
+			COMPILER_LFLAGS=-mmic -lrt
 		else
 			# Settings for the Intel Compiler (Release Mode)
 			# ----------------------------------------------
-			CC=icpc
 			COMPILER_CFLAGS=-fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -mmic -std=c++0x
 			COMPILER_LFLAGS=-mmic -lrt
 		endif
 else
 	ifeq ($(CC),gcc)
+		CC=g++
 		ifeq ($(MODE),Debug)
 			# Settings for the GNU Compiler (Debug Mode)
 			# ------------------------------------------
-			CC=g++
 			COMPILER_CFLAGS=-DDebug -DAsserts -O0 -pedantic -Wall -Wstrict-aliasing -fstrict-aliasing -ggdb -std=c++0x \
 											-Drestrict=__restrict__ -D__assume_aligned=__builtin_assume_aligned -pipe
 			COMPILER_LFLAGS=
 		else ifeq ($(MODE),Asserts)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			CC=g++
 			COMPILER_CFLAGS=-DAsserts -p -pg -O3 -pedantic -Wall -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x -march=native -pipe \
 											-Drestrict=__restrict__ -D__assume_aligned=__builtin_assume_aligned
 			COMPILER_LFLAGS=-p -pg
 		else ifeq ($(MODE),Profile)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			CC=g++
 			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -O3 -pedantic -Wall -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x -march=native -pipe \
 																	-Drestrict=__restrict__ -D__assume_aligned=__builtin_assume_aligned 
 			COMPILER_LFLAGS=-p -pg
@@ -77,33 +73,30 @@ else
 		else
 			# Settings for the GNU Compiler (Release Mode)
 			# --------------------------------------------
-			CC=g++
 			COMPILER_CFLAGS=-O3 -pedantic -pedantic-errors -Wall -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x -march=native -pipe \
 											-Drestrict=__restrict__ -D__assume_aligned=__builtin_assume_aligned 
 			COMPILER_LFLAGS=
 		endif
 	else
+		CC=icpc
 		ifeq ($(MODE),Debug)
 			# Settings for the Intel Compiler (Debug Mode)
 			# --------------------------------------------
-			CC=icpc
 			COMPILER_CFLAGS=-DDebug -DAsserts -O0 -fstrict-aliasing -restrict -std=c++0x
 			COMPILER_LFLAGS=
 		else ifeq ($(MODE),Profile)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			CC=icpc
 			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xHost -std=c++0x
 			COMPILER_LFLAGS=-p -pg
 		else ifeq ($(MODE),Asserts)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			CC=icpc
 			COMPILER_CFLAGS=-DAsserts -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xHost -std=c++0x
+			COMPILER_LFLAGS=
 		else
 			# Settings for the Intel Compiler (Release Mode)
 			# ----------------------------------------------
-			CC=icpc
 			COMPILER_CFLAGS=-fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xHost -std=c++0x
 			COMPILER_LFLAGS=
 		endif
@@ -112,7 +105,7 @@ endif
 
 
 
-# Assemble Compiler Flags depending on the environment variable [SHAREDMEM]={OMP, TBB}
+# Assemble Compiler Flags depending on the environment variable [SHAREDMEM]={OMP, TBB, None}
 # -----------------------
 ifeq ($(SHAREDMEM),OMP)
         SYSTEM_CFLAGS = $(INCLUDE_OMP) 
@@ -131,6 +124,14 @@ else
 endif
 
 
+
+# Assemble Compiler Flags depending on the environment variable [DISTMEM]={MPI, None}
+# -----------------------
+ifeq ($(DISTMEM),MPI)
+	CC = mpiCC 
+	COMPILER_CFLAGS += -DParallel
+else
+endif
 
 
 
