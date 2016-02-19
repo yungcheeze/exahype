@@ -343,6 +343,7 @@ void exahype::mappings::Plot::enterCell(
     pPlotter != exahype::plotters::RegisteredPlotters.end();
     pPlotter++
   ) {
+    // todo 19/02/16:Dominic Etienne Charrier: Parallelise this too?
     for (
       ADERDGCellDescriptionHeap::HeapEntries::const_iterator pPatch = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
       pPatch != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();

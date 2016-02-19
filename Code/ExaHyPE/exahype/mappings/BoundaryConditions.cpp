@@ -449,11 +449,6 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       adjacentADERDGCellDescriptionsIndices.toString()
   );
 
-//  for (
-//      ADERDGCellDescriptionHeap::HeapEntries::iterator p = ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndex] ).begin();
-//      p != ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndex] ).end();
-//      p++
-//  ) {
   const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndex] ).size();
   const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined0; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
   const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
@@ -517,7 +512,6 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       logDebug("touchVertexLastTime(...)::debug::after::Qhbnd[0]*",Qhbnd[0]);
       logDebug("touchVertexLastTime(...)::debug::after::Fhbnd[0]",Fhbnd[0]);
     }
-//  }
   endpfor
   peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
 }

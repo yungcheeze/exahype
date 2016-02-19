@@ -69,11 +69,11 @@ exahype::solvers::Solve::Solve (const exahype::solvers::Solve& otherSolve):
   _nextPredictorTimeStepSize = otherSolve._nextPredictorTimeStepSize;
 }
 
-const std::string exahype::solvers::Solve::getName () const {
+std::string exahype::solvers::Solve::getName () const {
   return _name;
 }
 
-const int exahype::solvers::Solve::getSolverNumber () const {
+int exahype::solvers::Solve::getSolverNumber () const {
   return _solverNumber;
 }
 

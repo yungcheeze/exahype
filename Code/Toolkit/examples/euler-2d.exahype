@@ -15,7 +15,7 @@ exahype-project  Euler2d
   
   output-directory           = ./Applications/eulerflow2d
 
-  /*architecture               = noarch  */
+  architecture               = noarch  
   
   computational-domain
     dimension                = 2
