@@ -19,14 +19,14 @@ void kernels::aderdg::generic::volumeIntegral(
   // todo Angelika
   // Please remove the typedefs in generic kernels again since numberOf(...)Dof is not
   // a compile time variable anymore
-// #if DIMENSIONS == 2
+#if DIMENSIONS == 2
   constexpr int numberOfDof = 5 * (3+1)*(3+1); //tarch::la::aPowI(3+1,DIMENSIONS);
-// #else
-  // constexpr int numberOfDof = 5 * (3+1)*(3+1)*(3+1); //tarch::la::aPowI(3+1,DIMENSIONS);
-// #endif  
+#else
+  constexpr int numberOfDof = 5 * (3+1)*(3+1)*(3+1); //tarch::la::aPowI(3+1,DIMENSIONS);
+#endif  
   constexpr int order       = 3;
 
-// #if DIMENSIONS == 2
+#if DIMENSIONS == 2
   // memory layout of lFhi:
   // lFhi = [ lFhi_x | lFhi_y ] ordered as follows
   // (a) lFhi_x[nDOF_y][nDOF_x][nVar]
@@ -37,16 +37,16 @@ void kernels::aderdg::generic::volumeIntegral(
   const double * lFhi_y = &lFhi[numberOfDof];  // g flux
 
   memset(lduh,0,sizeof(double) * numberOfDof);
-// #else
-  // const double * lFhi_x = &lFhi[0];              // f flux
-  // const double * lFhi_y = &lFhi[numberOfDof];    // g flux
-  // const double * lFhi_z = &lFhi[numberOfDof*2];  // h flux
+#else
+  const double * lFhi_x = &lFhi[0            ];  // f flux
+  const double * lFhi_y = &lFhi[numberOfDof  ];  // g flux
+  const double * lFhi_z = &lFhi[numberOfDof*2];  // h flux
 
-  // memset(lduh,0,sizeof(double) * numberOfDof*2);
-// #endif  
+  memset(lduh,0,sizeof(double) * numberOfDof);
+#endif  
 
 
-// #if DIMENSIONS == 2
+#if DIMENSIONS == 2
   // access lduh(nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array manner
   // @todo Angelika
   typedef double tensor_t[3+1][5];
@@ -94,33 +94,71 @@ void kernels::aderdg::generic::volumeIntegral(
       }
     }
   }
-// #else
-  // // access lduh(nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array manner
-  // // @todo Angelika
-  // typedef double tensor_t[3+1][3+1][5];
-  // tensor_t *lduh3D = (tensor_t *)lduh;
+#else
+  for (int ii=0; ii<basisSize; ii++) { // loop over dof
+    for (int jj=0; jj<basisSize; jj++) {
+      for (int kk=0; kk<basisSize; kk++) { // loop over dof
 
-  // // Compute the "derivatives" (contributions of the stiffness matrix)
-  // // x direction
-  // for (int ii=0; ii<basisSize; ii++) {
-    // for (int jj=0; jj<basisSize; jj++) {
-      // for (int kk=0; kk<basisSize; kk++) {
+      double weight = kernels::gaussLegendreWeights[basisSize-1][jj] *
+                        kernels::gaussLegendreWeights[basisSize-1][kk];
 
-        // double weight = kernels::gaussLegendreWeights[order][ii] * kernels::gaussLegendreWeights[order][jj];
 
-        // // MATMUL: Kxi * lFhi_x
-        // for(int mm=0; mm < basisSize; mm++) {
-          // const int mmNodeIndex         = mm + basisSize * ii + basisSize * basisSize * kk;
-          // const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
+        for(int mm=0; mm < basisSize; mm++) {
+          const int mmNodeIndex         = mm + basisSize * jj + basisSize * basisSize * kk;
+          const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
 
-          // for(int ivar=0; ivar < numberOfVariables; ivar++) {
-            // lduh3D[ii][jj][kk][ivar] += weight/dx[0] * kernels::Kxi[order][ii][jj][mm] * lFhi_x[mmDofStartIndex+ivar];
-          // }
-        // }
-      // }
-    // }
-  // }
-  
-// #endif  
+          for(int ivar=0; ivar < numberOfVariables; ivar++) {
+            lduh[mmDofStartIndex+ivar] += weight/dx[0] * kernels::Kxi[basisSize-1][ii][mm] * lFhi_x[mmNodeIndex+ivar];
+            //todo VV
+            lduh[mmDofStartIndex+ivar] += weight/dx[0] * kernels::Kxi[basisSize-1][ii][mm] * lFhi_x[mmNodeIndex+ivar];
+          }
+        }
+      }
+    }
+  }
+  for (int ii=0; ii<basisSize; ii++) { // loop over dof
+    for (int jj=0; jj<basisSize; jj++) {
+      for (int kk=0; kk<basisSize; kk++) { // loop over dof
+
+      double weight = kernels::gaussLegendreWeights[basisSize-1][jj] *
+                        kernels::gaussLegendreWeights[basisSize-1][kk];
+
+
+        for(int mm=0; mm < basisSize; mm++) {
+          const int mmNodeIndex         = ii + basisSize * mm + basisSize * basisSize * kk;
+          const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
+
+          for(int ivar=0; ivar < numberOfVariables; ivar++) {
+            lduh[mmDofStartIndex+ivar] += weight/dx[0] * kernels::Kxi[basisSize-1][jj][mm] * lFhi_y[mmNodeIndex+ivar];
+            //todo VV
+            lduh[mmDofStartIndex+ivar] += weight/dx[0] * kernels::Kxi[basisSize-1][jj][mm] * lFhi_y[mmNodeIndex+ivar];
+          }
+        }
+      }
+    }
+  }
+  for (int ii=0; ii<basisSize; ii++) { // loop over dof
+    for (int jj=0; jj<basisSize; jj++) {
+      for (int kk=0; kk<basisSize; kk++) { // loop over dof
+
+      double weight = kernels::gaussLegendreWeights[basisSize-1][jj] *
+                        kernels::gaussLegendreWeights[basisSize-1][kk];
+
+
+        for(int mm=0; mm < basisSize; mm++) {
+          const int mmNodeIndex         = ii + basisSize * jj + basisSize * basisSize * mm;
+          const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
+
+          for(int ivar=0; ivar < numberOfVariables; ivar++) {
+            lduh[mmDofStartIndex+ivar] += weight/dx[0] * kernels::Kxi[basisSize-1][kk][mm] * lFhi_z[mmNodeIndex+ivar];
+            //todo VV
+            lduh[mmDofStartIndex+ivar] += weight/dx[0] * kernels::Kxi[basisSize-1][kk][mm] * lFhi_z[mmNodeIndex+ivar];
+          }
+        }
+      }
+    }
+  }
+ 
+#endif  
 }
 

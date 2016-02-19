@@ -844,7 +844,7 @@ std::cout << "spaceTimePredictor Picard only" << std::endl;
 #else
 
   
-template <void PDEFlux2d(const double * const Q, double * f, double * g, double * h)>
+template <void PDEFlux3d(const double * const Q, double * f, double * g, double * h)>
 void kernels::aderdg::generic::spaceTimePredictor(
     double * lQi,
     double * lFi,
@@ -893,8 +893,6 @@ void kernels::aderdg::generic::spaceTimePredictor(
   constexpr int numberOfDof           = NVAR * BASISSIZE * BASISSIZE * BASISSIZE;/*tarch::la::aPowI(dim,BASISSIZE);*/
 
   
-  std::cout << "dt= " << dt << std::endl;
-  std::cout << "dx= " << dx[0] << ", " << dx[1] << ", " << dx[2] << std::endl;
   double* rhs0 = new double[numberOfSpaceTimeDof];
   double* rhs  = new double[numberOfSpaceTimeDof];
   double* tmp  = new double[numberOfVariables * basisSize];
@@ -959,7 +957,7 @@ void kernels::aderdg::generic::spaceTimePredictor(
 
             // @todo Angelika's old code
             // exahype::problem::PDEFlux(Q,f,g);
-            PDEFlux2d(Q,f,g,h);
+            PDEFlux3d(Q,f,g,h);
           }
         }
       }
