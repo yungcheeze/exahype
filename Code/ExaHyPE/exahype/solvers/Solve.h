@@ -54,13 +54,13 @@ public:
   /**
    * Each solve has an identifier/name. It is used for debug purposes only.
    */
-  const std::string getName () const;
+  std::string getName () const;
 
   /**
    * Each solve has a solver number that says which solver is to be
    * used. Typically this is an ascending index starting from 0.
    */
-  const int getSolverNumber () const;
+  int getSolverNumber () const;
 
   // @todo 13/02/16:Dominic Etienne Charrier
   // This is just a dummy entry.
