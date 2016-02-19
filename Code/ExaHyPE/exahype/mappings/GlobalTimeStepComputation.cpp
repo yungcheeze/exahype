@@ -2,8 +2,10 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/solvers/Solve.h"
+#include "tarch/multicore/Loop.h"
+#include "peano/datatraversal/autotuning/Oracle.h"
 
+#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
 #include <limits>
@@ -370,11 +372,12 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
-  for (
-      ADERDGCellDescriptionHeap::HeapEntries::iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
-      p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
-      p++
-  ) {
+  const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData( fineGridCell.getADERDGCellDescriptionsIndex() ).size();
+  const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined1; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
+  const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
+  pfor(i,0,numberOfADERDGCellDescriptions,grainSize)
+    records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData( fineGridCell.getADERDGCellDescriptionsIndex() )[i]);
+
     exahype::solvers::Solve&  solve  = _localState.getSolveRegistry()[ p->getSolveNumber() ];
     exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers   [ solve.getSolverNumber() ];
 
@@ -397,12 +400,10 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
     solve.updateNextPredictorTimeStepSize(admissibleTimeStepSize);
     _localState.updateNextMinTimeStepSize(admissibleTimeStepSize);
 
+
 #if defined(Debug) || defined(Asserts)
-    // todo Write AssertionNumericalSmaller(lhs,rhs,a)
     if (
-      std::fabs(p->getPredictorTimeStepSize()        - solve.getNextPredictorTimeStepSize()) > 1e-12 // not equal // todo precision
-      &&
-      (p->getPredictorTimeStepSize()                 - solve.getNextPredictorTimeStepSize()) < 1e-12 // smaller
+        tarch::la::smallerEquals(solve.getNextPredictorTimeStepSize(),p->getPredictorTimeStepSize(),1e12)
    ) {
       logError("enterCell(...)","(p->getPredictorTimeStepSize() - solve.getNextPredictorTimeStepSize()) <= 1e-12");
       logError("enterCell(...)","p->getPredictorTimeStepSize()" <<  p->getPredictorTimeStepSize());
@@ -410,19 +411,16 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
       exit(1);
     }
     if (
-      std::fabs(solve.getNextPredictorTimeStepSize() - _localState.getNextMinTimeStepSize()) > 1e-12 // not equal // todo precision
-      &&
-      (solve.getNextPredictorTimeStepSize() - _localState.getNextMinTimeStepSize())          < 1e-12 // smaller
-    )  {
+        tarch::la::smallerEquals(_localState.getNextMinTimeStepSize(),solve.getNextPredictorTimeStepSize(),1e12)
+    ) {
       logError("enterCell(...)","(solve->getPredictorTimeStepSize() - _localState.getNextMinTimeStepSize()) <= 1e-12");
       logError("enterCell(...)","solve.getPredictorTimeStepSize()" <<  solve.getNextPredictorTimeStepSize());
       logError("enterCell(...)","_localState.getNextMinTimeStepSize()" <<  _localState.getNextMinTimeStepSize());
       exit(1);
     }
 #endif
-//    assertion(solve.getNextPredictorTimeStepSize() <= p->getPredictorTimeStepSize());
-//    assertion(_localState.getNextMinTimeStepSize() <= solve.getNextPredictorTimeStepSize());
-  }
+   endpfor
+   peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }

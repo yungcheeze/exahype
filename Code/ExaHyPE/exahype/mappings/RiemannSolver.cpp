@@ -432,15 +432,9 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
   std::vector<records::ADERDGCellDescription>&  cellDescriptionsR =
       ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexR] );
 
-  // @todo 08/03/16:Dominic Etienne Charrier
+  // @todo 08/02/16:Dominic Etienne Charrier
   // Assumes that the both elements hold the same (number of) solvers
   assertion1WithExplanation( cellDescriptionsL.size() == cellDescriptionsR.size(), cellDescriptionsL.size(), "The number of ADERDGCellDescriptions is not the same for both cells!" );
-
-//  for (
-//      int i = 0;
-//      i < static_cast<int>(cellDescriptionsL.size());
-//      i++
-//  ) {
 
   const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexL] ).size();
   const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined2; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
@@ -505,7 +499,6 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       logDebug("touchVertexLastTime(...)::debug::after::FL[0]",FL[0]);
       logDebug("touchVertexLastTime(...)::debug::after::FR[0]",FR[0]);
     }
-//  }
     endpfor
     peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
 }

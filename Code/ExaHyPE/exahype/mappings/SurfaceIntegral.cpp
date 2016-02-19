@@ -367,11 +367,6 @@ void exahype::mappings::SurfaceIntegral::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
-//  for (
-//      ADERDGCellDescriptionHeap::HeapEntries::const_iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
-//      p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
-//      p++
-//  ) {
   const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size();
   const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined5; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
   const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
@@ -394,7 +389,6 @@ void exahype::mappings::SurfaceIntegral::enterCell(
         lFhbnd,
         fineGridVerticesEnumerator.getCellSize()
     );
-//  }
   endpfor
   peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );

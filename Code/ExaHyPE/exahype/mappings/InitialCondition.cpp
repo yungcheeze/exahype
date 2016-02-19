@@ -367,11 +367,6 @@ void exahype::mappings::InitialCondition::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
-//  for (
-//      ADERDGCellDescriptionHeap::HeapEntries::const_iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
-//      p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
-//      p++
-//    ) {
   const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size();
   const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined1; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
   const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
@@ -397,7 +392,6 @@ void exahype::mappings::InitialCondition::enterCell(
     // apply initial condition
     double* luh    = &(DataHeap::getInstance().getData(p->getSolution())[0]._persistentRecords._u);
     solver->initialCondition(luh,fineGridVerticesEnumerator.getCellCenter(),fineGridVerticesEnumerator.getCellSize());
-//  }
   endpfor
   peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
 
