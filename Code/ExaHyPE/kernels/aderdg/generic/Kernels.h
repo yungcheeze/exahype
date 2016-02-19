@@ -8,6 +8,7 @@ namespace kernels {
   namespace aderdg {
     namespace generic {
 
+#if DIMENSIONS == 2
       // @todo Dominic Etienne Charrier
       // Inconsistent ordering of inout and in arguments for
       // template argument functions and non-template argument function.
@@ -39,6 +40,26 @@ namespace kernels {
           const int numberOfVariables,
           const int basisSize
       );
+#else
+      // @todo Dominic Etienne Charrier
+      // Inconsistent ordering of inout and in arguments for
+      // template argument functions and non-template argument function.
+      template <void PDEFlux(const double* const Q,double* f,double* g,double* h)>
+      void spaceTimePredictor(
+          double* lQi,
+          double* lFi,
+          double* lQhi,
+          double* lFhi,
+          double* lQhbnd,
+          double* lFhbnd,
+          const double* const luh,
+          const tarch::la::Vector<DIMENSIONS,double>&  dx,
+          const double predictorTimeStepSize,
+          const int numberOfVariables,
+          const int basisSize
+      );
+
+#endif
 
       /**
        * (At the moment, we always evaluate the time averaged space-time

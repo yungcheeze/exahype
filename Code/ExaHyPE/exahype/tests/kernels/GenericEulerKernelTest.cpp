@@ -1,3 +1,4 @@
+#if DIMENSIONS == 2
 #include "exahype/tests/kernels/GenericEulerKernelTest.h"
 
 
@@ -1292,4 +1293,7 @@ void exahype::tests::GenericEulerKernelTest::testSpaceTimePredictor2d() {
 
 #ifdef UseTestSpecificCompilerSettings
 #pragma optimize("",on)
+#endif
+#else
+  //todo VV TestCase
 #endif
