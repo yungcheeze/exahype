@@ -13,7 +13,6 @@ tarch::logging::Log exahype::Parser::_log( "exahype::Parser" );
 
 void exahype::Parser::readFile( const std::string& filename ) {
   const int MAX_CHARS_PER_LINE = 512;
-  const int MAX_TOKENS_PER_LINE = 20;
   const char* const DELIMITER = " =\t";
 
   _tokenStream.clear();
