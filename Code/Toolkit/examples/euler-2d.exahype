@@ -36,13 +36,6 @@ exahype-project  Euler2d
       filename = ./solution
     end plot
   end solver
-/*
-  shared-memory
-    identifier               = sampling
-    cores                    = 4
-    properties-file          = sharedmemory.properties
-  end shared-memory  
-*/
 
   optimisation
     fuse-algorithmic-steps   = off
