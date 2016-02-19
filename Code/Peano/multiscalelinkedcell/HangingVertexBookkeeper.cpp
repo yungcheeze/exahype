@@ -1,7 +1,7 @@
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
 #include "peano/utils/Loop.h"
-
+#include "tarch/parallel/Node.h"
 
 const int multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex         = -1;
 const int multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex          = -2;
@@ -276,4 +276,21 @@ tarch::la::Vector<TWO_POWER_D,int> multiscalelinkedcell::HangingVertexBookkeeper
   logTraceOutWith2Arguments( "createHangingVertex(...)",_vertexMap[key].indicesOfAdjacentCells,_vertexMap[key].usedInLastTraversal);
 
   return _vertexMap[key].indicesOfAdjacentCells;
+}
+
+
+tarch::la::Vector<TWO_POWER_D,int> multiscalelinkedcell::HangingVertexBookkeeper::updateCellIndicesInMergeWithNeighbour(
+  const tarch::la::Vector<TWO_POWER_D,int>&  adjacentRanks,
+  const tarch::la::Vector<TWO_POWER_D,int>&  oldAdjacencyEntries
+) {
+  tarch::la::Vector<TWO_POWER_D,int> result;
+  for (int i=0; i<TWO_POWER_D; i++) {
+    if (adjacentRanks(i)!=tarch::parallel::Node::getInstance().getRank()) {
+      result = RemoteAdjacencyIndex;
+    }
+    else {
+      result = oldAdjacencyEntries(i);
+    }
+  }
+  return result;
 }

@@ -47,7 +47,7 @@ namespace multiscalelinkedcell {
 
 
 /**
- * Singleon keeping track of the adjacency data of the hanging nodes.
+ * Singleton keeping track of the adjacency data of the hanging nodes.
  *
  * To get the bookkeeper's instance, i.e. to work with it, you call
  * \code
@@ -157,9 +157,9 @@ class multiscalelinkedcell::HangingVertexBookkeeper {
      */
     void destroyCell(int cellIndex);
 
-    template <class Vertex>
-    void updateCellIndicesInMergeWithNeighbour(
-      Vertex&   vertex
+    tarch::la::Vector<TWO_POWER_D,int> updateCellIndicesInMergeWithNeighbour(
+      const tarch::la::Vector<TWO_POWER_D,int>&  adjacentRanks,
+      const tarch::la::Vector<TWO_POWER_D,int>&  oldAdjacencyEntries
     );
 
     void beginIteration();
@@ -173,9 +173,6 @@ class multiscalelinkedcell::HangingVertexBookkeeper {
     static bool allAdjacencyInformationIsAvailable(const tarch::la::Vector<THREE_POWER_D,int>&  arg);
     static bool allAdjacencyInformationIsAvailable(const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&  arg);
 };
-
-
-#include "multiscalelinkedcell/HangingVertexBookkeeper.cpph"
 
 
 #endif

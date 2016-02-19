@@ -168,7 +168,12 @@ void __THIS_QUALIFIED_TYPENAME__::mergeWithNeighbour(
   const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
   int                                           level
 ) {
-  multiscalelinkedcell::HangingVertexBookkeeper::getInstance().updateCellIndicesInMergeWithNeighbour(vertex);
+  VertexOperations::writePARAM0(
+    multiscalelinkedcell::HangingVertexBookkeeper::getInstance().updateCellIndicesInMergeWithNeighbour(
+      vertex.getAdjacentRanks(),
+      VertexOperations::readPARAM0(vertex)
+    )
+  );
 }
 
 
