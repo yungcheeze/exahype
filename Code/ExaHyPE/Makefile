@@ -35,17 +35,17 @@ ifeq ($(ARCHITECTURE),Phi)
 		else ifeq ($(MODE),Profile)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -mmic -std=c++0x
+			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -restrict -fast -fno-rtti -no-ipo -ip -mmic -std=c++0x
 			COMPILER_LFLAGS=-p -pg -mmic
 		else ifeq ($(MODE),Asserts)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DAsserts -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -mmic -std=c++0x
+			COMPILER_CFLAGS=-DAsserts -fast -fstrict-aliasing -restrict -fast -fno-rtti -no-ipo -ip -mmic -std=c++0x
 			COMPILER_LFLAGS=-mmic -lrt
 		else
 			# Settings for the Intel Compiler (Release Mode)
 			# ----------------------------------------------
-			COMPILER_CFLAGS=-fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -mmic -std=c++0x
+			COMPILER_CFLAGS=-fast -fstrict-aliasing -restrict -fast -fno-rtti -no-ipo -ip -mmic -std=c++0x
 			COMPILER_LFLAGS=-mmic -lrt
 		endif
 else
@@ -87,17 +87,17 @@ else
 		else ifeq ($(MODE),Profile)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xHost -std=c++0x
+			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -restrict -fast -fno-rtti -no-ipo -ip -xHost -std=c++0x
 			COMPILER_LFLAGS=-p -pg
 		else ifeq ($(MODE),Asserts)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DAsserts -fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xHost -std=c++0x
+			COMPILER_CFLAGS=-DAsserts -fast -fstrict-aliasing -restrict -fast -fno-rtti -no-ipo -ip -xHost -std=c++0x
 			COMPILER_LFLAGS=
 		else
 			# Settings for the Intel Compiler (Release Mode)
 			# ----------------------------------------------
-			COMPILER_CFLAGS=-fast -fstrict-aliasing -restrict -DMPICH_IGNORE_CXX_SEEK -fast -fno-rtti -no-ipo -ip -xHost -std=c++0x
+			COMPILER_CFLAGS=-fast -fstrict-aliasing -restrict -fast -fno-rtti -no-ipo -ip -xHost -std=c++0x
 			COMPILER_LFLAGS=
 		endif
 	endif
@@ -108,29 +108,27 @@ endif
 # Assemble Compiler Flags depending on the environment variable [SHAREDMEM]={OMP, TBB, None}
 # -----------------------
 ifeq ($(SHAREDMEM),OMP)
-        SYSTEM_CFLAGS = $(INCLUDE_OMP) 
-        SYSTEM_LFLAGS = $(LINK_OMP) 
+	SYSTEM_CFLAGS = $(INCLUDE_OMP) 
+	SYSTEM_LFLAGS = $(LINK_OMP) 
 	COMPILER_CFLAGS += -DSharedOMP
 else ifeq ($(SHAREDMEM),TBB)
 	SYSTEM_CFLAGS = $(INCLUDE_TBB)
 	SYSTEM_LFLAGS = $(LINK_TBB)
 	COMPILER_CFLAGS += -DSharedTBB
 else ifeq ($(SHAREDMEM),None)
-	# do nothing
-        SYSTEM_LFLAGS = -lrt 
+	SYSTEM_LFLAGS = -lrt 
 else
-        SYSTEM_CFLAGS = $(INCLUDE_TBB) $(INCLUDE_MPI)
-        SYSTEM_LFLAGS = $(LINK_TBB)    $(LINK_MPI)
+	SYSTEM_CFLAGS = $(INCLUDE_TBB) $(INCLUDE_MPI)
+	SYSTEM_LFLAGS = $(LINK_TBB)    $(LINK_MPI)
 endif
 
 
 
-# Assemble Compiler Flags depending on the environment variable [DISTMEM]={MPI, None}
+# Assemble Compiler Flags depending on the environment variable [DISTRIBUTEDMEM]={MPI, None}
 # -----------------------
-ifeq ($(DISTMEM),MPI)
-	CC = mpiCC 
-	COMPILER_CFLAGS += -DParallel
-else
+ifeq ($(DISTRIBUTEDMEM),MPI)
+	CC = mpicxx 
+	COMPILER_CFLAGS += -DParallel -DMPICH_IGNORE_CXX_SEEK
 endif
 
 
