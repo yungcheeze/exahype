@@ -1,9 +1,14 @@
 #!/bin/env python
 
 import os
+from os.path import join
+from os.path import isfile
 import subprocess
 import errno
 from matplotlib.cbook import dedent
+from distlib._backport.shutil import move
+from glob import iglob
+
 
 
 def executeLibxsmmGenerator(i_pathToLibxsmmGenerator,
@@ -35,7 +40,7 @@ def executeBashCommand(i_command, i_commandLineParameters):
 
 def validateLibxsmmGenerator(i_pathToLibxsmm):
     l_pathToLibxsmmGenerator = i_pathToLibxsmm + "/bin/libxsmm_gemm_generator"
-    return os.path.isfile(l_pathToLibxsmmGenerator)
+    return isfile(l_pathToLibxsmmGenerator)
      
      
 def writeIntrinsicsInclude(i_pathToFile):
@@ -59,5 +64,9 @@ def writeCommonKernelsHeaderInclude(i_pathToFile):
     l_sourceFile.write(l_includeStatement)
     l_sourceFile.close()
    
-    
-    
+   
+def moveGeneratedCppFiles(i_pathToSrc,i_pathToDest):
+    l_files = iglob(join(i_pathToSrc, "*.cpp"))
+    for l_file in l_files:
+        if(isfile(l_file)):
+            move(l_file, i_pathToDest)

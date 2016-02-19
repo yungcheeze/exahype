@@ -16,6 +16,7 @@ import argparse
 from Backend import validateLibxsmmGenerator
 from SpaceTimePredictorGenerator import SpaceTimePredictorGenerator
 from Backend import prepareOutputDirectory
+from Backend import moveGeneratedCppFiles
 
 
 # --------------------------------------------------------
@@ -83,12 +84,11 @@ if(not validateLibxsmmGenerator(l_pathToLibxsmm)):
 config = { 
            "solverName"        : solverName,
            "nVar"              : numberOfVariables,
-           "order"             : order,
+           "nDof"              : order+1,
            "nDim"              : dimensions,
            "architecture"      : architecture,
            "precision"         : precision
           }
-
 
 
 # clean up output directory
@@ -103,4 +103,6 @@ prepareOutputDirectory(pathToOutputDirectory)
 # --------------------------------------------------------
 
 spaceTimePredictorGenerator = SpaceTimePredictorGenerator(config)
-spaceTimePredictorGenerator.generateCode()
+spaceTimePredictorGenerator.generateCode(pathToLibxsmmGenerator)
+
+moveGeneratedCppFiles(pathToLibxsmmGenerator, pathToOutputDirectory)
