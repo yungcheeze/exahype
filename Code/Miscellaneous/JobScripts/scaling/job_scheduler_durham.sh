@@ -35,26 +35,6 @@ printf "EXAHYPE_PREFIX=${EXAHYPE_PREFIX}\n"
 printf "EXAHYPE_OUTPUT_DIR=${EXAHYPE_OUTPUT_DIR}\n"
 printf "EXAHYPE_INTERACTIVE=${EXAHYPE_INTERACTIVE}\n\n"
 
-# Select MPI process and core counts based on system id.
-# NOTE: I can't outsource these numbers since bash does not support exporting
-# arrays out of the box.
-if [ "${EXAHYPE_SYSTEM_ID}" == "sandybridge" ]
-then
-  EXAHYPE_MPI_PROCESSES=(1)
-  EXAHYPE_CORES=(2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 32)
-elif [ "${EXAHYPE_SYSTEM_ID}" == "haswell" ]
-then
-  EXAHYPE_MPI_PROCESSES=(1)
-  EXAHYPE_CORES=(2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 56)
-elif [ "${EXAHYPE_SYSTEM_ID}" == "mic" ]
-then
-  export EXAHYPE_MPI_PROCESSES=(1)
-  export EXAHYPE_CORES=(1 2 8 12 16 18 24 60 72 120 180 240)
-else
-  printf "System \'${EXAHYPE_SYSTEM_ID}\' is not supported!"
-  exit 1;
-fi
-
 printf "EXAHYPE_MPI_PROCESSES="
 for n in "${EXAHYPE_MPI_PROCESSES[@]}"; do printf "$n,"; done
 printf "\n"
