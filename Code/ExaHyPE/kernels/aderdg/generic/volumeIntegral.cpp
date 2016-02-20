@@ -129,9 +129,9 @@ void kernels::aderdg::generic::volumeIntegral(
           const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
 
           for(int ivar=0; ivar < numberOfVariables; ivar++) {
-            lduh[mmDofStartIndex+ivar] += weight/dx[0] * kernels::Kxi[basisSize-1][jj][mm] * lFhi_y[mmNodeIndex+ivar];
+            lduh[mmDofStartIndex+ivar] += weight/dx[1] * kernels::Kxi[basisSize-1][jj][mm] * lFhi_y[mmNodeIndex+ivar];
             //todo VV
-            lduh[mmDofStartIndex+ivar] += weight/dx[0] * kernels::Kxi[basisSize-1][jj][mm] * lFhi_y[mmNodeIndex+ivar];
+            lduh[mmDofStartIndex+ivar] += weight/dx[1] * kernels::Kxi[basisSize-1][jj][mm] * lFhi_y[mmNodeIndex+ivar];
           }
         }
       }
@@ -149,10 +149,14 @@ void kernels::aderdg::generic::volumeIntegral(
           const int mmNodeIndex         = ii + basisSize * jj + basisSize * basisSize * mm;
           const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
 
+          // TODO please check this again
+          // something is definitely wrong here. lduh and lFhi_z are accessed in the same way
+          // but are not stored in the same way
+          // lFhi_z[(ii*basisSize*basisSize+basisSize*jj+mm)*numberOfVariables+ivar] ???
           for(int ivar=0; ivar < numberOfVariables; ivar++) {
-            lduh[mmDofStartIndex+ivar] += weight/dx[0] * kernels::Kxi[basisSize-1][kk][mm] * lFhi_z[mmNodeIndex+ivar];
+            lduh[mmDofStartIndex+ivar] += weight/dx[2] * kernels::Kxi[basisSize-1][kk][mm] * lFhi_z[mmNodeIndex+ivar];
             //todo VV
-            lduh[mmDofStartIndex+ivar] += weight/dx[0] * kernels::Kxi[basisSize-1][kk][mm] * lFhi_z[mmNodeIndex+ivar];
+            lduh[mmDofStartIndex+ivar] += weight/dx[2] * kernels::Kxi[basisSize-1][kk][mm] * lFhi_z[mmNodeIndex+ivar];
           }
         }
       }

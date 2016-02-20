@@ -883,8 +883,8 @@ void kernels::aderdg::generic::spaceTimePredictor(
   //
   //  lQhbnd[EXAHYPE_FACE_BACK*numberOfFaceDof] = 14;
   //  lFhbnd[EXAHYPE_FACE_BACK*numberOfFaceDof] = 24;
-  constexpr int dim         = DIMENSIONS;         // 2
-  constexpr int dimTimesTwo = (2*DIMENSIONS);     // 4
+  constexpr int dim         = DIMENSIONS;         // 3
+  constexpr int dimTimesTwo = (2*DIMENSIONS);     //
   constexpr int BASISSIZE   = (3+1); // basisSize=order+1
   constexpr int NVAR        = 5;     // numberOfVariables
 
@@ -1049,9 +1049,6 @@ void kernels::aderdg::generic::spaceTimePredictor(
             //    tmp[ivar] += 1./dxPatch * dg::dudx[ii][mm] * Q[ivar];
             //  }
             //}
-            for(int ivar=0; ivar < NVAR; ivar++) {
-              rhs[spaceTimeDofStartIndex+ivar] = rhs0[spaceTimeDofStartIndex+ivar];
-            }
 
             for(int mm=0; mm < BASISSIZE; mm++) {
               const int mmNodeIndex                  = mm + BASISSIZE * jj + BASISSIZE * BASISSIZE * kk;
@@ -1059,11 +1056,11 @@ void kernels::aderdg::generic::spaceTimePredictor(
               const int mmSpaceTimeDofStartIndex     = mmSpaceTimeNodeIndex * NVAR;
               const int mmSpaceTimeFluxDofStartIndex = mmSpaceTimeDofStartIndex * dim;
 
-              f = &lFi[mmSpaceTimeFluxDofStartIndex];
+              g = &lFi[mmSpaceTimeFluxDofStartIndex+NVAR];
 
               for(int ivar=0; ivar < NVAR; ivar++) {
                 rhs[spaceTimeDofStartIndex+ivar]
-                    -= weight * dt/dx[0] * kernels::Kxi[BASISSIZE-1][mm][jj] * f[ivar];
+                    -= weight * dt/dx[1] * kernels::Kxi[BASISSIZE-1][mm][jj] * g[ivar];
               }
             }
           }
@@ -1071,7 +1068,7 @@ void kernels::aderdg::generic::spaceTimePredictor(
       }
 
       // Compute the "derivatives" (contributions of the stiffness matrix)
-      // y direction (independent from the x and z derivatives)
+      // z direction (independent from the x and y derivatives)
       for (int ii=0; ii<BASISSIZE; ii++) { // loop over dof
         for (int jj=0; jj<BASISSIZE; jj++) {
           for (int kk=0; kk<BASISSIZE; kk++) { // loop over dof
@@ -1101,9 +1098,6 @@ void kernels::aderdg::generic::spaceTimePredictor(
             //    tmp[ivar] += 1./dxPatch * dg::dudx[ii][mm] * Q[ivar];
             //  }
             //}
-            for(int ivar=0; ivar < NVAR; ivar++) {
-              rhs[spaceTimeDofStartIndex+ivar] = rhs0[spaceTimeDofStartIndex+ivar];
-            }
 
             for(int mm=0; mm < BASISSIZE; mm++) {
               const int mmNodeIndex                  = mm + BASISSIZE * jj + BASISSIZE * BASISSIZE * kk;
@@ -1111,11 +1105,11 @@ void kernels::aderdg::generic::spaceTimePredictor(
               const int mmSpaceTimeDofStartIndex     = mmSpaceTimeNodeIndex * NVAR;
               const int mmSpaceTimeFluxDofStartIndex = mmSpaceTimeDofStartIndex * dim;
 
-              f = &lFi[mmSpaceTimeFluxDofStartIndex];
+              h = &lFi[mmSpaceTimeFluxDofStartIndex+2*NVAR];
 
               for(int ivar=0; ivar < NVAR; ivar++) {
                 rhs[spaceTimeDofStartIndex+ivar]
-                    -= weight * dt/dx[0] * kernels::Kxi[BASISSIZE-1][mm][kk] * f[ivar];
+                    -= weight * dt/dx[2] * kernels::Kxi[BASISSIZE-1][mm][kk] * h[ivar];
               }
             }
           }
@@ -1299,6 +1293,9 @@ void kernels::aderdg::generic::spaceTimePredictor(
           lQhbnd[dofStartIndexL+ivar] += kernels::FLCoeff[BASISSIZE-1][mm] * Q[ivar];
           lQhbnd[dofStartIndexR+ivar] += kernels::FRCoeff[BASISSIZE-1][mm] * Q[ivar];
 
+          // TODO please check this again
+          // shouldn't this read
+          // lFhi_y[(mm + BASISSIZE*ii + BASISSIZE*BASISSIZE*kk)*NVAR+ivar]
           lFhbnd[dofStartIndexL+ivar] += kernels::FLCoeff[BASISSIZE-1][mm] * lFhi_y[(mm  + BASISSIZE * ii) * NVAR+ivar]; // lFhi_y * FLCoeff
           lFhbnd[dofStartIndexR+ivar] += kernels::FRCoeff[BASISSIZE-1][mm] * lFhi_y[(mm  + BASISSIZE * ii) * NVAR+ivar]; // lFhi_y * FRCoeff
         }
@@ -1326,6 +1323,9 @@ void kernels::aderdg::generic::spaceTimePredictor(
           lQhbnd[dofStartIndexL+ivar] += kernels::FLCoeff[BASISSIZE-1][mm] * Q[ivar];
           lQhbnd[dofStartIndexR+ivar] += kernels::FRCoeff[BASISSIZE-1][mm] * Q[ivar];
 
+          // TODO please check this again
+          // lFhi_z[(mm + BASISSIZE*jj + BASISSIZE*BASISSIZE*ii)*NVAR+ivar]
+          // (mind the var order in lFhi_z)
           lFhbnd[dofStartIndexL+ivar] += kernels::FLCoeff[BASISSIZE-1][mm] * lFhi_z[(mm  + BASISSIZE * ii + BASISSIZE * BASISSIZE * jj) * NVAR+ivar]; // lFhi_z * FLCoeff
           lFhbnd[dofStartIndexR+ivar] += kernels::FRCoeff[BASISSIZE-1][mm] * lFhi_z[(mm  + BASISSIZE * ii + BASISSIZE * BASISSIZE * jj) * NVAR+ivar]; // lFhi_z * FRCoeff
         }
