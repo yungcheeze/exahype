@@ -25,7 +25,7 @@ class SpaceTimePredictorGenerator:
         self.l_pathToLibxsmmGenerator = i_pathToLibxsmmGenerator
         
         self.generatePicardLoop()
-        self.generateAverager()
+        self.generatePredictor()
         self.generateExtrapolator()
         
 
@@ -34,7 +34,7 @@ class SpaceTimePredictorGenerator:
         pass
 
     
-    def generateAverager(self):
+    def generatePredictor(self):
         pass
     
 

@@ -6,8 +6,8 @@ from os.path import isfile
 import subprocess
 import errno
 from matplotlib.cbook import dedent
-from distlib._backport.shutil import move
 from glob import iglob
+from shutil import move
 
 
 
