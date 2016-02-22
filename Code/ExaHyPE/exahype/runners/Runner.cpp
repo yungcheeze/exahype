@@ -9,6 +9,9 @@
 #include "tarch/multicore/Core.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
 
+#include "tarch/parallel/FCFSNodePoolStrategy.h"
+#include "peano/parallel/loadbalancing/OracleForOnePhaseWithGreedyPartitioning.h"
+
 #include "peano/utils/UserInterface.h"
 #include "peano/geometry/Hexahedron.h"
 
@@ -32,6 +35,57 @@ exahype::runners::Runner::Runner(const Parser& parser):
 
 
 exahype::runners::Runner::~Runner() {
+}
+
+
+void exahype::runners::Runner::initDistributedMemoryConfiguration() {
+  #ifdef Parallel
+  // @todo evtl. fehlen hier die Includes
+/*
+  if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
+    tarch::parallel::NodePool::getInstance().setStrategy(
+      new mpibalancing::FairNodePoolStrategy(6)
+    );
+  }
+  #else
+*/
+  if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
+     tarch::parallel::NodePool::getInstance().setStrategy(
+      new tarch::parallel::FCFSNodePoolStrategy()
+    );
+  }
+  #endif
+
+  tarch::parallel::NodePool::getInstance().restart();
+
+  #ifdef Parallel
+  // @todo evtl. fehlen hier die Includes
+/*
+  peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
+    new mpibalancing::StaticBalancing(true)
+  );
+  #else
+*/
+  peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
+    new peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning(true)
+  );
+  #endif
+
+  #if defined(Debug) || defined(Asserts)
+  tarch::parallel::Node::getInstance().setDeadlockTimeOut(120*4);
+  tarch::parallel::Node::getInstance().setTimeOutWarning(60*4);
+  #else
+  tarch::parallel::Node::getInstance().setDeadlockTimeOut(120);
+  tarch::parallel::Node::getInstance().setTimeOutWarning(60);
+  #endif
+}
+
+
+void exahype::runners::Runner::shutdownDistributedMemoryConfiguration() {
+  #ifdef Parallel
+  tarch::parallel::NodePool::getInstance().terminate();
+  exahype::repositories::RepositoryFactory::getInstance().shutdownAllParallelDatatypes();
+  #endif
 }
 
 
@@ -88,6 +142,7 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 
 int exahype::runners::Runner::run() {
   initSharedMemoryConfiguration();
+  initDistributedMemoryConfiguration();
 
   logInfo("run(...)", "create computational domain at " << _parser.getOffset() << " of width/size " << _parser.getSize() );
 
@@ -107,13 +162,14 @@ int exahype::runners::Runner::run() {
   if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
     result = runAsMaster( *repository );
   }
-#ifdef Parallel
+  #ifdef Parallel
   else {
     result = runAsWorker( *repository );
   }
-#endif
+  #endif
 
   shutdownSharedMemoryConfiguration();
+  shutdownDistributedMemoryConfiguration();
 
   delete repository;
 
@@ -166,9 +222,28 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    */
   // The space-tree is initialised with 1 coarse grid cell on level 1 and 3^d fine grid cells on level 2.
   repository.switchToInitialGrid();
+  int gridSetupIterations = 0;
   do {
     repository.iterate();
+    gridSetupIterations++;
   } while (!repository.getState().isGridBalanced());
+
+  logInfo(
+    "runAsMaster()",
+    "grid setup iterations=" << gridSetupIterations
+  );
+  #ifdef Parallel
+  logInfo(
+    "runAsMaster()",
+    "number of working ranks=" <<
+    tarch::parallel::NodePool::getInstance().getNumberOfWorkingNodes()
+  );
+  logInfo(
+    "runAsMaster()",
+    "number of idle ranks=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+  );
+  #endif
+
   // initialise the cell descriptions;
   repository.switchToPatchInitialisation();
   repository.iterate();

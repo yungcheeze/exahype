@@ -128,7 +128,7 @@ endif
 # -----------------------
 ifeq ($(DISTRIBUTEDMEM),MPI)
 	COMPILER_CFLAGS += -DParallel -DMPICH_IGNORE_CXX_SEEK
-	ifeq ($(CC),gcc)
+	ifeq ($(CC),g++)
 		CC = mpiCC
 	else
 		CC = mpiicpc

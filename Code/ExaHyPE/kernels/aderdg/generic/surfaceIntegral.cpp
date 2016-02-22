@@ -16,12 +16,19 @@ void kernels::aderdg::generic::surfaceIntegral(
     const int numberOfVariables,
     const int basisSize
 ){
+#if DIMENSIONS == 2
   constexpr int numberOfFaceDof = 5 * (3+1);//numberOfVariables * tarch::la::aPowI(DIMENSIONS-1,basisSize);
   const double * FLeft  = &(lFhbnd[EXAHYPE_FACE_LEFT  * numberOfFaceDof]);
   const double * FRight = &(lFhbnd[EXAHYPE_FACE_RIGHT * numberOfFaceDof]);
   const double * FFront = &(lFhbnd[EXAHYPE_FACE_FRONT * numberOfFaceDof]);
   const double * FBack  = &(lFhbnd[EXAHYPE_FACE_BACK  * numberOfFaceDof]);
+#endif  
 #if DIMENSIONS == 3
+  constexpr int numberOfFaceDof = 5 * (3+1) * (3+1);//numberOfVariables * tarch::la::aPowI(DIMENSIONS-1,basisSize);
+  const double * FLeft  = &(lFhbnd[EXAHYPE_FACE_LEFT  * numberOfFaceDof]);
+  const double * FRight = &(lFhbnd[EXAHYPE_FACE_RIGHT * numberOfFaceDof]);
+  const double * FFront = &(lFhbnd[EXAHYPE_FACE_FRONT * numberOfFaceDof]);
+  const double * FBack  = &(lFhbnd[EXAHYPE_FACE_BACK  * numberOfFaceDof]);
   const double * FBottom=&(lFhbnd[EXAHYPE_FACE_BOTTOM* numberOfFaceDof]);
   const double * FTop  = &(lFhbnd[EXAHYPE_FACE_TOP   * numberOfFaceDof]);
 #endif
