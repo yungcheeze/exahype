@@ -48,7 +48,9 @@ class exahype::runners::Runner {
      * @todo Weiterschreiben
      */
     void initSharedMemoryConfiguration();
+    void initDistributedMemoryConfiguration();
     void shutdownSharedMemoryConfiguration();
+    void shutdownDistributedMemoryConfiguration();
 
     int runAsMaster(exahype::repositories::Repository& repository);
     
