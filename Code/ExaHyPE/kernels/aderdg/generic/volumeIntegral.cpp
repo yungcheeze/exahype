@@ -123,7 +123,9 @@ void kernels::aderdg::generic::volumeIntegral(
       double weight = kernels::gaussLegendreWeights[basisSize-1][jj] *
                         kernels::gaussLegendreWeights[basisSize-1][kk];
 
-
+        // TODO please check this again
+        // lFhi_y[nDOF_z][nDOF_x][nDOF_y][nVar]
+        // lFhi_y[(mm + basisSize * ii + basisSize * basisSize * kk)+ivar]
         for(int mm=0; mm < basisSize; mm++) {
           const int mmNodeIndex         = ii + basisSize * mm + basisSize * basisSize * kk;
           const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
@@ -152,7 +154,8 @@ void kernels::aderdg::generic::volumeIntegral(
           // TODO please check this again
           // something is definitely wrong here. lduh and lFhi_z are accessed in the same way
           // but are not stored in the same way
-          // lFhi_z[(ii*basisSize*basisSize+basisSize*jj+mm)*numberOfVariables+ivar] ???
+          // lFhi_z[nDOF_x][nDOF_y][nDOF_z][nVar]
+          // lFhi_z[(ii*basisSize*basisSize+basisSize*jj+mm)+ivar]
           for(int ivar=0; ivar < numberOfVariables; ivar++) {
             lduh[mmDofStartIndex+ivar] += weight/dx[2] * kernels::Kxi[basisSize-1][kk][mm] * lFhi_z[mmNodeIndex+ivar];
             //todo VV
