@@ -20,9 +20,6 @@ namespace exahype {
  */ 
 class exahype::tests::GenericEulerKernelTest: public tarch::tests::TestCase {
   private:
-    /**
-     * These operation usually implement the real tests.
-     */
     void testPDEFluxes2d();
     void testSpaceTimePredictor2d();
     void testVolumeIntegral2d();
@@ -30,8 +27,12 @@ class exahype::tests::GenericEulerKernelTest: public tarch::tests::TestCase {
     void testSurfaceIntegral2d();
     void testSolutionUpdate2d();
 
+    void testPDEFluxes3d();
+    void testSolutionUpdate3d();
+
     const double eps = 1.0e-10; // for quick adaption of the test cases (say, switch to single precision)
 
+    static void testFlux(const double * const Q, double *f, double *g, double *h);
     static void testFlux(const double* const Q, double* f, double* g);
     static void testEigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);
   public: 
