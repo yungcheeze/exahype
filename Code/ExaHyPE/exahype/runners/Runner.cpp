@@ -54,11 +54,8 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
       new tarch::parallel::FCFSNodePoolStrategy()
     );
   }
-  #endif
 
   tarch::parallel::NodePool::getInstance().restart();
-
-  #ifdef Parallel
   // @todo evtl. fehlen hier die Includes
 /*
   peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
@@ -220,7 +217,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   /*
    * Build up the initial space tree.
    */
-  // The space-tree is initialised with 1 coarse grid cell on level 1 and 3^d fine grid cells on level 2.
   repository.switchToInitialGrid();
   int gridSetupIterations = 0;
   do {
@@ -244,7 +240,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   );
   #endif
 
-  // initialise the cell descriptions;
+  // Initialise the cell descriptions;
   repository.switchToPatchInitialisation();
   repository.iterate();
 
