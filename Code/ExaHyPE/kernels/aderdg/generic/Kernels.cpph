@@ -1295,9 +1295,9 @@ void kernels::aderdg::generic::spaceTimePredictor(
 
           // TODO please check this again
           // shouldn't this read
-          // lFhi_y[(mm + BASISSIZE*ii + BASISSIZE*BASISSIZE*kk)*NVAR+ivar]
-          lFhbnd[dofStartIndexL+ivar] += kernels::FLCoeff[BASISSIZE-1][mm] * lFhi_y[(mm  + BASISSIZE * ii) * NVAR+ivar]; // lFhi_y * FLCoeff
-          lFhbnd[dofStartIndexR+ivar] += kernels::FRCoeff[BASISSIZE-1][mm] * lFhi_y[(mm  + BASISSIZE * ii) * NVAR+ivar]; // lFhi_y * FRCoeff
+          // and not lFhi_y[(mm  + BASISSIZE * ii) * NVAR+ivar]
+          lFhbnd[dofStartIndexL+ivar] += kernels::FLCoeff[BASISSIZE-1][mm] * lFhi_y[(mm + BASISSIZE*ii + BASISSIZE*BASISSIZE*kk)*NVAR+ivar]; // lFhi_y * FLCoeff
+          lFhbnd[dofStartIndexR+ivar] += kernels::FRCoeff[BASISSIZE-1][mm] * lFhi_y[(mm + BASISSIZE*ii + BASISSIZE*BASISSIZE*kk)*NVAR+ivar]; // lFhi_y * FRCoeff
         }
       }
       continue;
@@ -1326,8 +1326,8 @@ void kernels::aderdg::generic::spaceTimePredictor(
           // TODO please check this again
           // lFhi_z[(mm + BASISSIZE*jj + BASISSIZE*BASISSIZE*ii)*NVAR+ivar]
           // (mind the var order in lFhi_z)
-          lFhbnd[dofStartIndexL+ivar] += kernels::FLCoeff[BASISSIZE-1][mm] * lFhi_z[(mm  + BASISSIZE * ii + BASISSIZE * BASISSIZE * jj) * NVAR+ivar]; // lFhi_z * FLCoeff
-          lFhbnd[dofStartIndexR+ivar] += kernels::FRCoeff[BASISSIZE-1][mm] * lFhi_z[(mm  + BASISSIZE * ii + BASISSIZE * BASISSIZE * jj) * NVAR+ivar]; // lFhi_z * FRCoeff
+          lFhbnd[dofStartIndexL+ivar] += kernels::FLCoeff[BASISSIZE-1][mm] * lFhi_z[(mm + BASISSIZE*jj + BASISSIZE*BASISSIZE*ii)*NVAR+ivar]; // lFhi_z * FLCoeff
+          lFhbnd[dofStartIndexR+ivar] += kernels::FRCoeff[BASISSIZE-1][mm] * lFhi_z[(mm + BASISSIZE*jj + BASISSIZE*BASISSIZE*ii)*NVAR+ivar]; // lFhi_z * FRCoeff
         }
       }
       continue;
