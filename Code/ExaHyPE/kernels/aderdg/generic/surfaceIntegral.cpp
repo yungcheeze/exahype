@@ -65,14 +65,14 @@ void kernels::aderdg::generic::surfaceIntegralXDirection(
 
   // x direction (independent from the y and z)
   for (int jj=0; jj<basisSize; jj++) {
-    const int nodeIndex     = jj;
+    const int nodeIndex     = jj; 
     const int dofStartIndex = nodeIndex * numberOfVariables;
 
     double weight = kernels::gaussLegendreWeights[order][jj];
 
     for(int mm=0; mm < basisSize; mm++) {
       for(int ivar=0; ivar < numberOfVariables; ivar++) {
-        lduh3D[jj][mm][ivar] // direction dependent!
+        lduh3D[jj][mm][ivar] // direction dependent! 
                        += updateSign * weight/area * ( kernels::FCoeff[order][facePosition][mm] * lFhbnd [dofStartIndex+ivar] );
       }
     }
@@ -99,21 +99,22 @@ void kernels::aderdg::generic::surfaceIntegralYDirection(
   tensor_t *lduh3D = (tensor_t *)lduh;
 
   // y direction (independent from the y and z)
-  for (int jj=0; jj<basisSize; jj++) {
-    const int nodeIndex     = jj;
+  for (int ii=0; ii<basisSize; ii++) {
+    const int nodeIndex     = ii; 
     const int dofStartIndex = nodeIndex * numberOfVariables;
 
-    double weight =  kernels::gaussLegendreWeights[order][jj];
+    double weight =  kernels::gaussLegendreWeights[order][ii];
 
     for(int mm=0; mm < basisSize; mm++) {
       for(int ivar=0; ivar < numberOfVariables; ivar++) {
-        lduh3D[mm][jj][ivar] // direction dependent!
+        lduh3D[mm][ii][ivar] // direction dependent! 
                        += updateSign * weight/area * ( kernels::FCoeff[order][facePosition][mm] * lFhbnd[dofStartIndex+ivar] );
       }
     }
   }
 }
 #else
+  
 void kernels::aderdg::generic::surfaceIntegralXDirection(
     double * lduh,
     const double * const lFhbnd,
@@ -129,22 +130,21 @@ void kernels::aderdg::generic::surfaceIntegralXDirection(
   constexpr int numberOfFaceDof = 5 * (3+1) * (3+1);//numberOfVariables * tarch::la::aPowI(DIMENSIONS-1,basisSize);
   constexpr int order           = 3;
 
-  // access lduh(nDOF[3] x nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array manner
+  // access lduh(nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array manner
   typedef double tensor_t[3+1][3+1][5];
   tensor_t *lduh3D = (tensor_t *)lduh;
 
   // x direction (independent from the y and z)
-  for (int ii=0; ii<basisSize; ii++) { // loop over dof
-    for (int jj=0; jj<basisSize; jj++) { // loop over dof
-      const int nodeIndex     = ii + basisSize * jj;
+  for (int kk=0; kk<basisSize; kk++) {
+    for (int jj=0; jj<basisSize; jj++) {
+      const int nodeIndex     = jj + basisSize * kk; 
       const int dofStartIndex = nodeIndex * numberOfVariables;
 
-      double weight = kernels::gaussLegendreWeights[order][ii]*kernels::gaussLegendreWeights[order][jj];
+      double weight = kernels::gaussLegendreWeights[order][jj] * kernels::gaussLegendreWeights[order][kk];
 
       for(int mm=0; mm < basisSize; mm++) {
         for(int ivar=0; ivar < numberOfVariables; ivar++) {
-          // todo VV
-          lduh3D[mm][ii][jj][ivar] // direction dependent!
+          lduh3D[kk][jj][mm][ivar] // direction dependent! 
                          += updateSign * weight/area * ( kernels::FCoeff[order][facePosition][mm] * lFhbnd [dofStartIndex+ivar] );
         }
       }
@@ -167,22 +167,21 @@ void kernels::aderdg::generic::surfaceIntegralYDirection(
   constexpr int numberOfFaceDof = 5 * (3+1) * (3+1);//numberOfVariables * tarch::la::aPowI(DIMENSIONS-1,basisSize);
   constexpr int order           = 3;
 
-  // access lduh(nDOF[3] x nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array manner
+  // access lduh(nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array manner
   typedef double tensor_t[3+1][3+1][5];
   tensor_t *lduh3D = (tensor_t *)lduh;
 
   // x direction (independent from the y and z)
-  for (int ii=0; ii<basisSize; ii++) { // loop over dof
-    for (int jj=0; jj<basisSize; jj++) { // loop over dof
-      const int nodeIndex     = ii + basisSize * jj;
+  for (int kk=0; kk<basisSize; kk++) {
+    for (int ii=0; ii<basisSize; ii++) {
+      const int nodeIndex     = ii + basisSize * kk; 
       const int dofStartIndex = nodeIndex * numberOfVariables;
 
-      double weight = kernels::gaussLegendreWeights[order][ii]*kernels::gaussLegendreWeights[order][jj];
+      double weight = kernels::gaussLegendreWeights[order][ii] * kernels::gaussLegendreWeights[order][kk];
 
       for(int mm=0; mm < basisSize; mm++) {
         for(int ivar=0; ivar < numberOfVariables; ivar++) {
-          // todo VV
-          lduh3D[ii][mm][jj][ivar] // direction dependent!
+          lduh3D[kk][mm][ii][ivar] // direction dependent! 
                          += updateSign * weight/area * ( kernels::FCoeff[order][facePosition][mm] * lFhbnd [dofStartIndex+ivar] );
         }
       }
@@ -199,29 +198,28 @@ void kernels::aderdg::generic::surfaceIntegralZDirection(
     const double updateSign, // -1 for "left" face, 1 for "right" face.
     const int numberOfVariables,
     const int basisSize
-) {
+)  {
   // @todo Angelika
   // Please remove the typedefs in generic kernels again since numberOf(...)Dof is not
   // a compile time variable anymore
   constexpr int numberOfFaceDof = 5 * (3+1) * (3+1);//numberOfVariables * tarch::la::aPowI(DIMENSIONS-1,basisSize);
   constexpr int order           = 3;
 
-  // access lduh(nDOF[3] x nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array manner
+  // access lduh(nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array manner
   typedef double tensor_t[3+1][3+1][5];
   tensor_t *lduh3D = (tensor_t *)lduh;
 
   // x direction (independent from the y and z)
-  for (int ii=0; ii<basisSize; ii++) { // loop over dof
-    for (int jj=0; jj<basisSize; jj++) { // loop over dof
-      const int nodeIndex     = ii + basisSize * jj;
+  for (int jj=0; jj<basisSize; jj++) {
+    for (int ii=0; ii<basisSize; ii++) {
+      const int nodeIndex     = ii + basisSize * jj; 
       const int dofStartIndex = nodeIndex * numberOfVariables;
 
-      double weight = kernels::gaussLegendreWeights[order][ii]*kernels::gaussLegendreWeights[order][jj];
+      double weight = kernels::gaussLegendreWeights[order][ii] * kernels::gaussLegendreWeights[order][jj];
 
       for(int mm=0; mm < basisSize; mm++) {
         for(int ivar=0; ivar < numberOfVariables; ivar++) {
-          // todo VV
-          lduh3D[ii][jj][mm][ivar] // direction dependent!
+          lduh3D[mm][jj][ii][ivar] // direction dependent! 
                          += updateSign * weight/area * ( kernels::FCoeff[order][facePosition][mm] * lFhbnd [dofStartIndex+ivar] );
         }
       }
