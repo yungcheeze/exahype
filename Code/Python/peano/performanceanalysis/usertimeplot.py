@@ -18,7 +18,7 @@ from plotting import scalingplot as sp
 :synopsis: Creates a speedup plot based on  Peano output files with specific file naming pattern.
 '''
 
-def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_counts,thread_counts,n_runs,cc,mode,ticks,ylim,per_iteration=False,hyperthreading=False,annotate=False,create_pdf=False):
+def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_counts,thread_counts,n_runs,cc,mode,xticks,yticks,ylim,per_iteration=False,hyperthreading=False,annotate=False,create_pdf=False):
     '''
     Creates a scaling plot for the cumulative user time spent within the 
     specified adapters.
@@ -42,6 +42,10 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
          Compiler.
       mode (str):
          Shared memory mode.
+      xticks (str[]):
+        The x-ticks.
+      yticks {str[]):
+        The y-ticks.
       ylim (float):
          Upper limit for the y-Axis.
       hyperthreading (bool):
@@ -106,14 +110,14 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
     p_ticks_filtered = p_ticks
     for ip in range(0,len(p_ticks)):
         if 'HT' not in p_ticks_filtered[ip]:
-            if p_ticks_filtered[ip] not in ticks:
+            if p_ticks_filtered[ip] not in xticks:
                 p_ticks_filtered[ip] = ''
     plt.xticks(p2,p_ticks_filtered)
 
     p_ideal_filtered = map(int,p_ideal)
     p_ideal_filtered = map(str,p_ideal_filtered)
     for ip in range(0,len(p_ideal)):
-       if p_ideal_filtered[ip] not in ticks:
+       if p_ideal_filtered[ip] not in yticks:
          p_ideal_filtered[ip] = ''
     plt.yticks(p_ideal,p_ideal_filtered)
 
@@ -163,7 +167,8 @@ parser.add_argument('-t',default=[1],nargs='+',required=True,help="Threads per M
 parser.add_argument('-r',default=1,help="Number of runs for all \'n\' and \'t\' combinations [default=1].")
 parser.add_argument('-cc',default='icpc',nargs='+',help="Compiler [default=\'icpc\']")
 parser.add_argument('-mode',default='TBB',nargs='+',help="Shared memory mode [default=\'TBB\']")
-parser.add_argument('-ticks',nargs='+',required=False,help="Ticks for the x- and y-axis.")
+parser.add_argument('-xticks',nargs='+',required=False,help="Ticks for the x-axis.")
+parser.add_argument('-yticks',nargs='+',required=False,help="Ticks for the y-axis.")
 parser.add_argument('-ylim',required=True,help="Upper limit for the y-axis.")
 parser.add_argument('-hyperthreading', action='store_true', default=False,help="The last thread count corresponds to a hyperthreading run.")
 parser.add_argument('-annotate', action='store_true', default=False,help="Annotate the plots with the speedup values.")
@@ -192,8 +197,11 @@ annotate       = args.annotate
 per_iteration  = args.per_iteration
 create_pdf     = args.create_pdf
 
-ticks          = args.ticks
-if args.ticks is None:
-    ticks=thread_counts
+xticks         = args.xticks
+if args.xticks is None:
+    xticks     =thread_counts
+yticks         = args.yticks
+if args.yticks is None:
+    yticks     =xticks
 
-plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapter,process_counts,thread_counts,n_runs,cc,mode,ticks,ylim,per_iteration,hyperthreading,annotate,create_pdf)
+plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapter,process_counts,thread_counts,n_runs,cc,mode,xticks,yticks,ylim,per_iteration,hyperthreading,annotate,create_pdf)
