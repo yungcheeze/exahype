@@ -4,6 +4,7 @@
 
 #include "peano/datatraversal/autotuning/Oracle.h"
 
+#include "exahype/timestepping/TimeSteppingSynchronization.h"
 
 #include "tarch/multicore/Loop.h"
 
@@ -362,59 +363,22 @@ void exahype::mappings::NewTimeStep::enterCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  // We want to run this in parallel
-  //
-  for (
-      ADERDGCellDescriptionHeap::HeapEntries::iterator p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
-      p != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
-      p++
-  ) {
-    /*
   const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size();
   const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined0; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
   const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
   pfor(i,0,numberOfADERDGCellDescriptions,grainSize)
+    // todo ugly
     // This is not beautiful and should be replaced by a reference next. I just
     // use it to mirror the aforementioned realisation. Dominic, please change
     // successively to a simpler scheme with just references. Pointers are
     // ugly.
     records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i]);
-
-     */
     const exahype::solvers::Solve& solve = _localState.getSolveRegistry()[ p->getSolveNumber() ];
 
-    if (solve.getTimeStepping()==exahype::solvers::Solve::GLOBAL) {
-      p->setCorrectorTimeStamp   (solve.getCorrectorTimeStamp   ());
-      p->setCorrectorTimeStepSize(solve.getCorrectorTimeStepSize());
-      p->setPredictorTimeStamp   (solve.getPredictorTimeStamp   ());
-      p->setPredictorTimeStepSize(solve.getPredictorTimeStepSize());
-
-      assertionNumericalEquals1(p->getCorrectorTimeStamp()   ,solve.getCorrectorTimeStamp(),   1e-12); // todo precision
-      assertionNumericalEquals1(p->getCorrectorTimeStepSize(),solve.getCorrectorTimeStepSize(),1e-12);
-      assertionNumericalEquals1(p->getPredictorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12);
-      assertionNumericalEquals1(p->getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
-    }
-    if (!solve.isCorrectorTimeLagging()) {
-      p->setCorrectorTimeStamp   (p->getPredictorTimeStamp   ());
-      p->setCorrectorTimeStepSize(p->getPredictorTimeStepSize());
-    }
-
-#if defined(Debug) || defined(Asserts)
-    if (solve.getTimeStepping()==exahype::solvers::Solve::GLOBAL && !solve.isCorrectorTimeLagging()) {
-      // Note that the solve time stamps and time step sizes are not modified if corrector time lagging
-      // is deactivated. Thus, solve.getPredictor... and solve.getCorrector... are not the same in general
-      // for any value of solve->isCorrectorTimeLagging().
-      assertionNumericalEquals1(p->getPredictorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12); // todo precision
-      assertionNumericalEquals1(p->getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
-      assertionNumericalEquals1(p->getCorrectorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12);
-      assertionNumericalEquals1(p->getCorrectorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
-    }
-#endif
-    //  endpfor
-    //  peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
-  }
+    timestepping::synchroniseTimeStepping(solve,*p);
+  endpfor
+  peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
 }
-
 
 void exahype::mappings::NewTimeStep::leaveCell(
       exahype::Cell&           fineGridCell,

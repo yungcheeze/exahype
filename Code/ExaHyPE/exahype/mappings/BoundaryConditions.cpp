@@ -11,6 +11,8 @@
 #include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
+#include "exahype/timestepping/TimeSteppingSynchronization.h"
+
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
@@ -489,18 +491,17 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       double * Qhbnd = &(DataHeap::getInstance().getData(p->getExtrapolatedPredictor())[faceIndex * numberOfFaceDof]._persistentRecords._u);
       double * Fhbnd = &(DataHeap::getInstance().getData(p->getFluctuation())          [faceIndex * numberOfFaceDof]._persistentRecords._u);
 
-      // todo Dominic Charrier
-      // Do not solve a Riemann problem here:
-      // Invoke user defined boundary condition function
-      // At the moment, we simply copy the cell solution to the boundary.
-
-      synchroniseTimeStepping(*p);
+      timestepping::synchroniseTimeStepping(solve,*p);
 
       logDebug("touchVertexLastTime(...)::debug::before::dt_min(previous ) of State*",_localState.getPreviousMinTimeStepSize());
       logDebug("touchVertexLastTime(...)::debug::before::dt_min(corrector) of Solve*",solve.getCorrectorTimeStepSize());
       logDebug("touchVertexLastTime(...)::debug::before::Qhbnd[0]*",Qhbnd[0]);
       logDebug("touchVertexLastTime(...)::debug::before::Fhbnd[0]",Fhbnd[0]);
 
+      // todo Dominic Charrier
+      // Do not solve a Riemann problem here:
+      // Invoke user defined boundary condition function
+      // At the moment, we simply copy the cell solution to the boundary.
       solver->riemannSolver(
           Fhbnd,
           Fhbnd,
@@ -514,37 +515,6 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
     }
   endpfor
   peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
-}
-
-void exahype::mappings::BoundaryConditions::synchroniseTimeStepping(records::ADERDGCellDescription& p) {
-  const exahype::solvers::Solve& solve = _localState.getSolveRegistry()[ p.getSolveNumber() ];
-  if (solve.getTimeStepping()==exahype::solvers::Solve::GLOBAL) {
-    p.setCorrectorTimeStamp   (solve.getCorrectorTimeStamp   ());
-    p.setCorrectorTimeStepSize(solve.getCorrectorTimeStepSize());
-    p.setPredictorTimeStamp   (solve.getPredictorTimeStamp   ());
-    p.setPredictorTimeStepSize(solve.getPredictorTimeStepSize());
-
-    assertionNumericalEquals1(p.getCorrectorTimeStamp()   ,solve.getCorrectorTimeStamp(),   1e-12); // todo precision
-    assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solve.getCorrectorTimeStepSize(),1e-12);
-    assertionNumericalEquals1(p.getPredictorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12);
-    assertionNumericalEquals1(p.getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
-  }
-  if (!solve.isCorrectorTimeLagging()) {
-    p.setCorrectorTimeStamp   (p.getPredictorTimeStamp   ());
-    p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
-  }
-
-#if defined(Debug) || defined(Asserts)
-  if (solve.getTimeStepping()==exahype::solvers::Solve::GLOBAL && !solve.isCorrectorTimeLagging()) {
-    // Note that the solve time stamps and time step sizes are not modified if corrector time lagging
-    // is deactivated. Thus, solve.getPredictor... and solve.getCorrector... are not the same in general
-    // for any value of solve.isCorrectorTimeLagging().
-    assertionNumericalEquals1(p.getPredictorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12); // todo precision
-    assertionNumericalEquals1(p.getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
-    assertionNumericalEquals1(p.getCorrectorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12);
-    assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
-  }
-#endif
 }
 
 void exahype::mappings::BoundaryConditions::touchVertexLastTime(

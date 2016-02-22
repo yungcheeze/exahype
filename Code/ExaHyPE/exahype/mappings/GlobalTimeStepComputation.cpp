@@ -400,27 +400,10 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
     solve.updateNextPredictorTimeStepSize(admissibleTimeStepSize);
     _localState.updateNextMinTimeStepSize(admissibleTimeStepSize);
 
-
-#if defined(Debug) || defined(Asserts)
-    if (
-        tarch::la::smallerEquals(solve.getNextPredictorTimeStepSize(),p->getPredictorTimeStepSize(),1e12)
-   ) {
-      logError("enterCell(...)","(p->getPredictorTimeStepSize() - solve.getNextPredictorTimeStepSize()) <= 1e-12");
-      logError("enterCell(...)","p->getPredictorTimeStepSize()" <<  p->getPredictorTimeStepSize());
-      logError("enterCell(...)","solve.getNextPredictorTimeStepSize()" <<  solve.getNextPredictorTimeStepSize());
-      exit(1);
-    }
-    if (
-        tarch::la::smallerEquals(_localState.getNextMinTimeStepSize(),solve.getNextPredictorTimeStepSize(),1e12)
-    ) {
-      logError("enterCell(...)","(solve->getPredictorTimeStepSize() - _localState.getNextMinTimeStepSize()) <= 1e-12");
-      logError("enterCell(...)","solve.getPredictorTimeStepSize()" <<  solve.getNextPredictorTimeStepSize());
-      logError("enterCell(...)","_localState.getNextMinTimeStepSize()" <<  _localState.getNextMinTimeStepSize());
-      exit(1);
-    }
-#endif
-   endpfor
-   peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
+    assertion(tarch::la::smallerEquals(solve.getNextPredictorTimeStepSize(),p->getPredictorTimeStepSize(),1e12));
+    assertion(tarch::la::smallerEquals(_localState.getNextMinTimeStepSize(),solve.getNextPredictorTimeStepSize(),1e12));
+  endpfor
+  peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
