@@ -2,10 +2,10 @@
 Copy the bash scripts in the application folder
 
 2. Running the scripts:
-On the command line, execute.
+On the command line, execute:
+
 source config_<project>
-source params_<system_id>
-./job_scheduler.sh
+BASH_ENV=params_<system_id> ./job_scheduler.sh
 
 Example for euler2d on Haswell: 
 source config_eulerflow2d
