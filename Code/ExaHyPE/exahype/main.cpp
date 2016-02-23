@@ -1,6 +1,7 @@
 #include "tarch/logging/Log.h"
 #include "tarch/tests/TestCaseRegistry.h"
 #include "tarch/logging/CommandLineLogger.h"
+#include "tarch/logging/LogFilterFileReader.h"
 #include "tarch/parallel/Node.h"
 
 #include "peano/peano.h"
@@ -71,14 +72,40 @@ int main(int argc, char** argv) {
   kernels::initDGMatrices();
 
   //
-  //   Run tests
-  // =============
+  //   Configure the logging
+  // =========================
   //
   tarch::logging::CommandLineLogger::getInstance().clearFilterList();
-  tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "info", false ) );
-  tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "info", -1, "peano::grid", true ) );
-  tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "debug", true ) );
-  tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "debug", -1, "exahype", false ) );
+  #ifdef Parallel
+  tarch::logging::CommandLineLogger::getInstance().setLogFormat(
+    " ",              // columnSeparator
+    true,             // logTimeStamp
+    false,            // logTimeStampHumanReadable
+    true,             // logMachineName
+    true,             // logMessageType
+    true,             // logTrace
+    "exahype.log-file"
+  );
+  #else
+  tarch::logging::CommandLineLogger::getInstance().setLogFormat(
+    " ",              // columnSeparator
+    true,             // logTimeStamp
+    false,            // logTimeStampHumanReadable
+    false,            // logMachineName
+    true,             // logMessageType
+    true,             // logTrace
+    "exahype.log-file"
+  );
+  #endif
+
+  tarch::logging::CommandLineLogger::getInstance().clearFilterList();
+  if (!tarch::logging::LogFilterFileReader::parsePlainTextFile( "exahype.log-filter" )) {
+    tarch::logging::CommandLineLogger::getInstance().clearFilterList();
+    tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "info", false ) );
+    tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "info", -1, "peano::grid", true ) );
+    tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "debug", true ) );
+    tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "debug", -1, "exahype", false ) );
+  }
 
   //
   //   Run tests
