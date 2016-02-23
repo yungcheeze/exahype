@@ -323,7 +323,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("\n\n\n");
         writer.write( "void " + _projectName + "::" + solverName + "::spaceTimePredictor( double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {\n");
         writer.write("   kernels::aderdg::optimised::picardLoop<flux>( lQi, lFi, luh, dx, dt );\n");
-        writer.write("   kernels::aderdg::optimised::predictor<flux>( lQhi, lFhi, lQi, lFi );\n");
+        writer.write("   kernels::aderdg::optimised::predictor( lQhi, lFhi, lQi, lFi );\n");
         writer.write("   kernels::aderdg::optimised::extrapolator( lQhbnd, lFhbnd, lQhi, lFhi );\n");
         writer.write("}\n");
         writer.write("\n\n\n");
