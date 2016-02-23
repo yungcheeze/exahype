@@ -30,16 +30,18 @@ void exahype::tests::GenericEulerKernelTest::run() {
 #if DIMENSIONS == 2
   testMethod( testPDEFluxes2d );
 
+  testMethod( testSpaceTimePredictor2d );
   testMethod( testVolumeIntegral2d );
   testMethod( testRiemannSolver2d );
   testMethod( testSurfaceIntegral2d );
-  testMethod( testSolutionUpdate2d     );
 
-  testMethod( testSpaceTimePredictor2d );
+  testMethod( testSolutionUpdate2d );
+
 
 #elif DIMENSIONS == 3
   testMethod( testPDEFluxes3d );
 
+  testMethod( testSpaceTimePredictor3d );
   testMethod( testVolumeIntegral3d );
   testMethod( testSurfaceIntegral3d );
   testMethod( testSolutionUpdate3d );
@@ -898,9 +900,6 @@ void exahype::tests::GenericEulerKernelTest::testSpaceTimePredictor2d() {
   // local:
   double *lQi = new double[320]; // space-time DOF
   double *lFi = new double[640];
-  double *rhs0 = new double[320];
-  double *rhs  = new double[320];
-  double *tmp  = new double[20];
 
   // output:
   double *lQhi = new double[80];
@@ -1346,14 +1345,10 @@ void exahype::tests::GenericEulerKernelTest::testSpaceTimePredictor2d() {
   delete[] luh;
   delete[] lQi;
   delete[] lFi;
-  delete[] rhs0;
-  delete[] rhs;
-  delete[] tmp;
   delete[] lQhi;
   delete[] lFhi;
   delete[] lQhbnd;
   delete[] lFhbnd;
-  //  #endif
 } // testSpaceTimePredictor2d
 
 #elif DIMENSIONS == 3
@@ -2468,6 +2463,371 @@ void exahype::tests::GenericEulerKernelTest::testSolutionUpdate3d() {
   delete[] luh;
   delete[] lduh;
 } // testSolutionUpdate3d
+
+void exahype::tests::GenericEulerKernelTest::testSpaceTimePredictor3d() {
+  cout << "Test space time predictor, ORDER=3, DIM=3" << endl;
+
+  // inputs:
+  double *luh = new double[320]();  // nVar * nDOFx * nDOFy * nDOFz
+  for(int i=0; i<320; i+=5) {
+    luh[i]   = 1.0;
+    luh[i+4] = 2.5;
+  }
+
+  const double dx[3]        = {0.5, 0.5, 0.5};
+  const double timeStepSize = 1.267423918681417E-002;
+
+  // local:
+  double *lQi = new double[1280]; // nVar * nDOFx * nDOFy * nDOFz * nDOFt
+  double *lFi = new double[3840]; // nVar * nDOFx * nDOFy * nDOFz * nDOFt * dim
+
+  // outputs:
+  double *lQhi = new double[320]; // intentionally left uninitialised
+  double *lFhi = new double[960]; // nVar * nDOFx * nDOFy * nDOFz * dim
+  double *lQhbnd = new double[480];
+  double *lFhbnd = new double[480];
+
+  kernels::aderdg::generic::spaceTimePredictor<testFlux>(lQi,
+                                                         lFi,
+                                                         lQhi,
+                                                         lFhi,
+                                                         lQhbnd,
+                                                         lFhbnd,
+                                                         luh,
+                                                         dx[0],
+                                                         timeStepSize,
+                                                         5,
+                                                         4);
+
+  validateNumericalEqualsWithEps(lQhi[  0],   1.00000000000000, eps);
+  validateNumericalEqualsWithEps(lQhi[  1], -1.414141237833126E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[  2], -1.414141237833126E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[  3], -1.414141237833126E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[  4],   2.50000000000000, eps);
+  validateNumericalEqualsWithEps(lQhi[  5],  0.999999999999999, eps);
+  validateNumericalEqualsWithEps(lQhi[  6],  7.894747169082205E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[  7],  7.097293679172628E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[  8],  6.854058887336607E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[  9],   2.50000000000000, eps);
+  validateNumericalEqualsWithEps(lQhi[ 10],   1.00000000000404, eps);
+  validateNumericalEqualsWithEps(lQhi[ 11], -1.791597497058318E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[ 12],  3.616499155633637E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[ 13],  3.616497512774846E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[ 14],   2.50000000001415, eps);
+  validateNumericalEqualsWithEps(lQhi[ 15],   1.00000000073606, eps);
+  validateNumericalEqualsWithEps(lQhi[ 16], -7.963444839796136E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[ 17],  6.582230193856691E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[ 18],  6.582230193856691E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[ 19],   2.50000000257622, eps);
+  validateNumericalEqualsWithEps(lQhi[ 20],  0.999999999999999, eps);
+  validateNumericalEqualsWithEps(lQhi[ 21],  7.097293679172628E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[ 22],  7.894747169082205E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[ 23],  6.854058887336607E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[ 24],   2.50000000000000, eps);
+  validateNumericalEqualsWithEps(lQhi[ 25],  0.999999999999999, eps);
+  validateNumericalEqualsWithEps(lQhi[ 26], -3.932917960690441E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[ 27], -3.932917960690441E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[ 28], -4.505618621848862E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[ 29],   2.50000000000000, eps);
+  validateNumericalEqualsWithEps(lQhi[ 30],   1.00000000000036, eps);
+  validateNumericalEqualsWithEps(lQhi[ 31],  9.375378778749026E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[ 32], -2.037662069333642E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[ 33],  3.195038267061962E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[ 34],   2.50000000000125, eps);
+  validateNumericalEqualsWithEps(lQhi[ 35],   1.00000000006495, eps);
+  validateNumericalEqualsWithEps(lQhi[ 36],  4.076092249207785E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[ 37], -3.708646277639238E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[ 38],  5.826266001045470E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[ 39],   2.50000000022734, eps);
+  validateNumericalEqualsWithEps(lQhi[ 40],   1.00000000000404, eps);
+  validateNumericalEqualsWithEps(lQhi[ 41],  3.616499155633637E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[ 42], -1.791597497058318E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[ 43],  3.616497512774845E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[ 44],   2.50000000001415, eps);
+  validateNumericalEqualsWithEps(lQhi[ 45],   1.00000000000036, eps);
+  validateNumericalEqualsWithEps(lQhi[ 46], -2.037662069333642E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[ 47],  9.375378778749026E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[ 48],  3.195038267061962E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[ 49],   2.50000000000125, eps);
+  validateNumericalEqualsWithEps(lQhi[ 50],  0.999999999971419, eps);
+  validateNumericalEqualsWithEps(lQhi[ 51],  4.827998526952449E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[ 52],  4.827998526952449E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[ 53], -2.914572905624160E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[ 54],   2.49999999989997, eps);
+  validateNumericalEqualsWithEps(lQhi[ 55],  0.999999995599626, eps);
+  validateNumericalEqualsWithEps(lQhi[ 56],  2.100642966191235E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[ 57],  8.787216777076569E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[ 58], -4.588392225714331E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[ 59],   2.49999998459872, eps);
+  validateNumericalEqualsWithEps(lQhi[ 60],   1.00000000073606, eps);
+  validateNumericalEqualsWithEps(lQhi[ 61],  6.582230193856691E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[ 62], -7.963444839796136E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[ 63],  6.582230193856691E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[ 64],   2.50000000257622, eps);
+  validateNumericalEqualsWithEps(lQhi[ 65],   1.00000000006495, eps);
+  validateNumericalEqualsWithEps(lQhi[ 66], -3.708646277639238E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[ 67],  4.076092249207785E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[ 68],  5.826266001045472E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[ 69],   2.50000000022734, eps);
+  validateNumericalEqualsWithEps(lQhi[ 70],  0.999999995599626, eps);
+  validateNumericalEqualsWithEps(lQhi[ 71],  8.787216777076569E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[ 72],  2.100642966191235E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[ 73], -4.588392225714332E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[ 74],   2.49999998459872, eps);
+  validateNumericalEqualsWithEps(lQhi[ 75],  0.999999344957882, eps);
+  validateNumericalEqualsWithEps(lQhi[ 76],  3.821674127025651E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[ 77],  3.821674127025651E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[ 78], -7.046017399846969E-006, eps);
+  validateNumericalEqualsWithEps(lQhi[ 79],   2.49999770803073, eps);
+  validateNumericalEqualsWithEps(lQhi[ 80],  0.999999999999999, eps);
+  validateNumericalEqualsWithEps(lQhi[ 81],  6.854058887335334E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[ 82],  6.854058887335334E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[ 83],  7.894747169090295E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[ 84],   2.50000000000000, eps);
+  validateNumericalEqualsWithEps(lQhi[ 85],  0.999999999999999, eps);
+  validateNumericalEqualsWithEps(lQhi[ 86], -3.976071642233816E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[ 87], -4.313566299799716E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[ 88], -3.976071642233817E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[ 89],   2.50000000000000, eps);
+  validateNumericalEqualsWithEps(lQhi[ 90],   1.00000000000036, eps);
+  validateNumericalEqualsWithEps(lQhi[ 91],  9.426038068902498E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[ 92],  3.195060417854131E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[ 93], -2.037663110536551E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[ 94],   2.50000000000125, eps);
+  validateNumericalEqualsWithEps(lQhi[ 95],   1.00000000006495, eps);
+  validateNumericalEqualsWithEps(lQhi[ 96],  4.104580322429802E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[ 97],  5.826266001045470E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[ 98], -3.708646277639238E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[ 99],   2.50000000022734, eps);
+  validateNumericalEqualsWithEps(lQhi[100],  0.999999999999999, eps);
+  validateNumericalEqualsWithEps(lQhi[101], -4.313566299799716E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[102], -3.976071642233816E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[103], -3.976071642233816E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[104],   2.50000000000000, eps);
+  validateNumericalEqualsWithEps(lQhi[105],  0.999999999999999, eps);
+  validateNumericalEqualsWithEps(lQhi[106],  2.473634687775540E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[107],  2.473634687775540E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[108],  2.413438662141627E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[109],   2.50000000000000, eps);
+  validateNumericalEqualsWithEps(lQhi[110],   1.00000000000003, eps);
+  validateNumericalEqualsWithEps(lQhi[111], -5.385486860859148E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[112], -1.800209414722620E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[113], -1.800214683764325E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[114],   2.50000000000011, eps);
+  validateNumericalEqualsWithEps(lQhi[115],   1.00000000000581, eps);
+  validateNumericalEqualsWithEps(lQhi[116], -2.426732560887566E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[117], -3.282805690423648E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[118], -3.282805690423648E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[119],   2.50000000002035, eps);
+  validateNumericalEqualsWithEps(lQhi[120],   1.00000000000036, eps);
+  validateNumericalEqualsWithEps(lQhi[121],  3.195060417854131E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[122],  9.426038068902498E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[123], -2.037663110536551E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[124],   2.50000000000125, eps);
+  validateNumericalEqualsWithEps(lQhi[125],   1.00000000000003, eps);
+  validateNumericalEqualsWithEps(lQhi[126], -1.800209414722620E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[127], -5.385486860859148E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[128], -1.800214683764325E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[129],   2.50000000000011, eps);
+  validateNumericalEqualsWithEps(lQhi[130],  0.999999999997475, eps);
+  validateNumericalEqualsWithEps(lQhi[131],  4.265359574328905E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[132],  4.265359574328905E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[133],  1.632624660439792E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[134],   2.49999999999116, eps);
+  validateNumericalEqualsWithEps(lQhi[135],  0.999999999611136, eps);
+  validateNumericalEqualsWithEps(lQhi[136],  1.855888231163553E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[137],  7.777980116289355E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[138],  2.567881132636929E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[139],   2.49999999863897, eps);
+  validateNumericalEqualsWithEps(lQhi[140],   1.00000000006495, eps);
+  validateNumericalEqualsWithEps(lQhi[141],  5.826266001045470E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[142],  4.104580322429802E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[143], -3.708646277639238E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[144],   2.50000000022734, eps);
+  validateNumericalEqualsWithEps(lQhi[145],   1.00000000000581, eps);
+  validateNumericalEqualsWithEps(lQhi[146], -3.282805690423648E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[147], -2.426732560887566E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[148], -3.282805690423648E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[149],   2.50000000002035, eps);
+  validateNumericalEqualsWithEps(lQhi[150],  0.999999999611136, eps);
+  validateNumericalEqualsWithEps(lQhi[151],  7.777980116289355E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[152],  1.855888231163553E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[153],  2.567881132636929E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[154],   2.49999999863897, eps);
+  validateNumericalEqualsWithEps(lQhi[155],  0.999999942148407, eps);
+  validateNumericalEqualsWithEps(lQhi[156],  3.393356629476107E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[157],  3.393356629476107E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[158],  3.938343021564507E-006, eps);
+  validateNumericalEqualsWithEps(lQhi[159],   2.49999979713652, eps);
+  validateNumericalEqualsWithEps(lQhi[160],   1.00000000000404, eps);
+  validateNumericalEqualsWithEps(lQhi[161],  3.616497512774846E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[162],  3.616497512774846E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[163], -1.791597497060163E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[164],   2.50000000001415, eps);
+  validateNumericalEqualsWithEps(lQhi[165],   1.00000000000036, eps);
+  validateNumericalEqualsWithEps(lQhi[166], -2.037663110536551E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[167],  3.195060417854131E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[168],  9.426038068902514E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[169],   2.50000000000125, eps);
+  validateNumericalEqualsWithEps(lQhi[170],  0.999999999971419, eps);
+  validateNumericalEqualsWithEps(lQhi[171],  4.827998987108949E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[172], -2.914572605977133E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[173],  4.827998987108951E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[174],   2.49999999989997, eps);
+  validateNumericalEqualsWithEps(lQhi[175],  0.999999995599626, eps);
+  validateNumericalEqualsWithEps(lQhi[176],  2.100643343231989E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[177], -4.588392225714332E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[178],  8.787216777076569E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[179],   2.49999998459872, eps);
+  validateNumericalEqualsWithEps(lQhi[180],   1.00000000000036, eps);
+  validateNumericalEqualsWithEps(lQhi[181],  3.195060417854131E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[182], -2.037663110536551E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[183],  9.426038068902512E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[184],   2.50000000000125, eps);
+  validateNumericalEqualsWithEps(lQhi[185],   1.00000000000003, eps);
+  validateNumericalEqualsWithEps(lQhi[186], -1.800209414722622E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[187], -1.800209414722622E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[188], -5.323477994960536E-016, eps);
+  validateNumericalEqualsWithEps(lQhi[189],   2.50000000000011, eps);
+  validateNumericalEqualsWithEps(lQhi[190],  0.999999999997475, eps);
+  validateNumericalEqualsWithEps(lQhi[191],  4.265359574328913E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[192],  1.632624775359611E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[193],  4.265363575645746E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[194],   2.49999999999116, eps);
+  validateNumericalEqualsWithEps(lQhi[195],  0.999999999611136, eps);
+  validateNumericalEqualsWithEps(lQhi[196],  1.855888231163545E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[197],  2.567881132636929E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[198],  7.777980116289355E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[199],   2.49999999863897, eps);
+  validateNumericalEqualsWithEps(lQhi[200],  0.999999999971419, eps);
+  validateNumericalEqualsWithEps(lQhi[201], -2.914572605977133E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[202],  4.827998987108949E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[203],  4.827998987108949E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[204],   2.49999999989997, eps);
+  validateNumericalEqualsWithEps(lQhi[205],  0.999999999997475, eps);
+  validateNumericalEqualsWithEps(lQhi[206],  1.632624775359611E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[207],  4.265359574328913E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[208],  4.265363575645746E-012, eps);
+  validateNumericalEqualsWithEps(lQhi[209],   2.49999999999116, eps);
+  validateNumericalEqualsWithEps(lQhi[210],   1.00000000007971, eps);
+  validateNumericalEqualsWithEps(lQhi[211], -3.888880868711050E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[212], -3.888880868711050E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[213], -3.888880778700033E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[214],   2.50000000048004, eps);
+  validateNumericalEqualsWithEps(lQhi[215],   1.00000000883935, eps);
+  validateNumericalEqualsWithEps(lQhi[216], -1.689998415271273E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[217], -6.121736833880259E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[218], -6.121736833880259E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[219],   2.50000006754103, eps);
+  validateNumericalEqualsWithEps(lQhi[220],  0.999999995599626, eps);
+  validateNumericalEqualsWithEps(lQhi[221], -4.588392225714332E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[222],  2.100643343231989E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[223],  8.787216777076569E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[224],   2.49999998459872, eps);
+  validateNumericalEqualsWithEps(lQhi[225],  0.999999999611136, eps);
+  validateNumericalEqualsWithEps(lQhi[226],  2.567881132636929E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[227],  1.855888231163545E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[228],  7.777980116289357E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[229],   2.49999999863897, eps);
+  validateNumericalEqualsWithEps(lQhi[230],   1.00000000883935, eps);
+  validateNumericalEqualsWithEps(lQhi[231], -6.121736833880259E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[232], -1.689998415271273E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[233], -6.121736833880260E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[234],   2.50000006754103, eps);
+  validateNumericalEqualsWithEps(lQhi[235],   1.00000073576163, eps);
+  validateNumericalEqualsWithEps(lQhi[236], -2.660040759753038E-007, eps);
+  validateNumericalEqualsWithEps(lQhi[237], -2.660040759753038E-007, eps);
+  validateNumericalEqualsWithEps(lQhi[238], -9.399638578227751E-006, eps);
+  validateNumericalEqualsWithEps(lQhi[239],   2.50000923962373, eps);
+  validateNumericalEqualsWithEps(lQhi[240],   1.00000000073606, eps);
+  validateNumericalEqualsWithEps(lQhi[241],  6.582230193856691E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[242],  6.582230193856691E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[243], -7.963444839782563E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[244],   2.50000000257622, eps);
+  validateNumericalEqualsWithEps(lQhi[245],   1.00000000006495, eps);
+  validateNumericalEqualsWithEps(lQhi[246], -3.708646277639238E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[247],  5.826266219519660E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[248],  4.104580322430626E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[249],   2.50000000022734, eps);
+  validateNumericalEqualsWithEps(lQhi[250],  0.999999995599626, eps);
+  validateNumericalEqualsWithEps(lQhi[251],  8.787216777076565E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[252], -4.588392226698902E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[253],  2.100643343231988E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[254],   2.49999998459872, eps);
+  validateNumericalEqualsWithEps(lQhi[255],  0.999999344957882, eps);
+  validateNumericalEqualsWithEps(lQhi[256],  3.821674127025653E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[257], -7.046017399846969E-006, eps);
+  validateNumericalEqualsWithEps(lQhi[258],  3.821674127025651E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[259],   2.49999770803073, eps);
+  validateNumericalEqualsWithEps(lQhi[260],   1.00000000006495, eps);
+  validateNumericalEqualsWithEps(lQhi[261],  5.826266219519660E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[262], -3.708646277639238E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[263],  4.104580322430626E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[264],   2.50000000022734, eps);
+  validateNumericalEqualsWithEps(lQhi[265],   1.00000000000581, eps);
+  validateNumericalEqualsWithEps(lQhi[266], -3.282805657394961E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[267], -3.282805657394961E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[268], -2.410551981704859E-015, eps);
+  validateNumericalEqualsWithEps(lQhi[269],   2.50000000002035, eps);
+  validateNumericalEqualsWithEps(lQhi[270],  0.999999999611136, eps);
+  validateNumericalEqualsWithEps(lQhi[271],  7.777980037068766E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[272],  2.567881133874299E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[273],  1.855888762602564E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[274],   2.49999999863897, eps);
+  validateNumericalEqualsWithEps(lQhi[275],  0.999999942148407, eps);
+  validateNumericalEqualsWithEps(lQhi[276],  3.393356617482706E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[277],  3.938343021564507E-006, eps);
+  validateNumericalEqualsWithEps(lQhi[278],  3.393356629476108E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[279],   2.49999979713652, eps);
+  validateNumericalEqualsWithEps(lQhi[280],  0.999999995599626, eps);
+  validateNumericalEqualsWithEps(lQhi[281], -4.588392226698902E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[282],  8.787216777076565E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[283],  2.100643343231987E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[284],   2.49999998459872, eps);
+  validateNumericalEqualsWithEps(lQhi[285],  0.999999999611136, eps);
+  validateNumericalEqualsWithEps(lQhi[286],  2.567881133874299E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[287],  7.777980037068766E-010, eps);
+  validateNumericalEqualsWithEps(lQhi[288],  1.855888762602564E-011, eps);
+  validateNumericalEqualsWithEps(lQhi[289],   2.49999999863897, eps);
+  validateNumericalEqualsWithEps(lQhi[290],   1.00000000883935, eps);
+  validateNumericalEqualsWithEps(lQhi[291], -6.121736833946936E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[292], -6.121736833946936E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[293], -1.689998381468809E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[294],   2.50000006754103, eps);
+  validateNumericalEqualsWithEps(lQhi[295],   1.00000073576163, eps);
+  validateNumericalEqualsWithEps(lQhi[296], -2.660040760111474E-007, eps);
+  validateNumericalEqualsWithEps(lQhi[297], -9.399638578227751E-006, eps);
+  validateNumericalEqualsWithEps(lQhi[298], -2.660040759753038E-007, eps);
+  validateNumericalEqualsWithEps(lQhi[299],   2.50000923962373, eps);
+  validateNumericalEqualsWithEps(lQhi[300],  0.999999344957882, eps);
+  validateNumericalEqualsWithEps(lQhi[301], -7.046017399846969E-006, eps);
+  validateNumericalEqualsWithEps(lQhi[302],  3.821674127025653E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[303],  3.821674127025651E-008, eps);
+  validateNumericalEqualsWithEps(lQhi[304],   2.49999770803073, eps);
+  validateNumericalEqualsWithEps(lQhi[305],  0.999999942148407, eps);
+  validateNumericalEqualsWithEps(lQhi[306],  3.938343021564507E-006, eps);
+  validateNumericalEqualsWithEps(lQhi[307],  3.393356617482706E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[308],  3.393356629476108E-009, eps);
+  validateNumericalEqualsWithEps(lQhi[309],   2.49999979713652, eps);
+  validateNumericalEqualsWithEps(lQhi[310],   1.00000073576163, eps);
+  validateNumericalEqualsWithEps(lQhi[311], -9.399638578227751E-006, eps);
+  validateNumericalEqualsWithEps(lQhi[312], -2.660040760111474E-007, eps);
+  validateNumericalEqualsWithEps(lQhi[313], -2.660040759753039E-007, eps);
+  validateNumericalEqualsWithEps(lQhi[314],   2.50000923962373, eps);
+  validateNumericalEqualsWithEps(lQhi[315],   1.00000394662192, eps);
+  validateNumericalEqualsWithEps(lQhi[316], -4.082991169596664E-005, eps);
+  validateNumericalEqualsWithEps(lQhi[317], -4.082991169596664E-005, eps);
+  validateNumericalEqualsWithEps(lQhi[318], -4.082991169596665E-005, eps);
+  validateNumericalEqualsWithEps(lQhi[319],   2.50122691822917, eps);
+
+  delete[] luh;
+  delete[] lQi;
+  delete[] lFi;
+  delete[] lFhi;
+  delete[] lQhi;
+  delete[] lQhbnd;
+  delete[] lFhbnd;
+} // testSpaceTimePredictor3d
 
 #endif // DIMENSIONS==3
 

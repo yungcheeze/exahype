@@ -28,6 +28,7 @@ class exahype::tests::GenericEulerKernelTest: public tarch::tests::TestCase {
     void testSolutionUpdate2d();
 
     void testPDEFluxes3d();
+    void testSpaceTimePredictor3d();
     void testVolumeIntegral3d();
     void testSurfaceIntegral3d();
     void testSolutionUpdate3d();
