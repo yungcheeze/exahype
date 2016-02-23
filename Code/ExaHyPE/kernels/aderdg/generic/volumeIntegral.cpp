@@ -170,7 +170,7 @@ void kernels::aderdg::generic::volumeIntegral(
           // lFhi_z[nDOF_x][nDOF_y][nDOF_z][nVar]
           // lFhi_z[(ii*basisSize*basisSize+basisSize*jj+mm)+ivar]
           for(int ivar=0; ivar < numberOfVariables; ivar++) {
-            lduh3D[kk][jj][ii][ivar] += weight/dx[2] * kernels::Kxi[order][jj][mm] * lFhi_z[mmNodeIndex+ivar]; 
+            lduh3D[kk][jj][ii][ivar] += weight/dx[2] * kernels::Kxi[order][kk][mm] * lFhi_z[mmNodeIndex+ivar]; 
           }
         }
       }
