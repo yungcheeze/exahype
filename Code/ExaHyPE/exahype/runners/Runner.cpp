@@ -4,6 +4,7 @@
 
 
 #include "tarch/Assertions.h"
+#include "tarch/logging/CommandLineLogger.h"
 #include "tarch/parallel/Node.h"
 #include "tarch/parallel/NodePool.h"
 #include "tarch/multicore/Core.h"
