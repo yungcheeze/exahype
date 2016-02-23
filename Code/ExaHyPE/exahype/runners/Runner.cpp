@@ -298,6 +298,8 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     */
     repository.getState().startNewTimeStep();
 
+    tarch::logging::CommandLineLogger::getInstance().closeOutputStreamAndReopenNewOne();
+
     logInfo(
         "runAsMaster(...)",
         "step " << n <<
