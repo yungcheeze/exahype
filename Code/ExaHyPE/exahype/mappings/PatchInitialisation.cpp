@@ -1,5 +1,8 @@
 #include "exahype/mappings/PatchInitialisation.h"
 
+#include "exahype/solvers/Solve.h"
+#include "exahype/solvers/Solver.h"
+
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -9,41 +12,20 @@ peano::CommunicationSpecification   exahype::mappings::PatchInitialisation::comm
 }
 
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::PatchInitialisation::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::PatchInitialisation::touchVertexFirstTimeSpecification() { 
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::PatchInitialisation::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::OnlyLeaves,peano::MappingSpecification::Serial);
+  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::Serial);
 }
 
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::PatchInitialisation::leaveCellSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::PatchInitialisation::ascendSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
@@ -348,13 +330,13 @@ void exahype::mappings::PatchInitialisation::touchVertexLastTime(
 
 
 void exahype::mappings::PatchInitialisation::enterCell(
-      exahype::Cell&                 fineGridCell,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+  exahype::Cell&                 fineGridCell,
+  exahype::Vertex * const        fineGridVertices,
+  const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+  exahype::Vertex * const        coarseGridVertices,
+  const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+  exahype::Cell&                 coarseGridCell,
+  const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
@@ -365,9 +347,16 @@ void exahype::mappings::PatchInitialisation::enterCell(
     fineGridVerticesEnumerator.getCellCenter()
   );
 
-  assertion1(
-    fineGridCell.isRefined() || !ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).empty(),
-    fineGridCell.toString()
+  // @todo Too restrictive for AMR
+  assertion3(
+    fineGridCell.isRefined()
+    ||
+    !ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).empty()
+    ||
+    fineGridCell.isAssignedToRemoteRank(),
+    fineGridCell.toString(),
+    fineGridVerticesEnumerator.toString(),
+    _localState.getSolveRegistry().size()
   );
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );

@@ -404,8 +404,8 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
         lFi,
         lQhi,
         lFhi,
-        lQhbnd,
-        lFhbnd,
+        lQhbnd,  // da kommt was drauf
+        lFhbnd,  // da kommt was drauf
         luh,
         fineGridVerticesEnumerator.getCellSize(),
         p->getPredictorTimeStepSize()
