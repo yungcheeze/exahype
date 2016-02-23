@@ -14,4 +14,9 @@ debug              peano    -1                      black
 info               tarch    -1                      black
 info               peano    -1                      black
 
+
+#
+# App-specific output
+#
+info             peano::utils::UserInterface    -1  white
 info               exahype  -1                      white
