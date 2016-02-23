@@ -898,9 +898,6 @@ void exahype::tests::GenericEulerKernelTest::testSpaceTimePredictor2d() {
   // local:
   double *lQi = new double[320]; // space-time DOF
   double *lFi = new double[640];
-  double *rhs0 = new double[320];
-  double *rhs  = new double[320];
-  double *tmp  = new double[20];
 
   // output:
   double *lQhi = new double[80];
@@ -1346,9 +1343,6 @@ void exahype::tests::GenericEulerKernelTest::testSpaceTimePredictor2d() {
   delete[] luh;
   delete[] lQi;
   delete[] lFi;
-  delete[] rhs0;
-  delete[] rhs;
-  delete[] tmp;
   delete[] lQhi;
   delete[] lFhi;
   delete[] lQhbnd;
