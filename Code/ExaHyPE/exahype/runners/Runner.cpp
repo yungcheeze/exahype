@@ -228,7 +228,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
   logInfo(
     "runAsMaster()",
-    "grid setup iterations=" << gridSetupIterations
+    "grid setup iterations=" << gridSetupIterations << ", max-level=" << repository.getState().getMaxLevel()
   );
   #ifdef Parallel
   logInfo(
