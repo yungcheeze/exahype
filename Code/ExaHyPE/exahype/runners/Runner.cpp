@@ -4,12 +4,14 @@
 
 
 #include "tarch/Assertions.h"
+#include "tarch/logging/CommandLineLogger.h"
 #include "tarch/parallel/Node.h"
 #include "tarch/parallel/NodePool.h"
 #include "tarch/multicore/Core.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
 
 #include "tarch/parallel/FCFSNodePoolStrategy.h"
+#include "peano/parallel/JoinDataBufferPool.h"
 #include "peano/parallel/loadbalancing/OracleForOnePhaseWithGreedyPartitioning.h"
 
 #include "peano/utils/UserInterface.h"
@@ -39,7 +41,6 @@ exahype::runners::Runner::~Runner() {
 
 
 void exahype::runners::Runner::initDistributedMemoryConfiguration() {
-  #ifdef Parallel
   // @todo evtl. fehlen hier die Includes
 /*
   if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
@@ -55,7 +56,6 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
     );
   }
 
-  tarch::parallel::NodePool::getInstance().restart();
   // @todo evtl. fehlen hier die Includes
 /*
   peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
@@ -66,7 +66,9 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
   peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
     new peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning(true)
   );
-  #endif
+
+  tarch::parallel::NodePool::getInstance().restart();
+  tarch::parallel::NodePool::getInstance().waitForAllNodesToBecomeIdle();
 
   #if defined(Debug) || defined(Asserts)
   tarch::parallel::Node::getInstance().setDeadlockTimeOut(120*4);
@@ -75,14 +77,16 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
   tarch::parallel::Node::getInstance().setDeadlockTimeOut(120);
   tarch::parallel::Node::getInstance().setTimeOutWarning(60);
   #endif
+
+  const int bufferSize = 64;
+  peano::parallel::SendReceiveBufferPool::getInstance().setBufferSize( bufferSize );
+  peano::parallel::JoinDataBufferPool::getInstance().setBufferSize( bufferSize );
 }
 
 
 void exahype::runners::Runner::shutdownDistributedMemoryConfiguration() {
-  #ifdef Parallel
   tarch::parallel::NodePool::getInstance().terminate();
   exahype::repositories::RepositoryFactory::getInstance().shutdownAllParallelDatatypes();
-  #endif
 }
 
 
@@ -193,13 +197,11 @@ void exahype::runners::Runner::initialiseSolveRegistry(State& state,bool correct
     solverNumber++;
   }
 
-#if defined(Debug) || defined(Asserts)
-  logInfo(
+  logDebug(
       "runAsMaster(...)",
       "registered solvers=" << exahype::solvers::RegisteredSolvers.size() <<
       "\t registered solves =" << state.getSolveRegistry().size()
   );
-#endif
 
   assertion(state.getSolveRegistry().size()==exahype::solvers::RegisteredSolvers.size());
 }
@@ -303,6 +305,8 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     */
     repository.getState().startNewTimeStep();
 
+    tarch::logging::CommandLineLogger::getInstance().closeOutputStreamAndReopenNewOne();
+
     logInfo(
         "runAsMaster(...)",
         "step " << n <<
@@ -312,9 +316,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     );
 
     n++;
-#if defined(Debug) || defined(Asserts)
-    logInfo( "runAsMaster(...)", "state=" << repository.getState().toString() );
-#endif
+    logDebug( "runAsMaster(...)", "state=" << repository.getState().toString() );
   }
 
   repository.logIterationStatistics();
@@ -342,12 +344,12 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(exahype:
 
 void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(exahype::repositories::Repository& repository) {
   // Only one time step (predictor vs. corrector) is used in this case.
-  repository.switchToFaceDataExchange();
+  repository.switchToFaceDataExchange();          // Riemann -> face2face
   repository.iterate();
-  repository.switchToCorrector();
+  repository.switchToCorrector();                 // Face to cell
   repository.iterate();
-  repository.switchToGlobalTimeStepComputation();
+  repository.switchToGlobalTimeStepComputation(); // Inside cell
   repository.iterate();
-  repository.switchToPredictor();
+  repository.switchToPredictor();                 // Cell onto faces
   repository.iterate();
 }

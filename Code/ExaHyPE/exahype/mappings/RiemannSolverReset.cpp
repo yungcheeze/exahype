@@ -360,7 +360,7 @@ void exahype::mappings::RiemannSolverReset::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
-  const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData( fineGridCell.getADERDGCellDescriptionsIndex() ).size();
+  const int numberOfADERDGCellDescriptions = static_cast<int>( ADERDGCellDescriptionHeap::getInstance().getData( fineGridCell.getADERDGCellDescriptionsIndex() ).size() );
   const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined2; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
   const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
   pfor(i,0,numberOfADERDGCellDescriptions,grainSize)
