@@ -286,10 +286,10 @@ tarch::la::Vector<TWO_POWER_D,int> multiscalelinkedcell::HangingVertexBookkeeper
   tarch::la::Vector<TWO_POWER_D,int> result;
   for (int i=0; i<TWO_POWER_D; i++) {
     if (adjacentRanks(i)!=tarch::parallel::Node::getInstance().getRank()) {
-      result = RemoteAdjacencyIndex;
+      result(i) = RemoteAdjacencyIndex;
     }
     else {
-      result = oldAdjacencyEntries(i);
+      result(i) = oldAdjacencyEntries(i);
     }
   }
   return result;
