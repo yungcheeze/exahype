@@ -4,15 +4,21 @@
 
 
 #include "tarch/Assertions.h"
+
 #include "tarch/logging/CommandLineLogger.h"
+
 #include "tarch/parallel/Node.h"
 #include "tarch/parallel/NodePool.h"
+
 #include "tarch/multicore/Core.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
 
 #include "tarch/parallel/FCFSNodePoolStrategy.h"
 #include "peano/parallel/JoinDataBufferPool.h"
 #include "peano/parallel/loadbalancing/OracleForOnePhaseWithGreedyPartitioning.h"
+#include "peano/parallel/loadbalancing/Oracle.h"
+#include "peano/parallel/SendReceiveBufferPool.h"
+#include "peano/parallel/JoinDataBufferPool.h"
 
 #include "peano/utils/UserInterface.h"
 #include "peano/geometry/Hexahedron.h"
