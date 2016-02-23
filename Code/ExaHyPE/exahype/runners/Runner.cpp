@@ -11,6 +11,7 @@
 #include "tarch/multicore/MulticoreDefinitions.h"
 
 #include "tarch/parallel/FCFSNodePoolStrategy.h"
+#include "peano/parallel/JoinDataBufferPool.h"
 #include "peano/parallel/loadbalancing/OracleForOnePhaseWithGreedyPartitioning.h"
 
 #include "peano/utils/UserInterface.h"
@@ -67,6 +68,7 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
   );
 
   tarch::parallel::NodePool::getInstance().restart();
+  tarch::parallel::NodePool::getInstance().waitForAllNodesToBecomeIdle();
 
   #if defined(Debug) || defined(Asserts)
   tarch::parallel::Node::getInstance().setDeadlockTimeOut(120*4);
@@ -75,6 +77,10 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
   tarch::parallel::Node::getInstance().setDeadlockTimeOut(120);
   tarch::parallel::Node::getInstance().setTimeOutWarning(60);
   #endif
+
+  const int bufferSize = 64;
+  peano::parallel::SendReceiveBufferPool::getInstance().setBufferSize( bufferSize );
+  peano::parallel::JoinDataBufferPool::getInstance().setBufferSize( bufferSize );
 }
 
 
@@ -338,12 +344,12 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(exahype:
 
 void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(exahype::repositories::Repository& repository) {
   // Only one time step (predictor vs. corrector) is used in this case.
-  repository.switchToFaceDataExchange();
+  repository.switchToFaceDataExchange();          // Riemann -> face2face
   repository.iterate();
-  repository.switchToCorrector();
+  repository.switchToCorrector();                 // Face to cell
   repository.iterate();
-  repository.switchToGlobalTimeStepComputation();
+  repository.switchToGlobalTimeStepComputation(); // Inside cell
   repository.iterate();
-  repository.switchToPredictor();
+  repository.switchToPredictor();                 // Cell onto faces
   repository.iterate();
 }
