@@ -99,12 +99,43 @@ void kernels::aderdg::generic::volumeIntegral(
   }
 #else
   
+
   //lduh is (nDofz x nDofy x nDofx x nVar)
 
   // Compute the "derivatives" (contributions of the stiffness matrix)
   // x direction (independent from the y and z derivatives)
   typedef double tensor_t[3+1][3+1][5];
   tensor_t *lduh3D = (tensor_t *)lduh;
+  
+ // std::cout << "---------volumeIntegral----------------" << '\n';
+  // for (int ivar=0; ivar < numberOfVariables; ivar++) {
+    // int ll=0;
+    // int ii=0;
+    // int jj=0;
+    // int kk=0;
+    // const int nodeindex          = ii + basisSize * jj + basisSize * basisSize * kk;
+    // const int spacetimenodeindex = nodeindex  + basisSize * basisSize * basisSize * ll;
+
+    // const int dofstartindex           = nodeindex * numberOfVariables;
+    // const int spacetimedofstartindex  = spacetimenodeindex * numberOfVariables;
+    
+    // std::cout << lduh3D[kk][jj][ii][ivar] << '\n';
+  // }
+
+  // std::cout << "---------volumeIntegral----------------" << '\n';
+  // for (int ivar=0; ivar < numberOfVariables; ivar++) {
+    // int ll=0;
+    // int ii=0;
+    // int jj=0;
+    // int kk=0;
+    // const int nodeindex          = ii + basisSize * jj + basisSize * basisSize * kk;
+    // const int spacetimenodeindex = nodeindex  + basisSize * basisSize * basisSize * ll;
+
+    // const int dofstartindex           = nodeindex * numberOfVariables;
+    // const int spacetimedofstartindex  = spacetimenodeindex * numberOfVariables;
+    
+    // std::cout << lFhi_x[ivar] << '\n';
+  // }  
   
   for (int kk=0; kk<basisSize; kk++) { // loop over dof
     for (int jj=0; jj<basisSize; jj++) {
@@ -119,13 +150,14 @@ void kernels::aderdg::generic::volumeIntegral(
           const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
 
           for(int ivar=0; ivar < numberOfVariables; ivar++) {
-            lduh3D[kk][jj][ii][ivar] += weight/dx[0] * kernels::Kxi[order][ii][mm] * lFhi_x[mmNodeIndex+ivar]; 
+            lduh3D[kk][jj][ii][ivar] += weight/dx[0] * kernels::Kxi[order][ii][mm] * lFhi_x[ii+ivar]; 
           }
         }
       }
     }
   }
   
+ 
   // Compute the "derivatives" (contributions of the stiffness matrix)
   // y direction (independent from the x and z derivatives)
   for (int kk=0; kk<basisSize; kk++) { // loop over dof
@@ -143,12 +175,14 @@ void kernels::aderdg::generic::volumeIntegral(
           const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
 
           for(int ivar=0; ivar < numberOfVariables; ivar++) {
-            lduh3D[kk][jj][ii][ivar] += weight/dx[1] * kernels::Kxi[order][jj][mm] * lFhi_y[mmNodeIndex+ivar]; 
+            lduh3D[kk][jj][ii][ivar] += weight/dx[1] * kernels::Kxi[order][jj][mm] * lFhi_y[jj+ivar]; 
           }
         }
       }
     }
   }
+  
+ 
   
   // Compute the "derivatives" (contributions of the stiffness matrix)
   // z direction (independent from the x and y derivatives)
@@ -170,13 +204,29 @@ void kernels::aderdg::generic::volumeIntegral(
           // lFhi_z[nDOF_x][nDOF_y][nDOF_z][nVar]
           // lFhi_z[(ii*basisSize*basisSize+basisSize*jj+mm)+ivar]
           for(int ivar=0; ivar < numberOfVariables; ivar++) {
-            lduh3D[kk][jj][ii][ivar] += weight/dx[2] * kernels::Kxi[order][kk][mm] * lFhi_z[mmNodeIndex+ivar]; 
+            lduh3D[kk][jj][ii][ivar] += weight/dx[2] * kernels::Kxi[order][kk][mm] * lFhi_z[kk+ivar]; 
           }
         }
       }
     }
   }
  
-#endif  
+// std::cout << "---------volumeIntegral----------------" << '\n';
+  // for (int ivar=0; ivar < numberOfVariables; ivar++) {
+    // int ll=0;
+    // int ii=0;
+    // int jj=0;
+    // int kk=0;
+    // const int nodeindex          = ii + basisSize * jj + basisSize * basisSize * kk;
+    // const int spacetimenodeindex = nodeindex  + basisSize * basisSize * basisSize * ll;
+
+    // const int dofstartindex           = nodeindex * numberOfVariables;
+    // const int spacetimedofstartindex  = spacetimenodeindex * numberOfVariables;
+    
+    // std::cout << lduh3D[kk][jj][ii][ivar] << '\n';
+  // }
+// exit(0);  
+ 
+ #endif  
 }
 
