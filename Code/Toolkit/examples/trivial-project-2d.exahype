@@ -12,9 +12,8 @@ exahype-project TrivialProject
   multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
   sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
   exahype-path               = ./ExaHyPE
-  architecture               = noarch
-  
   output-directory           = ./Applications/trivialproject
+  architecture               = noarch
   
   
   computational-domain
