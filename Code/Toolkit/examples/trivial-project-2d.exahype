@@ -5,7 +5,7 @@
  A trivial project without any content.
 
  */
-exahype-project  TrivialProject
+exahype-project TrivialProject
 
   peano-path                 = ./Peano/peano
   tarch-path                 = ./Peano/tarch
