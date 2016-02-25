@@ -340,6 +340,8 @@ public:
   void startNewTimeStep();
 
   double getPredictorTimeStamp() const;
+
+  void updateNextPredictorTimeStepSize (const double& nextPredictorTimeStepSize);
 };
 
 #endif

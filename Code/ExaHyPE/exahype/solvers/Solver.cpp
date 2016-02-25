@@ -121,3 +121,7 @@ double exahype::solvers::Solver::getPredictorTimeStamp() const {
   return _minPredictorTimeStamp;
 }
 
+
+void exahype::solvers::Solver::updateNextPredictorTimeStepSize (const double& nextPredictorTimeStepSize) {
+  _nextPredictorTimeStepSize = std::min( _nextPredictorTimeStepSize, nextPredictorTimeStepSize );
+}
