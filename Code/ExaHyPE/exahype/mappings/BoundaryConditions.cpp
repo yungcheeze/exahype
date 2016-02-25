@@ -460,8 +460,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
     // ugly.
     records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndex] )[i]);
 
-    exahype::solvers::Solve& solve   = _localState.getSolveRegistry()       [ p->getSolveNumber() ];
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers  [ solve.getSolverNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers  [ p->getSolverNumber() ];
 
     // Lock the critical multithreading area.
     // Note that two boundary vertices can operate on the same face at the same time.
