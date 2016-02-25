@@ -1,6 +1,5 @@
 #include "exahype/mappings/PatchInitialisation.h"
 
-#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
 
@@ -56,7 +55,6 @@ exahype::mappings::PatchInitialisation::~PatchInitialisation() {
 exahype::mappings::PatchInitialisation::PatchInitialisation(const PatchInitialisation&  masterThread):
   _localState(masterThread._localState
 ) {
-  _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 
@@ -341,7 +339,6 @@ void exahype::mappings::PatchInitialisation::enterCell(
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
   fineGridCell.init(
-    _localState.getSolveRegistry(),
     fineGridVerticesEnumerator.getLevel(),
     fineGridVerticesEnumerator.getCellSize(),
     fineGridVerticesEnumerator.getCellCenter()
