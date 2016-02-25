@@ -274,6 +274,25 @@ public:
       const tarch::la::Vector<DIMENSIONS,double>& center,
       const tarch::la::Vector<DIMENSIONS,double>& dx
   ) = 0;
+
+  /**
+   * This operation allows you to realise time-dependent conditions.
+   * Please be aware that this operation is called per time step if
+   * the corresponding predicate hasToUpdateSolution() yields true for the
+   * region.
+   */
+  virtual void updateSolution(
+    double *                                      luh,
+    const tarch::la::Vector<DIMENSIONS,double>&   center,
+    const tarch::la::Vector<DIMENSIONS,double>&   dx,
+    double                                        t,
+    double                                        dt
+  ) = 0;
+
+  virtual bool hasToUpdateSolution(
+    const tarch::la::Vector<DIMENSIONS,double>&   center,
+    const tarch::la::Vector<DIMENSIONS,double>&   dx
+  ) = 0;
 };
 
 #endif
