@@ -1,3 +1,4 @@
+/*
 //$<EXAHYPE_SOURCE_FILE_COPYRIGHT_NOTE>$
 #include "exahype/solvers/Solve.h"
 
@@ -175,3 +176,4 @@ void exahype::solvers::Solve::merge (const exahype::solvers::Solve& otherSolve) 
   _predictorTimeStepSize     = std::min( _predictorTimeStepSize    , otherSolve._predictorTimeStepSize     );
   _nextPredictorTimeStepSize = std::min( _nextPredictorTimeStepSize, otherSolve._nextPredictorTimeStepSize );
 }
+*/

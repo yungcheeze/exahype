@@ -1,10 +1,8 @@
 #include "exahype/mappings/NewTimeStep.h"
 
-#include "exahype/solvers/Solve.h"
+#include "exahype/solvers/Solver.h"
 
 #include "peano/datatraversal/autotuning/Oracle.h"
-
-#include "exahype/timestepping/TimeSteppingSynchronization.h"
 
 #include "tarch/multicore/Loop.h"
 
@@ -363,7 +361,7 @@ void exahype::mappings::NewTimeStep::enterCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size();
+  const int numberOfADERDGCellDescriptions = static_cast<int>( ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size() );
   const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined0; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
   const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
   pfor(i,0,numberOfADERDGCellDescriptions,grainSize)

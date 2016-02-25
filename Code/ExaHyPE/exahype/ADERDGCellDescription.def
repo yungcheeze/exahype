@@ -11,7 +11,7 @@ Constant: DIMENSIONS;
 Constant: DIMENSIONS_TIMES_TWO;
 
 class exahype::records::ADERDGCellDescription {
-  parallelise persistent int    solveNumber;          // !< Time stamp of the current solution.
+  parallelise persistent int    solverNumber;      
   
   /** 
    * Indicates if this a parent cell (true) or a leaf cell that holds data.

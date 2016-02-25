@@ -67,11 +67,6 @@ class exahype::runners::Runner {
     void runGlobalStep();
     #endif
 
-    /**
-     * Initialises the solve registry of \p state.
-     */
-    void initialiseSolveRegistry(State& state,bool correctorTimeLagging);
-
     void runOneTimeStampWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository);
     void runOneTimeStampWithFourSeparateAlgorithmicSteps(exahype::repositories::Repository& repository);
   public:

@@ -80,7 +80,6 @@ public:
    * unrefined.
    */
   void init(
-    const exahype::State::SolveRegistry          solveRegistry,
     const int                                    level,
     const tarch::la::Vector<DIMENSIONS,double>&  size,
     const tarch::la::Vector<DIMENSIONS,double>&  cellCentre

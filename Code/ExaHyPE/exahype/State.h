@@ -16,8 +16,6 @@
 
 #include "peano/grid/Checkpoint.h"
 
-#include "exahype/solvers/Solve.h"
-
 namespace exahype { 
   class State;
 
@@ -58,10 +56,7 @@ private:
 
   void writeToCheckpoint( peano::grid::Checkpoint<Vertex,Cell>&  checkpoint ) const;
   void readFromCheckpoint( const peano::grid::Checkpoint<Vertex,Cell>&  checkpoint );
-
-  std::vector< solvers::Solve > _solveRegistry;
 public:
-  typedef std::vector<solvers::Solve> SolveRegistry;
   /**
    * Default Constructor
    *
@@ -137,16 +132,6 @@ public:
    * @todo Clarify which stuff has to be merged
    */
   void merge(const State& anotherState);
-
-  /**
-   * @return the solve registry. Either a vector or tree like structure.
-   */
-  SolveRegistry& getSolveRegistry();
-
-  /**
-   * Deep copies the solve registry of another state.
-   */
-  void deepCopySolveRegistry(const State& anotherState);
   ///@}
 };
 

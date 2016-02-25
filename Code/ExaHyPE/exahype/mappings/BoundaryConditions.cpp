@@ -8,10 +8,8 @@
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
-#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
-#include "exahype/timestepping/TimeSteppingSynchronization.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -491,7 +489,8 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       double * Qhbnd = &(DataHeap::getInstance().getData(p->getExtrapolatedPredictor())[faceIndex * numberOfFaceDof]._persistentRecords._u);
       double * Fhbnd = &(DataHeap::getInstance().getData(p->getFluctuation())          [faceIndex * numberOfFaceDof]._persistentRecords._u);
 
-      timestepping::synchroniseTimeStepping(solve,*p);
+      // @todo
+//      timestepping::synchroniseTimeStepping(solve,*p);
 
       logDebug("touchVertexLastTime(...)::debug::before::dt_min(previous ) of State*",_localState.getPreviousMinTimeStepSize());
       logDebug("touchVertexLastTime(...)::debug::before::dt_min(corrector) of Solve*",solve.getCorrectorTimeStepSize());

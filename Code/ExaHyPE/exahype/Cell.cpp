@@ -8,7 +8,6 @@
 
 #include "kernels/KernelCalls.h"
 
-#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
 #include "exahype/records/ADERDGCellDescription.h"
@@ -40,17 +39,21 @@ int exahype::Cell::getADERDGCellDescriptionsIndex() const {
 
 
 void exahype::Cell::init(
-    const exahype::State::SolveRegistry          solveRegistry,
-    const int                                    level,
-    const tarch::la::Vector<DIMENSIONS,double>&  size,
-    const tarch::la::Vector<DIMENSIONS,double>&  cellOffset
+  const int                                    level,
+  const tarch::la::Vector<DIMENSIONS,double>&  size,
+  const tarch::la::Vector<DIMENSIONS,double>&  cellOffset
 ) {
   assertion1( !ADERDGCellDescriptionHeap::getInstance().isValidIndex(_cellData.getADERDGCellDescriptionsIndex()), toString() );
   const int ADERDGCellDescriptionIndex = ADERDGCellDescriptionHeap::getInstance().createData(0,0);
   _cellData.setADERDGCellDescriptionsIndex( ADERDGCellDescriptionIndex );
 
-  for (unsigned int solveNumber=0; solveNumber < solveRegistry.size(); solveNumber++) {
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ solveRegistry[solveNumber].getSolverNumber() ];
+  int solverNumber = 0;
+  for (
+    std::vector<exahype::solvers::Solver*>::const_iterator p = solvers::RegisteredSolvers.begin();
+    p != solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    exahype::solvers::Solver* solver = *p;
 
     // Has to be +1 here
     if (level==solver->getMinimumTreeDepth()+1) {
@@ -66,8 +69,8 @@ void exahype::Cell::init(
           newCellDescription.setSize  (size);
           newCellDescription.setOffset(cellOffset);
 
-          newCellDescription.setPredictorTimeStamp( solveRegistry[solveNumber].getPredictorTimeStamp() );
-          newCellDescription.setSolveNumber ( solveNumber);
+          newCellDescription.setPredictorTimeStamp( solver->getPredictorTimeStamp() );
+          newCellDescription.setSolverNumber ( solverNumber);
 
           const int spaceTimeUnknownsPerCell     = solver->getSpaceTimeUnknownsPerCell();
           const int SpaceTimeFluxUnknownsPerCell = solver->getSpaceTimeFluxUnknownsPerCell();
@@ -97,5 +100,6 @@ void exahype::Cell::init(
     else {
       logDebug( "init(...)","cell is not associated with any solver. cell=" << toString() << ", level=" << level << ", size=" << size << ",offset=" << cellOffset );
     }
+    solverNumber++;
   }
 }
