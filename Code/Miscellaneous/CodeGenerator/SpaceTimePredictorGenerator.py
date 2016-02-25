@@ -138,7 +138,7 @@ class SpaceTimePredictorGenerator:
         # let's open the file to which we write our function calls to the assembler code 
         l_file = open(l_filename, 'a')
        
-        if(self.l_config['nDim'] == 2):
+        if(self.l_config['nDim'] == 2):       
             #
             # x-direction
             #
@@ -149,42 +149,56 @@ class SpaceTimePredictorGenerator:
                                              self.l_config['nVar'], self.l_config['nDof'], self.l_config['nVar'], \
                                              l_alpha, l_beta, 0, 0, "lQbnd"))    
             
+            # number of entries between two flux matrices, or, equivalently, the number of face DOFs
+            l_offset = self.l_config['nVar']*self.l_config['nDof']
+            
+            # write the function calls to the cpp file
             for l_matmul in l_matmulList:
                 for j in range(self.l_config['nDof']):
                     # lQbnd(:,1,j,k) = MATMUL( lqhi(:,:,j,k),   FLCoeff )   ! left
-                    l_file.write("  "+l_matmul.baseroutinename+"(&lqhi["+str(j*self.l_config['nVar']*self.l_config['nDof'])+"], "\
-                                                                   +"FLCoeff,"\
+                    l_file.write("  "+l_matmul.baseroutinename+"(&lqhi["+str(j*self.l_config['nVar']*self.l_config['nDof'])+"], "+\
+                                                               "FLCoeff,"\
                                                                " &lQbnd["+str(j*self.l_config['nVar'])+"]);\n")
-                    # lQbnd(:,1,j,k) = MATMUL( lqhi(:,:,j,k),   FRCoeff )   ! right
-                    l_file.write("  "+l_matmul.baseroutinename+"(&lqhi["+str(j*self.l_config['nVar']*self.l_config['nDof'])+"], "\
-                                                                   +"FRCoeff,"\
-                                                               " &lQbnd["+str(j*self.l_config['nVar']+20)+"]);\n")
+                    # lQbnd(:,2,j,k) = MATMUL( lqhi(:,:,j,k),   FRCoeff )   ! right
+                    l_file.write("  "+l_matmul.baseroutinename+"(&lqhi["+str(j*self.l_config['nVar']*self.l_config['nDof'])+"], "+\
+                                                               "FRCoeff,"\
+                                                               " &lQbnd["+str(j*self.l_config['nVar']+l_offset)+"]);\n")
+                    # lFbnd(:,1,j,k) = MATMUL( lFhi(:,1,:,j,k), FLCoeff )   ! left
+                    l_file.write("  "+l_matmul.baseroutinename+"(&lFhi["+str(j*self.l_config['nVar']*self.l_config['nDof'])+"], "+\
+                                                               "FLCoeff,"\
+                                                               " &lFbnd["+str(j*self.l_config['nVar'])+"]);\n")
+                    # lFbnd(:,2,j,k) = MATMUL( lFhi(:,1,:,j,k), FRCoeff )   ! right
+                    l_file.write("  "+l_matmul.baseroutinename+"(&lFhi["+str(j*self.l_config['nVar']*self.l_config['nDof'])+"], "+\
+                                                               "FRCoeff,"\
+                                                               " &lFbnd["+str(j*self.l_config['nVar']+l_offset)+"]);\n")
                 
-                
-                """
-                l_commandLineArguments =       lqhiFLCoeff.type  + \
-                                         ' ' + self.l_pathToLibxsmmGenerator+"/extrapolatedPredictor.cpp" + \
-                                         ' ' + lqhiFLCoeff.baseroutinename + \
-                                         ' ' + str(lqhiFLCoeff.M) + \
-                                         ' ' + str(lqhiFLCoeff.N) + \
-                                         ' ' + str(lqhiFLCoeff.K) + \
-                                         ' ' + str(lqhiFLCoeff.LDA) + \
-                                         ' ' + str(lqhiFLCoeff.LDB) + \
-                                         ' ' + str(lqhiFLCoeff.LDC) + \
-                                         ' ' + str(lqhiFLCoeff.alpha) + \
-                                         ' ' + str(lqhiFLCoeff.beta) + \
-                                         ' ' + str(lqhiFLCoeff.alignment_A) + \
-                                         ' ' + str(lqhiFLCoeff.alignment_C) + \
-                                         ' ' + self.l_config['architecture'] + \
-                                         ' ' + "nopf" + \
-                                         ' ' + self.l_config['precision'] 
-                print(l_commandLineArguments)
-                executeLibxsmmGenerator(self.l_pathToLibxsmmGenerator, l_commandLineArguments)
-                """                         
-            
+                                  
             #                      
             # y direction
             # 
+            
+            
+            """
+            l_commandLineArguments =       lqhiFLCoeff.type  + \
+                                     ' ' + self.l_pathToLibxsmmGenerator+"/extrapolatedPredictor.cpp" + \
+                                     ' ' + lqhiFLCoeff.baseroutinename + \
+                                     ' ' + str(lqhiFLCoeff.M) + \
+                                     ' ' + str(lqhiFLCoeff.N) + \
+                                     ' ' + str(lqhiFLCoeff.K) + \
+                                     ' ' + str(lqhiFLCoeff.LDA) + \
+                                     ' ' + str(lqhiFLCoeff.LDB) + \
+                                     ' ' + str(lqhiFLCoeff.LDC) + \
+                                     ' ' + str(lqhiFLCoeff.alpha) + \
+                                     ' ' + str(lqhiFLCoeff.beta) + \
+                                     ' ' + str(lqhiFLCoeff.alignment_A) + \
+                                     ' ' + str(lqhiFLCoeff.alignment_C) + \
+                                     ' ' + self.l_config['architecture'] + \
+                                     ' ' + "nopf" + \
+                                     ' ' + self.l_config['precision'] 
+            print(l_commandLineArguments)
+            executeLibxsmmGenerator(self.l_pathToLibxsmmGenerator, l_commandLineArguments)
+            """   
+            
               
         elif(self.l_config['nDim'] == 3):
             pass
