@@ -345,15 +345,14 @@ void exahype::mappings::PatchInitialisation::enterCell(
   );
 
   // @todo Too restrictive for AMR
-  assertion3(
+  assertion2(
     fineGridCell.isRefined()
     ||
     !ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).empty()
     ||
     fineGridCell.isAssignedToRemoteRank(),
     fineGridCell.toString(),
-    fineGridVerticesEnumerator.toString(),
-    _localState.getSolveRegistry().size()
+    fineGridVerticesEnumerator.toString()
   );
 
   logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
