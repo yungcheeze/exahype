@@ -80,7 +80,6 @@ exahype::mappings::NewTimeStep::~NewTimeStep() {
 exahype::mappings::NewTimeStep::NewTimeStep(const NewTimeStep&  masterThread):
   _localState(masterThread._localState
 ) {
-   _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 

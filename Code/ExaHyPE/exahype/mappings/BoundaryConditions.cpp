@@ -83,7 +83,6 @@ exahype::mappings::BoundaryConditions::~BoundaryConditions() {
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::BoundaryConditions::BoundaryConditions(const BoundaryConditions&  masterThread):
       _localState( masterThread._localState ) {
-  _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 
