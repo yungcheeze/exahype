@@ -424,7 +424,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("#include \"" + solverName + ".h\"\n");
         writer.write("\n\n\n");
         writer.write(_projectName + "::" + solverName + "::" + solverName + "( int kernelNumber):\n");
-        writer.write("  exahype::solvers::Solver(\"" + solverName + "\",exahype::solvers::Solver::ADER_DG,kernelNumber," + numberOfVariables + "," + order + "+1) {\n");
+        writer.write("  exahype::solvers::Solver(\"" + solverName + "\",exahype::solvers::Solver::ADER_DG,kernelNumber," + numberOfVariables + "," + order + "+1,exahype::solvers::Solver::GlobalTimeStepping) {\n");
         writer.write("  // @todo Please implement/augment if required\n");
         writer.write("}\n");
         writer.write("\n\n\n");
