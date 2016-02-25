@@ -9,9 +9,12 @@ class MatmulConfig:
 	# (M x N)             (M x K)  (K x N)
 	#
 
-	type = ''
+	# dense, sparse
+	operationType = ''
 
 	baseroutinename = ""
+	
+	name = ""
 	
 	# dimension of the matrices
 	M = -1
@@ -33,7 +36,7 @@ class MatmulConfig:
 	
 	
 	# Constructor
-	def __init__(self, M, N, K, LDA, LDB, LDC, alpha, beta, alignment_A, alignment_C):
+	def __init__(self, M, N, K, LDA, LDB, LDC, alpha, beta, alignment_A, alignment_C, name, operationType='dgemm'):
 		if((M > LDC) or (K > LDB) or (M > LDA)):
 			print("Incompatible matrix sizes and leading dimensions")
 			exit()
@@ -54,8 +57,12 @@ class MatmulConfig:
 		self.beta = beta
 		self.alignment_A = alignment_A
 		self.alignment_C = alignment_C
-		self.type = 'dense'
-		self.baseroutinename = self.type+"_"+str(M)+"_"+str(N)+"_"+str(K)
+		self.name = name
+		self.baseroutinename = operationType+"_"+str(M)+"_"+str(N)+"_"+str(K)
 		
+
+	def __repr__(self):
+		return "<%s: %s LDA=%s, LDB=%s, LDC=%s, alpha=%s, beta=%s, alignment_A=%s, alignment_C=%s>" \
+			 % (self.name, self.baseroutinename, self.LDA, self.LDB, self.LDC, self.alpha, self.beta, self.alignment_A, self.alignment_C)
 
 		
