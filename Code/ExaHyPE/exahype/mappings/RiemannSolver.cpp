@@ -470,7 +470,6 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       solver->synchroniseTimeStepping( cellDescriptionsL[i] );
       solver->synchroniseTimeStepping( cellDescriptionsR[i] );
 
-      logDebug("touchVertexLastTime(...)::debug::before::dt_min(previous ) of State*",_localState.getPreviousMinTimeStepSize());
       logDebug("touchVertexLastTime(...)::debug::before::QL[0]*",QL[0]);
       logDebug("touchVertexLastTime(...)::debug::before::QR[0]*",QR[0]);
       logDebug("touchVertexLastTime(...)::debug::before::FL[0]",FL[0]);

@@ -396,7 +396,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
     p->setPredictorTimeStamp   (p->getPredictorTimeStamp()+admissibleTimeStepSize);
     p->setPredictorTimeStepSize(admissibleTimeStepSize);
 
-    // indirect update of the solve and local state time step sizes
+    // indirect update of the solver time step sizes
     tarch::multicore::Lock lock( _semaphore );
     solver->updateMinNextPredictorTimeStepSize(admissibleTimeStepSize);
     lock.free();
@@ -437,10 +437,6 @@ void exahype::mappings::GlobalTimeStepComputation::endIteration(
 ) {
   logTraceInWith1Argument( "endIteration(State)", solverState );
 
-
-  // @todo Please remove as soon a all time stepping data is removed from the state
-  logDebug("endIteration(...)::dt_max::solverState",solverState.getCurrentMinTimeStepSize());
-  logDebug("endIteration(...)::dt_max::localState",_localState.getCurrentMinTimeStepSize());
   solverState.merge(_localState);
 
   logTraceOutWith1Argument( "endIteration(State)", solverState);

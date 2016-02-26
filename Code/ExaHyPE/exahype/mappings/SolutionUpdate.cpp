@@ -380,7 +380,6 @@ void exahype::mappings::SolutionUpdate::enterCell(
     double * luh  = &(DataHeap::getInstance().getData(p->getSolution())[0]._persistentRecords._u);
     double * lduh = &(DataHeap::getInstance().getData(p->getUpdate())  [0]._persistentRecords._u);
 
-    logDebug("enterCell(...)::debug::dt_max_old",_localState.getCurrentMinTimeStepSize());
     logDebug("enterCell(...)::debug::before::luh[0]",luh[0]);
     logDebug("enterCell(...)::debug::before::lduh[0]",lduh[0]);
 

@@ -487,8 +487,6 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
 
       // @todo
 //      timestepping::synchroniseTimeStepping(solve,*p);
-
-      logDebug("touchVertexLastTime(...)::debug::before::dt_min(previous ) of State*",_localState.getPreviousMinTimeStepSize());
       logDebug("touchVertexLastTime(...)::debug::before::Qhbnd[0]*",Qhbnd[0]);
       logDebug("touchVertexLastTime(...)::debug::before::Fhbnd[0]",Fhbnd[0]);
 
