@@ -92,22 +92,11 @@ protected:
   // of step sizes
   // Local time stepping will require macro (max) values
   // of step sizes (right?)
-
-  /**
-   * Minimum corrector time stamp.
-   */
-  double             _minCorrectorTimeStamp;
-
   /**
    * Minimum predictor time stamp. Always equal or larger
    * than the minimum corrector time stamp.
    */
   double             _minPredictorTimeStamp;
-
-  /**
-   * Corrector time step size.
-   */
-  double             _minCorrectorTimeStepSize;
 
   /**
    * Predictor time step size.
@@ -353,7 +342,6 @@ public:
 
   // todo 25/02/16:Dominic Etienne Charrier
   // Remove the time stamps that are not used in ExaHype.
-  double getMinCorrectorTimeStamp() const;
 
   void setMinPredictorTimeStamp(double minPredictorTimeStamp);
 
@@ -363,8 +351,6 @@ public:
   // @Tobias: The time step size getters are only used for
   // debugging/assertion purposes at the moment and will
   // be removed if the time stepping works robust again.
-  double getMinCorrectorTimeStepSize() const;
-
   double getMinPredictorTimeStepSize() const;
   /**
    * Update predictor time step size
