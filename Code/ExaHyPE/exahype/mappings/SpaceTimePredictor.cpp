@@ -407,7 +407,6 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
         p->getPredictorTimeStepSize()
     );
 
-    logDebug("enterCell(...)::debug::after::dt_max",_localState.getCurrentMinTimeStepSize());
     logDebug("enterCell(...)::debug::after::luh[0]",luh[0]);
     logDebug("enterCell(...)::debug::after::lQi[0]",lQi[0]);
     logDebug("enterCell(...)::debug::after::lFi[0]",lFi[0]);

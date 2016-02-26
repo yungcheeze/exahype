@@ -189,7 +189,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   /*
    * Initialise the solvers.
    */
-
+  initSolvers();
 
   /*
    * Build up the initial space tree.
@@ -324,13 +324,13 @@ void exahype::runners::Runner::startNewTimeStep(int n) {
   }
 
   logInfo(
-      "runAsMaster(...)",
+      "startNewTimeStep(...)",
       "step " << n <<
       "\t t_min          =" << currentMinTimeStamp
   );
 
-  logDebug(
-      "runAsMaster(...)",
+  logInfo(
+      "startNewTimeStep(...)",
       "step "  << n <<
       "\t dt_min         =" << currentMinTimeStepSize <<
       "\t previous dt_min=" << nextMinTimeStepSize
