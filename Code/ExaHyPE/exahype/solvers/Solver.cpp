@@ -17,9 +17,9 @@ exahype::solvers::Solver::Solver(const std::string& identifier, Type type, int k
   _spaceTimeUnknownsPerCell    (numberOfVariables * power(nodesPerCoordinateAxis,DIMENSIONS+1)),
   _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell*DIMENSIONS),
   _timeStepping                (timeStepping),
-  _minPredictorTimeStamp       (std::numeric_limits<double>::max()),
-  _minPredictorTimeStepSize    (std::numeric_limits<double>::max()),
-  _minNextPredictorTimeStepSize(std::numeric_limits<double>::max())
+  _minTimeStamp       (std::numeric_limits<double>::max()),
+  _minTimeStepSize    (std::numeric_limits<double>::max()),
+  _minNextTimeStepSize(std::numeric_limits<double>::max())
 {
   // do nothing
 }
@@ -77,35 +77,35 @@ int exahype::solvers::Solver::getSpaceTimeFluxUnknownsPerCell() const {
 
 void exahype::solvers::Solver::synchroniseTimeStepping(exahype::records::ADERDGCellDescription& p) const {
   if (_timeStepping==GlobalTimeStepping) {
-    p.setPredictorTimeStamp   (_minPredictorTimeStamp);
-    p.setPredictorTimeStepSize(_minPredictorTimeStepSize);
+    p.setPredictorTimeStamp   (_minTimeStamp);
+    p.setPredictorTimeStepSize(_minTimeStepSize);
   }
 }
 
 
 void exahype::solvers::Solver::startNewTimeStep() {
-  _minPredictorTimeStepSize     = _minNextPredictorTimeStepSize;
-  _minPredictorTimeStamp        = _minPredictorTimeStamp+_minNextPredictorTimeStepSize;
+  _minTimeStepSize     = _minNextTimeStepSize;
+  _minTimeStamp        = _minTimeStamp+_minNextTimeStepSize;
 
-  _minNextPredictorTimeStepSize = std::numeric_limits<double>::max();
+  _minNextTimeStepSize = std::numeric_limits<double>::max();
 }
 
-void exahype::solvers::Solver::updateMinNextPredictorTimeStepSize (const double& minNextPredictorTimeStepSize) {
-  _minNextPredictorTimeStepSize = std::min( _minNextPredictorTimeStepSize, minNextPredictorTimeStepSize );
+void exahype::solvers::Solver::updateMinNextTimeStepSize (const double& minNextTimeStepSize) {
+  _minNextTimeStepSize = std::min( _minNextTimeStepSize, minNextTimeStepSize );
 }
 
-double exahype::solvers::Solver::getMinNextPredictorTimeStepSize () const {
-  return _minNextPredictorTimeStepSize;
+double exahype::solvers::Solver::getMinNextTimeStepSize () const {
+  return _minNextTimeStepSize;
 }
 
-void exahype::solvers::Solver::setMinPredictorTimeStamp(double minPredictorTimeStamp) {
-  _minPredictorTimeStamp = minPredictorTimeStamp;
+void exahype::solvers::Solver::setMinTimeStamp(double minTimeStamp) {
+  _minTimeStamp = minTimeStamp;
 }
 
-double exahype::solvers::Solver::getMinPredictorTimeStamp() const {
-  return _minPredictorTimeStamp;
+double exahype::solvers::Solver::getMinTimeStamp() const {
+  return _minTimeStamp;
 }
 
-double exahype::solvers::Solver::getMinPredictorTimeStepSize() const {
-  return _minPredictorTimeStepSize;
+double exahype::solvers::Solver::getMinTimeStepSize() const {
+  return _minTimeStepSize;
 }

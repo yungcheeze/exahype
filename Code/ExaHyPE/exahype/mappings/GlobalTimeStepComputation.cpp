@@ -396,7 +396,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
 
     // indirect update of the solver time step sizes
     tarch::multicore::Lock lock( _semaphore );
-    solver->updateMinNextPredictorTimeStepSize(admissibleTimeStepSize);
+    solver->updateMinNextTimeStepSize(admissibleTimeStepSize);
     lock.free();
   endpfor
   peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);

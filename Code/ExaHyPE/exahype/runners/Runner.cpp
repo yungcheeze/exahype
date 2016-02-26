@@ -277,7 +277,7 @@ double exahype::runners::Runner::getMinSolverTimeStamp() {
     p != exahype::solvers::RegisteredSolvers.end();
     p++
   ) {
-    currentMinTimeStamp = std::min ( currentMinTimeStamp, (*p)->getMinPredictorTimeStamp() );
+    currentMinTimeStamp = std::min ( currentMinTimeStamp, (*p)->getMinTimeStamp() );
   }
   return currentMinTimeStamp;
 }
@@ -290,7 +290,7 @@ double exahype::runners::Runner::getMinSolverTimeStepSize() {
     p != exahype::solvers::RegisteredSolvers.end();
     p++
   ) {
-    currentMinTimeStepSize = std::min ( currentMinTimeStepSize, (*p)->getMinPredictorTimeStepSize());
+    currentMinTimeStepSize = std::min ( currentMinTimeStepSize, (*p)->getMinTimeStepSize());
   }
   return currentMinTimeStepSize;
 }
@@ -303,7 +303,7 @@ void exahype::runners::Runner::initSolvers() {
     p != exahype::solvers::RegisteredSolvers.end();
     p++
   ) {
-    (*p)->setMinPredictorTimeStamp(0.0);
+    (*p)->setMinTimeStamp(0.0);
   }
 }
 
@@ -317,9 +317,9 @@ void exahype::runners::Runner::startNewTimeStep(int n) {
     p != exahype::solvers::RegisteredSolvers.end();
     p++
   ) {
-    currentMinTimeStamp    = std::min ( currentMinTimeStamp,    (*p)->getMinPredictorTimeStamp       ());
-    currentMinTimeStepSize = std::min ( currentMinTimeStepSize, (*p)->getMinPredictorTimeStepSize    ());
-    nextMinTimeStepSize    = std::min ( nextMinTimeStepSize,    (*p)->getMinNextPredictorTimeStepSize());
+    currentMinTimeStamp    = std::min ( currentMinTimeStamp,    (*p)->getMinTimeStamp       ());
+    currentMinTimeStepSize = std::min ( currentMinTimeStepSize, (*p)->getMinTimeStepSize    ());
+    nextMinTimeStepSize    = std::min ( nextMinTimeStepSize,    (*p)->getMinNextTimeStepSize());
 
     (*p)->startNewTimeStep();
   }
@@ -379,12 +379,12 @@ bool exahype::runners::Runner::wasStabilityConditionViolated() {
       p != exahype::solvers::RegisteredSolvers.end();
       p++
   ) {
-    cflConditionWasViolated = cflConditionWasViolated | ( (*p)->getMinPredictorTimeStepSize() > factor * (*p)->getMinNextPredictorTimeStepSize() );
+    cflConditionWasViolated = cflConditionWasViolated | ( (*p)->getMinTimeStepSize() > factor * (*p)->getMinNextTimeStepSize() );
 
     if (cflConditionWasViolated) {
       logInfo("startNewTimeStep(...)",
           "\t\t Relative time step size overshoot: " <<
-          ( (*p)->getMinPredictorTimeStepSize() - (*p)->getMinNextPredictorTimeStepSize() )/(*p)->getMinNextPredictorTimeStepSize()
+          ( (*p)->getMinTimeStepSize() - (*p)->getMinNextTimeStepSize() )/(*p)->getMinNextTimeStepSize()
        );
     }
   }

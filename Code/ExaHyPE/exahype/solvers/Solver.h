@@ -96,17 +96,17 @@ protected:
    * Minimum predictor time stamp. Always equal or larger
    * than the minimum corrector time stamp.
    */
-  double             _minPredictorTimeStamp;
+  double             _minTimeStamp;
 
   /**
    * Predictor time step size.
    */
-  double             _minPredictorTimeStepSize;
+  double             _minTimeStepSize;
 
   /**
    * Predictor time step size.
    */
-  double             _minNextPredictorTimeStepSize;
+  double             _minNextTimeStepSize;
 public:
   Solver(const std::string& identifier, Type type, int kernelNumber, int numberOfVariables, int nodesPerCoordinateAxis, TimeStepping timeStepping);
 
@@ -334,24 +334,24 @@ public:
 
   void startNewTimeStep();
 
-  void updateMinNextPredictorTimeStepSize (const double& nextPredictorTimeStepSize);
+  void updateMinNextTimeStepSize (const double& nextTimeStepSize);
 
-  double getMinNextPredictorTimeStepSize () const;
+  double getMinNextTimeStepSize () const;
 
   // todo 16/02/25:Dominic Etienne Charrier: It follows stuff that must be revised:
 
   // todo 25/02/16:Dominic Etienne Charrier
   // Remove the time stamps that are not used in ExaHype.
 
-  void setMinPredictorTimeStamp(double minPredictorTimeStamp);
+  void setMinTimeStamp(double minTimeStamp);
 
-  double getMinPredictorTimeStamp() const;
+  double getMinTimeStamp() const;
 
   // @todo 25/02/16:Dominic Etienne Charrier
   // @Tobias: The time step size getters are only used for
   // debugging/assertion purposes at the moment and will
   // be removed if the time stepping works robust again.
-  double getMinPredictorTimeStepSize() const;
+  double getMinTimeStepSize() const;
   /**
    * Update predictor time step size
    *
@@ -364,7 +364,7 @@ public:
    * This operation is not thread safe.
    *
    */
-  void updateNextPredictorTimeStepSize (const double& nextPredictorTimeStepSize);
+  void updateNextTimeStepSize (const double& nextTimeStepSize);
 };
 
 #endif
