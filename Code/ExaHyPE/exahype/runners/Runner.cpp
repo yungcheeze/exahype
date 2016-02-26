@@ -277,7 +277,7 @@ double exahype::runners::Runner::getMinSolverTimeStamp() {
     p != exahype::solvers::RegisteredSolvers.end();
     p++
   ) {
-    currentMinTimeStamp = std::min ( currentMinTimeStamp, (*p)->getMinCorrectorTimeStamp());
+    currentMinTimeStamp = std::min ( currentMinTimeStamp, (*p)->getMinPredictorTimeStamp() );
   }
   return currentMinTimeStamp;
 }
