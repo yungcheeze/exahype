@@ -329,7 +329,7 @@ void exahype::runners::Runner::startNewTimeStep(int n) {
       "\t t_min          =" << currentMinTimeStamp
   );
 
-  logInfo(
+  logDebug(
       "startNewTimeStep(...)",
       "step "  << n <<
       "\t dt_min         =" << currentMinTimeStepSize <<

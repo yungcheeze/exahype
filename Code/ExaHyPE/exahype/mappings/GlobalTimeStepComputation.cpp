@@ -388,7 +388,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
         fineGridVerticesEnumerator.getCellSize()
     );
 
-    logDebug("endIteration(...)::dt_adm",admissibleTimeStepSize);
+    logDebug("enterCell(...)::dt_adm",admissibleTimeStepSize);
 
     // direct update of the cell description time steps
     p->setCorrectorTimeStamp   (p->getPredictorTimeStamp());
