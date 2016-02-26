@@ -72,6 +72,8 @@ class exahype::runners::Runner {
     double getMinSolverTimeStepSize();
     void startNewTimeStep(int n);
     void runOneTimeStampWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository);
+    bool wasStabilityConditionViolated();
+    void startNewTimeStepAndRecomputePredictorIfNecessary(exahype::repositories::Repository& repository, int n);
     void runOneTimeStampWithFourSeparateAlgorithmicSteps(exahype::repositories::Repository& repository);
   public:
     Runner(const Parser& parser);

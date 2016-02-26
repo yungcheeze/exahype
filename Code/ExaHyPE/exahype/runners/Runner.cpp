@@ -252,11 +252,12 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
     if ( _parser.fuseAlgorithmicSteps() ) {
       runOneTimeStampWithFusedAlgorithmicSteps(repository);
+      startNewTimeStepAndRecomputePredictorIfNecessary(repository,n);
     }
     else {
       runOneTimeStampWithFourSeparateAlgorithmicSteps(repository);
+      startNewTimeStep(n);
     }
-    startNewTimeStep(n);
 
     n++;
     logDebug( "runAsMaster(...)", "state=" << repository.getState().toString() );
@@ -329,11 +330,14 @@ void exahype::runners::Runner::startNewTimeStep(int n) {
       "\t t_min          =" << currentMinTimeStamp
   );
 
-  logDebug(
+  logInfo(
       "startNewTimeStep(...)",
-      "step "  << n <<
-      "\t dt_min         =" << currentMinTimeStepSize <<
-      "\t previous dt_min=" << nextMinTimeStepSize
+      "\t\t dt_min         =" << currentMinTimeStepSize
+  );
+
+  logInfo(
+      "startNewTimeStep(...)",
+      "\t\t next dt_min=" << nextMinTimeStepSize
   );
 
 #if defined(Debug) || defined(Asserts)
@@ -354,6 +358,54 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(exahype:
    */
   repository.switchToADERDGTimeStep();
   repository.iterate();
+}
+
+// @todo 16/02/23:Dominic Etienne Charrier
+// The tolerance factor in this computation
+// relates to the CFL-factor 0.9 that is used in the kernel
+// function stableTimeStepSize.
+// We are thus on the safe side if the new time
+// steps size overshoots the old one by less than approx. 10 %.
+// We only allow an overshoot of around 5 % here.
+// This method should move into each solver.
+bool exahype::runners::Runner::wasStabilityConditionViolated() {
+  bool cflConditionWasViolated = false;
+
+  const double CFL_FACTOR = 0.9;
+  const double factor     = 0.95*1./CFL_FACTOR;
+
+  for (
+      std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
+      p != exahype::solvers::RegisteredSolvers.end();
+      p++
+  ) {
+    cflConditionWasViolated = cflConditionWasViolated | ( (*p)->getMinPredictorTimeStepSize() > factor * (*p)->getMinNextPredictorTimeStepSize() );
+
+    if (cflConditionWasViolated) {
+      logInfo("startNewTimeStep(...)",
+          "\t\t Relative time step size overshoot: " <<
+          ( (*p)->getMinPredictorTimeStepSize() - (*p)->getMinNextPredictorTimeStepSize() )/(*p)->getMinPredictorTimeStepSize()
+       );
+    }
+  }
+
+  return cflConditionWasViolated;
+}
+
+void exahype::runners::Runner::startNewTimeStepAndRecomputePredictorIfNecessary(exahype::repositories::Repository& repository,int n) {
+  bool stabilityConditionWasViolated = wasStabilityConditionViolated();
+  startNewTimeStep(n);
+  // Note that t is important that switch the time step sizes, i.e,
+  // start a new time step, before we recompute the predictor.
+  if (stabilityConditionWasViolated) {
+    logInfo(
+        "startNewTimeStep(...)",
+        "\t\t Space-time predictor must be recomputed."
+    );
+
+    repository.switchToPredictor();
+    repository.iterate();
+  }
 }
 
 

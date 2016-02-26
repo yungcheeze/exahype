@@ -347,6 +347,8 @@ public:
 
   void updateMinNextPredictorTimeStepSize (const double& nextPredictorTimeStepSize);
 
+  double getMinNextPredictorTimeStepSize () const;
+
   // todo 16/02/25:Dominic Etienne Charrier: It follows stuff that must be revised:
 
   // todo 25/02/16:Dominic Etienne Charrier
