@@ -8,6 +8,15 @@
 #include "kernels/GaussLegendreQuadrature.h"
 #include "kernels/DGMatrices.h"
 
+#include <fstream> 
+
+using std::endl;
+using std::cout;
+
+extern "C" 
+{
+  void adervolumeintegral_(double *lduh, double *lFhi, double *dx);
+}
 
 void kernels::aderdg::generic::volumeIntegral(
     double * lduh,
@@ -21,12 +30,8 @@ void kernels::aderdg::generic::volumeIntegral(
   // a compile time variable anymore
 #if DIMENSIONS == 2
   constexpr int numberOfDof = 5 * (3+1)*(3+1); //tarch::la::aPowI(3+1,DIMENSIONS);
-#else
-  constexpr int numberOfDof = 5 * (3+1)*(3+1)*(3+1); //tarch::la::aPowI(3+1,DIMENSIONS);
-#endif  
   constexpr int order       = 3;
 
-#if DIMENSIONS == 2
   // memory layout of lFhi:
   // lFhi = [ lFhi_x | lFhi_y ] ordered as follows
   // (a) lFhi_x[nDOF_y][nDOF_x][nVar]
@@ -37,16 +42,7 @@ void kernels::aderdg::generic::volumeIntegral(
   const double * lFhi_y = &lFhi[numberOfDof];  // g flux
 
   memset(lduh,0,sizeof(double) * numberOfDof);
-#else
-  const double * lFhi_x = &lFhi[0            ];  // f flux
-  const double * lFhi_y = &lFhi[numberOfDof  ];  // g flux
-  const double * lFhi_z = &lFhi[numberOfDof*2];  // h flux
 
-  memset(lduh,0,sizeof(double) * numberOfDof);
-#endif  
-
-
-#if DIMENSIONS == 2
   // access lduh(nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array manner
   // @todo Angelika
   typedef double tensor_t[3+1][5];
@@ -97,135 +93,54 @@ void kernels::aderdg::generic::volumeIntegral(
       }
     }
   }
-#else
+#elif DIMENSIONS == 3
   
+   
+    double* lFhiFortran = new double[numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize];
+    for(int i=0; i < numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize; i++)
+      lFhiFortran[i] = -123.45;
 
-  //lduh is (nDofz x nDofy x nDofx x nVar)
-
-  // Compute the "derivatives" (contributions of the stiffness matrix)
-  // x direction (independent from the y and z derivatives)
-  typedef double tensor_t[3+1][3+1][5];
-  tensor_t *lduh3D = (tensor_t *)lduh;
-  
- // std::cout << "---------volumeIntegral----------------" << '\n';
-  // for (int ivar=0; ivar < numberOfVariables; ivar++) {
-    // int ll=0;
-    // int ii=0;
-    // int jj=0;
-    // int kk=0;
-    // const int nodeindex          = ii + basisSize * jj + basisSize * basisSize * kk;
-    // const int spacetimenodeindex = nodeindex  + basisSize * basisSize * basisSize * ll;
-
-    // const int dofstartindex           = nodeindex * numberOfVariables;
-    // const int spacetimedofstartindex  = spacetimenodeindex * numberOfVariables;
-    
-    // std::cout << lduh3D[kk][jj][ii][ivar] << '\n';
-  // }
-
-  // std::cout << "---------volumeIntegral----------------" << '\n';
-  // for (int ivar=0; ivar < numberOfVariables; ivar++) {
-    // int ll=0;
-    // int ii=0;
-    // int jj=0;
-    // int kk=0;
-    // const int nodeindex          = ii + basisSize * jj + basisSize * basisSize * kk;
-    // const int spacetimenodeindex = nodeindex  + basisSize * basisSize * basisSize * ll;
-
-    // const int dofstartindex           = nodeindex * numberOfVariables;
-    // const int spacetimedofstartindex  = spacetimenodeindex * numberOfVariables;
-    
-    // std::cout << lFhi_x[ivar] << '\n';
-  // }  
-  
-  for (int kk=0; kk<basisSize; kk++) { // loop over dof
-    for (int jj=0; jj<basisSize; jj++) {
-      for (int ii=0; ii<basisSize; ii++) {
-
-      double weight = kernels::gaussLegendreWeights[basisSize-1][jj] *
-                        kernels::gaussLegendreWeights[basisSize-1][kk];
-
-
-        for(int mm=0; mm < basisSize; mm++) {
-          const int mmNodeIndex         = mm + basisSize * jj + basisSize * basisSize * kk; 
-          const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
-
+    for (int ii=0; ii<basisSize; ii++) {  // loop over dof
+      for (int jj=0; jj<basisSize; jj++) {
+        for (int kk=0; kk<basisSize; kk++) {
           for(int ivar=0; ivar < numberOfVariables; ivar++) {
-            lduh3D[kk][jj][ii][ivar] += weight/dx[0] * kernels::Kxi[order][ii][mm] * lFhi_x[ii+ivar]; 
+            for(int dim=0; dim < DIMENSIONS; dim++) {
+              lFhiFortran[f2p5(ivar, dim, ii, jj, kk)] = lFhi[p2f5(ivar, dim, ii, jj, kk)];
+            }
           }
         }
       }
     }
-  }
-  
- 
-  // Compute the "derivatives" (contributions of the stiffness matrix)
-  // y direction (independent from the x and z derivatives)
-  for (int kk=0; kk<basisSize; kk++) { // loop over dof
-    for (int jj=0; jj<basisSize; jj++) {
-      for (int ii=0; ii<basisSize; ii++) {
 
-      double weight = kernels::gaussLegendreWeights[basisSize-1][ii] *
-                        kernels::gaussLegendreWeights[basisSize-1][kk];
-
-        // TODO please check this again
-        // lFhi_y[nDOF_z][nDOF_x][nDOF_y][nVar]
-        // lFhi_y[(mm + basisSize * ii + basisSize * basisSize * kk)+ivar]
-        for(int mm=0; mm < basisSize; mm++) {
-          const int mmNodeIndex         = mm + basisSize * ii + basisSize * basisSize * kk; 
-          const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
-
-          for(int ivar=0; ivar < numberOfVariables; ivar++) {
-            lduh3D[kk][jj][ii][ivar] += weight/dx[1] * kernels::Kxi[order][jj][mm] * lFhi_y[jj+ivar]; 
-          }
-        }
-      }
-    }
-  }
-  
- 
-  
-  // Compute the "derivatives" (contributions of the stiffness matrix)
-  // z direction (independent from the x and y derivatives)
-  for (int kk=0; kk<basisSize; kk++) { // loop over dof
-    for (int jj=0; jj<basisSize; jj++) {
-      for (int ii=0; ii<basisSize; ii++) {
-
-      double weight = kernels::gaussLegendreWeights[basisSize-1][ii] *
-                        kernels::gaussLegendreWeights[basisSize-1][jj];
-
-
-        for(int mm=0; mm < basisSize; mm++) {
-          const int mmNodeIndex         = mm + basisSize * jj + basisSize * basisSize * ii; 
-          const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
-
-          // TODO please check this again
-          // something is definitely wrong here. lduh and lFhi_z are accessed in the same way
-          // but are not stored in the same way
-          // lFhi_z[nDOF_x][nDOF_y][nDOF_z][nVar]
-          // lFhi_z[(ii*basisSize*basisSize+basisSize*jj+mm)+ivar]
-          for(int ivar=0; ivar < numberOfVariables; ivar++) {
-            lduh3D[kk][jj][ii][ivar] += weight/dx[2] * kernels::Kxi[order][kk][mm] * lFhi_z[kk+ivar]; 
-          }
-        }
-      }
-    }
-  }
- 
-// std::cout << "---------volumeIntegral----------------" << '\n';
-  // for (int ivar=0; ivar < numberOfVariables; ivar++) {
-    // int ll=0;
-    // int ii=0;
-    // int jj=0;
-    // int kk=0;
-    // const int nodeindex          = ii + basisSize * jj + basisSize * basisSize * kk;
-    // const int spacetimenodeindex = nodeindex  + basisSize * basisSize * basisSize * ll;
-
-    // const int dofstartindex           = nodeindex * numberOfVariables;
-    // const int spacetimedofstartindex  = spacetimenodeindex * numberOfVariables;
     
-    // std::cout << lduh3D[kk][jj][ii][ivar] << '\n';
-  // }
-// exit(0);  
+    // std::ofstream ofs;
+    // ofs.open ("boutput_lFhi.txt", std::ofstream::out);
+    // for (int ii=0; ii<numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize; ii++) {
+      // ofs << lFhi[ii] << "\n";
+    // }
+    // ofs.close();
+
+    // ofs.open ("boutput_lFhiFortran.txt", std::ofstream::out);
+    // for (int ii=0; ii<numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize; ii++) {
+      // ofs << lFhiFortran[ii] << "\n";
+    // }
+    // ofs.close();
+  
+    // cout << "-------------lFhi in volumeIntegral.cpph------------------" << "\n";
+    // cout << lFhi[0] << "\n";
+    // cout << lFhi[1]<< "\n";
+    // cout << lFhi[2] << "\n";
+    // cout << lFhi[3] << "\n";
+    // cout << lFhi[4] << "\n";
+    // cout << lFhi[5] << "\n";
+    // cout << "-------------lFhi in volumeIntegral.cpph------------------" << "\n";
+    
+    
+    double dxTemp[3] = {dx[0], dx[1], dx[2]};
+    
+    adervolumeintegral_(lduh, lFhiFortran, &dxTemp[0]);
+
+
  
  #endif  
 }

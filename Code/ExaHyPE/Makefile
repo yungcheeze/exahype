@@ -26,6 +26,8 @@ LINK_MPI=
 # Decide on compiler and flags depending on the environment variables [ARCHITECTURE]={Phi, CPU}, [CC]={gcc, Intel} and [MODE]={Debug, Profile, Release}
 # -----------------------
 ifeq ($(ARCHITECTURE),Phi)
+    FC=ifort
+    FCOMPILER_CFLAGS=-r8
 		CC=icpc
 		ifeq ($(MODE),Debug)
 			# Settings for the Intel Compiler (Debug Mode)
@@ -50,6 +52,8 @@ ifeq ($(ARCHITECTURE),Phi)
 		endif
 else
 	ifeq ($(CC),gcc)
+    FC=gfortran
+    FCOMPILER_CFLAGS=-fdefault-real-8
 		CC=g++
 		ifeq ($(MODE),Debug)
 			# Settings for the GNU Compiler (Debug Mode)
@@ -78,6 +82,8 @@ else
 			COMPILER_LFLAGS=
 		endif
 	else
+    FC=ifort
+    FCOMPILER_CFLAGS=-r8
 		CC=icpc
 		ifeq ($(MODE),Debug)
 			# Settings for the Intel Compiler (Debug Mode)
@@ -148,7 +154,7 @@ OBJECTS=$(SOURCES:.cpp=.o)
 
 
 
-all: header build
+all: header doFortran build
 
 buildinfo:
 	$(EXAHYPE_PATH)/generate-buildinfo.sh $(PROJECT_PATH)
@@ -168,7 +174,16 @@ endif
 	find -H $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
 
 
-
+doFortran:
+#  ifeq ($(INCLUDE_FORTRAN),yes)
+#    $(FC) $(FCOMPILER_CFLAGS) -c typesDef.f90 
+#    $(FC) $(FCOMPILER_CFLAGS) -c spaceTimePredictor.f90 
+#    $(FC) $(FCOMPILER_CFLAGS) -c volumeIntegral.f90
+#    $(FC) $(FCOMPILER_CFLAGS) -c surfaceIntegral.f90
+#    $(FC) $(FCOMPILER_CFLAGS) -c riemannSolver.f90
+#    $(FC) $(FCOMPILER_CFLAGS) -c elementUpdate.f90
+#  endif
+ 
 header:
 	@echo ================================
 	@echo 
@@ -182,8 +197,9 @@ header:
 	@echo framework Peano \(www.peano-framework.org\).
 
 
-build: buildinfo files.mk $(OBJECTS)
+build: buildinfo files.mk doFortran $(OBJECTS)
 	$(LL) $(OBJECTS) -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS) 
+  #$(LL) $(OBJECTS) typesDef.o spaceTimePredictor.o volumeIntegral.o surfaceIntegral.o riemannSolver.o elementUpdate.o -lifcore -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS) 
 	@echo
 	@echo build of ExaHyPE successful
 	@echo run code with ./$(EXECUTABLE) and pass config file as argument

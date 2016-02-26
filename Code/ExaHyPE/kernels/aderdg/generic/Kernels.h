@@ -4,6 +4,16 @@
 #include "tarch/la/Vector.h"
 #include "peano/utils/Globals.h"
 
+#define MbasisSize 4
+#define Mvar 5
+#define Mdim 3
+#define f2p5(var, dim, i, j, k) (var + Mvar*dim + Mvar*Mdim*i + Mvar*Mdim*MbasisSize*j + Mvar*Mdim*MbasisSize*MbasisSize*k)
+#define p2f5(var, dim, i, j, k) (dim*MbasisSize*MbasisSize*MbasisSize*Mvar + Mvar*i + Mvar*MbasisSize*j + Mvar*MbasisSize*MbasisSize*k + var)
+
+#define Mface 6
+#define f2p4(var, face, a, b) (var + Mvar*face + Mvar*Mface*a + Mvar*Mface*MbasisSize*b)
+#define p2f4(var, face, a, b) (face*MbasisSize*MbasisSize*Mvar + Mvar*a + Mvar*MbasisSize*b + var)
+
 namespace kernels {
   namespace aderdg {
     namespace generic {
@@ -18,8 +28,8 @@ namespace kernels {
           double* lFi,
           double* lQhi,
           double* lFhi,
-          double* lQhbnd,
-          double* lFhbnd,
+          double* lQbnd,
+          double* lFbnd,
           const double* const luh,
           const tarch::la::Vector<DIMENSIONS,double>&  dx,
           const double predictorTimeStepSize,
@@ -92,6 +102,7 @@ namespace kernels {
           const int basisSize
       );
 
+#if DIMENSIONS == 2
       /**
        * @todo Dominic Etienne Charrier
        * docu
@@ -130,19 +141,6 @@ namespace kernels {
           const int numberOfVariables,
           const int basisSize
       );
-#if DIMENSIONS == 3
-
-      void extrapolatedPredictorZDirection(
-          double* lQhbnd,
-          double* lFhbnd,
-          const double* const lQhi,
-          const double* const lFhi,
-          const int facePosition, // 0 for "left" face, 1 far "right" face
-          const double evaluationTimeStepSize,
-          const double predictorTimeStepSize,
-          const int numberOfVariables,
-          const int basisSize
-      );
 #endif
 
       // todo Dominic Etienne Charrier:
@@ -171,7 +169,7 @@ namespace kernels {
       // Keep only one surfaceIntegral.
       void surfaceIntegral(
           double* lduh,
-          const double* const lFhbnd,
+          const double* const lFbnd,
           const tarch::la::Vector<DIMENSIONS,double>&  dx,
           const int numberOfVariables,
           const int basisSize
@@ -185,6 +183,7 @@ namespace kernels {
           const int basisSize
       );*/
 
+#if DIMENSIONS == 2
       void surfaceIntegralXDirection(
           double * lduh,
           const double * const lFhbnd,
@@ -205,17 +204,7 @@ namespace kernels {
           const int basisSize
       );
 
-#if DIMENSIONS == 3
 
-      void surfaceIntegralZDirection(
-          double * lduh,
-          const double * const lFhbnd,
-          const double area,
-          const int facePosition,  // 0 for "left" face, 1 for "right" face.
-          const double updateSign, // -1 for "left" face, 1 for "right" face.
-          const int numberOfVariables,
-          const int basisSize
-      );
 #endif
 
       // @todo Dominic Etienne Charrier

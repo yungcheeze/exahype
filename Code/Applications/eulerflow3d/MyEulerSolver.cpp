@@ -1,9 +1,8 @@
 #include "MyEulerSolver.h"
 
 
-
 Euler3d::MyEulerSolver::MyEulerSolver( int kernelNumber):
-  exahype::solvers::Solver("MyEulerSolver",exahype::solvers::Solver::ADER_DG,kernelNumber,5,3+1,exahype::solvers::Solver::GlobalTimeStepping) {
+  exahype::solvers::Solver("MyEulerSolver",exahype::solvers::Solver::ADER_DG,kernelNumber,5,3+1) {
   // @todo Please implement/augment if required
 }
 
@@ -90,8 +89,8 @@ void Euler3d::MyEulerSolver::initialValues(const double* const x, double* Q) {
   Q[1] = 0.;
   Q[2] = 0.;
   Q[3] = 0.;
-//  Q[4] = 1./(GAMMA-1) + std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/(0.05*0.05)) * 1.0e-3;
-  Q[4] = 2.5;
+  Q[4] = 1./(GAMMA-1) + std::exp(-((x[0]-0.5)*(x[0]-0.5) + (x[1]-0.5)*(x[1]-0.5) + (x[2]-0.5)*(x[2]-0.5))/(0.05)) * 1.0e-3;
+//  Q[4] = 2.5;
 }
 
 
