@@ -7,7 +7,6 @@
 #include "tarch/multicore/Loop.h"
 #include "peano/datatraversal/autotuning/Oracle.h"
 
-#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
 /**
@@ -83,7 +82,6 @@ exahype::mappings::InitialCondition::~InitialCondition() {
 exahype::mappings::InitialCondition::InitialCondition(const InitialCondition&  masterThread):
     _localState(masterThread._localState
 ) {
-  _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 
@@ -378,8 +376,7 @@ void exahype::mappings::InitialCondition::enterCell(
     // ugly.
     records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i]);
 
-    exahype::solvers::Solve& solve   = _localState.getSolveRegistry()      [ p->getSolveNumber() ];
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers [ solve.getSolverNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers [ p->getSolverNumber() ];
 
     // @todo Dominic Etienne Charrier
     // 03/02/16:

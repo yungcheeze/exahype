@@ -16,7 +16,7 @@
 namespace exahype {
   namespace tests {
     namespace solvers {
-      class SolveTest;
+      class SolverTest;
     }
   }
 }
@@ -26,7 +26,7 @@ namespace exahype {
  * This is just a default test case that demonstrated how to write unit tests 
  * in Peano. Feel free to rename, remove, or duplicate it. 
  */ 
-class exahype::tests::solvers::SolveTest: public tarch::tests::TestCase {
+class exahype::tests::solvers::SolverTest: public tarch::tests::TestCase {
   private:
     /**
      * Tests the properties of a Solve
@@ -35,8 +35,8 @@ class exahype::tests::solvers::SolveTest: public tarch::tests::TestCase {
     void testSolve();
 
   public: 
-    SolveTest();
-    virtual ~SolveTest();
+    SolverTest();
+    virtual ~SolverTest();
      
     virtual void run();
 };

@@ -35,8 +35,12 @@ class exahype::tests::GenericEulerKernelTest: public tarch::tests::TestCase {
 
     const double eps = 1.0e-10; // for quick adaption of the test cases (say, switch to single precision)
 
-    static void testFlux(const double * const Q, double *f, double *g, double *h);
+#if DIMENSIONS == 2
     static void testFlux(const double* const Q, double* f, double* g);
+#elif DIMENSIONS == 3
+    static void testFlux(const double * const Q, double *f, double *g, double *h);
+#endif
+
     static void testEigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);
   public: 
     GenericEulerKernelTest();

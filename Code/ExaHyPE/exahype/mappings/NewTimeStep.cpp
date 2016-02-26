@@ -1,10 +1,8 @@
 #include "exahype/mappings/NewTimeStep.h"
 
-#include "exahype/solvers/Solve.h"
+#include "exahype/solvers/Solver.h"
 
 #include "peano/datatraversal/autotuning/Oracle.h"
-
-#include "exahype/timestepping/TimeSteppingSynchronization.h"
 
 #include "tarch/multicore/Loop.h"
 
@@ -82,7 +80,6 @@ exahype::mappings::NewTimeStep::~NewTimeStep() {
 exahype::mappings::NewTimeStep::NewTimeStep(const NewTimeStep&  masterThread):
   _localState(masterThread._localState
 ) {
-   _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 
@@ -363,19 +360,14 @@ void exahype::mappings::NewTimeStep::enterCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size();
+  const int numberOfADERDGCellDescriptions = static_cast<int>( ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size() );
   const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined0; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
   const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
   pfor(i,0,numberOfADERDGCellDescriptions,grainSize)
-    // todo ugly
-    // This is not beautiful and should be replaced by a reference next. I just
-    // use it to mirror the aforementioned realisation. Dominic, please change
-    // successively to a simpler scheme with just references. Pointers are
-    // ugly.
     records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i]);
-    const exahype::solvers::Solve& solve = _localState.getSolveRegistry()[ p->getSolveNumber() ];
+    const exahype::solvers::Solver* solver = solvers::RegisteredSolvers[ p->getSolverNumber() ];
 
-    timestepping::synchroniseTimeStepping(solve,*p);
+    solver->synchroniseTimeStepping(*p);
   endpfor
   peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
 }

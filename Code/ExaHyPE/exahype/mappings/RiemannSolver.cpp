@@ -6,10 +6,8 @@
 #include "tarch/multicore/Loop.h"
 #include "peano/datatraversal/autotuning/Oracle.h"
 
-#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
-#include "exahype/timestepping/TimeSteppingSynchronization.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -438,7 +436,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
   // Assumes that the both elements hold the same (number of) solvers
   assertion1WithExplanation( cellDescriptionsL.size() == cellDescriptionsR.size(), cellDescriptionsL.size(), "The number of ADERDGCellDescriptions is not the same for both cells!" );
 
-  const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexL] ).size();
+  const int numberOfADERDGCellDescriptions = static_cast<int>( ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexL] ).size() );
   const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined2; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
   const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
   pfor(i,0,numberOfADERDGCellDescriptions,grainSize)
@@ -449,8 +447,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
     // ugly.
     records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndexL] )[i]);
 
-    exahype::solvers::Solve& solve   = _localState.getSolveRegistry()       [ p->getSolveNumber() ];
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers  [ solve.getSolverNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers  [ p->getSolverNumber() ];
 
     // Lock the critical multithreading area.
     bool riemannSolveNotPerformed = false;
@@ -473,8 +470,8 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       double * FL = &(DataHeap::getInstance().getData(cellDescriptionsL[i].getFluctuation())[faceL * numberOfFaceDof]._persistentRecords._u);
       double * FR = &(DataHeap::getInstance().getData(cellDescriptionsR[i].getFluctuation())[faceR * numberOfFaceDof]._persistentRecords._u);
 
-      timestepping::synchroniseTimeStepping( solve,cellDescriptionsL[i] );
-      timestepping::synchroniseTimeStepping( solve,cellDescriptionsR[i] );
+      solver->synchroniseTimeStepping( cellDescriptionsL[i] );
+      solver->synchroniseTimeStepping( cellDescriptionsR[i] );
 
       logDebug("touchVertexLastTime(...)::debug::before::dt_min(previous ) of State*",_localState.getPreviousMinTimeStepSize());
       logDebug("touchVertexLastTime(...)::debug::before::dt_min(corrector) of Solve*",solve.getCorrectorTimeStepSize());

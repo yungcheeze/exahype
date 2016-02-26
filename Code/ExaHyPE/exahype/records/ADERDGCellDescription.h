@@ -32,7 +32,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   19/02/2016 15:17
+ * @date   25/02/2016 12:38
  */
 class exahype::records::ADERDGCellDescription { 
    
@@ -41,7 +41,7 @@ class exahype::records::ADERDGCellDescription {
       typedef exahype::records::ADERDGCellDescriptionPacked Packed;
       
       struct PersistentRecords {
-         int _solveNumber;
+         int _solverNumber;
          bool _isParent;
          bool _isGhost;
          #ifdef UseManualAlignment
@@ -81,25 +81,25 @@ class exahype::records::ADERDGCellDescription {
          /**
           * Generated
           */
-         PersistentRecords(const int& solveNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+         PersistentRecords(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
          
          
-         inline int getSolveNumber() const 
+         inline int getSolverNumber() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _solveNumber;
+            return _solverNumber;
          }
          
          
          
-         inline void setSolveNumber(const int& solveNumber) 
+         inline void setSolverNumber(const int& solverNumber) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _solveNumber = solveNumber;
+            _solverNumber = solverNumber;
          }
          
          
@@ -617,7 +617,7 @@ class exahype::records::ADERDGCellDescription {
       /**
        * Generated
        */
-      ADERDGCellDescription(const int& solveNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+      ADERDGCellDescription(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
       
       /**
        * Generated
@@ -625,22 +625,22 @@ class exahype::records::ADERDGCellDescription {
       ~ADERDGCellDescription();
       
       
-      inline int getSolveNumber() const 
+      inline int getSolverNumber() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._solveNumber;
+         return _persistentRecords._solverNumber;
       }
       
       
       
-      inline void setSolveNumber(const int& solveNumber) 
+      inline void setSolverNumber(const int& solverNumber) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._solveNumber = solveNumber;
+         _persistentRecords._solverNumber = solverNumber;
       }
       
       
@@ -1301,14 +1301,14 @@ class exahype::records::ADERDGCellDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   19/02/2016 15:17
+          * @date   25/02/2016 12:38
           */
          class exahype::records::ADERDGCellDescriptionPacked { 
             
             public:
                
                struct PersistentRecords {
-                  int _solveNumber;
+                  int _solverNumber;
                   bool _isParent;
                   bool _isGhost;
                   std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
@@ -1336,25 +1336,25 @@ class exahype::records::ADERDGCellDescription {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const int& solveNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+                  PersistentRecords(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
                   
                   
-                  inline int getSolveNumber() const 
+                  inline int getSolverNumber() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _solveNumber;
+                     return _solverNumber;
                   }
                   
                   
                   
-                  inline void setSolveNumber(const int& solveNumber) 
+                  inline void setSolverNumber(const int& solverNumber) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _solveNumber = solveNumber;
+                     _solverNumber = solverNumber;
                   }
                   
                   
@@ -1872,7 +1872,7 @@ class exahype::records::ADERDGCellDescription {
                /**
                 * Generated
                 */
-               ADERDGCellDescriptionPacked(const int& solveNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+               ADERDGCellDescriptionPacked(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
                
                /**
                 * Generated
@@ -1880,22 +1880,22 @@ class exahype::records::ADERDGCellDescription {
                ~ADERDGCellDescriptionPacked();
                
                
-               inline int getSolveNumber() const 
+               inline int getSolverNumber() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._solveNumber;
+                  return _persistentRecords._solverNumber;
                }
                
                
                
-               inline void setSolveNumber(const int& solveNumber) 
+               inline void setSolverNumber(const int& solverNumber) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._solveNumber = solveNumber;
+                  _persistentRecords._solverNumber = solverNumber;
                }
                
                

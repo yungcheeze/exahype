@@ -8,10 +8,8 @@
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
-#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
-#include "exahype/timestepping/TimeSteppingSynchronization.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -85,7 +83,6 @@ exahype::mappings::BoundaryConditions::~BoundaryConditions() {
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::BoundaryConditions::BoundaryConditions(const BoundaryConditions&  masterThread):
       _localState( masterThread._localState ) {
-  _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 
@@ -462,8 +459,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
     // ugly.
     records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData( adjacentADERDGCellDescriptionsIndices[cellIndex] )[i]);
 
-    exahype::solvers::Solve& solve   = _localState.getSolveRegistry()       [ p->getSolveNumber() ];
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers  [ solve.getSolverNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers  [ p->getSolverNumber() ];
 
     // Lock the critical multithreading area.
     // Note that two boundary vertices can operate on the same face at the same time.
@@ -491,7 +487,8 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       double * Qhbnd = &(DataHeap::getInstance().getData(p->getExtrapolatedPredictor())[faceIndex * numberOfFaceDof]._persistentRecords._u);
       double * Fhbnd = &(DataHeap::getInstance().getData(p->getFluctuation())          [faceIndex * numberOfFaceDof]._persistentRecords._u);
 
-      timestepping::synchroniseTimeStepping(solve,*p);
+      // @todo
+//      timestepping::synchroniseTimeStepping(solve,*p);
 
       logDebug("touchVertexLastTime(...)::debug::before::dt_min(previous ) of State*",_localState.getPreviousMinTimeStepSize());
       logDebug("touchVertexLastTime(...)::debug::before::dt_min(corrector) of Solve*",solve.getCorrectorTimeStepSize());

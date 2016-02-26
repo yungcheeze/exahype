@@ -4,6 +4,8 @@
 
 #include "peano/grid/Checkpoint.h"
 
+#include "exahype/solvers/Solver.h"
+
 #include <limits>
 
 exahype::State::State():
@@ -51,13 +53,14 @@ void exahype::State::startNewTimeStep() {
   _stateData.setNextMinTimeStepSize( std::numeric_limits<double>::max() );
 
   for (
-      SolveRegistry::iterator p = _solveRegistry.begin();
-      p != _solveRegistry.end();
-      p++
-  ){
-    (*p).startNewTimeStep();
+    std::vector<exahype::solvers::Solver*>::const_iterator p = solvers::RegisteredSolvers.begin();
+    p != solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    (*p)->startNewTimeStep();
   }
 }
+
 
 void exahype::State::merge(const exahype::State& anotherState) {
   _stateData.setPreviousMinTimeStepSize( std::min(_stateData.getPreviousMinTimeStepSize(),anotherState._stateData.getPreviousMinTimeStepSize()) );
@@ -69,6 +72,10 @@ void exahype::State::merge(const exahype::State& anotherState) {
 
   // todo 15/02/16:Dominic Etienne Charrier
   // This does only work for consistent registries
+
+
+  // @todo Fehlerhaft
+/*
   int solveNumber = 0;
   for (
       SolveRegistry::iterator p = _solveRegistry.begin();
@@ -82,14 +89,7 @@ void exahype::State::merge(const exahype::State& anotherState) {
     assertion(_stateData.getCurrentMinTimeStepSize()  <= (*p).getPredictorTimeStepSize());
     assertion(_stateData.getPreviousMinTimeStepSize() <= (*p).getCorrectorTimeStepSize());
   }
-}
-
-exahype::State::SolveRegistry& exahype::State::getSolveRegistry() {
-  return _solveRegistry;
-}
-
-void exahype::State::deepCopySolveRegistry(const State& anotherState) {
-  _solveRegistry = anotherState._solveRegistry;
+*/
 }
 
 void exahype::State::writeToCheckpoint( peano::grid::Checkpoint<exahype::Vertex,exahype::Cell>& checkpoint ) const {

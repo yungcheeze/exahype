@@ -5,7 +5,6 @@
 #include "tarch/multicore/Loop.h"
 #include "peano/datatraversal/autotuning/Oracle.h"
 
-#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
 
@@ -377,8 +376,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
     // ugly.
     records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i]);
 
-    exahype::solvers::Solve& solve   = _localState.getSolveRegistry()       [ p->getSolveNumber() ];
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers  [ solve.getSolverNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
 
     double * luh  = &(DataHeap::getInstance().getData(p->getSolution())[0]._persistentRecords._u);
     double * lduh = &(DataHeap::getInstance().getData(p->getUpdate())  [0]._persistentRecords._u);

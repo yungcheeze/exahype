@@ -13,6 +13,18 @@ int Euler2d::MyEulerSolver::getMinimumTreeDepth() const {
   // @todo Please implement
   return 4;
 }
+void Euler2d::MyEulerSolver::updateSolution(double*  luh, const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx, double  t, double  dt) {
+  // @todo Please implement/augment if required
+}
+
+
+
+bool Euler2d::MyEulerSolver::hasToUpdateSolution( const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx) {
+  // @todo Please implement/augment if required
+  return false;
+}
+
+
 void Euler2d::MyEulerSolver::flux(const double* const Q, double* f, double* g) {
   // @todo Please implement
   const double GAMMA = 1.4;

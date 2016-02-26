@@ -27,6 +27,8 @@ class Euler2d::MyEulerSolver: public exahype::solvers::Solver {
     virtual void riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex);
     virtual double stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx );
     virtual void initialCondition(double* luh, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx);
+    virtual void updateSolution(double*  luh, const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx, double  t, double  dt);
+    virtual bool hasToUpdateSolution( const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx);
   private:
     static void flux(const double* const Q, double* f, double* g);
     static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);

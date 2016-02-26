@@ -5,8 +5,8 @@
 #include "tarch/multicore/Loop.h"
 #include "peano/datatraversal/autotuning/Oracle.h"
 
-#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
+
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -363,7 +363,7 @@ void exahype::mappings::VolumeIntegral::enterCell(
 ) {
   logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
-  const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size();
+  const int numberOfADERDGCellDescriptions = static_cast<int>( ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size() );
   const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined6; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
   const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
   pfor(i,0,numberOfADERDGCellDescriptions,grainSize)
@@ -374,8 +374,7 @@ void exahype::mappings::VolumeIntegral::enterCell(
     // ugly.
     records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i]);
 
-    exahype::solvers::Solve& solve   = _localState.getSolveRegistry()      [ p->getSolveNumber() ];
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers [ solve.getSolverNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers [ p->getSolverNumber() ];
 
     double * lduh = &(DataHeap::getInstance().getData(p->getUpdate())    [0]._persistentRecords._u);
     double * lFhi = &(DataHeap::getInstance().getData(p->getVolumeFlux())[0]._persistentRecords._u);

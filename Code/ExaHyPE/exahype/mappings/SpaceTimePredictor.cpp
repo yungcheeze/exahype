@@ -5,7 +5,6 @@
 #include "tarch/multicore/Loop.h"
 #include "peano/datatraversal/autotuning/Oracle.h"
 
-#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
 
@@ -80,9 +79,7 @@ exahype::mappings::SpaceTimePredictor::~SpaceTimePredictor() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::SpaceTimePredictor::SpaceTimePredictor(const SpaceTimePredictor&  masterThread):
-      _localState(masterThread._localState
-      ) {
-  _localState.deepCopySolveRegistry ( masterThread._localState );
+      _localState(masterThread._localState) {
 }
 
 
@@ -372,7 +369,7 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
       fineGridCell.toString()
   );
 
-  const auto numberOfADERDGCellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size();
+  const int numberOfADERDGCellDescriptions = static_cast<int>( ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size() );
   const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined4; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
   const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
   pfor(i,0,numberOfADERDGCellDescriptions,grainSize)
@@ -383,8 +380,7 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
     // ugly.
     records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i]);
 
-    exahype::solvers::Solve& solve   = _localState.getSolveRegistry()      [ p->getSolveNumber() ];
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers [ solve.getSolverNumber() ];
+    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers [ p->getSolverNumber() ];
 
     // space-time DoF (basisSize**(DIMENSIONS+1))
     double * lQi = &(DataHeap::getInstance().getData(p->getSpaceTimePredictor()) [0]._persistentRecords._u);

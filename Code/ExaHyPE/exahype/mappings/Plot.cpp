@@ -4,7 +4,6 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
 #include "exahype/plotters/Plotter.h"
@@ -349,9 +348,9 @@ void exahype::mappings::Plot::enterCell(
       pPatch != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
       pPatch++
     ) {
-      const exahype::solvers::Solve& solve = _localState.getSolveRegistry()[ pPatch->getSolveNumber() ];
+      const exahype::solvers::Solver* solver = solvers::RegisteredSolvers[ pPatch->getSolverNumber() ];
 
-      if ( (*pPlotter)->plotDataFromSolver(solve.getSolverNumber()) ) {
+      if ( (*pPlotter)->plotDataFromSolver(pPatch->getSolverNumber()) ) {
         double * u = &(DataHeap::getInstance().getData(pPatch->getSolution())  [0]._persistentRecords._u);
         (*pPlotter)->plotPatch(
           fineGridVerticesEnumerator.getVertexPosition(),

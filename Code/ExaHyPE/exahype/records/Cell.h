@@ -34,7 +34,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   19/02/2016 15:17
+    * @date   25/02/2016 12:38
     */
    class exahype::records::Cell { 
       
@@ -682,7 +682,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   19/02/2016 15:17
+       * @date   25/02/2016 12:38
        */
       class exahype::records::CellPacked { 
          
@@ -1368,7 +1368,7 @@ namespace exahype {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   19/02/2016 15:17
+          * @date   25/02/2016 12:38
           */
          class exahype::records::Cell { 
             
@@ -1975,7 +1975,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   19/02/2016 15:17
+             * @date   25/02/2016 12:38
              */
             class exahype::records::CellPacked { 
                
@@ -2621,7 +2621,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   19/02/2016 15:17
+             * @date   25/02/2016 12:38
              */
             class exahype::records::Cell { 
                
@@ -2649,11 +2649,6 @@ namespace exahype {
                      #endif
                      int _responsibleRank;
                      bool _subtreeHoldsWorker;
-                     double _nodeWorkload;
-                     double _localWorkload;
-                     double _totalWorkload;
-                     double _maxWorkload;
-                     double _minWorkload;
                      bool _cellIsAForkCandidate;
                      /**
                       * Generated
@@ -2663,7 +2658,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                     PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
                      
                      
                      inline int getADERDGCellDescriptionsIndex() const 
@@ -2882,106 +2877,6 @@ namespace exahype {
                      
                      
                      
-                     inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _nodeWorkload;
-                     }
-                     
-                     
-                     
-                     inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _nodeWorkload = nodeWorkload;
-                     }
-                     
-                     
-                     
-                     inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _localWorkload;
-                     }
-                     
-                     
-                     
-                     inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _localWorkload = localWorkload;
-                     }
-                     
-                     
-                     
-                     inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _totalWorkload;
-                     }
-                     
-                     
-                     
-                     inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _totalWorkload = totalWorkload;
-                     }
-                     
-                     
-                     
-                     inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _maxWorkload;
-                     }
-                     
-                     
-                     
-                     inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _maxWorkload = maxWorkload;
-                     }
-                     
-                     
-                     
-                     inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _minWorkload;
-                     }
-                     
-                     
-                     
-                     inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _minWorkload = minWorkload;
-                     }
-                     
-                     
-                     
                      inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -3021,7 +2916,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                  Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
                   
                   /**
                    * Generated
@@ -3309,106 +3204,6 @@ namespace exahype {
                   
                   
                   
-                  inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._nodeWorkload;
-                  }
-                  
-                  
-                  
-                  inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._nodeWorkload = nodeWorkload;
-                  }
-                  
-                  
-                  
-                  inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._localWorkload;
-                  }
-                  
-                  
-                  
-                  inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._localWorkload = localWorkload;
-                  }
-                  
-                  
-                  
-                  inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._totalWorkload;
-                  }
-                  
-                  
-                  
-                  inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._totalWorkload = totalWorkload;
-                  }
-                  
-                  
-                  
-                  inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._maxWorkload;
-                  }
-                  
-                  
-                  
-                  inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._maxWorkload = maxWorkload;
-                  }
-                  
-                  
-                  
-                  inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._minWorkload;
-                  }
-                  
-                  
-                  
-                  inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._minWorkload = minWorkload;
-                  }
-                  
-                  
-                  
                   inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -3515,7 +3310,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   19/02/2016 15:17
+                * @date   25/02/2016 12:38
                 */
                class exahype::records::CellPacked { 
                   
@@ -3528,11 +3323,6 @@ namespace exahype {
                         tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                         int _responsibleRank;
                         bool _subtreeHoldsWorker;
-                        double _nodeWorkload;
-                        double _localWorkload;
-                        double _totalWorkload;
-                        double _maxWorkload;
-                        double _minWorkload;
                         
                         /** mapping of records:
                         || Member 	|| startbit 	|| length
@@ -3551,7 +3341,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                        PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
                         
                         
                         inline int getADERDGCellDescriptionsIndex() const 
@@ -3790,106 +3580,6 @@ namespace exahype {
                         
                         
                         
-                        inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _nodeWorkload;
-                        }
-                        
-                        
-                        
-                        inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _nodeWorkload = nodeWorkload;
-                        }
-                        
-                        
-                        
-                        inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _localWorkload;
-                        }
-                        
-                        
-                        
-                        inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _localWorkload = localWorkload;
-                        }
-                        
-                        
-                        
-                        inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _totalWorkload;
-                        }
-                        
-                        
-                        
-                        inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _totalWorkload = totalWorkload;
-                        }
-                        
-                        
-                        
-                        inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _maxWorkload;
-                        }
-                        
-                        
-                        
-                        inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _maxWorkload = maxWorkload;
-                        }
-                        
-                        
-                        
-                        inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _minWorkload;
-                        }
-                        
-                        
-                        
-                        inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _minWorkload = minWorkload;
-                        }
-                        
-                        
-                        
                         inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -3932,7 +3622,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                     CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
                      
                      /**
                       * Generated
@@ -4247,106 +3937,6 @@ namespace exahype {
                      
                      
                      
-                     inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._nodeWorkload;
-                     }
-                     
-                     
-                     
-                     inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._nodeWorkload = nodeWorkload;
-                     }
-                     
-                     
-                     
-                     inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._localWorkload;
-                     }
-                     
-                     
-                     
-                     inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._localWorkload = localWorkload;
-                     }
-                     
-                     
-                     
-                     inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._totalWorkload;
-                     }
-                     
-                     
-                     
-                     inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._totalWorkload = totalWorkload;
-                     }
-                     
-                     
-                     
-                     inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._maxWorkload;
-                     }
-                     
-                     
-                     
-                     inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._maxWorkload = maxWorkload;
-                     }
-                     
-                     
-                     
-                     inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._minWorkload;
-                     }
-                     
-                     
-                     
-                     inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._minWorkload = minWorkload;
-                     }
-                     
-                     
-                     
                      inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -4454,7 +4044,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   19/02/2016 15:17
+                * @date   25/02/2016 12:38
                 */
                class exahype::records::Cell { 
                   
@@ -5020,7 +4610,7 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   19/02/2016 15:17
+                   * @date   25/02/2016 12:38
                    */
                   class exahype::records::CellPacked { 
                      
@@ -5625,7 +5215,7 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   19/02/2016 15:17
+                   * @date   25/02/2016 12:38
                    */
                   class exahype::records::Cell { 
                      
@@ -5654,11 +5244,6 @@ namespace exahype {
                            #endif
                            int _responsibleRank;
                            bool _subtreeHoldsWorker;
-                           double _nodeWorkload;
-                           double _localWorkload;
-                           double _totalWorkload;
-                           double _maxWorkload;
-                           double _minWorkload;
                            bool _cellIsAForkCandidate;
                            int _numberOfLoadsFromInputStream;
                            int _numberOfStoresToOutputStream;
@@ -5670,7 +5255,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                           PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                            
                            
                            inline int getADERDGCellDescriptionsIndex() const 
@@ -5909,106 +5494,6 @@ namespace exahype {
                            
                            
                            
-                           inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _nodeWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _nodeWorkload = nodeWorkload;
-                           }
-                           
-                           
-                           
-                           inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _localWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _localWorkload = localWorkload;
-                           }
-                           
-                           
-                           
-                           inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _totalWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _totalWorkload = totalWorkload;
-                           }
-                           
-                           
-                           
-                           inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _maxWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _maxWorkload = maxWorkload;
-                           }
-                           
-                           
-                           
-                           inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _minWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _minWorkload = minWorkload;
-                           }
-                           
-                           
-                           
                            inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -6088,7 +5573,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                        Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                         
                         /**
                          * Generated
@@ -6396,106 +5881,6 @@ namespace exahype {
                         
                         
                         
-                        inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._nodeWorkload;
-                        }
-                        
-                        
-                        
-                        inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._nodeWorkload = nodeWorkload;
-                        }
-                        
-                        
-                        
-                        inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._localWorkload;
-                        }
-                        
-                        
-                        
-                        inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._localWorkload = localWorkload;
-                        }
-                        
-                        
-                        
-                        inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._totalWorkload;
-                        }
-                        
-                        
-                        
-                        inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._totalWorkload = totalWorkload;
-                        }
-                        
-                        
-                        
-                        inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._maxWorkload;
-                        }
-                        
-                        
-                        
-                        inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._maxWorkload = maxWorkload;
-                        }
-                        
-                        
-                        
-                        inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._minWorkload;
-                        }
-                        
-                        
-                        
-                        inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._minWorkload = minWorkload;
-                        }
-                        
-                        
-                        
                         inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -6642,7 +6027,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   19/02/2016 15:17
+                      * @date   25/02/2016 12:38
                       */
                      class exahype::records::CellPacked { 
                         
@@ -6656,11 +6041,6 @@ namespace exahype {
                               tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                               int _responsibleRank;
                               bool _subtreeHoldsWorker;
-                              double _nodeWorkload;
-                              double _localWorkload;
-                              double _totalWorkload;
-                              double _maxWorkload;
-                              double _minWorkload;
                               int _numberOfLoadsFromInputStream;
                               int _numberOfStoresToOutputStream;
                               
@@ -6681,7 +6061,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                              PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                               
                               
                               inline int getADERDGCellDescriptionsIndex() const 
@@ -6940,106 +6320,6 @@ namespace exahype {
                               
                               
                               
-                              inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _nodeWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _nodeWorkload = nodeWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _localWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _localWorkload = localWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _totalWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _totalWorkload = totalWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _maxWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _maxWorkload = maxWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _minWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _minWorkload = minWorkload;
-                              }
-                              
-                              
-                              
                               inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -7122,7 +6402,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                           CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                            
                            /**
                             * Generated
@@ -7457,106 +6737,6 @@ namespace exahype {
                            
                            
                            
-                           inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._nodeWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._nodeWorkload = nodeWorkload;
-                           }
-                           
-                           
-                           
-                           inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._localWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._localWorkload = localWorkload;
-                           }
-                           
-                           
-                           
-                           inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._totalWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._totalWorkload = totalWorkload;
-                           }
-                           
-                           
-                           
-                           inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._maxWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._maxWorkload = maxWorkload;
-                           }
-                           
-                           
-                           
-                           inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._minWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._minWorkload = minWorkload;
-                           }
-                           
-                           
-                           
                            inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -7704,7 +6884,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   19/02/2016 15:17
+                      * @date   25/02/2016 12:38
                       */
                      class exahype::records::Cell { 
                         
@@ -7733,11 +6913,6 @@ namespace exahype {
                               #endif
                               int _responsibleRank;
                               bool _subtreeHoldsWorker;
-                              double _nodeWorkload;
-                              double _localWorkload;
-                              double _totalWorkload;
-                              double _maxWorkload;
-                              double _minWorkload;
                               bool _cellIsAForkCandidate;
                               /**
                                * Generated
@@ -7747,7 +6922,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                              PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
                               
                               
                               inline int getADERDGCellDescriptionsIndex() const 
@@ -7986,106 +7161,6 @@ namespace exahype {
                               
                               
                               
-                              inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _nodeWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _nodeWorkload = nodeWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _localWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _localWorkload = localWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _totalWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _totalWorkload = totalWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _maxWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _maxWorkload = maxWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _minWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _minWorkload = minWorkload;
-                              }
-                              
-                              
-                              
                               inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -8125,7 +7200,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                           Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
                            
                            /**
                             * Generated
@@ -8433,106 +7508,6 @@ namespace exahype {
                            
                            
                            
-                           inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._nodeWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._nodeWorkload = nodeWorkload;
-                           }
-                           
-                           
-                           
-                           inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._localWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._localWorkload = localWorkload;
-                           }
-                           
-                           
-                           
-                           inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._totalWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._totalWorkload = totalWorkload;
-                           }
-                           
-                           
-                           
-                           inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._maxWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._maxWorkload = maxWorkload;
-                           }
-                           
-                           
-                           
-                           inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._minWorkload;
-                           }
-                           
-                           
-                           
-                           inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._minWorkload = minWorkload;
-                           }
-                           
-                           
-                           
                            inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -8639,7 +7614,7 @@ namespace exahype {
                          *
                          * 		   build date: 09-02-2014 14:40
                          *
-                         * @date   19/02/2016 15:17
+                         * @date   25/02/2016 12:38
                          */
                         class exahype::records::CellPacked { 
                            
@@ -8653,11 +7628,6 @@ namespace exahype {
                                  tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                                  int _responsibleRank;
                                  bool _subtreeHoldsWorker;
-                                 double _nodeWorkload;
-                                 double _localWorkload;
-                                 double _totalWorkload;
-                                 double _maxWorkload;
-                                 double _minWorkload;
                                  
                                  /** mapping of records:
                                  || Member 	|| startbit 	|| length
@@ -8676,7 +7646,7 @@ namespace exahype {
                                  /**
                                   * Generated
                                   */
-                                 PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                                 PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
                                  
                                  
                                  inline int getADERDGCellDescriptionsIndex() const 
@@ -8935,106 +7905,6 @@ namespace exahype {
                                  
                                  
                                  
-                                 inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _nodeWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _nodeWorkload = nodeWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _localWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _localWorkload = localWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _totalWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _totalWorkload = totalWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _maxWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _maxWorkload = maxWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _minWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _minWorkload = minWorkload;
-                                 }
-                                 
-                                 
-                                 
                                  inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -9077,7 +7947,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate);
+                              CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate);
                               
                               /**
                                * Generated
@@ -9412,106 +8282,6 @@ namespace exahype {
                               
                               
                               
-                              inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _persistentRecords._nodeWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _persistentRecords._nodeWorkload = nodeWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _persistentRecords._localWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _persistentRecords._localWorkload = localWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _persistentRecords._totalWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _persistentRecords._totalWorkload = totalWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _persistentRecords._maxWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _persistentRecords._maxWorkload = maxWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _persistentRecords._minWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _persistentRecords._minWorkload = minWorkload;
-                              }
-                              
-                              
-                              
                               inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -9619,7 +8389,7 @@ namespace exahype {
                          *
                          * 		   build date: 09-02-2014 14:40
                          *
-                         * @date   19/02/2016 15:17
+                         * @date   25/02/2016 12:38
                          */
                         class exahype::records::Cell { 
                            
@@ -9647,11 +8417,6 @@ namespace exahype {
                                  #endif
                                  int _responsibleRank;
                                  bool _subtreeHoldsWorker;
-                                 double _nodeWorkload;
-                                 double _localWorkload;
-                                 double _totalWorkload;
-                                 double _maxWorkload;
-                                 double _minWorkload;
                                  bool _cellIsAForkCandidate;
                                  int _numberOfLoadsFromInputStream;
                                  int _numberOfStoresToOutputStream;
@@ -9663,7 +8428,7 @@ namespace exahype {
                                  /**
                                   * Generated
                                   */
-                                 PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                 PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                  
                                  
                                  inline int getADERDGCellDescriptionsIndex() const 
@@ -9882,106 +8647,6 @@ namespace exahype {
                                  
                                  
                                  
-                                 inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _nodeWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _nodeWorkload = nodeWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _localWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _localWorkload = localWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _totalWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _totalWorkload = totalWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _maxWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _maxWorkload = maxWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _minWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _minWorkload = minWorkload;
-                                 }
-                                 
-                                 
-                                 
                                  inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -10061,7 +8726,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                              Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                               
                               /**
                                * Generated
@@ -10349,106 +9014,6 @@ namespace exahype {
                               
                               
                               
-                              inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _persistentRecords._nodeWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _persistentRecords._nodeWorkload = nodeWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _persistentRecords._localWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _persistentRecords._localWorkload = localWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _persistentRecords._totalWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _persistentRecords._totalWorkload = totalWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _persistentRecords._maxWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _persistentRecords._maxWorkload = maxWorkload;
-                              }
-                              
-                              
-                              
-                              inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _persistentRecords._minWorkload;
-                              }
-                              
-                              
-                              
-                              inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _persistentRecords._minWorkload = minWorkload;
-                              }
-                              
-                              
-                              
                               inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -10595,7 +9160,7 @@ namespace exahype {
                             *
                             * 		   build date: 09-02-2014 14:40
                             *
-                            * @date   19/02/2016 15:17
+                            * @date   25/02/2016 12:38
                             */
                            class exahype::records::CellPacked { 
                               
@@ -10608,11 +9173,6 @@ namespace exahype {
                                     tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int> _accessNumber;
                                     int _responsibleRank;
                                     bool _subtreeHoldsWorker;
-                                    double _nodeWorkload;
-                                    double _localWorkload;
-                                    double _totalWorkload;
-                                    double _maxWorkload;
-                                    double _minWorkload;
                                     int _numberOfLoadsFromInputStream;
                                     int _numberOfStoresToOutputStream;
                                     
@@ -10633,7 +9193,7 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                    PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                     
                                     
                                     inline int getADERDGCellDescriptionsIndex() const 
@@ -10872,106 +9432,6 @@ namespace exahype {
                                     
                                     
                                     
-                                    inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       return _nodeWorkload;
-                                    }
-                                    
-                                    
-                                    
-                                    inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       _nodeWorkload = nodeWorkload;
-                                    }
-                                    
-                                    
-                                    
-                                    inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       return _localWorkload;
-                                    }
-                                    
-                                    
-                                    
-                                    inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       _localWorkload = localWorkload;
-                                    }
-                                    
-                                    
-                                    
-                                    inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       return _totalWorkload;
-                                    }
-                                    
-                                    
-                                    
-                                    inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       _totalWorkload = totalWorkload;
-                                    }
-                                    
-                                    
-                                    
-                                    inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       return _maxWorkload;
-                                    }
-                                    
-                                    
-                                    
-                                    inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       _maxWorkload = maxWorkload;
-                                    }
-                                    
-                                    
-                                    
-                                    inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       return _minWorkload;
-                                    }
-                                    
-                                    
-                                    
-                                    inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       _minWorkload = minWorkload;
-                                    }
-                                    
-                                    
-                                    
                                     inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -11054,7 +9514,7 @@ namespace exahype {
                                  /**
                                   * Generated
                                   */
-                                 CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const double& nodeWorkload, const double& localWorkload, const double& totalWorkload, const double& maxWorkload, const double& minWorkload, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
+                                 CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream);
                                  
                                  /**
                                   * Generated
@@ -11369,106 +9829,6 @@ namespace exahype {
                                  
                                  
                                  
-                                 inline double getNodeWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _persistentRecords._nodeWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setNodeWorkload(const double& nodeWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _persistentRecords._nodeWorkload = nodeWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline double getLocalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _persistentRecords._localWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setLocalWorkload(const double& localWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _persistentRecords._localWorkload = localWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline double getTotalWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _persistentRecords._totalWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setTotalWorkload(const double& totalWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _persistentRecords._totalWorkload = totalWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline double getMaxWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _persistentRecords._maxWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setMaxWorkload(const double& maxWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _persistentRecords._maxWorkload = maxWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline double getMinWorkload() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    return _persistentRecords._minWorkload;
-                                 }
-                                 
-                                 
-                                 
-                                 inline void setMinWorkload(const double& minWorkload) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                    _persistentRecords._minWorkload = minWorkload;
-                                 }
-                                 
-                                 
-                                 
                                  inline bool getCellIsAForkCandidate() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -11616,7 +9976,7 @@ namespace exahype {
                             *
                             * 		   build date: 09-02-2014 14:40
                             *
-                            * @date   19/02/2016 15:17
+                            * @date   25/02/2016 12:38
                             */
                            class exahype::records::Cell { 
                               
@@ -12305,7 +10665,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   19/02/2016 15:17
+                               * @date   25/02/2016 12:38
                                */
                               class exahype::records::CellPacked { 
                                  

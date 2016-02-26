@@ -5,15 +5,15 @@
  A trivial project without any content.
 
  */
-exahype-project  TrivialProject
+exahype-project TrivialProject
 
   peano-path                 = ./Peano/peano
   tarch-path                 = ./Peano/tarch
   multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
   sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
   exahype-path               = ./ExaHyPE
-  
   output-directory           = ./Applications/trivialproject
+  architecture               = noarch
   
   
   computational-domain

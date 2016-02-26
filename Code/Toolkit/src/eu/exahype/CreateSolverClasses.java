@@ -214,6 +214,9 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("    virtual void riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex);\n" );
         writer.write("    virtual double stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx );\n" );
         writer.write("    virtual void initialCondition(double* luh, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx);\n" );
+
+        writer.write("    virtual void updateSolution(double*  luh, const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx, double  t, double  dt);\n" );
+        writer.write("    virtual bool hasToUpdateSolution( const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx);\n" );
     }
 
     private void writeMinimalADERDGSolverHeader(
@@ -421,7 +424,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("#include \"" + solverName + ".h\"\n");
         writer.write("\n\n\n");
         writer.write(_projectName + "::" + solverName + "::" + solverName + "( int kernelNumber):\n");
-        writer.write("  exahype::solvers::Solver(\"" + solverName + "\",exahype::solvers::Solver::ADER_DG,kernelNumber," + numberOfVariables + "," + order + "+1) {\n");
+        writer.write("  exahype::solvers::Solver(\"" + solverName + "\",exahype::solvers::Solver::ADER_DG,kernelNumber," + numberOfVariables + "," + order + "+1,exahype::solvers::Solver::GlobalTimeStepping) {\n");
         writer.write("  // @todo Please implement/augment if required\n");
         writer.write("}\n");
         writer.write("\n\n\n");
@@ -480,6 +483,15 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("  // @todo Please implement\n");
         writer.write("  return 3;\n");
         writer.write("}\n");
+        writer.write("void " + _projectName + "::" + solverName + "::updateSolution(double*  luh, const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx, double  t, double  dt) {\n");
+        writer.write("  // @todo Please implement/augment if required\n");
+        writer.write("}\n");
+        writer.write("\n\n\n");
+        writer.write("bool " + _projectName + "::" + solverName + "::hasToUpdateSolution( const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx) {\n");
+        writer.write("  // @todo Please implement/augment if required\n");
+        writer.write("  return false;\n");
+        writer.write("}\n");
+        writer.write("\n\n\n");
     }
 
     private void invokeCodeGenerator(

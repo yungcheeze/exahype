@@ -8,7 +8,11 @@
 #include <vector>
 
 #include "peano/utils/Globals.h"
+
 #include "tarch/la/Vector.h"
+
+#include "exahype/records/ADERDGCellDescription.h"
+
 
 #define EXAHYPE_FACE_LEFT   0
 #define EXAHYPE_FACE_RIGHT  1
@@ -41,8 +45,14 @@ public:
     ADER_DG
   };
 
+/*
+  enum Type {
+    SOLVE, SUBSOLVE
+  };
+*/
+
   enum TimeStepping {
-    GLOBAL, // ANARCHIC
+    GlobalTimeStepping, // ANARCHIC
   };
 
 protected:
@@ -74,8 +84,36 @@ protected:
   const int         _spaceTimeUnknownsPerCell;
 
   const int         _spaceTimeFluxUnknownsPerCell;
+
+  const TimeStepping _timeStepping;
+
+  /**
+   * Minimum corrector time stamp.
+   */
+  double             _minCorrectorTimeStamp;
+
+  /**
+   * Minimum predictor time stamp. Always equal or larger
+   * than the minimum corrector time stamp.
+   */
+  double             _minPredictorTimeStamp;
+
+  /**
+   * Corrector time step size.
+   */
+  double             _correctorTimeStepSize;
+
+  /**
+   * Predictor time step size.
+   */
+  double             _predictorTimeStepSize;
+
+  /**
+   * Predictor time step size.
+   */
+  double             _nextPredictorTimeStepSize;
 public:
-  Solver(const std::string& identifier, Type type, int kernelNumber, int numberOfVariables, int nodesPerCoordinateAxis);
+  Solver(const std::string& identifier, Type type, int kernelNumber, int numberOfVariables, int nodesPerCoordinateAxis, TimeStepping timeStepping);
 
   virtual ~Solver() {}
 
@@ -274,6 +312,36 @@ public:
       const tarch::la::Vector<DIMENSIONS,double>& center,
       const tarch::la::Vector<DIMENSIONS,double>& dx
   ) = 0;
+
+  /**
+   * This operation allows you to realise time-dependent conditions.
+   * Please be aware that this operation is called per time step if
+   * the corresponding predicate hasToUpdateSolution() yields true for the
+   * region.
+   */
+  virtual void updateSolution(
+    double *                                      luh,
+    const tarch::la::Vector<DIMENSIONS,double>&   center,
+    const tarch::la::Vector<DIMENSIONS,double>&   dx,
+    double                                        t,
+    double                                        dt
+  ) = 0;
+
+  virtual bool hasToUpdateSolution(
+    const tarch::la::Vector<DIMENSIONS,double>&   center,
+    const tarch::la::Vector<DIMENSIONS,double>&   dx
+  ) = 0;
+
+  /**
+   * @todo Dominic, please add a description what this routine does.
+   */
+  void synchroniseTimeStepping(exahype::records::ADERDGCellDescription& p) const;
+
+  void startNewTimeStep();
+
+  double getPredictorTimeStamp() const;
+
+  void updateNextPredictorTimeStepSize (const double& nextPredictorTimeStepSize);
 };
 
 #endif

@@ -30,7 +30,6 @@
 
 #include "exahype/plotters/Plotter.h"
 
-#include "exahype/solvers/Solve.h"
 #include "exahype/solvers/Solver.h"
 
 tarch::logging::Log  exahype::runners::Runner::_log( "exahype::runners::Runner" );
@@ -183,34 +182,6 @@ int exahype::runners::Runner::run() {
   return result;
 }
 
-void exahype::runners::Runner::initialiseSolveRegistry(State& state,bool correctorTimeLagging) {
-  int solverNumber=0;
-  for (
-      std::vector<exahype::solvers::Solver*>::iterator p = exahype::solvers::RegisteredSolvers.begin();
-      p != exahype::solvers::RegisteredSolvers.end();
-      p++
-  ){
-    state.getSolveRegistry().push_back(
-        exahype::solvers::Solve (
-            solverNumber, // solverNumber
-            exahype::solvers::Solve::SOLVE,
-            exahype::solvers::Solve::GLOBAL,
-            correctorTimeLagging, // corrector time lagging
-            true  // active
-        ));
-
-    state.getSolveRegistry()[solverNumber].setPredictorTimeStamp( state.getCurrentMinTimeStamp() );
-    solverNumber++;
-  }
-
-  logDebug(
-      "runAsMaster(...)",
-      "registered solvers=" << exahype::solvers::RegisteredSolvers.size() <<
-      "\t registered solves =" << state.getSolveRegistry().size()
-  );
-
-  assertion(state.getSolveRegistry().size()==exahype::solvers::RegisteredSolvers.size());
-}
 
 int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& repository) {
   peano::utils::UserInterface userInterface;
@@ -220,7 +191,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    * Initialise the state and the solves.
    */
   repository.getState().setCurrentMinTimeStamp(0.0);
-  initialiseSolveRegistry(repository.getState(),_parser.fuseAlgorithmicSteps());
 
   /*
    * Build up the initial space tree.
