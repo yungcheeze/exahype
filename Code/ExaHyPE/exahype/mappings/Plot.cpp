@@ -417,7 +417,3 @@ void exahype::mappings::Plot::ascend(
 ) {
   // do nothing
 }
-
-const exahype::State& exahype::mappings::Plot::getState() const {
-  return _localState;
-}

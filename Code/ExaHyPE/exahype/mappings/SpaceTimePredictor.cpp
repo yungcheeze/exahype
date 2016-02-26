@@ -476,7 +476,3 @@ void exahype::mappings::SpaceTimePredictor::ascend(
 ) {
   // do nothing
 }
-
-const exahype::State& exahype::mappings::SpaceTimePredictor::getState() const {
-  return _localState;
-}

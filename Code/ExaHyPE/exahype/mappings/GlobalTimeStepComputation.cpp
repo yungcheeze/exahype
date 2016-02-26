@@ -395,8 +395,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
     p->setPredictorTimeStepSize(admissibleTimeStepSize);
 
     // indirect update of the solve and local state time step sizes
-    solver->updateNextPredictorTimeStepSize(admissibleTimeStepSize);
-    _localState.updateNextMinTimeStepSize(admissibleTimeStepSize);
+    solver->updateMinNextPredictorTimeStepSize(admissibleTimeStepSize);
 
     // @ŧodo Wieder rein
 /*
@@ -470,8 +469,4 @@ void exahype::mappings::GlobalTimeStepComputation::ascend(
     exahype::Cell&           coarseGridCell
 ) {
   // do nothing
-}
-
-const exahype::State& exahype::mappings::GlobalTimeStepComputation::getState() const {
-  return _localState;
 }

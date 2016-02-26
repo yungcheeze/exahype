@@ -447,7 +447,3 @@ void exahype::mappings::SurfaceIntegral::ascend(
 ) {
   // do nothing
 }
-
-const exahype::State& exahype::mappings::SurfaceIntegral::getState() const {
-  return _localState;
-}

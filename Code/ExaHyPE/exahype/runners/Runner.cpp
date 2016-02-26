@@ -182,15 +182,14 @@ int exahype::runners::Runner::run() {
   return result;
 }
 
-
 int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& repository) {
   peano::utils::UserInterface userInterface;
   userInterface.writeHeader();
 
   /*
-   * Initialise the state and the solves.
+   * Initialise the solvers.
    */
-  repository.getState().setCurrentMinTimeStamp(0.0);
+
 
   /*
    * Build up the initial space tree.
@@ -222,21 +221,10 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.switchToPatchInitialisation();
   repository.iterate();
 
-  /*
-   * Apply the initial conditions (first corrector).
-   * Then, compute the the initial current time step size.
-   */
+
   repository.switchToInitialConditionAndGlobalTimeStepComputation();
   repository.iterate();
-  repository.getState().startNewTimeStep();
-
-  logInfo(
-      "runAsMaster(...)",
-      "step " << -1 <<
-      "\t t_min          =" << repository.getState().getCurrentMinTimeStamp() <<
-      "\t dt_min         =" << repository.getState().getCurrentMinTimeStepSize() <<
-      "\t previous dt_min=" << repository.getState().getPreviousMinTimeStepSize()
-  );
+  startNewTimeStep(-1);
 
   /*
    * Compute current first predictor based on current time step size.
@@ -245,25 +233,17 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    */
   repository.switchToPredictorAndGlobalTimeStepComputation();
   repository.iterate();
-  repository.getState().startNewTimeStep();
-
-  logInfo(
-      "runAsMaster(...)",
-      "step " << 0 <<
-      "\t t_min          =" << repository.getState().getCurrentMinTimeStamp() <<
-      "\t dt_min         =" << repository.getState().getCurrentMinTimeStepSize() <<
-      "\t previous dt_min=" << repository.getState().getPreviousMinTimeStepSize()
-  );
+  startNewTimeStep(0);
 
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n=1;
 
   while (
-      (repository.getState().getCurrentMinTimeStamp()<simulationEndTime)
+      (getMinSolverTimeStamp()<simulationEndTime)
       &&
-      tarch::la::greater(repository.getState().getCurrentMinTimeStepSize(), 0.0)
+      tarch::la::greater(getMinSolverTimeStepSize(), 0.0)
   ) {
-    if (exahype::plotters::isAPlotterActive(repository.getState().getCurrentMinTimeStamp())) {
+    if (exahype::plotters::isAPlotterActive(getMinSolverTimeStamp())) {
       repository.switchToPlot();
       repository.iterate();
       exahype::plotters::finishedPlotting();
@@ -276,20 +256,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     else {
       runOneTimeStampWithFourSeparateAlgorithmicSteps(repository);
     }
-    /*
-    * After the traversal, set the global current time step size as the previous global time step size.
-    */
-    repository.getState().startNewTimeStep();
-
-    tarch::logging::CommandLineLogger::getInstance().closeOutputStreamAndReopenNewOne();
-
-    logInfo(
-        "runAsMaster(...)",
-        "step " << n <<
-        "\t t_min          =" << repository.getState().getCurrentMinTimeStamp() <<
-        "\t dt_min         =" << repository.getState().getCurrentMinTimeStepSize() <<
-        "\t previous dt_min=" << repository.getState().getPreviousMinTimeStepSize()
-    );
+    startNewTimeStep(n);
 
     n++;
     logDebug( "runAsMaster(...)", "state=" << repository.getState().toString() );
@@ -301,6 +268,76 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   return 0;
 }
 
+double exahype::runners::Runner::getMinSolverTimeStamp() {
+  double currentMinTimeStamp = std::numeric_limits<double>::max();
+
+  for (
+    std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
+    p != exahype::solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    currentMinTimeStamp = std::min ( currentMinTimeStamp, (*p)->getMinCorrectorTimeStamp());
+  }
+  return currentMinTimeStamp;
+}
+
+double exahype::runners::Runner::getMinSolverTimeStepSize() {
+  double currentMinTimeStepSize = std::numeric_limits<double>::max();
+
+  for (
+    std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
+    p != exahype::solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    currentMinTimeStepSize = std::min ( currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
+  }
+  return currentMinTimeStepSize;
+}
+
+void exahype::runners::Runner::initSolvers() {
+  // todo 16/02/26:Dominic Etienne Charrier: The initial time stamp
+  // should be set by the user in his solver sub class.
+  for (
+    std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
+    p != exahype::solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    (*p)->setMinPredictorTimeStamp(0.0);
+  }
+}
+
+void exahype::runners::Runner::startNewTimeStep(int n) {
+  double currentMinTimeStamp    = std::numeric_limits<double>::max();
+  double currentMinTimeStepSize = std::numeric_limits<double>::max();
+  double nextMinTimeStepSize    = std::numeric_limits<double>::max();
+
+  for (
+    std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
+    p != exahype::solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    (*p)->startNewTimeStep();
+
+    currentMinTimeStamp    = std::min ( currentMinTimeStamp,    (*p)->getMinCorrectorTimeStamp());
+    currentMinTimeStepSize = std::min ( currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
+    nextMinTimeStepSize    = std::min ( nextMinTimeStepSize,    (*p)->getMinPredictorTimeStepSize());
+  }
+
+  logInfo(
+      "runAsMaster(...)",
+      "step " << n <<
+      "\t t_min          =" << currentMinTimeStamp
+  );
+
+  logDebug(
+      "runAsMaster(...)",
+      "step "  << n <<
+      "\t dt_min         =" << currentMinTimeStepSize <<
+      "\t previous dt_min=" << nextMinTimeStepSize
+  );
+
+  tarch::logging::CommandLineLogger::getInstance().closeOutputStreamAndReopenNewOne();
+}
 
 void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository) {
   /*

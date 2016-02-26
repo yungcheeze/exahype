@@ -448,7 +448,3 @@ void exahype::mappings::VolumeIntegral::ascend(
 ) {
   // do nothing
 }
-
-const exahype::State& exahype::mappings::VolumeIntegral::getState() const {
-  return _localState;
-}

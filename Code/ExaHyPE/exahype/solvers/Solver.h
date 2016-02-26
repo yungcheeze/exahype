@@ -52,7 +52,7 @@ public:
 */
 
   enum TimeStepping {
-    GlobalTimeStepping, // ANARCHIC
+    GlobalTimeStepping, // Local, Anarchic
   };
 
 protected:
@@ -87,6 +87,12 @@ protected:
 
   const TimeStepping _timeStepping;
 
+  // @ŧodo 16/02/16:Dominic Etienne Charrier
+  // Global time stepping will require min values
+  // of step sizes
+  // Local time stepping will require macro (max) values
+  // of step sizes (right?)
+
   /**
    * Minimum corrector time stamp.
    */
@@ -101,17 +107,17 @@ protected:
   /**
    * Corrector time step size.
    */
-  double             _correctorTimeStepSize;
+  double             _minCorrectorTimeStepSize;
 
   /**
    * Predictor time step size.
    */
-  double             _predictorTimeStepSize;
+  double             _minPredictorTimeStepSize;
 
   /**
    * Predictor time step size.
    */
-  double             _nextPredictorTimeStepSize;
+  double             _minNextPredictorTimeStepSize;
 public:
   Solver(const std::string& identifier, Type type, int kernelNumber, int numberOfVariables, int nodesPerCoordinateAxis, TimeStepping timeStepping);
 
@@ -339,9 +345,25 @@ public:
 
   void startNewTimeStep();
 
-  double getPredictorTimeStamp() const;
+  void updateMinNextPredictorTimeStepSize (const double& nextPredictorTimeStepSize);
 
-  void updateNextPredictorTimeStepSize (const double& nextPredictorTimeStepSize);
+  // todo 16/02/25:Dominic Etienne Charrier: It follows stuff that must be revised:
+
+  // todo 25/02/16:Dominic Etienne Charrier
+  // Remove the time stamps that are not used in ExaHype.
+  double getMinCorrectorTimeStamp() const;
+
+  void setMinPredictorTimeStamp(double minPredictorTimeStamp);
+
+  double getMinPredictorTimeStamp() const;
+
+  // @todo 25/02/16:Dominic Etienne Charrier
+  // @Tobias: The time step size getters are only used for
+  // debugging/assertion purposes at the moment and will
+  // be removed if the time stepping works robust again.
+  double getMinCorrectorTimeStepSize() const;
+
+  double getMinPredictorTimeStepSize() const;
 };
 
 #endif

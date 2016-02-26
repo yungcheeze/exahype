@@ -341,8 +341,6 @@ void exahype::mappings::BoundaryConditions::touchVertexFirstTime(
 ) {
   logTraceInWith6Arguments( "touchVertextFirstTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
 
-  assertion1WithExplanation(_localState.getPreviousMinTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Old time step size is not initialised correctly!");
-
   tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
   // todo: DEC: Reverse engineered indices from
   // PatchInitialisation2MultiscaleLinkedCell_1::touchVertextFirstTime(...)

@@ -1254,8 +1254,6 @@ public:
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
   );
-
-  const exahype::State& getState() const;
 };
 
 

@@ -77,57 +77,8 @@ public:
    */
   State(const Base::PersistentState& argument);
 
-  void setCurrentMinTimeStepSize (double currentMinTimeStepSize);
-
-  /*
-   * This operation returns the field max time step size.
-   *
-   * todo Dominic Etienne Charrier
-   * Introduce better names for the time step sizes.
-   * Note that I changed the definition of this method.
-   *
-   * Previous definition of the method:
-   * "This operation always returns the field old time step size, as the field
-   * maxTimeStepSize is actually used to determine the new/upcoming max time
-   * step size through global reduction."
-   */
-  double getCurrentMinTimeStepSize () const;
-
-  void setCurrentMinTimeStamp (double currentMinTimeStamp);
-
   /**
-   * @return Minimum of global time stamps. If you do not use local time
-   *         stepping, this value equals the global time of the simulation.
-   */
-  double getCurrentMinTimeStamp () const;
-
-  double setPreviousMinTimeStepSize (double previousMinTimeStepSize);
-
-  /*
-   * Returns the max time step size of the previous sweep.
-   */
-  double getPreviousMinTimeStepSize () const;
-
-  /**
-   * Additional methods for ExaHyPE.
-   **/
-  ///@{
-  /*
-   * Set the time step size of this state. It is the minimum of the
-   * current time step size and the argument.
-   */
-  void updateNextMinTimeStepSize (const double nextMinTimeStepSize);
-
-  double getNextMinTimeStepSize () const;
-
-  /**
-   * Prepares the time step sizes and time stamps for the next sweep.
-   */
-  void startNewTimeStep();
-
-  /**
-   * Set the minimum time step size of this state and another state as the time
-   * step size of this state.
+   * Merge this state with another state
    *
    * @todo Clarify which stuff has to be merged
    */

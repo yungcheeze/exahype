@@ -1206,11 +1206,6 @@ class exahype::mappings::GlobalTimeStepComputation {
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
     );
-
-    /**
-     * @brief Returns th this mapping's local copy of the state.
-     */
-    const exahype::State& getState() const;
 };
 
 
