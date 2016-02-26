@@ -5,24 +5,25 @@ std::vector<exahype::solvers::Solver*>  exahype::solvers::RegisteredSolvers;
 
 
 exahype::solvers::Solver::Solver(const std::string& identifier, Type type, int kernelNumber, int numberOfVariables, int nodesPerCoordinateAxis, TimeStepping timeStepping):
-  _identifier(identifier),
-  _type(type),
-  _kernelNumber(kernelNumber),
-  _numberOfVariables(numberOfVariables),
-  _nodesPerCoordinateAxis(nodesPerCoordinateAxis),
-  _unknownsPerFace(numberOfVariables * power(nodesPerCoordinateAxis,DIMENSIONS-1)),
-  _unknownsPerCellBoundary(DIMENSIONS_TIMES_TWO * _unknownsPerFace),
-  _unknownsPerCell(numberOfVariables * power(nodesPerCoordinateAxis,DIMENSIONS+0)),
-  _fluxUnknownsPerCell(_unknownsPerCell*DIMENSIONS),
-  _spaceTimeUnknownsPerCell(numberOfVariables * power(nodesPerCoordinateAxis,DIMENSIONS+1)),
+  _identifier                  (identifier),
+  _type                        (type),
+  _kernelNumber                (kernelNumber),
+  _numberOfVariables           (numberOfVariables),
+  _nodesPerCoordinateAxis      (nodesPerCoordinateAxis),
+  _unknownsPerFace             (numberOfVariables * power(nodesPerCoordinateAxis,DIMENSIONS-1)),
+  _unknownsPerCellBoundary     (DIMENSIONS_TIMES_TWO * _unknownsPerFace),
+  _unknownsPerCell             (numberOfVariables * power(nodesPerCoordinateAxis,DIMENSIONS+0)),
+  _fluxUnknownsPerCell         (_unknownsPerCell*DIMENSIONS),
+  _spaceTimeUnknownsPerCell    (numberOfVariables * power(nodesPerCoordinateAxis,DIMENSIONS+1)),
   _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell*DIMENSIONS),
-  _timeStepping(timeStepping
-) {
-  _minCorrectorTimeStamp        = std::numeric_limits<double>::max();
-  _minPredictorTimeStamp        = std::numeric_limits<double>::max();
-  _minCorrectorTimeStepSize     = std::numeric_limits<double>::max();
-  _minPredictorTimeStepSize     = std::numeric_limits<double>::max();
-  _minNextPredictorTimeStepSize = std::numeric_limits<double>::max();
+  _timeStepping                (timeStepping),
+  _minCorrectorTimeStamp       (std::numeric_limits<double>::max()),
+  _minPredictorTimeStamp       (std::numeric_limits<double>::max()),
+  _minCorrectorTimeStepSize    (std::numeric_limits<double>::max()),
+  _minPredictorTimeStepSize    (std::numeric_limits<double>::max()),
+  _minNextPredictorTimeStepSize(std::numeric_limits<double>::max())
+{
+  // do nothing
 }
 
 
