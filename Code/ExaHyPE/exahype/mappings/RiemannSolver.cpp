@@ -340,8 +340,6 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
 ) {
   logTraceInWith6Arguments( "touchVertexFirstTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
 
-  assertion1WithExplanation(_localState.getPreviousMinTimeStepSize() < std::numeric_limits<double>::max(),_localState.toString(),"Previous time step size was not initialised correctly!");
-
   tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices = fineGridVertex.getADERDGCellDescriptionsIndex();
   logDebug("touchVertexFirstTime(...)","cell descriptions around vertex. "
            << "coarse grid level: " << coarseGridVerticesEnumerator.getLevel()
@@ -578,8 +576,4 @@ void exahype::mappings::RiemannSolver::ascend(
     exahype::Cell&           coarseGridCell
 ) {
   // do nothing
-}
-
-const exahype::State& exahype::mappings::RiemannSolver::getState() const {
-  return _localState;
 }

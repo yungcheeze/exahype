@@ -67,6 +67,10 @@ class exahype::runners::Runner {
     void runGlobalStep();
     #endif
 
+    void initSolvers();
+    double getMinSolverTimeStamp();
+    double getMinSolverTimeStepSize();
+    void startNewTimeStep(int n);
     void runOneTimeStampWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository);
     void runOneTimeStampWithFourSeparateAlgorithmicSteps(exahype::repositories::Repository& repository);
   public:

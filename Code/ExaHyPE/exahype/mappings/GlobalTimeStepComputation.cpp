@@ -398,11 +398,8 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
 
     // indirect update of the solve and local state time step sizes
     tarch::multicore::Lock lock( _semaphore );
-    solver->updateNextPredictorTimeStepSize(admissibleTimeStepSize);
+    solver->updateMinNextPredictorTimeStepSize(admissibleTimeStepSize);
     lock.free();
-
-    // @todo Raus
-    _localState.updateNextMinTimeStepSize(admissibleTimeStepSize);
   endpfor
   peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
 
@@ -472,8 +469,4 @@ void exahype::mappings::GlobalTimeStepComputation::ascend(
     exahype::Cell&           coarseGridCell
 ) {
   // do nothing
-}
-
-const exahype::State& exahype::mappings::GlobalTimeStepComputation::getState() const {
-  return _localState;
 }

@@ -1281,11 +1281,6 @@ public:
       const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
       exahype::Cell&           coarseGridCell
   );
-
-  /**
-   * @brief Returns this mapping's local copy of the state.
-   */
-  const exahype::State& getState() const;
 };
 
 

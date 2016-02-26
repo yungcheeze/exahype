@@ -426,7 +426,3 @@ void exahype::mappings::NewTimeStep::ascend(
 ) {
   // do nothing
 }
-
-const exahype::State& exahype::mappings::NewTimeStep::getState() const {
-  return _localState;
-}
