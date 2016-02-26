@@ -345,6 +345,18 @@ void exahype::adapters::InitialGrid2MultiscaleLinkedCell_1::enterCell(
 ) {
   dfor2(k)
     if (fineGridVertices[fineGridVerticesEnumerator(k)].isHangingNode()) {
+      assertion6(
+        multiscalelinkedcell::HangingVertexBookkeeper::getInstance().holdsVertex(
+          fineGridVerticesEnumerator.getVertexPosition(k),
+          fineGridVerticesEnumerator.getLevel()
+        ),
+        fineGridVerticesEnumerator.getVertexPosition(k),
+        fineGridVerticesEnumerator.getLevel(),
+        fineGridVertices[fineGridVerticesEnumerator(k)].toString(),
+        fineGridVertices[fineGridVerticesEnumerator(k)].isHangingNode(),
+        fineGridVerticesEnumerator.toString(),
+        fineGridCell.toString()
+      );
       multiscalelinkedcell::HangingVertexBookkeeper::getInstance().getAdjacencyEntriesOfVertex( 
         fineGridVerticesEnumerator.getVertexPosition(k),
         fineGridVerticesEnumerator.getLevel()
