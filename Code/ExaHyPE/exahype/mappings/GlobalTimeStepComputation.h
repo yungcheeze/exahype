@@ -17,6 +17,8 @@
 #include "peano/CommunicationSpecification.h"
 
 #include "tarch/multicore/MulticoreDefinitions.h"
+#include "tarch/multicore/BooleanSemaphore.h"
+
 
 #include "exahype/Vertex.h"
 #include "exahype/Cell.h"
@@ -42,7 +44,8 @@ class exahype::mappings::GlobalTimeStepComputation {
     /**
      * Logging device for the trace macros.
      */
-    static tarch::logging::Log  _log;
+    static tarch::logging::Log                 _log;
+    static tarch::multicore::BooleanSemaphore  _semaphore;
 
     /**
      * Local copy of the state.

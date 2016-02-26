@@ -57,8 +57,6 @@ void exahype::Cell::init(
 
     // Has to be +1 here
     if (level==solver->getMinimumTreeDepth()+1) {
-      logDebug( "init(...)","initialising cell description: " << "level=" << level << ", size=" << size << ",offset=" << cellOffset << ",solveNumber=" << solveNumber << ",ADER-DG index=" << ADERDGCellDescriptionIndex);
-
       switch (solver->getType()) {
         case exahype::solvers::Solver::ADER_DG:
         {

@@ -80,10 +80,7 @@ exahype::mappings::SurfaceIntegral::~SurfaceIntegral() {
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::SurfaceIntegral::SurfaceIntegral(const SurfaceIntegral&  masterThread):
-  _localState(masterThread._localState
-) {
-  _localState.deepCopySolveRegistry ( masterThread._localState );
+exahype::mappings::SurfaceIntegral::SurfaceIntegral(const SurfaceIntegral&  masterThread) {
 }
 
 void exahype::mappings::SurfaceIntegral::mergeWithWorkerThread(const SurfaceIntegral& workerThread) {
@@ -409,11 +406,7 @@ void exahype::mappings::SurfaceIntegral::leaveCell(
 void exahype::mappings::SurfaceIntegral::beginIteration(
     exahype::State&  solverState
 ) {
-  logTraceInWith1Argument( "beginIteration(State)", solverState );
-
-  _localState = solverState;
-
-  logTraceOutWith1Argument( "beginIteration(State)", solverState);
+  // do nothing
 }
 
 

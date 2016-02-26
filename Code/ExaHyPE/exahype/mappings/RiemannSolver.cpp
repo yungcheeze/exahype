@@ -80,9 +80,8 @@ exahype::mappings::RiemannSolver::~RiemannSolver() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::RiemannSolver::RiemannSolver(const RiemannSolver&  masterThread):
-      _localState(masterThread._localState
-      ) {
-  _localState.deepCopySolveRegistry ( masterThread._localState );
+  _localState(masterThread._localState
+) {
 }
 
 
@@ -472,7 +471,6 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       solver->synchroniseTimeStepping( cellDescriptionsR[i] );
 
       logDebug("touchVertexLastTime(...)::debug::before::dt_min(previous ) of State*",_localState.getPreviousMinTimeStepSize());
-      logDebug("touchVertexLastTime(...)::debug::before::dt_min(corrector) of Solve*",solve.getCorrectorTimeStepSize());
       logDebug("touchVertexLastTime(...)::debug::before::QL[0]*",QL[0]);
       logDebug("touchVertexLastTime(...)::debug::before::QR[0]*",QR[0]);
       logDebug("touchVertexLastTime(...)::debug::before::FL[0]",FL[0]);

@@ -81,7 +81,6 @@ exahype::mappings::SolutionUpdate::~SolutionUpdate() {
 exahype::mappings::SolutionUpdate::SolutionUpdate(const SolutionUpdate&  masterThread):
   _localState(masterThread._localState
 ) {
-  _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 
