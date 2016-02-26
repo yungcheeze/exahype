@@ -5,6 +5,7 @@
 
 
 #include "tarch/tests/TestCase.h"
+#include "peano/utils/Globals.h"
 
 
 namespace exahype {
