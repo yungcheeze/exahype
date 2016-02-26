@@ -336,7 +336,9 @@ void exahype::runners::Runner::startNewTimeStep(int n) {
       "\t previous dt_min=" << nextMinTimeStepSize
   );
 
+#if defined(Debug) || defined(Asserts)
   tarch::logging::CommandLineLogger::getInstance().closeOutputStreamAndReopenNewOne();
+#endif
 }
 
 void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository) {
