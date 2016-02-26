@@ -42,39 +42,39 @@ void exahype::tests::solvers::SolverTest::testSolve() {
   validateEquals(solve.isActive()              ,false);
 
   validateNumericalEqualsWithEps(solve.getCorrectorTimeStepSize(),std::numeric_limits<double>::max(),1e-10);
-  validateNumericalEqualsWithEps(solve.getPredictorTimeStepSize(),std::numeric_limits<double>::max(),1e-10);
+  validateNumericalEqualsWithEps(solve.getTimeStepSize(),std::numeric_limits<double>::max(),1e-10);
   validateNumericalEqualsWithEps(solve.getCorrectorTimeStamp(),std::numeric_limits<double>::max(),1e-10);
-  validateNumericalEqualsWithEps(solve.getPredictorTimeStamp(),std::numeric_limits<double>::max(),1e-10);
+  validateNumericalEqualsWithEps(solve.getTimeStamp(),std::numeric_limits<double>::max(),1e-10);
 
   //
   // check the bucket chain shifting of the time step sizes and stamps
   //
   // initialise predictor time stamp
-  solve.setPredictorTimeStamp(0.);
+  solve.setTimeStamp(0.);
   validateNumericalEqualsWithEps(solve.getCorrectorTimeStepSize(),std::numeric_limits<double>::max(),1e-10);
-  validateNumericalEqualsWithEps(solve.getPredictorTimeStepSize(),std::numeric_limits<double>::max(),1e-10);
+  validateNumericalEqualsWithEps(solve.getTimeStepSize(),std::numeric_limits<double>::max(),1e-10);
   validateNumericalEqualsWithEps(solve.getCorrectorTimeStamp()   ,std::numeric_limits<double>::max(),1e-10);
-  validateNumericalEqualsWithEps(solve.getPredictorTimeStamp()   ,0.                                ,1e-10);
+  validateNumericalEqualsWithEps(solve.getTimeStamp()   ,0.                                ,1e-10);
 
   // step 1
-  solve.updateNextPredictorTimeStepSize(5.);
+  solve.updateNextTimeStepSize(5.);
   solve.startNewTimeStep();
 
   validateNumericalEqualsWithEps(solve.getCorrectorTimeStepSize(),std::numeric_limits<double>::max(),1e-10);
   validateNumericalEqualsWithEps(solve.getCorrectorTimeStamp()   ,0.                                ,1e-10);
 
-  validateNumericalEqualsWithEps(solve.getPredictorTimeStepSize(),5.                                ,1e-10);
-  validateNumericalEqualsWithEps(solve.getPredictorTimeStamp()   ,5.                                ,1e-10);
+  validateNumericalEqualsWithEps(solve.getTimeStepSize(),5.                                ,1e-10);
+  validateNumericalEqualsWithEps(solve.getTimeStamp()   ,5.                                ,1e-10);
 
   // step 2
-  solve.updateNextPredictorTimeStepSize(20.);
+  solve.updateNextTimeStepSize(20.);
   solve.startNewTimeStep();
 
   validateNumericalEqualsWithEps(solve.getCorrectorTimeStepSize(),5. ,1e-10);
   validateNumericalEqualsWithEps(solve.getCorrectorTimeStamp()   ,5. ,1e-10);
 
-  validateNumericalEqualsWithEps(solve.getPredictorTimeStepSize(),20.,1e-10);
-  validateNumericalEqualsWithEps(solve.getPredictorTimeStamp()   ,25.,1e-10);
+  validateNumericalEqualsWithEps(solve.getTimeStepSize(),20.,1e-10);
+  validateNumericalEqualsWithEps(solve.getTimeStamp()   ,25.,1e-10);
 
   //
   //  copy the solver
@@ -91,8 +91,8 @@ void exahype::tests::solvers::SolverTest::testSolve() {
   validateNumericalEqualsWithEps(solveCopy.getCorrectorTimeStepSize(),5. ,1e-10);
   validateNumericalEqualsWithEps(solveCopy.getCorrectorTimeStamp()   ,5. ,1e-10);
 
-  validateNumericalEqualsWithEps(solveCopy.getPredictorTimeStepSize(),20.,1e-10);
-  validateNumericalEqualsWithEps(solveCopy.getPredictorTimeStamp()   ,25.,1e-10);
+  validateNumericalEqualsWithEps(solveCopy.getTimeStepSize(),20.,1e-10);
+  validateNumericalEqualsWithEps(solveCopy.getTimeStamp()   ,25.,1e-10);
 
   //merge two solvers
   //
@@ -106,9 +106,9 @@ void exahype::tests::solvers::SolverTest::testSolve() {
   otherSolve.setCorrectorTimeStamp(0.1);
   otherSolve.setCorrectorTimeStepSize(0.2);
 
-  otherSolve.setPredictorTimeStamp(0.3);
-  otherSolve.setPredictorTimeStepSize(0.4);
-  otherSolve.updateNextPredictorTimeStepSize(0.5);
+  otherSolve.setTimeStamp(0.3);
+  otherSolve.setTimeStepSize(0.4);
+  otherSolve.updateNextTimeStepSize(0.5);
 
   // merge two solvers
   solve.merge(otherSolve);
@@ -118,10 +118,10 @@ void exahype::tests::solvers::SolverTest::testSolve() {
   validateNumericalEqualsWithEps(solve.getCorrectorTimeStamp()       ,0.1,1e-10);
   validateNumericalEqualsWithEps(solve.getCorrectorTimeStepSize()    ,0.2,1e-10);
 
-  validateNumericalEqualsWithEps(solve.getPredictorTimeStamp()       ,0.3,1e-10);
-  validateNumericalEqualsWithEps(solve.getPredictorTimeStepSize()    ,0.4,1e-10);
+  validateNumericalEqualsWithEps(solve.getTimeStamp()       ,0.3,1e-10);
+  validateNumericalEqualsWithEps(solve.getTimeStepSize()    ,0.4,1e-10);
 
-  validateNumericalEqualsWithEps(solve.getNextPredictorTimeStepSize(),0.5,1e-10);*/
+  validateNumericalEqualsWithEps(solve.getNextTimeStepSize(),0.5,1e-10);*/
 }
 
 #ifdef UseTestSpecificCompilerSettings

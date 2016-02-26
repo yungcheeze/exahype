@@ -5,14 +5,14 @@ exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords() 
 }
 
 
-exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
+exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& timeStepSize, const double& timeStamp, const double& nextTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
 _solverNumber(solverNumber),
 _isParent(isParent),
 _isGhost(isGhost),
 _riemannSolvePerformed(riemannSolvePerformed),
-_predictorTimeStepSize(predictorTimeStepSize),
-_predictorTimeStamp(predictorTimeStamp),
-_nextPredictorTimeStepSize(nextPredictorTimeStepSize),
+_timeStepSize(timeStepSize),
+_timeStamp(timeStamp),
+_nextTimeStepSize(nextTimeStepSize),
 _spaceTimePredictor(spaceTimePredictor),
 _spaceTimeVolumeFlux(spaceTimeVolumeFlux),
 _solution(solution),
@@ -33,13 +33,13 @@ exahype::records::ADERDGCellDescription::ADERDGCellDescription() {
 
 
 exahype::records::ADERDGCellDescription::ADERDGCellDescription(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._solverNumber, persistentRecords._isParent, persistentRecords._isGhost, persistentRecords._riemannSolvePerformed, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._spaceTimePredictor, persistentRecords._spaceTimeVolumeFlux, persistentRecords._solution, persistentRecords._update, persistentRecords._predictor, persistentRecords._volumeFlux, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size) {
+_persistentRecords(persistentRecords._solverNumber, persistentRecords._isParent, persistentRecords._isGhost, persistentRecords._riemannSolvePerformed, persistentRecords._timeStepSize, persistentRecords._timeStamp, persistentRecords._nextTimeStepSize, persistentRecords._spaceTimePredictor, persistentRecords._spaceTimeVolumeFlux, persistentRecords._solution, persistentRecords._update, persistentRecords._predictor, persistentRecords._volumeFlux, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size) {
    
 }
 
 
-exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
-_persistentRecords(solverNumber, isParent, isGhost, riemannSolvePerformed, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size) {
+exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& timeStepSize, const double& timeStamp, const double& nextTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
+_persistentRecords(solverNumber, isParent, isGhost, riemannSolvePerformed, timeStepSize, timeStamp, nextTimeStepSize, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size) {
    
 }
 
@@ -68,11 +68,11 @@ void exahype::records::ADERDGCellDescription::toString (std::ostream& out) const
    }
    out << getRiemannSolvePerformed(DIMENSIONS_TIMES_TWO-1) << "]";
    out << ",";
-   out << "predictorTimeStepSize:" << getPredictorTimeStepSize();
+   out << "timeStepSize:" << getTimeStepSize();
    out << ",";
-   out << "predictorTimeStamp:" << getPredictorTimeStamp();
+   out << "timeStamp:" << getTimeStamp();
    out << ",";
-   out << "nextPredictorTimeStepSize:" << getNextPredictorTimeStepSize();
+   out << "nextTimeStepSize:" << getNextTimeStepSize();
    out << ",";
    out << "spaceTimePredictor:" << getSpaceTimePredictor();
    out << ",";
@@ -117,9 +117,9 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
       getIsParent(),
       getIsGhost(),
       getRiemannSolvePerformed(),
-      getPredictorTimeStepSize(),
-      getPredictorTimeStamp(),
-      getNextPredictorTimeStepSize(),
+      getTimeStepSize(),
+      getTimeStamp(),
+      getNextTimeStepSize(),
       getSpaceTimePredictor(),
       getSpaceTimeVolumeFlux(),
       getSolution(),
@@ -151,9 +151,9 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
             MPI_CHAR,		 //isParent
             MPI_CHAR,		 //isGhost
             MPI_INT,		 //riemannSolvePerformed
-            MPI_DOUBLE,		 //predictorTimeStepSize
-            MPI_DOUBLE,		 //predictorTimeStamp
-            MPI_DOUBLE,		 //nextPredictorTimeStepSize
+            MPI_DOUBLE,		 //timeStepSize
+            MPI_DOUBLE,		 //timeStamp
+            MPI_DOUBLE,		 //nextTimeStepSize
             MPI_INT,		 //spaceTimePredictor
             MPI_INT,		 //spaceTimeVolumeFlux
             MPI_INT,		 //solution
@@ -173,9 +173,9 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
             1,		 //isParent
             1,		 //isGhost
             DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-            1,		 //predictorTimeStepSize
-            1,		 //predictorTimeStamp
-            1,		 //nextPredictorTimeStepSize
+            1,		 //timeStepSize
+            1,		 //timeStamp
+            1,		 //nextTimeStepSize
             1,		 //spaceTimePredictor
             1,		 //spaceTimeVolumeFlux
             1,		 //solution
@@ -198,9 +198,9 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._isParent))), 		&disp[1] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._isGhost))), 		&disp[2] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[3] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._predictorTimeStepSize))), 		&disp[4] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._predictorTimeStamp))), 		&disp[5] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._nextPredictorTimeStepSize))), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._timeStepSize))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._timeStamp))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._nextTimeStepSize))), 		&disp[6] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._spaceTimePredictor))), 		&disp[7] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._spaceTimeVolumeFlux))), 		&disp[8] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solution))), 		&disp[9] );
@@ -233,9 +233,9 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
             MPI_CHAR,		 //isParent
             MPI_CHAR,		 //isGhost
             MPI_INT,		 //riemannSolvePerformed
-            MPI_DOUBLE,		 //predictorTimeStepSize
-            MPI_DOUBLE,		 //predictorTimeStamp
-            MPI_DOUBLE,		 //nextPredictorTimeStepSize
+            MPI_DOUBLE,		 //timeStepSize
+            MPI_DOUBLE,		 //timeStamp
+            MPI_DOUBLE,		 //nextTimeStepSize
             MPI_INT,		 //spaceTimePredictor
             MPI_INT,		 //spaceTimeVolumeFlux
             MPI_INT,		 //solution
@@ -255,9 +255,9 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
             1,		 //isParent
             1,		 //isGhost
             DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-            1,		 //predictorTimeStepSize
-            1,		 //predictorTimeStamp
-            1,		 //nextPredictorTimeStepSize
+            1,		 //timeStepSize
+            1,		 //timeStamp
+            1,		 //nextTimeStepSize
             1,		 //spaceTimePredictor
             1,		 //spaceTimeVolumeFlux
             1,		 //solution
@@ -280,9 +280,9 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._isParent))), 		&disp[1] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._isGhost))), 		&disp[2] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[3] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._predictorTimeStepSize))), 		&disp[4] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._predictorTimeStamp))), 		&disp[5] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._nextPredictorTimeStepSize))), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._timeStepSize))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._timeStamp))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._nextTimeStepSize))), 		&disp[6] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._spaceTimePredictor))), 		&disp[7] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._spaceTimeVolumeFlux))), 		&disp[8] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solution))), 		&disp[9] );
@@ -541,14 +541,14 @@ exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentReco
 }
 
 
-exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
+exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& timeStepSize, const double& timeStamp, const double& nextTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
 _solverNumber(solverNumber),
 _isParent(isParent),
 _isGhost(isGhost),
 _riemannSolvePerformed(riemannSolvePerformed),
-_predictorTimeStepSize(predictorTimeStepSize),
-_predictorTimeStamp(predictorTimeStamp),
-_nextPredictorTimeStepSize(nextPredictorTimeStepSize),
+_timeStepSize(timeStepSize),
+_timeStamp(timeStamp),
+_nextTimeStepSize(nextTimeStepSize),
 _spaceTimePredictor(spaceTimePredictor),
 _spaceTimeVolumeFlux(spaceTimeVolumeFlux),
 _solution(solution),
@@ -569,13 +569,13 @@ exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked() {
 
 
 exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._solverNumber, persistentRecords._isParent, persistentRecords._isGhost, persistentRecords._riemannSolvePerformed, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._spaceTimePredictor, persistentRecords._spaceTimeVolumeFlux, persistentRecords._solution, persistentRecords._update, persistentRecords._predictor, persistentRecords._volumeFlux, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size) {
+_persistentRecords(persistentRecords._solverNumber, persistentRecords._isParent, persistentRecords._isGhost, persistentRecords._riemannSolvePerformed, persistentRecords._timeStepSize, persistentRecords._timeStamp, persistentRecords._nextTimeStepSize, persistentRecords._spaceTimePredictor, persistentRecords._spaceTimeVolumeFlux, persistentRecords._solution, persistentRecords._update, persistentRecords._predictor, persistentRecords._volumeFlux, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size) {
    
 }
 
 
-exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
-_persistentRecords(solverNumber, isParent, isGhost, riemannSolvePerformed, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size) {
+exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& timeStepSize, const double& timeStamp, const double& nextTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size):
+_persistentRecords(solverNumber, isParent, isGhost, riemannSolvePerformed, timeStepSize, timeStamp, nextTimeStepSize, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size) {
    
 }
 
@@ -604,11 +604,11 @@ void exahype::records::ADERDGCellDescriptionPacked::toString (std::ostream& out)
    }
    out << getRiemannSolvePerformed(DIMENSIONS_TIMES_TWO-1) << "]";
    out << ",";
-   out << "predictorTimeStepSize:" << getPredictorTimeStepSize();
+   out << "timeStepSize:" << getTimeStepSize();
    out << ",";
-   out << "predictorTimeStamp:" << getPredictorTimeStamp();
+   out << "timeStamp:" << getTimeStamp();
    out << ",";
-   out << "nextPredictorTimeStepSize:" << getNextPredictorTimeStepSize();
+   out << "nextTimeStepSize:" << getNextTimeStepSize();
    out << ",";
    out << "spaceTimePredictor:" << getSpaceTimePredictor();
    out << ",";
@@ -653,9 +653,9 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
       getIsParent(),
       getIsGhost(),
       getRiemannSolvePerformed(),
-      getPredictorTimeStepSize(),
-      getPredictorTimeStamp(),
-      getNextPredictorTimeStepSize(),
+      getTimeStepSize(),
+      getTimeStamp(),
+      getNextTimeStepSize(),
       getSpaceTimePredictor(),
       getSpaceTimeVolumeFlux(),
       getSolution(),
@@ -687,9 +687,9 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
             MPI_CHAR,		 //isParent
             MPI_CHAR,		 //isGhost
             MPI_INT,		 //riemannSolvePerformed
-            MPI_DOUBLE,		 //predictorTimeStepSize
-            MPI_DOUBLE,		 //predictorTimeStamp
-            MPI_DOUBLE,		 //nextPredictorTimeStepSize
+            MPI_DOUBLE,		 //timeStepSize
+            MPI_DOUBLE,		 //timeStamp
+            MPI_DOUBLE,		 //nextTimeStepSize
             MPI_INT,		 //spaceTimePredictor
             MPI_INT,		 //spaceTimeVolumeFlux
             MPI_INT,		 //solution
@@ -709,9 +709,9 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
             1,		 //isParent
             1,		 //isGhost
             DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-            1,		 //predictorTimeStepSize
-            1,		 //predictorTimeStamp
-            1,		 //nextPredictorTimeStepSize
+            1,		 //timeStepSize
+            1,		 //timeStamp
+            1,		 //nextTimeStepSize
             1,		 //spaceTimePredictor
             1,		 //spaceTimeVolumeFlux
             1,		 //solution
@@ -734,9 +734,9 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._isParent))), 		&disp[1] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._isGhost))), 		&disp[2] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[3] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._predictorTimeStepSize))), 		&disp[4] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._predictorTimeStamp))), 		&disp[5] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._nextPredictorTimeStepSize))), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._timeStepSize))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._timeStamp))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._nextTimeStepSize))), 		&disp[6] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._spaceTimePredictor))), 		&disp[7] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._spaceTimeVolumeFlux))), 		&disp[8] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solution))), 		&disp[9] );
@@ -769,9 +769,9 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
             MPI_CHAR,		 //isParent
             MPI_CHAR,		 //isGhost
             MPI_INT,		 //riemannSolvePerformed
-            MPI_DOUBLE,		 //predictorTimeStepSize
-            MPI_DOUBLE,		 //predictorTimeStamp
-            MPI_DOUBLE,		 //nextPredictorTimeStepSize
+            MPI_DOUBLE,		 //timeStepSize
+            MPI_DOUBLE,		 //timeStamp
+            MPI_DOUBLE,		 //nextTimeStepSize
             MPI_INT,		 //spaceTimePredictor
             MPI_INT,		 //spaceTimeVolumeFlux
             MPI_INT,		 //solution
@@ -791,9 +791,9 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
             1,		 //isParent
             1,		 //isGhost
             DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
-            1,		 //predictorTimeStepSize
-            1,		 //predictorTimeStamp
-            1,		 //nextPredictorTimeStepSize
+            1,		 //timeStepSize
+            1,		 //timeStamp
+            1,		 //nextTimeStepSize
             1,		 //spaceTimePredictor
             1,		 //spaceTimeVolumeFlux
             1,		 //solution
@@ -816,9 +816,9 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._isParent))), 		&disp[1] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._isGhost))), 		&disp[2] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[3] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._predictorTimeStepSize))), 		&disp[4] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._predictorTimeStamp))), 		&disp[5] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._nextPredictorTimeStepSize))), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._timeStepSize))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._timeStamp))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._nextTimeStepSize))), 		&disp[6] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._spaceTimePredictor))), 		&disp[7] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._spaceTimeVolumeFlux))), 		&disp[8] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solution))), 		&disp[9] );

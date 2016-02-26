@@ -337,7 +337,7 @@ void exahype::runners::Runner::startNewTimeStep(int n) {
 
   logInfo(
       "startNewTimeStep(...)",
-      "\t\t next dt_min=" << nextMinTimeStepSize
+      "\t\t next dt_min    =" << nextMinTimeStepSize
   );
 
 #if defined(Debug) || defined(Asserts)

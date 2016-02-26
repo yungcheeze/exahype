@@ -35,19 +35,19 @@ class exahype::records::ADERDGCellDescription {
    */
    ///@{
   /** 
-   * The time step size the predictor is working with.
+   * The time step size.
    */
-  parallelise persistent double predictorTimeStepSize;
+  parallelise persistent double timeStepSize;
  
   /** 
-   * The time stamp the predictor is working with.
+   * The time stamp.
    */
-  parallelise persistent double predictorTimeStamp;
+  parallelise persistent double timeStamp;
   
   /** 
-   * The predictor time step size for the next sweep.
+   * The estimated time step size for the next sweep.
    */
-  parallelise persistent double nextPredictorTimeStepSize;
+  parallelise persistent double nextTimeStepSize;
    ///@}
   
   

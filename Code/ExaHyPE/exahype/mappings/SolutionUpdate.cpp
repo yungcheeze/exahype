@@ -386,7 +386,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
     solver->solutionUpdate(
         luh,
         lduh,
-        p->getPredictorTimeStepSize()
+        p->getTimeStepSize()
     );
 
     logDebug("enterCell(...)::debug::after::luh[0]",luh[0]);

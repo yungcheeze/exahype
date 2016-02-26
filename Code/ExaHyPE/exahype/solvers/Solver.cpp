@@ -77,8 +77,8 @@ int exahype::solvers::Solver::getSpaceTimeFluxUnknownsPerCell() const {
 
 void exahype::solvers::Solver::synchroniseTimeStepping(exahype::records::ADERDGCellDescription& p) const {
   if (_timeStepping==GlobalTimeStepping) {
-    p.setPredictorTimeStamp   (_minTimeStamp);
-    p.setPredictorTimeStepSize(_minTimeStepSize);
+    p.setTimeStamp   (_minTimeStamp);
+    p.setTimeStepSize(_minTimeStepSize);
   }
 }
 

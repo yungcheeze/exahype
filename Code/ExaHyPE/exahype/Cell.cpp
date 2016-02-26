@@ -67,11 +67,8 @@ void exahype::Cell::init(
           newCellDescription.setSize  (size);
           newCellDescription.setOffset(cellOffset);
 
-          // todo 16/02/25:Dominic Etienne Charrier:
-          // This should be set to max_double.
-          // Move time step synchronisation in time step synchronisation mapping.
-          newCellDescription.setPredictorTimeStamp( solver->getMinTimeStamp() );
-          newCellDescription.setSolverNumber ( solverNumber);
+          newCellDescription.setTimeStamp    ( solver->getMinTimeStamp() );
+          newCellDescription.setSolverNumber ( solverNumber              );
 
           const int spaceTimeUnknownsPerCell     = solver->getSpaceTimeUnknownsPerCell();
           const int SpaceTimeFluxUnknownsPerCell = solver->getSpaceTimeFluxUnknownsPerCell();

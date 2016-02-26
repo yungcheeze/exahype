@@ -391,8 +391,8 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
     logDebug("enterCell(...)::dt_adm",admissibleTimeStepSize);
 
     // direct update of the cell description time step
-    p->setPredictorTimeStamp   (p->getPredictorTimeStamp()+admissibleTimeStepSize);
-    p->setPredictorTimeStepSize(admissibleTimeStepSize);
+    p->setTimeStamp   (p->getTimeStamp()+admissibleTimeStepSize);
+    p->setTimeStepSize(admissibleTimeStepSize);
 
     // indirect update of the solver time step sizes
     tarch::multicore::Lock lock( _semaphore );
