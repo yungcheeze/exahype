@@ -3,7 +3,7 @@
 
 
 Euler2d::MyEulerSolver::MyEulerSolver( int kernelNumber):
-  exahype::solvers::Solver("MyEulerSolver",exahype::solvers::Solver::ADER_DG,kernelNumber,5,3+1) {
+  exahype::solvers::Solver("MyEulerSolver",exahype::solvers::Solver::ADER_DG,kernelNumber,5,3+1,exahype::solvers::Solver::GlobalTimeStepping) {
   // @todo Please implement/augment if required
 }
 
