@@ -107,17 +107,17 @@ void exahype::solvers::Solver::synchroniseTimeStepping(exahype::records::ADERDGC
 
 
 void exahype::solvers::Solver::startNewTimeStep() {
-  _minCorrectorTimeStamp = _minPredictorTimeStamp;
-  _minCorrectorTimeStepSize = _minPredictorTimeStepSize;
+  _minCorrectorTimeStamp        = _minPredictorTimeStamp;
+  _minCorrectorTimeStepSize     = _minPredictorTimeStepSize;
 
-  _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
-  _minPredictorTimeStamp = _minPredictorTimeStamp+_minNextPredictorTimeStepSize;
+  _minPredictorTimeStepSize     = _minNextPredictorTimeStepSize;
+  _minPredictorTimeStamp        = _minPredictorTimeStamp+_minNextPredictorTimeStepSize;
 
   _minNextPredictorTimeStepSize = std::numeric_limits<double>::max();
 }
 
-void exahype::solvers::Solver::updateMinNextPredictorTimeStepSize (const double& nextPredictorTimeStepSize) {
-  _minNextPredictorTimeStepSize = std::min( _minNextPredictorTimeStepSize, nextPredictorTimeStepSize );
+void exahype::solvers::Solver::updateMinNextPredictorTimeStepSize (const double& minNextPredictorTimeStepSize) {
+  _minNextPredictorTimeStepSize = std::min( _minNextPredictorTimeStepSize, minNextPredictorTimeStepSize );
 }
 
 double exahype::solvers::Solver::getMinCorrectorTimeStamp() const {
