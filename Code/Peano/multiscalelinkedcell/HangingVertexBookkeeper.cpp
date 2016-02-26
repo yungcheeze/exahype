@@ -155,7 +155,7 @@ tarch::la::Vector<TWO_POWER_D,int>&  multiscalelinkedcell::HangingVertexBookkeep
   int                                          level
 ) {
   const tarch::la::Vector<DIMENSIONS+1,double > key = getKey(x,level);
-  assertion(_vertexMap.count(key)==1);
+  assertion2(_vertexMap.count(key)==1,x,level);
   _vertexMap[key].usedInLastTraversal = true;
   return _vertexMap[key].indicesOfAdjacentCells;
 }
