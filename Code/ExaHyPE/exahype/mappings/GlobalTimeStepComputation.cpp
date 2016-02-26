@@ -390,9 +390,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
 
     logDebug("enterCell(...)::dt_adm",admissibleTimeStepSize);
 
-    // direct update of the cell description time steps
-    p->setCorrectorTimeStamp   (p->getPredictorTimeStamp());
-    p->setCorrectorTimeStepSize(p->getPredictorTimeStepSize());
+    // direct update of the cell description time step
     p->setPredictorTimeStamp   (p->getPredictorTimeStamp()+admissibleTimeStepSize);
     p->setPredictorTimeStepSize(admissibleTimeStepSize);
 

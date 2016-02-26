@@ -484,7 +484,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
           FR,
           QL,
           QR,
-          std::min( cellDescriptionsL[i].getCorrectorTimeStepSize(), cellDescriptionsR[i].getCorrectorTimeStepSize() ),
+          std::min( cellDescriptionsL[i].getPredictorTimeStepSize(), cellDescriptionsR[i].getPredictorTimeStepSize() ),
           normalNonZero
       );
 

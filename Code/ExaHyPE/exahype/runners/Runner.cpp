@@ -290,7 +290,7 @@ double exahype::runners::Runner::getMinSolverTimeStepSize() {
     p != exahype::solvers::RegisteredSolvers.end();
     p++
   ) {
-    currentMinTimeStepSize = std::min ( currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
+    currentMinTimeStepSize = std::min ( currentMinTimeStepSize, (*p)->getMinPredictorTimeStepSize());
   }
   return currentMinTimeStepSize;
 }
@@ -317,11 +317,11 @@ void exahype::runners::Runner::startNewTimeStep(int n) {
     p != exahype::solvers::RegisteredSolvers.end();
     p++
   ) {
-    (*p)->startNewTimeStep();
+    currentMinTimeStamp    = std::min ( currentMinTimeStamp,    (*p)->getMinPredictorTimeStamp       ());
+    currentMinTimeStepSize = std::min ( currentMinTimeStepSize, (*p)->getMinPredictorTimeStepSize    ());
+    nextMinTimeStepSize    = std::min ( nextMinTimeStepSize,    (*p)->getMinNextPredictorTimeStepSize());
 
-    currentMinTimeStamp    = std::min ( currentMinTimeStamp,    (*p)->getMinCorrectorTimeStamp());
-    currentMinTimeStepSize = std::min ( currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
-    nextMinTimeStepSize    = std::min ( nextMinTimeStepSize,    (*p)->getMinPredictorTimeStepSize());
+    (*p)->startNewTimeStep();
   }
 
   logInfo(
@@ -384,7 +384,7 @@ bool exahype::runners::Runner::wasStabilityConditionViolated() {
     if (cflConditionWasViolated) {
       logInfo("startNewTimeStep(...)",
           "\t\t Relative time step size overshoot: " <<
-          ( (*p)->getMinPredictorTimeStepSize() - (*p)->getMinNextPredictorTimeStepSize() )/(*p)->getMinPredictorTimeStepSize()
+          ( (*p)->getMinPredictorTimeStepSize() - (*p)->getMinNextPredictorTimeStepSize() )/(*p)->getMinNextPredictorTimeStepSize()
        );
     }
   }
