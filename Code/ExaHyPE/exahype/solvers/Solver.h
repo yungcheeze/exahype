@@ -341,6 +341,18 @@ public:
 
   double getPredictorTimeStamp() const;
 
+  /**
+   * Update predictor time step size
+   *
+   * This operation takes the minimum of the current predicator time step size
+   * and the argument handed in. The routine is used in
+   * GlobalTimeStepComputation to determine the subsequent time step size.
+   *
+   * <h1>Thread-safety</h1>
+   *
+   * This operation is not thread safe.
+   *
+   */
   void updateNextPredictorTimeStepSize (const double& nextPredictorTimeStepSize);
 };
 
