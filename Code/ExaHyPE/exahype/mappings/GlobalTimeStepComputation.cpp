@@ -3,9 +3,12 @@
 #include "peano/utils/Globals.h"
 
 #include "tarch/multicore/Loop.h"
+
 #include "peano/datatraversal/autotuning/Oracle.h"
 
 #include "exahype/solvers/Solver.h"
+
+#include "tarch/multicore/Lock.h"
 
 #include <limits>
 
@@ -65,13 +68,11 @@ peano::MappingSpecification   exahype::mappings::GlobalTimeStepComputation::desc
 }
 
 
-tarch::logging::Log                exahype::mappings::GlobalTimeStepComputation::_log( "exahype::mappings::GlobalTimeStepComputation" );
+tarch::logging::Log                 exahype::mappings::GlobalTimeStepComputation::_log( "exahype::mappings::GlobalTimeStepComputation" );
+tarch::multicore::BooleanSemaphore  exahype::mappings::GlobalTimeStepComputation::_semaphore;
 
 
-exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation()
-:
-          _localState() // initialises the old and current time step size to max double value
-{
+exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation() {
   // do nothing
 }
 
@@ -82,9 +83,10 @@ exahype::mappings::GlobalTimeStepComputation::~GlobalTimeStepComputation() {
 
 
 #if defined(SharedMemoryParallelisation)
+// @todo Remove _localState copying and merging
 exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(const GlobalTimeStepComputation&  masterThread):
-      _localState(masterThread._localState) {
-  _localState.deepCopySolveRegistry ( masterThread._localState );
+  _localState(masterThread._localState
+) {
 }
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(const GlobalTimeStepComputation& workerThread) {
@@ -395,14 +397,12 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
     p->setPredictorTimeStepSize(admissibleTimeStepSize);
 
     // indirect update of the solve and local state time step sizes
+    tarch::multicore::Lock lock( _semaphore );
     solver->updateNextPredictorTimeStepSize(admissibleTimeStepSize);
-    _localState.updateNextMinTimeStepSize(admissibleTimeStepSize);
+    lock.free();
 
-    // @ŧodo Wieder rein
-/*
-    assertion(tarch::la::smallerEquals(solver->getNextPredictorTimeStepSize(),p->getPredictorTimeStepSize(),1e12));
-    assertion(tarch::la::smallerEquals(_localState.getNextMinTimeStepSize(),solver->getNextPredictorTimeStepSize(),1e12));
-*/
+    // @todo Raus
+    _localState.updateNextMinTimeStepSize(admissibleTimeStepSize);
   endpfor
   peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
 
@@ -428,6 +428,7 @@ void exahype::mappings::GlobalTimeStepComputation::beginIteration(
 ) {
   logTraceInWith1Argument( "beginIteration(State)", solverState );
 
+  // @todo Please remove as soon a all time stepping data is removed from the state
   _localState = solverState;
 
   logTraceOutWith1Argument( "beginIteration(State)", solverState);
@@ -439,9 +440,10 @@ void exahype::mappings::GlobalTimeStepComputation::endIteration(
 ) {
   logTraceInWith1Argument( "endIteration(State)", solverState );
 
+
+  // @todo Please remove as soon a all time stepping data is removed from the state
   logDebug("endIteration(...)::dt_max::solverState",solverState.getCurrentMinTimeStepSize());
   logDebug("endIteration(...)::dt_max::localState",_localState.getCurrentMinTimeStepSize());
-
   solverState.merge(_localState);
 
   logTraceOutWith1Argument( "endIteration(State)", solverState);

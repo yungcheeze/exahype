@@ -78,10 +78,7 @@ exahype::mappings::VolumeIntegral::~VolumeIntegral() {
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::VolumeIntegral::VolumeIntegral(const VolumeIntegral&  masterThread):
-  _localState(masterThread._localState
-) {
-  _localState.deepCopySolveRegistry ( masterThread._localState );
+exahype::mappings::VolumeIntegral::VolumeIntegral(const VolumeIntegral&  masterThread) {
 }
 
 void exahype::mappings::VolumeIntegral::mergeWithWorkerThread(const VolumeIntegral& workerThread) {
@@ -412,11 +409,7 @@ void exahype::mappings::VolumeIntegral::leaveCell(
 void exahype::mappings::VolumeIntegral::beginIteration(
     exahype::State&  solverState
 ) {
-  logTraceInWith1Argument( "beginIteration(State)", solverState );
-
-  _localState = solverState;
-
-  logTraceOutWith1Argument( "beginIteration(State)", solverState);
+  // do nothing
 }
 
 
@@ -447,8 +440,4 @@ void exahype::mappings::VolumeIntegral::ascend(
     exahype::Cell&           coarseGridCell
 ) {
   // do nothing
-}
-
-const exahype::State& exahype::mappings::VolumeIntegral::getState() const {
-  return _localState;
 }

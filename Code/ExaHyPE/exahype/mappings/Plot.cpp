@@ -54,7 +54,6 @@ exahype::mappings::Plot::~Plot() {
 exahype::mappings::Plot::Plot(const Plot&  masterThread):
   _localState(masterThread._localState
 ) {
-  _localState.deepCopySolveRegistry ( masterThread._localState );
 }
 
 
@@ -348,8 +347,6 @@ void exahype::mappings::Plot::enterCell(
       pPatch != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
       pPatch++
     ) {
-      const exahype::solvers::Solver* solver = solvers::RegisteredSolvers[ pPatch->getSolverNumber() ];
-
       if ( (*pPlotter)->plotDataFromSolver(pPatch->getSolverNumber()) ) {
         double * u = &(DataHeap::getInstance().getData(pPatch->getSolution())  [0]._persistentRecords._u);
         (*pPlotter)->plotPatch(
@@ -379,11 +376,7 @@ void exahype::mappings::Plot::leaveCell(
 void exahype::mappings::Plot::beginIteration(
     exahype::State&  solverState
 ) {
-  logTraceInWith1Argument( "beginIteration(State)", solverState );
-
-  _localState = solverState;
-
-  logTraceOutWith1Argument( "beginIteration(State)", solverState);
+  // do nothing
 }
 
 
@@ -416,8 +409,4 @@ void exahype::mappings::Plot::ascend(
     exahype::Cell&           coarseGridCell
 ) {
   // do nothing
-}
-
-const exahype::State& exahype::mappings::Plot::getState() const {
-  return _localState;
 }
