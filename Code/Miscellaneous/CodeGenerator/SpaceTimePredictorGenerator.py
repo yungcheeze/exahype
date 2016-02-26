@@ -9,7 +9,7 @@
 #
 #
 #
-from Backend import executeLibxsmmGenerator
+from Backend import generateAssemblerCode
 from MatmulConfig import MatmulConfig
 
 
@@ -92,10 +92,13 @@ class SpaceTimePredictorGenerator:
                               "  double * lFhi \n"                                \
                               ") {\n"
                               
-        l_parameterDocumentation = '// lQbnd[nVar][nDOF][nDOF][nFace]       : boundary-extrapolated data for the state vector\n' \
+        l_parameterDocumentation = '// lQbnd[nVar][nDOF][nDOF][nFace]       : boundary-extrapolated data for the state vector\n'    \
                                    '// lFbnd[nVar][nDOFx][nDOFy][nDOFz][dim]: the boundary-extrapolated data for the normal flux\n' \
-                                   '// lqhi[nVar][nDOFx][nDOFy][nDOFz]      : time-averaged space-time DOFs\n'\
-                                   '// lFhi[nVar][nDOFx][nDOFy][nDOFz][dim] : time-averaged non-linear flux tensor\n\n'      
+                                   '// lqhi[nVar][nDOFx][nDOFy][nDOFz]      : time-averaged space-time DOFs\n'                      \
+                                   '// lFhi[nVar][nDOF?][nDOF?][nDOF?][dim] : time-averaged non-linear flux tensor\n'               \
+                                   '// where lFhi[nVar][nDOFx][nDOFy][nDOFz][1]\n'                                                  \
+                                   '//       lFhi[nVar][nDOFy][nDOFx][nDOFz][2]\n'                                                  \
+                                   '//       lFhi[nVar][nDOFy][nDOFx][nDOFz][3]\n\n'                                                  
         
         l_sourceFile = open(i_pathToFile, 'a')
         l_sourceFile.write(l_description)
@@ -130,25 +133,47 @@ class SpaceTimePredictorGenerator:
                 
         # define a sequence of matmul configs        
         l_matmulList = []        
-        
-        # we do classical DGEMM: C = A * B
-        l_alpha = 1
-        l_beta  = 0
-        
+               
         # let's open the file to which we write our function calls to the assembler code 
         l_file = open(l_filename, 'a')
        
-        if(self.l_config['nDim'] == 2):       
-            #
+        if(self.l_config['nDim'] == 2):
+            # ---------------------------------
+            # unpadded, dgemv variant
+            # ---------------------------------
+            
+                   
+            # 
             # x-direction
-            #
+            # 
             
-            # lqhi * FLCoeff, unpadded
-            # LDA, LDB, LDC, alpha, beta, alignment_A, alignment_C, baseroutinename
-            l_matmulList.append(MatmulConfig(self.l_config['nVar'],1, self.l_config['nDof'], \
-                                             self.l_config['nVar'], self.l_config['nDof'], self.l_config['nVar'], \
-                                             l_alpha, l_beta, 0, 0, "lQbnd"))    
+            # we do classical DGEMM: C = A * B
+            l_matmulList.append(MatmulConfig(# M
+                                             self.l_config['nVar'], \
+                                             # N
+                                             1,                     \
+                                             # K                    
+                                             self.l_config['nDof'], \
+                                             # LDA
+                                             self.l_config['nVar'], \
+                                             # LDB
+                                             self.l_config['nDof'], \
+                                             # LDC
+                                             self.l_config['nVar'], \
+                                             # alpha 
+                                             1,                     \
+                                             # beta
+                                             0,                     \
+                                             # alignment A
+                                             0,                     \
+                                             # alignment C
+                                             0,                     \
+                                             # name
+                                             "lQbnd",               \
+                                             # prefetching
+                                             "nopf"))
             
+                     
             # number of entries between two flux matrices, or, equivalently, the number of face DOFs
             l_offset = self.l_config['nVar']*self.l_config['nDof']
             
@@ -177,27 +202,7 @@ class SpaceTimePredictorGenerator:
             # y direction
             # 
             
-            
-            """
-            l_commandLineArguments =       lqhiFLCoeff.type  + \
-                                     ' ' + self.l_pathToLibxsmmGenerator+"/extrapolatedPredictor.cpp" + \
-                                     ' ' + lqhiFLCoeff.baseroutinename + \
-                                     ' ' + str(lqhiFLCoeff.M) + \
-                                     ' ' + str(lqhiFLCoeff.N) + \
-                                     ' ' + str(lqhiFLCoeff.K) + \
-                                     ' ' + str(lqhiFLCoeff.LDA) + \
-                                     ' ' + str(lqhiFLCoeff.LDB) + \
-                                     ' ' + str(lqhiFLCoeff.LDC) + \
-                                     ' ' + str(lqhiFLCoeff.alpha) + \
-                                     ' ' + str(lqhiFLCoeff.beta) + \
-                                     ' ' + str(lqhiFLCoeff.alignment_A) + \
-                                     ' ' + str(lqhiFLCoeff.alignment_C) + \
-                                     ' ' + self.l_config['architecture'] + \
-                                     ' ' + "nopf" + \
-                                     ' ' + self.l_config['precision'] 
-            print(l_commandLineArguments)
-            executeLibxsmmGenerator(self.l_pathToLibxsmmGenerator, l_commandLineArguments)
-            """   
+            generateAssemblerCode(l_filename, l_matmulList)
             
               
         elif(self.l_config['nDim'] == 3):

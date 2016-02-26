@@ -10,11 +10,37 @@ from glob import iglob
 from shutil import move
 
 
+m_architecture           = ''
+m_precision              = ''
+m_pathToLibxsmmGenerator = ''
 
-def executeLibxsmmGenerator(i_pathToLibxsmmGenerator,
-                            i_commandLineParameters):
-    l_bashCommand = i_pathToLibxsmmGenerator + '/libxsmm_gemm_generator ' + i_commandLineParameters
+def executeLibxsmmGenerator(i_commandLineParameters):
+    l_bashCommand = m_pathToLibxsmmGenerator + '/libxsmm_gemm_generator ' + i_commandLineParameters
+    print("execute")
     subprocess.call(l_bashCommand.split())
+    
+    
+def generateAssemblerCode(i_pathToOutputFile,
+                          i_matmulConfigList):
+    for l_matmul in i_matmulConfigList:
+        l_commandLineArguments =       "dense"  + \
+                                 ' ' + m_pathToLibxsmmGenerator+"/"+i_pathToOutputFile + \
+                                 ' ' + l_matmul.baseroutinename + \
+                                 ' ' + str(l_matmul.M) + \
+                                 ' ' + str(l_matmul.N) + \
+                                 ' ' + str(l_matmul.K) + \
+                                 ' ' + str(l_matmul.LDA) + \
+                                 ' ' + str(l_matmul.LDB) + \
+                                 ' ' + str(l_matmul.LDC) + \
+                                 ' ' + str(l_matmul.alpha) + \
+                                 ' ' + str(l_matmul.beta) + \
+                                 ' ' + str(l_matmul.alignment_A) + \
+                                 ' ' + str(l_matmul.alignment_C) + \
+                                 ' ' + m_architecture + \
+                                 ' ' + l_matmul.prefetchStrategy+ \
+                                 ' ' + m_precision 
+        print(l_commandLineArguments)
+        executeLibxsmmGenerator(l_commandLineArguments)
     
     
 def prepareOutputDirectory(i_outputDirectory):
@@ -70,3 +96,16 @@ def moveGeneratedCppFiles(i_pathToSrc,i_pathToDest):
     for l_file in l_files:
         if(isfile(l_file)):
             move(l_file, i_pathToDest)
+
+
+def setArchitecture(i_architecture):
+    global m_architecture 
+    m_architecture = i_architecture
+
+def setPrecision(i_precision):
+    global m_precision
+    m_precision = i_precision
+
+def setPathToLibxsmmGenerator(i_pathToLibxsmmGenerator):
+    global m_pathToLibxsmmGenerator
+    m_pathToLibxsmmGenerator = i_pathToLibxsmmGenerator

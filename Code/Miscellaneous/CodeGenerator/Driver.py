@@ -17,6 +17,8 @@ from Backend import validateLibxsmmGenerator
 from SpaceTimePredictorGenerator import SpaceTimePredictorGenerator
 from Backend import prepareOutputDirectory
 from Backend import moveGeneratedCppFiles
+import Backend
+
 
 
 # --------------------------------------------------------
@@ -85,11 +87,13 @@ config = {
            "solverName"        : solverName,
            "nVar"              : numberOfVariables,
            "nDof"              : order+1,
-           "nDim"              : dimensions,
-           "architecture"      : architecture,
-           "precision"         : precision
+           "nDim"              : dimensions
           }
 
+# configure global setup of the code generator
+Backend.setArchitecture(architecture)
+Backend.setPrecision(precision)
+Backend.setPathToLibxsmmGenerator(pathToLibxsmmGenerator)
 
 # clean up output directory
 pathToOutputDirectory = "../../ExaHyPE/kernels/aderdg/optimised"

@@ -1,6 +1,7 @@
 #!/bin/env python
 
 from sys import exit
+import AvailableConfigs
 
 class MatmulConfig:
 	# Specification of a dense matrix-matrix multiplication
@@ -9,7 +10,7 @@ class MatmulConfig:
 	# (M x N)             (M x K)  (K x N)
 	#
 
-	# dense, sparse
+	# dgemm, dgemv, ....
 	operationType = ''
 
 	baseroutinename = ""
@@ -34,17 +35,23 @@ class MatmulConfig:
 	alignment_A = 0							# 1 aligned, 0 unaligned  
 	alignment_C = 0                         # 1 aligned, 0 unaligned
 	
+	# prefetching
+	prefetchStrategy = ''
 	
 	# Constructor
-	def __init__(self, M, N, K, LDA, LDB, LDC, alpha, beta, alignment_A, alignment_C, name, operationType='dgemm'):
+	def __init__(self, M, N, K, LDA, LDB, LDC, alpha, beta, alignment_A, alignment_C, name, prefetchStrategy, operationType='dgemm'):
 		if((M > LDC) or (K > LDB) or (M > LDA)):
-			print("Incompatible matrix sizes and leading dimensions")
+			print("MatmulConfig: Incompatible matrix sizes and leading dimensions")
 			exit()
 		if(alignment_A not in [0,1]):
-			print("Something is wrong with the alignment choice of matrix A")
+			print("MatmulConfig: Something is wrong with the alignment choice of matrix A")
 			exit()
 		if(alignment_C not in [0,1]):
-			print("Something is wrong with the alignment choice of matrix C")
+			print("MatmulConfig: Something is wrong with the alignment choice of matrix C")
+			exit()
+			
+		if(prefetchStrategy not in AvailableConfigs.prefetchStrategies):
+			print("MatmulConfig: Unkown prefetching strategy")
 			exit()
 			
 		self.M = M
@@ -58,6 +65,7 @@ class MatmulConfig:
 		self.alignment_A = alignment_A
 		self.alignment_C = alignment_C
 		self.name = name
+		self.prefetchStrategy = prefetchStrategy
 		self.baseroutinename = operationType+"_"+str(M)+"_"+str(N)+"_"+str(K)
 		
 
