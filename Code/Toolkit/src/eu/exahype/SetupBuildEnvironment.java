@@ -130,6 +130,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
               break;
       }
       _writer.write("\n");
+      _writer.write("PROJECT_CFLAGS+=-DnoMultipleThreadsMayTriggerMPICalls\n");
       
 	} 
 	catch (Exception exc) {
