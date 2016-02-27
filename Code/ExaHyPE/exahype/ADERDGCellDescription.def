@@ -34,20 +34,32 @@ class exahype::records::ADERDGCellDescription {
    * Time integration.
    */
    ///@{
-  /** 
-   * The time step size.
+   /**  
+   * The time step size the time lagging corrector is working with, i.e.,
+   * the predictor time step size of the previous sweep.
    */
-  parallelise persistent double timeStepSize;
+  parallelise persistent double correctorTimeStepSize;
  
-  /** 
-   * The time stamp.
+  /**  
+   * The time stamp the time lagging corrector is working with.
+   * the predictor time stamp of the previous sweep.
    */
-  parallelise persistent double timeStamp;
+  parallelise persistent double correctorTimeStamp;
   
   /** 
-   * The estimated time step size for the next sweep.
+   * The time step size the predictor is working with.
    */
-  parallelise persistent double nextTimeStepSize;
+  parallelise persistent double predictorTimeStepSize;
+ 
+  /** 
+   * The time stamp the predictor is working with.
+   */
+  parallelise persistent double predictorTimeStamp;
+  
+  /** 
+   * The predictor time step size for the next sweep.
+   */
+  parallelise persistent double nextPredictorTimeStepSize;
    ///@}
   
   

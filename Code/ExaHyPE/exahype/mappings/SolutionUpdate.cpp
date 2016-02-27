@@ -386,7 +386,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
     solver->solutionUpdate(
         luh,
         lduh,
-        p->getTimeStepSize()
+        p->getCorrectorTimeStepSize()//solve.getCorrectorTimeStepSize()//_localState.getPreviousMinTimeStepSize() // todo replace by patch time step size
     );
 
     logDebug("enterCell(...)::debug::after::luh[0]",luh[0]);

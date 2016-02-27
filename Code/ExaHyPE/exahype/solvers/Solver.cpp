@@ -17,9 +17,11 @@ exahype::solvers::Solver::Solver(const std::string& identifier, Type type, int k
   _spaceTimeUnknownsPerCell    (numberOfVariables * power(nodesPerCoordinateAxis,DIMENSIONS+1)),
   _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell*DIMENSIONS),
   _timeStepping                (timeStepping),
-  _minTimeStamp       (std::numeric_limits<double>::max()),
-  _minTimeStepSize    (std::numeric_limits<double>::max()),
-  _minNextTimeStepSize(std::numeric_limits<double>::max())
+  _minCorrectorTimeStamp       (std::numeric_limits<double>::max()),
+  _minPredictorTimeStamp       (std::numeric_limits<double>::max()),
+  _minCorrectorTimeStepSize    (std::numeric_limits<double>::max()),
+  _minPredictorTimeStepSize    (std::numeric_limits<double>::max()),
+  _minNextPredictorTimeStepSize(std::numeric_limits<double>::max())
 {
   // do nothing
 }
@@ -77,35 +79,74 @@ int exahype::solvers::Solver::getSpaceTimeFluxUnknownsPerCell() const {
 
 void exahype::solvers::Solver::synchroniseTimeStepping(exahype::records::ADERDGCellDescription& p) const {
   if (_timeStepping==GlobalTimeStepping) {
-    p.setTimeStamp   (_minTimeStamp);
-    p.setTimeStepSize(_minTimeStepSize);
+    p.setCorrectorTimeStamp   (_minCorrectorTimeStamp);
+    p.setCorrectorTimeStepSize(_minCorrectorTimeStepSize);
+    p.setPredictorTimeStamp   (_minPredictorTimeStamp);
+    p.setPredictorTimeStepSize(_minPredictorTimeStepSize);
+
+/*
+    assertionNumericalEquals1(p.getCorrectorTimeStamp()   ,solve.getCorrectorTimeStamp(),   1e-12); // todo precision
+    assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solve.getCorrectorTimeStepSize(),1e-12);
+    assertionNumericalEquals1(p.getPredictorTimeStamp()   ,solve.getPredictorTimeStamp(),   1e-12);
+    assertionNumericalEquals1(p.getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
+*/
   }
+/*  if (!solve.isCorrectorTimeLagging()) {*/
+    p.setCorrectorTimeStamp   (p.getPredictorTimeStamp   ());
+    p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
+//  }
+
+#if defined(Debug) || defined(Asserts)
+  // @ŧodo Wieder reinnehmen
+/*
+  if (solver.getTimeStepping()==exahype::solvers::Solver::GLOBAL && !solver.isCorrectorTimeLagging()) {
+    // Note that the solve time stamps and time step sizes are not modified if corrector time lagging
+    // is deactivated. Thus, solve.getPredictor... and solve.getCorrector... are not the same in general
+    // for any value of solve.isCorrectorTimeLagging().
+    assertionNumericalEquals1(p.getPredictorTimeStamp()   ,solver.getPredictorTimeStamp(),   1e-12); // todo precision
+    assertionNumericalEquals1(p.getPredictorTimeStepSize(),solver.getPredictorTimeStepSize(),1e-12);
+    assertionNumericalEquals1(p.getCorrectorTimeStamp()   ,solver.getPredictorTimeStamp(),   1e-12);
+    assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solver.getPredictorTimeStepSize(),1e-12);
+  }
+*/
+#endif
 }
 
 
 void exahype::solvers::Solver::startNewTimeStep() {
-  _minTimeStepSize     = _minNextTimeStepSize;
-  _minTimeStamp        = _minTimeStamp+_minNextTimeStepSize;
+  _minCorrectorTimeStamp        = _minPredictorTimeStamp;
+  _minCorrectorTimeStepSize     = _minPredictorTimeStepSize;
 
-  _minNextTimeStepSize = std::numeric_limits<double>::max();
+  _minPredictorTimeStepSize     = _minNextPredictorTimeStepSize;
+  _minPredictorTimeStamp        = _minPredictorTimeStamp+_minNextPredictorTimeStepSize;
+
+  _minNextPredictorTimeStepSize = std::numeric_limits<double>::max();
 }
 
-void exahype::solvers::Solver::updateMinNextTimeStepSize (const double& minNextTimeStepSize) {
-  _minNextTimeStepSize = std::min( _minNextTimeStepSize, minNextTimeStepSize );
+void exahype::solvers::Solver::updateMinNextPredictorTimeStepSize (const double& minNextPredictorTimeStepSize) {
+  _minNextPredictorTimeStepSize = std::min( _minNextPredictorTimeStepSize, minNextPredictorTimeStepSize );
 }
 
-double exahype::solvers::Solver::getMinNextTimeStepSize () const {
-  return _minNextTimeStepSize;
+double exahype::solvers::Solver::getMinNextPredictorTimeStepSize () const {
+  return _minNextPredictorTimeStepSize;
 }
 
-void exahype::solvers::Solver::setMinTimeStamp(double minTimeStamp) {
-  _minTimeStamp = minTimeStamp;
+double exahype::solvers::Solver::getMinCorrectorTimeStamp() const {
+  return _minCorrectorTimeStamp;
 }
 
-double exahype::solvers::Solver::getMinTimeStamp() const {
-  return _minTimeStamp;
+void exahype::solvers::Solver::setMinPredictorTimeStamp(double minPredictorTimeStamp) {
+  _minPredictorTimeStamp = minPredictorTimeStamp;
 }
 
-double exahype::solvers::Solver::getMinTimeStepSize() const {
-  return _minTimeStepSize;
+double exahype::solvers::Solver::getMinPredictorTimeStamp() const {
+  return _minPredictorTimeStamp;
+}
+
+double exahype::solvers::Solver::getMinCorrectorTimeStepSize() const {
+  return _minCorrectorTimeStepSize;
+}
+
+double exahype::solvers::Solver::getMinPredictorTimeStepSize() const {
+  return _minPredictorTimeStepSize;
 }

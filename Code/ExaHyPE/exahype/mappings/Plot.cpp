@@ -353,7 +353,7 @@ void exahype::mappings::Plot::enterCell(
           fineGridVerticesEnumerator.getVertexPosition(),
           fineGridVerticesEnumerator.getCellSize(),
           u,
-          pPatch->getTimeStamp()
+          pPatch->getCorrectorTimeStamp()
         );
       }
     }

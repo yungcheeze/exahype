@@ -92,21 +92,32 @@ protected:
   // of step sizes
   // Local time stepping will require macro (max) values
   // of step sizes (right?)
+
+  /**
+   * Minimum corrector time stamp.
+   */
+  double             _minCorrectorTimeStamp;
+
   /**
    * Minimum predictor time stamp. Always equal or larger
    * than the minimum corrector time stamp.
    */
-  double             _minTimeStamp;
+  double             _minPredictorTimeStamp;
+
+  /**
+   * Corrector time step size.
+   */
+  double             _minCorrectorTimeStepSize;
 
   /**
    * Predictor time step size.
    */
-  double             _minTimeStepSize;
+  double             _minPredictorTimeStepSize;
 
   /**
    * Predictor time step size.
    */
-  double             _minNextTimeStepSize;
+  double             _minNextPredictorTimeStepSize;
 public:
   Solver(const std::string& identifier, Type type, int kernelNumber, int numberOfVariables, int nodesPerCoordinateAxis, TimeStepping timeStepping);
 
@@ -334,24 +345,27 @@ public:
 
   void startNewTimeStep();
 
-  void updateMinNextTimeStepSize (const double& nextTimeStepSize);
+  void updateMinNextPredictorTimeStepSize (const double& nextPredictorTimeStepSize);
 
-  double getMinNextTimeStepSize () const;
+  double getMinNextPredictorTimeStepSize () const;
 
   // todo 16/02/25:Dominic Etienne Charrier: It follows stuff that must be revised:
 
   // todo 25/02/16:Dominic Etienne Charrier
   // Remove the time stamps that are not used in ExaHype.
+  double getMinCorrectorTimeStamp() const;
 
-  void setMinTimeStamp(double minTimeStamp);
+  void setMinPredictorTimeStamp(double minPredictorTimeStamp);
 
-  double getMinTimeStamp() const;
+  double getMinPredictorTimeStamp() const;
 
   // @todo 25/02/16:Dominic Etienne Charrier
   // @Tobias: The time step size getters are only used for
   // debugging/assertion purposes at the moment and will
   // be removed if the time stepping works robust again.
-  double getMinTimeStepSize() const;
+  double getMinCorrectorTimeStepSize() const;
+
+  double getMinPredictorTimeStepSize() const;
   /**
    * Update predictor time step size
    *
@@ -364,7 +378,7 @@ public:
    * This operation is not thread safe.
    *
    */
-  void updateNextTimeStepSize (const double& nextTimeStepSize);
+  void updateNextPredictorTimeStepSize (const double& nextPredictorTimeStepSize);
 };
 
 #endif
