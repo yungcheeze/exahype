@@ -499,7 +499,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
           Fhbnd,
           Qhbnd,
           Qhbnd,
-          p->getTimeStepSize(),
+          p->getCorrectorTimeStepSize(),//solve.getCorrectorTimeStepSize(),//_localState.getPreviousMinTimeStepSize(),
           normalNonZero);
 
       logDebug("touchVertexLastTime(...)::debug::after::Qhbnd[0]*",Qhbnd[0]);

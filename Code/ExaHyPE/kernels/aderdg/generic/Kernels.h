@@ -32,7 +32,7 @@ namespace kernels {
           double* lFbnd,
           const double* const luh,
           const tarch::la::Vector<DIMENSIONS,double>&  dx,
-          const double timeStepSize,
+          const double predictorTimeStepSize,
           const int numberOfVariables,
           const int basisSize
       );
@@ -46,7 +46,7 @@ namespace kernels {
           double* lFi,
           const double* const luh,
           const tarch::la::Vector<DIMENSIONS,double>&  dx,
-          const double timeStepSize,
+          const double predictorTimeStepSize,
           const int numberOfVariables,
           const int basisSize
       );
@@ -64,7 +64,7 @@ namespace kernels {
           double* lFhbnd,
           const double* const luh,
           const tarch::la::Vector<DIMENSIONS,double>&  dx,
-          const double timeStepSize,
+          const double predictorTimeStepSize,
           const int numberOfVariables,
           const int basisSize
       );
@@ -81,7 +81,7 @@ namespace kernels {
           double* lFhi,
           const double* const lQi,
           const double* const lFi,
-          const double timeStepSize,
+          const double predictorTimeStepSize,
           const int numberOfVariables,
           const int basisSize
       );
@@ -97,7 +97,7 @@ namespace kernels {
           double* lFhbnd,
           const double* const lQhi,
           const double* const lFhi,
-          const double timeStepSize,
+          const double predictorTimeStepSize,
           const int numberOfVariables,
           const int basisSize
       );
@@ -114,7 +114,7 @@ namespace kernels {
        * The evaluation of the extrapolated predictor requires a time integration
        * of the space-time predictor unknowns. Clearly,
        * \p evaluationTimeStepSize must be smaller than or equal to
-       * \p timeStepSize.
+       * \p predictorTimeStepSize.
        * At the moment, we always evaluate the time averaged space-time
        * predictor unknowns. Thus it is not necessary to pass these values.
        */
@@ -125,7 +125,7 @@ namespace kernels {
           const double* const lFhi,
           const int facePosition, // 0 for "left" face, 1 far "right" face
           const double evaluationTimeStepSize,
-          const double timeStepSize,
+          const double predictorTimeStepSize,
           const int numberOfVariables,
           const int basisSize
       );
@@ -137,7 +137,7 @@ namespace kernels {
           const double* const lFhi,
           const int facePosition, // 0 for "left" face, 1 far "right" face
           const double evaluationTimeStepSize,
-          const double timeStepSize,
+          const double predictorTimeStepSize,
           const int numberOfVariables,
           const int basisSize
       );

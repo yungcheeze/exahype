@@ -14,7 +14,7 @@ void kernels::aderdg::generic::predictor(
     double* lFhi,
     const double* const lQi,
     const double* const lFi,
-    const double timeStepSize,
+    const double predictorTimeStepSize,
     const int numberOfVariables,
     const int basisSize
 ) {

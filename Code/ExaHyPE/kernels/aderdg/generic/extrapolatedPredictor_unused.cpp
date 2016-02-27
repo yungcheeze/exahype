@@ -14,7 +14,7 @@ void kernels::aderdg::generic::extrapolatedPredictor(
     double* lFhbnd,
     const double* const lQhi,
     const double* const lFhi,
-    const double timeStepSize,
+    const double predictorTimeStepSize,
     const int numberOfVariables,
     const int basisSize
 ){
@@ -26,32 +26,32 @@ void kernels::aderdg::generic::extrapolatedPredictor(
                                   &lFhbnd[EXAHYPE_FACE_LEFT * numberOfFaceDof],
                                   lQhi,lFhi,
                                   0, // face position
-                                  timeStepSize, // evaluationTimeStepSize
-                                  timeStepSize,
+                                  predictorTimeStepSize, // evaluationTimeStepSize
+                                  predictorTimeStepSize,
                                   numberOfVariables,basisSize);
 
   extrapolatedPredictorXDirection(&lQhbnd[EXAHYPE_FACE_RIGHT * numberOfFaceDof],
                                   &lFhbnd[EXAHYPE_FACE_RIGHT * numberOfFaceDof],
                                   lQhi,lFhi,
                                   1, // face position
-                                  timeStepSize, // evaluationTimeStepSize
-                                  timeStepSize,
+                                  predictorTimeStepSize, // evaluationTimeStepSize
+                                  predictorTimeStepSize,
                                   numberOfVariables,basisSize);
 
   extrapolatedPredictorYDirection(&lQhbnd[EXAHYPE_FACE_FRONT * numberOfFaceDof],
                                   &lFhbnd[EXAHYPE_FACE_FRONT * numberOfFaceDof],
                                   lQhi,lFhi,
                                   0, // face position
-                                  timeStepSize, // evaluationTimeStepSize
-                                  timeStepSize,
+                                  predictorTimeStepSize, // evaluationTimeStepSize
+                                  predictorTimeStepSize,
                                   numberOfVariables,basisSize);
 
   extrapolatedPredictorYDirection(&lQhbnd[EXAHYPE_FACE_BACK * numberOfFaceDof],
                                   &lFhbnd[EXAHYPE_FACE_BACK * numberOfFaceDof],
                                   lQhi,lFhi,
                                   1, // face position
-                                  timeStepSize, // evaluationTimeStepSize
-                                  timeStepSize,
+                                  predictorTimeStepSize, // evaluationTimeStepSize
+                                  predictorTimeStepSize,
                                   numberOfVariables,basisSize);
 }
 
@@ -62,7 +62,7 @@ void kernels::aderdg::generic::extrapolatedPredictorXDirection(
     const double* const lFhi,
     const int facePosition,
     const double evaluationTimeStepSize,
-    const double timeStepSize,
+    const double predictorTimeStepSize,
     const int numberOfVariables,
     const int basisSize
 ){
@@ -129,7 +129,7 @@ void kernels::aderdg::generic::extrapolatedPredictorYDirection(
     const double* const lFhi,
     const int facePosition,
     const double evaluationTimeStepSize,
-    const double timeStepSize,
+    const double predictorTimeStepSize,
     const int numberOfVariables,
     const int basisSize
 ){

@@ -32,7 +32,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   26/02/2016 23:15
+ * @date   25/02/2016 12:38
  */
 class exahype::records::ADERDGCellDescription { 
    
@@ -49,9 +49,11 @@ class exahype::records::ADERDGCellDescription {
          #else
          std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
          #endif
-         double _timeStepSize;
-         double _timeStamp;
-         double _nextTimeStepSize;
+         double _correctorTimeStepSize;
+         double _correctorTimeStamp;
+         double _predictorTimeStepSize;
+         double _predictorTimeStamp;
+         double _nextPredictorTimeStepSize;
          int _spaceTimePredictor;
          int _spaceTimeVolumeFlux;
          int _solution;
@@ -79,7 +81,7 @@ class exahype::records::ADERDGCellDescription {
          /**
           * Generated
           */
-         PersistentRecords(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& timeStepSize, const double& timeStamp, const double& nextTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+         PersistentRecords(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
          
          
          inline int getSolverNumber() const 
@@ -200,62 +202,102 @@ class exahype::records::ADERDGCellDescription {
          
          
          
-         inline double getTimeStepSize() const 
+         inline double getCorrectorTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _timeStepSize;
+            return _correctorTimeStepSize;
          }
          
          
          
-         inline void setTimeStepSize(const double& timeStepSize) 
+         inline void setCorrectorTimeStepSize(const double& correctorTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _timeStepSize = timeStepSize;
+            _correctorTimeStepSize = correctorTimeStepSize;
          }
          
          
          
-         inline double getTimeStamp() const 
+         inline double getCorrectorTimeStamp() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _timeStamp;
+            return _correctorTimeStamp;
          }
          
          
          
-         inline void setTimeStamp(const double& timeStamp) 
+         inline void setCorrectorTimeStamp(const double& correctorTimeStamp) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _timeStamp = timeStamp;
+            _correctorTimeStamp = correctorTimeStamp;
          }
          
          
          
-         inline double getNextTimeStepSize() const 
+         inline double getPredictorTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _nextTimeStepSize;
+            return _predictorTimeStepSize;
          }
          
          
          
-         inline void setNextTimeStepSize(const double& nextTimeStepSize) 
+         inline void setPredictorTimeStepSize(const double& predictorTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _nextTimeStepSize = nextTimeStepSize;
+            _predictorTimeStepSize = predictorTimeStepSize;
+         }
+         
+         
+         
+         inline double getPredictorTimeStamp() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _predictorTimeStamp;
+         }
+         
+         
+         
+         inline void setPredictorTimeStamp(const double& predictorTimeStamp) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _predictorTimeStamp = predictorTimeStamp;
+         }
+         
+         
+         
+         inline double getNextPredictorTimeStepSize() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _nextPredictorTimeStepSize;
+         }
+         
+         
+         
+         inline void setNextPredictorTimeStepSize(const double& nextPredictorTimeStepSize) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _nextPredictorTimeStepSize = nextPredictorTimeStepSize;
          }
          
          
@@ -575,7 +617,7 @@ class exahype::records::ADERDGCellDescription {
       /**
        * Generated
        */
-      ADERDGCellDescription(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& timeStepSize, const double& timeStamp, const double& nextTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+      ADERDGCellDescription(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
       
       /**
        * Generated
@@ -739,62 +781,102 @@ class exahype::records::ADERDGCellDescription {
       
       
       
-      inline double getTimeStepSize() const 
+      inline double getCorrectorTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._timeStepSize;
+         return _persistentRecords._correctorTimeStepSize;
       }
       
       
       
-      inline void setTimeStepSize(const double& timeStepSize) 
+      inline void setCorrectorTimeStepSize(const double& correctorTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._timeStepSize = timeStepSize;
+         _persistentRecords._correctorTimeStepSize = correctorTimeStepSize;
       }
       
       
       
-      inline double getTimeStamp() const 
+      inline double getCorrectorTimeStamp() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._timeStamp;
+         return _persistentRecords._correctorTimeStamp;
       }
       
       
       
-      inline void setTimeStamp(const double& timeStamp) 
+      inline void setCorrectorTimeStamp(const double& correctorTimeStamp) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._timeStamp = timeStamp;
+         _persistentRecords._correctorTimeStamp = correctorTimeStamp;
       }
       
       
       
-      inline double getNextTimeStepSize() const 
+      inline double getPredictorTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._nextTimeStepSize;
+         return _persistentRecords._predictorTimeStepSize;
       }
       
       
       
-      inline void setNextTimeStepSize(const double& nextTimeStepSize) 
+      inline void setPredictorTimeStepSize(const double& predictorTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._nextTimeStepSize = nextTimeStepSize;
+         _persistentRecords._predictorTimeStepSize = predictorTimeStepSize;
+      }
+      
+      
+      
+      inline double getPredictorTimeStamp() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         return _persistentRecords._predictorTimeStamp;
+      }
+      
+      
+      
+      inline void setPredictorTimeStamp(const double& predictorTimeStamp) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         _persistentRecords._predictorTimeStamp = predictorTimeStamp;
+      }
+      
+      
+      
+      inline double getNextPredictorTimeStepSize() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         return _persistentRecords._nextPredictorTimeStepSize;
+      }
+      
+      
+      
+      inline void setNextPredictorTimeStepSize(const double& nextPredictorTimeStepSize) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         _persistentRecords._nextPredictorTimeStepSize = nextPredictorTimeStepSize;
       }
       
       
@@ -1219,7 +1301,7 @@ class exahype::records::ADERDGCellDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   26/02/2016 23:15
+          * @date   25/02/2016 12:38
           */
          class exahype::records::ADERDGCellDescriptionPacked { 
             
@@ -1230,9 +1312,11 @@ class exahype::records::ADERDGCellDescription {
                   bool _isParent;
                   bool _isGhost;
                   std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
-                  double _timeStepSize;
-                  double _timeStamp;
-                  double _nextTimeStepSize;
+                  double _correctorTimeStepSize;
+                  double _correctorTimeStamp;
+                  double _predictorTimeStepSize;
+                  double _predictorTimeStamp;
+                  double _nextPredictorTimeStepSize;
                   int _spaceTimePredictor;
                   int _spaceTimeVolumeFlux;
                   int _solution;
@@ -1252,7 +1336,7 @@ class exahype::records::ADERDGCellDescription {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& timeStepSize, const double& timeStamp, const double& nextTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+                  PersistentRecords(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
                   
                   
                   inline int getSolverNumber() const 
@@ -1373,62 +1457,102 @@ class exahype::records::ADERDGCellDescription {
                   
                   
                   
-                  inline double getTimeStepSize() const 
+                  inline double getCorrectorTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _timeStepSize;
+                     return _correctorTimeStepSize;
                   }
                   
                   
                   
-                  inline void setTimeStepSize(const double& timeStepSize) 
+                  inline void setCorrectorTimeStepSize(const double& correctorTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _timeStepSize = timeStepSize;
+                     _correctorTimeStepSize = correctorTimeStepSize;
                   }
                   
                   
                   
-                  inline double getTimeStamp() const 
+                  inline double getCorrectorTimeStamp() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _timeStamp;
+                     return _correctorTimeStamp;
                   }
                   
                   
                   
-                  inline void setTimeStamp(const double& timeStamp) 
+                  inline void setCorrectorTimeStamp(const double& correctorTimeStamp) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _timeStamp = timeStamp;
+                     _correctorTimeStamp = correctorTimeStamp;
                   }
                   
                   
                   
-                  inline double getNextTimeStepSize() const 
+                  inline double getPredictorTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _nextTimeStepSize;
+                     return _predictorTimeStepSize;
                   }
                   
                   
                   
-                  inline void setNextTimeStepSize(const double& nextTimeStepSize) 
+                  inline void setPredictorTimeStepSize(const double& predictorTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _nextTimeStepSize = nextTimeStepSize;
+                     _predictorTimeStepSize = predictorTimeStepSize;
+                  }
+                  
+                  
+                  
+                  inline double getPredictorTimeStamp() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _predictorTimeStamp;
+                  }
+                  
+                  
+                  
+                  inline void setPredictorTimeStamp(const double& predictorTimeStamp) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _predictorTimeStamp = predictorTimeStamp;
+                  }
+                  
+                  
+                  
+                  inline double getNextPredictorTimeStepSize() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _nextPredictorTimeStepSize;
+                  }
+                  
+                  
+                  
+                  inline void setNextPredictorTimeStepSize(const double& nextPredictorTimeStepSize) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _nextPredictorTimeStepSize = nextPredictorTimeStepSize;
                   }
                   
                   
@@ -1748,7 +1872,7 @@ class exahype::records::ADERDGCellDescription {
                /**
                 * Generated
                 */
-               ADERDGCellDescriptionPacked(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& timeStepSize, const double& timeStamp, const double& nextTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
+               ADERDGCellDescriptionPacked(const int& solverNumber, const bool& isParent, const bool& isGhost, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size);
                
                /**
                 * Generated
@@ -1912,62 +2036,102 @@ class exahype::records::ADERDGCellDescription {
                
                
                
-               inline double getTimeStepSize() const 
+               inline double getCorrectorTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._timeStepSize;
+                  return _persistentRecords._correctorTimeStepSize;
                }
                
                
                
-               inline void setTimeStepSize(const double& timeStepSize) 
+               inline void setCorrectorTimeStepSize(const double& correctorTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._timeStepSize = timeStepSize;
+                  _persistentRecords._correctorTimeStepSize = correctorTimeStepSize;
                }
                
                
                
-               inline double getTimeStamp() const 
+               inline double getCorrectorTimeStamp() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._timeStamp;
+                  return _persistentRecords._correctorTimeStamp;
                }
                
                
                
-               inline void setTimeStamp(const double& timeStamp) 
+               inline void setCorrectorTimeStamp(const double& correctorTimeStamp) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._timeStamp = timeStamp;
+                  _persistentRecords._correctorTimeStamp = correctorTimeStamp;
                }
                
                
                
-               inline double getNextTimeStepSize() const 
+               inline double getPredictorTimeStepSize() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._nextTimeStepSize;
+                  return _persistentRecords._predictorTimeStepSize;
                }
                
                
                
-               inline void setNextTimeStepSize(const double& nextTimeStepSize) 
+               inline void setPredictorTimeStepSize(const double& predictorTimeStepSize) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._nextTimeStepSize = nextTimeStepSize;
+                  _persistentRecords._predictorTimeStepSize = predictorTimeStepSize;
+               }
+               
+               
+               
+               inline double getPredictorTimeStamp() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._predictorTimeStamp;
+               }
+               
+               
+               
+               inline void setPredictorTimeStamp(const double& predictorTimeStamp) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._predictorTimeStamp = predictorTimeStamp;
+               }
+               
+               
+               
+               inline double getNextPredictorTimeStepSize() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._nextPredictorTimeStepSize;
+               }
+               
+               
+               
+               inline void setNextPredictorTimeStepSize(const double& nextPredictorTimeStepSize) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._nextPredictorTimeStepSize = nextPredictorTimeStepSize;
                }
                
                
