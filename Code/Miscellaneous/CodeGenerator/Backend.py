@@ -13,6 +13,20 @@ from shutil import move
 m_architecture           = ''
 m_precision              = ''
 m_pathToLibxsmmGenerator = ''
+m_simdWidth              =  {'SP':  {'noarch' : 1,
+                                     'wsm'    : 4,
+                                     'snb'    : 8,
+                                     'hsw'    : 8,
+                                     'knc'    : 16,
+                                     'knl'    : 16 },
+                             'DP': { 'noarch' : 1,
+                                     'wsm'    : 2,
+                                     'snb'    : 4,
+                                     'hsw'    : 4,
+                                     'knc'    : 8,
+                                     'knl'    : 8 }
+                            }
+
 
 def executeLibxsmmGenerator(i_commandLineParameters):
     l_bashCommand = m_pathToLibxsmmGenerator + '/libxsmm_gemm_generator ' + i_commandLineParameters
@@ -96,7 +110,6 @@ def moveGeneratedCppFiles(i_pathToSrc,i_pathToDest):
     for l_file in l_files:
         if(isfile(l_file)):
             move(l_file, i_pathToDest)
-
 
 def setArchitecture(i_architecture):
     global m_architecture 
