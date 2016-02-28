@@ -337,7 +337,7 @@ void exahype::runners::Runner::startNewTimeStep(int n) {
 
   logInfo(
       "startNewTimeStep(...)",
-      "\t\t next dt_min=" << nextMinTimeStepSize
+      "\t\t next dt_min    =" << nextMinTimeStepSize
   );
 
 #if defined(Debug) || defined(Asserts)
@@ -366,30 +366,36 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(exahype:
 // function stableTimeStepSize.
 // We are thus on the safe side if the new time
 // steps size overshoots the old one by less than approx. 10 %.
-// We only allow an overshoot of around 5 % here.
-// This method should move into each solver.
+// This is only true if the last time computed with the correct
+// CFL constant.
+// We thus need to update the CFL factor in every time step/
+// Here, I set it to 1.
+// The correction gets activated in nearly time step now.
 bool exahype::runners::Runner::wasStabilityConditionViolated() {
   bool cflConditionWasViolated = false;
+//  bool tooDiffusive            = false;
 
-  const double CFL_FACTOR = 0.9;
-  const double factor     = 0.95*1./CFL_FACTOR;
+//  const double CFL_FACTOR            = 0.9;
+  const double maxRelativeOvershoot  = 1.;
+//  const double maxRelativeUndershoot = 1.;
 
   for (
       std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
       p != exahype::solvers::RegisteredSolvers.end();
       p++
   ) {
-    cflConditionWasViolated = cflConditionWasViolated | ( (*p)->getMinPredictorTimeStepSize() > factor * (*p)->getMinNextPredictorTimeStepSize() );
+    cflConditionWasViolated = cflConditionWasViolated | ( (*p)->getMinPredictorTimeStepSize() > maxRelativeOvershoot  * (*p)->getMinNextPredictorTimeStepSize() );
+//    tooDiffusive            = tooDiffusive            | ( (*p)->getMinPredictorTimeStepSize() < maxRelativeUndershoot * (*p)->getMinNextPredictorTimeStepSize() );
 
     if (cflConditionWasViolated) {
       logInfo("startNewTimeStep(...)",
           "\t\t Relative time step size overshoot: " <<
-          ( (*p)->getMinPredictorTimeStepSize() - (*p)->getMinNextPredictorTimeStepSize() )/(*p)->getMinPredictorTimeStepSize()
+          ( (*p)->getMinPredictorTimeStepSize() - (*p)->getMinNextPredictorTimeStepSize() )/(*p)->getMinNextPredictorTimeStepSize()
        );
     }
   }
 
-  return cflConditionWasViolated;
+  return cflConditionWasViolated; // | tooDiffusive;
 }
 
 void exahype::runners::Runner::startNewTimeStepAndRecomputePredictorIfNecessary(exahype::repositories::Repository& repository,int n) {
