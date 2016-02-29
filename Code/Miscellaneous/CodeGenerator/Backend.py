@@ -8,6 +8,7 @@ import errno
 from matplotlib.cbook import dedent
 from glob import iglob
 from shutil import move
+import FunctionSignatures
 
 
 m_architecture           = ''
@@ -101,21 +102,25 @@ def writeCommonKernelsHeaderInclude(i_pathToFile):
     l_sourceFile = open(i_pathToFile, 'a')
     l_sourceFile.write(l_includeStatement)
     l_sourceFile.close()
-   
-   
+
+
 def moveGeneratedCppFiles(i_pathToSrc,i_pathToDest):
     l_files = iglob(join(i_pathToSrc, "*.cpp"))
     for l_file in l_files:
         if(isfile(l_file)):
             move(l_file, i_pathToDest)
 
+
 def setArchitecture(i_architecture):
     global m_architecture 
     m_architecture = i_architecture
 
+
 def setPrecision(i_precision):
     global m_precision
     m_precision = i_precision
+    FunctionSignatures.setPrecision(i_precision)
+
 
 def setPathToLibxsmmGenerator(i_pathToLibxsmmGenerator):
     global m_pathToLibxsmmGenerator

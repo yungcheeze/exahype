@@ -19,6 +19,7 @@ from Backend import prepareOutputDirectory
 from Backend import moveGeneratedCppFiles
 import Backend
 import AvailableConfigs
+import os
 
 
 
@@ -117,4 +118,7 @@ prepareOutputDirectory(pathToOutputDirectory)
 spaceTimePredictorGenerator = SpaceTimePredictorGenerator(config)
 spaceTimePredictorGenerator.generateCode(pathToLibxsmmGenerator)
 
+# move assembler code
 moveGeneratedCppFiles(pathToLibxsmmGenerator, pathToOutputDirectory)
+# move C++ wrapper
+moveGeneratedCppFiles(os.getcwd(), pathToOutputDirectory)

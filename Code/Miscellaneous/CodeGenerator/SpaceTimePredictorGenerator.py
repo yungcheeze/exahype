@@ -11,6 +11,7 @@
 #
 from Backend import generateAssemblerCode
 from MatmulConfig import MatmulConfig
+import FunctionSignatures
 
 
 class SpaceTimePredictorGenerator:
@@ -31,26 +32,7 @@ class SpaceTimePredictorGenerator:
                              '#include "kernels/DGMatrices.h"\n'                  \
                              '#include "kernels/GaussLegendreQuadrature"\n\n'     
         
-        if(self.l_config['nDim']==2):                        
-            l_functionSignature = "template<void PDEFlux2d(const double * const Q, double * f, double * g)>\n" \
-                                  "void kernels::aderdg::optimised::picardLoop( \n"                            \
-                                  "  double * lQi, \n"                                                         \
-                                  "  double * lFi, \n"                                                         \
-                                  "  const double * const luh, \n"                                             \
-                                  "  const tarch::la::Vector<DIMENSIONS,double> &dx\n"                         \
-                                  "  const double dt \n"                                                       \
-                                  ") {\n"
-        elif(self.l_config['nDim']==3):
-            l_functionSignature = "template<void PDEFlux3d(const double * const Q, double * f, double * g, double * h)>\n" \
-                                  "void kernels::aderdg::optimised::picardLoop( \n"                                        \
-                                  "  double * lQi, \n"                                                                     \
-                                  "  double * lFi, \n"                                                                     \
-                                  "  const double * const luh, \n"                                                         \
-                                  "  const tarch::la::Vector<DIMENSIONS,double> &dx\n"                                     \
-                                  "  const double dt \n"                                                                   \
-                                  ") {\n"
-        else:
-            print("SpaceTimePredictorGenerator.writeHeaderForPicardLoop(): nDim not supported") 
+        l_functionSignature = FunctionSignatures.getPicardLoopSignature(self.l_config['nDim']) + " {\n"
         
         l_sourceFile = open(i_pathToFile, 'a')
         l_sourceFile.write(l_description)
@@ -62,15 +44,11 @@ class SpaceTimePredictorGenerator:
     def writeHeaderForPredictor(self, i_pathToFile):
         l_description = '// Compute the time-averaged space-time polynomials (integration in time) \n\n'
         
-        l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h" \n'   \
-                             '#include "kernels/GaussLegendreQuadrature"\n\n'     
-                                
-        l_functionSignature = "void kernels::aderdg::optimised::predictor( \n"    \
-                              "  double * lQhi, \n"                               \
-                              "  double * lFhi, \n"                               \
-                              "  double * lQhi, \n"                               \
-                              "  double * lFi \n"                                 \
-                              ") {\n"
+        l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n'           \
+                             '#include "kernels/GaussLegendreQuadrature"\n'              \
+                             '#include "kernels/aderdg/optimised/asm_predictor.cpp"\n\n'
+
+        l_functionSignature = FunctionSignatures.getPredictorSignature()+" {\n"
         
         l_sourceFile = open(i_pathToFile, 'a')
         l_sourceFile.write(l_description)
@@ -82,15 +60,11 @@ class SpaceTimePredictorGenerator:
     def writeHeaderForExtrapolator(self, i_pathToFile):
         l_description = '// Compute the boundary-extrapolated values for Q and F*n \n\n'
         
-        l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h" \n'   \
-                             '#include "kernels/DGMatrices.h"\n\n'
+        l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n'      \
+                             '#include "kernels/DGMatrices.h"\n'                    \
+                             '#include "kernels/aderdg/optimised/asm_extrapolatedPredictor.cpp"\n\n'
                                 
-        l_functionSignature = "void kernels::aderdg::optimised::extrapolator( \n" \
-                              "  double * lQbnd, \n"                              \
-                              "  double * lFbnd, \n"                              \
-                              "  double * lqhi, \n"                               \
-                              "  double * lFhi \n"                                \
-                              ") {\n"
+        l_functionSignature = FunctionSignatures.getExtrapolatorSignature()+" {\n"
                               
         l_parameterDocumentation = '// lQbnd[nVar][nDOF][nDOF][nFace]       : boundary-extrapolated data for the state vector\n'    \
                                    '// lFbnd[nVar][nDOFx][nDOFy][nDOFz][dim]: the boundary-extrapolated data for the normal flux\n' \
@@ -202,7 +176,7 @@ class SpaceTimePredictorGenerator:
             # y direction
             # 
             
-            generateAssemblerCode(l_filename, l_matmulList)
+            generateAssemblerCode("asm_"+l_filename, l_matmulList)
             
               
         elif(self.l_config['nDim'] == 3):
