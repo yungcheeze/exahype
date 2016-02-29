@@ -18,6 +18,7 @@ from SpaceTimePredictorGenerator import SpaceTimePredictorGenerator
 from Backend import prepareOutputDirectory
 from Backend import moveGeneratedCppFiles
 import Backend
+import AvailableConfigs
 
 
 
@@ -56,6 +57,14 @@ order             = l_commandLineArguments.order
 dimensions        = l_commandLineArguments.dimension
 architecture      = l_commandLineArguments.architecture
 
+#
+# error handling of obligatory arguments
+#
+# when we have to postprocess the generated assemly code we may
+# support only a subset of the available microarchitectures
+if(architecture not in AvailableConfigs.architectures):
+    print("Driver: Unkown or unsupported microarchitecture. Continue with noarch")
+    architecture = 'noarch'
 
 #
 # process optional arguments
@@ -84,7 +93,6 @@ if(not validateLibxsmmGenerator(l_pathToLibxsmm)):
     
        
 config = { 
-           "solverName"        : solverName,
            "nVar"              : numberOfVariables,
            "nDof"              : order+1,
            "nDim"              : dimensions

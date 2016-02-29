@@ -30,7 +30,6 @@ m_simdWidth              =  {'SP':  {'noarch' : 1,
 
 def executeLibxsmmGenerator(i_commandLineParameters):
     l_bashCommand = m_pathToLibxsmmGenerator + '/libxsmm_gemm_generator ' + i_commandLineParameters
-    print("execute")
     subprocess.call(l_bashCommand.split())
     
     
@@ -53,7 +52,6 @@ def generateAssemblerCode(i_pathToOutputFile,
                                  ' ' + m_architecture + \
                                  ' ' + l_matmul.prefetchStrategy+ \
                                  ' ' + m_precision 
-        print(l_commandLineArguments)
         executeLibxsmmGenerator(l_commandLineArguments)
     
     

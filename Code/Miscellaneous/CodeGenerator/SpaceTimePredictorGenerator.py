@@ -148,56 +148,56 @@ class SpaceTimePredictorGenerator:
             # 
             
             # we do classical DGEMM: C = A * B
-            l_matmulList.append(MatmulConfig(# M
-                                             self.l_config['nVar'], \
-                                             # N
-                                             1,                     \
-                                             # K                    
-                                             self.l_config['nDof'], \
-                                             # LDA
-                                             self.l_config['nVar'], \
-                                             # LDB
-                                             self.l_config['nDof'], \
-                                             # LDC
-                                             self.l_config['nVar'], \
-                                             # alpha 
-                                             1,                     \
-                                             # beta
-                                             0,                     \
-                                             # alignment A
-                                             0,                     \
-                                             # alignment C
-                                             0,                     \
-                                             # name
-                                             "lQbnd",               \
-                                             # prefetching
-                                             "nopf"))
+            l_matmul = MatmulConfig( # M
+                                     self.l_config['nVar'], \
+                                     # N
+                                     1,                     \
+                                     # K                    
+                                     self.l_config['nDof'], \
+                                     # LDA
+                                     self.l_config['nVar'], \
+                                     # LDB
+                                     self.l_config['nDof'], \
+                                     # LDC
+                                     self.l_config['nVar'], \
+                                     # alpha 
+                                     1,                     \
+                                     # beta
+                                     0,                     \
+                                     # alignment A
+                                     0,                     \
+                                     # alignment C
+                                     0,                     \
+                                     # name
+                                     "lQbnd",               \
+                                     # prefetching
+                                     "nopf")
             
                      
             # number of entries between two flux matrices, or, equivalently, the number of face DOFs
             l_offset = self.l_config['nVar']*self.l_config['nDof']
             
             # write the function calls to the cpp file
-            for l_matmul in l_matmulList:
-                for j in range(self.l_config['nDof']):
-                    # lQbnd(:,1,j,k) = MATMUL( lqhi(:,:,j,k),   FLCoeff )   ! left
-                    l_file.write("  "+l_matmul.baseroutinename+"(&lqhi["+str(j*self.l_config['nVar']*self.l_config['nDof'])+"], "+\
-                                                               "FLCoeff,"\
-                                                               " &lQbnd["+str(j*self.l_config['nVar'])+"]);\n")
-                    # lQbnd(:,2,j,k) = MATMUL( lqhi(:,:,j,k),   FRCoeff )   ! right
-                    l_file.write("  "+l_matmul.baseroutinename+"(&lqhi["+str(j*self.l_config['nVar']*self.l_config['nDof'])+"], "+\
-                                                               "FRCoeff,"\
-                                                               " &lQbnd["+str(j*self.l_config['nVar']+l_offset)+"]);\n")
-                    # lFbnd(:,1,j,k) = MATMUL( lFhi(:,1,:,j,k), FLCoeff )   ! left
-                    l_file.write("  "+l_matmul.baseroutinename+"(&lFhi["+str(j*self.l_config['nVar']*self.l_config['nDof'])+"], "+\
-                                                               "FLCoeff,"\
-                                                               " &lFbnd["+str(j*self.l_config['nVar'])+"]);\n")
-                    # lFbnd(:,2,j,k) = MATMUL( lFhi(:,1,:,j,k), FRCoeff )   ! right
-                    l_file.write("  "+l_matmul.baseroutinename+"(&lFhi["+str(j*self.l_config['nVar']*self.l_config['nDof'])+"], "+\
-                                                               "FRCoeff,"\
-                                                               " &lFbnd["+str(j*self.l_config['nVar']+l_offset)+"]);\n")
+            for j in range(self.l_config['nDof']):
+                # lQbnd(:,1,j,k) = MATMUL( lqhi(:,:,j,k),   FLCoeff )   ! left
+                l_file.write("  "+l_matmul.baseroutinename+"(&lqhi["+str(j*self.l_config['nVar']*self.l_config['nDof'])+"], "+\
+                                                           "FLCoeff,"\
+                                                           " &lQbnd["+str(j*self.l_config['nVar'])+"]);\n")
+                # lQbnd(:,2,j,k) = MATMUL( lqhi(:,:,j,k),   FRCoeff )   ! right
+                l_file.write("  "+l_matmul.baseroutinename+"(&lqhi["+str(j*self.l_config['nVar']*self.l_config['nDof'])+"], "+\
+                                                           "FRCoeff,"\
+                                                           " &lQbnd["+str(j*self.l_config['nVar']+l_offset)+"]);\n")
+                # lFbnd(:,1,j,k) = MATMUL( lFhi(:,1,:,j,k), FLCoeff )   ! left
+                l_file.write("  "+l_matmul.baseroutinename+"(&lFhi["+str(j*self.l_config['nVar']*self.l_config['nDof'])+"], "+\
+                                                           "FLCoeff,"\
+                                                           " &lFbnd["+str(j*self.l_config['nVar'])+"]);\n")
+                # lFbnd(:,2,j,k) = MATMUL( lFhi(:,1,:,j,k), FRCoeff )   ! right
+                l_file.write("  "+l_matmul.baseroutinename+"(&lFhi["+str(j*self.l_config['nVar']*self.l_config['nDof'])+"], "+\
+                                                           "FRCoeff,"\
+                                                           " &lFbnd["+str(j*self.l_config['nVar']+l_offset)+"]);\n")
                 
-                                  
+            l_matmulList.append(l_matmul)
+                                                      
             #                      
             # y direction
             # 
