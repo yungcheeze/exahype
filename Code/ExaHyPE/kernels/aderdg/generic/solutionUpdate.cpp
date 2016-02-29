@@ -45,6 +45,8 @@ void kernels::aderdg::generic::solutionUpdate(double * luh,
   
   double dtTemp = dt;
   elementupdate_(luh, lduhFortran, &dtTemp);
+  
+  delete[] lduhFortran;
 
 #endif
 }

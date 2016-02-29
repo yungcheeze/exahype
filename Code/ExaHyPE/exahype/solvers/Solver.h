@@ -355,7 +355,7 @@ public:
   // Remove the time stamps that are not used in ExaHype.
   double getMinCorrectorTimeStamp() const;
 
-  void setMinPredictorTimeStamp(double minPredictorTimeStamp);
+  void setMinPredictorTimeStamp (double minPredictorTimeStamp);
 
   double getMinPredictorTimeStamp() const;
 
@@ -365,11 +365,13 @@ public:
   // be removed if the time stepping works robust again.
   double getMinCorrectorTimeStepSize() const;
 
+  void setMinPredictorTimeStepSize (double minPredictorTimeStepSize);
+
   double getMinPredictorTimeStepSize() const;
   /**
    * Update predictor time step size
    *
-   * This operation takes the minimum of the current predicator time step size
+   * This operation takes the minimum of the current predictor time step size
    * and the argument handed in. The routine is used in
    * GlobalTimeStepComputation to determine the subsequent time step size.
    *
@@ -378,7 +380,7 @@ public:
    * This operation is not thread safe.
    *
    */
-  void updateNextPredictorTimeStepSize (const double& nextPredictorTimeStepSize);
+  void updateNextPredictorTimeStepSize (double nextPredictorTimeStepSize);
 };
 
 #endif

@@ -22,7 +22,7 @@ SUBROUTINE ADERVolumeIntegral(lduh,lFhi,dx)
 
     DO k = 1, nDOF(3)
         DO j = 1, nDOF(2) 
-            aux = (/ 1., wGPN(j), wGPN(k) /) 
+            aux = (/ 1.d0, wGPN(j), wGPN(k) /) 
             lduh(:,:,j,k) = lduh(:,:,j,k) + MATMUL( lFhi(:,1,:,j,k), TRANSPOSE(Kxi) )*PRODUCT(aux(1:nDim))/dx(1) 
         ENDDO
     ENDDO
@@ -31,7 +31,7 @@ SUBROUTINE ADERVolumeIntegral(lduh,lFhi,dx)
     IF(nDim>=2) THEN
         DO k = 1, nDOF(3)
             DO i = 1, nDOF(1) 
-                aux = (/ 1., wGPN(i), wGPN(k) /) 
+                aux = (/ 1.d0, wGPN(i), wGPN(k) /) 
                 lduh(:,i,:,k) = lduh(:,i,:,k) + MATMUL( lFhi(:,2,i,:,k), TRANSPOSE(Kxi) )*PRODUCT(aux(1:nDim))/dx(2)
             ENDDO
         ENDDO
@@ -41,7 +41,7 @@ SUBROUTINE ADERVolumeIntegral(lduh,lFhi,dx)
     IF(nDim>=3) THEN
         DO j = 1, nDOF(2)
             DO i = 1, nDOF(1)
-                aux = (/ 1., wGPN(i), wGPN(j) /)  
+                aux = (/ 1.d0, wGPN(i), wGPN(j) /)  
                 lduh(:,i,j,:) = lduh(:,i,j,:) + MATMUL( lFhi(:,3,i,j,:), TRANSPOSE(Kxi) )*PRODUCT(aux(1:nDim))/dx(3)  
             ENDDO
         ENDDO

@@ -84,6 +84,8 @@ void kernels::aderdg::generic::surfaceIntegral(
       // cout << lduh[i] << endl;
     // }
     // exit(0);
+    
+    delete[] lFbndFortran;
   
 #endif
 }

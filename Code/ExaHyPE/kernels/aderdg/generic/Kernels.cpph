@@ -171,6 +171,11 @@ void kernels::aderdg::generic::riemannSolver(
     // }
     // ofs.close();
 
+    delete[] QlFortran;
+    delete[] QrFortran;
+    delete[] FlFortran;
+    delete[] FrFortran;
+    
 
 #endif
   
@@ -940,7 +945,10 @@ void kernels::aderdg::generic::spaceTimePredictor(
       }
     }    
 
-    
+    delete[] luhTemp;
+    delete[] lFhiFortran;
+    delete[] lFbndFortran;
+    delete[] lQbndFortran;
     
     
     // std::ofstream ofs;
@@ -1021,6 +1029,8 @@ double kernels::aderdg::generic::stableTimeStepSize(
     }
   }
 #endif
+
+  delete[] lambda;
   // std::cout << "-----------------------------------" << std::endl;
   // std::cout << dt << std::endl;
   // std::cout << "-----------------------------------" << std::endl;
