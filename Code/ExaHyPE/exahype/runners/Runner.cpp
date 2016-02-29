@@ -363,7 +363,7 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(exahype:
 // @todo 16/02/29:Dominic Etienne Charrier
 // @Tobias: This should move into solver class, or not?
 // The function does only make sense for optimistic time stepping
-bool exahype::runners::Runner::wasStabilityConditionViolated() {
+bool exahype::runners::Runner::setAccurateTimeStepSizesIfStabilityConditionWasHarmed() {
   bool cflConditionWasViolated = false;
 
   for (
@@ -374,7 +374,8 @@ bool exahype::runners::Runner::wasStabilityConditionViolated() {
     bool solverTimeStepSizeIsInstable = ( (*p)->getMinPredictorTimeStepSize() > (*p)->getMinNextPredictorTimeStepSize() );
 
     if (solverTimeStepSizeIsInstable) {
-      (*p)->updateMinNextPredictorTimeStepSize(0.99 * (*p)->getMinNextPredictorTimeStepSize());
+      (*p)->updateMinNextPredictorTimeStepSize(0.99 * (*p)->getMinNextPredictorTimeStepSize()); // set next predictor time step size
+      (*p)->setMinPredictorTimeStepSize       (0.99 * (*p)->getMinPredictorTimeStepSize());     // set next corrector time step size
     } else {
       (*p)->updateMinNextPredictorTimeStepSize( .5*((*p)->getMinPredictorTimeStepSize() + (*p)->getMinNextPredictorTimeStepSize()) );
     }
@@ -387,11 +388,11 @@ bool exahype::runners::Runner::wasStabilityConditionViolated() {
 
 void exahype::runners::Runner::startNewTimeStepAndRecomputePredictorIfNecessary(exahype::repositories::Repository& repository,int n) {
   // Must be evaluated before we start a new time step
-  bool stabilityConditionWasViolated = wasStabilityConditionViolated();
-  // Note thati t is important that switch the time step sizes, i.e,
+  bool stabilityConditionWasHarmed = setAccurateTimeStepSizesIfStabilityConditionWasHarmed();
+  // Note that it is important to switch the time step sizes, i.e,
   // start a new time step, before we recompute the predictor.
   startNewTimeStep(n);
-  if (stabilityConditionWasViolated) {
+  if (stabilityConditionWasHarmed) {
     logInfo(
         "startNewTimeStep(...)",
         "\t\t Space-time predictor must be recomputed."

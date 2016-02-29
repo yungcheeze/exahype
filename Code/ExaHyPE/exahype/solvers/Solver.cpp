@@ -129,7 +129,7 @@ void exahype::solvers::Solver::startNewTimeStep() {
   _minCorrectorTimeStepSize     = _minPredictorTimeStepSize;
 
   _minPredictorTimeStepSize     = _minNextPredictorTimeStepSize;
-  _minPredictorTimeStamp        = _minPredictorTimeStamp+_minNextPredictorTimeStepSize;
+  _minPredictorTimeStamp        = _minPredictorTimeStamp + _minNextPredictorTimeStepSize;
 
   _minNextPredictorTimeStepSize = std::numeric_limits<double>::max();
 }
@@ -156,6 +156,10 @@ double exahype::solvers::Solver::getMinPredictorTimeStamp() const {
 
 double exahype::solvers::Solver::getMinCorrectorTimeStepSize() const {
   return _minCorrectorTimeStepSize;
+}
+
+void exahype::solvers::Solver::setMinPredictorTimeStepSize(double minPredictorTimeStepSize) {
+  _minPredictorTimeStepSize = minPredictorTimeStepSize;
 }
 
 double exahype::solvers::Solver::getMinPredictorTimeStepSize() const {
