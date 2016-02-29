@@ -23,19 +23,19 @@ def getPicardLoopSignature(i_nDim):
     if(i_nDim==2):                        
         l_functionSignature = "template<void PDEFlux2d(const DATATYPE* const Q, DATATYPE* f, DATATYPE* g)>\n" \
                               "void kernels::aderdg::optimised::picardLoop( \n"                                  \
-                              "  DATATYPE* lQi, \n"                                                             \
-                              "  DATATYPE* lFi, \n"                                                             \
+                              "  DATATYPE* restrict lQi, \n"                                                             \
+                              "  DATATYPE* restrict lFi, \n"                                                             \
                               "  const DATATYPE* const luh, \n"                                                 \
-                              "  const tarch::la::Vector<DIMENSIONS,DATATYPE> &dx\n"                             \
+                              "  const tarch::la::Vector<DIMENSIONS,DATATYPE> &dx,\n"                             \
                               "  const DATATYPE dt \n"                                                           \
                               ")"
     elif(i_nDim==3):
         l_functionSignature = "template<void PDEFlux3d(const DATATYPE* const Q, DATATYPE* f, DATATYPE* g, DATATYPE* h)>\n" \
                               "void kernels::aderdg::optimised::picardLoop( \n"                                                \
-                              "  DATATYPE* lQi, \n"                                                                           \
-                              "  DATATYPE* lFi, \n"                                                                           \
+                              "  DATATYPE* restrict lQi, \n"                                                                           \
+                              "  DATATYPE* restrict lFi, \n"                                                                           \
                               "  const DATATYPE* const luh, \n"                                                               \
-                              "  const tarch::la::Vector<DIMENSIONS,DATATYPE> &dx\n"                                           \
+                              "  const tarch::la::Vector<DIMENSIONS,DATATYPE> &dx,\n"                                           \
                               "  const DATATYPE dt \n"                                                                         \
                               ")"
     else:
@@ -58,10 +58,10 @@ def getPicardLoopSignature(i_nDim):
 def getPredictorSignature():
     # function signature prototype
     l_functionSignature = "void kernels::aderdg::optimised::predictor( \n"      \
-                          "  DATATYPE* lQhi, \n"                               \
-                          "  DATATYPE* lFhi, \n"                               \
-                          "  DATATYPE* lQhi, \n"                               \
-                          "  DATATYPE* lFi \n"                                 \
+                          "  DATATYPE* restrict lQhi, \n"                       \
+                          "  DATATYPE* restrict lFhi, \n"                       \
+                          "  DATATYPE* restrict lQhi, \n"                       \
+                          "  DATATYPE* restrict lFi \n"                         \
                           ")"
                           
     # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                         
@@ -78,10 +78,10 @@ def getPredictorSignature():
 def getExtrapolatorSignature():
     # function signature prototype
     l_functionSignature = "void kernels::aderdg::optimised::extrapolator( \n"   \
-                          "  DATATYPE* lQbnd, \n"                              \
-                          "  DATATYPE* lFbnd, \n"                              \
-                          "  DATATYPE* lqhi, \n"                               \
-                          "  DATATYPE* lFhi \n"                                \
+                          "  DATATYPE* restrict lQbnd, \n"                      \
+                          "  DATATYPE* restrict lFbnd, \n"                      \
+                          "  DATATYPE* restrict lqhi, \n"                       \
+                          "  DATATYPE* restrict lFhi \n"                        \
                           ")"
         
     # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                         
@@ -174,7 +174,7 @@ def getRiemannSolverSignature():
                           "  DATATYPE* restrict FR,\n"                                                                          \
                           "  const DATATYPE* restrict const QL,\n"                                                              \
                           "  const DATATYPE* restrict const QR,\n"                                                              \
-                          "  const DATATYPE dt\n"                                                                                \
+                          "  const DATATYPE dt,\n"                                                                               \
                           "  const int normalNonZero\n"                                                                          \
                           ")" 
                           
@@ -198,7 +198,7 @@ def getInitialConditionSignature():
                           "void initialCondition(\n"                                                \
                           "  DATATYPE* restrict luh,\n"                                             \
                           "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& center,\n"               \
-                          "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx,\n"                   \
+                          "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx\n"                   \
                           ")"
     
     # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                         
@@ -218,9 +218,9 @@ def getInitialConditionSignature():
 def getStableTimeStepSizeSignature():
     # function signature prototype:
     l_functionSignature = "template <void PDEEigenvalues(const DATATYPE* const Q, const int normalNonZero, DATATYPE* lambda)>\n" \
-                          "  double stableTimeStepSize(\n"                                                                       \
+                          "double stableTimeStepSize(\n"                                                                       \
                           "  const DATATYPE* restrict const luh,\n"                                                              \
-                          "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx,\n"                                                \
+                          "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx\n"                                                \
                           ")"
     
     # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                     

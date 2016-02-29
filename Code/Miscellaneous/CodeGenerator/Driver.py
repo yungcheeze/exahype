@@ -102,6 +102,7 @@ config = {
 # configure global setup of the code generator
 Backend.setArchitecture(architecture)
 Backend.setPrecision(precision)
+Backend.setConfig(config)
 Backend.setPathToLibxsmmGenerator(pathToLibxsmmGenerator)
 
 # clean up output directory
@@ -115,6 +116,8 @@ prepareOutputDirectory(pathToOutputDirectory)
 # Now let's generate the compute kernels.
 # --------------------------------------------------------
 
+Backend.writeCommonHeader("Kernels.h")
+
 spaceTimePredictorGenerator = SpaceTimePredictorGenerator(config)
 spaceTimePredictorGenerator.generateCode(pathToLibxsmmGenerator)
 
@@ -122,3 +125,5 @@ spaceTimePredictorGenerator.generateCode(pathToLibxsmmGenerator)
 moveGeneratedCppFiles(pathToLibxsmmGenerator, pathToOutputDirectory)
 # move C++ wrapper
 moveGeneratedCppFiles(os.getcwd(), pathToOutputDirectory)
+
+
