@@ -16,7 +16,7 @@ SUBROUTINE ADERSurfaceIntegral(lduh,lFbnd,dx)
     ! x faces
     DO k = 1, nDOF(3)
         DO j = 1, nDOF(2) 
-            aux = (/ 1., wGPN(j), wGPN(k) /)
+            aux = (/ 1.d0, wGPN(j), wGPN(k) /)
             DO iVar = 1, nVar 
                 lduh(iVar,:,j,k) = lduh(iVar,:,j,k) - PRODUCT(aux(1:nDim))/dx(1)*( lFbnd(iVar,2,j,k)*FRCoeff - lFbnd(iVar,1,j,k)*FLCoeff )      ! left flux minus right flux 
             ENDDO                                                             
@@ -26,7 +26,7 @@ SUBROUTINE ADERSurfaceIntegral(lduh,lFbnd,dx)
         ! y faces
         DO k = 1, nDOF(3)
             DO i = 1, nDOF(1) 
-                aux = (/ 1., wGPN(i), wGPN(k) /) 
+                aux = (/ 1.d0, wGPN(i), wGPN(k) /) 
                 DO iVar = 1, nVar 
                     lduh(iVar,i,:,k) = lduh(iVar,i,:,k) - PRODUCT(aux(1:nDim))/dx(2)*( lFbnd(iVar,4,i,k)*FRCoeff - lFbnd(iVar,3,i,k)*FLCoeff )  ! left flux minus right flux  
                 ENDDO                                                             
@@ -37,7 +37,7 @@ SUBROUTINE ADERSurfaceIntegral(lduh,lFbnd,dx)
         ! z faces
         DO j = 1, nDOF(2)
             DO i = 1, nDOF(1) 
-                aux = (/ 1., wGPN(i), wGPN(j) /) 
+                aux = (/ 1.d0, wGPN(i), wGPN(j) /) 
                 DO iVar = 1, nVar 
                     lduh(iVar,i,j,:) = lduh(iVar,i,j,:) - PRODUCT(aux(1:nDim))/dx(3)*( lFbnd(iVar,6,i,j)*FRCoeff - lFbnd(iVar,5,i,j)*FLCoeff )  ! left flux minus right flux  
                 ENDDO                                                             

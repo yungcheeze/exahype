@@ -19,7 +19,7 @@ SUBROUTINE ADERRiemannSolver(lQbndL,lFbndL,lQbndR,lFbndR,nv)
     QavR = 0. 
     DO k = 1, nDOF(3)
       DO j = 1, nDOF(2)
-            aux = (/ 1., wGPN(j), wGPN(k) /) 
+            aux = (/ 1.d0, wGPN(j), wGPN(k) /) 
             QavL = QavL + PRODUCT(aux(1:nDim))*lQbndL(:,j,k) 
             QavR = QavR + PRODUCT(aux(1:nDim))*lQbndR(:,j,k) 
         ENDDO
