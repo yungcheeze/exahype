@@ -139,7 +139,8 @@ void kernels::aderdg::generic::volumeIntegral(
     double dxTemp[3] = {dx[0], dx[1], dx[2]};
     
     adervolumeintegral_(lduh, lFhiFortran, &dxTemp[0]);
-
+  
+    delete[] lFhiFortran;
 
  
  #endif  
