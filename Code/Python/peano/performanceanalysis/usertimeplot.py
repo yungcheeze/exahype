@@ -18,7 +18,7 @@ from plotting import scalingplot as sp
 :synopsis: Creates a speedup plot based on  Peano output files with specific file naming pattern.
 '''
 
-def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_counts,thread_counts,n_runs,cc,mode,xticks,yticks,ylim,per_iteration=False,hyperthreading=False,annotate=False,create_pdf=False):
+def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_counts,thread_counts,n_runs,cc,mode,xticks,yticks,ylim,per_iteration=False,hyperthreading=False,annotate=False,create_pdf=False,_fontsize=10):
     '''
     Creates a scaling plot for the cumulative user time spent within the 
     specified adapters.
@@ -103,8 +103,8 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
         # Measured speedup
         sp.plot_scaling(ax,p,speedup_measured,legend[i],colors[i],markers[i],markerfacecolors[i],hyperthreading,annotate)
 
-    plt.ylabel(r'speedup', fontsize=12)    
-    plt.xlabel(r'number of cores', fontsize=12)
+    plt.ylabel(r'speedup',         fontsize=float(1.2*float(_fontsize)))    
+    plt.xlabel(r'number of cores', fontsize=float(1.2*float(_fontsize)))
     plt.grid(True)
 
     p_ticks_filtered = p_ticks
@@ -121,8 +121,8 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
          p_ideal_filtered[ip] = ''
     plt.yticks(p_ideal,p_ideal_filtered)
 
-    plt.tick_params(axis='both', which='major', labelsize=10)
-    plt.tick_params(axis='both', which='minor', labelsize=10)
+    plt.tick_params(axis='both', which='major', labelsize=int(_fontsize))
+    plt.tick_params(axis='both', which='minor', labelsize=int(_fontsize))
     
     ax.set_xlim(0.8,p2[-1]+0.2)
     ax.set_ylim(0.8,ylim+0.2)
@@ -130,7 +130,7 @@ def plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapters,process_
     plt.suptitle('',fontsize=12)
     
     fig = plt.gcf()
-    matplotlib.pylab.legend(loc='best',fontsize='10')	
+    matplotlib.pylab.legend(loc='best',fontsize='%d' % int(_fontsize))	
     DefaultSize = matplotlib.pylab.gcf().get_size_inches()
     fig.set_size_inches( (DefaultSize[0]/10, DefaultSize[1]/10) )
     fig.set_size_inches(7.25,7.25)
@@ -174,6 +174,7 @@ parser.add_argument('-hyperthreading', action='store_true', default=False,help="
 parser.add_argument('-annotate', action='store_true', default=False,help="Annotate the plots with the speedup values.")
 parser.add_argument('-per_iteration', action='store_true', default=False,help="Use the adapter times per iteration instead of the total times.")
 parser.add_argument('-create_pdf', action='store_true', default=False,help="Creates a PDF plot in the working directory.")
+parser.add_argument('-fontsize',default=10,required=False,help="Font size of the legend and tick labels. Axis labels are computed by ceiling the font size times a factor 1.2.")
 
 args           = parser.parse_args();
 
@@ -192,6 +193,7 @@ n_runs         = int(args.r)
 cc             = args.cc
 mode           = args.mode
 ylim           = float(args.ylim)
+fontsize       = args.fontsize
 hyperthreading = args.hyperthreading
 annotate       = args.annotate
 per_iteration  = args.per_iteration
@@ -204,4 +206,4 @@ yticks         = args.yticks
 if args.yticks is None:
     yticks     =xticks
 
-plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapter,process_counts,thread_counts,n_runs,cc,mode,xticks,yticks,ylim,per_iteration,hyperthreading,annotate,create_pdf)
+plot_multithreading_adapter_scaling(root_dir,prefix,legend,adapter,process_counts,thread_counts,n_runs,cc,mode,xticks,yticks,ylim,per_iteration,hyperthreading,annotate,create_pdf,fontsize)
