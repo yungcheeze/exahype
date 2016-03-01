@@ -14,6 +14,19 @@
 #define f2p4(var, face, a, b) (var + Mvar*face + Mvar*Mface*a + Mvar*Mface*MbasisSize*b)
 #define p2f4(var, face, a, b) (face*MbasisSize*MbasisSize*Mvar + Mvar*a + Mvar*MbasisSize*b + var)
 
+
+// todo Dominic Etienne Charrier
+// Possibly redundant definition of face indices
+// see exahype/solvers/Solver.h
+// On the other hand, the kernels should be
+// more or less independent of ExaHyPE/exahype.
+#define EXAHYPE_FACE_LEFT   0
+#define EXAHYPE_FACE_RIGHT  1
+#define EXAHYPE_FACE_FRONT  2
+#define EXAHYPE_FACE_BACK   3
+#define EXAHYPE_FACE_BOTTOM 4
+#define EXAHYPE_FACE_TOP    5
+
 namespace kernels {
   namespace aderdg {
     namespace generic {
@@ -249,9 +262,15 @@ namespace kernels {
 }
 
 
-#include "kernels/aderdg/generic/initialCondition.cpph"
-#include "kernels/aderdg/generic/stableTimeStepSize.cpph"
-#include "kernels/aderdg/generic/spaceTimePredictor.cpph"
-#include "kernels/aderdg/generic/riemannSolver.cpph"
-
+#if DIMENSIONS == 2
+  #include "kernels/aderdg/generic/2D/initialCondition.cpph"
+  #include "kernels/aderdg/generic/2D/stableTimeStepSize.cpph"
+  #include "kernels/aderdg/generic/2D/spaceTimePredictor.cpph"
+  #include "kernels/aderdg/generic/2D/riemannSolver.cpph"
+#elif DIMENSIONS == 3
+  #include "kernels/aderdg/generic/3D/initialCondition.cpph"
+  #include "kernels/aderdg/generic/3D/stableTimeStepSize.cpph"
+  #include "kernels/aderdg/generic/3D/spaceTimePredictor.cpph"
+  #include "kernels/aderdg/generic/3D/riemannSolver.cpph"
+#endif
 #endif

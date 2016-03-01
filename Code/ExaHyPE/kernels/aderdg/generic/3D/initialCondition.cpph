@@ -23,23 +23,29 @@ void kernels::aderdg::generic::initialCondition(
     const int numberOfVariables,
     const int basisSize
 ) {
-  double x[2];
+
+  double x[3];
 
   for (int ii=0; ii<basisSize; ii++) { // loop over dof
     const double qr = kernels::gaussLegendreNodes[basisSize-1][ii];
 
     for (int jj=0; jj<basisSize; jj++) {
-      // location and index of nodal degrees of freedom
-      const int nodeIndex = ii + basisSize * jj;
-
       const double qs = kernels::gaussLegendreNodes[basisSize-1][jj];
-      x[0]=center[0] + dx[0]*(qr-0.5);
-      x[1]=center[1] + dx[1]*(qs-0.5);
 
-      // read initial condition
-      const int dofStartIndex  = nodeIndex * numberOfVariables;
-      PDEInitialValues(x,&luh[dofStartIndex]);
+      for (int kk=0; kk<basisSize; kk++) { // loop over dof
+        const double qt = kernels::gaussLegendreNodes[basisSize-1][kk];
+
+        // location and index of nodal degrees of freedom
+        const int nodeIndex = ii + basisSize * jj + basisSize * basisSize * kk;
+        x[0]=center[0] + dx[0]*(qr-0.5);
+        x[1]=center[1] + dx[1]*(qs-0.5);
+        x[2]=center[2] + dx[2]*(qt-0.5);
+
+        // read initial condition
+        const int dofStartIndex  = nodeIndex * numberOfVariables;
+        PDEInitialValues(x,&luh[dofStartIndex]);
+        }
+      }
     }
   }
-}
 

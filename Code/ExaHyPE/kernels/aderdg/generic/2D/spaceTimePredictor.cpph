@@ -1,4 +1,4 @@
-#include "Kernels.h"
+#include "../Kernels.h"
 
 #include "string.h"
 
@@ -15,12 +15,6 @@
 using std::endl;
 using std::cout;
 
-extern "C" 
-{
-  void aderspacetimepredictor_(double *lqhi, double *lFhi, double *lQbnd, double *lFbnd, double *luh, double *dt, double *dx);
-}
-
-#if DIMENSIONS == 2
 template <void PDEFlux2d(const double * const Q, double * f, double * g)>
 void kernels::aderdg::generic::spaceTimePredictor(
     double * lQi,
@@ -635,120 +629,4 @@ std::cout << "spaceTimePredictor Picard only" << std::endl;
 /******************************************************************************************************
 *******************************************************************************************************
 ******************************************************************************************************/
-
-
-#else
-
-  
-  
-template <void PDEFlux3d(const double * const Q, double * f, double * g, double * h)>
-void kernels::aderdg::generic::spaceTimePredictor(
-    double * lQi,
-    double * lFi,
-    double * lQhi,
-    double * lFhi,
-    double * lQbnd,
-    double * lFbnd,
-    const double * const luh,
-    const tarch::la::Vector<DIMENSIONS,double>&  dx,
-    const double dt,
-    const int numberOfVariables,
-    const int basisSize
-) {
-  
-    double* luhTemp = new double[numberOfVariables*basisSize*basisSize*basisSize];
-    memcpy(luhTemp, luh, numberOfVariables*basisSize*basisSize*basisSize*sizeof(double));
-
-    double* lFhiFortran = new double[numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize];
-    for(int i=0; i < numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize; i++)
-      lFhiFortran[i] = -123.45;
-
-    double dtTemp = dt;
-    double dxTemp[3] = {dx[0], dx[1], dx[2]};
-    
-    double* lFbndFortran = new double[numberOfVariables*6*basisSize*basisSize];
-    for(int i=0; i < numberOfVariables*6*basisSize*basisSize; i++){
-      lFbndFortran[i] = -123.45;
-    }
-
-    double* lQbndFortran = new double[numberOfVariables*6*basisSize*basisSize];
-    for(int i=0; i < numberOfVariables*6*basisSize*basisSize; i++){
-      lQbndFortran[i] = -123.45;
-    }
-    
-    
-    aderspacetimepredictor_(lQhi, lFhiFortran, lQbndFortran, lFbndFortran, luhTemp, &dtTemp, &dxTemp[0]);
-    
-    // Permutation of lFhi
-    for (int ii=0; ii<basisSize; ii++) {  // loop over dof
-      for (int jj=0; jj<basisSize; jj++) {
-        for (int kk=0; kk<basisSize; kk++) {
-          for(int ivar=0; ivar < numberOfVariables; ivar++) {
-            for(int dim=0; dim < DIMENSIONS; dim++) {
-              lFhi[p2f5(ivar, dim, ii, jj, kk)] = lFhiFortran[f2p5(ivar, dim, ii, jj, kk)];
-            }
-          }
-        }
-      }
-    }
-
-
-
-    
-    
-    // Permutation of lFbnd
-
-    // for(int i=0; i < numberOfVariables*6*basisSize*basisSize; i++){
-      // lFbndFortran[i] = i;
-    // }
-    
-    for (int bb=0; bb<basisSize; bb++) {  // loop over dof
-      for (int aa=0; aa<basisSize; aa++) {
-        for(int ivar=0; ivar < numberOfVariables; ivar++) {
-          for(int face=0; face < 6; face++) {
-            lFbnd[p2f4(ivar, face, aa, bb)] = lFbndFortran[f2p4(ivar, face, aa, bb)];
-          }
-        }
-      }
-    }
-    
-    // Permutation of lQbnd
-
-    // for(int i=0; i < numberOfVariables*6*basisSize*basisSize; i++){
-      // lFbndFortran[i] = i;
-    // }
-    
-    for (int bb=0; bb<basisSize; bb++) {  // loop over dof
-      for (int aa=0; aa<basisSize; aa++) {
-        for(int ivar=0; ivar < numberOfVariables; ivar++) {
-          for(int face=0; face < 6; face++) {
-            lQbnd[p2f4(ivar, face, aa, bb)] = lQbndFortran[f2p4(ivar, face, aa, bb)];
-          }
-        }
-      }
-    }    
-
-    delete[] luhTemp;
-    delete[] lFhiFortran;
-    delete[] lFbndFortran;
-    delete[] lQbndFortran;
-    
-    
-    // std::ofstream ofs;
-    // ofs.open ("aoutput_lQbnd.txt", std::ofstream::out);
-    // for (int ii=0; ii<numberOfVariables*6*basisSize*basisSize; ii++) {
-      // ofs << lQbnd[ii] << "\n";
-    // }
-    // ofs.close();
-
-    // ofs.open ("aoutput_lQbndFortran.txt", std::ofstream::out);
-    // for (int ii=0; ii<numberOfVariables*6*basisSize*basisSize; ii++) {
-      // ofs << lQbndFortran[ii] << "\n";
-    // }
-    // ofs.close();
-   
-}
-
-
-#endif  
 

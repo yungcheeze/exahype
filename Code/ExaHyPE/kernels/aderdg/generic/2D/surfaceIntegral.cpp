@@ -11,12 +11,6 @@
 using std::endl;
 using std::cout;
 
-extern "C" 
-{
-  void adersurfaceintegral_(double *lduh, double *lFhi, double *dx);
-}
-
-
 void kernels::aderdg::generic::surfaceIntegral(
     double * lduh,
     const double * const lFbnd,
@@ -24,7 +18,6 @@ void kernels::aderdg::generic::surfaceIntegral(
     const int numberOfVariables,
     const int basisSize
 ){
-#if DIMENSIONS == 2
   constexpr int numberOfFaceDof = 5 * (3+1);//numberOfVariables * tarch::la::aPowI(DIMENSIONS-1,basisSize);
   const double * FLeft  = &(lFbnd[EXAHYPE_FACE_LEFT  * numberOfFaceDof]);
   const double * FRight = &(lFbnd[EXAHYPE_FACE_RIGHT * numberOfFaceDof]);
@@ -35,62 +28,8 @@ void kernels::aderdg::generic::surfaceIntegral(
   surfaceIntegralXDirection( lduh,FRight, dx[0],1,-1.,numberOfVariables,basisSize );
   surfaceIntegralYDirection( lduh,FFront, dx[1],0,+1.,numberOfVariables,basisSize );
   surfaceIntegralYDirection( lduh,FBack,  dx[1],1,-1.,numberOfVariables,basisSize );
-  
-#elif DIMENSIONS == 3
-
-    double* lFbndFortran = new double[numberOfVariables*6*basisSize*basisSize];
-    for(int i=0; i < numberOfVariables*6*basisSize*basisSize; i++){
-      lFbndFortran[i] = -123.45;
-    }
-    
-    // Permutation of lFbnd and lFbnd
-
-    // for(int i=0; i < numberOfVariables*6*basisSize*basisSize; i++){
-      // lFbndFortran[i] = i;
-    // }
-    
-    for (int bb=0; bb<basisSize; bb++) {  // loop over dof
-      for (int aa=0; aa<basisSize; aa++) {
-        for(int ivar=0; ivar < numberOfVariables; ivar++) {
-          for(int face=0; face < 6; face++) {
-            lFbndFortran[f2p4(ivar, face, aa, bb)] = lFbnd[p2f4(ivar, face, aa, bb)];
-          }
-        }
-      }
-    }
-
-    
-    
-    
-    // std::ofstream ofs;
-    // ofs.open ("boutput_lFbnd.txt", std::ofstream::out);
-    // for (int ii=0; ii<numberOfVariables*6*basisSize*basisSize; ii++) {
-      // ofs << lFbnd[ii] << "\n";
-    // }
-    // ofs.close();
-
-    // ofs.open ("boutput_lFbndFortran.txt", std::ofstream::out);
-    // for (int ii=0; ii<numberOfVariables*6*basisSize*basisSize; ii++) {
-      // ofs << lFbndFortran[ii] << "\n";
-    // }
-    // ofs.close();
-    
-
-    double dxTemp[3] = {dx[0], dx[1], dx[2]};
-    
-    adersurfaceintegral_(lduh, lFbndFortran, &dxTemp[0]);
-
-    // for(int i=0; i < numberOfVariables*basisSize*basisSize*basisSize; i++){
-      // cout << lduh[i] << endl;
-    // }
-    // exit(0);
-    
-    delete[] lFbndFortran;
-  
-#endif
 }
 
-#if DIMENSIONS == 2
 void kernels::aderdg::generic::surfaceIntegralXDirection(
     double * lduh,
     const double * const lFhbnd,
@@ -160,5 +99,3 @@ void kernels::aderdg::generic::surfaceIntegralYDirection(
     }
   }
 }
-#endif
-

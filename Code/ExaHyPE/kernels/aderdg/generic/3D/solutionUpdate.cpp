@@ -20,21 +20,18 @@ void kernels::aderdg::generic::solutionUpdate(double * luh,
                                               const double dt,
                                               const int numberOfVariables,
                                               const int basisSize) {
-  const int order = basisSize-1;
+const int order = basisSize-1;
 
-  for (int ii=0; ii<basisSize; ii++) {
-    for (int jj=0; jj<basisSize; jj++) {
-      const int nodeIndex     = jj + basisSize * ii;
-      const int dofStartIndex = nodeIndex * numberOfVariables;
+double* lduhFortran = new double[numberOfVariables*basisSize*basisSize*basisSize];
+for(int i=0; i < numberOfVariables*basisSize*basisSize*basisSize; i++){
+  lduhFortran[i] = lduh[i];
+}
 
-      const double weight     =  kernels::gaussLegendreWeights[order][ii] * kernels::gaussLegendreWeights[order][jj];
-      const double updateSize = dt/weight;
+double dtTemp = dt;
+elementupdate_(luh, lduhFortran, &dtTemp);
 
-      for(int ivar=0; ivar < numberOfVariables; ivar++) {
-        luh[dofStartIndex+ivar] +=  lduh[dofStartIndex+ivar]*updateSize;
-      }
-    }
-  }
+delete[] lduhFortran;
+
 }
 
 
