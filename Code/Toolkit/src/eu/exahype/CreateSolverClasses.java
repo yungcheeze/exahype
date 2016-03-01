@@ -349,7 +349,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("   return kernels::aderdg::optimised::stableTimeStepSize<eigenvalues>( luh, dx );\n");
         writer.write("}\n");
         writer.write("\n\n\n");
-        writer.write( "void " + _projectName + "::" + solverName + "initialCondition(double* luh, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
+        writer.write( "void " + _projectName + "::" + solverName + "::initialCondition(double* luh, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
         writer.write("   kernels::aderdg::optimised::initialCondition<initialValues>( luh, center, dx );\n");
         writer.write("}\n");
         writer.write("\n\n\n");
