@@ -53,7 +53,7 @@ ifeq ($(ARCHITECTURE),Phi)
 else
 	ifeq ($(CC),gcc)
     FC=gfortran
-    FCOMPILER_CFLAGS=-fdefault-real-8
+    FCOMPILER_CFLAGS=-fdefault-real-8 -ffree-line-length-none
 		CC=g++
 		ifeq ($(MODE),Debug)
 			# Settings for the GNU Compiler (Debug Mode)
