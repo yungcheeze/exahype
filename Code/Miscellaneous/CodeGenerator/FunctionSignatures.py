@@ -21,22 +21,22 @@ def setPrecision(i_precision):
 def getPicardLoopSignature(i_nDim):
     # choose function signature prototype
     if(i_nDim==2):                        
-        l_functionSignature = "template<void PDEFlux2d(const DATATYPE* const Q, DATATYPE* f, DATATYPE* g)>\n" \
-                              "void kernels::aderdg::optimised::picardLoop( \n"                                  \
-                              "  DATATYPE* restrict lQi, \n"                                                             \
-                              "  DATATYPE* restrict lFi, \n"                                                             \
-                              "  const DATATYPE* const luh, \n"                                                 \
-                              "  const tarch::la::Vector<DIMENSIONS,DATATYPE> &dx,\n"                             \
-                              "  const DATATYPE dt \n"                                                           \
+        l_functionSignature = "template<void PDEFlux2d(const DATATYPE* const Q, DATATYPE* f, DATATYPE* g)>\n"              \
+                              "void kernels::aderdg::optimised::picardLoop( \n"                                            \
+                              "  DATATYPE* restrict lQi, \n"                                                               \
+                              "  DATATYPE* restrict lFi, \n"                                                               \
+                              "  const DATATYPE* restrict const luh, \n"                                                   \
+                              "  const tarch::la::Vector<DIMENSIONS,DATATYPE> &dx,\n"                                      \
+                              "  const DATATYPE dt \n"                                                                     \
                               ")"
     elif(i_nDim==3):
         l_functionSignature = "template<void PDEFlux3d(const DATATYPE* const Q, DATATYPE* f, DATATYPE* g, DATATYPE* h)>\n" \
-                              "void kernels::aderdg::optimised::picardLoop( \n"                                                \
-                              "  DATATYPE* restrict lQi, \n"                                                                           \
-                              "  DATATYPE* restrict lFi, \n"                                                                           \
-                              "  const DATATYPE* const luh, \n"                                                               \
-                              "  const tarch::la::Vector<DIMENSIONS,DATATYPE> &dx,\n"                                           \
-                              "  const DATATYPE dt \n"                                                                         \
+                              "void kernels::aderdg::optimised::picardLoop( \n"                                            \
+                              "  DATATYPE* restrict lQi, \n"                                                               \
+                              "  DATATYPE* restrict lFi, \n"                                                               \
+                              "  const DATATYPE* restrict const luh, \n"                                                   \
+                              "  const tarch::la::Vector<DIMENSIONS,DATATYPE> &dx,\n"                                      \
+                              "  const DATATYPE dt \n"                                                                     \
                               ")"
     else:
         l_functionSignature = ""
@@ -60,8 +60,8 @@ def getPredictorSignature():
     l_functionSignature = "void kernels::aderdg::optimised::predictor( \n"      \
                           "  DATATYPE* restrict lQhi, \n"                       \
                           "  DATATYPE* restrict lFhi, \n"                       \
-                          "  DATATYPE* restrict lQhi, \n"                       \
-                          "  DATATYPE* restrict lFi \n"                         \
+                          "  const DATATYPE* restrict const lQh, \n"            \
+                          "  const DATATYPE* restrict const lFh \n"             \
                           ")"
                           
     # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                         
@@ -80,7 +80,7 @@ def getExtrapolatorSignature():
     l_functionSignature = "void kernels::aderdg::optimised::extrapolator( \n"   \
                           "  DATATYPE* restrict lQbnd, \n"                      \
                           "  DATATYPE* restrict lFbnd, \n"                      \
-                          "  DATATYPE* restrict lqhi, \n"                       \
+                          "  DATATYPE* restrict lQhi, \n"                       \
                           "  DATATYPE* restrict lFhi \n"                        \
                           ")"
         

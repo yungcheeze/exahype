@@ -22,7 +22,6 @@ void kernels::aderdg::generic::solutionUpdate(double * luh,
                                               const int basisSize) {
   const int order = basisSize-1;
 
-#if DIMENSIONS == 2
   for (int ii=0; ii<basisSize; ii++) {
     for (int jj=0; jj<basisSize; jj++) {
       const int nodeIndex     = jj + basisSize * ii;
@@ -36,19 +35,6 @@ void kernels::aderdg::generic::solutionUpdate(double * luh,
       }
     }
   }
-#elif DIMENSIONS == 3
-
-  double* lduhFortran = new double[numberOfVariables*basisSize*basisSize*basisSize];
-  for(int i=0; i < numberOfVariables*basisSize*basisSize*basisSize; i++){
-    lduhFortran[i] = lduh[i];
-  }
-  
-  double dtTemp = dt;
-  elementupdate_(luh, lduhFortran, &dtTemp);
-  
-  delete[] lduhFortran;
-
-#endif
 }
 
 

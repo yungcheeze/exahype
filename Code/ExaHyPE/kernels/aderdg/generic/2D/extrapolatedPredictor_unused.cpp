@@ -18,8 +18,6 @@ void kernels::aderdg::generic::extrapolatedPredictor(
     const int numberOfVariables,
     const int basisSize
 ){
-#if DIMENSIONS == 2
-  
   constexpr int BASISSIZE       = (3+1); // basisSize=order+1
   constexpr int NVAR            = 5;     // numberOfVariables
   constexpr int numberOfFaceDof = NVAR * BASISSIZE;// tarch::la::aPowI(dim-1,BASISSIZE);
@@ -55,9 +53,7 @@ void kernels::aderdg::generic::extrapolatedPredictor(
                                   predictorTimeStepSize, // evaluationTimeStepSize
                                   predictorTimeStepSize,
                                   numberOfVariables,basisSize);
-#endif
 }
-#if DIMENSIONS == 2
 
 void kernels::aderdg::generic::extrapolatedPredictorXDirection(
     double* lQhbnd,
@@ -192,4 +188,3 @@ void kernels::aderdg::generic::extrapolatedPredictorYDirection(
     continue;
   }
 }
-#endif

@@ -28,6 +28,7 @@ LINK_MPI=
 ifeq ($(ARCHITECTURE),Phi)
     FC=ifort
     FCOMPILER_CFLAGS=-r8
+    LINK_FORTRAN=-lifcore 
 		CC=icpc
 		ifeq ($(MODE),Debug)
 			# Settings for the Intel Compiler (Debug Mode)
@@ -53,7 +54,8 @@ ifeq ($(ARCHITECTURE),Phi)
 else
 	ifeq ($(CC),gcc)
     FC=gfortran
-    FCOMPILER_CFLAGS=-fdefault-real-8
+    FCOMPILER_CFLAGS=-fdefault-real-8 -ffree-line-length-none
+    LINK_FORTRAN=-lgfortran
 		CC=g++
 		ifeq ($(MODE),Debug)
 			# Settings for the GNU Compiler (Debug Mode)
@@ -84,6 +86,7 @@ else
 	else
     FC=ifort
     FCOMPILER_CFLAGS=-r8
+    LINK_FORTRAN=-lifcore 
 		CC=icpc
 		ifeq ($(MODE),Debug)
 			# Settings for the Intel Compiler (Debug Mode)
@@ -166,23 +169,27 @@ files.mk:
 	find -H $(TARCH_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
 	find -H $(MULTISCALELINKEDCELL_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
 	find -H $(SHAREDMEMORYORACLES_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
-ifndef USE_OPTIMISED_KERNELS
-	find -H $(EXAHYPE_PATH) -name '*.cpp' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/optimised/*' | tr '\n' ' ' >> files.mk
-else
+ifdef USE_OPTIMISED_KERNELS
 	find -H $(EXAHYPE_PATH) -name '*.cpp' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/*' | tr '\n' ' ' >> files.mk
+else
+ifneq (,$(findstring Dim3, $(PROJECT_CFLAGS) )) 
+	find -H $(EXAHYPE_PATH) -name '*.cpp' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/2D/*'  | tr '\n' ' ' >> files.mk
+else
+	find -H $(EXAHYPE_PATH) -name '*.cpp' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/3D/*'  | tr '\n' ' ' >> files.mk
+endif
 endif
 	find -H $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> files.mk
 
 
 doFortran:
-#  ifeq ($(INCLUDE_FORTRAN),yes)
-#    $(FC) $(FCOMPILER_CFLAGS) -c typesDef.f90 
-#    $(FC) $(FCOMPILER_CFLAGS) -c spaceTimePredictor.f90 
-#    $(FC) $(FCOMPILER_CFLAGS) -c volumeIntegral.f90
-#    $(FC) $(FCOMPILER_CFLAGS) -c surfaceIntegral.f90
-#    $(FC) $(FCOMPILER_CFLAGS) -c riemannSolver.f90
-#    $(FC) $(FCOMPILER_CFLAGS) -c elementUpdate.f90
-#  endif
+ifneq (,$(findstring Dim3, $(PROJECT_CFLAGS) ))
+	$(FC) $(FCOMPILER_CFLAGS) -c typesDef.f90 
+	$(FC) $(FCOMPILER_CFLAGS) -c spaceTimePredictor.f90 
+	$(FC) $(FCOMPILER_CFLAGS) -c volumeIntegral.f90
+	$(FC) $(FCOMPILER_CFLAGS) -c surfaceIntegral.f90
+	$(FC) $(FCOMPILER_CFLAGS) -c riemannSolver.f90
+	$(FC) $(FCOMPILER_CFLAGS) -c elementUpdate.f90
+endif
  
 header:
 	@echo ================================
@@ -198,8 +205,11 @@ header:
 
 
 build: buildinfo files.mk doFortran $(OBJECTS)
-	$(LL) $(OBJECTS) -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS) 
-  #$(LL) $(OBJECTS) typesDef.o spaceTimePredictor.o volumeIntegral.o surfaceIntegral.o riemannSolver.o elementUpdate.o -lifcore -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS) 
+ifneq (,$(findstring Dim3, $(PROJECT_CFLAGS) ))
+	$(LL) $(OBJECTS) typesDef.o spaceTimePredictor.o volumeIntegral.o surfaceIntegral.o riemannSolver.o elementUpdate.o  $(LINK_FORTRAN) -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
+else
+	$(LL) $(OBJECTS) -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
+endif
 	@echo
 	@echo build of ExaHyPE successful
 	@echo run code with ./$(EXECUTABLE) and pass config file as argument

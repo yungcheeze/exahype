@@ -109,14 +109,12 @@ Backend.setPathToLibxsmmGenerator(pathToLibxsmmGenerator)
 pathToOutputDirectory = "../../ExaHyPE/kernels/aderdg/optimised"
 prepareOutputDirectory(pathToOutputDirectory)
 
-# TODO verify that Kernels.h exists
-# create from scratch?
-
 # --------------------------------------------------------
 # Now let's generate the compute kernels.
 # --------------------------------------------------------
 
 Backend.writeCommonHeader("Kernels.h")
+# TODO move Kernels.h to directory kernels/aderdg/optimised 
 
 spaceTimePredictorGenerator = SpaceTimePredictorGenerator(config)
 spaceTimePredictorGenerator.generateCode(pathToLibxsmmGenerator)
