@@ -28,6 +28,7 @@ LINK_MPI=
 ifeq ($(ARCHITECTURE),Phi)
     FC=ifort
     FCOMPILER_CFLAGS=-r8
+    LINK_FORTRAN=-lifcore 
 		CC=icpc
 		ifeq ($(MODE),Debug)
 			# Settings for the Intel Compiler (Debug Mode)
@@ -54,6 +55,7 @@ else
 	ifeq ($(CC),gcc)
     FC=gfortran
     FCOMPILER_CFLAGS=-fdefault-real-8 -ffree-line-length-none
+    LINK_FORTRAN=-lgfortran
 		CC=g++
 		ifeq ($(MODE),Debug)
 			# Settings for the GNU Compiler (Debug Mode)
@@ -84,6 +86,7 @@ else
 	else
     FC=ifort
     FCOMPILER_CFLAGS=-r8
+    LINK_FORTRAN=-lifcore 
 		CC=icpc
 		ifeq ($(MODE),Debug)
 			# Settings for the Intel Compiler (Debug Mode)
@@ -203,7 +206,7 @@ header:
 
 build: buildinfo files.mk doFortran $(OBJECTS)
 ifneq (,$(findstring Dim3, $(PROJECT_CFLAGS) ))
-	$(LL) $(OBJECTS) typesDef.o spaceTimePredictor.o volumeIntegral.o surfaceIntegral.o riemannSolver.o elementUpdate.o -lifcore -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
+	$(LL) $(OBJECTS) typesDef.o spaceTimePredictor.o volumeIntegral.o surfaceIntegral.o riemannSolver.o elementUpdate.o  $(LINK_FORTRAN) -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
 else
 	$(LL) $(OBJECTS) -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
 endif
