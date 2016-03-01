@@ -249,6 +249,9 @@ namespace kernels {
 }
 
 
-#include "kernels/aderdg/generic/Kernels.cpph"
+#include "kernels/aderdg/generic/initialCondition.cpph"
+#include "kernels/aderdg/generic/stableTimeStepSize.cpph"
+#include "kernels/aderdg/generic/spaceTimePredictor.cpph"
+#include "kernels/aderdg/generic/riemannSolver.cpph"
 
 #endif
