@@ -1,0 +1,45 @@
+#include "../Kernels.h"
+
+#include "string.h"
+
+#include "tarch/la/Scalar.h"
+#include "tarch/la/ScalarOperations.h"
+
+#include "kernels/GaussLegendreQuadrature.h"
+#include "kernels/DGMatrices.h"
+
+#define EXAHYPE_CFL_FACTOR 0.9
+
+#include <fstream> 
+
+using std::endl;
+using std::cout;
+
+template <void PDEInitialValues(const double* const x,double* Q)>
+void kernels::aderdg::generic::initialCondition(
+    double* luh,
+    const tarch::la::Vector<DIMENSIONS,double>& center,
+    const tarch::la::Vector<DIMENSIONS,double>& dx,
+    const int numberOfVariables,
+    const int basisSize
+) {
+  double x[2];
+
+  for (int ii=0; ii<basisSize; ii++) { // loop over dof
+    const double qr = kernels::gaussLegendreNodes[basisSize-1][ii];
+
+    for (int jj=0; jj<basisSize; jj++) {
+      // location and index of nodal degrees of freedom
+      const int nodeIndex = ii + basisSize * jj;
+
+      const double qs = kernels::gaussLegendreNodes[basisSize-1][jj];
+      x[0]=center[0] + dx[0]*(qr-0.5);
+      x[1]=center[1] + dx[1]*(qs-0.5);
+
+      // read initial condition
+      const int dofStartIndex  = nodeIndex * numberOfVariables;
+      PDEInitialValues(x,&luh[dofStartIndex]);
+    }
+  }
+}
+
