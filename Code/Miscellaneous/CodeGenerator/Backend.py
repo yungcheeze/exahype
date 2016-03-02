@@ -112,6 +112,12 @@ def writeCommonHeader(i_pathToHeaderFile):
                        )
 
 
+    # TODO temporary solution
+    # necessary till all generic kernels have been replaces with generated ones
+    l_sourceFile.write('#define basisSize '+str(m_config['nDof'])+'\n'    \
+                       '#define numberOfVariables '+str(m_config['nVar'])+'\n\n')
+
+
     if(m_config['nDim']==2):
         pass
         # TODO
