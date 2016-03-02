@@ -42,7 +42,7 @@ void kernels::aderdg::generic::surfaceIntegralXDirection(
   // @todo Angelika
   // Please remove the typedefs in generic kernels again since numberOf(...)Dof is not
   // a compile time variable anymore
-  constexpr int numberOfFaceDof = 5 * (3+1);//numberOfVariables * tarch::la::aPowI(DIMENSIONS-1,basisSize);
+  // constexpr int numberOfFaceDof = 5 * (3+1);//numberOfVariables * tarch::la::aPowI(DIMENSIONS-1,basisSize);
   constexpr int order           = 3;
 
   // access lduh(nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array manner
@@ -77,7 +77,7 @@ void kernels::aderdg::generic::surfaceIntegralYDirection(
   // @todo Angelika
   // Please remove the typedefs in generic kernels again since numberOf(...)Dof is not
   // a compile time variable anymore
-  constexpr int numberOfFaceDof = 5 * (3+1);//numberOfVariables * tarch::la::aPowI(DIMENSIONS-1,basisSize);
+  // constexpr int numberOfFaceDof = 5 * (3+1);//numberOfVariables * tarch::la::aPowI(DIMENSIONS-1,basisSize);
   constexpr int order           = 3;
 
   // access lduh(nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array manner

@@ -33,7 +33,7 @@ void kernels::aderdg::generic::spaceTimePredictor(
   // Please remove the typedefs in generic kernels again since numberOf(...)Dof is not
   // a compile time variable anymore
   // helper variables
-  const int order = basisSize-1;
+  // const int order = basisSize-1;
 
   // UNCOMMENT FOR DEBUGGING PURPOSES
   //  lQi[0] = 1;
