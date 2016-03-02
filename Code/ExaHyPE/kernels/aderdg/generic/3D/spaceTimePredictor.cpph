@@ -111,12 +111,12 @@ void kernels::aderdg::generic::spaceTimePredictor(
       }
     }    
 
-    delete[] luhTemp;
-    delete[] lFhiFortran;
-    delete[] lFbndFortran;
-    delete[] lQbndFortran;
-    delete[] dxTemp;
-    delete dtTemp;
+    // delete[] luhTemp;
+    // delete[] lFhiFortran;
+    // delete[] lFbndFortran;
+    // delete[] lQbndFortran;
+    // delete[] dxTemp;
+    // delete dtTemp;
     
     
     // std::ofstream ofs;
