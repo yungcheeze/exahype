@@ -461,11 +461,10 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
     if (riemannSolveNotPerformed) {
       const int numberOfFaceDof = solver->getUnknownsPerFace();//solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
 
-      double * QL = &(DataHeap::getInstance().getData(cellDescriptionsL[i].getExtrapolatedPredictor())[faceL * numberOfFaceDof]._persistentRecords._u);
-      double * QR = &(DataHeap::getInstance().getData(cellDescriptionsR[i].getExtrapolatedPredictor())[faceR * numberOfFaceDof]._persistentRecords._u);
-
-      double * FL = &(DataHeap::getInstance().getData(cellDescriptionsL[i].getFluctuation())[faceL * numberOfFaceDof]._persistentRecords._u);
-      double * FR = &(DataHeap::getInstance().getData(cellDescriptionsR[i].getFluctuation())[faceR * numberOfFaceDof]._persistentRecords._u);
+      double * QL = DataHeap::getInstance().getData(cellDescriptionsL[i].getExtrapolatedPredictor()).data() + (faceL * numberOfFaceDof);
+      double * QR = DataHeap::getInstance().getData(cellDescriptionsR[i].getExtrapolatedPredictor()).data() + (faceR * numberOfFaceDof);
+      double * FL = DataHeap::getInstance().getData(cellDescriptionsL[i].getFluctuation()).data() + (faceL * numberOfFaceDof);
+      double * FR = DataHeap::getInstance().getData(cellDescriptionsR[i].getFluctuation()).data() + (faceR * numberOfFaceDof);
 
       solver->synchroniseTimeStepping( cellDescriptionsL[i] );
       solver->synchroniseTimeStepping( cellDescriptionsR[i] );

@@ -383,11 +383,11 @@ void exahype::mappings::InitialCondition::enterCell(
     // Create solver function resetUpdate(...)
     // zero update
     // @todo Entfernen - sollte Loeser machen. Bitte erst mal validieren
-    double* lduh = &(DataHeap::getInstance().getData(p->getUpdate())[0]._persistentRecords._u);
+    double* lduh = DataHeap::getInstance().getData(p->getUpdate()).data();
     memset(lduh,0,sizeof(double) * solver->getNumberOfVariables() * solver->getNodesPerCoordinateAxis() * solver->getNodesPerCoordinateAxis());
 
     // apply initial condition
-    double* luh    = &(DataHeap::getInstance().getData(p->getSolution())[0]._persistentRecords._u);
+    double* luh    = DataHeap::getInstance().getData(p->getSolution()).data();
     solver->initialCondition(luh,fineGridVerticesEnumerator.getCellCenter(),fineGridVerticesEnumerator.getCellSize());
   endpfor
   peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
