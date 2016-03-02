@@ -14,7 +14,7 @@
 #include "peano/grid/Cell.h"
 
 // ! Begin of code for multiscalelinkedcell toolbox.
-#include "peano/heap/Heap.h"
+#include "peano/heap/DoubleHeap.h"
 #include "exahype/records/ADERDGCellDescription.h"
 // ! End of code for multiscalelinkedcell toolbox.
 
