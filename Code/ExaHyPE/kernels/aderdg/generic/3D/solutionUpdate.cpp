@@ -27,10 +27,13 @@ for(int i=0; i < numberOfVariables*basisSize*basisSize*basisSize; i++){
   lduhFortran[i] = lduh[i];
 }
 
-double dtTemp = dt;
-elementupdate_(luh, lduhFortran, &dtTemp);
+double* dtTemp = new double[1];
+dtTemp[0] = dt;
+
+elementupdate_(luh, lduhFortran, dtTemp);
 
 delete[] lduhFortran;
+delete dtTemp;
 
 }
 
