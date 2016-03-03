@@ -549,15 +549,17 @@ SUBROUTINE InitialField(u0,par,xGP)
 #endif
 #ifdef ELASTICITY
     ! Set the local material parameters 
-    par(1) = 2.0 
-    par(2) = 1.0
-    par(3) = 1.0  
+    par(1) = 2.0  ! lambda 
+    par(2) = 1.0  ! mu 
+    par(3) = 1.0  ! rho 
     ! Gaussian perturbation 
     sigma = (/ 0.05, 0.05, 0.05 /)       ! half-width
     VBase(:) = 0.0                       ! base-state 
     ampl(:)  = 0.                        ! perturbation amplitude vector 
     ampl(7)   = 1e-3                     ! 
-    V0(:) = VBase(:) + ampl(:)*EXP( -0.5*SUM(xGP(1:nDim)**2/sigma(1:nDim)**2) )    
+    V0(:) = VBase(:) + ampl(:)*EXP( -0.5*SUM(xGP(1:nDim)**2/sigma(1:nDim)**2) )   
+!    V0 = 0.  
+!    V0(1) = 1.0 + exp(-0.5*(xGP(1)**2+xGP(2)**2)/0.1**2)  
 #endif 
     ! A simple debug check for the computation of derivatives 
     !u0 = 0. 

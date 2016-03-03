@@ -176,13 +176,11 @@
     ! Local variables
     INTEGER :: i,j,k,l,iVar,iDim
     REAL    :: rhs(nVar,nDOF(1),nDOF(2),nDOF(3))                        ! temporary work array
-    REAL    :: lqh(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! space-time degrees of freedom
+    REAL    :: lqh(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0)+1)                ! space-time degrees of freedom
     REAL    :: lFh(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))              ! nonlinear flux tensor in each space-time DOF
     REAL    :: aux(d), w                                                ! auxiliary variables
-    REAL    :: lqx(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qx of q
-    REAL    :: lqy(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qy of q
-    REAL    :: lqz(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qz of q
-    REAL    :: lqt(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! time derivative qt of q
+    REAL    :: gradQ(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))            ! spatial gradient of q
+    REAL    :: lqt(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))              ! time derivative qt of q
     REAL    :: dtavFac                                                  ! integral average of the time power terms of the Taylor series
     REAL, PARAMETER :: tol = 1e-7                                       ! tolerance
     !
@@ -199,22 +197,13 @@
     !
     ! For linear PDE, the fastest space-time predictor is the good old Cauchy-Kovalewski procedure
     !
-    DO l = 1, nDOF(0)-1
-        ! Compute the fluxes (once these fluxes are available, the subsequent operations are independent from each other)
-        DO k = 1, nDOF(3)
-            DO j = 1, nDOF(2)
-                DO i = 1, nDOF(1)
-                    CALL PDEFlux(lFh(:,:,i,j,k,l),lqh(:,i,j,k,l),lpar(:,i,j,k))
-                ENDDO
-            ENDDO
-        ENDDO
-        ! Compute the "derivatives" (contributions of the stiffness matrix)
-        ! x direction (independent from the y and z derivatives)
+    DO l = 1, nDOF(0) 
+        ! Compute the derivatives in x direction (independent from the y and z derivatives)
         DO k = 1, nDOF(3)
             DO j = 1, nDOF(2)
                 aux = (/ 1., wGPN(j), wGPN(k) /)
-                rhs(:,:,j,k) = - PRODUCT(aux(1:nDim))/dx(1)*MATMUL( lFh(:,1,:,j,k,l), Kxi )
-                !lqx(:,:,j,k,l) = 1.0/dx(1)*MATMUL( lqh(:,:,j,k,l), TRANSPOSE(dudx) )         ! currently used only for debugging purposes, to check if derivatives are correctly computed
+                !rhs(:,:,j,k) = - PRODUCT(aux(1:nDim))/dx(1)*MATMUL( lFh(:,1,:,j,k,l), Kxi )
+                gradQ(:,1,:,j,k,l) = 1.0/dx(1)*MATMUL( lqh(:,:,j,k,l), TRANSPOSE(dudx) )         ! currently used only for debugging purposes, to check if derivatives are correctly computed
             ENDDO
         ENDDO
         ! y direction (independent from the x and z derivatives) - should not be used for 1D
@@ -222,8 +211,8 @@
             DO k = 1, nDOF(3)
                 DO i = 1, nDOF(1)
                     aux = (/ 1., wGPN(i), wGPN(k) /)
-                    rhs(:,i,:,k) = rhs(:,i,:,k) - PRODUCT(aux(1:nDim))/dx(2)*MATMUL( lFh(:,2,i,:,k,l), Kxi )
-                    !lqy(:,i,:,k,l) = 1.0/dx(2)*MATMUL( lqh(:,i,:,k,l), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed
+                    !rhs(:,i,:,k) = rhs(:,i,:,k) - PRODUCT(aux(1:nDim))/dx(2)*MATMUL( lFh(:,2,i,:,k,l), Kxi )
+                    gradQ(:,2,i,:,k,l) = 1.0/dx(2)*MATMUL( lqh(:,i,:,k,l), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed
                 ENDDO
             ENDDO
         ENDIF
@@ -232,35 +221,47 @@
             DO j = 1, nDOF(2)
                 DO i = 1, nDOF(1)
                     aux = (/ 1., wGPN(i), wGPN(j) /)
-                    rhs(:,i,j,:) = rhs(:,i,j,:) - PRODUCT(aux(1:nDim))/dx(3)*MATMUL( lFh(:,3,i,j,:,l), Kxi )
-                    !lqz(:,i,j,:,l) = 1.0/dx(3)*MATMUL( lqh(:,i,j,:,l), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed
+                    !rhs(:,i,j,:) = rhs(:,i,j,:) - PRODUCT(aux(1:nDim))/dx(3)*MATMUL( lFh(:,3,i,j,:,l), Kxi )
+                    gradQ(:,3,i,j,:,l) = 1.0/dx(3)*MATMUL( lqh(:,i,j,:,l), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed
                 ENDDO
             ENDDO
         ENDIF
-        !
-        ! Multiply with (M)^(-1) to get the next higher time derivative
-        !
+        ! Compute the fluxes (once these fluxes are available, the subsequent operations are independent from each other)
         DO k = 1, nDOF(3)
             DO j = 1, nDOF(2)
                 DO i = 1, nDOF(1)
-                    aux = (/ wGPN(i), wGPN(j), wGPN(k) /)
-                    lqh(:,i,j,k,l+1) = 1./(PRODUCT(aux(1:nDim)))*rhs(:,i,j,k)
-                    !lqt(:,i,j,k,:) = 1.0/dt*MATMUL( lqh(:,i,j,k,:), TRANSPOSE(dudx) )         ! currently used only for debugging purposes, to check if derivatives are correctly computed
+                    CALL PDENCP(lFh(:,:,i,j,k,l),lqh(:,i,j,k,l),gradQ(:,:,i,j,k,l),lpar(:,i,j,k))  ! PDEFlux(lFh(:,:,i,j,k,l),lqh(:,i,j,k,l),lpar(:,i,j,k))
+                    lqh(:,i,j,k,l+1) = -SUM( lFh(:,1:nDim,i,j,k,l), dim=2 ) 
                 ENDDO
             ENDDO
         ENDDO
+        !
+        CONTINUE
+        !
+        !
+        ! Multiply with (M)^(-1) to get the next higher time derivative
+        !
+!        DO k = 1, nDOF(3)
+!            DO j = 1, nDOF(2)
+!                DO i = 1, nDOF(1)
+!                    aux = (/ wGPN(i), wGPN(j), wGPN(k) /)
+!                    lqh(:,i,j,k,l+1) = 1./(PRODUCT(aux(1:nDim)))*rhs(:,i,j,k)
+!                    !lqt(:,i,j,k,:) = 1.0/dt*MATMUL( lqh(:,i,j,k,:), TRANSPOSE(dudx) )         ! currently used only for debugging purposes, to check if derivatives are correctly computed
+!                ENDDO
+!            ENDDO
+!        ENDDO
         !
     ENDDO
     !
     ! Compute the fluxes also for the last time derivative 
-    l = nDOF(0) 
-    DO k = 1, nDOF(3)
-        DO j = 1, nDOF(2)
-            DO i = 1, nDOF(1)
-                CALL PDEFlux(lFh(:,:,i,j,k,l),lqh(:,i,j,k,l),lpar(:,i,j,k))
-            ENDDO
-        ENDDO
-    ENDDO
+!    l = nDOF(0) 
+!    DO k = 1, nDOF(3)
+!        DO j = 1, nDOF(2)
+!            DO i = 1, nDOF(1)
+!                CALL PDEFlux(lFh(:,:,i,j,k,l),lqh(:,i,j,k,l),lpar(:,i,j,k))
+!            ENDDO
+!        ENDDO
+!    ENDDO
     !
     ! Immediately compute the time-averaged space-time polynomials
     !

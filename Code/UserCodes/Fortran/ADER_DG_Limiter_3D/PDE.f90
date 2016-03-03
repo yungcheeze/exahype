@@ -137,6 +137,10 @@ SUBROUTINE PDENCP(BgradQ,Q,gradQ,par)
     BgradQ(7,3) = - irho *Qz(4) 
     BgradQ(8,3) = - irho *Qz(2) 
     BgradQ(9,3) = - irho *Qz(5) 
+
+!    BgradQ = 0. 
+!    BgradQ(1,1) = Qx(1) 
+!    BgradQ(1,2) = Qy(1) 
     
 #endif 
     !            
@@ -198,6 +202,12 @@ SUBROUTINE PDEMatrixB(Bn,Q,nv,par)
     B3(8,2) = - irho
     B3(9,5) = - irho
     
+!    B1 = 0. 
+!    B2 = 0. 
+!    B3 = 0. 
+!    B1(1,1) = 1.0 
+!    B2(1,1) = 1.0 
+
 #endif 
     !            
     Bn = B1*nv(1) + B2*nv(2) + B3*nv(3) 
@@ -240,6 +250,7 @@ SUBROUTINE PDEEigenvalues(Lambda,Q,par,nv)
     Lambda(7) = +cs
     Lambda(8) = +cs
     Lambda(9) = +cp 
+
 #endif 
     !
 END SUBROUTINE PDEEigenvalues

@@ -11,9 +11,15 @@ SUBROUTINE ADERRiemannSolver(lQbndL,lFbndL,lparbndL,lQbndR,lFbndR,lparbndR,nv)
     REAL, INTENT(INOUT)  :: lFbndR(nVar,nDOF(2),nDOF(3))              ! right flux 
     ! Local variables 
     INTEGER           :: i,j,k,l
-    REAL              :: aux(d), QavL(nVar), QavR(nVar), smax
-    REAL              :: parL(nParam), parR(nParam) 
+    REAL              :: aux(d), QavL(nVar), QavR(nVar), Id(nVar,nVar), smax
+    REAL              :: parL(nParam), parR(nParam), Bn(nVar,nVar) 
     REAL              :: LL(nVar), LR(nVar) 
+    !
+    ! Identity matrix 
+    Id = 0.0 
+    DO i=1,nVar
+        Id(i,i)=1.0
+    ENDDO
     !
     ! Compute the average states from the left and the right, which we need to compute the numerical dissipation 
     QavL = 0. 
@@ -51,12 +57,28 @@ SUBROUTINE ADERRiemannSolver(lQbndL,lFbndL,lparbndL,lQbndR,lFbndR,lparbndR,nv)
     ! CONSERVATION FORM => no fluctuations, but real fluxes. 
     ! Later, this will be converted into the left and right fluctuations. 
     !
+#ifdef ELASTICITY 
+    CALL PDEMatrixB(Bn,0.5*(QavL+QavR),nv,0.5*(parL+parR)) ! evaluate the system matrix just once in the averaged state 
+    DO k = 1, nDOF(3)
+      DO j = 1, nDOF(2)
+            !CALL PDEMatrixB(Bn,0.5*(lQbndL(:,j,k)+lQbndR(:,j,k)),nv,0.5*(lparbndL(:,j,k)+lparbndR(:,j,k))) ! evaluate the system matrix in each Gaussian point again (slow) 
+            lFbndL(:,j,k) = 0.5*MATMUL( Bn - Id*smax, lQbndR(:,j,k) - lQbndL(:,j,k) ) 
+            lFbndR(:,j,k) = 0.5*MATMUL( Bn + Id*smax, lQbndR(:,j,k) - lQbndL(:,j,k) ) 
+        ENDDO
+    ENDDO
+
+#else
+
     DO k = 1, nDOF(3)
       DO j = 1, nDOF(2)
             lFbndL(:,j,k) = 0.5*( lFbndR(:,j,k) + lFbndL(:,j,k) ) - 0.5*smax*( lQbndR(:,j,k) - lQbndL(:,j,k) ) 
             lFbndR(:,j,k) = lFbndL(:,j,k) 
         ENDDO
     ENDDO
+
+
+#endif 
+
     !
 END SUBROUTINE ADERRiemannSolver 
     
