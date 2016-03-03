@@ -63,9 +63,12 @@ void kernels::aderdg::generic::surfaceIntegral(
     // ofs.close();
     
 
-    double dxTemp[3] = {dx[0], dx[1], dx[2]};
+    double* dxTemp = new double[3];
+    dxTemp[0]= dx[0];
+    dxTemp[1]= dx[1];
+    dxTemp[2]= dx[2];
     
-    adersurfaceintegral_(lduh, lFbndFortran, &dxTemp[0]);
+    adersurfaceintegral_(lduh, lFbndFortran, dxTemp);
 
     // for(int i=0; i < numberOfVariables*basisSize*basisSize*basisSize; i++){
       // cout << lduh[i] << endl;
@@ -73,5 +76,5 @@ void kernels::aderdg::generic::surfaceIntegral(
     // exit(0);
     
     delete[] lFbndFortran;
-  
+    delete[] dxTemp;
 }

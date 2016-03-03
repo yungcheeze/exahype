@@ -70,10 +70,14 @@ void kernels::aderdg::generic::volumeIntegral(
   // cout << "-------------lFhi in volumeIntegral.cpph------------------" << "\n";
   
   
-  double dxTemp[3] = {dx[0], dx[1], dx[2]};
+  double* dxTemp = new double[3];
+  dxTemp[0]= dx[0];
+  dxTemp[1]= dx[1];
+  dxTemp[2]= dx[2];
   
-  adervolumeintegral_(lduh, lFhiFortran, &dxTemp[0]);
+  adervolumeintegral_(lduh, lFhiFortran, dxTemp);
 
   delete[] lFhiFortran;
+  delete[] dxTemp;
 }
 

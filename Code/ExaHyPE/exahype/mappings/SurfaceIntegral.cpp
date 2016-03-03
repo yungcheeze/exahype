@@ -376,8 +376,8 @@ void exahype::mappings::SurfaceIntegral::enterCell(
 
     exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers [ p->getSolverNumber() ];
 
-    double * lduh   = &(DataHeap::getInstance().getData( p->getUpdate() )     [0]._persistentRecords._u);
-    double * lFhbnd = &(DataHeap::getInstance().getData( p->getFluctuation() )[0]._persistentRecords._u);
+    double * lduh   = DataHeap::getInstance().getData( p->getUpdate() ).data();
+    double * lFhbnd = DataHeap::getInstance().getData( p->getFluctuation() ).data();
 
     solver->surfaceIntegral(
         lduh,

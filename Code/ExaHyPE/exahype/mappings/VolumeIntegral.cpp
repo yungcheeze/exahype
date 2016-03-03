@@ -373,8 +373,8 @@ void exahype::mappings::VolumeIntegral::enterCell(
 
     exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers [ p->getSolverNumber() ];
 
-    double * lduh = &(DataHeap::getInstance().getData(p->getUpdate())    [0]._persistentRecords._u);
-    double * lFhi = &(DataHeap::getInstance().getData(p->getVolumeFlux())[0]._persistentRecords._u);
+    double * lduh = DataHeap::getInstance().getData(p->getUpdate()).data();
+    double * lFhi = DataHeap::getInstance().getData(p->getVolumeFlux()).data();
 
     logDebug("enterCell(...)::debug::before::lduh[0]",lduh[0]);
     logDebug("enterCell(...)::debug::before::lFhi[0]",lFhi[0]);

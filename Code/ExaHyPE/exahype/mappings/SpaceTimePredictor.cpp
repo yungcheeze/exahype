@@ -383,17 +383,17 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
     exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers [ p->getSolverNumber() ];
 
     // space-time DoF (basisSize**(DIMENSIONS+1))
-    double * lQi = &(DataHeap::getInstance().getData(p->getSpaceTimePredictor()) [0]._persistentRecords._u);
-    double * lFi = &(DataHeap::getInstance().getData(p->getSpaceTimeVolumeFlux())[0]._persistentRecords._u);
+    double * lQi  = DataHeap::getInstance().getData(p->getSpaceTimePredictor()).data();
+    double * lFi  = DataHeap::getInstance().getData(p->getSpaceTimeVolumeFlux()).data();
 
     // volume DoF (basisSize**(DIMENSIONS))
-    double * luh  = &(DataHeap::getInstance().getData(p->getSolution())  [0]._persistentRecords._u);
-    double * lQhi = &(DataHeap::getInstance().getData(p->getPredictor()) [0]._persistentRecords._u);
-    double * lFhi = &(DataHeap::getInstance().getData(p->getVolumeFlux())[0]._persistentRecords._u);
+    double * luh  = DataHeap::getInstance().getData(p->getSolution()).data();
+    double * lQhi = DataHeap::getInstance().getData(p->getPredictor()).data();
+    double * lFhi = DataHeap::getInstance().getData(p->getVolumeFlux()).data();
 
     // face DoF (basisSize**(DIMENSIONS-1))
-    double * lQhbnd = &(DataHeap::getInstance().getData(p->getExtrapolatedPredictor())[0]._persistentRecords._u);
-    double * lFhbnd = &(DataHeap::getInstance().getData(p->getFluctuation())          [0]._persistentRecords._u);
+    double * lQhbnd = DataHeap::getInstance().getData(p->getExtrapolatedPredictor()).data();
+    double * lFhbnd = DataHeap::getInstance().getData(p->getFluctuation()).data();
 
     solver->spaceTimePredictor(
         lQi,

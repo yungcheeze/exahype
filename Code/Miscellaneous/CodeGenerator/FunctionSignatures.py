@@ -80,8 +80,8 @@ def getExtrapolatorSignature():
     l_functionSignature = "void kernels::aderdg::optimised::extrapolator( \n"   \
                           "  DATATYPE* restrict lQbnd, \n"                      \
                           "  DATATYPE* restrict lFbnd, \n"                      \
-                          "  DATATYPE* restrict lQhi, \n"                       \
-                          "  DATATYPE* restrict lFhi \n"                        \
+                          "  const DATATYPE* restrict const lQhi, \n"           \
+                          "  const DATATYPE* restrict const lFhi \n"            \
                           ")"
         
     # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                         

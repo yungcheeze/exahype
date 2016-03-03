@@ -348,7 +348,7 @@ void exahype::mappings::Plot::enterCell(
       pPatch++
     ) {
       if ( (*pPlotter)->plotDataFromSolver(pPatch->getSolverNumber()) ) {
-        double * u = &(DataHeap::getInstance().getData(pPatch->getSolution())  [0]._persistentRecords._u);
+        double * u = DataHeap::getInstance().getData(pPatch->getSolution()).data();
         (*pPlotter)->plotPatch(
           fineGridVerticesEnumerator.getVertexPosition(),
           fineGridVerticesEnumerator.getCellSize(),

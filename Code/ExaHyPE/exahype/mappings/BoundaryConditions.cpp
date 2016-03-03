@@ -482,15 +482,15 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       // Change to solver->getUnknownsPerFace()
       const int numberOfFaceDof = solver->getNumberOfVariables() * tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
 
-      double * Qhbnd = &(DataHeap::getInstance().getData(p->getExtrapolatedPredictor())[faceIndex * numberOfFaceDof]._persistentRecords._u);
-      double * Fhbnd = &(DataHeap::getInstance().getData(p->getFluctuation())          [faceIndex * numberOfFaceDof]._persistentRecords._u);
+      double * Qhbnd = DataHeap::getInstance().getData(p->getExtrapolatedPredictor()).data() + (faceIndex * numberOfFaceDof);
+      double * Fhbnd = DataHeap::getInstance().getData(p->getFluctuation()).data()           + (faceIndex * numberOfFaceDof);
 
       // @todo
 //      timestepping::synchroniseTimeStepping(solve,*p);
       logDebug("touchVertexLastTime(...)::debug::before::Qhbnd[0]*",Qhbnd[0]);
       logDebug("touchVertexLastTime(...)::debug::before::Fhbnd[0]",Fhbnd[0]);
 
-      // todo Dominic Charrier
+      // todo Dominic Charrier2503
       // Do not solve a Riemann problem here:
       // Invoke user defined boundary condition function
       // At the moment, we simply copy the cell solution to the boundary.

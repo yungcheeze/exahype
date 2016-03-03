@@ -381,7 +381,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
 
     exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers   [ p->getSolverNumber() ];
 
-    double * luh  = &(DataHeap::getInstance().getData( p->getSolution() )[0]._persistentRecords._u);
+    double * luh  = DataHeap::getInstance().getData( p->getSolution() ).data();
 
     double admissibleTimeStepSize = solver->stableTimeStepSize(
         luh,
