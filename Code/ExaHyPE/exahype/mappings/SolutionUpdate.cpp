@@ -79,8 +79,8 @@ exahype::mappings::SolutionUpdate::~SolutionUpdate() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::SolutionUpdate::SolutionUpdate(const SolutionUpdate&  masterThread):
-  _localState(masterThread._localState
-) {
+      _localState(masterThread._localState
+      ) {
 }
 
 
@@ -368,29 +368,39 @@ void exahype::mappings::SolutionUpdate::enterCell(
   const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined3; // Dominic, please use a different UserDefined per mapping/event. There should be enough by now.
   const int  grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions,methodTrace);
   pfor(i,0,numberOfADERDGCellDescriptions,grainSize)
-    // todo ugly
-    // This is not beautiful and should be replaced by a reference next. I just
-    // use it to mirror the aforementioned realisation. Dominic, please change
-    // successively to a simpler scheme with just references. Pointers are
-    // ugly.
-    records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i]);
+  // todo ugly
+  // This is not beautiful and should be replaced by a reference next. I just
+  // use it to mirror the aforementioned realisation. Dominic, please change
+  // successively to a simpler scheme with just references. Pointers are
+  // ugly.
+  records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i]);
 
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
+  exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[ p->getSolverNumber() ];
 
-    double * luh  = DataHeap::getInstance().getData(p->getSolution()).data();
-    double * lduh = DataHeap::getInstance().getData(p->getUpdate()).data();
+  double * luh  = DataHeap::getInstance().getData(p->getSolution()).data();
+  double * lduh = DataHeap::getInstance().getData(p->getUpdate()).data();
 
-    logDebug("enterCell(...)::debug::before::luh[0]",luh[0]);
-    logDebug("enterCell(...)::debug::before::lduh[0]",lduh[0]);
+  logDebug("enterCell(...)::debug::before::luh[0]",luh[0]);
+  logDebug("enterCell(...)::debug::before::lduh[0]",lduh[0]);
 
-    solver->solutionUpdate(
-        luh,
-        lduh,
-        p->getCorrectorTimeStepSize()//solve.getCorrectorTimeStepSize()//_localState.getPreviousMinTimeStepSize() // todo replace by patch time step size
-    );
+  solver->solutionUpdate(
+      luh,
+      lduh,
+      p->getCorrectorTimeStepSize()//solve.getCorrectorTimeStepSize()//_localState.getPreviousMinTimeStepSize() // todo replace by patch time step size
+  );
 
-    logDebug("enterCell(...)::debug::after::luh[0]",luh[0]);
-    logDebug("enterCell(...)::debug::after::lduh[0]",lduh[0]);
+  if (
+      solver->hasToAdjustSolution(
+          fineGridVerticesEnumerator.getCellCenter(),
+          fineGridVerticesEnumerator.getCellSize(),
+          p->getCorrectorTimeStepSize()
+      )
+  ) {
+    solver->solutionAdjustment( luh,fineGridVerticesEnumerator.getCellCenter(),fineGridVerticesEnumerator.getCellSize(),p->getCorrectorTimeStamp(),p->getCorrectorTimeStepSize() );
+  }
+
+  logDebug("enterCell(...)::debug::after::luh[0]",luh[0]);
+  logDebug("enterCell(...)::debug::after::lduh[0]",lduh[0]);
   endpfor
   peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
 
