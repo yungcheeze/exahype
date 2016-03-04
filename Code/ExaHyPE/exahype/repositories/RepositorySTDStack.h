@@ -19,7 +19,7 @@
  #include "exahype/adapters/InitialGrid.h" 
  #include "exahype/adapters/PatchInitialisation.h" 
  #include "exahype/adapters/Plot.h" 
- #include "exahype/adapters/InitialConditionAndGlobalTimeStepComputation.h" 
+ #include "exahype/adapters/SolutionUpdateAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/ADERDGTimeStep.h" 
  #include "exahype/adapters/GlobalTimeStepComputation.h" 
@@ -54,7 +54,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialGrid> _gridWithInitialGrid;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PatchInitialisation> _gridWithPatchInitialisation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Plot> _gridWithPlot;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialConditionAndGlobalTimeStepComputation> _gridWithInitialConditionAndGlobalTimeStepComputation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionUpdateAndGlobalTimeStepComputation> _gridWithSolutionUpdateAndGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictorAndGlobalTimeStepComputation> _gridWithPredictorAndGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::ADERDGTimeStep> _gridWithADERDGTimeStep;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GlobalTimeStepComputation> _gridWithGlobalTimeStepComputation;
@@ -68,7 +68,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureInitialGridCPUTime;
     tarch::timing::Measurement _measurePatchInitialisationCPUTime;
     tarch::timing::Measurement _measurePlotCPUTime;
-    tarch::timing::Measurement _measureInitialConditionAndGlobalTimeStepComputationCPUTime;
+    tarch::timing::Measurement _measureSolutionUpdateAndGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measurePredictorAndGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measureADERDGTimeStepCPUTime;
     tarch::timing::Measurement _measureGlobalTimeStepComputationCPUTime;
@@ -79,7 +79,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureInitialGridCalendarTime;
     tarch::timing::Measurement _measurePatchInitialisationCalendarTime;
     tarch::timing::Measurement _measurePlotCalendarTime;
-    tarch::timing::Measurement _measureInitialConditionAndGlobalTimeStepComputationCalendarTime;
+    tarch::timing::Measurement _measureSolutionUpdateAndGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measurePredictorAndGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measureADERDGTimeStepCalendarTime;
     tarch::timing::Measurement _measureGlobalTimeStepComputationCalendarTime;
@@ -128,7 +128,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToInitialGrid();    
     virtual void switchToPatchInitialisation();    
     virtual void switchToPlot();    
-    virtual void switchToInitialConditionAndGlobalTimeStepComputation();    
+    virtual void switchToSolutionUpdateAndGlobalTimeStepComputation();    
     virtual void switchToPredictorAndGlobalTimeStepComputation();    
     virtual void switchToADERDGTimeStep();    
     virtual void switchToGlobalTimeStepComputation();    
@@ -139,7 +139,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual bool isActiveAdapterInitialGrid() const;
     virtual bool isActiveAdapterPatchInitialisation() const;
     virtual bool isActiveAdapterPlot() const;
-    virtual bool isActiveAdapterInitialConditionAndGlobalTimeStepComputation() const;
+    virtual bool isActiveAdapterSolutionUpdateAndGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterPredictorAndGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterADERDGTimeStep() const;
     virtual bool isActiveAdapterGlobalTimeStepComputation() const;
