@@ -82,7 +82,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
                     System.out.println( "create header of solver " + solverName + " ... ok" );      
                     writeMinimalADERDGSolverHeader( solverName, headerWriter );
                 }
-                else if (kernel.equals("user::fluxes")) {
+                else if (kernel.equals("generic::fluxes::nonlinear")) {
                     System.out.println( "create header of solver " + solverName + " ... ok" );      
 
                     writeADERDGSolverHeaderForUserFluxes( solverName, headerWriter );
@@ -113,7 +113,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
                     writeADERDGSolverUserImplementationForUserDefined(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), userImplementationWriter);
                 }
-                else if (kernel.equals("user::fluxes")) {
+                else if (kernel.equals("generic::fluxes::nonlinear")) {
                     System.out.println( "create user implementation template of solver " + solverName + " ... please complete" );      
 
                     writeADERDGSolverUserImplementationForUserFluxes(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), userImplementationWriter);
@@ -145,7 +145,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
                 writeADERDGSolverGeneratedImplementationForUserDefined(solverName, generatedImplementationWriter);
             }
-            else if (kernel.equals("user::fluxes")) {
+            else if (kernel.equals("generic::fluxes::nonlinear")) {
                 System.out.println( "create generated implementation of solver " + solverName + " ... ok" );      
 
                 writeADERDGSolverGeneratedImplementationForUserFluxes(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), generatedImplementationWriter);
