@@ -52,6 +52,7 @@ Tokens
   token_variables                 = 'variables';
   token_order                     = 'order';
   token_kernel                    = 'kernel';
+  token_language                  = 'language';
 
   token_plot                      = 'plot';
   token_variable                  = 'variable';
@@ -187,10 +188,11 @@ Productions
          token_variables [variables_equals]:token_equals [variables]:int_number
          token_order     [order_equals]:token_equals     [order]:int_number
          token_kernel    [kernel_equals]:token_equals    [kernel]:typename
+         token_language  [language_equals]:token_equals  [language]:identifier
          plot_solution_list?
        token_end [end_token]:token_solver
        solver_list?
-       { -> [New solver.aderdg(name,variables,order,kernel,[plot_solution_list.plot_solution]),solver_list.solver] }
+       { -> [New solver.aderdg(name,variables,order,kernel,language,[plot_solution_list.plot_solution]),solver_list.solver] }
      ;
 
 
@@ -224,7 +226,7 @@ Abstract Syntax Tree
      [fuse_algorithm_steps]:token_on_off;
     
    solver = 
-     {aderdg} [name]:identifier [variables]:int_number [order]:int_number [kernel]:typename plot_solution*
+     {aderdg} [name]:identifier [variables]:int_number [order]:int_number [kernel]:typename [language]:identifier plot_solution*
      ;
 
    plot_solution = 
