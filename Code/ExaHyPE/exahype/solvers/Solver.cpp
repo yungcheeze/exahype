@@ -142,6 +142,10 @@ double exahype::solvers::Solver::getMinNextPredictorTimeStepSize () const {
   return _minNextPredictorTimeStepSize;
 }
 
+void exahype::solvers::Solver::setMinCorrectorTimeStamp(double minCorrectorTimeStamp) {
+  _minCorrectorTimeStamp = minCorrectorTimeStamp;
+}
+
 double exahype::solvers::Solver::getMinCorrectorTimeStamp() const {
   return _minCorrectorTimeStamp;
 }

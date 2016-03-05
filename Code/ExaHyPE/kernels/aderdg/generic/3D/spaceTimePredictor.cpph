@@ -42,8 +42,13 @@ void kernels::aderdg::generic::spaceTimePredictor(
     for(int i=0; i < numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize; i++)
       lFhiFortran[i] = -123.45;
 
-    double dtTemp = dt;
-    double dxTemp[3] = {dx[0], dx[1], dx[2]};
+    double* dtTemp = new double[1];
+    dtTemp[0] = dt;
+    
+    double* dxTemp = new double[3];
+    dxTemp[0]= dx[0];
+    dxTemp[1]= dx[1];
+    dxTemp[2]= dx[2];
     
     double* lFbndFortran = new double[numberOfVariables*6*basisSize*basisSize];
     for(int i=0; i < numberOfVariables*6*basisSize*basisSize; i++){
@@ -56,7 +61,7 @@ void kernels::aderdg::generic::spaceTimePredictor(
     }
     
     
-    aderspacetimepredictor_(lQhi, lFhiFortran, lQbndFortran, lFbndFortran, luhTemp, &dtTemp, &dxTemp[0]);
+    aderspacetimepredictor_(lQhi, lFhiFortran, lQbndFortran, lFbndFortran, luhTemp, dtTemp, dxTemp);
     
     // Permutation of lFhi
     for (int ii=0; ii<basisSize; ii++) {  // loop over dof
@@ -70,7 +75,6 @@ void kernels::aderdg::generic::spaceTimePredictor(
         }
       }
     }
-
 
 
     
@@ -107,10 +111,12 @@ void kernels::aderdg::generic::spaceTimePredictor(
       }
     }    
 
-    delete[] luhTemp;
-    delete[] lFhiFortran;
-    delete[] lFbndFortran;
-    delete[] lQbndFortran;
+    // delete[] luhTemp;
+    // delete[] lFhiFortran;
+    // delete[] lFbndFortran;
+    // delete[] lQbndFortran;
+    // delete[] dxTemp;
+    // delete dtTemp;
     
     
     // std::ofstream ofs;

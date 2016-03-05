@@ -23,9 +23,6 @@ event-mapping:
 
 event-mapping:
   name: GlobalTimeStepComputation
-
-event-mapping:
-  name: InitialCondition
   
 event-mapping:
   name: SolutionUpdate
@@ -73,8 +70,8 @@ adapter:
 
 // Adapters for initialisation of time stepping
 adapter:
-  name: InitialConditionAndGlobalTimeStepComputation
-  merge-with-user-defined-mapping: InitialCondition
+  name: SolutionUpdateAndGlobalTimeStepComputation
+  merge-with-user-defined-mapping: SolutionUpdate
   // needs current time step size
   merge-with-user-defined-mapping: GlobalTimeStepComputation
 
@@ -91,8 +88,8 @@ adapter:
 adapter: 
   name: ADERDGTimeStep
   // needs corrector time step size
-  merge-with-user-defined-mapping: RiemannSolver
-  merge-with-user-defined-mapping: BoundaryConditions // RiemannSolver must start new time step in touchVertexFirstTime
+  merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
+  merge-with-user-defined-mapping: BoundaryConditions 
   merge-with-user-defined-mapping: RiemannSolverReset
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate

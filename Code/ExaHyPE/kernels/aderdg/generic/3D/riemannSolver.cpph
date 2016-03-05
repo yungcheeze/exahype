@@ -67,10 +67,13 @@ void kernels::aderdg::generic::riemannSolver(
     FrFortran[i] = FR[i];
   }
 
-  double nv[3] = {0.0, 0.0, 0.0};
+  double* nv = new double[3];
+  nv[0] = 0.0;
+  nv[1] = 0.0;
+  nv[2] = 0.0;
   nv[normalNonZero] = 1.0;
   
-  aderriemannsolver_(QlFortran, FlFortran, QrFortran, FrFortran, &nv[0]);
+  aderriemannsolver_(QlFortran, FlFortran, QrFortran, FrFortran, nv);
   
   // // Permutation of lQbnd
 
@@ -108,6 +111,6 @@ void kernels::aderdg::generic::riemannSolver(
   delete[] QrFortran;
   delete[] FlFortran;
   delete[] FrFortran;
-    
+  delete[] nv;  
 }
 

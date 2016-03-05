@@ -39,11 +39,8 @@ double Euler2d::MyEulerSolver::stableTimeStepSize(const double* const luh, const
    return kernels::aderdg::generic::stableTimeStepSize<eigenvalues>( luh, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );
 }
 
-
-
-void Euler2d::MyEulerSolver::initialCondition(double* luh, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx) {
-   kernels::aderdg::generic::initialCondition<initialValues>( luh, center, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );
+void Euler2d::MyEulerSolver::solutionAdjustment(double*  luh, const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx, double  t, double  dt) {
+  kernels::aderdg::generic::solutionAdjustment<adjustedSolutionValues>( luh, center, dx, t, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );
 }
-
 
 

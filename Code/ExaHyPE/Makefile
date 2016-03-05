@@ -38,17 +38,17 @@ ifeq ($(ARCHITECTURE),Phi)
 		else ifeq ($(MODE),Profile)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -restrict -fast -fno-rtti -no-ipo -ip -mmic -std=c++0x
+			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -mmic -std=c++0x
 			COMPILER_LFLAGS=-p -pg -mmic
 		else ifeq ($(MODE),Asserts)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DAsserts -fast -fstrict-aliasing -restrict -fast -fno-rtti -no-ipo -ip -mmic -std=c++0x
+			COMPILER_CFLAGS=-DAsserts -fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -mmic -std=c++0x
 			COMPILER_LFLAGS=-mmic -lrt
 		else
 			# Settings for the Intel Compiler (Release Mode)
 			# ----------------------------------------------
-			COMPILER_CFLAGS=-fast -fstrict-aliasing -restrict -fast -fno-rtti -no-ipo -ip -mmic -std=c++0x
+			COMPILER_CFLAGS=-fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -mmic -std=c++0x
 			COMPILER_LFLAGS=-mmic -lrt
 		endif
 else
@@ -96,17 +96,17 @@ else
 		else ifeq ($(MODE),Profile)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -restrict -fast -fno-rtti -no-ipo -ip -xHost -std=c++0x
+			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -xHost -std=c++0x
 			COMPILER_LFLAGS=-p -pg
 		else ifeq ($(MODE),Asserts)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DAsserts -fast -fstrict-aliasing -restrict -fast -fno-rtti -no-ipo -ip -xHost -std=c++0x
+			COMPILER_CFLAGS=-DAsserts -fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -xHost -std=c++0x
 			COMPILER_LFLAGS=
 		else
 			# Settings for the Intel Compiler (Release Mode)
 			# ----------------------------------------------
-			COMPILER_CFLAGS=-fast -fstrict-aliasing -restrict -fast -fno-rtti -no-ipo -ip -xHost -std=c++0x
+			COMPILER_CFLAGS=-fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -xHost -std=c++0x
 			COMPILER_LFLAGS=
 		endif
 	endif

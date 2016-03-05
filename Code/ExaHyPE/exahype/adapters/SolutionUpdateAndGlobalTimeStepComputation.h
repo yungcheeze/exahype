@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_InitialConditionAndGlobalTimeStepComputation_H_
-#define EXAHYPE_ADAPTERS_InitialConditionAndGlobalTimeStepComputation_H_
+#ifndef EXAHYPE_ADAPTERS_SolutionUpdateAndGlobalTimeStepComputation_H_
+#define EXAHYPE_ADAPTERS_SolutionUpdateAndGlobalTimeStepComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,14 +18,14 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/InitialCondition.h"
+ #include "exahype/mappings/SolutionUpdate.h"
  #include "exahype/mappings/GlobalTimeStepComputation.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class InitialConditionAndGlobalTimeStepComputation;
+        class SolutionUpdateAndGlobalTimeStepComputation;
       } 
 }
 
@@ -37,12 +37,12 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::InitialConditionAndGlobalTimeStepComputation {
+class exahype::adapters::SolutionUpdateAndGlobalTimeStepComputation {
   private:
-    typedef mappings::InitialCondition Mapping0;
+    typedef mappings::SolutionUpdate Mapping0;
     typedef mappings::GlobalTimeStepComputation Mapping1;
 
-     Mapping0  _map2InitialCondition;
+     Mapping0  _map2SolutionUpdate;
      Mapping1  _map2GlobalTimeStepComputation;
 
 
@@ -55,16 +55,16 @@ class exahype::adapters::InitialConditionAndGlobalTimeStepComputation {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    InitialConditionAndGlobalTimeStepComputation();
+    SolutionUpdateAndGlobalTimeStepComputation();
 
     #if defined(SharedMemoryParallelisation)
-    InitialConditionAndGlobalTimeStepComputation(const InitialConditionAndGlobalTimeStepComputation& masterThread);
+    SolutionUpdateAndGlobalTimeStepComputation(const SolutionUpdateAndGlobalTimeStepComputation& masterThread);
     #endif
 
-    virtual ~InitialConditionAndGlobalTimeStepComputation();
+    virtual ~SolutionUpdateAndGlobalTimeStepComputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const InitialConditionAndGlobalTimeStepComputation& workerThread);
+    void mergeWithWorkerThread(const SolutionUpdateAndGlobalTimeStepComputation& workerThread);
     #endif
 
     void createInnerVertex(

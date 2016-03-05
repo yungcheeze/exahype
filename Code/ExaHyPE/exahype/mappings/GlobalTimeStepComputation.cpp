@@ -388,13 +388,24 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
         fineGridVerticesEnumerator.getCellSize()
     );
 
-    logDebug("enterCell(...)::dt_adm",admissibleTimeStepSize);
+    logDebug("enterCell(...)::dt_adm",admissibleTimeStepSize); // Delta tp+1
 
     // direct update of the cell description time steps
     p->setCorrectorTimeStamp   (p->getPredictorTimeStamp());
     p->setCorrectorTimeStepSize(p->getPredictorTimeStepSize());
     p->setPredictorTimeStamp   (p->getPredictorTimeStamp()+admissibleTimeStepSize);
     p->setPredictorTimeStepSize(admissibleTimeStepSize);
+//    p->setNextPredictorTimeStepSize(admissibleTimeStepSize);
+
+    // todo 16/02/27:Dominic Etienne Charrier
+    // in case we use optimistic time stepping:
+    // if last predictor time step size is larger
+    // as admissibleTimeStepSize + tolerance:
+    // make sure that corrector time step size
+    // will equal predictor time step size in next
+    // sweep.
+    // Extra attention must be paid to time stamps.
+    // All this should be done by the solver.
 
     // indirect update of the solver time step sizes
     tarch::multicore::Lock lock( _semaphore );
