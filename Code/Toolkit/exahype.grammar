@@ -36,6 +36,7 @@ Tokens
   token_exahype_path              = 'exahype-path';
   token_multiscalelinkedcell_path = 'multiscalelinkedcell-path';
   token_sharedmemoryoracles_path  = 'sharedmemoryoracles-path';
+  token_libxssm_path              = 'libxsmm-path';
   token_output_directory          = 'output-directory';
   token_architecture              = 'architecture';
 
@@ -111,14 +112,25 @@ Productions
     ;    
 
   paths {->paths} =
+     {without_libxssm}
         token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
         token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
         token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename
         token_sharedmemoryoracles_path   [sharedmemoryoracles_path_equals]:token_equals         [sharedmemoryoracles_path]:filename  
         token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
         token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
-     { -> New paths(peano_path, tarch_path, multiscalelinkedcell_path, sharedmemoryoracles_path, exahype_path, output_directory) }
-   ;
+     { -> New paths(peano_path, tarch_path, multiscalelinkedcell_path, sharedmemoryoracles_path, exahype_path, Null, output_directory) }
+     |
+     {with_libxssm}
+        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
+        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
+        token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename
+        token_sharedmemoryoracles_path   [sharedmemoryoracles_path_equals]:token_equals         [sharedmemoryoracles_path]:filename  
+        token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
+        token_libxssm_path               [libxssm_path_equals]:token_equals                     [libxssm_path]:filename  
+        token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+     { -> New paths(peano_path, tarch_path, multiscalelinkedcell_path, sharedmemoryoracles_path, exahype_path, libxssm_path, output_directory) }
+    ;
     
   distributed_memory {->distributed_memory} =
     [begin_token]:token_distributed_memory
@@ -195,7 +207,7 @@ Abstract Syntax Tree
      ;
   
    paths = 
-     [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [sharedmemoryoracles_path]:filename [exahype_path]:filename [output_directory]:filename;
+     [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [sharedmemoryoracles_path]:filename [exahype_path]:filename [libxssm_path]:filename? [output_directory]:filename;
     
    shared_memory = 
      [identifier]:identifier [cores]:int_number [properties_file]:filename;
