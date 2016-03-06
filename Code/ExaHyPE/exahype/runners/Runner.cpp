@@ -222,7 +222,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.iterate();
 
 
-  repository.switchToInitialConditionAndGlobalTimeStepComputation();
+  repository.switchToSolutionUpdateAndGlobalTimeStepComputation();
   repository.iterate();
   startNewTimeStep(-1);
 
@@ -303,7 +303,9 @@ void exahype::runners::Runner::initSolvers() {
     p != exahype::solvers::RegisteredSolvers.end();
     p++
   ) {
-    (*p)->setMinPredictorTimeStamp(0.0);
+    // todo:16/03/04:Dominic Charrier
+    (*p)->setMinPredictorTimeStamp ( 0.0 ); // introduce reset method that sets both to t=zero
+    (*p)->setMinCorrectorTimeStamp ( 0.0 ); // introduce reset method that sets both to t=zero
   }
 }
 
@@ -373,6 +375,8 @@ bool exahype::runners::Runner::setAccurateTimeStepSizesIfStabilityConditionWasHa
   ) {
     bool solverTimeStepSizeIsInstable = ( (*p)->getMinPredictorTimeStepSize() > (*p)->getMinNextPredictorTimeStepSize() );
 
+    // todo 16/02/26:Dominic Etienne Charrier: The initial time stamp
+    // introduce reset method that sets both to t=0.99*... make alpha=0.99 solver variable
     if (solverTimeStepSizeIsInstable) {
       (*p)->updateMinNextPredictorTimeStepSize(0.99 * (*p)->getMinNextPredictorTimeStepSize()); // set next predictor time step size
       (*p)->setMinPredictorTimeStepSize       (0.99 * (*p)->getMinPredictorTimeStepSize());     // set next corrector time step size

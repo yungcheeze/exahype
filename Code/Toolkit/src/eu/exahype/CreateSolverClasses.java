@@ -82,7 +82,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
                     System.out.println( "create header of solver " + solverName + " ... ok" );      
                     writeMinimalADERDGSolverHeader( solverName, headerWriter );
                 }
-                else if (kernel.equals("user::fluxes")) {
+                else if (kernel.equals("generic::fluxes::nonlinear")) {
                     System.out.println( "create header of solver " + solverName + " ... ok" );      
 
                     writeADERDGSolverHeaderForUserFluxes( solverName, headerWriter );
@@ -113,7 +113,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
                     writeADERDGSolverUserImplementationForUserDefined(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), userImplementationWriter);
                 }
-                else if (kernel.equals("user::fluxes")) {
+                else if (kernel.equals("generic::fluxes::nonlinear")) {
                     System.out.println( "create user implementation template of solver " + solverName + " ... please complete" );      
 
                     writeADERDGSolverUserImplementationForUserFluxes(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), userImplementationWriter);
@@ -145,7 +145,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
                 writeADERDGSolverGeneratedImplementationForUserDefined(solverName, generatedImplementationWriter);
             }
-            else if (kernel.equals("user::fluxes")) {
+            else if (kernel.equals("generic::fluxes::nonlinear")) {
                 System.out.println( "create generated implementation of solver " + solverName + " ... ok" );      
 
                 writeADERDGSolverGeneratedImplementationForUserFluxes(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), generatedImplementationWriter);
@@ -213,10 +213,9 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("    virtual void surfaceIntegral(double* lduh, const double* const lFhbnd, const tarch::la::Vector<DIMENSIONS,double>& dx);\n" );
         writer.write("    virtual void riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex);\n" );
         writer.write("    virtual double stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx );\n" );
-        writer.write("    virtual void initialCondition(double* luh, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx);\n" );
 
-        writer.write("    virtual void updateSolution(double*  luh, const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx, double  t, double  dt);\n" );
-        writer.write("    virtual bool hasToUpdateSolution( const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx);\n" );
+        writer.write("    virtual void solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt);\n" );
+        writer.write("    virtual bool hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t);\n" );
     }
 
     private void writeMinimalADERDGSolverHeader(
@@ -247,7 +246,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
          writer.write("    static void flux(const double* const Q, double* f, double* g, double* h);\n");
         }
         writer.write("    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
-        writer.write("    static void initialValues(const double* const x, double* Q);\n" );
+        writer.write("    static void adjustedSolutionValues(const double* const x,const double t,const double dt,double* Q);\n" );
 
         writer.write("};\n\n\n");
     }
@@ -304,8 +303,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("   return kernels::aderdg::generic::stableTimeStepSize<eigenvalues>( luh, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
         writer.write("}\n");
         writer.write("\n\n\n");
-        writer.write( "void " + _projectName + "::" + solverName + "::initialCondition(double* luh, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
-        writer.write("   kernels::aderdg::generic::initialCondition<initialValues>( luh, center, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        writer.write( "void " + _projectName + "::" + solverName + "::solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {\n");
+        writer.write("   kernels::aderdg::generic::solutionAdjustment<adjustedSolutionValues>( luh, center, dx, t, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
         writer.write("}\n");
         writer.write("\n\n\n");
     }
@@ -349,8 +348,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("   return kernels::aderdg::optimised::stableTimeStepSize<eigenvalues>( luh, dx );\n");
         writer.write("}\n");
         writer.write("\n\n\n");
-        writer.write( "void " + _projectName + "::" + solverName + "::initialCondition(double* luh, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
-        writer.write("   kernels::aderdg::optimised::initialCondition<initialValues>( luh, center, dx );\n");
+        writer.write( "void " + _projectName + "::" + solverName + "::solutionAdjustment(double*  luh, const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx, double  t, double  dt) {\n");
+        writer.write("   kernels::aderdg::generic::solutionAdjustment<adjustedSolutionValues>( luh, center, dx, t, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
         writer.write("}\n");
         writer.write("\n\n\n");
     }
@@ -402,7 +401,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
             }
             writer.write("}\n");
             writer.write("\n\n\n");
-            writer.write("void " + _projectName + "::" + solverName + "::initialValues(const double* const x, double* Q) {\n");
+            writer.write("void " + _projectName + "::" + solverName + "::adjustedSolutionValues(const double* const x,const double t,const double dt,double* Q) {\n");
             writer.write("  // Dimensions             = "+_dimensions      +"\n");
             writer.write("  // Number of variables    = "+numberOfVariables+"\n");
             writer.write("  // @todo Please implement\n");
@@ -458,7 +457,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
             writer.write("  return 1.0;\n");
             writer.write("}\n");
             writer.write("\n\n\n");
-            writer.write("void " + _projectName + "::" + solverName + "::initialCondition(double* luh, const tarch::la::Vector<DIMENSIONS,double>& center, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
+            writer.write("void " + _projectName + "::" + solverName + "::solutionAdjustment(double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {\n");
             writer.write("  // @todo Please implement\n");
             writer.write("}\n");
             writer.write("\n\n\n");
@@ -482,11 +481,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("  // @todo Please implement\n");
         writer.write("  return 3;\n");
         writer.write("}\n");
-        writer.write("void " + _projectName + "::" + solverName + "::updateSolution(double*  luh, const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx, double  t, double  dt) {\n");
-        writer.write("  // @todo Please implement/augment if required\n");
-        writer.write("}\n");
         writer.write("\n\n\n");
-        writer.write("bool " + _projectName + "::" + solverName + "::hasToUpdateSolution( const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx) {\n");
+        writer.write("bool " + _projectName + "::" + solverName + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t) {\n");
         writer.write("  // @todo Please implement/augment if required\n");
         writer.write("  return false;\n");
         writer.write("}\n");

@@ -223,11 +223,13 @@ namespace kernels {
       // @todo Dominic Etienne Charrier
       // Inconsistent ordering of inout and in arguments for
       // template argument functions and non-template argument function.
-      template <void PDEInitialValues(const double* const x,double* Q)>
-      void initialCondition(
+      template <void PDESolutionAdjustment(const double* const x,const double t,const double dt,double* Q)>
+      void solutionAdjustment(
           double* luh,
           const tarch::la::Vector<DIMENSIONS,double>& center,
           const tarch::la::Vector<DIMENSIONS,double>& dx,
+          const double t,
+          const double dt,
           const int numberOfVariables,
           const int basisSize
       );
@@ -263,12 +265,12 @@ namespace kernels {
 
 
 #if DIMENSIONS == 2
-  #include "kernels/aderdg/generic/2D/initialCondition.cpph"
+  #include "kernels/aderdg/generic/2D/solutionAdjustment.cpph"
   #include "kernels/aderdg/generic/2D/stableTimeStepSize.cpph"
   #include "kernels/aderdg/generic/2D/spaceTimePredictor.cpph"
   #include "kernels/aderdg/generic/2D/riemannSolver.cpph"
 #elif DIMENSIONS == 3
-  #include "kernels/aderdg/generic/3D/initialCondition.cpph"
+  #include "kernels/aderdg/generic/3D/solutionAdjustment.cpph"
   #include "kernels/aderdg/generic/3D/stableTimeStepSize.cpph"
   #include "kernels/aderdg/generic/3D/spaceTimePredictor.cpph"
   #include "kernels/aderdg/generic/3D/riemannSolver.cpph"

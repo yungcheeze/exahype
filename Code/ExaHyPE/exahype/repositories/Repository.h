@@ -65,7 +65,7 @@ class exahype::repositories::Repository {
     virtual void switchToInitialGrid() = 0;    
     virtual void switchToPatchInitialisation() = 0;    
     virtual void switchToPlot() = 0;    
-    virtual void switchToInitialConditionAndGlobalTimeStepComputation() = 0;    
+    virtual void switchToSolutionUpdateAndGlobalTimeStepComputation() = 0;    
     virtual void switchToPredictorAndGlobalTimeStepComputation() = 0;    
     virtual void switchToADERDGTimeStep() = 0;    
     virtual void switchToGlobalTimeStepComputation() = 0;    
@@ -76,7 +76,7 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterInitialGrid() const = 0;
     virtual bool isActiveAdapterPatchInitialisation() const = 0;
     virtual bool isActiveAdapterPlot() const = 0;
-    virtual bool isActiveAdapterInitialConditionAndGlobalTimeStepComputation() const = 0;
+    virtual bool isActiveAdapterSolutionUpdateAndGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterPredictorAndGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterADERDGTimeStep() const = 0;
     virtual bool isActiveAdapterGlobalTimeStepComputation() const = 0;
