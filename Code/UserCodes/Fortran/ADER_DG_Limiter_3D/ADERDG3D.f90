@@ -32,11 +32,13 @@ PROGRAM ADERDG3D
             nRecompute   = 0 
             recompute(:) = 0 
             CALL Saveolduh
-        ENDIF         
+        ENDIF     
+        ! Process the point sources
+        CALL RunPointSources     
         ! ADER predictor step 
         DO iElem  = 1, nElem
 #ifdef ELASTICITY 
-          CALL ADERSpaceTimePredictorLinear(qhi(:,:,:,:,iElem),Fhi(:,:,:,:,:,iElem),qBnd(:,:,:,:,iElem),FBnd(:,:,:,:,iElem),uh(:,:,:,:,iElem),parh(:,:,:,:,iElem))  
+          CALL ADERSpaceTimePredictorLinear(qhi(:,:,:,:,iElem),Fhi(:,:,:,:,:,iElem),qBnd(:,:,:,:,iElem),FBnd(:,:,:,:,iElem),uh(:,:,:,:,iElem),parh(:,:,:,:,iElem),iElem)  
 #else
           CALL ADERSpaceTimePredictorNonlinear(qhi(:,:,:,:,iElem),Fhi(:,:,:,:,:,iElem),qBnd(:,:,:,:,iElem),FBnd(:,:,:,:,iElem),uh(:,:,:,:,iElem),parh(:,:,:,:,iElem))  
 #endif             
@@ -54,12 +56,14 @@ PROGRAM ADERDG3D
         ! Compute the surface integrals of the test function multiplied with the numerical flux 
         DO iElem  = 1, nElem
             CALL ADERSurfaceIntegral(duh(:,:,:,:,iElem),FBnd(:,:,:,:,iElem))
-        ENDDO           
+        ENDDO       
+        ! Add source terms
+        CALL AddPointSources    
         ! Do the element update (compute the candidate solution) 
         DO iElem  = 1, nElem
             CALL ElementUpdate(uh(:,:,:,:,iElem),duh(:,:,:,:,iElem))
             IF(N > 0) THEN
-                CALL DMP(dmpresult,uh(:,:,:,:,iElem),Limiter(iElem)) 
+                CALL DMP(dmpresult,uh(:,:,:,:,iElem),Limiter(iElem),0.0) 
                 IF(.NOT.dmpresult) THEN
                     recompute(iElem) = 1
                     nRecompute = nRecompute + 1 
@@ -73,8 +77,9 @@ PROGRAM ADERDG3D
             CALL UpdateLimiter 
         ENDIF         
         IF(MOD(timestep,10)==0) THEN
-            PRINT *, ' n = ', timestep, ' t = ', time 
-        ENDIF         
+            PRINT *, ' n = ', timestep, ' t = ', time, 'nRec = ', nRecompute, ' %troub = ', REAL(nRecompute)/REAL(nElem)*100
+            !CALL WriteData
+        ENDIF  
         time = time + dt 
     ENDDO    
     CALL CPU_TIME(tCPU2)
@@ -86,6 +91,8 @@ PROGRAM ADERDG3D
     
     CALL WriteData
     
+    CALL AnalyseDG 
+
     PRINT *, ' ----------------------------------------- ' 
     PRINT *, '  Program terminated. Ciao.                ' 
     PRINT *, ' ----------------------------------------- ' 

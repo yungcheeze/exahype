@@ -33,6 +33,10 @@ MODULE typesDef
   REAL               :: F0(N+1), F1(N+1,N+1)                ! Time flux matrices 
   REAL               :: K1(N+1,N+1), iK1(N+1,N+1)           ! F1 - Ktau 
   INTEGER            :: dn(d)                               ! number of direct neighbors in each dimension 
+  REAL               :: MT(N+1,N+1), iMT(N+1,N+1)           ! Time mass matrix (for point source terms) 
+  INTEGER            :: Face2Neigh(3,6)                     ! Mapping from face to neighbor index 
+  ! Periodic boundary conditions 
+  LOGICAL            :: Periodic(d)                         ! periodic BC in x, y, z direction 
   ! Stuff related to the problem setup, mesh and output 
   INTEGER            :: IMAX, JMAX, KMAX, NMAX              ! The number of cells in each space dimension & max. number of time steps 
   INTEGER            :: nElem, nFace, nNode                 ! The number of elements, faces and nodes 
@@ -49,9 +53,11 @@ MODULE typesDef
   REAL               :: SubOutputMatrix((N+1)**d,(N+1)**d)  ! Matrix needed for the plotting of the results on a fine subgrid 
   INTEGER            :: subtri(2**d,N**d)                   ! subcell connectivity (for fine output) 
   REAL               :: allsubxi(d,(N+1)**d)                ! subnodes (for fine output) 
-  ! Some diagnostics                                        ! 
+  ! Some diagnostics or data analysis                       ! 
   REAL               :: tCPU1, tCPU2                        ! CPU times 
   INTEGER(8)         :: TEU                                 ! total element updates 
+  INTEGER            :: AnalyseType   
+  CHARACTER(LEN=200) :: ICType  
   ! Data needed for the subcell limiter 
   INTEGER, PARAMETER :: nSubLim = 2*N+1                     ! number of subcells 
   INTEGER            :: nSubLimV(d)                         ! vector for number of subcells in each dimension 
@@ -95,10 +101,19 @@ MODULE typesDef
   END TYPE tLimiter  
   TYPE(tLimiter), POINTER :: Limiter(:) 
   !
+  TYPE tPointSource
+      INTEGER        :: iElem, waveform 
+      REAL           :: xP(d), xiP(d)  
+      REAL, POINTER  :: phi(:,:,:) 
+      REAL, POINTER  :: sigma(:,:), SrcInt(:) 
+  END TYPE tPointSource
+  INTEGER                     :: nPointSource
+  TYPE(tPointSource), POINTER :: PointSrc(:) 
+  !
   ! Important info and parameters concerning the governing PDE system 
   !
   TYPE tEquations 
-      REAL           :: gamma 
+      REAL           :: gamma, Pi  
   END TYPE tEquations 
   
   TYPE(tEquations)   :: EQN 

@@ -16,8 +16,7 @@ F90 = ifort
 # LIBRARIES
 #------------------------------------------------------------------------------
 
-LIBDIR      = ./lib
-LTEC   = -ltecio
+LTEC   = libtecio.a
 
 LFLAGS = $(LTEC) -cxxlib
 
@@ -68,6 +67,8 @@ F90_OBJ = gauleg.o                  \
           SurfaceIntegral.o         \
           ElementUpdate.o           \
           Limiter.o                 \
+          PointSources.o            \
+          AnalyseDG.o            \
           ADERDG3D.o                
 
 OBJS       = $(F90_OBJ)

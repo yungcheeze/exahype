@@ -5,8 +5,8 @@ SUBROUTINE BoundaryConditions
     REAL :: Qbc(nVar),Fbc(nVar,d),Vbc(nVar),parbc(nParam)  
     !
     ! Fix boundary data  
-    !Vbc = (/ 1., 0., 0., 0., 1. /)    ! primitive variables     
-    !CALL PDEPrim2Cons(qBC,Vbc)        ! convert into conservative variables    
+    Vbc = (/ 1., 1., 0., 0., 1. /)    ! primitive variables     
+    CALL PDEPrim2Cons(qBC,Vbc)        ! convert into conservative variables    
     !
     DO iFace = 1, nFace
         ! Here, we need to take care of the boundary conditions 
