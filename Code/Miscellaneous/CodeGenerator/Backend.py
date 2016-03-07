@@ -79,11 +79,7 @@ def executeBashCommand(i_command, i_commandLineParameters):
     l_commandOutput = subprocess.check_output(l_bashCommand, shell=True)
     return l_commandOutput
 
-
-def validateLibxsmmGenerator(i_pathToLibxsmm):
-    l_pathToLibxsmmGenerator = i_pathToLibxsmm + "/bin/libxsmm_gemm_generator"
-    return isfile(l_pathToLibxsmmGenerator)
-     
+   
      
 def writeIntrinsicsInclude(i_pathToFile):
     l_includeStatement = dedent(  """
