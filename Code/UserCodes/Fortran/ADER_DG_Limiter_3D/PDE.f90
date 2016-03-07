@@ -385,4 +385,22 @@ SUBROUTINE PDEAssurePositivity(iErr,Q,Qout)
     !            
 END SUBROUTINE PDEAssurePositivity    
     
-    
+SUBROUTINE PointSource(sigma,t,waveform)
+    USE typesDef 
+    IMPLICIT NONE
+    ! Argument declaration
+    INTEGER, INTENT(IN) :: waveform  
+    REAL, INTENT(IN)  :: t
+    REAL, INTENT(OUT) :: sigma(nVar)  
+    ! Local variables 
+    REAL :: Pi 
+    Pi = ACOS(-1.0) 
+    SELECT CASE(waveform)
+    CASE(1)
+        sigma = 0. 
+#ifdef ELASTICITY 
+        !sigma(7) = t*t !
+        sigma(7) = SIN(2*Pi*t/0.5) 
+#endif 
+    END SELECT 
+END SUBROUTINE     

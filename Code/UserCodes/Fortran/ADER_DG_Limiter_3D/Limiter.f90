@@ -250,12 +250,12 @@ SUBROUTINE GetMinMax
     !
 END SUBROUTINE GetMinMax   
 !    
-SUBROUTINE DMP(dmpresult,arguh,argLimiter)  
+SUBROUTINE DMP(dmpresult,arguh,argLimiter,argmax)  
    USE typesDef
    IMPLICIT NONE 
    ! Argument list
    LOGICAL        :: dmpresult 
-   REAL           :: arguh(nVar,nDOF(1),nDOF(2),nDOF(3)) 
+   REAL           :: arguh(nVar,nDOF(1),nDOF(2),nDOF(3)),argmax  
    TYPE(tLimiter) :: argLimiter
    ! Local variables 
    INTEGER :: i, iii, jjj, kkk, iVar, iErr 
@@ -270,12 +270,13 @@ SUBROUTINE DMP(dmpresult,arguh,argLimiter)
    !dmpresult = .FALSE. 
    !return 
    dmpresult = .TRUE. 
+   !return
    CALL GetSubcellData( lim, arguh )  
    CALL GetLobattoData( lob, arguh )  
    DO iVar = 1, nVar 
         lmin(iVar) = MIN( MINVAL(arguh(iVar,1:nDOF(1),1:nDOF(2),1:nDOF(3))), MINVAL(lim(iVar,1:nSubLimV(1),1:nSubLimV(2),1:nSubLimV(3))), MINVAL(lob(iVar,1:nDOF(1),1:nDOF(2),1:nDOF(3))) )  
         lmax(iVar) = MAX( MAXVAL(arguh(iVar,1:nDOF(1),1:nDOF(2),1:nDOF(3))), MAXVAL(lim(iVar,1:nSubLimV(1),1:nSubLimV(2),1:nSubLimV(3))), MAXVAL(lob(iVar,1:nDOF(1),1:nDOF(2),1:nDOF(3))) )  
-        ldiff = MAX( 1e-4, 1e-3*(argLimiter%lmax(iVar) - argLimiter%lmin(iVar)) ) 
+        ldiff = MAX( 1e-4, 1e-3*(argLimiter%lmax(iVar) - argLimiter%lmin(iVar)), argmax )   ! *(argLimiter%lmax(iVar) - argLimiter%lmin(iVar))
         IF(lmin(iVar).LT.argLimiter%lmin(iVar)-ldiff) THEN       
             dmpresult = .FALSE. 
             RETURN
@@ -367,20 +368,20 @@ SUBROUTINE SpreadRecompute
    USE typesDef     
    IMPLICIT NONE                                                               
    ! Local variables
-   INTEGER  :: i, j, ii, jj, kk  
+   INTEGER  :: i, j, ii, jj, kk
+   INTEGER  :: iFace
    !
    DO i = 1, nElem 
     IF(recompute(i)==1) THEN
-        DO kk = -dn(3), dn(3) 
-         DO jj = -dn(2), dn(2) 
-          DO ii = -dn(1), dn(1) 
-            j = neighbor(ii,jj,kk,i) 
-            IF(recompute(j)==0) THEN
-                recompute(j) = 2 
-            ENDIF 
-           ENDDO
-          ENDDO
-        ENDDO
+      DO iFace = 1, 2*nDim 
+        ii = Face2Neigh(1,iFace) 
+        jj = Face2Neigh(2,iFace) 
+        kk = Face2Neigh(3,iFace) 
+        j = neighbor(ii,jj,kk,i) 
+        IF(recompute(j)==0) THEN
+            recompute(j) = 2 
+        ENDIF 
+       ENDDO
      ENDIF 
     ENDDO
    !
@@ -394,12 +395,12 @@ SUBROUTINE Subcellrecompute
    ! Argument list
    INTEGER :: i 
    ! Local variables 
-   INTEGER :: j, ii, jj, kk, iVar, reflev, iDim  
+   INTEGER :: j, ii, jj, kk, iVar, reflev, iDim, iFace   
    INTEGER :: postatus
    REAL    :: ldx(d), xg(d), Wout(nVar), nv(d), nvi(d,d) 
    REAL    :: subpar(nParam,(1-nSubLimV(1)):2*nSubLimV(1),(1-nSubLimV(2)):2*nSubLimV(2),(1-nSubLimV(3)):2*nSubLimV(3)) 
    REAL    :: subuh0(nVar,(1-nSubLimV(1)):2*nSubLimV(1),(1-nSubLimV(2)):2*nSubLimV(2),(1-nSubLimV(3)):2*nSubLimV(3)) 
-   REAL    :: subuh1(nVar,(1-nSubLimV(1)):2*nSubLimV(1),(1-nSubLimV(2)):2*nSubLimV(2),(1-nSubLimV(3)):2*nSubLimV(3)) 
+   REAL    :: subuh1(nVar,nSubLimV(1),nSubLimV(2),nSubLimV(3)) 
    REAL    :: slopex(nVar,1-dn(1):nSubLimV(1)+dn(1),1-dn(2):nSubLimV(2)+dn(2),1-dn(3):nSubLimV(3)+dn(3)) 
    REAL    :: slopey(nVar,1-dn(1):nSubLimV(1)+dn(1),1-dn(2):nSubLimV(2)+dn(2),1-dn(3):nSubLimV(3)+dn(3)) 
    REAL    :: slopez(nVar,1-dn(1):nSubLimV(1)+dn(1),1-dn(2):nSubLimV(2)+dn(2),1-dn(3):nSubLimV(3)+dn(3)) 
@@ -450,6 +451,10 @@ SUBROUTINE Subcellrecompute
            DO kk = -dn(3), dn(3) 
             DO jj = -dn(2), dn(2) 
              DO ii = -dn(1), dn(1) 
+ !          DO iFace = 1, 2*nDim 
+!                ii = Face2Neigh(1,iFace) 
+!                jj = Face2Neigh(2,iFace) 
+!                kk = Face2Neigh(3,iFace) 
                 j = neighbor(ii,jj,kk,i)
                 IF(Limiter(j)%oldstatus.EQ.0) THEN
                     CALL GetSubcellData(lim,olduh(:,:,:,:,j)) 
@@ -460,9 +465,9 @@ SUBROUTINE Subcellrecompute
                 IF(nParam > 0) THEN
                     CALL GetSubcellParam(lpar,parh(:,:,:,:,j)) 
                     subpar(:,1+ii*nSubLimV(1):(ii+1)*nSublimV(1),1+jj*nSubLimV(2):(jj+1)*nSublimV(2),1+kk*nSubLimV(3):(kk+1)*nSublimV(3)) = lpar(:,:,:,:)    
-                ENDIF                
-             ENDDO
-            ENDDO
+                ENDIF       
+             ENDDO 
+            ENDDO         
            ENDDO 
            ! -------------------------------------------------------------- 
            ! Second order TVD MUSCL reconstruction in space and time 
@@ -487,9 +492,6 @@ SUBROUTINE Subcellrecompute
            DO kk = 1-dn(3), nSubLimV(3)+dn(3)
             DO jj = 1-dn(2), nSubLimV(2)+dn(2)                 
               DO ii = 1-dn(1), nSubLimV(1)+dn(1) 
-                  if(ii>=1 .and. jj>=1) then
-                      continue
-                  endif 
                   wLx(:,ii,jj,kk) = subuh0(:,ii,jj,kk) - 0.5*slopex(:,ii,jj,kk) 
                   wRx(:,ii,jj,kk) = subuh0(:,ii,jj,kk) + 0.5*slopex(:,ii,jj,kk) 
                   CALL PDEFlux(FLx,wLx(:,ii,jj,kk),subpar(:,ii,jj,kk))
@@ -552,11 +554,10 @@ SUBROUTINE Subcellrecompute
            ENDIF           
            
            ! Evolve the subcell data inside cell i using a simple first order finite volume scheme 
-           subuh1 = subuh0 
            DO kk = 1, nSubLimV(3)
             DO jj = 1, nSubLimV(2) 
              DO ii = 1, nSubLimV(1)
-                 subuh1(:,ii,jj,kk) = subuh1(:,ii,jj,kk) - dt/ldx(1)*(Fx(:,ii+1,jj,kk)-Fx(:,ii,jj,kk)) - dt/ldx(2)*(Fy(:,ii,jj+1,kk)-Fy(:,ii,jj,kk)) - dt/ldx(3)*(Fz(:,ii,jj,kk+1)-Fz(:,ii,jj,kk)) 
+                 subuh1(:,ii,jj,kk) = subuh0(:,ii,jj,kk) - dt/ldx(1)*(Fx(:,ii+1,jj,kk)-Fx(:,ii,jj,kk)) - dt/ldx(2)*(Fy(:,ii,jj+1,kk)-Fy(:,ii,jj,kk)) - dt/ldx(3)*(Fz(:,ii,jj,kk+1)-Fz(:,ii,jj,kk)) 
              ENDDO
             ENDDO
            ENDDO 
@@ -575,8 +576,10 @@ SUBROUTINE Subcellrecompute
                 ! Put the evolved cell-averaged data back into the DG polynomial 
                 CALL PutSubCellData(uh(:,:,:,:,i),Limiter(i)%NewLh) 
            ELSEIF(recompute(i).EQ.2) THEN
+                ! Put the evolved cell-averaged data back into the DG polynomial 
+                CALL PutSubCellData(uh(:,:,:,:,i),subuh1) 
                 ! If we recompute neighbors of troubled cells, and the resulting reconstructed DG polynomial is troubled, then activate the limiter also in this case 
-                CALL DMP(dmpresult,uh(:,:,:,:,i),Limiter(i))  
+                CALL DMP(dmpresult,uh(:,:,:,:,i),Limiter(i),0.0)  
                 IF(dmpresult) THEN 
                     Limiter(i)%status = 0 
                 ELSE
@@ -593,8 +596,6 @@ SUBROUTINE Subcellrecompute
                       ENDDO
                      ENDDO
                     ENDDO    
-                    ! Put the evolved cell-averaged data back into the DG polynomial 
-                    CALL PutSubCellData(uh(:,:,:,:,i),Limiter(i)%NewLh) 
                 ENDIF            
             ENDIF 
            !

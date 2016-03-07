@@ -163,10 +163,11 @@
     END SUBROUTINE ADERSpaceTimePredictorNonlinear
 
 
-    SUBROUTINE ADERSpaceTimePredictorLinear(lqhi,lFhi,lQbnd,lFbnd,luh,lpar)
+    SUBROUTINE ADERSpaceTimePredictorLinear(lqhi,lFhi,lQbnd,lFbnd,luh,lpar,iElem)
     USE typesDef
     IMPLICIT NONE
     ! Argument list
+    INTEGER, INTENT(IN) :: iElem                                        ! element number (needed for the point sources) 
     REAL, INTENT(IN)  :: luh(nVar,nDOF(1),nDOF(2),nDOF(3))              ! spatial degrees of freedom
     REAL, INTENT(IN)  :: lpar(nParam,nDOF(1),nDOF(2),nDOF(3))           ! spatial degrees of freedom
     REAL, INTENT(OUT) :: lqhi(nVar,nDOF(1),nDOF(2),nDOF(3))             ! time-averaged space-time degrees of freedom
@@ -174,22 +175,47 @@
     REAL, INTENT(OUT) :: lqbnd(nVar,6,nDOF(2),nDOF(3))                  ! time-averaged space-time degrees of freedom
     REAL, INTENT(OUT) :: lFbnd(nVar,6,nDOF(2),nDOF(3))                  ! time-averaged nonlinear flux tensor in each space-time DOF
     ! Local variables
-    INTEGER :: i,j,k,l,iVar,iDim
+    INTEGER :: i,j,k,l,ii,jj,kk,iVar,iDim
     REAL    :: rhs(nVar,nDOF(1),nDOF(2),nDOF(3))                        ! temporary work array
-    REAL    :: lqh(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0)+1)                ! space-time degrees of freedom
+    REAL    :: lqh(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0)+1)              ! space-time degrees of freedom
     REAL    :: lFh(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))              ! nonlinear flux tensor in each space-time DOF
     REAL    :: aux(d), w                                                ! auxiliary variables
     REAL    :: gradQ(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))            ! spatial gradient of q
-    REAL    :: lqt(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))              ! time derivative qt of q
+    REAL    :: lqt(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! time derivative qt of q
     REAL    :: dtavFac                                                  ! integral average of the time power terms of the Taylor series
     REAL, PARAMETER :: tol = 1e-7                                       ! tolerance
+    !
+    ! Init the time derivatives with the point sources (if applicable) 
+    ! 
+    lqh = 0. 
+    !
+!    DO i = 1, nPointSource 
+!        IF(iElem.EQ.PointSrc(i)%iElem) THEN
+!           DO l = 1, nDOF(0)  
+!            DO kk = 1, nDOF(3)
+!             DO jj = 1, nDOF(2) 
+!              DO ii = 1, nDOF(1) 
+!               DO iVar = 1, nVar
+!                  !
+!                  ! Multiply source with (M)^(-1) to get the next higher time derivative
+!                  !
+!                  aux = (/ wGPN(ii), wGPN(jj), wGPN(kk) /)
+!                  lqh(iVar,ii,jj,kk,l) = lqh(iVar,ii,jj,kk,l) + PointSrc(i)%phi(ii,jj,kk)/(PRODUCT(aux(1:nDim)))*PointSrc(i)%sigma(l,iVar)/(dt**(l-1))
+!               ENDDO
+!              ENDDO
+!             ENDDO 
+!            ENDDO 
+!           ENDDO 
+!        ENDIF
+!    ENDDO 
+
     !
     ! The zeroth time derivative (time dof number 1) is the initial condition
     DO k = 1, nDOF(3)
         DO j = 1, nDOF(2)
             DO i = 1, nDOF(1)
                 DO iVar = 1, nVar
-                    lqh(iVar,i,j,k,1) = luh(iVar,i,j,k)
+                    lqh(iVar,i,j,k,1) = lqh(iVar,i,j,k,1) + luh(iVar,i,j,k)
                 ENDDO
             ENDDO
         ENDDO
@@ -231,7 +257,7 @@
             DO j = 1, nDOF(2)
                 DO i = 1, nDOF(1)
                     CALL PDENCP(lFh(:,:,i,j,k,l),lqh(:,i,j,k,l),gradQ(:,:,i,j,k,l),lpar(:,i,j,k))  ! PDEFlux(lFh(:,:,i,j,k,l),lqh(:,i,j,k,l),lpar(:,i,j,k))
-                    lqh(:,i,j,k,l+1) = -SUM( lFh(:,1:nDim,i,j,k,l), dim=2 ) 
+                    lqh(:,i,j,k,l+1) = lqh(:,i,j,k,l+1) -SUM( lFh(:,1:nDim,i,j,k,l), dim=2 ) 
                 ENDDO
             ENDDO
         ENDDO
