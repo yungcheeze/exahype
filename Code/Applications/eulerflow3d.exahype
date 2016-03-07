@@ -28,8 +28,9 @@ exahype-project  Euler3d
   solver ADER-DG MyEulerSolver
     variables = 5
     order     = 3
-    kernel    = user::fluxes
-   
+    kernel    = generic::fluxes::nonlinear
+    language  = C
+ 
     plot vtk::ascii
       time     = 0.0
       repeat   = 0.005
