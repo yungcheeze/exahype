@@ -22,6 +22,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     private java.util.List<String>    _supportedMicroarchitectures;
 
     private int                       _dimensions;
+    
+    private enum                      Numerics {LINEAR, NONLINEAR} 
 
 
     public CreateSolverClasses(DirectoryAndPathChecker  directoryAndPathChecker) {
@@ -78,24 +80,33 @@ public class CreateSolverClasses extends DepthFirstAdapter {
             else {
                 java.io.BufferedWriter headerWriter = new java.io.BufferedWriter(new java.io.FileWriter(headerFile));
 
-                if (kernel.equals("user::defined")) {
-                    System.out.println( "create header of solver " + solverName + " ... ok" );      
-                    writeMinimalADERDGSolverHeader( solverName, headerWriter );
+                // TODO extend
+                switch(kernel) {
+                    case "user::defined":
+                        System.out.println( "create header of solver " + solverName + " ... ok" );
+                        writeMinimalADERDGSolverHeader( solverName, headerWriter );
+                        break;
+                        
+                    case "generic::fluxes::nonlinear":
+                        System.out.println( "create header of solver " + solverName + " ... ok" );
+                        writeADERDGSolverHeaderForUserFluxes( solverName, headerWriter );
+                        break;
+                        
+                    case "optimised::fluxes::nonlinear":
+                        System.out.println( "create header of solver " + solverName + " ... ok" );
+                        writeMinimalADERDGSolverHeader( solverName, headerWriter );
+                        break;
+                        
+                    case "optimised::fluxes::linear":
+                        System.out.println( "create header of solver " + solverName + " ... ok" );
+                        writeMinimalADERDGSolverHeader( solverName, headerWriter );
+                        break;
+                        
+                    default:
+                        System.err.println( "ERROR: unknown ADER-DG kernel type " + kernel + " ... failed" );      
+                        valid = false;
                 }
-                else if (kernel.equals("generic::fluxes::nonlinear")) {
-                    System.out.println( "create header of solver " + solverName + " ... ok" );      
-
-                    writeADERDGSolverHeaderForUserFluxes( solverName, headerWriter );
-                }
-                else if (node.getKernel().toString().trim().equals("kernel::euler2d")) {
-                    System.out.println( "create header of solver " + solverName + " ... ok" );      
-                    writeMinimalADERDGSolverHeader( solverName, headerWriter );
-                }
-                else {
-                    System.err.println( "ERROR: unknown ADER-DG kernel type " + kernel + " ... failed" );      
-                    valid = false;
-                }
-
+                
                 headerWriter.close();
             }
 
@@ -108,24 +119,31 @@ public class CreateSolverClasses extends DepthFirstAdapter {
             else {
                 java.io.BufferedWriter userImplementationWriter = new java.io.BufferedWriter(new java.io.FileWriter(userImplementationFile));
 
-                if (kernel.equals("user::defined")) {
-                    System.out.println( "create user implementation template of solver " + solverName + " ... please complete" );      
+                // TODO extend
+                switch(kernel) {
+                    case "user::defined":
+                        System.out.println( "create user implementation template of solver " + solverName + " ... please complete" );
+                        writeADERDGSolverUserImplementationForUserDefined(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), userImplementationWriter);
+                        break;
+                        
+                    case "generic::fluxes::nonlinear":
+                        System.out.println( "create user implementation template of solver " + solverName + " ... please complete" );
+                        writeADERDGSolverUserImplementationForUserFluxes(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), userImplementationWriter);
+                        break;
+                        
+                    case "optimised::fluxes::nonlinear":
+                        System.out.println( "create user implementation template of solver " + solverName + " ... please complete" );
+                        writeMinimalADERDGSolverUserImplementation(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), userImplementationWriter);
+                        break;
+                        
+                    case "optimised::fluxes::linear":
+                        System.out.println( "create generated implementation of solver " + solverName + " ... ok" );
+                        writeMinimalADERDGSolverUserImplementation(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), userImplementationWriter);
+                        break;
 
-                    writeADERDGSolverUserImplementationForUserDefined(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), userImplementationWriter);
-                }
-                else if (kernel.equals("generic::fluxes::nonlinear")) {
-                    System.out.println( "create user implementation template of solver " + solverName + " ... please complete" );      
-
-                    writeADERDGSolverUserImplementationForUserFluxes(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), userImplementationWriter);
-                }
-                else if (node.getKernel().toString().trim().equals("kernel::euler2d")) {
-                    System.out.println( "create user implementation template of solver " + solverName + " ... please complete" );      
-
-                    writeMinimalADERDGSolverUserImplementation(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), userImplementationWriter);
-                }
-                else {
-                    System.err.println( "ERROR: unknown ADER-DG kernel type " + kernel + " ... failed" );      
-                    valid = false;
+                    default:
+                        System.err.println( "ERROR: unknown ADER-DG kernel type " + kernel + " ... failed" );      
+                        valid = false;                    
                 }
 
                 userImplementationWriter.close();
@@ -140,25 +158,33 @@ public class CreateSolverClasses extends DepthFirstAdapter {
             }
             java.io.BufferedWriter generatedImplementationWriter = new java.io.BufferedWriter(new java.io.FileWriter(generatedImplementationFile));
 
-            if (kernel.equals("user::defined")) {
-                System.out.println( "create generated implementation of solver " + solverName + " ... is empty (ok)" );      
-
-                writeADERDGSolverGeneratedImplementationForUserDefined(solverName, generatedImplementationWriter);
-            }
-            else if (kernel.equals("generic::fluxes::nonlinear")) {
-                System.out.println( "create generated implementation of solver " + solverName + " ... ok" );      
-
-                writeADERDGSolverGeneratedImplementationForUserFluxes(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), generatedImplementationWriter);
-            }
-            else if (node.getKernel().toString().trim().equals("kernel::euler2d")) {
-                System.out.println( "create generated implementation of solver " + solverName + " ... ok" );     
-
-                writeADERDGSolverGeneratedImplementationForKernelEuler2d(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), generatedImplementationWriter);
-                invokeCodeGenerator(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim());
-            }
-            else {
-                System.err.println( "ERROR: unknown ADER-DG kernel type " + kernel + " ... failed" );      
-                valid = false;
+            // TODO extend
+            switch(kernel) {
+                case "user::defined":
+                    System.out.println( "create generated implementation of solver " + solverName + " ... is empty (ok)" );
+                    writeADERDGSolverGeneratedImplementationForUserDefined(solverName, generatedImplementationWriter);
+                    break;
+                    
+                case "generic::fluxes::nonlinear":
+                    System.out.println( "create generated implementation of solver " + solverName + " ... ok" );
+                    writeADERDGSolverGeneratedImplementationForUserFluxes(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), generatedImplementationWriter);
+                    break;
+                    
+                case "optimised::fluxes::nonlinear":
+                    System.out.println( "create generated implementation of solver " + solverName + " ... ok" );
+                    writeADERDGSolverGeneratedImplementationForOptimisedKernel(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), Numerics.NONLINEAR, generatedImplementationWriter);
+                    invokeCodeGenerator(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), Numerics.NONLINEAR);
+                    break;
+                    
+                case "optimised::fluxes::linear":
+                    System.out.println( "create generated implementation of solver " + solverName + " ... ok" );
+                    writeADERDGSolverGeneratedImplementationForOptimisedKernel(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), Numerics.LINEAR, generatedImplementationWriter);
+                    invokeCodeGenerator(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), Numerics.LINEAR);
+                    break;
+                    
+                default:
+                    System.err.println( "ERROR: unknown ADER-DG kernel type " + kernel + " ... failed" );      
+                    valid = false;
             }
 
             generatedImplementationWriter.close();
@@ -310,6 +336,64 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     }
 
 
+    private void writeADERDGSolverGeneratedImplementationForOptimisedKernel(
+            String                 solverName,
+            String                 numberOfVariables,
+            String                 order,
+            Numerics               numerics,
+            java.io.BufferedWriter writer
+            ) throws IOException {
+        writer.write("// ==============================================\n");
+        writer.write("// Please do not change the implementations below\n");
+        writer.write("// =============================---==============\n");
+        writer.write("#include \"" + solverName + ".h\"\n");
+        writer.write( "#include \"kernels/aderdg/optimised/Kernels.h\"\n");
+        writer.write("\n\n\n");
+        
+        switch(numerics) {
+            case NONLINEAR:
+                writer.write( "void " + _projectName + "::" + solverName + "::spaceTimePredictor( double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {\n");
+                writer.write("   kernels::aderdg::optimised::picardLoop<flux>( lQi, lFi, luh, dx, dt );\n");
+                writer.write("   kernels::aderdg::optimised::predictor( lQhi, lFhi, lQi, lFi );\n");
+                writer.write("   kernels::aderdg::optimised::extrapolator( lQhbnd, lFhbnd, lQhi, lFhi );\n");
+                writer.write("}\n");            
+                break;
+            case LINEAR:
+                // TODO
+                // Cauchy-Kowalewski
+                break;
+            default:
+                break;
+        }
+        
+        writer.write("\n\n\n");
+        writer.write( "void " + _projectName + "::" + solverName + "::solutionUpdate(double* luh, const double* const lduh, const double dt) {\n");
+        writer.write("   kernels::aderdg::optimised::solutionUpdate( luh, lduh, dt );\n");
+        writer.write("}\n");
+        writer.write("\n\n\n");
+        writer.write( "void " + _projectName + "::" + solverName + "::volumeIntegral(double* lduh, const double* const lFhi, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
+        writer.write("   kernels::aderdg::optimised::volumeIntegral( lduh, lFhi, dx );\n");
+        writer.write("}\n");
+        writer.write("\n\n\n");
+        writer.write( "void " + _projectName + "::" + solverName + "::surfaceIntegral(double* lduh, const double* const lFhbnd, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
+        writer.write("   kernels::aderdg::optimised::surfaceIntegral( lduh, lFhbnd, dx );\n");
+        writer.write("}\n");
+        writer.write("\n\n\n");
+        writer.write( "void " + _projectName + "::" + solverName + "::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex) {\n");
+        writer.write("   kernels::aderdg::optimised::riemannSolver<eigenvalues>( FL, FR, QL, QR, dt, normalNonZeroIndex );\n");
+        writer.write("}\n");
+        writer.write("\n\n\n");
+        writer.write( "double " + _projectName + "::" + solverName + "::stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
+        writer.write("   return kernels::aderdg::optimised::stableTimeStepSize<eigenvalues>( luh, dx );\n");
+        writer.write("}\n");
+        writer.write("\n\n\n");
+        writer.write( "void " + _projectName + "::" + solverName + "::solutionAdjustment(double*  luh, const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx, double  t, double  dt) {\n");
+        writer.write("   kernels::aderdg::generic::solutionAdjustment<adjustedSolutionValues>( luh, center, dx, t, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        writer.write("}\n");
+        writer.write("\n\n\n");
+    }
+
+    // @warning unused (please keep the code)
     private void writeADERDGSolverGeneratedImplementationForKernelEuler2d(
             String                 solverName,
             String                 numberOfVariables,
@@ -492,7 +576,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     private void invokeCodeGenerator(
             String                 solverName,
             String                 numberOfVariables,
-            String                 order
+            String                 order,
+            Numerics               numerics
             ) throws IOException {
         // TODO adapt path
         String currentDirectory = System.getProperty("user.dir");

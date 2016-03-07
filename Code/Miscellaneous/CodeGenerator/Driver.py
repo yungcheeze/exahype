@@ -7,21 +7,19 @@
 #--------------------------------------------------------------
 #
 # For a quick test, type
-# python Driver.py MyEulerSolver 5 3 2 hsw
+# python Driver.py MyEulerSolver 5 3 2 hsw path/to/libxsmmRepository
 #
 # 
 
 
 import argparse
-from Backend import validateLibxsmmGenerator
+import CodeGenArgumentParser
 from SpaceTimePredictorGenerator import SpaceTimePredictorGenerator
 from Backend import prepareOutputDirectory
 from Backend import moveGeneratedCppFiles
 import Backend
-import AvailableConfigs
 import os
-
-
+       
 
 # --------------------------------------------------------
 # Process the command line arguments
@@ -41,57 +39,27 @@ l_parser.add_argument('dimension',
                       type=int, 
                       help='number of dimensions you want to simulate')
 l_parser.add_argument('architecture',
-                      type=str, 
+                      type=lambda architectureArg: CodeGenArgumentParser.validateArchitecture(l_parser, architectureArg), 
                       help='the microarchitecture of the target device')
+l_parser.add_argument('pathToLibxsmm',
+                      type=lambda pathArg: CodeGenArgumentParser.validateLibxsmmGenerator(l_parser, pathArg),
+                      help='where to find your local copy of code generator backend "https://github.com/hfp/libxsmm"')
 l_parser.add_argument('--precision',
-                      type=str,
+                      type=lambda precisionArg: CodeGenArgumentParser.validatePrecision(l_parser, precisionArg),
                       default='DP',
                       help='SP or DP')
-l_parser.add_argument('--pathToLibxsmm', 
-                      help='where to find your local copy of code generator backend "https://github.com/hfp/libxsmm"')
+
 
 l_commandLineArguments = l_parser.parse_args()
 
-solverName        = l_commandLineArguments.solverName
-numberOfVariables = l_commandLineArguments.numberOfVariables
-order             = l_commandLineArguments.order
-dimensions        = l_commandLineArguments.dimension
-architecture      = l_commandLineArguments.architecture
+solverName             = l_commandLineArguments.solverName
+numberOfVariables      = l_commandLineArguments.numberOfVariables
+order                  = l_commandLineArguments.order
+dimensions             = l_commandLineArguments.dimension
+architecture           = l_commandLineArguments.architecture
+pathToLibxsmmGenerator = l_commandLineArguments.pathToLibxsmm
+precision              = l_commandLineArguments.precision
 
-#
-# error handling of obligatory arguments
-#
-# when we have to postprocess the generated assemly code we may
-# support only a subset of the available microarchitectures
-if(architecture not in AvailableConfigs.architectures):
-    print("Driver: Unkown or unsupported microarchitecture. Continue with noarch")
-    architecture = 'noarch'
-
-#
-# process optional arguments
-#
-if(vars(l_commandLineArguments)['precision']=='DP'):
-    precision    = 'DP'
-elif(vars(l_commandLineArguments)['precision']=='SP'):
-    precision    = 'SP'
-else:
-    print("Unknown precision specified. Continue with double precision")
-    precision    = 'DP'
-
-# TODO make pathToLibxsmm argument obligatory
-if(l_commandLineArguments.pathToLibxsmm == None):
-    # just for testing :-)
-    l_pathToLibxsmm        = "/home/schwara/Documents/workspace/ga63cad_workspace/libxsmm/"
-    pathToLibxsmmGenerator = "/home/schwara/Documents/workspace/ga63cad_workspace/libxsmm/bin"
-else:
-    l_pathToLibxsmm        = l_commandLineArguments.pathToLibxsmm
-    pathToLibxsmmGenerator = l_pathToLibxsmm + "/bin"
-    
-      
-if(not validateLibxsmmGenerator(l_pathToLibxsmm)):
-    print("Can't find the code generator of libxsmm. Did you run 'make generator' to build the library?")
-    exit()
-    
        
 config = { 
            "nVar"              : numberOfVariables,
@@ -117,7 +85,7 @@ Backend.writeCommonHeader("Kernels.h")
 # TODO move Kernels.h to directory kernels/aderdg/optimised 
 
 spaceTimePredictorGenerator = SpaceTimePredictorGenerator(config)
-spaceTimePredictorGenerator.generateCode(pathToLibxsmmGenerator)
+spaceTimePredictorGenerator.generateCode()
 
 # move assembler code
 moveGeneratedCppFiles(pathToLibxsmmGenerator, pathToOutputDirectory)

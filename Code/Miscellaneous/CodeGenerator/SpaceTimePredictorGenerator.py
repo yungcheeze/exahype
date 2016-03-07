@@ -16,7 +16,6 @@ import FunctionSignatures
 
 class SpaceTimePredictorGenerator:
     l_config = {}
-    l_pathToLibxsmmGenerator = ""
           
     def __init__(self, i_config):
         self.l_config = i_config
@@ -82,14 +81,11 @@ class SpaceTimePredictorGenerator:
         l_sourceFile.close()
 
     
-    def generateCode(self, i_pathToLibxsmmGenerator):
-        self.l_pathToLibxsmmGenerator = i_pathToLibxsmmGenerator
-        
+    def generateCode(self):      
         self.generatePicardLoop()
         self.generatePredictor()
         self.generateExtrapolator()
         
-
     
     def generatePicardLoop(self):
         pass
