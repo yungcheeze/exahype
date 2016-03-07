@@ -39,21 +39,21 @@ SUBROUTINE ADERDGInit
     !xL = (/  0.0,  0.0, -1.0 /)                                     ! lower-left corner of the domain 
     !xR = (/ 10.0, 10.0, +1.0 /)                                     ! upper right corner of the domain 
     IMAX = 50                                                       ! Number of elements in x,y,z direction 
-    JMAX = 5  
+    JMAX = 50  
     KMAX = 1  
     VMAX = (/ IMAX, JMAX, KMAX /)                                   ! Vector of the number of elements in each space dimension 
     dx = (xR-xL)/VMAX                                               ! Mesh spacing 
     NMAX = 100000                                                   ! Max. number of time steps 
     timestep = 0                                                    ! initial time step number 
     time = 0.                                                       ! initial time 
-    tend = 0.4                                                      ! final time 
-    ICType = 'Sod'                                                  ! type of initial condition 'ShuVortex2D'      
-    Basefile = 'Sod'                                                ! Base filename for writing results 
+    tend = 1.0                                                      ! final time 
+    !ICType = 'Sod'                                                  ! type of initial condition 'ShuVortex2D'      
+    Basefile = 'Test'                                                ! Base filename for writing results 
     !tend = 1.0                                                     ! final time 
     !ICType = 'ShuVortex2D'                                         ! type of initial condition 'ShuVortex2D'      
     !Basefile = 'ShuVortex2D'                                       ! Base filename for writing results 
-    Periodic(:) = (/ .FALSE., .TRUE., .FALSE. /)                     ! periodic BC 
-    AnalyseType = 0                                                 ! comparison with exact solution
+    !Periodic(:) = (/ .FALSE., .TRUE., .FALSE. /)                     ! periodic BC 
+    !AnalyseType = 0                                                 ! comparison with exact solution
     !
     nElem = IMAX*JMAX*KMAX                                          ! Number of elements 
     ALLOCATE(  uh(nVar, nDOF(1), nDOF(2), nDOF(3), nElem) )         ! Allocate the spatial degrees of freedom 
@@ -680,7 +680,7 @@ SUBROUTINE InitialField(u0,par,xGP,tGP)
     sigma = (/ 0.05, 0.05, 0.05 /)       ! half-width
     VBase(:) = 0.0                       ! base-state 
     ampl(:)  = 0.                        ! perturbation amplitude vector 
-    ampl(7)   = 0e-3                     ! 
+    ampl(7)   = 1e-3                     ! 
     V0(:) = VBase(:) + ampl(:)*EXP( -0.5*SUM(xGP(1:nDim)**2/sigma(1:nDim)**2) )   
 !    V0 = 0.  
 !    V0(1) = 1.0 + exp(-0.5*(xGP(1)**2+xGP(2)**2)/0.1**2)  
