@@ -7,7 +7,7 @@
 #--------------------------------------------------------------
 #
 # For a quick test, type
-# python Driver.py MyEulerSolver 5 3 2 hsw path/to/libxsmmRepository
+# python Driver.py MyEulerSolver 5 3 2 hsw nonlinear path/to/libxsmmRepository
 #
 # 
 
@@ -24,7 +24,7 @@ import os
 # --------------------------------------------------------
 # Process the command line arguments
 # --------------------------------------------------------
-l_parser = argparse.ArgumentParser(description='This is the frontend of the ExaHyPE code generator.')
+l_parser = argparse.ArgumentParser(description='This is the front end of the ExaHyPE code generator.')
 
 l_parser.add_argument('solverName', 
                       type=str,
@@ -38,12 +38,15 @@ l_parser.add_argument('order',
 l_parser.add_argument('dimension', 
                       type=int, 
                       help='number of dimensions you want to simulate')
+l_parser.add_argument('numerics',
+                      type=lambda numericsArg: CodeGenArgumentParser.validateNumerics(l_parser, numericsArg),
+                      help='linear or nonlinear')
 l_parser.add_argument('architecture',
                       type=lambda architectureArg: CodeGenArgumentParser.validateArchitecture(l_parser, architectureArg), 
                       help='the microarchitecture of the target device')
 l_parser.add_argument('pathToLibxsmm',
                       type=lambda pathArg: CodeGenArgumentParser.validateLibxsmmGenerator(l_parser, pathArg),
-                      help='where to find your local copy of code generator backend "https://github.com/hfp/libxsmm"')
+                      help='where to find your local copy of code generator back end "https://github.com/hfp/libxsmm"')
 l_parser.add_argument('--precision',
                       type=lambda precisionArg: CodeGenArgumentParser.validatePrecision(l_parser, precisionArg),
                       default='DP',
@@ -81,8 +84,7 @@ prepareOutputDirectory(pathToOutputDirectory)
 # Now let's generate the compute kernels.
 # --------------------------------------------------------
 
-Backend.writeCommonHeader("Kernels.h")
-# TODO move Kernels.h to directory kernels/aderdg/optimised 
+Backend.writeCommonHeader(pathToOutputDirectory+"/Kernels.h")
 
 spaceTimePredictorGenerator = SpaceTimePredictorGenerator(config)
 spaceTimePredictorGenerator.generateCode()

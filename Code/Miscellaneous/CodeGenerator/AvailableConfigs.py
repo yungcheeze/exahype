@@ -29,3 +29,8 @@ precisions =  [
                 "DP",
                 "SP"
               ]
+
+numerics   =  [
+                "linear",
+                "nonlinear"
+              ]

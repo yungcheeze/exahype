@@ -3,7 +3,7 @@ import AvailableConfigs
 
 def validateLibxsmmGenerator(i_parser, i_arg):
     if not os.path.isdir(i_arg):
-        i_parser.error('The libxsmm directory {} does not exist'.format(i_arg))
+        i_parser.error("The libxsmm directory {} does not exist".format(i_arg))
     else:
         # directory exists, but is it a valid path to the libxsmm generator backend?
         l_pathToLibxsmm = i_arg
@@ -34,3 +34,13 @@ def validatePrecision(i_parser, i_arg):
         l_precision    = 'DP' 
         
     return l_precision
+
+
+def validateNumerics(i_parser, i_arg):
+    l_numericsType = i_arg
+    
+    if(l_numericsType not in AvailableConfigs.numerics):
+        i_parser.error("Numerics not supported. Available options are " + str(AvailableConfigs.numerics).format(i_arg))
+    
+    return l_numericsType    
+        

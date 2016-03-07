@@ -67,10 +67,12 @@ def prepareOutputDirectory(i_outputDirectory):
         if exception.errno != errno.EEXIST:
             raise
     
-    # remove all .cpp files (we are in append mode!) 
-    for fileName in os.listdir(i_outputDirectory):
-        if fileName.endswith(".cpp"):
-            os.remove(i_outputDirectory + "/" + fileName)    
+    # remove all .cpp and .h files (we are in append mode!) 
+    for l_fileName in os.listdir(i_outputDirectory):
+        _ , l_ext = os.path.splitext(l_fileName)
+        if(l_ext in ['.cpp', '.h']):
+            os.remove(i_outputDirectory + "/" + l_fileName)
+  
 
 
 def executeBashCommand(i_command, i_commandLineParameters):
@@ -109,7 +111,7 @@ def writeCommonHeader(i_pathToHeaderFile):
 
 
     # TODO temporary solution
-    # necessary till all generic kernels have been replaces with generated ones
+    # necessary till all generic kernels have been replaced with generated ones
     l_sourceFile.write('#define basisSize '+str(m_config['nDof'])+'\n'    \
                        '#define numberOfVariables '+str(m_config['nVar'])+'\n\n')
 
