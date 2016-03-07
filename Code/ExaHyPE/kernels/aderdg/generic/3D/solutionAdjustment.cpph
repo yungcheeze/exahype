@@ -45,9 +45,9 @@ void kernels::aderdg::generic::solutionAdjustment(
         
         const double J_w = // Jacobi determinant times Gauss weight  
                   dx[0] * dx[1] * dx[2] *
-                  kernels::gaussLegendreWeights[order][ii] * 
-                  kernels::gaussLegendreWeights[order][jj] *
-                  kernels::gaussLegendreWeights[order][kk];
+                  kernels::gaussLegendreWeights[basisSize-1][ii] * 
+                  kernels::gaussLegendreWeights[basisSize-1][jj] *
+                  kernels::gaussLegendreWeights[basisSize-1][kk];
 
         // read initial condition
         const int dofStartIndex  = nodeIndex * numberOfVariables;

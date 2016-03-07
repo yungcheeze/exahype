@@ -11,12 +11,12 @@
 #include "exahype/solvers/Solver.h"
 
 
-namespace Euler2d{
+namespace Euler3d{
   class MyEulerSolver;
 }
 
 
-class Euler2d::MyEulerSolver: public exahype::solvers::Solver {
+class Euler3d::MyEulerSolver: public exahype::solvers::Solver {
   public:
     MyEulerSolver(int kernelNumber); 
     virtual int getMinimumTreeDepth() const;
@@ -29,7 +29,7 @@ class Euler2d::MyEulerSolver: public exahype::solvers::Solver {
     virtual void solutionAdjustment(double*  luh, const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&  dx, double  t, double  dt);
     virtual bool hasToAdjustSolution( const tarch::la::Vector<DIMENSIONS,double>&   center, const tarch::la::Vector<DIMENSIONS,double>&   dx, double   t);
   private:
-    static void flux(const double* const Q, double* f, double* g);
+    static void flux(const double* const Q, double* f, double* g, double * h);
     static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);
     static void adjustedSolutionValues(const double* const x, const double J_w, const double t, const double dt, double* Q);
 };
