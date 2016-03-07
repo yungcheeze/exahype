@@ -77,7 +77,7 @@ void Euler3d::MyEulerSolver::eigenvalues(const double* const Q, const int normal
 
 
 
-void Euler3d::MyEulerSolver::adjustedSolutionValues(const double* const x,const double t,const double dt,double* Q) {
+void Euler3d::MyEulerSolver::adjustedSolutionValues(const double* const x,const double J_w,const double t,const double dt,double* Q) {
   // Dimensions             = 3
   // Number of variables    = 5
   if (tarch::la::equals( t, 0.0, 1e-15 )) { // @todo precision

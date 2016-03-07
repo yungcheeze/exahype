@@ -246,7 +246,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
          writer.write("    static void flux(const double* const Q, double* f, double* g, double* h);\n");
         }
         writer.write("    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
-        writer.write("    static void adjustedSolutionValues(const double* const x,const double t,const double dt,double* Q);\n" );
+        writer.write("    static void adjustedSolutionValues(const double* const x,const double J_w,const double t,const double dt,double* Q);\n" );
 
         writer.write("};\n\n\n");
     }
@@ -401,7 +401,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
             }
             writer.write("}\n");
             writer.write("\n\n\n");
-            writer.write("void " + _projectName + "::" + solverName + "::adjustedSolutionValues(const double* const x,const double t,const double dt,double* Q) {\n");
+            writer.write("void " + _projectName + "::" + solverName + "::adjustedSolutionValues(const double* const x,const double J_w,const double t,const double dt,double* Q) {\n");
             writer.write("  // Dimensions             = "+_dimensions      +"\n");
             writer.write("  // Number of variables    = "+numberOfVariables+"\n");
             writer.write("  // @todo Please implement\n");
