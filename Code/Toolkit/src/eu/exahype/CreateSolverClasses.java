@@ -76,121 +76,109 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
     @Override
     public void inAAderdgSolver(AAderdgSolver node) {
-        String solverName = node.getName().toString().trim();
+      String solverName = node.getName().toString().trim();
 
-        java.io.File headerFile                  = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + ".h");
-        java.io.File userImplementationFile      = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + ".cpp");
-        java.io.File generatedImplementationFile = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + "_generated.cpp");
+      java.io.File headerFile                  = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + ".h");
+      java.io.File userImplementationFile      = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + ".cpp");
+      java.io.File generatedImplementationFile = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + solverName + "_generated.cpp");
 
-        String kernel = node.getKernel().toString().trim();
+      String kernel = node.getKernel().toString().trim();
 
-        boolean isFortran = false;
-    	if ( node.getLanguage().getText().trim().equals("C") ) {
-          isFortran = false;		
-    	}
-    	else if ( node.getLanguage().getText().trim().equals("Fortran") ) {
-          isFortran = true;		
-    	}
-    	else {
-          System.err.println( "ERROR: unknown language for solver " + node.getName().getText() + ". Supported languages are C and Fortran" );
-          valid = false;
-    	}
+      boolean isFortran = false;
+      if ( node.getLanguage().getText().trim().equals("C") ) {
+        isFortran = false;
+      }
+      else if ( node.getLanguage().getText().trim().equals("Fortran") ) {
+       isFortran = true;		
+      }
+      else {
+        System.err.println( "ERROR: unknown language for solver " + node.getName().getText() + ". Supported languages are C and Fortran" );
+        valid = false;
+        return;
+      }
 
-        try {      
-            // =====================
-            // Write all the headers
-            // =====================
-            if (headerFile.exists()) {
-                System.out.println( "create header of solver " + solverName + " ... header " + headerFile.getAbsoluteFile() + " does exist already. Remove to allow toolkit to regenerate it (changes will be lost)" );      
-            }
-            else {
-                java.io.BufferedWriter headerWriter = new java.io.BufferedWriter(new java.io.FileWriter(headerFile));
+      int numberOfVariables = Integer.parseInt(node.getVariables().toString().trim());
+      int order             = Integer.parseInt(node.getOrder().toString().trim());
+      
+      eu.exahype.solvers.Solver solver = null;
+      if (isFortran) {
+        switch(kernel) {
+          case eu.exahype.solvers.UserDefinedADER_DGinFortran.Identifier:
+            solver = new eu.exahype.solvers.UserDefinedADER_DGinFortran();
+            break;
+          case eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran.Identifier:
+            solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran();
+            break;
+          case eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran.Identifier:
+            solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran();
+            break;
+        }
+      }
+      else {
+        switch(kernel) {
+          case eu.exahype.solvers.UserDefinedADER_DGinC.Identifier:
+            solver = new eu.exahype.solvers.UserDefinedADER_DGinC(numberOfVariables,order);
+            break;
+          case eu.exahype.solvers.GenericFluxesLinearADER_DGinC.Identifier:
+            solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinC(_dimensions);
+            break;
+          case eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC.Identifier:
+            solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC(_dimensions,numberOfVariables,order);
+            break;
+          case eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier:
+            solver = new eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC(_dimensions);
+            break;
+          case eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier:
+            solver = new eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC(_dimensions,numberOfVariables,order);
+            break;
+          case eu.exahype.solvers.KernelEuler2d.Identifier:
+            solver = new eu.exahype.solvers.KernelEuler2d();
+            break;
+        }
+      }
+      
+      if (solver==null) {
+        System.err.println( "creation solver " + solverName + " ... failed as kernel " + kernel + " for language " + node.getLanguage().getText().trim() + " is not supported" );
+        valid = false;
+        return;
+      }
+      
+      try {      
+        // =====================
+        // Write all the headers
+        // =====================
+        if (headerFile.exists()) {
+            System.out.println( "create header of solver " + solverName + " ... header " + headerFile.getAbsoluteFile() + " does exist already. Remove to allow toolkit to regenerate it (changes will be lost)" );      
+        }
+        else {
+          java.io.BufferedWriter headerWriter = new java.io.BufferedWriter(new java.io.FileWriter(headerFile));
+          solver.writeHeader(headerWriter, solverName, _projectName);
+          System.out.println( "create header of solver " + solverName + " ... ok" );
+          headerWriter.close();
+        }
 
-                // TODO extend
-                switch(kernel) {
-                    case "user::defined":
-                        System.out.println( "create header of solver " + solverName + " ... ok" );
-                        writeMinimalADERDGSolverHeader( solverName, headerWriter );
-                        break;
-                        
-                    case "generic::fluxes::nonlinear":
-                        System.out.println( "create header of solver " + solverName + " ... ok" );
-                        writeADERDGSolverHeaderForUserFluxes( solverName, headerWriter );
-                        break;
-                        
-                    case "optimised::fluxes::nonlinear":
-                        System.out.println( "create header of solver " + solverName + " ... ok" );
-                        writeMinimalADERDGSolverHeader( solverName, headerWriter );
-                        break;
-                        
-                    case "optimised::fluxes::linear":
-                        System.out.println( "create header of solver " + solverName + " ... ok" );
-                        writeMinimalADERDGSolverHeader( solverName, headerWriter );
-                        break;
-                        
-                    default:
-                        System.err.println( "ERROR: unknown ADER-DG kernel type " + kernel + " ... failed" );      
-                        valid = false;
-                }
-                
-                headerWriter.close();
-            }
+        if (userImplementationFile.exists()) {
+          System.out.println( "user's implementation file of solver " + solverName + " ... does exist already. Is not overwritten" );      
+        }
+        else {
+          java.io.BufferedWriter userImplementationWriter = new java.io.BufferedWriter(new java.io.FileWriter(userImplementationFile));
+          solver.writeUserImplementation(userImplementationWriter, solverName, _projectName);
+          System.out.println( "create user implementation template of solver " + solverName + " ... please complete" );
+          userImplementationWriter.close();
+        }
+        
+        if (generatedImplementationFile.exists()) {
+          System.out.println( "generated implementation file of solver " + solverName + " ... does exist already. Is overwritten" );      
+        }
 
-            // =======================================
-            // Write all the user implementation files
-            // =======================================
-            if (userImplementationFile.exists()) {
-                System.out.println( "user's implementation file of solver " + solverName + " ... does exist already. Is not overwritten" );      
-            }
-            else {
-                java.io.BufferedWriter userImplementationWriter = new java.io.BufferedWriter(new java.io.FileWriter(userImplementationFile));
-
-                // TODO extend
-                switch(kernel) {
-                    case "user::defined":
-                        System.out.println( "create user implementation template of solver " + solverName + " ... please complete" );
-                        writeADERDGSolverUserImplementationForUserDefined(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), userImplementationWriter);
-                        break;
-                        
-                    case "generic::fluxes::nonlinear":
-                        System.out.println( "create user implementation template of solver " + solverName + " ... please complete" );
-                        writeADERDGSolverUserImplementationForUserFluxes(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), userImplementationWriter);
-                        break;
-                        
-                    case "optimised::fluxes::nonlinear":
-                        System.out.println( "create user implementation template of solver " + solverName + " ... please complete" );
-                        writeMinimalADERDGSolverUserImplementation(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), userImplementationWriter);
-                        break;
-                        
-                    case "optimised::fluxes::linear":
-                        System.out.println( "create generated implementation of solver " + solverName + " ... ok" );
-                        writeMinimalADERDGSolverUserImplementation(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), userImplementationWriter);
-                        break;
-
-                    default:
-                        System.err.println( "ERROR: unknown ADER-DG kernel type " + kernel + " ... failed" );      
-                        valid = false;                    
-                }
-
-                userImplementationWriter.close();
-            }
+        java.io.BufferedWriter generatedImplementationWriter = new java.io.BufferedWriter(new java.io.FileWriter(generatedImplementationFile));
+        solver.writeGeneratedImplementation(generatedImplementationWriter, solverName, _projectName);
+        System.out.println( "create generated implementation of solver " + solverName + " ... ok" );
+        generatedImplementationWriter.close();
 
 
-            // ============================================
-            // Write all the generated implementation files
-            // ============================================
-            if (generatedImplementationFile.exists()) {
-                System.out.println( "generated implementation file of solver " + solverName + " ... does exist already. Is overwritten" );      
-            }
-            java.io.BufferedWriter generatedImplementationWriter = new java.io.BufferedWriter(new java.io.FileWriter(generatedImplementationFile));
+/*
 
-            // TODO extend
-            switch(kernel) {
-                case "user::defined":
-                    System.out.println( "create generated implementation of solver " + solverName + " ... is empty (ok)" );
-                    writeADERDGSolverGeneratedImplementationForUserDefined(solverName, generatedImplementationWriter);
-                    break;
-                    
                 case "generic::fluxes::nonlinear":
                     System.out.println( "create generated implementation of solver " + solverName + " ... ok" );
                     writeADERDGSolverGeneratedImplementationForUserFluxes(solverName, node.getVariables().toString().trim(), node.getOrder().toString().trim(), generatedImplementationWriter);
@@ -213,154 +201,15 @@ public class CreateSolverClasses extends DepthFirstAdapter {
                     valid = false;
             }
 
-            generatedImplementationWriter.close();
-        }      
-        catch (Exception exc) {
-            System.err.println( "ERROR: " + exc.toString() );
-            valid = false;
-        }
+            generatedImplementationWriter.close();*/
+      }      
+      catch (Exception exc) {
+        System.err.println( "ERROR: " + exc.toString() );
+        valid = false;
+      }
     }
 
-
-    /**
-     * Write header with ExaHyPE copyright. Should be inserted for any solver's 
-     * header.
-     */
-    private void writeHeaderCopyright( java.io.BufferedWriter writer ) throws IOException {
-        writer.write("// This file is generated by the ExaHyPE toolkit.\n");
-        writer.write("// Please do not modify - it will be overwritten by the next\n");
-        writer.write("// ExaHyPE toolkit call.\n");
-        writer.write("// \n");
-        writer.write("// ========================\n");
-        writer.write("//   www.exahype.eu\n");
-        writer.write("// ========================\n");
-    }
-
-    /**
-     * Adds all the default includes of any solver as well as the solver define. 
-     * Is used by all solvers.
-     */
-    private void writeHeaderIncludesAndDefines( java.io.BufferedWriter writer, String solverName ) throws IOException {
-        writer.write("\n\n\n");
-        writer.write("#include \"exahype/solvers/Solver.h\"");
-        writer.write("\n\n\n");
-
-        writer.write("namespace " + _projectName + "{\n");
-        writer.write("  class " + solverName + ";\n");
-        writer.write("}\n\n\n");
-    }
-
-    /**
-     * Creates all the public operations that are mandatory for any solver.
-     */
-    private void writeHeaderMinimalADERDGClassSignature( java.io.BufferedWriter writer, String solverName ) throws IOException {
-        writer.write("class " + _projectName + "::" + solverName + ": public exahype::solvers::Solver {\n");
-        writer.write("  public:\n");
-        writer.write("    " + solverName + "(int kernelNumber); \n");
-        writer.write("    virtual int getMinimumTreeDepth() const;\n");
-
-        writer.write("    virtual void spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ); \n");
-        writer.write("    virtual void solutionUpdate(double* luh, const double* const lduh, const double dt);\n");
-        writer.write("    virtual void volumeIntegral(double* lduh, const double* const lFhi, const tarch::la::Vector<DIMENSIONS,double>& dx);\n" );
-        writer.write("    virtual void surfaceIntegral(double* lduh, const double* const lFhbnd, const tarch::la::Vector<DIMENSIONS,double>& dx);\n" );
-        writer.write("    virtual void riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex);\n" );
-        writer.write("    virtual double stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx );\n" );
-
-        writer.write("    virtual void solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt);\n" );
-        writer.write("    virtual bool hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t);\n" );
-    }
-
-    private void writeMinimalADERDGSolverHeader(
-            String                 solverName,
-            java.io.BufferedWriter writer
-            ) throws IOException {
-        writeHeaderCopyright(writer);
-        writeHeaderIncludesAndDefines(writer,solverName);
-        writeHeaderMinimalADERDGClassSignature(writer,solverName);
-
-        writer.write("};\n\n\n");
-    }
-
-
-    private void writeADERDGSolverHeaderForUserFluxes(
-            String                 solverName,
-            java.io.BufferedWriter writer
-            ) throws IOException {
-        writeHeaderCopyright(writer);
-        writeHeaderIncludesAndDefines(writer,solverName);
-        writeHeaderMinimalADERDGClassSignature(writer,solverName);
-
-        writer.write("  private:\n");
-        if (_dimensions==2) {
-          writer.write("    static void flux(const double* const Q, double* f, double* g);\n");
-        }
-        else {
-         writer.write("    static void flux(const double* const Q, double* f, double* g, double* h);\n");
-        }
-        writer.write("    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
-        writer.write("    static void adjustedSolutionValues(const double* const x,const double J_w,const double t,const double dt,double* Q);\n" );
-
-        writer.write("};\n\n\n");
-    }
-
-
-    private void writeADERDGSolverGeneratedImplementationForUserDefined(
-            String                 solverName,
-            java.io.BufferedWriter writer
-            ) throws IOException {
-        writer.write("// ==============================================\n");
-        writer.write("// Please do not change the implementations below\n");
-        writer.write("// =============================---==============\n");
-        writer.write("#include \"" + solverName + ".h\"\n");
-        writer.write("\n\n\n");
-        writer.write("// This file is empty as a user::defined kernel is chosen, i.e. the user\n");
-        writer.write("// wants to implement everything.");
-        writer.write("\n\n\n");
-    }
-
-
-    private void writeADERDGSolverGeneratedImplementationForUserFluxes(
-            String                 solverName,
-            String                 numberOfVariables,
-            String                 order,
-            java.io.BufferedWriter writer
-            ) throws IOException {
-        writer.write("// ==============================================\n");
-        writer.write("// Please do not change the implementations below\n");
-        writer.write("// =============================---==============\n");
-        writer.write("#include \"" + solverName + ".h\"\n");
-        writer.write("#include \"kernels/aderdg/generic/Kernels.h\"\n");
-        writer.write("\n\n\n");
-        writer.write( "void " + _projectName + "::" + solverName + "::spaceTimePredictor( double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {\n");
-        writer.write("   kernels::aderdg::generic::spaceTimePredictor<flux>( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-        writer.write("}\n");
-        writer.write("\n\n\n");
-        writer.write( "void " + _projectName + "::" + solverName + "::solutionUpdate(double* luh, const double* const lduh, const double dt) {\n");
-        writer.write("   kernels::aderdg::generic::solutionUpdate( luh, lduh, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-        writer.write("}\n");
-        writer.write("\n\n\n");
-        writer.write( "void " + _projectName + "::" + solverName + "::volumeIntegral(double* lduh, const double* const lFhi, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
-        writer.write("   kernels::aderdg::generic::volumeIntegral( lduh, lFhi, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-        writer.write("}\n");
-        writer.write("\n\n\n");
-        writer.write( "void " + _projectName + "::" + solverName + "::surfaceIntegral(double* lduh, const double* const lFhbnd, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
-        writer.write("   kernels::aderdg::generic::surfaceIntegral( lduh, lFhbnd, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-        writer.write("}\n");
-        writer.write("\n\n\n");
-        writer.write( "void " + _projectName + "::" + solverName + "::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex) {\n");
-        writer.write("   kernels::aderdg::generic::riemannSolver<eigenvalues>( FL, FR, QL, QR, dt, normalNonZeroIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-        writer.write("}\n");
-        writer.write("\n\n\n");
-        writer.write( "double " + _projectName + "::" + solverName + "::stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
-        writer.write("   return kernels::aderdg::generic::stableTimeStepSize<eigenvalues>( luh, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-        writer.write("}\n");
-        writer.write("\n\n\n");
-        writer.write( "void " + _projectName + "::" + solverName + "::solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {\n");
-        writer.write("   kernels::aderdg::generic::solutionAdjustment<adjustedSolutionValues>( luh, center, dx, t, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-        writer.write("}\n");
-        writer.write("\n\n\n");
-    }
-
+/*
 
     private void writeADERDGSolverGeneratedImplementationForOptimisedKernel(
             String                 solverName,
@@ -464,140 +313,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         writer.write("\n\n\n");
     }
 
-
-    private void writeADERDGSolverUserImplementationForUserFluxes(
-            String                 solverName,
-            String                 numberOfVariables,
-            String                 order,
-            java.io.BufferedWriter writer
-            ) throws IOException {
-        writeMinimalADERDGSolverUserImplementation(solverName,numberOfVariables,order,writer);
-
-            int digits = String.valueOf(numberOfVariables).length();
-
-            if (_dimensions==2) {
-              writer.write("void " + _projectName + "::" + solverName + "::flux(const double* const Q, double* f, double* g) {\n");
-            }
-            else {
-              writer.write("void " + _projectName + "::" + solverName + "::flux(const double* const Q, double* f, double* g, double* h) {\n");
-            }
-            writer.write("  // Dimensions             = "+_dimensions      +"\n");
-            writer.write("  // Number of variables    = "+numberOfVariables+"\n");
-            writer.write("  // f\n");
-            writer.write("  // @todo Please implement\n");
-            for (int i=0; i < Integer.parseInt(numberOfVariables); i++) {
-                writer.write("  f["+String.format("%"+digits+"d",i)+"] = 0.0;\n");    
-            }
-            writer.write("  // g\n");
-            writer.write("  // @todo Please implement\n");
-            for (int i=0; i < Integer.parseInt(numberOfVariables); i++) {
-                writer.write("  g["+String.format("%"+digits+"d",i)+"] = 0.0;\n");    
-            }
-            if (_dimensions==3) {
-              writer.write("  // h\n");
-              writer.write("  // @todo Please implement\n");
-              for (int i=0; i < Integer.parseInt(numberOfVariables); i++) {
-                  writer.write("  h["+String.format("%"+digits+"d",i)+"] = 0.0;\n");    
-              }
-            }
-            writer.write("}\n");
-            writer.write("\n\n\n");
-            writer.write("void " + _projectName + "::" + solverName + "::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {\n");
-            writer.write("  // Dimensions             = "+_dimensions      +"\n");
-            writer.write("  // Number of variables    = "+numberOfVariables+"\n");
-            writer.write("  // @todo Please implement\n");
-            for (int i=0; i < Integer.parseInt(numberOfVariables); i++) {
-                writer.write("  lambda["+String.format("%"+digits+"d",i)+"] = 0.0;\n");    
-            }
-            writer.write("}\n");
-            writer.write("\n\n\n");
-            writer.write("void " + _projectName + "::" + solverName + "::adjustedSolutionValues(const double* const x,const double J_w,const double t,const double dt,double* Q) {\n");
-            writer.write("  // Dimensions             = "+_dimensions      +"\n");
-            writer.write("  // Number of variables    = "+numberOfVariables+"\n");
-            writer.write("  // @todo Please implement\n");
-            for (int i=0; i < Integer.parseInt(numberOfVariables); i++) {
-                writer.write("  Q["+String.format("%"+digits+"d",i)+"] = 0.0;\n");    
-            }
-            writer.write("}\n");
-            writer.write("\n\n\n");
-    }
-
-
-    private void writeADERDGSolverUserImplementationForUserDefined(
-            String                 solverName,
-            String                 numberOfVariables,
-            String                 order,
-            java.io.BufferedWriter writer
-            ) throws IOException {
-        writer.write("#include \"" + solverName + ".h\"\n");
-        writer.write("\n\n\n");
-        writer.write(_projectName + "::" + solverName + "::" + solverName + "( int kernelNumber):\n");
-        writer.write("  exahype::solvers::Solver(\"" + solverName + "\",exahype::solvers::Solver::ADER_DG,kernelNumber," + numberOfVariables + "," + order + "+1,exahype::solvers::Solver::GlobalTimeStepping) {\n");
-        writer.write("  // @todo Please implement/augment if required\n");
-        writer.write("}\n");
-        writer.write("\n\n\n");
-        writer.write("int " + _projectName + "::" + solverName + "::getMinimumTreeDepth() const {\n");
-        writer.write("  // @todo Please implement\n");
-        writer.write("  return 3;\n");
-        writer.write("}\n");
-        writer.write("\n\n\n");
-
-            writer.write("void " + _projectName + "::" + solverName + "::spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {\n");
-            writer.write("  // @todo Please implement\n");
-            writer.write("}\n");
-            writer.write("\n\n\n");
-            writer.write("void " + _projectName + "::" + solverName + "::solutionUpdate(double* luh, const double* const lduh, const double dt) {\n");
-            writer.write("  // @todo Please implement\n");
-            writer.write("}\n");
-            writer.write("\n\n\n");
-            writer.write("void " + _projectName + "::" + solverName + "::volumeIntegral(double* lduh, const double* const lFhi, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
-            writer.write("  // @todo Please implement\n");
-            writer.write("}\n");
-            writer.write("\n\n\n");
-            writer.write("void " + _projectName + "::" + solverName + "::surfaceIntegral(double* lduh, const double* const lFhbnd, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
-            writer.write("  // @todo Please implement\n");
-            writer.write("}\n");
-            writer.write("\n\n\n");
-            writer.write("void " + _projectName + "::" + solverName + "::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex) {\n");
-            writer.write("  // @todo Please implement\n");
-            writer.write("}\n");
-            writer.write("\n\n\n");
-            writer.write("double " + _projectName + "::" + solverName + "::stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx ) {\n");
-            writer.write("  // @todo Please implement\n");
-            writer.write("  return 1.0;\n");
-            writer.write("}\n");
-            writer.write("\n\n\n");
-            writer.write("void " + _projectName + "::" + solverName + "::solutionAdjustment(double* luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {\n");
-            writer.write("  // @todo Please implement\n");
-            writer.write("}\n");
-            writer.write("\n\n\n");
-    }
-
-
-    private void writeMinimalADERDGSolverUserImplementation(
-            String                 solverName,
-            String                 numberOfVariables,
-            String                 order,
-            java.io.BufferedWriter writer
-            ) throws IOException {
-        writer.write("#include \"" + solverName + ".h\"\n");
-        writer.write("\n\n\n");
-        writer.write(_projectName + "::" + solverName + "::" + solverName + "( int kernelNumber):\n");
-        writer.write("  exahype::solvers::Solver(\"" + solverName + "\",exahype::solvers::Solver::ADER_DG,kernelNumber," + numberOfVariables + "," + order + "+1,exahype::solvers::Solver::GlobalTimeStepping) {\n");
-        writer.write("  // @todo Please implement/augment if required\n");
-        writer.write("}\n");
-        writer.write("\n\n\n");
-        writer.write("int " + _projectName + "::" + solverName + "::getMinimumTreeDepth() const {\n");
-        writer.write("  // @todo Please implement\n");
-        writer.write("  return 3;\n");
-        writer.write("}\n");
-        writer.write("\n\n\n");
-        writer.write("bool " + _projectName + "::" + solverName + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t) {\n");
-        writer.write("  // @todo Please implement/augment if required\n");
-        writer.write("  return false;\n");
-        writer.write("}\n");
-        writer.write("\n\n\n");
-    }
+*/
 
     private void invokeCodeGenerator(
             String                 solverName,
