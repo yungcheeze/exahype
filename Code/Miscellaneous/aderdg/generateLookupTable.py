@@ -105,7 +105,13 @@ while (order <= maxOrder):
     #----------------------------------------------------------------
     # compute matrices and export
     #----------------------------------------------------------------
-    Kxi = assembleStiffnessMatrix(xGPN, wGPN, order)
+    Kxi  = assembleStiffnessMatrix(xGPN, wGPN, order)
+#    Kxi2 = assembleStiffnessMatrixShorter(xGPN, wGPN, order)
+#    
+#    for j in range(0, order+1):
+#        for i in range(0, order+1):
+#            print (Kxi[i][j] - Kxi2[i][j])
+
     #                (data, n,      m,       name,  aligned?, namespace, output file)
     #writeMatrixToFile(Kxi, order+1, order+1, "Kxi", True, "exahype::dg::", filename)
     writeMatrixLookupTableInitToFile( out,"",Kxi,order+1,order+1,"Kxi[%d]" % order );
@@ -134,8 +140,7 @@ while (order <= maxOrder):
     
     # dim == 2 only
     subOutputMatrix  = assembleSubOutputMatrix(xGPN, order, dim)
-    subOutputMatrix2 = assembleEquidistantGridProjector2D(xGPN, order, dim)
-    
+#    subOutputMatrix2 = assembleEquidistantGridProjector2D(xGPN, order, dim)    
 #    for j in range(0, order+1):
 #        for i in range(0, order+1):
 #            print (subOutputMatrix[i][j] - subOutputMatrix2[i][j])
