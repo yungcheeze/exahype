@@ -31,6 +31,8 @@ exahype-project  Euler2d
     variables = 5
     order     = 3
     kernel    = user::fluxes
+    language  = C
+    // language  = Fortran
    
     plot vtk::binary
       time     = 0.0
