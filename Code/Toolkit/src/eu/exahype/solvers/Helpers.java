@@ -88,4 +88,49 @@ public class Helpers {
       writer.write("}\n");
       writer.write("\n\n\n");
   }
-}
+  
+  static public void invokeCodeGenerator(
+    String                 solverName,
+    int                    numberOfVariables,
+    int                    order,
+    boolean                isLinear,
+    int                    dimensions,
+    String                 microarchitecture,
+    String                 pathToLibxsmm
+  ) throws IOException {
+      
+      String currentDirectory = System.getProperty("user.dir");
+      java.nio.file.Path pathToCodeGenerator = java.nio.file.Paths.get(currentDirectory+"/Miscellaneous/CodeGenerator/Driver.py");
+		    if(java.nio.file.Files.notExists(pathToCodeGenerator)) {
+			    System.err.println("ERROR: Code generator not found. Can't generated optimised kernels.");
+			    return;
+		    }
+
+     String numericsParameter = isLinear ? "linear" : "nonlinear";
+
+     // set up the command to execute the code generator
+     String args         = " " + solverName                    + " "
+                               + numberOfVariables             + " "
+                               + order                         + " "
+                               + Integer.toString(dimensions)  + " "
+                               + numericsParameter             + " "
+                               + microarchitecture             + " "
+                               + pathToLibxsmm                 + " "
+                               + "--precision=DP";  //double precision
+		                               
+    String bashCommand   = "python " + pathToCodeGenerator + args ;
+
+    Runtime runtime = Runtime.getRuntime();
+
+    // execute the command line program
+    Process codeGenerator = runtime.exec(bashCommand);
+
+    // capture any output that is produced by the code generator and print it line-by-line
+    java.io.BufferedReader codeGeneratorsOutputReader = new java.io.BufferedReader(new java.io.InputStreamReader(codeGenerator.getInputStream()));
+    String line = "";
+    while((line = codeGeneratorsOutputReader.readLine()) != null) {
+      System.out.println(line);
+    }
+  }
+}  
+
