@@ -54,7 +54,7 @@ ifeq ($(ARCHITECTURE),Phi)
 else
 	ifeq ($(CC),gcc)
     FC=gfortran
-    FCOMPILER_CFLAGS=-fdefault-real-8 -ffree-line-length-none
+    FCOMPILER_CFLAGS=-ffree-line-length-none
     LINK_FORTRAN=-lgfortran
 		CC=g++
 		ifeq ($(MODE),Debug)

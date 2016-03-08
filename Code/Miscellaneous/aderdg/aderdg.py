@@ -51,7 +51,7 @@ def BaseFunc1D(xi, xin, N):
 
 def assembleStiffnessMatrix(xGPN, wGPN, N):
     """
-    Computes the (reference) element stiffness matrix for an approximation of
+    Computes the (reference) element stiffness matrix times a Gauss-Legendre weight for an approximation of
     order N.
 
     Args:
@@ -75,6 +75,33 @@ def assembleStiffnessMatrix(xGPN, wGPN, N):
                 Kxi[k][l] += wGPN[i]*phi_xi[k]*phi[l] 
         
     return Kxi
+
+def assembleStiffnessMatrixShorter(xGPN, wGPN, N):
+    """
+    Computes the (reference) element stiffness matrix times a Gauss-Legendre weight for an approximation of
+    order N.
+
+    Args:
+       xGPN:
+          Gauss-Legendre nodes (N nodes).
+       wGPN:
+          N Gauss-Legendre weights  (N weights).
+       N:
+          Order of approximation corresponding to N+1 nodal basis functions.
+    Returns:
+       K_xi:
+          The (reference) element stiffness matrix.
+    """
+    # init matrix with zero
+    Kxi = [[0 for _ in range(N+1)] for _ in range(N+1)]
+     
+    for i in range(0,N+1):
+        phi, phi_xi = BaseFunc1D(xGPN[i], xGPN, N)
+        for k in range(0,N+1):
+            Kxi[k][i] = wGPN[i]*phi_xi[k]*phi[i] 
+        
+    return Kxi
+
 
 def assembleMassMatrix(xGPN, wGPN, N):
     """

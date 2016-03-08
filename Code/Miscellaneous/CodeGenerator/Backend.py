@@ -67,10 +67,12 @@ def prepareOutputDirectory(i_outputDirectory):
         if exception.errno != errno.EEXIST:
             raise
     
-    # remove all .cpp files (we are in append mode!) 
-    for fileName in os.listdir(i_outputDirectory):
-        if fileName.endswith(".cpp"):
-            os.remove(i_outputDirectory + "/" + fileName)    
+    # remove all .cpp and .h files (we are in append mode!) 
+    for l_fileName in os.listdir(i_outputDirectory):
+        _ , l_ext = os.path.splitext(l_fileName)
+        if(l_ext in ['.cpp', '.h']):
+            os.remove(i_outputDirectory + "/" + l_fileName)
+  
 
 
 def executeBashCommand(i_command, i_commandLineParameters):
@@ -79,11 +81,7 @@ def executeBashCommand(i_command, i_commandLineParameters):
     l_commandOutput = subprocess.check_output(l_bashCommand, shell=True)
     return l_commandOutput
 
-
-def validateLibxsmmGenerator(i_pathToLibxsmm):
-    l_pathToLibxsmmGenerator = i_pathToLibxsmm + "/bin/libxsmm_gemm_generator"
-    return isfile(l_pathToLibxsmmGenerator)
-     
+   
      
 def writeIntrinsicsInclude(i_pathToFile):
     l_includeStatement = dedent(  """
@@ -113,7 +111,7 @@ def writeCommonHeader(i_pathToHeaderFile):
 
 
     # TODO temporary solution
-    # necessary till all generic kernels have been replaces with generated ones
+    # necessary till all generic kernels have been replaced with generated ones
     l_sourceFile.write('#define basisSize '+str(m_config['nDof'])+'\n'    \
                        '#define numberOfVariables '+str(m_config['nVar'])+'\n\n')
 
@@ -153,6 +151,7 @@ def writeCommonHeader(i_pathToHeaderFile):
     l_functionList.append(FunctionSignatures.getVolumeIntegralSignature())
     l_functionList.append(FunctionSignatures.getSurfaceIntegralSignature())
     l_functionList.append(FunctionSignatures.getInitialConditionSignature())
+    l_functionList.append(FunctionSignatures.getSolutionAdjustmentSignature())
     l_functionList.append(FunctionSignatures.getRiemannSolverSignature())
     l_functionList.append(FunctionSignatures.getStableTimeStepSizeSignature())
 
@@ -171,8 +170,11 @@ def writeCommonHeader(i_pathToHeaderFile):
     l_sourceFile.write('  }\n'  )
     l_sourceFile.write('}\n\n'  )
     
-    # include template functions (TODO)    
-    l_sourceFile.write('#include "kernels/aderdg/optimised/Kernels.cpph"\n\n')
+    # include template functions
+    l_sourceFile.write('#include "kernels/aderdg/optimised/solutionAdjustment.cpph"\n\n')
+    l_sourceFile.write('#include "kernels/aderdg/optimised/stableTimeStepSize.cpph"\n\n')
+    l_sourceFile.write('#include "kernels/aderdg/optimised/spaceTimePredictor.cpph"\n\n')
+    l_sourceFile.write('#include "kernels/aderdg/optimised/riemannSolver.cpph"\n\n')
     
     # close include guard
     l_sourceFile.write('#endif // EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_')

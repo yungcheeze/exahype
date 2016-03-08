@@ -163,6 +163,29 @@ def getSolutionUpdateSignature():
     return l_functionSignature
 
 
+
+def getSolutionAdjustmentSignature():
+    # function signature prototype
+    l_functionSignature = "template <void PDESolutionAdjustment(const DATATYPE* const x,const DATATYPE J_w,const DATATYPE t,const DATATYPE dt,DATATYPE* Q)> \n" \
+                          "void solutionAdjustment(\n" \
+                          "DATATYPE* luh,\n" \
+                          "const tarch::la::Vector<DIMENSIONS,DATATYPE>& center,\n" \
+                          "const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx,\n" \
+                          "const DATATYPE t,\n" \
+                          "const DATATYPE dt\n" \
+                          ")"
+                          
+    # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                         
+    if(m_precision=='SP'):
+        l_functionSignature = re.sub(r'\bDATATYPE\b', 'float', l_functionSignature)
+    elif(m_precision=='DP'):
+        l_functionSignature = re.sub(r'\bDATATYPE\b', 'double', l_functionSignature)
+    else:
+        print("FunctionSignatures.getSolutionAdjustmentSignature(): precision not supported")
+                                 
+    return l_functionSignature
+
+
 #
 # signature of the Riemann solver
 #

@@ -24,3 +24,13 @@ prefetchStrategies = [
                         "AL2jpst",           # aggressive *A' prefetch of first rows without any structure
                         "AL2jpst_BL2viaC"    # combines AL2jpst and BL2viaC
                      ]
+
+precisions =  [
+                "DP",
+                "SP"
+              ]
+
+numerics   =  [
+                "linear",
+                "nonlinear"
+              ]
