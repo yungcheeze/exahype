@@ -10,15 +10,20 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
     DOUBLE PRECISION, INTENT(IN)  :: dt                                             ! 
     DOUBLE PRECISION, INTENT(IN)  :: dx(d)                                          ! 
     DOUBLE PRECISION, INTENT(OUT) :: lqhi(nVar,nDOF(1),nDOF(2),nDOF(3))             ! time-averaged space-time degrees of freedom 
-    DOUBLE PRECISION, INTENT(OUT) :: lFhi(nVar,d,nDOF(1),nDOF(2),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF 
-    DOUBLE PRECISION, INTENT(OUT) :: lqbnd(nVar,6,nDOF(2),nDOF(3))                  ! time-averaged space-time degrees of freedom 
+    DOUBLE PRECISION, INTENT(OUT) :: lFhi(nVar,d,nDOF(1),nDOF(2),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF
+    ! shall become                   lFhi(nVar,nDOF(1),nDOF(2),nDOF(3),d)
+    DOUBLE PRECISION, INTENT(OUT) :: lQbnd(nVar,6,nDOF(2),nDOF(3))                  ! time-averaged space-time degrees of freedom 
+    ! shall become                   lQbnd(nVar,nDOF(2),nDOF(3),6)
     DOUBLE PRECISION, INTENT(OUT) :: lFbnd(nVar,6,nDOF(2),nDOF(3))                  ! time-averaged nonlinear flux tensor in each space-time DOF 
+    ! shall become                   lFbnd(nVar,nDOF(2),nDOF(3),6)
+    !
     ! Local variables 
     INTEGER :: i,j,k,l,iVar,iDim, iter 
     DOUBLE PRECISION    :: rhs0(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))               ! contribution of the initial condition to the known right hand side 
     DOUBLE PRECISION    :: rhs(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! known right hand side 
     DOUBLE PRECISION    :: lqh(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! space-time degrees of freedom 
     DOUBLE PRECISION    :: lFh(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))              ! nonlinear flux tensor in each space-time DOF 
+    ! lFh shall remain as it is
     DOUBLE PRECISION    :: aux(d), w                                                ! auxiliary variables 
     DOUBLE PRECISION    :: lqhold(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))             ! old space-time degrees of freedom 
     DOUBLE PRECISION    :: lqx(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qx of q 
@@ -220,4 +225,4 @@ END SUBROUTINE PDEFlux
     
     
     
-    
+
