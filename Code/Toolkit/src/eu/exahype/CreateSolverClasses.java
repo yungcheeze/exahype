@@ -34,7 +34,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     @Override
     public void inAProject(AProject node) {
         _projectName = node.getName().toString().trim();
-
+        
         if (node.getSolver().size()==0) { 
             System.out.println( "there are no solvers in the specification file ... nothing to be done" );      
         }
@@ -46,6 +46,15 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         }
 
     } 
+    
+    
+    @Override
+    public void inAPaths(eu.exahype.node.APaths node) {
+      // @todo Angelika
+      // - make libxsmm an attribute such that you can access it from anywhere else in the class
+      // - check before whether get...Path returns Null if attribute is not in the spec file
+      String libxsmm = node.getLibxssmPath().toString().trim();
+    };
 
 
     @Override
