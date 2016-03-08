@@ -20,6 +20,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     private String                    _microarchitecture;
 
     private java.util.List<String>    _supportedMicroarchitectures;
+    
+    private String                    _pathToLibxsmm;
 
     private int                       _dimensions;
     
@@ -50,10 +52,13 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     
     @Override
     public void inAPaths(eu.exahype.node.APaths node) {
-      // @todo Angelika
-      // - make libxsmm an attribute such that you can access it from anywhere else in the class
-      // - check before whether get...Path returns Null if attribute is not in the spec file
-      String libxsmm = node.getLibxssmPath().toString().trim();
+        if(node.getLibxsmmPath() == null) {
+            // attribute 'libxsmm-path' did not occur in spec file
+            _pathToLibxsmm = "";    
+        } 
+        else {
+            _pathToLibxsmm = node.getLibxsmmPath().toString().trim();
+        }
     };
 
 
@@ -600,7 +605,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
             String                 order,
             Numerics               numerics
             ) throws IOException {
-        // TODO adapt path
+        
         String currentDirectory = System.getProperty("user.dir");
         java.nio.file.Path pathToCodeGenerator = java.nio.file.Paths.get(currentDirectory+"/Miscellaneous/CodeGenerator/Driver.py");
 		    if(java.nio.file.Files.notExists(pathToCodeGenerator)) {
@@ -608,12 +613,26 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 			    return;
 		    }
 
+		    String numericsParameter = "";
+        switch(numerics) {
+            case NONLINEAR:
+                numericsParameter = "nonlinear";
+                break;
+            case LINEAR:
+                numericsParameter = "linear";
+                break;
+            default:
+                break;
+        }		    
+
 		    // set up the command to execute the code generator
 		    String args          = " " + solverName                    + " "
 		                               + numberOfVariables             + " "
 		                               + order                         + " "
 		                               + Integer.toString(_dimensions) + " "
+		                               + numericsParameter             + " "
 		                               + _microarchitecture            + " "
+		                               + _pathToLibxsmm                + " "
 		                               + "--precision=DP";  //double precision
 		                               
 		    String bashCommand   = "python " + pathToCodeGenerator + args ;

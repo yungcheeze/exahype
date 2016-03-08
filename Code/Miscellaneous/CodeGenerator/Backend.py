@@ -151,6 +151,7 @@ def writeCommonHeader(i_pathToHeaderFile):
     l_functionList.append(FunctionSignatures.getVolumeIntegralSignature())
     l_functionList.append(FunctionSignatures.getSurfaceIntegralSignature())
     l_functionList.append(FunctionSignatures.getInitialConditionSignature())
+    l_functionList.append(FunctionSignatures.getSolutionAdjustmentSignature())
     l_functionList.append(FunctionSignatures.getRiemannSolverSignature())
     l_functionList.append(FunctionSignatures.getStableTimeStepSizeSignature())
 
@@ -169,8 +170,11 @@ def writeCommonHeader(i_pathToHeaderFile):
     l_sourceFile.write('  }\n'  )
     l_sourceFile.write('}\n\n'  )
     
-    # include template functions (TODO)    
-    l_sourceFile.write('#include "kernels/aderdg/optimised/Kernels.cpph"\n\n')
+    # include template functions
+    l_sourceFile.write('#include "kernels/aderdg/optimised/solutionAdjustment.cpph"\n\n')
+    l_sourceFile.write('#include "kernels/aderdg/optimised/stableTimeStepSize.cpph"\n\n')
+    l_sourceFile.write('#include "kernels/aderdg/optimised/spaceTimePredictor.cpph"\n\n')
+    l_sourceFile.write('#include "kernels/aderdg/optimised/riemannSolver.cpph"\n\n')
     
     # close include guard
     l_sourceFile.write('#endif // EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_')
