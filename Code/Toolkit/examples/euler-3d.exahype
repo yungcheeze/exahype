@@ -28,9 +28,9 @@ exahype-project  Euler3d
   solver ADER-DG MyEulerSolver
     variables = 5
     order     = 3
-    kernel    = user::fluxes
+    kernel    = generic::fluxes::nonlinear
     language  = C
-    // language  = Fortran
+    /* language  = Fortran */
    
     plot vtk::binary
       time     = 0.0

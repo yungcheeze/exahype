@@ -1,6 +1,7 @@
 package eu.exahype;
 
 import eu.exahype.analysis.DepthFirstAdapter;
+import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.AProject;
 import eu.exahype.node.ASharedMemory;
 import eu.exahype.node.ATwoDimensionalComputationalDomain;
@@ -15,6 +16,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
   
   private DirectoryAndPathChecker   _directoryAndPathChecker;
 
+  private boolean                   _requiresFortran;
   
   public SetupBuildEnvironment(DirectoryAndPathChecker  directoryAndPathChecker) {
 	_directoryAndPathChecker = directoryAndPathChecker;
@@ -91,6 +93,8 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
   
   @Override
   public void inAProject(AProject node) {
+	_requiresFortran = false;
+	  
 	try {
       java.io.File logFile = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/Makefile");
       
@@ -129,8 +133,26 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
 	}
   }
   
+  
+  @Override
+  public void inAAderdgSolver(AAderdgSolver node) {
+	if ( node.getLanguage().getText().trim().equals("C") ) {
+	}
+	else if ( node.getLanguage().getText().trim().equals("Fortran") ) {
+      _requiresFortran = true;		
+	}
+	else {
+      System.err.println( "ERROR: unknown language for solver " + node.getName().getText() + ". Supported languages are C and Fortran" );
+      valid = false;
+	}
+  }
+  
+
   @Override
   public void outAProject(AProject node) {
+	// @todo Vasco
+	// can we evaluate _requiresFortran here?
+	  
 	try {
       _writer.write("\n\n");
       _writer.write("-include " + _directoryAndPathChecker.exahypePath.getAbsolutePath() + "/Makefile\n");

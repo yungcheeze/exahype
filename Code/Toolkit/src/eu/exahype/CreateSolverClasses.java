@@ -79,6 +79,18 @@ public class CreateSolverClasses extends DepthFirstAdapter {
 
         String kernel = node.getKernel().toString().trim();
 
+        boolean isFortran = false;
+    	if ( node.getLanguage().getText().trim().equals("C") ) {
+          isFortran = false;		
+    	}
+    	else if ( node.getLanguage().getText().trim().equals("Fortran") ) {
+          isFortran = true;		
+    	}
+    	else {
+          System.err.println( "ERROR: unknown language for solver " + node.getName().getText() + ". Supported languages are C and Fortran" );
+          valid = false;
+    	}
+
         try {      
             // =====================
             // Write all the headers
