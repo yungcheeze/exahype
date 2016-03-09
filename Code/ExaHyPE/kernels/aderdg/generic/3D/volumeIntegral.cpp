@@ -30,21 +30,8 @@ void kernels::aderdg::generic::volumeIntegral(
   // a compile time variable anymore
 
  
+  // circumvent 'const double'
   double* lFhiFortran = new double[numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize];
-  for(int i=0; i < numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize; i++)
-    lFhiFortran[i] = -123.45;
-
-  /*for (int ii=0; ii<basisSize; ii++) {  // loop over dof
-    for (int jj=0; jj<basisSize; jj++) {
-      for (int kk=0; kk<basisSize; kk++) {
-        for(int ivar=0; ivar < numberOfVariables; ivar++) {
-          for(int dim=0; dim < DIMENSIONS; dim++) {
-            lFhiFortran[f2p5(ivar, dim, ii, jj, kk)] = lFhi[p2f5(ivar, dim, ii, jj, kk)];
-          }
-        }
-      }
-    }
-  }*/
   for(int i=0;i<numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize;i++) {
     lFhiFortran[i] = lFhi[i];
   }

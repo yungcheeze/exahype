@@ -2,7 +2,6 @@
     
 SUBROUTINE ADERPicardLoop(luh,dt,dx,lqh,lFh) 
     USE typesDef
-
     USE, INTRINSIC :: ISO_C_BINDING
     IMPLICIT NONE 
     ! Argument list 
@@ -11,21 +10,19 @@ SUBROUTINE ADERPicardLoop(luh,dt,dx,lqh,lFh)
     DOUBLE PRECISION, INTENT(IN)  :: dx(d)                                          ! 
     DOUBLE PRECISION, INTENT(OUT) :: lqh(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3))      ! space-time degrees of freedom  
     DOUBLE PRECISION, INTENT(OUT) :: lFh(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))    ! nonlinear flux tensor in each space-time DOF 
-    !
     ! Local variables 
-    INTEGER :: i,j,k,l,iVar,iDim, iter 
+    INTEGER :: i,j,k,l,iVar, iter 
     DOUBLE PRECISION    :: rhs0(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))               ! contribution of the initial condition to the known right hand side 
     DOUBLE PRECISION    :: rhs(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! known right hand side 
-    DOUBLE PRECISION    :: aux(d), w                                                ! auxiliary variables 
+    DOUBLE PRECISION    :: aux(d)                                                   ! auxiliary variables 
     DOUBLE PRECISION    :: lqhold(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3))             ! old space-time degrees of freedom  
     DOUBLE PRECISION    :: lqx(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qx of q 
     DOUBLE PRECISION    :: lqy(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qy of q 
     DOUBLE PRECISION    :: lqz(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qz of q 
     DOUBLE PRECISION    :: lqt(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! time derivative qt of q 
     DOUBLE PRECISION    :: res                                                      ! residual 
-    DOUBLE PRECISION, PARAMETER :: tol = 1e-7                                      ! tolerance 
+    DOUBLE PRECISION, PARAMETER :: tol = 1e-7                                       ! tolerance 
     !
-    
     DO k = 1, nDOF(3) 
      DO j = 1, nDOF(2) 
       DO i = 1, nDOF(1) 
@@ -121,7 +118,6 @@ END SUBROUTINE ADERPicardLoop
     
 SUBROUTINE ADERPredictor(lqh,lFh,lqhi,lFhi)
     USE typesDef
-
     USE, INTRINSIC :: ISO_C_BINDING
     IMPLICIT NONE 
     ! Argument list 
@@ -129,11 +125,9 @@ SUBROUTINE ADERPredictor(lqh,lFh,lqhi,lFhi)
     DOUBLE PRECISION, INTENT(IN)  :: lFh(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))    ! nonlinear flux tensor in each space-time DOF 
     DOUBLE PRECISION, INTENT(OUT) :: lqhi(nVar,nDOF(1),nDOF(2),nDOF(3))             ! time-averaged space-time degrees of freedom 
     DOUBLE PRECISION, INTENT(OUT) :: lFhi(nVar,nDOF(1),nDOF(2),nDOF(3),d)           ! time-averaged nonlinear flux tensor in each space-time DOF
-    !
     ! Local variables 
-    INTEGER :: i,j,k,l,iVar,iDim, iter 
+    INTEGER :: i,j,k,iDim
     !
-    
     !
     ! Immediately compute the time-averaged space-time polynomials 
     !
@@ -150,9 +144,10 @@ SUBROUTINE ADERPredictor(lqh,lFh,lqhi,lFhi)
     !
 END SUBROUTINE ADERPredictor
 
+
+
 SUBROUTINE ADERExtrapolator(lqhi,lFhi,lQbnd,lFbnd)
     USE typesDef
-
     USE, INTRINSIC :: ISO_C_BINDING
     IMPLICIT NONE 
     ! Argument list 
@@ -160,9 +155,8 @@ SUBROUTINE ADERExtrapolator(lqhi,lFhi,lQbnd,lFbnd)
     DOUBLE PRECISION, INTENT(IN)  :: lFhi(nVar,nDOF(1),nDOF(2),nDOF(3),d)           ! time-averaged nonlinear flux tensor in each space-time DOF
     DOUBLE PRECISION, INTENT(OUT) :: lQbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged space-time degrees of freedom 
     DOUBLE PRECISION, INTENT(OUT) :: lFbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged nonlinear flux tensor in each space-time DOF 
-    !
     ! Local variables 
-    INTEGER :: i,j,k,l,iVar,iDim, iter 
+    INTEGER :: i,j,k
     ! 
     !
     ! Compute the bounday-extrapolated values for Q and F*n
@@ -200,7 +194,6 @@ SUBROUTINE ADERExtrapolator(lqhi,lFhi,lQbnd,lFbnd)
          ENDDO
         ENDDO 
     ENDIF    
-    
     !PRINT *, ' --------lFhi--------------------------------- ' 
     !PRINT *, lFhi
     !PRINT *, ' --------lFhi--------------------------------- ' 
@@ -209,8 +202,6 @@ SUBROUTINE ADERExtrapolator(lqhi,lFhi,lQbnd,lFbnd)
     !WRITE(12, '(ES24.16,1x)') , lFhi
     !CALL EXIT    
     !
-    
-    
 END SUBROUTINE ADERExtrapolator
     
     
