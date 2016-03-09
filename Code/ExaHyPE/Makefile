@@ -185,8 +185,8 @@ endif
 ffiles.mk:
 	touch ffiles.mk
 	echo -n FSOURCES= > ffiles.mk
-	find -H . -name 'typesdef.f90' | tr '\n' ' ' >> ffiles.mk
-	find -H . -name '*.f90' | tr '\n' ' ' >> ffiles.mk
+	find -H . -name 'typesDef.f90' | tr '\n' ' ' >> ffiles.mk
+	find -H . -name '*.f90'  -not -path './typesDef.f90' | tr '\n' ' ' >> ffiles.mk
 
 
 header:
