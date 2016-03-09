@@ -17,7 +17,7 @@ extern "C"
 }
 
 
-void kernels::aderdg::generic::surfaceIntegral(
+void kernels::aderdg::generic::fortran::surfaceIntegral(
     double * lduh,
     const double * const lFbnd,
     const tarch::la::Vector<DIMENSIONS,double>& dx,

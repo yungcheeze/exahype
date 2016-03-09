@@ -107,7 +107,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
             solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran();
             break;
           case eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran.Identifier:
-            solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran();
+            solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran(_dimensions,numberOfVariables,order);
             break;
         }
       }

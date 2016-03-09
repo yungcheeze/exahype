@@ -18,7 +18,7 @@ extern "C"
   void adervolumeintegral_(double *lduh, double *lFhi, double *dx);
 }
 
-void kernels::aderdg::generic::volumeIntegral(
+void kernels::aderdg::generic::fortran::volumeIntegral(
     double * lduh,
     const double * const lFhi,
     const tarch::la::Vector<DIMENSIONS,double>& dx,

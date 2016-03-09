@@ -16,7 +16,7 @@ using std::endl;
 using std::cout;
 
 template <void PDEEigenvalues(const double * const Q,const int normalNonZero,double * lambda)>
-double kernels::aderdg::generic::stableTimeStepSize(
+double kernels::aderdg::generic::fortran::stableTimeStepSize(
     const double * const luh,
     const tarch::la::Vector<DIMENSIONS,double>& dx,
     const int numberOfVariables,

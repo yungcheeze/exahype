@@ -23,7 +23,7 @@ extern "C"
 }
 
 template <void PDEFlux3d(const double * const Q, double * f, double * g, double * h)>
-void kernels::aderdg::generic::spaceTimePredictor(
+void kernels::aderdg::generic::fortran::spaceTimePredictor(
     double * lQi,
     double * lFi,
     double * lQhi,
