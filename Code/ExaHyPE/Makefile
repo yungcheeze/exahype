@@ -184,11 +184,11 @@ endif
 doFortran:
 ifneq (,$(findstring Dim3, $(PROJECT_CFLAGS) ))
 	$(FC) $(FCOMPILER_CFLAGS) -c typesDef.f90 
-	$(FC) $(FCOMPILER_CFLAGS) -c spaceTimePredictor.f90 
-	$(FC) $(FCOMPILER_CFLAGS) -c volumeIntegral.f90
-	$(FC) $(FCOMPILER_CFLAGS) -c surfaceIntegral.f90
-	$(FC) $(FCOMPILER_CFLAGS) -c riemannSolver.f90
-	$(FC) $(FCOMPILER_CFLAGS) -c elementUpdate.f90
+	$(FC) $(FCOMPILER_CFLAGS) -c $(EXAHYPE_PATH)'/kernels/aderdg/generic/3D/spaceTimePredictor.f90' 
+	$(FC) $(FCOMPILER_CFLAGS) -c $(EXAHYPE_PATH)'/kernels/aderdg/generic/3D/volumeIntegral.f90'
+	$(FC) $(FCOMPILER_CFLAGS) -c $(EXAHYPE_PATH)'/kernels/aderdg/generic/3D/surfaceIntegral.f90'
+	$(FC) $(FCOMPILER_CFLAGS) -c $(EXAHYPE_PATH)'/kernels/aderdg/generic/3D/riemannSolver.f90'
+	$(FC) $(FCOMPILER_CFLAGS) -c $(EXAHYPE_PATH)'/kernels/aderdg/generic/3D/elementUpdate.f90'
 endif
  
 header:
