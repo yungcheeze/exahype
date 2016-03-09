@@ -13,20 +13,17 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
     DOUBLE PRECISION, INTENT(OUT) :: lFhi(nVar,d,nDOF(1),nDOF(2),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF
     ! shall become                   lFhi(nVar,nDOF(1),nDOF(2),nDOF(3),d)
     DOUBLE PRECISION, INTENT(OUT) :: lQbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged space-time degrees of freedom 
-    ! shall become                   lQbnd(nVar,nDOF(2),nDOF(3),6)
     DOUBLE PRECISION, INTENT(OUT) :: lFbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged nonlinear flux tensor in each space-time DOF 
-    ! shall become                   lFbnd(nVar,nDOF(2),nDOF(3),6)
     !
     ! Local variables 
     INTEGER :: i,j,k,l,iVar,iDim, iter 
     DOUBLE PRECISION    :: rhs0(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))               ! contribution of the initial condition to the known right hand side 
     DOUBLE PRECISION    :: rhs(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! known right hand side 
-    DOUBLE PRECISION    :: lqh(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! space-time degrees of freedom 
-    ! shall become         lqh(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3)) -> time second argument
+    DOUBLE PRECISION    :: lqh(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3))                ! space-time degrees of freedom  
     DOUBLE PRECISION    :: lFh(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))              ! nonlinear flux tensor in each space-time DOF 
     ! lFh shall remain as it is
     DOUBLE PRECISION    :: aux(d), w                                                ! auxiliary variables 
-    DOUBLE PRECISION    :: lqhold(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))             ! old space-time degrees of freedom 
+    DOUBLE PRECISION    :: lqhold(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3))             ! old space-time degrees of freedom  
     DOUBLE PRECISION    :: lqx(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qx of q 
     DOUBLE PRECISION    :: lqy(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qy of q 
     DOUBLE PRECISION    :: lqz(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qz of q 
@@ -40,7 +37,7 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
       DO i = 1, nDOF(1) 
         ! Trivial initial guess (can be significantly improved) 
         DO iVar = 1, nVar
-            lqh(iVar,i,j,k,:) = luh(iVar,i,j,k) 
+            lqh(iVar,:,i,j,k) = luh(iVar,i,j,k) 
         ENDDO 
         ! Compute the contribution of the initial condition uh to the time update. I prefer to compute it once
         ! and store it in rhs0, but if you think it is faster, you can also recompute this contribution 
@@ -65,7 +62,7 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
          DO k = 1, nDOF(3) 
           DO j = 1, nDOF(2) 
            DO i = 1, nDOF(1) 
-                CALL PDEFlux(lFh(:,:,i,j,k,l),lqh(:,i,j,k,l)) 
+                CALL PDEFlux(lFh(:,:,i,j,k,l),lqh(:,l,i,j,k)) 
            ENDDO
           ENDDO
          ENDDO                   
@@ -76,7 +73,7 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
           DO j = 1, nDOF(2) 
               aux = (/ wGPN(l), wGPN(j), wGPN(k) /) 
               rhs(:,:,j,k,l) = rhs0(:,:,j,k,l) - PRODUCT(aux(1:nDim))*dt/dx(1)*MATMUL( lFh(:,1,:,j,k,l), Kxi ) 
-              !lqx(:,:,j,k,l) = 1.0/dx(1)*MATMUL( lqh(:,:,j,k,l), TRANSPOSE(dudx) )         ! currently used only for debugging purposes, to check if derivatives are correctly computed  
+              !lqx(:,:,j,k,l) = 1.0/dx(1)*MATMUL( lqh(:,l,:,j,k), TRANSPOSE(dudx) )         ! currently used only for debugging purposes, to check if derivatives are correctly computed  
           ENDDO
          ENDDO 
          
@@ -86,7 +83,7 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
               DO i = 1, nDOF(1) 
                   aux = (/ wGPN(l), wGPN(i), wGPN(k) /) 
                   rhs(:,i,:,k,l) = rhs(:,i,:,k,l) - PRODUCT(aux(1:nDim))*dt/dx(2)*MATMUL( lFh(:,2,i,:,k,l), Kxi ) 
-                  !lqy(:,i,:,k,l) = 1.0/dx(2)*MATMUL( lqh(:,i,:,k,l), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed 
+                  !lqy(:,i,:,k,l) = 1.0/dx(2)*MATMUL( lqh(:,l,i,:,k), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed 
               ENDDO
              ENDDO 
          ENDIF 
@@ -96,7 +93,7 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
               DO i = 1, nDOF(1) 
                   aux = (/ wGPN(l), wGPN(i), wGPN(j) /) 
                   rhs(:,i,j,:,l) = rhs(:,i,j,:,l) - PRODUCT(aux(1:nDim))*dt/dx(3)*MATMUL( lFh(:,3,i,j,:,l), Kxi ) 
-                  !lqz(:,i,j,:,l) = 1.0/dx(3)*MATMUL( lqh(:,i,j,:,l), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed  
+                  !lqz(:,i,j,:,l) = 1.0/dx(3)*MATMUL( lqh(:,l,i,j,:), TRANSPOSE(dudx) )     ! currently used only for debugging purposes, to check if derivatives are correctly computed  
               ENDDO
              ENDDO 
          ENDIF 
@@ -109,8 +106,8 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
          DO j = 1, nDOF(2)  
           DO i = 1, nDOF(1)
              aux = (/ wGPN(i), wGPN(j), wGPN(k) /) 
-             lqh(:,i,j,k,:) = 1./(PRODUCT(aux(1:nDim)))*MATMUL( rhs(:,i,j,k,:), TRANSPOSE(iK1) ) 
-             !lqt(:,i,j,k,:) = 1.0/dt*MATMUL( lqh(:,i,j,k,:), TRANSPOSE(dudx) )         ! currently used only for debugging purposes, to check if derivatives are correctly computed  
+             lqh(:,:,i,j,k) = 1./(PRODUCT(aux(1:nDim)))*MATMUL( rhs(:,i,j,k,:), TRANSPOSE(iK1) ) 
+             !lqt(:,i,j,k,:) = 1.0/dt*MATMUL( lqh(:,:,i,j,k), TRANSPOSE(dudx) )         ! currently used only for debugging purposes, to check if derivatives are correctly computed  
            ENDDO
          ENDDO
         ENDDO
@@ -132,7 +129,7 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
     DO k = 1, nDOF(3)  
      DO j = 1, nDOF(2)  
       DO i = 1, nDOF(1) 
-         lqhi(:,i,j,k) = MATMUL( lqh(:,i,j,k,:), wGPN ) 
+         lqhi(:,i,j,k) = MATMUL( lqh(:,:,i,j,k), wGPN ) 
          DO iDim = 1, nDim 
             lFhi(:,iDim,i,j,k) = MATMUL( lFh(:,iDim,i,j,k,:), wGPN ) 
          ENDDO
