@@ -201,7 +201,7 @@ namespace kernels {
         void surfaceIntegralXDirection(
             double * lduh,
             const double * const lFhbnd,
-            const double area,
+            const double dx,
             const int facePosition,  // 0 for "left" face, 1 for "right" face.
             const double updateSign, // -1 for "left" face, 1 for "right" face.
             const int numberOfVariables,
@@ -211,7 +211,7 @@ namespace kernels {
         void surfaceIntegralYDirection(
             double * lduh,
             const double * const lFhbnd,
-            const double area,
+            const double dy,
             const int facePosition,  // 0 for "left" face, 1 for "right" face.
             const double updateSign, // -1 for "left" face, 1 for "right" face.
             const int numberOfVariables,

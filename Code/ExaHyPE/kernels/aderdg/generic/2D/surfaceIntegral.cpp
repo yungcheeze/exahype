@@ -33,7 +33,7 @@ void kernels::aderdg::generic::c::surfaceIntegral(
 void kernels::aderdg::generic::c::surfaceIntegralXDirection(
     double * lduh,
     const double * const lFhbnd,
-    const double area,
+    const double dx,
     const int facePosition,  // 0 for "left" face, 1 for "right" face.
     const double updateSign, // -1 for "left" face, 1 for "right" face.
     const int numberOfVariables,
@@ -59,7 +59,7 @@ void kernels::aderdg::generic::c::surfaceIntegralXDirection(
     for(int mm=0; mm < basisSize; mm++) {
       for(int ivar=0; ivar < numberOfVariables; ivar++) {
         lduh3D[jj][mm][ivar] // direction dependent! 
-                       += updateSign * weight/area * ( kernels::FCoeff[order][facePosition][mm] * lFhbnd [dofStartIndex+ivar] );
+                       += updateSign * weight/dx * ( kernels::FCoeff[order][facePosition][mm] * lFhbnd [dofStartIndex+ivar] );
       }
     }
   }
@@ -68,7 +68,7 @@ void kernels::aderdg::generic::c::surfaceIntegralXDirection(
 void kernels::aderdg::generic::c::surfaceIntegralYDirection(
     double * lduh,
     const double * const lFhbnd,
-    const double area,
+    const double dy,
     const int facePosition,  // 0 for "left" face, 1 for "right" face.
     const double updateSign, // -1 for "left" face, 1 for "right" face.
     const int numberOfVariables,
@@ -94,7 +94,7 @@ void kernels::aderdg::generic::c::surfaceIntegralYDirection(
     for(int mm=0; mm < basisSize; mm++) {
       for(int ivar=0; ivar < numberOfVariables; ivar++) {
         lduh3D[mm][ii][ivar] // direction dependent! 
-                       += updateSign * weight/area * ( kernels::FCoeff[order][facePosition][mm] * lFhbnd[dofStartIndex+ivar] );
+                       += updateSign * weight/dy * ( kernels::FCoeff[order][facePosition][mm] * lFhbnd[dofStartIndex+ivar] );
       }
     }
   }
