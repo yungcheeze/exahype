@@ -4,6 +4,7 @@
 # Include files
 -include cfiles.mk
 -include ffiles.mk
+-include fmodules.mk
 
 
 
@@ -156,6 +157,7 @@ LL=$(CC)
 
 COBJECTS=$(CSOURCES:.cpp=.o)
 FOBJECTS=$(FSOURCES:.f90=.o)
+FMOBJECTS=$(FMSOURCES:.f90=.o)
 
 
 
@@ -182,10 +184,14 @@ endif
 endif
 	find -H $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 
+fmodules.mk:
+	touch fmodules.mk
+	echo -n FMSOURCES= > fmodules.mk
+	find -H . -name 'typesDef.f90' | tr '\n' ' ' >> fmodules.mk
+
 ffiles.mk:
 	touch ffiles.mk
 	echo -n FSOURCES= > ffiles.mk
-	find -H . -name 'typesDef.f90' | tr '\n' ' ' >> ffiles.mk
 	find -H . -name '*.f90'  -not -path './typesDef.f90' | tr '\n' ' ' >> ffiles.mk
 
 
@@ -202,8 +208,8 @@ header:
 	@echo framework Peano \(www.peano-framework.org\).
 
 
-build: buildinfo ffiles.mk $(FOBJECTS) cfiles.mk $(COBJECTS)
-	$(LL) $(COBJECTS) $(FOBJECTS) $(LINK_FORTRAN) -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
+build: buildinfo fmodules.mk $(FMOBJECTS) ffiles.mk $(FOBJECTS) cfiles.mk $(COBJECTS)
+	$(LL) $(COBJECTS) $(FOBJECTS) $(FMOBJECTS) $(LINK_FORTRAN) -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
 	@echo
 	@echo build of ExaHyPE successful
 	@echo run code with ./$(EXECUTABLE) and pass config file as argument
@@ -211,6 +217,8 @@ build: buildinfo ffiles.mk $(FOBJECTS) cfiles.mk $(COBJECTS)
 
 clean:
 	rm -f $(EXECUTABLE)
+	rm -f $(FMOBJECTS)
+	rm -f fmodules.mk
 	rm -f $(FOBJECTS)
 	rm -f ffiles.mk
 	rm -f $(COBJECTS)
@@ -221,4 +229,7 @@ $(COBJECTS): %.o : %.cpp
 	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH)  -I$(PEANO_PATH)/.. -I$(TARCH_PATH)/.. -I$(MULTISCALELINKEDCELL_PATH)/.. -I$(SHAREDMEMORYORACLES_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
 
 $(FOBJECTS): %.o : %.f90
+	$(FC) $(FCOMPILER_CFLAGS) -c $< -o $@
+
+$(FMOBJECTS): %.o : %.f90
 	$(FC) $(FCOMPILER_CFLAGS) -c $< -o $@
