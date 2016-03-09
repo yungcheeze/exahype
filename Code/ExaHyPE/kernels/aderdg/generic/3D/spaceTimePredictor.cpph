@@ -62,7 +62,7 @@ void kernels::aderdg::generic::spaceTimePredictor(
     
     
     //aderspacetimepredictor_(lQhi, lFhiFortran, lQbndFortran, lFbndFortran, luhTemp, dtTemp, dxTemp);
-    aderspacetimepredictor_(lQhi, lFhiFortran, lQbnd, lFbnd, luhTemp, dtTemp, dxTemp);
+    aderspacetimepredictor_(lQhi, lFhi, lQbnd, lFbnd, luhTemp, dtTemp, dxTemp);
     
     // Permutation of lFhi
     /*for (int ii=0; ii<basisSize; ii++) {  // loop over dof
@@ -76,9 +76,9 @@ void kernels::aderdg::generic::spaceTimePredictor(
         }
       }
     }*/
-    for(int i=0; i<numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize; i++) {
+    /*for(int i=0; i<numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize; i++) {
       lFhi[i] = lFhiFortran[i];
-    }
+    }*/
 
 
     
