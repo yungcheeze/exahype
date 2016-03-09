@@ -15,6 +15,12 @@
 using std::endl;
 using std::cout;
 
+extern "C" 
+{
+  void pdeeigenvalues_(double *lambda, const double * const Q, double *nv);
+}
+
+
 template <void PDEEigenvalues(const double * const Q,const int normalNonZero,double * lambda)>
 double kernels::aderdg::generic::fortran::stableTimeStepSize(
     const double * const luh,
@@ -27,6 +33,11 @@ double kernels::aderdg::generic::fortran::stableTimeStepSize(
   };
   double* lambda = new double[numberOfVariables];
 
+  double* nv = new double[DIMENSIONS];
+  nv[0] = 0.;
+  nv[1] = 0.;
+  nv[2] = 0.;
+  
   double dt=std::numeric_limits<double>::max();
 
   for(int ii=0; ii < basisSize; ii++) {
@@ -37,7 +48,12 @@ double kernels::aderdg::generic::fortran::stableTimeStepSize(
 
         double denominator=0.0;
         for (int d=0; d<DIMENSIONS; d++) {
-          PDEEigenvalues(&luh[dofStartIndex],d,lambda);
+          
+          nv[0] = 0.;
+          nv[1] = 0.;
+          nv[2] = 0.;
+          nv[d] = 1.;
+          pdeeigenvalues_(lambda, &luh[dofStartIndex],nv);
 
           double maxEigenvalue=0.0;
           for (int ivar=0; ivar<numberOfVariables; ivar++) {
@@ -52,6 +68,7 @@ double kernels::aderdg::generic::fortran::stableTimeStepSize(
   }
 
   delete[] lambda;
+  delete[] nv;
   // std::cout << "-----------------------------------" << std::endl;
   // std::cout << dt << std::endl;
   // std::cout << "-----------------------------------" << std::endl;

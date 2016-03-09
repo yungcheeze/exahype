@@ -1,5 +1,6 @@
 SUBROUTINE PDEEigenvalues(Lambda,Q,nv)
     USE typesDef, ONLY : nVar, d, EQNgamma 
+    USE, INTRINSIC :: ISO_C_BINDING
     IMPLICIT NONE
     ! Argument list 
     REAL, INTENT(IN)  :: Q(nVar), nv(d) 
@@ -18,6 +19,7 @@ END SUBROUTINE PDEEigenvalues
 
 SUBROUTINE PDEFlux(F,Q)
     USE typesDef, ONLY : nVar, d, EQNgamma 
+    USE, INTRINSIC :: ISO_C_BINDING
     IMPLICIT NONE
     ! Argument list 
    REAL, INTENT(IN)  :: Q(nVar) 
