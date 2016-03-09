@@ -15,7 +15,7 @@ extern "C"
 {
   void elementupdate_(double *luh, double *lduh, double *dt);
 }
-void kernels::aderdg::generic::solutionUpdate(double * luh,
+void kernels::aderdg::generic::c::solutionUpdate(double * luh,
                                               const double * const lduh,
                                               const double dt,
                                               const int numberOfVariables,

@@ -9,7 +9,7 @@
 #include "kernels/DGMatrices.h"
 
 
-void kernels::aderdg::generic::predictor(
+void kernels::aderdg::generic::c::predictor(
     double* lQhi,
     double* lFhi,
     const double* const lQi,

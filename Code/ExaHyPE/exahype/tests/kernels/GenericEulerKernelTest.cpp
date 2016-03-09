@@ -204,7 +204,7 @@ void exahype::tests::GenericEulerKernelTest::testSolutionUpdate2d() {
       0,
       1.80196051954e-16};
 
-  kernels::aderdg::generic::solutionUpdate( luh, lduh, dt,
+  kernels::aderdg::generic::c::solutionUpdate( luh, lduh, dt,
                                             5,   //getNumberOfVariables(),
                                             4   // getNodesPerCoordinateAxis()
   );
@@ -399,7 +399,7 @@ void exahype::tests::GenericEulerKernelTest::testSurfaceIntegral2d() {
   };
 
   // lFhbnd = [ FLeft | FRight | FFront | FBack ]
-  kernels::aderdg::generic::surfaceIntegral( lduh, lFhbnd, dx[0],
+  kernels::aderdg::generic::c::surfaceIntegral( lduh, lFhbnd, dx[0],
                                               5,   //getNumberOfVariables(),
                                               4   // getNodesPerCoordinateAxis()
   );
@@ -499,7 +499,7 @@ void exahype::tests::GenericEulerKernelTest::testRiemannSolver2d() {
   double *FR = new double[20];
 
 
-  kernels::aderdg::generic::riemannSolver<testEigenvalues>( FL, FR, QL, QR,
+  kernels::aderdg::generic::c::riemannSolver<testEigenvalues>( FL, FR, QL, QR,
                                                             0.0, // dt
                                                             0,   // normalNonZero
                                                             5,   //getNumberOfVariables(),
@@ -688,7 +688,7 @@ void exahype::tests::GenericEulerKernelTest::testVolumeIntegral2d() {
         2.68302860327e-17
     };
 
-    kernels::aderdg::generic::volumeIntegral( lduh, lFhi,dx[0],
+    kernels::aderdg::generic::c::volumeIntegral( lduh, lFhi,dx[0],
                                               5, // getNumberOfVariables(),
                                               4 //getNodesPerCoordinateAxis()
     );
@@ -796,7 +796,7 @@ void exahype::tests::GenericEulerKernelTest::testVolumeIntegral2d() {
     // output:
     double *lduh = new double[80]; // intentionally left uninitialised
 
-    kernels::aderdg::generic::volumeIntegral(lduh, lFhi, dx[0], 5, 4);
+    kernels::aderdg::generic::c::volumeIntegral(lduh, lFhi, dx[0], 5, 4);
 
     validateNumericalEqualsWithEps(lduh[ 0],  0.000000000000000E+000, eps);
     validateNumericalEqualsWithEps(lduh[ 1],  -5.70727295609806     , eps);
@@ -919,15 +919,15 @@ void exahype::tests::GenericEulerKernelTest::testSpaceTimePredictor2d() {
   );
   */
   // ADDED
-  kernels::aderdg::generic::spaceTimePredictor<testFlux>( lQi, lFi, luh, dx[0], timeStepSize,
+  kernels::aderdg::generic::c::spaceTimePredictor<testFlux>( lQi, lFi, luh, dx[0], timeStepSize,
                                                           5, // getNumberOfVariables(),
                                                           4  // getNodesPerCoordinateAxis()
   );
-  kernels::aderdg::generic::predictor( lQhi, lFhi, lQi, lFi, timeStepSize,
+  kernels::aderdg::generic::c::predictor( lQhi, lFhi, lQi, lFi, timeStepSize,
                                                           5, // getNumberOfVariables(),
                                                           4  // getNodesPerCoordinateAxis()
   );
-  kernels::aderdg::generic::extrapolatedPredictor( lQhbnd, lFhbnd, lQhi, lFhi, timeStepSize,
+  kernels::aderdg::generic::c::extrapolatedPredictor( lQhbnd, lFhbnd, lQhi, lFhi, timeStepSize,
                                                           5, // getNumberOfVariables(),
                                                           4  // getNodesPerCoordinateAxis()
   );

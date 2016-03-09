@@ -11,7 +11,7 @@
 using std::endl;
 using std::cout;
 
-void kernels::aderdg::generic::surfaceIntegral(
+void kernels::aderdg::generic::c::surfaceIntegral(
     double * lduh,
     const double * const lFbnd,
     const tarch::la::Vector<DIMENSIONS,double>& dx,
@@ -30,7 +30,7 @@ void kernels::aderdg::generic::surfaceIntegral(
   surfaceIntegralYDirection( lduh,FBack,  dx[1],1,-1.,numberOfVariables,basisSize );
 }
 
-void kernels::aderdg::generic::surfaceIntegralXDirection(
+void kernels::aderdg::generic::c::surfaceIntegralXDirection(
     double * lduh,
     const double * const lFhbnd,
     const double area,
@@ -65,7 +65,7 @@ void kernels::aderdg::generic::surfaceIntegralXDirection(
   }
 }
 
-void kernels::aderdg::generic::surfaceIntegralYDirection(
+void kernels::aderdg::generic::c::surfaceIntegralYDirection(
     double * lduh,
     const double * const lFhbnd,
     const double area,

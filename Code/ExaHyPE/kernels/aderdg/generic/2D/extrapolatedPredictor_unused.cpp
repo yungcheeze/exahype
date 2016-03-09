@@ -9,7 +9,7 @@
 #include "kernels/DGMatrices.h"
 
 
-void kernels::aderdg::generic::extrapolatedPredictor(
+void kernels::aderdg::generic::c::extrapolatedPredictor(
     double* lQhbnd,
     double* lFhbnd,
     const double* const lQhi,
@@ -55,7 +55,7 @@ void kernels::aderdg::generic::extrapolatedPredictor(
                                   numberOfVariables,basisSize);
 }
 
-void kernels::aderdg::generic::extrapolatedPredictorXDirection(
+void kernels::aderdg::generic::c::extrapolatedPredictorXDirection(
     double* lQhbnd,
     double* lFhbnd,
     const double* const lQhi,
@@ -122,7 +122,7 @@ void kernels::aderdg::generic::extrapolatedPredictorXDirection(
   }
 }
 
-void kernels::aderdg::generic::extrapolatedPredictorYDirection(
+void kernels::aderdg::generic::c::extrapolatedPredictorYDirection(
     double* lQhbnd,
     double* lFhbnd,
     const double* const lQhi,

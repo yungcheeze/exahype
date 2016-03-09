@@ -16,7 +16,7 @@ using std::endl;
 using std::cout;
 
 template <void PDEFlux2d(const double * const Q, double * f, double * g)>
-void kernels::aderdg::generic::spaceTimePredictor(
+void kernels::aderdg::generic::c::spaceTimePredictor(
     double * lQi,
     double * lFi,
     double * lQhi,
@@ -399,7 +399,7 @@ void kernels::aderdg::generic::spaceTimePredictor(
 ******************************************************************************************************/
 
 template <void PDEFlux2d(const double * const Q, double * f, double * g)>
-void kernels::aderdg::generic::spaceTimePredictor(
+void kernels::aderdg::generic::c::spaceTimePredictor(
     double * lQi,
     double * lFi,
     const double * const luh,
