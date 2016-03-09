@@ -15,7 +15,7 @@ using std::cout;
 
 extern "C" 
 {
-  void adervolumeintegral_(double *lduh, double *lFhi, double *dx);
+  void adervolumeintegral_(double *lduh, double *lFhi_x, double *lFhi_y, double *lFhi_z, double *dx);
 }
 
 void kernels::aderdg::generic::fortran::volumeIntegral(
@@ -35,6 +35,10 @@ void kernels::aderdg::generic::fortran::volumeIntegral(
   for(int i=0;i<numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize;i++) {
     lFhiFortran[i] = lFhi[i];
   }
+  // lFhiFortran = [ lFhi_x | lFhi_y | lFhi_z ]
+  double* lFhi_x = &lFhiFortran[0*numberOfVariables*basisSize*basisSize*basisSize];
+  double* lFhi_y = &lFhiFortran[1*numberOfVariables*basisSize*basisSize*basisSize];
+  double* lFhi_z = &lFhiFortran[2*numberOfVariables*basisSize*basisSize*basisSize];
 
   
   // std::ofstream ofs;
@@ -65,7 +69,7 @@ void kernels::aderdg::generic::fortran::volumeIntegral(
   dxTemp[1]= dx[1];
   dxTemp[2]= dx[2];
   
-  adervolumeintegral_(lduh, lFhiFortran, dxTemp);
+  adervolumeintegral_(lduh, lFhi_x, lFhi_y, lFhi_z, dxTemp);
 
   delete[] lFhiFortran;
   delete[] dxTemp;

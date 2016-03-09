@@ -1,10 +1,13 @@
-SUBROUTINE ADERVolumeIntegral(lduh,lFhi,dx)
+SUBROUTINE ADERVolumeIntegral(lduh,lFhi_x,lFhi_y,lFhi_z,dx)
     USE typesDef
 
     USE, INTRINSIC :: ISO_C_BINDING
     IMPLICIT NONE 
     ! Argument list 
-    REAL, INTENT(IN)              :: lFhi(nVar,nDOF(1),nDOF(2),nDOF(3),d)    ! nonlinear flux tensor in each space-time DOF 
+    !REAL, INTENT(IN)              :: lFhi(nVar,nDOF(1),nDOF(2),nDOF(3),d)    ! nonlinear flux tensor in each space-time DOF
+    REAL, INTENT(IN)              :: lFhi_x(nVar,nDOF(1),nDOF(2),nDOF(3))    ! nonlinear flux tensor in each space-time DOF in x direction
+    REAL, INTENT(IN)              :: lFhi_y(nVar,nDOF(1),nDOF(2),nDOF(3))    ! nonlinear flux tensor in each space-time DOF in y direction
+    REAL, INTENT(IN)              :: lFhi_z(nVar,nDOF(1),nDOF(2),nDOF(3))    ! nonlinear flux tensor in each space-time DOF in z direction
     REAL, INTENT(OUT)             :: lduh(nVar,nDOF(1),nDOF(2),nDOF(3))      ! spatial degrees of freedom 
     DOUBLE PRECISION, INTENT(IN)  :: dx(d)                                          ! 
     ! Local variables 
@@ -23,7 +26,7 @@ SUBROUTINE ADERVolumeIntegral(lduh,lFhi,dx)
     DO k = 1, nDOF(3)
         DO j = 1, nDOF(2) 
             aux = (/ 1.d0, wGPN(j), wGPN(k) /) 
-            lduh(:,:,j,k) = lduh(:,:,j,k) + MATMUL( lFhi(:,:,j,k,1), TRANSPOSE(Kxi) )*PRODUCT(aux(1:nDim))/dx(1) 
+            lduh(:,:,j,k) = lduh(:,:,j,k) + MATMUL( lFhi_x(:,:,j,k), TRANSPOSE(Kxi) )*PRODUCT(aux(1:nDim))/dx(1) 
         ENDDO
     ENDDO
     
@@ -32,7 +35,7 @@ SUBROUTINE ADERVolumeIntegral(lduh,lFhi,dx)
         DO k = 1, nDOF(3)
             DO i = 1, nDOF(1) 
                 aux = (/ 1.d0, wGPN(i), wGPN(k) /) 
-                lduh(:,i,:,k) = lduh(:,i,:,k) + MATMUL( lFhi(:,i,:,k,2), TRANSPOSE(Kxi) )*PRODUCT(aux(1:nDim))/dx(2)
+                lduh(:,i,:,k) = lduh(:,i,:,k) + MATMUL( lFhi_y(:,i,:,k), TRANSPOSE(Kxi) )*PRODUCT(aux(1:nDim))/dx(2)
             ENDDO
         ENDDO
     ENDIF 
@@ -42,7 +45,7 @@ SUBROUTINE ADERVolumeIntegral(lduh,lFhi,dx)
         DO j = 1, nDOF(2)
             DO i = 1, nDOF(1)
                 aux = (/ 1.d0, wGPN(i), wGPN(j) /)  
-                lduh(:,i,j,:) = lduh(:,i,j,:) + MATMUL( lFhi(:,i,j,:,3), TRANSPOSE(Kxi) )*PRODUCT(aux(1:nDim))/dx(3)  
+                lduh(:,i,j,:) = lduh(:,i,j,:) + MATMUL( lFhi_z(:,i,j,:), TRANSPOSE(Kxi) )*PRODUCT(aux(1:nDim))/dx(3)  
             ENDDO
         ENDDO
     ENDIF 
