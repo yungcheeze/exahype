@@ -114,8 +114,9 @@ SUBROUTINE ADERPicardLoop(luh,dt,dx,lqh,lFh)
         !
     ENDDO    
 END SUBROUTINE ADERPicardLoop
+ 
     
-    
+   
 SUBROUTINE ADERPredictor(lqh,lFh,lqhi,lFhi_x,lFhi_y,lFhi_z)
     USE typesDef
     USE, INTRINSIC :: ISO_C_BINDING
@@ -124,10 +125,9 @@ SUBROUTINE ADERPredictor(lqh,lFh,lqhi,lFhi_x,lFhi_y,lFhi_z)
     DOUBLE PRECISION, INTENT(IN)  :: lqh(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3))      ! space-time degrees of freedom  
     DOUBLE PRECISION, INTENT(IN)  :: lFh(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))    ! nonlinear flux tensor in each space-time DOF 
     DOUBLE PRECISION, INTENT(OUT) :: lqhi(nVar,nDOF(1),nDOF(2),nDOF(3))             ! time-averaged space-time degrees of freedom 
-    !DOUBLE PRECISION, INTENT(OUT) :: lFhi(nVar,nDOF(1),nDOF(2),nDOF(3),d)           ! time-averaged nonlinear flux tensor in each space-time DOF
     DOUBLE PRECISION, INTENT(OUT) :: lFhi_x(nVar,nDOF(1),nDOF(2),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF in x direction
-    DOUBLE PRECISION, INTENT(OUT) :: lFhi_y(nVar,nDOF(1),nDOF(2),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF in y direction
-    DOUBLE PRECISION, INTENT(OUT) :: lFhi_z(nVar,nDOF(1),nDOF(2),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF in z direction
+    DOUBLE PRECISION, INTENT(OUT) :: lFhi_y(nVar,nDOF(2),nDOF(1),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF in y direction
+    DOUBLE PRECISION, INTENT(OUT) :: lFhi_z(nVar,nDOF(3),nDOF(2),nDOF(1))           ! time-averaged nonlinear flux tensor in each space-time DOF in z direction
     ! Local variables 
     INTEGER :: i,j,k,iDim
     !
@@ -142,8 +142,8 @@ SUBROUTINE ADERPredictor(lqh,lFh,lqhi,lFhi_x,lFhi_y,lFhi_z)
          !   lFhi(:,i,j,k,iDim) = MATMUL( lFh(:,iDim,i,j,k,:), wGPN )
          !ENDDO
          lFhi_x(:,i,j,k) = MATMUL( lFh(:,1,i,j,k,:), wGPN )
-         lFhi_y(:,i,j,k) = MATMUL( lFh(:,2,i,j,k,:), wGPN )
-         lFhi_z(:,i,j,k) = MATMUL( lFh(:,3,i,j,k,:), wGPN )
+         lFhi_y(:,j,i,k) = MATMUL( lFh(:,2,i,j,k,:), wGPN )
+         lFhi_z(:,k,j,i) = MATMUL( lFh(:,3,i,j,k,:), wGPN )
       ENDDO
      ENDDO
     ENDDO
@@ -158,10 +158,9 @@ SUBROUTINE ADERExtrapolator(lqhi,lFhi_x,lFhi_y,lFhi_z,lQbnd,lFbnd)
     IMPLICIT NONE 
     ! Argument list 
     DOUBLE PRECISION, INTENT(IN)  :: lqhi(nVar,nDOF(1),nDOF(2),nDOF(3))             ! time-averaged space-time degrees of freedom 
-    !DOUBLE PRECISION, INTENT(IN)  :: lFhi(nVar,nDOF(1),nDOF(2),nDOF(3),d)           ! time-averaged nonlinear flux tensor in each space-time DOF
     DOUBLE PRECISION, INTENT(IN)  :: lFhi_x(nVar,nDOF(1),nDOF(2),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF in x direction
-    DOUBLE PRECISION, INTENT(IN)  :: lFhi_y(nVar,nDOF(1),nDOF(2),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF in y direction
-    DOUBLE PRECISION, INTENT(IN)  :: lFhi_z(nVar,nDOF(1),nDOF(2),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF in z direction
+    DOUBLE PRECISION, INTENT(IN)  :: lFhi_y(nVar,nDOF(2),nDOF(1),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF in y direction
+    DOUBLE PRECISION, INTENT(IN)  :: lFhi_z(nVar,nDOF(3),nDOF(2),nDOF(1))           ! time-averaged nonlinear flux tensor in each space-time DOF in z direction
     DOUBLE PRECISION, INTENT(OUT) :: lQbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged space-time degrees of freedom 
     DOUBLE PRECISION, INTENT(OUT) :: lFbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged nonlinear flux tensor in each space-time DOF 
     ! Local variables 
@@ -187,8 +186,8 @@ SUBROUTINE ADERExtrapolator(lqhi,lFhi_x,lFhi_y,lFhi_z,lQbnd,lFbnd)
          DO i = 1, nDOF(1) 
             lQbnd(:,i,k,3) = MATMUL( lqhi(:,i,:,k),   FLCoeff )   ! left 
             lQbnd(:,i,k,4) = MATMUL( lqhi(:,i,:,k),   FRCoeff )   ! right 
-            lFbnd(:,i,k,3) = MATMUL( lFhi_y(:,i,:,k), FLCoeff )   ! left 
-            lFbnd(:,i,k,4) = MATMUL( lFhi_y(:,i,:,k), FRCoeff )   ! right 
+            lFbnd(:,i,k,3) = MATMUL( lFhi_y(:,:,i,k), FLCoeff )   ! left 
+            lFbnd(:,i,k,4) = MATMUL( lFhi_y(:,:,i,k), FRCoeff )   ! right 
          ENDDO
         ENDDO 
     ENDIF    
@@ -198,15 +197,11 @@ SUBROUTINE ADERExtrapolator(lqhi,lFhi_x,lFhi_y,lFhi_z,lQbnd,lFbnd)
          DO i = 1, nDOF(1) 
             lQbnd(:,i,j,5) = MATMUL( lqhi(:,i,j,:),   FLCoeff )   ! left 
             lQbnd(:,i,j,6) = MATMUL( lqhi(:,i,j,:),   FRCoeff )   ! right 
-            lFbnd(:,i,j,5) = MATMUL( lFhi_z(:,i,j,:), FLCoeff )   ! left 
-            lFbnd(:,i,j,6) = MATMUL( lFhi_z(:,i,j,:), FRCoeff )   ! right 
+            lFbnd(:,i,j,5) = MATMUL( lFhi_z(:,:,j,i), FLCoeff )   ! left
+            lFbnd(:,i,j,6) = MATMUL( lFhi_z(:,:,j,i), FRCoeff )   ! right
          ENDDO
         ENDDO 
-    ENDIF    
-    !PRINT *, ' --------lFhi--------------------------------- ' 
-    !PRINT *, lFhi
-    !PRINT *, ' --------lFhi--------------------------------- ' 
-    
+    ENDIF       
     !OPEN(UNIT=12, FILE="aoutput.txt", ACTION="write", STATUS="replace")
     !WRITE(12, '(ES24.16,1x)') , lFhi
     !CALL EXIT    
