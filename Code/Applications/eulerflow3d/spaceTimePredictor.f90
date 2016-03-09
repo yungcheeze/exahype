@@ -12,9 +12,9 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
     DOUBLE PRECISION, INTENT(OUT) :: lqhi(nVar,nDOF(1),nDOF(2),nDOF(3))             ! time-averaged space-time degrees of freedom 
     DOUBLE PRECISION, INTENT(OUT) :: lFhi(nVar,d,nDOF(1),nDOF(2),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF
     ! shall become                   lFhi(nVar,nDOF(1),nDOF(2),nDOF(3),d)
-    DOUBLE PRECISION, INTENT(OUT) :: lQbnd(nVar,6,nDOF(2),nDOF(3))                  ! time-averaged space-time degrees of freedom 
+    DOUBLE PRECISION, INTENT(OUT) :: lQbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged space-time degrees of freedom 
     ! shall become                   lQbnd(nVar,nDOF(2),nDOF(3),6)
-    DOUBLE PRECISION, INTENT(OUT) :: lFbnd(nVar,6,nDOF(2),nDOF(3))                  ! time-averaged nonlinear flux tensor in each space-time DOF 
+    DOUBLE PRECISION, INTENT(OUT) :: lFbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged nonlinear flux tensor in each space-time DOF 
     ! shall become                   lFbnd(nVar,nDOF(2),nDOF(3),6)
     !
     ! Local variables 
@@ -148,20 +148,20 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
     ! x-direction: face 1 (left) and face 2 (right) 
     DO k = 1, nDOF(3) 
      DO j = 1, nDOF(2) 
-        lQbnd(:,1,j,k) = MATMUL( lqhi(:,:,j,k),   FLCoeff )   ! left 
-        lQbnd(:,2,j,k) = MATMUL( lqhi(:,:,j,k),   FRCoeff )   ! right 
-        lFbnd(:,1,j,k) = MATMUL( lFhi(:,1,:,j,k), FLCoeff )   ! left 
-        lFbnd(:,2,j,k) = MATMUL( lFhi(:,1,:,j,k), FRCoeff )   ! right 
+        lQbnd(:,j,k,1) = MATMUL( lqhi(:,:,j,k),   FLCoeff )   ! left 
+        lQbnd(:,j,k,2) = MATMUL( lqhi(:,:,j,k),   FRCoeff )   ! right 
+        lFbnd(:,j,k,1) = MATMUL( lFhi(:,1,:,j,k), FLCoeff )   ! left 
+        lFbnd(:,j,k,2) = MATMUL( lFhi(:,1,:,j,k), FRCoeff )   ! right 
      ENDDO
     ENDDO 
     ! y-direction: face 3 (left) and face 4 (right) 
     IF(nDim>=2) THEN
         DO k = 1, nDOF(3) 
          DO i = 1, nDOF(1) 
-            lQbnd(:,3,i,k) = MATMUL( lqhi(:,i,:,k),   FLCoeff )   ! left 
-            lQbnd(:,4,i,k) = MATMUL( lqhi(:,i,:,k),   FRCoeff )   ! right 
-            lFbnd(:,3,i,k) = MATMUL( lFhi(:,2,i,:,k), FLCoeff )   ! left 
-            lFbnd(:,4,i,k) = MATMUL( lFhi(:,2,i,:,k), FRCoeff )   ! right 
+            lQbnd(:,i,k,3) = MATMUL( lqhi(:,i,:,k),   FLCoeff )   ! left 
+            lQbnd(:,i,k,4) = MATMUL( lqhi(:,i,:,k),   FRCoeff )   ! right 
+            lFbnd(:,i,k,3) = MATMUL( lFhi(:,2,i,:,k), FLCoeff )   ! left 
+            lFbnd(:,i,k,4) = MATMUL( lFhi(:,2,i,:,k), FRCoeff )   ! right 
          ENDDO
         ENDDO 
     ENDIF    
@@ -169,10 +169,10 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
     IF(nDim>=3) THEN
         DO j = 1, nDOF(2) 
          DO i = 1, nDOF(1) 
-            lQbnd(:,5,i,j) = MATMUL( lqhi(:,i,j,:),   FLCoeff )   ! left 
-            lQbnd(:,6,i,j) = MATMUL( lqhi(:,i,j,:),   FRCoeff )   ! right 
-            lFbnd(:,5,i,j) = MATMUL( lFhi(:,3,i,j,:), FLCoeff )   ! left 
-            lFbnd(:,6,i,j) = MATMUL( lFhi(:,3,i,j,:), FRCoeff )   ! right 
+            lQbnd(:,i,j,5) = MATMUL( lqhi(:,i,j,:),   FLCoeff )   ! left 
+            lQbnd(:,i,j,6) = MATMUL( lqhi(:,i,j,:),   FRCoeff )   ! right 
+            lFbnd(:,i,j,5) = MATMUL( lFhi(:,3,i,j,:), FLCoeff )   ! left 
+            lFbnd(:,i,j,6) = MATMUL( lFhi(:,3,i,j,:), FRCoeff )   ! right 
          ENDDO
         ENDDO 
     ENDIF    
