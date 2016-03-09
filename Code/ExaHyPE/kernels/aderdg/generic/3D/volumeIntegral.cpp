@@ -34,7 +34,7 @@ void kernels::aderdg::generic::volumeIntegral(
   for(int i=0; i < numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize; i++)
     lFhiFortran[i] = -123.45;
 
-  for (int ii=0; ii<basisSize; ii++) {  // loop over dof
+  /*for (int ii=0; ii<basisSize; ii++) {  // loop over dof
     for (int jj=0; jj<basisSize; jj++) {
       for (int kk=0; kk<basisSize; kk++) {
         for(int ivar=0; ivar < numberOfVariables; ivar++) {
@@ -44,6 +44,9 @@ void kernels::aderdg::generic::volumeIntegral(
         }
       }
     }
+  }*/
+  for(int i=0;i<numberOfVariables*DIMENSIONS*basisSize*basisSize*basisSize;i++) {
+    lFhiFortran[i] = lFhi[i];
   }
 
   
