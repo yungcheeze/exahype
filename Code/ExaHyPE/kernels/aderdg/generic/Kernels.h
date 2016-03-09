@@ -362,7 +362,7 @@ namespace kernels {
         // @todo Dominic Etienne Charrier
         // Inconsistent ordering of inout and in arguments for
         // template argument functions and non-template argument function.
-        template <void PDESolutionAdjustment(const double* const x,const double J_w,const double t,const double dt,double* Q)>
+        template <void PDESolutionAdjustment(const double* const x,const double w,const double t,const double dt,double* Q)>
         void solutionAdjustment(
             double* luh,
             const tarch::la::Vector<DIMENSIONS,double>& center,

@@ -22,7 +22,7 @@ bool Euler3d::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSI
 }
 
 
-void Euler3d::MyEulerSolver::adjustedSolutionValues(const double* const x,const double J_w,const double t,const double dt,double* Q) {
+void Euler3d::MyEulerSolver::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
   // Dimensions             = 3
   // Number of variables    = 5
   if (tarch::la::equals( t, 0.0, 1e-15 )) { // @todo precision

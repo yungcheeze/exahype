@@ -15,7 +15,7 @@
 using std::endl;
 using std::cout;
 
-template <void PDESolutionAdjustment(const double* const x,const double J_w,const double t,const double dt,double* Q)>
+template <void PDESolutionAdjustment(const double* const x,const double w,const double t,const double dt,double* Q)>
 void kernels::aderdg::generic::c::solutionAdjustment(
     double* luh,
     const tarch::la::Vector<DIMENSIONS,double>& center,
@@ -38,13 +38,12 @@ void kernels::aderdg::generic::c::solutionAdjustment(
       x[0]=center[0] + dx[0]*(qr-0.5);
       x[1]=center[1] + dx[1]*(qs-0.5);
       
-      const double J_w = // Jacobi determinant times Gauss weight  
-          dx[0] * dx[1] *
+      const double weight = // Gauss weight  
           kernels::gaussLegendreWeights[basisSize-1][ii] * kernels::gaussLegendreWeights[basisSize-1][jj];
       
       // read initial condition
       const int dofStartIndex  = nodeIndex * numberOfVariables;
-      PDESolutionAdjustment(x,J_w,t,dt,&luh[dofStartIndex]);
+      PDESolutionAdjustment(x,weight,t,dt,&luh[dofStartIndex]);
     }
   }
 }

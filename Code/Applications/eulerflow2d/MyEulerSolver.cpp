@@ -60,7 +60,7 @@ void Euler2d::MyEulerSolver::eigenvalues(const double* const Q, const int normal
 
 
 
-void Euler2d::MyEulerSolver::adjustedSolutionValues(const double* const x, const double J_w,const double t, const double dt, double* Q) {
+void Euler2d::MyEulerSolver::adjustedSolutionValues(const double* const x, const double w,const double t, const double dt, double* Q) {
   if (tarch::la::equals( t, 0.0, 1e-15 )) { // @todo precision
     const double GAMMA = 1.4;
 

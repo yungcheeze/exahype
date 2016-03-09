@@ -24,7 +24,7 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
       writer.write("    static void flux(const double* const Q, double* f, double* g, double* h);\n");
     }
     writer.write("    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
-    writer.write("    static void adjustedSolutionValues(const double* const x,const double J_w,const double t,const double dt,double* Q);\n" );
+    writer.write("    static void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);\n" );
 
     writer.write("};\n\n\n");
   }

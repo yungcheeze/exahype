@@ -43,15 +43,14 @@ void kernels::aderdg::generic::fortran::solutionAdjustment(
         x[1]=center[1] + dx[1]*(qs-0.5);
         x[2]=center[2] + dx[2]*(qt-0.5);
         
-        const double J_w = // Jacobi determinant times Gauss weight  
-                  dx[0] * dx[1] * dx[2] *
+        const double weight = // Gauss weight  
                   kernels::gaussLegendreWeights[basisSize-1][ii] * 
                   kernels::gaussLegendreWeights[basisSize-1][jj] *
                   kernels::gaussLegendreWeights[basisSize-1][kk];
 
         // read initial condition
         const int dofStartIndex  = nodeIndex * numberOfVariables;
-        PDESolutionAdjustment(x,J_w,t,dt,&luh[dofStartIndex]);
+        PDESolutionAdjustment(x,weight,t,dt,&luh[dofStartIndex]);
         }
       }
     }
