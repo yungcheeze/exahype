@@ -1,6 +1,6 @@
    
     
-SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx) 
+SUBROUTINE ADERPicardLoop(luh,dt,dx,lqh,lFh) 
     USE typesDef
 
     USE, INTRINSIC :: ISO_C_BINDING
@@ -9,19 +9,13 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
     DOUBLE PRECISION, INTENT(IN)  :: luh(nVar,nDOF(1),nDOF(2),nDOF(3))              ! spatial degrees of freedom 
     DOUBLE PRECISION, INTENT(IN)  :: dt                                             ! 
     DOUBLE PRECISION, INTENT(IN)  :: dx(d)                                          ! 
-    DOUBLE PRECISION, INTENT(OUT) :: lqhi(nVar,nDOF(1),nDOF(2),nDOF(3))             ! time-averaged space-time degrees of freedom 
-    DOUBLE PRECISION, INTENT(OUT) :: lFhi(nVar,nDOF(1),nDOF(2),nDOF(3),d)           ! time-averaged nonlinear flux tensor in each space-time DOF
-    ! shall become                   lFhi(nVar,nDOF(1),nDOF(2),nDOF(3),d)
-    DOUBLE PRECISION, INTENT(OUT) :: lQbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged space-time degrees of freedom 
-    DOUBLE PRECISION, INTENT(OUT) :: lFbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged nonlinear flux tensor in each space-time DOF 
+    DOUBLE PRECISION, INTENT(OUT) :: lqh(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3))      ! space-time degrees of freedom  
+    DOUBLE PRECISION, INTENT(OUT) :: lFh(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))    ! nonlinear flux tensor in each space-time DOF 
     !
     ! Local variables 
     INTEGER :: i,j,k,l,iVar,iDim, iter 
     DOUBLE PRECISION    :: rhs0(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))               ! contribution of the initial condition to the known right hand side 
     DOUBLE PRECISION    :: rhs(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! known right hand side 
-    DOUBLE PRECISION    :: lqh(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3))                ! space-time degrees of freedom  
-    DOUBLE PRECISION    :: lFh(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))              ! nonlinear flux tensor in each space-time DOF 
-    ! lFh shall remain as it is
     DOUBLE PRECISION    :: aux(d), w                                                ! auxiliary variables 
     DOUBLE PRECISION    :: lqhold(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3))             ! old space-time degrees of freedom  
     DOUBLE PRECISION    :: lqx(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qx of q 
@@ -122,6 +116,23 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
         !ENDIF
         !
     ENDDO    
+END SUBROUTINE ADERPicardLoop
+    
+    
+SUBROUTINE ADERPredictor(lqh,lFh,lqhi,lFhi)
+    USE typesDef
+
+    USE, INTRINSIC :: ISO_C_BINDING
+    IMPLICIT NONE 
+    ! Argument list 
+    DOUBLE PRECISION, INTENT(IN)  :: lqh(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3))      ! space-time degrees of freedom  
+    DOUBLE PRECISION, INTENT(IN)  :: lFh(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))    ! nonlinear flux tensor in each space-time DOF 
+    DOUBLE PRECISION, INTENT(OUT) :: lqhi(nVar,nDOF(1),nDOF(2),nDOF(3))             ! time-averaged space-time degrees of freedom 
+    DOUBLE PRECISION, INTENT(OUT) :: lFhi(nVar,nDOF(1),nDOF(2),nDOF(3),d)           ! time-averaged nonlinear flux tensor in each space-time DOF
+    !
+    ! Local variables 
+    INTEGER :: i,j,k,l,iVar,iDim, iter 
+    !
     
     !
     ! Immediately compute the time-averaged space-time polynomials 
@@ -136,7 +147,23 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
       ENDDO
      ENDDO
     ENDDO
+    !
+END SUBROUTINE ADERPredictor
 
+SUBROUTINE ADERExtrapolator(lqhi,lFhi,lQbnd,lFbnd)
+    USE typesDef
+
+    USE, INTRINSIC :: ISO_C_BINDING
+    IMPLICIT NONE 
+    ! Argument list 
+    DOUBLE PRECISION, INTENT(IN)  :: lqhi(nVar,nDOF(1),nDOF(2),nDOF(3))             ! time-averaged space-time degrees of freedom 
+    DOUBLE PRECISION, INTENT(IN)  :: lFhi(nVar,nDOF(1),nDOF(2),nDOF(3),d)           ! time-averaged nonlinear flux tensor in each space-time DOF
+    DOUBLE PRECISION, INTENT(OUT) :: lQbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged space-time degrees of freedom 
+    DOUBLE PRECISION, INTENT(OUT) :: lFbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged nonlinear flux tensor in each space-time DOF 
+    !
+    ! Local variables 
+    INTEGER :: i,j,k,l,iVar,iDim, iter 
+    ! 
     !
     ! Compute the bounday-extrapolated values for Q and F*n
     !
@@ -184,7 +211,7 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
     !
     
     
-END SUBROUTINE ADERSpaceTimePredictor 
+END SUBROUTINE ADERExtrapolator
     
     
 SUBROUTINE PDEFlux(F,Q)

@@ -17,7 +17,10 @@ using std::cout;
 
 extern "C" 
 {
-  void aderspacetimepredictor_(double *lqhi, double *lFhi, double *lQbnd, double *lFbnd, double *luh, double *dt, double *dx);
+  //void aderspacetimepredictor_(double *lqhi, double *lFhi, double *lQbnd, double *lFbnd, double *luh, double *dt, double *dx);
+  void aderpicardloop_(double *luhTemp, double *dtTemp, double *dxTemp, double *lQi, double *lFi);
+  void aderpredictor_(double *lQi, double *lFi, double *lQhi, double *lFhi);
+  void aderextrapolator_(double *lQhi, double *lFhi, double *lQbnd, double *lFbnd);
 }
 
 template <void PDEFlux3d(const double * const Q, double * f, double * g, double * h)>
@@ -62,7 +65,12 @@ void kernels::aderdg::generic::spaceTimePredictor(
     
     
     //aderspacetimepredictor_(lQhi, lFhiFortran, lQbndFortran, lFbndFortran, luhTemp, dtTemp, dxTemp);
-    aderspacetimepredictor_(lQhi, lFhi, lQbnd, lFbnd, luhTemp, dtTemp, dxTemp);
+    //aderspacetimepredictor_(lQhi, lFhi, lQbnd, lFbnd, luhTemp, dtTemp, dxTemp);
+    aderpicardloop_(luhTemp,dtTemp,dxTemp,lQi,lFi);
+    aderpredictor_(lQi,lFi,lQhi,lFhi);
+    aderextrapolator_(lQhi,lFhi,lQbnd,lFbnd);
+    
+
     
     // Permutation of lFhi
     /*for (int ii=0; ii<basisSize; ii++) {  // loop over dof
@@ -116,12 +124,12 @@ void kernels::aderdg::generic::spaceTimePredictor(
       }
     }*/    
 
-    // delete[] luhTemp;
+    delete[] luhTemp;
     // delete[] lFhiFortran;
-    // delete[] lFbndFortran;
-    // delete[] lQbndFortran;
-    // delete[] dxTemp;
-    // delete dtTemp;
+    delete[] lFbndFortran;
+    delete[] lQbndFortran;
+    delete[] dxTemp;
+    delete dtTemp;
     
     
     // std::ofstream ofs;
