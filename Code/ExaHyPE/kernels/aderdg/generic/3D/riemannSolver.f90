@@ -54,20 +54,3 @@ SUBROUTINE ADERRiemannSolver(lQbndL,lFbndL,lQbndR,lFbndR,nv)
     !
     
 END SUBROUTINE ADERRiemannSolver 
-    
-SUBROUTINE PDEEigenvalues(Lambda,Q,nv)
-    USE typesDef, ONLY : nVar, d, EQNgamma 
-    IMPLICIT NONE
-    ! Argument list 
-    REAL, INTENT(IN)  :: Q(nVar), nv(d) 
-    REAL, INTENT(OUT) :: Lambda(nVar) 
-    ! Local variables 
-    REAL :: p, u, c 
-    !
-    u = ( Q(2)*nv(1) + Q(3)*nv(2) + Q(4)*nv(3) )/Q(1)       ! normal velocity 
-    p = (EQNgamma-1)*( Q(5) - 0.5*SUM(Q(2:4)**2)/Q(1) )    ! fluid pressure 
-    c = SQRT(EQNgamma*p/Q(1))                              ! sound speed
-    !
-    Lambda = (/ u-c, u, u, u, u+c /)                        ! The eigenvalues of the Euler equations 
-    !
-END SUBROUTINE PDEEigenvalues

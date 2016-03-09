@@ -184,6 +184,7 @@ endif
 doFortran:
 ifneq (,$(findstring Dim3, $(PROJECT_CFLAGS) ))
 	$(FC) $(FCOMPILER_CFLAGS) -c typesDef.f90 
+	$(FC) $(FCOMPILER_CFLAGS) -c PDE.f90 
 	$(FC) $(FCOMPILER_CFLAGS) -c $(EXAHYPE_PATH)'/kernels/aderdg/generic/3D/spaceTimePredictor.f90' 
 	$(FC) $(FCOMPILER_CFLAGS) -c $(EXAHYPE_PATH)'/kernels/aderdg/generic/3D/volumeIntegral.f90'
 	$(FC) $(FCOMPILER_CFLAGS) -c $(EXAHYPE_PATH)'/kernels/aderdg/generic/3D/surfaceIntegral.f90'
@@ -206,7 +207,7 @@ header:
 
 build: buildinfo files.mk doFortran $(OBJECTS)
 ifneq (,$(findstring Dim3, $(PROJECT_CFLAGS) ))
-	$(LL) $(OBJECTS) typesDef.o spaceTimePredictor.o volumeIntegral.o surfaceIntegral.o riemannSolver.o elementUpdate.o  $(LINK_FORTRAN) -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
+	$(LL) $(OBJECTS) typesDef.o PDE.o spaceTimePredictor.o volumeIntegral.o surfaceIntegral.o riemannSolver.o elementUpdate.o  $(LINK_FORTRAN) -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
 else
 	$(LL) $(OBJECTS) -o $(EXECUTABLE) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
 endif
