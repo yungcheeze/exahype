@@ -154,6 +154,10 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
 	// can we evaluate _requiresFortran here?
 	  
 	try {
+      if (_requiresFortran){
+        _writer.write("\n\n");
+        _writer.write("MIXEDLANG=Yes\n");
+      }
       _writer.write("\n\n");
       _writer.write("-include " + _directoryAndPathChecker.exahypePath.getAbsolutePath() + "/Makefile\n");
       _writer.write("\n\n\n\n");
