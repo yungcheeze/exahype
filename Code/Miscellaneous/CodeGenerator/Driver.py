@@ -59,6 +59,7 @@ solverName             = l_commandLineArguments.solverName
 numberOfVariables      = l_commandLineArguments.numberOfVariables
 order                  = l_commandLineArguments.order
 dimensions             = l_commandLineArguments.dimension
+numerics               = l_commandLineArguments.numerics
 architecture           = l_commandLineArguments.architecture
 pathToLibxsmmGenerator = l_commandLineArguments.pathToLibxsmm
 precision              = l_commandLineArguments.precision
@@ -77,6 +78,9 @@ Backend.setConfig(config)
 Backend.setPathToLibxsmmGenerator(pathToLibxsmmGenerator)
 
 # clean up output directory
+# uncomment when using the Toolkit call chain
+#pathToOutputDirectory = "../../Code/ExaHyPE/kernels/aderdg/optimised"
+# used for testing as standalone tool
 pathToOutputDirectory = "../../ExaHyPE/kernels/aderdg/optimised"
 prepareOutputDirectory(pathToOutputDirectory)
 

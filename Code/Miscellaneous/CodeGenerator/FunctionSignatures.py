@@ -60,7 +60,7 @@ def getPredictorSignature():
     l_functionSignature = "void kernels::aderdg::optimised::predictor( \n"      \
                           "  DATATYPE* restrict lQhi, \n"                       \
                           "  DATATYPE* restrict lFhi, \n"                       \
-                          "  const DATATYPE* restrict const lQh, \n"            \
+                          "  const DATATYPE* restrict const lqh, \n"            \
                           "  const DATATYPE* restrict const lFh \n"             \
                           ")"
                           

@@ -39,7 +39,7 @@ class MatmulConfig:
 	prefetchStrategy = ''
 	
 	# Constructor
-	def __init__(self, M, N, K, LDA, LDB, LDC, alpha, beta, alignment_A, alignment_C, name, prefetchStrategy, operationType='dgemm'):
+	def __init__(self, M, N, K, LDA, LDB, LDC, alpha, beta, alignment_A, alignment_C, name, prefetchStrategy, operationType='gemm'):
 		if((M > LDC) or (K > LDB) or (M > LDA)):
 			print("MatmulConfig: Incompatible matrix sizes and leading dimensions")
 			exit()
@@ -66,7 +66,7 @@ class MatmulConfig:
 		self.alignment_C = alignment_C
 		self.name = name
 		self.prefetchStrategy = prefetchStrategy
-		self.baseroutinename = operationType+"_"+str(M)+"_"+str(N)+"_"+str(K)
+		self.baseroutinename = operationType+"_"+str(M)+"_"+str(N)+"_"+str(K)+"_"+name
 		
 
 	def __repr__(self):
