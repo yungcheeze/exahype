@@ -127,7 +127,7 @@ SUBROUTINE ADERPredictor(lqh,lFh,lqhi,lFhi_x,lFhi_y,lFhi_z)
     DOUBLE PRECISION, INTENT(OUT) :: lqhi(nVar,nDOF(1),nDOF(2),nDOF(3))             ! time-averaged space-time degrees of freedom 
     DOUBLE PRECISION, INTENT(OUT) :: lFhi_x(nVar,nDOF(1),nDOF(2),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF in x direction
     DOUBLE PRECISION, INTENT(OUT) :: lFhi_y(nVar,nDOF(2),nDOF(1),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF in y direction
-    DOUBLE PRECISION, INTENT(OUT) :: lFhi_z(nVar,nDOF(3),nDOF(2),nDOF(1))           ! time-averaged nonlinear flux tensor in each space-time DOF in z direction
+    DOUBLE PRECISION, INTENT(OUT) :: lFhi_z(nVar,nDOF(3),nDOF(1),nDOF(2))           ! time-averaged nonlinear flux tensor in each space-time DOF in z direction
     ! Local variables 
     INTEGER :: i,j,k,iDim
     !
@@ -143,7 +143,7 @@ SUBROUTINE ADERPredictor(lqh,lFh,lqhi,lFhi_x,lFhi_y,lFhi_z)
          !ENDDO
          lFhi_x(:,i,j,k) = MATMUL( lFh(:,1,i,j,k,:), wGPN )
          lFhi_y(:,j,i,k) = MATMUL( lFh(:,2,i,j,k,:), wGPN )
-         lFhi_z(:,k,j,i) = MATMUL( lFh(:,3,i,j,k,:), wGPN )
+         lFhi_z(:,k,i,j) = MATMUL( lFh(:,3,i,j,k,:), wGPN )
       ENDDO
      ENDDO
     ENDDO
@@ -160,7 +160,7 @@ SUBROUTINE ADERExtrapolator(lqhi,lFhi_x,lFhi_y,lFhi_z,lQbnd,lFbnd)
     DOUBLE PRECISION, INTENT(IN)  :: lqhi(nVar,nDOF(1),nDOF(2),nDOF(3))             ! time-averaged space-time degrees of freedom 
     DOUBLE PRECISION, INTENT(IN)  :: lFhi_x(nVar,nDOF(1),nDOF(2),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF in x direction
     DOUBLE PRECISION, INTENT(IN)  :: lFhi_y(nVar,nDOF(2),nDOF(1),nDOF(3))           ! time-averaged nonlinear flux tensor in each space-time DOF in y direction
-    DOUBLE PRECISION, INTENT(IN)  :: lFhi_z(nVar,nDOF(3),nDOF(2),nDOF(1))           ! time-averaged nonlinear flux tensor in each space-time DOF in z direction
+    DOUBLE PRECISION, INTENT(IN)  :: lFhi_z(nVar,nDOF(3),nDOF(1),nDOF(2))           ! time-averaged nonlinear flux tensor in each space-time DOF in z direction
     DOUBLE PRECISION, INTENT(OUT) :: lQbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged space-time degrees of freedom 
     DOUBLE PRECISION, INTENT(OUT) :: lFbnd(nVar,nDOF(2),nDOF(3),6)                  ! time-averaged nonlinear flux tensor in each space-time DOF 
     ! Local variables 
@@ -197,8 +197,8 @@ SUBROUTINE ADERExtrapolator(lqhi,lFhi_x,lFhi_y,lFhi_z,lQbnd,lFbnd)
          DO i = 1, nDOF(1) 
             lQbnd(:,i,j,5) = MATMUL( lqhi(:,i,j,:),   FLCoeff )   ! left 
             lQbnd(:,i,j,6) = MATMUL( lqhi(:,i,j,:),   FRCoeff )   ! right 
-            lFbnd(:,i,j,5) = MATMUL( lFhi_z(:,:,j,i), FLCoeff )   ! left
-            lFbnd(:,i,j,6) = MATMUL( lFhi_z(:,:,j,i), FRCoeff )   ! right
+            lFbnd(:,i,j,5) = MATMUL( lFhi_z(:,:,i,j), FLCoeff )   ! left
+            lFbnd(:,i,j,6) = MATMUL( lFhi_z(:,:,i,j), FRCoeff )   ! right
          ENDDO
         ENDDO 
     ENDIF       

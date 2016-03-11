@@ -5,7 +5,7 @@ SUBROUTINE ADERVolumeIntegral(lduh,lFhi_x,lFhi_y,lFhi_z,dx)
     ! Argument list 
     REAL, INTENT(IN)              :: lFhi_x(nVar,nDOF(1),nDOF(2),nDOF(3))    ! nonlinear flux tensor in each space-time DOF in x direction
     REAL, INTENT(IN)              :: lFhi_y(nVar,nDOF(2),nDOF(1),nDOF(3))    ! nonlinear flux tensor in each space-time DOF in y direction
-    REAL, INTENT(IN)              :: lFhi_z(nVar,nDOF(3),nDOF(2),nDOF(1))    ! nonlinear flux tensor in each space-time DOF in z direction
+    REAL, INTENT(IN)              :: lFhi_z(nVar,nDOF(3),nDOF(1),nDOF(2))    ! nonlinear flux tensor in each space-time DOF in z direction
     REAL, INTENT(OUT)             :: lduh(nVar,nDOF(1),nDOF(2),nDOF(3))      ! spatial degrees of freedom 
     DOUBLE PRECISION, INTENT(IN)  :: dx(d)                                   ! mesh spacing
     ! Local variables 
@@ -37,7 +37,7 @@ SUBROUTINE ADERVolumeIntegral(lduh,lFhi_x,lFhi_y,lFhi_z,dx)
         DO j = 1, nDOF(2)
             DO i = 1, nDOF(1)
                 aux = (/ 1.d0, wGPN(i), wGPN(j) /)  
-                lduh(:,i,j,:) = lduh(:,i,j,:) + MATMUL( lFhi_z(:,:,j,i), TRANSPOSE(Kxi) )*PRODUCT(aux(1:nDim))/dx(3)
+                lduh(:,i,j,:) = lduh(:,i,j,:) + MATMUL( lFhi_z(:,:,i,j), TRANSPOSE(Kxi) )*PRODUCT(aux(1:nDim))/dx(3)
             ENDDO
         ENDDO
     ENDIF 
