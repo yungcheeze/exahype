@@ -20,20 +20,20 @@
 #include "EulerFlow/Constants.h"
 
 namespace exahype {
-  namespace quad {
-    /** \brief The maximum number of supported nodes.**/
-    extern const double gaussLegendreMaxNodes;
+namespace quad {
+/** \brief The maximum number of supported nodes.**/
+extern const double gaussLegendreMaxNodes;
 
-    /**
-     * \brief The Gauss-Legendre weights mapped onto [0,1]
-     **/
-    extern const double gaussLegendreWeights[EXAHYPE_ORDER+1];
+/**
+ * \brief The Gauss-Legendre weights mapped onto [0,1]
+ **/
+extern const double gaussLegendreWeights[EXAHYPE_ORDER + 1];
 
-    /**
-     * \brief The Gauss-Legendre nodes mapped onto [0,1]
-     **/
-    extern const double gaussLegendreNodes[EXAHYPE_ORDER+1];
-  }
+/**
+ * \brief The Gauss-Legendre nodes mapped onto [0,1]
+ **/
+extern const double gaussLegendreNodes[EXAHYPE_ORDER + 1];
+}
 }
 
 #endif /* GAUSSLEGENDRE_H_ */

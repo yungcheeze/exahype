@@ -1,13 +1,12 @@
 // This file originally was created by pdt (Peano Development Toolkit) as part
-// of a code based upon the Peano project by Tobias Weinzierl. For conditions 
+// of a code based upon the Peano project by Tobias Weinzierl. For conditions
 // of distribution and use of this project, please see the copyright notice at
-// www.peano-framework.org. Feel free to adopt the license and authorship of 
-// this file and your project to your needs as long as the license is in 
-// agreement with the original Peano user constraints. A reference to/citation  
+// www.peano-framework.org. Feel free to adopt the license and authorship of
+// this file and your project to your needs as long as the license is in
+// agreement with the original Peano user constraints. A reference to/citation
 // of  Peano and its author is highly appreciated.
 #ifndef EXAHYPE_MAPPINGS_RiemannSolver_H_
 #define EXAHYPE_MAPPINGS_RiemannSolver_H_
-
 
 #include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
@@ -23,23 +22,22 @@
 #include "exahype/Cell.h"
 #include "exahype/State.h"
 
-
 namespace exahype {
-  namespace mappings {
-    class RiemannSolver;
-  }
+namespace mappings {
+class RiemannSolver;
+}
 }
 
-
 /**
- * This is a mapping from the spacetree traversal events to your user-defined activities.
- * The latter are realised within the mappings. 
- * 
+ * This is a mapping from the spacetree traversal events to your user-defined
+ *activities.
+ * The latter are realised within the mappings.
+ *
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
 class exahype::mappings::RiemannSolver {
-private:
+ private:
   /**
    * Semaphore for locking critical multithreading code areas.
    */
@@ -48,7 +46,7 @@ private:
   /**
    * Logging device for the trace macros.
    */
-  static tarch::logging::Log  _log;
+  static tarch::logging::Log _log;
 
   /**
    * Local copy of the state.
@@ -56,26 +54,31 @@ private:
   exahype::State _localState;
 
   /**
-   * Solve the Riemann problem at the interface between two cells ("left" and "right").
+   * Solve the Riemann problem at the interface between two cells ("left" and
+   *"right").
    *
-   * @param[in] adjacentADERDGCellDescriptionsIndices Map holding the cell description indices around a vertex.
-   * @param[in] cellIndexL                            Index for adjacentADERDGCellDescriptionsIndices referring to the "left" cell.
-   * @param[in] cellIndexR                            Index for adjacentADERDGCellDescriptionsIndices referring to the "right" cell.
-   * @param[in] faceL                                 Index for the face belonging to the "left" cell.
-   *                                                  One out of (EXAHYPE_FACE_LEFT,EXAHYPE_FACE_RIGHT,...,EXAHYPE_FACE_TOP).
-   * @param[in] faceR                                 Index for the face belonging to the "right" cell. See also the
+   * @param[in] adjacentADERDGCellDescriptionsIndices Map holding the cell
+   *description indices around a vertex.
+   * @param[in] cellIndexL                            Index for
+   *adjacentADERDGCellDescriptionsIndices referring to the "left" cell.
+   * @param[in] cellIndexR                            Index for
+   *adjacentADERDGCellDescriptionsIndices referring to the "right" cell.
+   * @param[in] faceL                                 Index for the face
+   *belonging to the "left" cell.
+   *                                                  One out of
+   *(EXAHYPE_FACE_LEFT,EXAHYPE_FACE_RIGHT,...,EXAHYPE_FACE_TOP).
+   * @param[in] faceR                                 Index for the face
+   *belonging to the "right" cell. See also the
    *                                                  description of faceL.
    * @param[in] normal                                Normal vector.
    */
-  void solveRiemannProblem(
-      tarch::la::Vector<TWO_POWER_D,int>& adjacentADERDGCellDescriptionsIndices,
-      const int cellIndexL,
-      const int cellIndexR,
-      const int faceL,
-      const int faceR,
-      const int normalNonZero
-  );
-public:
+  void solveRiemannProblem(tarch::la::Vector<TWO_POWER_D, int>&
+                               adjacentADERDGCellDescriptionsIndices,
+                           const int cellIndexL, const int cellIndexR,
+                           const int faceL, const int faceR,
+                           const int normalNonZero);
+
+ public:
   /**
    * These flags are used to inform Peano about your operation. It tells the
    * framework whether the operation is empty, whether it works only on the
@@ -85,15 +88,14 @@ public:
    *
    * @see peano::MappingSpecification for information on thread safety.
    */
-  static peano::MappingSpecification   touchVertexLastTimeSpecification();
-  static peano::MappingSpecification   touchVertexFirstTimeSpecification();
-  static peano::MappingSpecification   enterCellSpecification();
-  static peano::MappingSpecification   leaveCellSpecification();
-  static peano::MappingSpecification   ascendSpecification();
-  static peano::MappingSpecification   descendSpecification();
+  static peano::MappingSpecification touchVertexLastTimeSpecification();
+  static peano::MappingSpecification touchVertexFirstTimeSpecification();
+  static peano::MappingSpecification enterCellSpecification();
+  static peano::MappingSpecification leaveCellSpecification();
+  static peano::MappingSpecification ascendSpecification();
+  static peano::MappingSpecification descendSpecification();
 
-  static peano::CommunicationSpecification   communicationSpecification();
-
+  static peano::CommunicationSpecification communicationSpecification();
 
   /**
    * Mapping constructor.
@@ -282,15 +284,13 @@ public:
    *                        fine grid.
    */
   void createInnerVertex(
-      exahype::Vertex&               fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
-  );
-
+      exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
 
   /**
    * Create a boundary vertex.
@@ -378,15 +378,13 @@ public:
    *                        fine grid.
    */
   void createBoundaryVertex(
-      exahype::Vertex&               fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
-  );
-
+      exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
 
   /**
    * Create Hanging Vertex
@@ -417,22 +415,21 @@ public:
    * if checks in your mapping. If you run your code with mpi, you have to
    * wrap your code into
    * \code
- if ( fineGridVertex.isAdjacentToDomainOf( tarch::parallel::Node::getInstance().getRank() ) ) {
+ if ( fineGridVertex.isAdjacentToDomainOf(
+ tarch::parallel::Node::getInstance().getRank() ) ) {
    ...
-     \endcode  
+     \endcode
    *
    * @see peano::MappingSpecification for information on thread safety.
    */
   void createHangingVertex(
-      exahype::Vertex&               fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
-  );
-
+      exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
 
   /**
    * Counterpart of create operation
@@ -449,15 +446,13 @@ public:
    * vertex and cell lifecycle.
    */
   void destroyHangingVertex(
-      const exahype::Vertex&   fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
-  );
-
+      const exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
 
   /**
    * Destroy a vertex.
@@ -482,15 +477,13 @@ public:
    * @see createBoundaryVertex() for a argument description.
    */
   void destroyVertex(
-      const exahype::Vertex&   fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
-  );
-
+      const exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
 
   /**
    * Create an inner cell.
@@ -539,15 +532,12 @@ public:
    *                          entry is either 0,1, or 2.
    */
   void createCell(
-      exahype::Cell&                 fineGridCell,
-      exahype::Vertex * const         fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
-  );
-
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
    * Destroy a cell
@@ -589,15 +579,13 @@ public:
    *                          entry is either 0,1, or 2.
    */
   void destroyCell(
-      const exahype::Cell&           fineGridCell,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
-  );
-
+      const exahype::Cell& fineGridCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
 #ifdef Parallel
   /**
@@ -622,15 +610,11 @@ public:
    * @param fromRank  See prepareSendToNeighbour()
    * @param isForkOrJoin See preareSendToNeighbour()
    */
-  void mergeWithNeighbour(
-      exahype::Vertex&  vertex,
-      const exahype::Vertex&  neighbour,
-      int                                           fromRank,
-      const tarch::la::Vector<DIMENSIONS,double>&   x,
-      const tarch::la::Vector<DIMENSIONS,double>&   h,
-      int                                           level
-  );
-
+  void mergeWithNeighbour(exahype::Vertex& vertex,
+                          const exahype::Vertex& neighbour, int fromRank,
+                          const tarch::la::Vector<DIMENSIONS, double>& x,
+                          const tarch::la::Vector<DIMENSIONS, double>& h,
+                          int level);
 
   /**
    * Prepare a vertex that is sent to the neighbour
@@ -644,14 +628,10 @@ public:
    * @param toRank        Rank of the neighbour if isForkOrJoin is unset.
    *                      Otherwise, it is the rank of the master.
    */
-  void prepareSendToNeighbour(
-      exahype::Vertex&  vertex,
-      int                                           toRank,
-      const tarch::la::Vector<DIMENSIONS,double>&   x,
-      const tarch::la::Vector<DIMENSIONS,double>&   h,
-      int                                           level
-  );
-
+  void prepareSendToNeighbour(exahype::Vertex& vertex, int toRank,
+                              const tarch::la::Vector<DIMENSIONS, double>& x,
+                              const tarch::la::Vector<DIMENSIONS, double>& h,
+                              int level);
 
   /**
    * Move data to neighbour
@@ -671,26 +651,18 @@ public:
    * @param localVertex The local vertex. This is not a copy, i.e. you may
    *                    modify the vertex before a copy of it is sent away.
    */
-  void prepareCopyToRemoteNode(
-      exahype::Vertex&  localVertex,
-      int                                           toRank,
-      const tarch::la::Vector<DIMENSIONS,double>&   x,
-      const tarch::la::Vector<DIMENSIONS,double>&   h,
-      int                                           level
-  );
-
+  void prepareCopyToRemoteNode(exahype::Vertex& localVertex, int toRank,
+                               const tarch::la::Vector<DIMENSIONS, double>& x,
+                               const tarch::la::Vector<DIMENSIONS, double>& h,
+                               int level);
 
   /**
    * @see other prepareCopyToRemoteNode() operation for the vertices.
    */
   void prepareCopyToRemoteNode(
-      exahype::Cell&  localCell,
-      int                                           toRank,
-      const tarch::la::Vector<DIMENSIONS,double>&   cellCentre,
-      const tarch::la::Vector<DIMENSIONS,double>&   cellSize,
-      int                                           level
-  );
-
+      exahype::Cell& localCell, int toRank,
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
 
   /**
    * Merge with remote data due to fork or join
@@ -706,14 +678,9 @@ public:
    *                     non-PDE-specific data.
    */
   void mergeWithRemoteDataDueToForkOrJoin(
-      exahype::Vertex&  localVertex,
-      const exahype::Vertex&  masterOrWorkerVertex,
-      int                                          fromRank,
-      const tarch::la::Vector<DIMENSIONS,double>&  x,
-      const tarch::la::Vector<DIMENSIONS,double>&  h,
-      int                                          level
-  );
-
+      exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
+      int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
+      const tarch::la::Vector<DIMENSIONS, double>& h, int level);
 
   /**
    * Merge with remote data due to fork or join
@@ -729,14 +696,9 @@ public:
    *                   non-PDE-specific data.
    */
   void mergeWithRemoteDataDueToForkOrJoin(
-      exahype::Cell&  localCell,
-      const exahype::Cell&  masterOrWorkerCell,
-      int                                          fromRank,
-      const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
-      const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
-      int                                          level
-  );
-
+      exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
+      int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
 
   /**
    * Prepare startup send to worker
@@ -758,20 +720,18 @@ public:
    * happens if the master decides that load balancing should be made.
    *
    *
-   * @see peano::kernel::spacetreegrid::nodes::Node::updateCellsParallelStateAfterLoad()
+   * @see
+   *peano::kernel::spacetreegrid::nodes::Node::updateCellsParallelStateAfterLoad()
    * @return Whether this node needs to send back data to its master.
    */
   bool prepareSendToWorker(
-      exahype::Cell&                       fineGridCell,
-      exahype::Vertex * const              fineGridVertices,
-      const peano::grid::VertexEnumerator&       fineGridVerticesEnumerator,
-      exahype::Vertex * const              coarseGridVertices,
-      const peano::grid::VertexEnumerator&       coarseGridVerticesEnumerator,
-      exahype::Cell&                       coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell,
-      int                                        worker
-  );
-
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      int worker);
 
   /**
    * Merge data from the worker into the master records. This operation is
@@ -788,27 +748,27 @@ public:
    * Receive heap data instead separately without taking the pointers in
    * the arguments into account.
    *
-   * @param workerGridCell      Valid object iff data reduction is switched on. See State::reduceDataToMaster().
-   * @param workerGridVertices  Valid object iff data reduction is switched on. See State::reduceDataToMaster().
-   * @param workerEnumerator    Valid object iff data reduction is switched on. See State::reduceDataToMaster().
-   * @param workerState         Valid object iff data reduction is switched on. See State::reduceDataToMaster().
+   * @param workerGridCell      Valid object iff data reduction is switched on.
+   *See State::reduceDataToMaster().
+   * @param workerGridVertices  Valid object iff data reduction is switched on.
+   *See State::reduceDataToMaster().
+   * @param workerEnumerator    Valid object iff data reduction is switched on.
+   *See State::reduceDataToMaster().
+   * @param workerState         Valid object iff data reduction is switched on.
+   *See State::reduceDataToMaster().
    */
   void mergeWithMaster(
-      const exahype::Cell&                       workerGridCell,
-      exahype::Vertex * const                    workerGridVertices,
-      const peano::grid::VertexEnumerator&             workerEnumerator,
-      exahype::Cell&                             fineGridCell,
-      exahype::Vertex * const                    fineGridVertices,
-      const peano::grid::VertexEnumerator&             fineGridVerticesEnumerator,
-      exahype::Vertex * const                    coarseGridVertices,
-      const peano::grid::VertexEnumerator&             coarseGridVerticesEnumerator,
-      exahype::Cell&                             coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&         fineGridPositionOfCell,
-      int                                              worker,
-      const exahype::State&                      workerState,
-      exahype::State&                            masterState
-  );
-
+      const exahype::Cell& workerGridCell,
+      exahype::Vertex* const workerGridVertices,
+      const peano::grid::VertexEnumerator& workerEnumerator,
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      int worker, const exahype::State& workerState,
+      exahype::State& masterState);
 
   /**
    * Prepare send to master
@@ -849,15 +809,12 @@ public:
    * data. See State::reduceDataToMaster().
    */
   void prepareSendToMaster(
-      exahype::Cell&                       localCell,
-      exahype::Vertex *                    vertices,
-      const peano::grid::VertexEnumerator&       verticesEnumerator, 
-      const exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&       coarseGridVerticesEnumerator,
-      const exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
-  );
-
+      exahype::Cell& localCell, exahype::Vertex* vertices,
+      const peano::grid::VertexEnumerator& verticesEnumerator,
+      const exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      const exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
    * Counterpart of prepareSendToWorker(). This operation is called once when
@@ -906,16 +863,22 @@ public:
    * - Store the received data within these heap entries.
    * - Merge the heap data within mergeWithWorker().
    *
-   * - Remove the heap entries created in this operation within mergeWithWorker().
+   * - Remove the heap entries created in this operation within
+   *mergeWithWorker().
    *
    * @param coarseGridVertices  Copy of the coarse vertices of the master
    *                            node as well worker's records. As you receive
    *                            the copy, you can alter the local ones, but
-   *                            any change to this data will remain local on this
-   *                            worker, i.e. changes are not committed back to the
-   *                            master. Also, the changes might be lost from adapter
-   *                            run to adapter run, i.e. if you switch the adapter
-   *                            you wanna use, Peano might come up with different
+   *                            any change to this data will remain local on
+   *this
+   *                            worker, i.e. changes are not committed back to
+   *the
+   *                            master. Also, the changes might be lost from
+   *adapter
+   *                            run to adapter run, i.e. if you switch the
+   *adapter
+   *                            you wanna use, Peano might come up with
+   *different
    *                            coarse vertices and you have to reset data there
    *                            again.
    * @param coarseGridCell      Copy fo the coarse cell of the master.
@@ -923,18 +886,15 @@ public:
    *                            cell on master.
    */
   void receiveDataFromMaster(
-      exahype::Cell&                        receivedCell, 
-      exahype::Vertex *                     receivedVertices,
-      const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
-      exahype::Vertex * const               receivedCoarseGridVertices,
-      const peano::grid::VertexEnumerator&        receivedCoarseGridVerticesEnumerator,
-      exahype::Cell&                        receivedCoarseGridCell,
-      exahype::Vertex * const               workersCoarseGridVertices,
-      const peano::grid::VertexEnumerator&        workersCoarseGridVerticesEnumerator,
-      exahype::Cell&                        workersCoarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
-  );
-
+      exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
+      const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
+      exahype::Vertex* const receivedCoarseGridVertices,
+      const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
+      exahype::Cell& receivedCoarseGridCell,
+      exahype::Vertex* const workersCoarseGridVertices,
+      const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
+      exahype::Cell& workersCoarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
    * Counterpart of mergeWithMaster()
@@ -942,14 +902,11 @@ public:
    * Remark: If your grid exhibits sufficient regularity beyond the domain
    *         boundaries, the received cell might be an outside cell.
    */
-  void mergeWithWorker(
-      exahype::Cell&           localCell, 
-      const exahype::Cell&     receivedMasterCell,
-      const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
-      const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
-      int                                          level
-  );
-
+  void mergeWithWorker(exahype::Cell& localCell,
+                       const exahype::Cell& receivedMasterCell,
+                       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+                       const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+                       int level);
 
   /**
    * Counterpart of mergeWithMaster()
@@ -957,15 +914,12 @@ public:
    * Remark: If your grid exhibits sufficient regularity beyond the domain
    *         boundaries, the received vertex might be an outside vertex.
    */
-  void mergeWithWorker(
-      exahype::Vertex&        localVertex,
-      const exahype::Vertex&  receivedMasterVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&   x,
-      const tarch::la::Vector<DIMENSIONS,double>&   h,
-      int                                           level
-  );
+  void mergeWithWorker(exahype::Vertex& localVertex,
+                       const exahype::Vertex& receivedMasterVertex,
+                       const tarch::la::Vector<DIMENSIONS, double>& x,
+                       const tarch::la::Vector<DIMENSIONS, double>& h,
+                       int level);
 #endif
-
 
   /**
    * Read vertex the first time throughout one iteration
@@ -1015,16 +969,13 @@ public:
    * @see createInnerVertex() for a description of the arguments.
    */
   void touchVertexFirstTime(
-      exahype::Vertex&               fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
-  );
-
-
+      exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
 
   /**
    * Read vertex the last time throughout one iteration
@@ -1072,15 +1023,13 @@ public:
    * @see createInnerVertex() for a description of the arguments.
    */
   void touchVertexLastTime(
-      exahype::Vertex&         fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
-      const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
-  );
-
+      exahype::Vertex& fineGridVertex,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
 
   /**
    * Enter a cell
@@ -1117,30 +1066,24 @@ public:
    * @see peano::MappingSpecification for information on thread safety.
    */
   void enterCell(
-      exahype::Cell&                 fineGridCell,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
-  );
-
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
    * This is the counterpart of enterCell(). See this operation for a
    * description of the arguments.
    */
   void leaveCell(
-      exahype::Cell&                          fineGridCell,
-      exahype::Vertex * const                 fineGridVertices,
-      const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
-      exahype::Vertex * const                 coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&                          coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&      fineGridPositionOfCell
-  );
-
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
    * Begin an iteration
@@ -1172,10 +1115,7 @@ public:
    *
    * @see RiemannSolver()
    */
-  void beginIteration(
-      exahype::State&  solverState
-  );
-
+  void beginIteration(exahype::State& solverState);
 
   /**
    * Iteration is done
@@ -1205,10 +1145,7 @@ public:
    *
    * @see RiemannSolver()
    */
-  void endIteration(
-      exahype::State&  solverState
-  );
-
+  void endIteration(exahype::State& solverState);
 
   /**
    * Descend in the spacetree
@@ -1232,7 +1169,8 @@ public:
    * elements of the cell pointer.
    *
    * More information on the interplay of ascend() and
-   * descend() with enterCell() and leaveCell() can be found in peano::grid::nodes::Refined.
+   * descend() with enterCell() and leaveCell() can be found in
+   *peano::grid::nodes::Refined.
    *
    * @see VertexEnumerator::cell()
    *
@@ -1254,14 +1192,12 @@ public:
    * @see peano::MappingSpecification for information on thread safety.
    */
   void descend(
-      exahype::Cell * const          fineGridCells,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell
-  );
-
+      exahype::Cell* const fineGridCells,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell);
 
   /**
    * Ascend in the spacetree
@@ -1273,15 +1209,12 @@ public:
    * operation called for a cell. However, if a cell is gonna be destroyed,
    * destroyCell is called afterwards.
    */
-  void ascend(
-      exahype::Cell * const    fineGridCells,
-      exahype::Vertex * const  fineGridVertices,
-      const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell
-  );
+  void ascend(exahype::Cell* const fineGridCells,
+              exahype::Vertex* const fineGridVertices,
+              const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+              exahype::Vertex* const coarseGridVertices,
+              const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+              exahype::Cell& coarseGridCell);
 };
-
 
 #endif

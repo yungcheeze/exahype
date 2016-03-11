@@ -11,30 +11,28 @@
 using std::endl;
 using std::cout;
 
-extern "C" 
-{
-  void elementupdate_(double *luh, double *lduh, double *dt);
+extern "C" {
+void elementupdate_(double *luh, double *lduh, double *dt);
 }
-void kernels::aderdg::generic::c::solutionUpdate(double * luh,
-                                              const double * const lduh,
-                                              const double dt,
-                                              const int numberOfVariables,
-                                              const int basisSize) {
-  const int order = basisSize-1;
+void kernels::aderdg::generic::c::solutionUpdate(double *luh,
+                                                 const double *const lduh,
+                                                 const double dt,
+                                                 const int numberOfVariables,
+                                                 const int basisSize) {
+  const int order = basisSize - 1;
 
-  for (int ii=0; ii<basisSize; ii++) {
-    for (int jj=0; jj<basisSize; jj++) {
-      const int nodeIndex     = jj + basisSize * ii;
+  for (int ii = 0; ii < basisSize; ii++) {
+    for (int jj = 0; jj < basisSize; jj++) {
+      const int nodeIndex = jj + basisSize * ii;
       const int dofStartIndex = nodeIndex * numberOfVariables;
 
-      const double weight     =  kernels::gaussLegendreWeights[order][ii] * kernels::gaussLegendreWeights[order][jj];
-      const double updateSize = dt/weight;
+      const double weight = kernels::gaussLegendreWeights[order][ii] *
+                            kernels::gaussLegendreWeights[order][jj];
+      const double updateSize = dt / weight;
 
-      for(int ivar=0; ivar < numberOfVariables; ivar++) {
-        luh[dofStartIndex+ivar] +=  lduh[dofStartIndex+ivar]*updateSize;
+      for (int ivar = 0; ivar < numberOfVariables; ivar++) {
+        luh[dofStartIndex + ivar] += lduh[dofStartIndex + ivar] * updateSize;
       }
     }
   }
 }
-
-

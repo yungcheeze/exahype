@@ -1,11 +1,11 @@
-// This file originally was created by pdt (Peano Development Toolkit) as part 
-// of a code based upon the Peano project by Tobias Weinzierl. For conditions 
+// This file originally was created by pdt (Peano Development Toolkit) as part
+// of a code based upon the Peano project by Tobias Weinzierl. For conditions
 // of distribution and use of this project, please see the copyright notice at
-// www.peano-framework.org. Feel free to adopt the license and authorship of 
-// this file and your project to your needs as long as the license is in 
-// agreement with the original Peano user constraints. A reference to/citation 
+// www.peano-framework.org. Feel free to adopt the license and authorship of
+// this file and your project to your needs as long as the license is in
+// agreement with the original Peano user constraints. A reference to/citation
 // of  Peano and its author is highly appreciated.
-#ifndef _EXAHYPE_CELL_H_ 
+#ifndef _EXAHYPE_CELL_H_
 #define _EXAHYPE_CELL_H_
 
 #include "exahype/State.h"
@@ -19,26 +19,28 @@
 // ! End of code for multiscalelinkedcell toolbox.
 
 namespace exahype {
-  class Cell;
-  // ! Begin of code for multiscalelinkedcell toolbox..
-  typedef peano::heap::PlainHeap< exahype::records::ADERDGCellDescription >  ADERDGCellDescriptionHeap;
-  typedef peano::heap::PlainDoubleHeap DataHeap;
-  // ! End of code for multiscalelinkedcell toolbox.
+class Cell;
+// ! Begin of code for multiscalelinkedcell toolbox..
+typedef peano::heap::PlainHeap<exahype::records::ADERDGCellDescription>
+    ADERDGCellDescriptionHeap;
+typedef peano::heap::PlainDoubleHeap DataHeap;
+// ! End of code for multiscalelinkedcell toolbox.
 }
-
 
 /**
  * Blueprint for cell.
- * 
- * This file has originally been created by the PDT and may be manually extended to 
+ *
+ * This file has originally been created by the PDT and may be manually extended
+ *to
  * the needs of your application. We do not recommend to remove anything!
  */
-class exahype::Cell: public peano::grid::Cell< exahype::records::Cell > { 
-private:
-  typedef class peano::grid::Cell< exahype::records::Cell >  Base;
+class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
+ private:
+  typedef class peano::grid::Cell<exahype::records::Cell> Base;
 
   static tarch::logging::Log _log;
-public:
+
+ public:
   /**
    * Default Constructor
    *
@@ -69,8 +71,10 @@ public:
   // ! Begin of code for multiscalelinkedcell toolbox
   int getADERDGCellDescriptionsIndex() const;
 
-  inline exahype::records::ADERDGCellDescription& getADERDGCellDescription(int pdeIndex) {
-    return ADERDGCellDescriptionHeap::getInstance().getData(getADERDGCellDescriptionsIndex())[pdeIndex];
+  inline exahype::records::ADERDGCellDescription& getADERDGCellDescription(
+      int pdeIndex) {
+    return ADERDGCellDescriptionHeap::getInstance().getData(
+        getADERDGCellDescriptionsIndex())[pdeIndex];
   }
 
   /**
@@ -79,13 +83,9 @@ public:
    * the cell's level equals getMinimumTreeDepth() of if the tree is
    * unrefined.
    */
-  void init(
-    const int                                    level,
-    const tarch::la::Vector<DIMENSIONS,double>&  size,
-    const tarch::la::Vector<DIMENSIONS,double>&  cellCentre
-  );
+  void init(const int level, const tarch::la::Vector<DIMENSIONS, double>& size,
+            const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
   // ! End of code for multiscalelinkedcell toolbox
 };
-
 
 #endif

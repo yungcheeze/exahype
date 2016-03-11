@@ -13,23 +13,30 @@
 #include "peano/stacks/VertexArrayStack.h"
 #include "peano/stacks/VertexSTDStack.h"
 
- #include "exahype/adapters/InitialGrid.h" 
- #include "exahype/adapters/PatchInitialisation.h" 
- #include "exahype/adapters/Plot.h" 
- #include "exahype/adapters/SolutionUpdateAndGlobalTimeStepComputation.h" 
- #include "exahype/adapters/PredictorAndGlobalTimeStepComputation.h" 
- #include "exahype/adapters/ADERDGTimeStep.h" 
- #include "exahype/adapters/GlobalTimeStepComputation.h" 
- #include "exahype/adapters/FaceDataExchange.h" 
- #include "exahype/adapters/Predictor.h" 
- #include "exahype/adapters/Corrector.h" 
-
+#include "exahype/adapters/InitialGrid.h"
+#include "exahype/adapters/PatchInitialisation.h"
+#include "exahype/adapters/Plot.h"
+#include "exahype/adapters/SolutionUpdateAndGlobalTimeStepComputation.h"
+#include "exahype/adapters/PredictorAndGlobalTimeStepComputation.h"
+#include "exahype/adapters/ADERDGTimeStep.h"
+#include "exahype/adapters/GlobalTimeStepComputation.h"
+#include "exahype/adapters/FaceDataExchange.h"
+#include "exahype/adapters/Predictor.h"
+#include "exahype/adapters/Corrector.h"
 
 namespace peano {
-  namespace grid {
-    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexArrayStack<exahype::Vertex> ,peano::stacks::CellArrayStack<exahype::Cell> ,exahype::adapters::SolutionUpdateAndGlobalTimeStepComputation>;
-    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexSTDStack<  exahype::Vertex> ,peano::stacks::CellSTDStack<  exahype::Cell> ,exahype::adapters::SolutionUpdateAndGlobalTimeStepComputation>;
-  }
+namespace grid {
+template class Grid<
+    exahype::Vertex, exahype::Cell, exahype::State,
+    peano::stacks::VertexArrayStack<exahype::Vertex>,
+    peano::stacks::CellArrayStack<exahype::Cell>,
+    exahype::adapters::SolutionUpdateAndGlobalTimeStepComputation>;
+template class Grid<
+    exahype::Vertex, exahype::Cell, exahype::State,
+    peano::stacks::VertexSTDStack<exahype::Vertex>,
+    peano::stacks::CellSTDStack<exahype::Cell>,
+    exahype::adapters::SolutionUpdateAndGlobalTimeStepComputation>;
+}
 }
 
 #include "peano/grid/Grid.cpph"

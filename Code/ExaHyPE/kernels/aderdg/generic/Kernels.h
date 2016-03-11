@@ -7,412 +7,305 @@
 #define MbasisSize 4
 #define Mvar 5
 #define Mdim 3
-#define f2p5(var, dim, i, j, k) (var + Mvar*dim + Mvar*Mdim*i + Mvar*Mdim*MbasisSize*j + Mvar*Mdim*MbasisSize*MbasisSize*k)
-#define p2f5(var, dim, i, j, k) (dim*MbasisSize*MbasisSize*MbasisSize*Mvar + Mvar*i + Mvar*MbasisSize*j + Mvar*MbasisSize*MbasisSize*k + var)
+#define f2p5(var, dim, i, j, k)                                        \
+  (var + Mvar * dim + Mvar * Mdim * i + Mvar * Mdim * MbasisSize * j + \
+   Mvar * Mdim * MbasisSize * MbasisSize * k)
+#define p2f5(var, dim, i, j, k)                                   \
+  (dim * MbasisSize * MbasisSize * MbasisSize * Mvar + Mvar * i + \
+   Mvar * MbasisSize * j + Mvar * MbasisSize * MbasisSize * k + var)
 
 #define Mface 6
-#define f2p4(var, face, a, b) (var + Mvar*face + Mvar*Mface*a + Mvar*Mface*MbasisSize*b)
-#define p2f4(var, face, a, b) (face*MbasisSize*MbasisSize*Mvar + Mvar*a + Mvar*MbasisSize*b + var)
-
+#define f2p4(var, face, a, b) \
+  (var + Mvar * face + Mvar * Mface * a + Mvar * Mface * MbasisSize * b)
+#define p2f4(var, face, a, b)                                                 \
+  (face * MbasisSize * MbasisSize * Mvar + Mvar * a + Mvar * MbasisSize * b + \
+   var)
 
 // todo Dominic Etienne Charrier
 // Possibly redundant definition of face indices
 // see exahype/solvers/Solver.h
 // On the other hand, the kernels should be
 // more or less independent of ExaHyPE/exahype.
-#define EXAHYPE_FACE_LEFT   0
-#define EXAHYPE_FACE_RIGHT  1
-#define EXAHYPE_FACE_FRONT  2
-#define EXAHYPE_FACE_BACK   3
+#define EXAHYPE_FACE_LEFT 0
+#define EXAHYPE_FACE_RIGHT 1
+#define EXAHYPE_FACE_FRONT 2
+#define EXAHYPE_FACE_BACK 3
 #define EXAHYPE_FACE_BOTTOM 4
-#define EXAHYPE_FACE_TOP    5
+#define EXAHYPE_FACE_TOP 5
 
 namespace kernels {
-  namespace aderdg {
-    namespace generic {
-      namespace c {
+namespace aderdg {
+namespace generic {
+namespace c {
 
 #if DIMENSIONS == 2
-        // @todo Dominic Etienne Charrier
-        // Inconsistent ordering of inout and in arguments for
-        // template argument functions and non-template argument function.
-        template <void PDEFlux(const double* const Q,double* f,double* g)>
-        void spaceTimePredictor(
-            double* lQi,
-            double* lFi,
-            double* lQhi,
-            double* lFhi,
-            double* lQbnd,
-            double* lFbnd,
-            const double* const luh,
-            const tarch::la::Vector<DIMENSIONS,double>&  dx,
-            const double predictorTimeStepSize,
-            const int numberOfVariables,
-            const int basisSize
-        );
+// @todo Dominic Etienne Charrier
+// Inconsistent ordering of inout and in arguments for
+// template argument functions and non-template argument function.
+template <void PDEFlux(const double* const Q, double* f, double* g)>
+void spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi,
+                        double* lQbnd, double* lFbnd, const double* const luh,
+                        const tarch::la::Vector<DIMENSIONS, double>& dx,
+                        const double predictorTimeStepSize,
+                        const int numberOfVariables, const int basisSize);
 
-        // @todo Dominic Etienne Charrier
-        // Inconsistent ordering of inout and in arguments for
-        // template argument functions and non-template argument function.
-        template <void PDEFlux(const double* const Q,double* f,double* g)>
-        void spaceTimePredictor(
-            double* lQi,
-            double* lFi,
-            const double* const luh,
-            const tarch::la::Vector<DIMENSIONS,double>&  dx,
-            const double predictorTimeStepSize,
-            const int numberOfVariables,
-            const int basisSize
-        );
+// @todo Dominic Etienne Charrier
+// Inconsistent ordering of inout and in arguments for
+// template argument functions and non-template argument function.
+template <void PDEFlux(const double* const Q, double* f, double* g)>
+void spaceTimePredictor(double* lQi, double* lFi, const double* const luh,
+                        const tarch::la::Vector<DIMENSIONS, double>& dx,
+                        const double predictorTimeStepSize,
+                        const int numberOfVariables, const int basisSize);
 #else
-        // @todo Dominic Etienne Charrier
-        // Inconsistent ordering of inout and in arguments for
-        // template argument functions and non-template argument function.
-        template <void PDEFlux(const double* const Q,double* f,double* g,double* h)>
-        void spaceTimePredictor(
-            double* lQi,
-            double* lFi,
-            double* lQhi,
-            double* lFhi,
-            double* lQhbnd,
-            double* lFhbnd,
-            const double* const luh,
-            const tarch::la::Vector<DIMENSIONS,double>&  dx,
-            const double predictorTimeStepSize,
-            const int numberOfVariables,
-            const int basisSize
-        );
+// @todo Dominic Etienne Charrier
+// Inconsistent ordering of inout and in arguments for
+// template argument functions and non-template argument function.
+template <void PDEFlux(const double* const Q, double* f, double* g, double* h)>
+void spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi,
+                        double* lQhbnd, double* lFhbnd, const double* const luh,
+                        const tarch::la::Vector<DIMENSIONS, double>& dx,
+                        const double predictorTimeStepSize,
+                        const int numberOfVariables, const int basisSize);
 
 #endif
 
-        /**
-         * (At the moment, we always evaluate the time averaged space-time
-         * predictor unknowns.)
-         * todo docu
-         */
-        void predictor(
-            double* lQhi,
-            double* lFhi,
-            const double* const lQi,
-            const double* const lFi,
-            const double predictorTimeStepSize,
-            const int numberOfVariables,
-            const int basisSize
-        );
+/**
+ * (At the moment, we always evaluate the time averaged space-time
+ * predictor unknowns.)
+ * todo docu
+ */
+void predictor(double* lQhi, double* lFhi, const double* const lQi,
+               const double* const lFi, const double predictorTimeStepSize,
+               const int numberOfVariables, const int basisSize);
 
-        /**
-         * @todo Dominic Etienne Charrier
-         * This is just a "parent" function that
-         * invokes the function going by the same
-         * name 2*dim times.
-         */
-        void extrapolatedPredictor(
-            double* lQhbnd,
-            double* lFhbnd,
-            const double* const lQhi,
-            const double* const lFhi,
-            const double predictorTimeStepSize,
-            const int numberOfVariables,
-            const int basisSize
-        );
+/**
+ * @todo Dominic Etienne Charrier
+ * This is just a "parent" function that
+ * invokes the function going by the same
+ * name 2*dim times.
+ */
+void extrapolatedPredictor(double* lQhbnd, double* lFhbnd,
+                           const double* const lQhi, const double* const lFhi,
+                           const double predictorTimeStepSize,
+                           const int numberOfVariables, const int basisSize);
 
 #if DIMENSIONS == 2
-        /**
-         * @todo Dominic Etienne Charrier
-         * docu
-         * Note that we need to replace lQhi and LFhi by
-         * the space-time predictor unknowns if we want to employ
-         * local/anarchic time stepping. Since we will have
-         * to perform evaluations of the extrapolated boundary fluxes
-         * at various appropriate times in this case.
-         * The evaluation of the extrapolated predictor requires a time integration
-         * of the space-time predictor unknowns. Clearly,
-         * \p evaluationTimeStepSize must be smaller than or equal to
-         * \p predictorTimeStepSize.
-         * At the moment, we always evaluate the time averaged space-time
-         * predictor unknowns. Thus it is not necessary to pass these values.
-         */
-        void extrapolatedPredictorXDirection(
-            double* lQhbnd,
-            double* lFhbnd,
-            const double* const lQhi,
-            const double* const lFhi,
-            const int facePosition, // 0 for "left" face, 1 far "right" face
-            const double evaluationTimeStepSize,
-            const double predictorTimeStepSize,
-            const int numberOfVariables,
-            const int basisSize
-        );
+/**
+ * @todo Dominic Etienne Charrier
+ * docu
+ * Note that we need to replace lQhi and LFhi by
+ * the space-time predictor unknowns if we want to employ
+ * local/anarchic time stepping. Since we will have
+ * to perform evaluations of the extrapolated boundary fluxes
+ * at various appropriate times in this case.
+ * The evaluation of the extrapolated predictor requires a time integration
+ * of the space-time predictor unknowns. Clearly,
+ * \p evaluationTimeStepSize must be smaller than or equal to
+ * \p predictorTimeStepSize.
+ * At the moment, we always evaluate the time averaged space-time
+ * predictor unknowns. Thus it is not necessary to pass these values.
+ */
+void extrapolatedPredictorXDirection(
+    double* lQhbnd, double* lFhbnd, const double* const lQhi,
+    const double* const lFhi,
+    const int facePosition,  // 0 for "left" face, 1 far "right" face
+    const double evaluationTimeStepSize, const double predictorTimeStepSize,
+    const int numberOfVariables, const int basisSize);
 
-        void extrapolatedPredictorYDirection(
-            double* lQhbnd,
-            double* lFhbnd,
-            const double* const lQhi,
-            const double* const lFhi,
-            const int facePosition, // 0 for "left" face, 1 far "right" face
-            const double evaluationTimeStepSize,
-            const double predictorTimeStepSize,
-            const int numberOfVariables,
-            const int basisSize
-        );
+void extrapolatedPredictorYDirection(
+    double* lQhbnd, double* lFhbnd, const double* const lQhi,
+    const double* const lFhi,
+    const int facePosition,  // 0 for "left" face, 1 far "right" face
+    const double evaluationTimeStepSize, const double predictorTimeStepSize,
+    const int numberOfVariables, const int basisSize);
 #endif
 
-        // todo Dominic Etienne Charrier:
-        // The DIMENSIONS depending mesh size vector enables overloading at the moment.
-        // If we replace it by scalar mesh size, we have to add a template argument "int dim".
+// todo Dominic Etienne Charrier:
+// The DIMENSIONS depending mesh size vector enables overloading at the moment.
+// If we replace it by scalar mesh size, we have to add a template argument "int
+// dim".
 
-        void solutionUpdate(
-            double* luh,
-            const double* const lduh,
-            const double dt,
-            const int numberOfVariables,
-            const int basisSize
-        );
+void solutionUpdate(double* luh, const double* const lduh, const double dt,
+                    const int numberOfVariables, const int basisSize);
 
-        void volumeIntegral(
-            double* lduh,
-            const double* const lFhi,
-            const tarch::la::Vector<DIMENSIONS,double>&  dx,
-            const int numberOfVariables,
-            const int basisSize
+void volumeIntegral(double* lduh, const double* const lFhi,
+                    const tarch::la::Vector<DIMENSIONS, double>& dx,
+                    const int numberOfVariables, const int basisSize
 
-        );
+                    );
 
+// todo 10/02/16: Dominic
+// Keep only one surfaceIntegral.
+void surfaceIntegral(double* lduh, const double* const lFbnd,
+                     const tarch::la::Vector<DIMENSIONS, double>& dx,
+                     const int numberOfVariables, const int basisSize);
 
-        // todo 10/02/16: Dominic
-        // Keep only one surfaceIntegral.
-        void surfaceIntegral(
-            double* lduh,
-            const double* const lFbnd,
-            const tarch::la::Vector<DIMENSIONS,double>&  dx,
-            const int numberOfVariables,
-            const int basisSize
-        );
-
-        /*void surfaceIntegral2(
-            double* lduh,
-            const double* const lFhbnd,
-            const tarch::la::Vector<DIMENSIONS,double>&  dx,
-            const int numberOfVariables,
-            const int basisSize
-        );*/
+/*void surfaceIntegral2(
+    double* lduh,
+    const double* const lFhbnd,
+    const tarch::la::Vector<DIMENSIONS,double>&  dx,
+    const int numberOfVariables,
+    const int basisSize
+);*/
 
 #if DIMENSIONS == 2
-        void surfaceIntegralXDirection(
-            double * lduh,
-            const double * const lFhbnd,
-            const double dx,
-            const int facePosition,  // 0 for "left" face, 1 for "right" face.
-            const double updateSign, // -1 for "left" face, 1 for "right" face.
-            const int numberOfVariables,
-            const int basisSize
-        );
+void surfaceIntegralXDirection(
+    double* lduh, const double* const lFhbnd, const double dx,
+    const int facePosition,   // 0 for "left" face, 1 for "right" face.
+    const double updateSign,  // -1 for "left" face, 1 for "right" face.
+    const int numberOfVariables, const int basisSize);
 
-        void surfaceIntegralYDirection(
-            double * lduh,
-            const double * const lFhbnd,
-            const double dy,
-            const int facePosition,  // 0 for "left" face, 1 for "right" face.
-            const double updateSign, // -1 for "left" face, 1 for "right" face.
-            const int numberOfVariables,
-            const int basisSize
-        );
-
+void surfaceIntegralYDirection(
+    double* lduh, const double* const lFhbnd, const double dy,
+    const int facePosition,   // 0 for "left" face, 1 for "right" face.
+    const double updateSign,  // -1 for "left" face, 1 for "right" face.
+    const int numberOfVariables, const int basisSize);
 
 #endif
 
-        // @todo Dominic Etienne Charrier
-        // Inconsistent ordering of inout and in arguments for
-        // template argument functions and non-template argument function.
-        template <void PDESolutionAdjustment(const double* const x,const double J_w,const double t,const double dt,double* Q)>
-        void solutionAdjustment(
-            double* luh,
-            const tarch::la::Vector<DIMENSIONS,double>& center,
-            const tarch::la::Vector<DIMENSIONS,double>& dx,
-            const double t,
-            const double dt,
-            const int numberOfVariables,
-            const int basisSize
-        );
+// @todo Dominic Etienne Charrier
+// Inconsistent ordering of inout and in arguments for
+// template argument functions and non-template argument function.
+template <void PDESolutionAdjustment(const double* const x, const double J_w,
+                                     const double t, const double dt,
+                                     double* Q)>
+void solutionAdjustment(double* luh,
+                        const tarch::la::Vector<DIMENSIONS, double>& center,
+                        const tarch::la::Vector<DIMENSIONS, double>& dx,
+                        const double t, const double dt,
+                        const int numberOfVariables, const int basisSize);
 
-        // @todo Dominic Etienne Charrier
-        // Inconsistent ordering of inout and in arguments
-        // template argument functions and non-template argument function.
-        template <void PDEEigenvalues(const double* const Q,const int normalNonZero,double* lambda)>
-        void riemannSolver(
-            double* FL,
-            double* FR,
-            const double* const QL,
-            const double* const QR,
-            const double dt,
-            const int normalNonZero,
-            const int numberOfVariables,
-            const int basisSize
-        );
+// @todo Dominic Etienne Charrier
+// Inconsistent ordering of inout and in arguments
+// template argument functions and non-template argument function.
+template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
+                              double* lambda)>
+void riemannSolver(double* FL, double* FR, const double* const QL,
+                   const double* const QR, const double dt,
+                   const int normalNonZero, const int numberOfVariables,
+                   const int basisSize);
 
-        // @todo Dominic Etienne Charrier
-        // Inconsistent ordering of inout and in arguments for
-        // template argument functions and non-template argument function.
-        template <void PDEEigenvalues(const double* const Q,const int normalNonZero,double* lambda)>
-        double stableTimeStepSize(
-            const double* const luh,
-            const tarch::la::Vector<DIMENSIONS,double>& dx,
-            const int numberOfVariables,
-            const int basisSize
-        );
-      }
-    }
-  }
+// @todo Dominic Etienne Charrier
+// Inconsistent ordering of inout and in arguments for
+// template argument functions and non-template argument function.
+template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
+                              double* lambda)>
+double stableTimeStepSize(const double* const luh,
+                          const tarch::la::Vector<DIMENSIONS, double>& dx,
+                          const int numberOfVariables, const int basisSize);
+}
+}
+}
 }
 
 namespace kernels {
-  namespace aderdg {
-    namespace generic {
-      namespace fortran {
+namespace aderdg {
+namespace generic {
+namespace fortran {
 
-        // @todo Dominic Etienne Charrier
-        // Inconsistent ordering of inout and in arguments for
-        // template argument functions and non-template argument function.
-        template <void PDEFlux(const double* const Q,double* f,double* g,double* h)>
-        void spaceTimePredictor(
-            double* lQi,
-            double* lFi,
-            double* lQhi,
-            double* lFhi,
-            double* lQhbnd,
-            double* lFhbnd,
-            const double* const luh,
-            const tarch::la::Vector<DIMENSIONS,double>&  dx,
-            const double predictorTimeStepSize,
-            const int numberOfVariables,
-            const int basisSize
-        );
+// @todo Dominic Etienne Charrier
+// Inconsistent ordering of inout and in arguments for
+// template argument functions and non-template argument function.
+template <void PDEFlux(const double* const Q, double* f, double* g, double* h)>
+void spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi,
+                        double* lQhbnd, double* lFhbnd, const double* const luh,
+                        const tarch::la::Vector<DIMENSIONS, double>& dx,
+                        const double predictorTimeStepSize,
+                        const int numberOfVariables, const int basisSize);
 
-        /**
-         * (At the moment, we always evaluate the time averaged space-time
-         * predictor unknowns.)
-         * todo docu
-         */
-        void predictor(
-            double* lQhi,
-            double* lFhi,
-            const double* const lQi,
-            const double* const lFi,
-            const double predictorTimeStepSize,
-            const int numberOfVariables,
-            const int basisSize
-        );
+/**
+ * (At the moment, we always evaluate the time averaged space-time
+ * predictor unknowns.)
+ * todo docu
+ */
+void predictor(double* lQhi, double* lFhi, const double* const lQi,
+               const double* const lFi, const double predictorTimeStepSize,
+               const int numberOfVariables, const int basisSize);
 
-        /**
-         * @todo Dominic Etienne Charrier
-         * This is just a "parent" function that
-         * invokes the function going by the same
-         * name 2*dim times.
-         */
-        void extrapolatedPredictor(
-            double* lQhbnd,
-            double* lFhbnd,
-            const double* const lQhi,
-            const double* const lFhi,
-            const double predictorTimeStepSize,
-            const int numberOfVariables,
-            const int basisSize
-        );
+/**
+ * @todo Dominic Etienne Charrier
+ * This is just a "parent" function that
+ * invokes the function going by the same
+ * name 2*dim times.
+ */
+void extrapolatedPredictor(double* lQhbnd, double* lFhbnd,
+                           const double* const lQhi, const double* const lFhi,
+                           const double predictorTimeStepSize,
+                           const int numberOfVariables, const int basisSize);
 
-        // todo Dominic Etienne Charrier:
-        // The DIMENSIONS depending mesh size vector enables overloading at the moment.
-        // If we replace it by scalar mesh size, we have to add a template argument "int dim".
+// todo Dominic Etienne Charrier:
+// The DIMENSIONS depending mesh size vector enables overloading at the moment.
+// If we replace it by scalar mesh size, we have to add a template argument "int
+// dim".
 
-        void solutionUpdate(
-            double* luh,
-            const double* const lduh,
-            const double dt,
-            const int numberOfVariables,
-            const int basisSize
-        );
+void solutionUpdate(double* luh, const double* const lduh, const double dt,
+                    const int numberOfVariables, const int basisSize);
 
-        void volumeIntegral(
-            double* lduh,
-            const double* const lFhi,
-            const tarch::la::Vector<DIMENSIONS,double>&  dx,
-            const int numberOfVariables,
-            const int basisSize
+void volumeIntegral(double* lduh, const double* const lFhi,
+                    const tarch::la::Vector<DIMENSIONS, double>& dx,
+                    const int numberOfVariables, const int basisSize
 
-        );
+                    );
 
+// todo 10/02/16: Dominic
+// Keep only one surfaceIntegral.
+void surfaceIntegral(double* lduh, const double* const lFbnd,
+                     const tarch::la::Vector<DIMENSIONS, double>& dx,
+                     const int numberOfVariables, const int basisSize);
 
-        // todo 10/02/16: Dominic
-        // Keep only one surfaceIntegral.
-        void surfaceIntegral(
-            double* lduh,
-            const double* const lFbnd,
-            const tarch::la::Vector<DIMENSIONS,double>&  dx,
-            const int numberOfVariables,
-            const int basisSize
-        );
+/*void surfaceIntegral2(
+    double* lduh,
+    const double* const lFhbnd,
+    const tarch::la::Vector<DIMENSIONS,double>&  dx,
+    const int numberOfVariables,
+    const int basisSize
+);*/
 
-        /*void surfaceIntegral2(
-            double* lduh,
-            const double* const lFhbnd,
-            const tarch::la::Vector<DIMENSIONS,double>&  dx,
-            const int numberOfVariables,
-            const int basisSize
-        );*/
+// @todo Dominic Etienne Charrier
+// Inconsistent ordering of inout and in arguments for
+// template argument functions and non-template argument function.
+template <void PDESolutionAdjustment(const double* const x, const double w,
+                                     const double t, const double dt,
+                                     double* Q)>
+void solutionAdjustment(double* luh,
+                        const tarch::la::Vector<DIMENSIONS, double>& center,
+                        const tarch::la::Vector<DIMENSIONS, double>& dx,
+                        const double t, const double dt,
+                        const int numberOfVariables, const int basisSize);
 
-        // @todo Dominic Etienne Charrier
-        // Inconsistent ordering of inout and in arguments for
-        // template argument functions and non-template argument function.
-        template <void PDESolutionAdjustment(const double* const x,const double w,const double t,const double dt,double* Q)>
-        void solutionAdjustment(
-            double* luh,
-            const tarch::la::Vector<DIMENSIONS,double>& center,
-            const tarch::la::Vector<DIMENSIONS,double>& dx,
-            const double t,
-            const double dt,
-            const int numberOfVariables,
-            const int basisSize
-        );
+// @todo Dominic Etienne Charrier
+// Inconsistent ordering of inout and in arguments
+// template argument functions and non-template argument function.
+template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
+                              double* lambda)>
+void riemannSolver(double* FL, double* FR, const double* const QL,
+                   const double* const QR, const double dt,
+                   const int normalNonZero, const int numberOfVariables,
+                   const int basisSize);
 
-        // @todo Dominic Etienne Charrier
-        // Inconsistent ordering of inout and in arguments
-        // template argument functions and non-template argument function.
-        template <void PDEEigenvalues(const double* const Q,const int normalNonZero,double* lambda)>
-        void riemannSolver(
-            double* FL,
-            double* FR,
-            const double* const QL,
-            const double* const QR,
-            const double dt,
-            const int normalNonZero,
-            const int numberOfVariables,
-            const int basisSize
-        );
-
-        // @todo Dominic Etienne Charrier
-        // Inconsistent ordering of inout and in arguments for
-        // template argument functions and non-template argument function.
-        template <void PDEEigenvalues(const double* const Q,const int normalNonZero,double* lambda)>
-        double stableTimeStepSize(
-            const double* const luh,
-            const tarch::la::Vector<DIMENSIONS,double>& dx,
-            const int numberOfVariables,
-            const int basisSize
-        );
-      }
-    }
-  }
+// @todo Dominic Etienne Charrier
+// Inconsistent ordering of inout and in arguments for
+// template argument functions and non-template argument function.
+template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
+                              double* lambda)>
+double stableTimeStepSize(const double* const luh,
+                          const tarch::la::Vector<DIMENSIONS, double>& dx,
+                          const int numberOfVariables, const int basisSize);
+}
+}
+}
 }
 
-
 #if DIMENSIONS == 2
-  #include "kernels/aderdg/generic/2D/solutionAdjustment.cpph"
-  #include "kernels/aderdg/generic/2D/stableTimeStepSize.cpph"
-  #include "kernels/aderdg/generic/2D/spaceTimePredictor.cpph"
-  #include "kernels/aderdg/generic/2D/riemannSolver.cpph"
+#include "kernels/aderdg/generic/2D/solutionAdjustment.cpph"
+#include "kernels/aderdg/generic/2D/stableTimeStepSize.cpph"
+#include "kernels/aderdg/generic/2D/spaceTimePredictor.cpph"
+#include "kernels/aderdg/generic/2D/riemannSolver.cpph"
 #elif DIMENSIONS == 3
-  #include "kernels/aderdg/generic/3D/solutionAdjustment.cpph"
-  #include "kernels/aderdg/generic/3D/stableTimeStepSize.cpph"
-  #include "kernels/aderdg/generic/3D/spaceTimePredictor.cpph"
-  #include "kernels/aderdg/generic/3D/riemannSolver.cpph"
+#include "kernels/aderdg/generic/3D/solutionAdjustment.cpph"
+#include "kernels/aderdg/generic/3D/stableTimeStepSize.cpph"
+#include "kernels/aderdg/generic/3D/spaceTimePredictor.cpph"
+#include "kernels/aderdg/generic/3D/riemannSolver.cpph"
 #endif
 #endif

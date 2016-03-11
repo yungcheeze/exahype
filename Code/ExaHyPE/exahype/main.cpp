@@ -11,13 +11,10 @@
 
 #include "kernels/KernelCalls.h"
 
-
 #include "kernels/GaussLegendreQuadrature.h"
 #include "kernels/DGMatrices.h"
 
-
 tarch::logging::Log _log("");
-
 
 int main(int argc, char** argv) {
   peano::fillLookupTables();
@@ -26,20 +23,24 @@ int main(int argc, char** argv) {
   //   Setup environment
   // =====================
   //
-  int parallelSetup = peano::initParallelEnvironment(&argc,&argv);
-  if ( parallelSetup!=0 ) {
-    #ifdef Parallel
+  int parallelSetup = peano::initParallelEnvironment(&argc, &argv);
+  if (parallelSetup != 0) {
+#ifdef Parallel
     // Please do not use the logging if MPI doesn't work properly.
-    std::cerr << "mpi initialisation wasn't successful. Application shut down" << std::endl;
-    #else
-    _log.error("main()", "mpi initialisation wasn't successful. Application shut down");
-    #endif
+    std::cerr << "mpi initialisation wasn't successful. Application shut down"
+              << std::endl;
+#else
+    _log.error("main()",
+               "mpi initialisation wasn't successful. Application shut down");
+#endif
     return parallelSetup;
   }
 
   int sharedMemorySetup = peano::initSharedMemoryEnvironment();
-  if (sharedMemorySetup!=0) {
-    logError("main()", "shared memory initialisation wasn't successful. Application shut down");
+  if (sharedMemorySetup != 0) {
+    logError("main()",
+             "shared memory initialisation wasn't successful. Application shut "
+             "down");
     return sharedMemorySetup;
   }
 
@@ -47,16 +48,16 @@ int main(int argc, char** argv) {
   //   Parse config file
   // =====================
   //
-  if (argc!=2) {
-    logError( "main()", "Usage: ./ExaHyPE config-file" );
+  if (argc != 2) {
+    logError("main()", "Usage: ./ExaHyPE config-file");
     return -1;
   }
 
   exahype::Parser parser;
-  parser.readFile( argv[1] );
+  parser.readFile(argv[1]);
 
   if (!parser.isValid()) {
-    logError( "main()", "invalid config file. Quit" );
+    logError("main()", "invalid config file. Quit");
     return -2;
   }
 
@@ -76,65 +77,71 @@ int main(int argc, char** argv) {
   // =========================
   //
   tarch::logging::CommandLineLogger::getInstance().clearFilterList();
-  #ifdef Parallel
+#ifdef Parallel
   tarch::logging::CommandLineLogger::getInstance().setLogFormat(
-    " ",              // columnSeparator
-    true,             // logTimeStamp
-    false,            // logTimeStampHumanReadable
-    true,             // logMachineName
-    true,             // logMessageType
-    true,             // logTrace
-    "exahype.log-file"
-  );
-  #else
+      " ",    // columnSeparator
+      true,   // logTimeStamp
+      false,  // logTimeStampHumanReadable
+      true,   // logMachineName
+      true,   // logMessageType
+      true,   // logTrace
+      "exahype.log-file");
+#else
   tarch::logging::CommandLineLogger::getInstance().setLogFormat(
-    " ",              // columnSeparator
-    true,             // logTimeStamp
-    false,            // logTimeStampHumanReadable
-    false,            // logMachineName
-    true,             // logMessageType
-    true,             // logTrace
-    "exahype.log-file"
-  );
-  #endif
+      " ",    // columnSeparator
+      true,   // logTimeStamp
+      false,  // logTimeStampHumanReadable
+      false,  // logMachineName
+      true,   // logMessageType
+      true,   // logTrace
+      "exahype.log-file");
+#endif
 
   tarch::logging::CommandLineLogger::getInstance().clearFilterList();
-  if (!tarch::logging::LogFilterFileReader::parsePlainTextFile( "exahype.log-filter" )) {
+  if (!tarch::logging::LogFilterFileReader::parsePlainTextFile(
+          "exahype.log-filter")) {
     tarch::logging::CommandLineLogger::getInstance().clearFilterList();
-    tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "info", false ) );
-    tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "info", -1, "peano::grid", true ) );
-    tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "debug", true ) );
-    tarch::logging::CommandLineLogger::getInstance().addFilterListEntry( ::tarch::logging::CommandLineLogger::FilterListEntry( "debug", -1, "exahype", false ) );
+    tarch::logging::CommandLineLogger::getInstance().addFilterListEntry(
+        ::tarch::logging::CommandLineLogger::FilterListEntry("info", false));
+    tarch::logging::CommandLineLogger::getInstance().addFilterListEntry(
+        ::tarch::logging::CommandLineLogger::FilterListEntry(
+            "info", -1, "peano::grid", true));
+    tarch::logging::CommandLineLogger::getInstance().addFilterListEntry(
+        ::tarch::logging::CommandLineLogger::FilterListEntry("debug", true));
+    tarch::logging::CommandLineLogger::getInstance().addFilterListEntry(
+        ::tarch::logging::CommandLineLogger::FilterListEntry("debug", -1,
+                                                             "exahype", false));
   }
 
-  //
-  //   Run tests
-  // =============
-  //
-  #if defined(Debug) || defined(Asserts)
-  tarch::tests::TestCaseRegistry::getInstance().getTestCaseCollection().run();  
-  int testExitCode = tarch::tests::TestCaseRegistry::getInstance().getTestCaseCollection().getNumberOfErrors();
+//
+//   Run tests
+// =============
+//
+#if defined(Debug) || defined(Asserts)
+  tarch::tests::TestCaseRegistry::getInstance().getTestCaseCollection().run();
+  int testExitCode = tarch::tests::TestCaseRegistry::getInstance()
+                         .getTestCaseCollection()
+                         .getNumberOfErrors();
 
-  if (testExitCode!=0) {
-    logError( "main()", "unit tests failed. Quit" );
+  if (testExitCode != 0) {
+    logError("main()", "unit tests failed. Quit");
     return -2;
   }
-  #endif
+#endif
 
   exahype::runners::Runner runner(parser);
   int programExitCode = runner.run();
-  
-  if (programExitCode==0) {
-    #ifdef Parallel
+
+  if (programExitCode == 0) {
+#ifdef Parallel
     if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
-      logInfo( "main()", "Peano terminates successfully" );
+      logInfo("main()", "Peano terminates successfully");
     }
-    #else
-    logInfo( "main()", "Peano terminates successfully" );
-    #endif
-  }
-  else {
-    logInfo( "main()", "quit with error code " << programExitCode );
+#else
+    logInfo("main()", "Peano terminates successfully");
+#endif
+  } else {
+    logInfo("main()", "quit with error code " << programExitCode);
   }
 
   peano::shutdownParallelEnvironment();

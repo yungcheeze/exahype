@@ -10,78 +10,72 @@
 #include "peano/parallel/Partitioner.h"
 #endif
 
-
 exahype::repositories::RepositoryFactory::RepositoryFactory() {
-  #ifdef Parallel
+#ifdef Parallel
   peano::parallel::Partitioner::initDatatypes();
 
   exahype::State::initDatatype();
   exahype::Vertex::initDatatype();
   exahype::Cell::initDatatype();
 
-  if (exahype::records::RepositoryState::Datatype==0) {
+  if (exahype::records::RepositoryState::Datatype == 0) {
     exahype::records::RepositoryState::initDatatype();
   }
-  #endif
+#endif
 }
 
-
-exahype::repositories::RepositoryFactory::~RepositoryFactory() {
-}
-
+exahype::repositories::RepositoryFactory::~RepositoryFactory() {}
 
 void exahype::repositories::RepositoryFactory::shutdownAllParallelDatatypes() {
-  #ifdef Parallel
+#ifdef Parallel
   peano::parallel::Partitioner::shutdownDatatypes();
 
   exahype::State::shutdownDatatype();
   exahype::Vertex::shutdownDatatype();
   exahype::Cell::shutdownDatatype();
 
-  if (exahype::records::RepositoryState::Datatype!=0) {
+  if (exahype::records::RepositoryState::Datatype != 0) {
     exahype::records::RepositoryState::shutdownDatatype();
     exahype::records::RepositoryState::Datatype = 0;
   }
-  #endif
+#endif
 }
 
-
-exahype::repositories::RepositoryFactory& exahype::repositories::RepositoryFactory::getInstance() {
+exahype::repositories::RepositoryFactory&
+exahype::repositories::RepositoryFactory::getInstance() {
   static exahype::repositories::RepositoryFactory singleton;
   return singleton;
 }
 
-    
-exahype::repositories::Repository* 
+exahype::repositories::Repository*
 exahype::repositories::RepositoryFactory::createWithArrayStackImplementation(
-  peano::geometry::Geometry&                   geometry,
-  const tarch::la::Vector<DIMENSIONS,double>&  domainSize,
-  const tarch::la::Vector<DIMENSIONS,double>&  computationalDomainOffset,
-  int                                          maxCellStackSize,    
-  int                                          maxVertexStackSize,    
-  int                                          maxTemporaryVertexStackSize    
-) {
-  #ifdef Parallel
+    peano::geometry::Geometry& geometry,
+    const tarch::la::Vector<DIMENSIONS, double>& domainSize,
+    const tarch::la::Vector<DIMENSIONS, double>& computationalDomainOffset,
+    int maxCellStackSize, int maxVertexStackSize,
+    int maxTemporaryVertexStackSize) {
+#ifdef Parallel
   if (!tarch::parallel::Node::getInstance().isGlobalMaster()) {
-    return new exahype::repositories::RepositoryArrayStack(geometry, domainSize, computationalDomainOffset,maxCellStackSize,maxVertexStackSize,maxTemporaryVertexStackSize);
-  }
-  else
-  #endif
-  return new exahype::repositories::RepositoryArrayStack(geometry, domainSize, computationalDomainOffset,maxCellStackSize,maxVertexStackSize,maxTemporaryVertexStackSize);
-}    
+    return new exahype::repositories::RepositoryArrayStack(
+        geometry, domainSize, computationalDomainOffset, maxCellStackSize,
+        maxVertexStackSize, maxTemporaryVertexStackSize);
+  } else
+#endif
+    return new exahype::repositories::RepositoryArrayStack(
+        geometry, domainSize, computationalDomainOffset, maxCellStackSize,
+        maxVertexStackSize, maxTemporaryVertexStackSize);
+}
 
-
-exahype::repositories::Repository* 
+exahype::repositories::Repository*
 exahype::repositories::RepositoryFactory::createWithSTDStackImplementation(
-  peano::geometry::Geometry&                   geometry,
-  const tarch::la::Vector<DIMENSIONS,double>&  domainSize,
-  const tarch::la::Vector<DIMENSIONS,double>&  computationalDomainOffset
-) {
-  #ifdef Parallel
+    peano::geometry::Geometry& geometry,
+    const tarch::la::Vector<DIMENSIONS, double>& domainSize,
+    const tarch::la::Vector<DIMENSIONS, double>& computationalDomainOffset) {
+#ifdef Parallel
   if (!tarch::parallel::Node::getInstance().isGlobalMaster()) {
     return new exahype::repositories::RepositorySTDStack(geometry);
-  }
-  else
-  #endif
-  return new exahype::repositories::RepositorySTDStack(geometry, domainSize, computationalDomainOffset);
+  } else
+#endif
+    return new exahype::repositories::RepositorySTDStack(
+        geometry, domainSize, computationalDomainOffset);
 }

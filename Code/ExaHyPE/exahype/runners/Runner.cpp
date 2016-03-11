@@ -2,7 +2,6 @@
 #include "exahype/repositories/Repository.h"
 #include "exahype/repositories/RepositoryFactory.h"
 
-
 #include "tarch/Assertions.h"
 
 #include "tarch/logging/CommandLineLogger.h"
@@ -32,68 +31,60 @@
 
 #include "exahype/solvers/Solver.h"
 
-tarch::logging::Log  exahype::runners::Runner::_log( "exahype::runners::Runner" );
+tarch::logging::Log exahype::runners::Runner::_log("exahype::runners::Runner");
 
+exahype::runners::Runner::Runner(const Parser& parser) : _parser(parser) {}
 
-
-exahype::runners::Runner::Runner(const Parser& parser):
-              _parser(parser) {
-}
-
-
-exahype::runners::Runner::~Runner() {
-}
-
+exahype::runners::Runner::~Runner() {}
 
 void exahype::runners::Runner::initDistributedMemoryConfiguration() {
   // @todo evtl. fehlen hier die Includes
-/*
+  /*
+    if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
+      tarch::parallel::NodePool::getInstance().setStrategy(
+        new mpibalancing::FairNodePoolStrategy(6)
+      );
+    }
+    #else
+  */
   if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
     tarch::parallel::NodePool::getInstance().setStrategy(
-      new mpibalancing::FairNodePoolStrategy(6)
-    );
-  }
-  #else
-*/
-  if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
-     tarch::parallel::NodePool::getInstance().setStrategy(
-      new tarch::parallel::FCFSNodePoolStrategy()
-    );
+        new tarch::parallel::FCFSNodePoolStrategy());
   }
 
   // @todo evtl. fehlen hier die Includes
-/*
+  /*
+    peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
+      new mpibalancing::StaticBalancing(true)
+    );
+    #else
+  */
   peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-    new mpibalancing::StaticBalancing(true)
-  );
-  #else
-*/
-  peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-    new peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning(true)
-  );
+      new peano::parallel::loadbalancing::
+          OracleForOnePhaseWithGreedyPartitioning(true));
 
   tarch::parallel::NodePool::getInstance().restart();
   tarch::parallel::NodePool::getInstance().waitForAllNodesToBecomeIdle();
 
-  #if defined(Debug) || defined(Asserts)
-  tarch::parallel::Node::getInstance().setDeadlockTimeOut(120*4);
-  tarch::parallel::Node::getInstance().setTimeOutWarning(60*4);
-  #else
+#if defined(Debug) || defined(Asserts)
+  tarch::parallel::Node::getInstance().setDeadlockTimeOut(120 * 4);
+  tarch::parallel::Node::getInstance().setTimeOutWarning(60 * 4);
+#else
   tarch::parallel::Node::getInstance().setDeadlockTimeOut(120);
   tarch::parallel::Node::getInstance().setTimeOutWarning(60);
-  #endif
+#endif
 
   const int bufferSize = 64;
-  peano::parallel::SendReceiveBufferPool::getInstance().setBufferSize( bufferSize );
-  peano::parallel::JoinDataBufferPool::getInstance().setBufferSize( bufferSize );
+  peano::parallel::SendReceiveBufferPool::getInstance().setBufferSize(
+      bufferSize);
+  peano::parallel::JoinDataBufferPool::getInstance().setBufferSize(bufferSize);
 }
-
 
 void exahype::runners::Runner::shutdownDistributedMemoryConfiguration() {
   tarch::parallel::NodePool::getInstance().terminate();
-  exahype::repositories::RepositoryFactory::getInstance().shutdownAllParallelDatatypes();
+  exahype::repositories::RepositoryFactory::getInstance()
+      .shutdownAllParallelDatatypes();
 }
-
 
 void exahype::runners::Runner::initSharedMemoryConfiguration() {
 #ifdef SharedMemoryParallelisation
@@ -106,28 +97,31 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
 
   switch (_parser.getMulticoreOracleType()) {
     case Parser::Dummy:
-      logInfo( "initSharedMemoryConfiguration()", "use dummy shared memory oracle" );
+      logInfo("initSharedMemoryConfiguration()",
+              "use dummy shared memory oracle");
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
-          new peano::datatraversal::autotuning::OracleForOnePhaseDummy(true,false,0) // @todo Vasco bitte mal auf 1 setzen und nochmal durchjagen
-      );
+          new peano::datatraversal::autotuning::OracleForOnePhaseDummy(
+              true, false,
+              0)  // @todo Vasco bitte mal auf 1 setzen und nochmal durchjagen
+          );
       break;
     case Parser::Autotuning:
-      logInfo( "initSharedMemoryConfiguration()", "use autotuning shared memory oracle" );
+      logInfo("initSharedMemoryConfiguration()",
+              "use autotuning shared memory oracle");
       break;
     case Parser::GrainSizeSampling:
-      logInfo( "initSharedMemoryConfiguration()", "use shared memory oracle sampling" );
+      logInfo("initSharedMemoryConfiguration()",
+              "use shared memory oracle sampling");
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
           new sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling(
               32,
-              false, // useThreadPipelining,
-              true  // logarithmicDistribution
-          )
-      );
+              false,  // useThreadPipelining,
+              true    // logarithmicDistribution
+              ));
       break;
   }
 #endif
 }
-
 
 void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 #ifdef SharedMemoryParallelisation
@@ -137,42 +131,44 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
     case Parser::Autotuning:
       break;
     case Parser::GrainSizeSampling:
-      logInfo( "shutdownSharedMemoryConfiguration()", "wrote statistics into file " << _parser.getMulticorePropertiesFile() );
-      peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics(_parser.getMulticorePropertiesFile());
+      logInfo("shutdownSharedMemoryConfiguration()",
+              "wrote statistics into file "
+                  << _parser.getMulticorePropertiesFile());
+      peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics(
+          _parser.getMulticorePropertiesFile());
       break;
   }
 #endif
 }
 
-
-
 int exahype::runners::Runner::run() {
   initSharedMemoryConfiguration();
   initDistributedMemoryConfiguration();
 
-  logInfo("run(...)", "create computational domain at " << _parser.getOffset() << " of width/size " << _parser.getSize() );
+  logInfo("run(...)", "create computational domain at " << _parser.getOffset()
+                                                        << " of width/size "
+                                                        << _parser.getSize());
 
   peano::geometry::Hexahedron geometry(
       _parser.getSize(),
-      tarch::la::Vector<DIMENSIONS,double>( _parser.getOffset() )
-  );
+      tarch::la::Vector<DIMENSIONS, double>(_parser.getOffset()));
 
-  exahype::repositories::Repository* repository = 
-      exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
-          geometry,
-          tarch::la::Vector<DIMENSIONS,double>( _parser.getSize() ),
-          tarch::la::Vector<DIMENSIONS,double>( _parser.getOffset() )
-      );
+  exahype::repositories::Repository* repository =
+      exahype::repositories::RepositoryFactory::getInstance()
+          .createWithSTDStackImplementation(
+              geometry,
+              tarch::la::Vector<DIMENSIONS, double>(_parser.getSize()),
+              tarch::la::Vector<DIMENSIONS, double>(_parser.getOffset()));
 
   int result = 0;
   if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
-    result = runAsMaster( *repository );
+    result = runAsMaster(*repository);
   }
-  #ifdef Parallel
+#ifdef Parallel
   else {
-    result = runAsWorker( *repository );
+    result = runAsWorker(*repository);
   }
-  #endif
+#endif
 
   shutdownSharedMemoryConfiguration();
   shutdownDistributedMemoryConfiguration();
@@ -182,7 +178,8 @@ int exahype::runners::Runner::run() {
   return result;
 }
 
-int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& repository) {
+int exahype::runners::Runner::runAsMaster(
+    exahype::repositories::Repository& repository) {
   peano::utils::UserInterface userInterface;
   userInterface.writeHeader();
 
@@ -201,26 +198,22 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     gridSetupIterations++;
   } while (!repository.getState().isGridBalanced());
 
+  logInfo("runAsMaster()",
+          "grid setup iterations=" << gridSetupIterations << ", max-level="
+                                   << repository.getState().getMaxLevel());
+#ifdef Parallel
+  logInfo("runAsMaster()",
+          "number of working ranks=" << tarch::parallel::NodePool::getInstance()
+                                            .getNumberOfWorkingNodes());
   logInfo(
-    "runAsMaster()",
-    "grid setup iterations=" << gridSetupIterations << ", max-level=" << repository.getState().getMaxLevel()
-  );
-  #ifdef Parallel
-  logInfo(
-    "runAsMaster()",
-    "number of working ranks=" <<
-    tarch::parallel::NodePool::getInstance().getNumberOfWorkingNodes()
-  );
-  logInfo(
-    "runAsMaster()",
-    "number of idle ranks=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
-  );
-  #endif
+      "runAsMaster()",
+      "number of idle ranks="
+          << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes());
+#endif
 
   // Initialise the cell descriptions;
   repository.switchToPatchInitialisation();
   repository.iterate();
-
 
   repository.switchToSolutionUpdateAndGlobalTimeStepComputation();
   repository.iterate();
@@ -236,31 +229,27 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   startNewTimeStep(0);
 
   const double simulationEndTime = _parser.getSimulationEndTime();
-  int n=1;
+  int n = 1;
 
-  while (
-      (getMinSolverTimeStamp()<simulationEndTime)
-      &&
-      tarch::la::greater(getMinSolverTimeStepSize(), 0.0)
-  ) {
+  while ((getMinSolverTimeStamp() < simulationEndTime) &&
+         tarch::la::greater(getMinSolverTimeStepSize(), 0.0)) {
     if (exahype::plotters::isAPlotterActive(getMinSolverTimeStamp())) {
       repository.switchToPlot();
       repository.iterate();
       exahype::plotters::finishedPlotting();
-      logDebug( "runAsMaster(...)", "all snapshots written" );
+      logDebug("runAsMaster(...)", "all snapshots written");
     }
 
-    if ( _parser.fuseAlgorithmicSteps() ) {
+    if (_parser.fuseAlgorithmicSteps()) {
       runOneTimeStampWithFusedAlgorithmicSteps(repository);
-      startNewTimeStepAndRecomputePredictorIfNecessary(repository,n);
-    }
-    else {
+      startNewTimeStepAndRecomputePredictorIfNecessary(repository, n);
+    } else {
       runOneTimeStampWithFourSeparateAlgorithmicSteps(repository);
       startNewTimeStep(n);
     }
 
     n++;
-    logDebug( "runAsMaster(...)", "state=" << repository.getState().toString() );
+    logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
   }
 
   repository.logIterationStatistics();
@@ -272,12 +261,11 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 double exahype::runners::Runner::getMinSolverTimeStamp() {
   double currentMinTimeStamp = std::numeric_limits<double>::max();
 
-  for (
-    std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
-    p != exahype::solvers::RegisteredSolvers.end();
-    p++
-  ) {
-    currentMinTimeStamp = std::min ( currentMinTimeStamp, (*p)->getMinCorrectorTimeStamp());
+  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
+           exahype::solvers::RegisteredSolvers.begin();
+       p != exahype::solvers::RegisteredSolvers.end(); p++) {
+    currentMinTimeStamp =
+        std::min(currentMinTimeStamp, (*p)->getMinCorrectorTimeStamp());
   }
   return currentMinTimeStamp;
 }
@@ -285,12 +273,11 @@ double exahype::runners::Runner::getMinSolverTimeStamp() {
 double exahype::runners::Runner::getMinSolverTimeStepSize() {
   double currentMinTimeStepSize = std::numeric_limits<double>::max();
 
-  for (
-    std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
-    p != exahype::solvers::RegisteredSolvers.end();
-    p++
-  ) {
-    currentMinTimeStepSize = std::min ( currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
+  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
+           exahype::solvers::RegisteredSolvers.begin();
+       p != exahype::solvers::RegisteredSolvers.end(); p++) {
+    currentMinTimeStepSize =
+        std::min(currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
   }
   return currentMinTimeStepSize;
 }
@@ -298,64 +285,64 @@ double exahype::runners::Runner::getMinSolverTimeStepSize() {
 void exahype::runners::Runner::initSolvers() {
   // todo 16/02/26:Dominic Etienne Charrier: The initial time stamp
   // should be set by the user in his solver sub class.
-  for (
-    std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
-    p != exahype::solvers::RegisteredSolvers.end();
-    p++
-  ) {
+  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
+           exahype::solvers::RegisteredSolvers.begin();
+       p != exahype::solvers::RegisteredSolvers.end(); p++) {
     // todo:16/03/04:Dominic Charrier
-    (*p)->setMinPredictorTimeStamp ( 0.0 ); // introduce reset method that sets both to t=zero
-    (*p)->setMinCorrectorTimeStamp ( 0.0 ); // introduce reset method that sets both to t=zero
+    (*p)->setMinPredictorTimeStamp(
+        0.0);  // introduce reset method that sets both to t=zero
+    (*p)->setMinCorrectorTimeStamp(
+        0.0);  // introduce reset method that sets both to t=zero
   }
 }
 
 void exahype::runners::Runner::startNewTimeStep(int n) {
-  double currentMinTimeStamp    = std::numeric_limits<double>::max();
+  double currentMinTimeStamp = std::numeric_limits<double>::max();
   double currentMinTimeStepSize = std::numeric_limits<double>::max();
-  double nextMinTimeStepSize    = std::numeric_limits<double>::max();
+  double nextMinTimeStepSize = std::numeric_limits<double>::max();
 
-  for (
-    std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
-    p != exahype::solvers::RegisteredSolvers.end();
-    p++
-  ) {
+  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
+           exahype::solvers::RegisteredSolvers.begin();
+       p != exahype::solvers::RegisteredSolvers.end(); p++) {
     (*p)->startNewTimeStep();
 
-    currentMinTimeStamp    = std::min ( currentMinTimeStamp,    (*p)->getMinCorrectorTimeStamp());
-    currentMinTimeStepSize = std::min ( currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
-    nextMinTimeStepSize    = std::min ( nextMinTimeStepSize,    (*p)->getMinPredictorTimeStepSize());
+    currentMinTimeStamp =
+        std::min(currentMinTimeStamp, (*p)->getMinCorrectorTimeStamp());
+    currentMinTimeStepSize =
+        std::min(currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
+    nextMinTimeStepSize =
+        std::min(nextMinTimeStepSize, (*p)->getMinPredictorTimeStepSize());
   }
 
-  logInfo(
-      "startNewTimeStep(...)",
-      "step " << n <<
-      "\t t_min          =" << currentMinTimeStamp
-  );
+  logInfo("startNewTimeStep(...)",
+          "step " << n << "\t t_min          =" << currentMinTimeStamp);
 
-  logInfo(
-      "startNewTimeStep(...)",
-      "\t\t dt_min         =" << currentMinTimeStepSize
-  );
+  logInfo("startNewTimeStep(...)",
+          "\t\t dt_min         =" << currentMinTimeStepSize);
 
-  logInfo(
-      "startNewTimeStep(...)",
-      "\t\t next dt_min    =" << nextMinTimeStepSize
-  );
+  logInfo("startNewTimeStep(...)",
+          "\t\t next dt_min    =" << nextMinTimeStepSize);
 
 #if defined(Debug) || defined(Asserts)
-  tarch::logging::CommandLineLogger::getInstance().closeOutputStreamAndReopenNewOne();
+  tarch::logging::CommandLineLogger::getInstance()
+      .closeOutputStreamAndReopenNewOne();
 #endif
 }
 
-void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository) {
+void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
+    exahype::repositories::Repository& repository) {
   /*
    * The adapter below performs the following steps:
    *
-   * 1. Exchange the fluctuations using the predictor computed in the previous sweep
+   * 1. Exchange the fluctuations using the predictor computed in the previous
+   *sweep
    *    and the corrector time stemp size.
-   * 2. Perform the corrector step using the corrector update and the corrector time step size.
-   *    This is a cell-local operation. Thus we immediately obtain the cell-local current solution.
-   * 3. Perform the predictor step using the cell-local current solution and the predictor time step size.
+   * 2. Perform the corrector step using the corrector update and the corrector
+   *time step size.
+   *    This is a cell-local operation. Thus we immediately obtain the
+   *cell-local current solution.
+   * 3. Perform the predictor step using the cell-local current solution and the
+   *predictor time step size.
    * 4. Compute the cell-local time step sizes
    */
   repository.switchToADERDGTimeStep();
@@ -365,57 +352,67 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(exahype:
 // @todo 16/02/29:Dominic Etienne Charrier
 // @Tobias: This should move into solver class, or not?
 // The function does only make sense for optimistic time stepping
-bool exahype::runners::Runner::setAccurateTimeStepSizesIfStabilityConditionWasHarmed() {
+bool exahype::runners::Runner::
+    setAccurateTimeStepSizesIfStabilityConditionWasHarmed() {
   bool cflConditionWasViolated = false;
 
-  for (
-      std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
-      p != exahype::solvers::RegisteredSolvers.end();
-      p++
-  ) {
-    bool solverTimeStepSizeIsInstable = ( (*p)->getMinPredictorTimeStepSize() > (*p)->getMinNextPredictorTimeStepSize() );
+  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
+           exahype::solvers::RegisteredSolvers.begin();
+       p != exahype::solvers::RegisteredSolvers.end(); p++) {
+    bool solverTimeStepSizeIsInstable =
+        ((*p)->getMinPredictorTimeStepSize() >
+         (*p)->getMinNextPredictorTimeStepSize());
 
     // todo 16/02/26:Dominic Etienne Charrier: The initial time stamp
-    // introduce reset method that sets both to t=0.99*... make alpha=0.99 solver variable
+    // introduce reset method that sets both to t=0.99*... make alpha=0.99
+    // solver variable
     if (solverTimeStepSizeIsInstable) {
-      (*p)->updateMinNextPredictorTimeStepSize(0.99 * (*p)->getMinNextPredictorTimeStepSize()); // set next predictor time step size
-      (*p)->setMinPredictorTimeStepSize       (0.99 * (*p)->getMinPredictorTimeStepSize());     // set next corrector time step size
+      (*p)->updateMinNextPredictorTimeStepSize(
+          0.99 * (*p)->getMinNextPredictorTimeStepSize());  // set next
+                                                            // predictor time
+                                                            // step size
+      (*p)->setMinPredictorTimeStepSize(
+          0.99 * (*p)->getMinPredictorTimeStepSize());  // set next corrector
+                                                        // time step size
     } else {
-      (*p)->updateMinNextPredictorTimeStepSize( .5*((*p)->getMinPredictorTimeStepSize() + (*p)->getMinNextPredictorTimeStepSize()) );
+      (*p)->updateMinNextPredictorTimeStepSize(
+          .5 * ((*p)->getMinPredictorTimeStepSize() +
+                (*p)->getMinNextPredictorTimeStepSize()));
     }
 
-    cflConditionWasViolated = cflConditionWasViolated | solverTimeStepSizeIsInstable;
+    cflConditionWasViolated =
+        cflConditionWasViolated | solverTimeStepSizeIsInstable;
   }
 
-  return cflConditionWasViolated; // | tooDiffusive;
+  return cflConditionWasViolated;  // | tooDiffusive;
 }
 
-void exahype::runners::Runner::startNewTimeStepAndRecomputePredictorIfNecessary(exahype::repositories::Repository& repository,int n) {
+void exahype::runners::Runner::startNewTimeStepAndRecomputePredictorIfNecessary(
+    exahype::repositories::Repository& repository, int n) {
   // Must be evaluated before we start a new time step
-  bool stabilityConditionWasHarmed = setAccurateTimeStepSizesIfStabilityConditionWasHarmed();
+  bool stabilityConditionWasHarmed =
+      setAccurateTimeStepSizesIfStabilityConditionWasHarmed();
   // Note that it is important to switch the time step sizes, i.e,
   // start a new time step, before we recompute the predictor.
   startNewTimeStep(n);
   if (stabilityConditionWasHarmed) {
-    logInfo(
-        "startNewTimeStep(...)",
-        "\t\t Space-time predictor must be recomputed."
-    );
+    logInfo("startNewTimeStep(...)",
+            "\t\t Space-time predictor must be recomputed.");
 
     repository.switchToPredictor();
     repository.iterate();
   }
 }
 
-
-void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(exahype::repositories::Repository& repository) {
+void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(
+    exahype::repositories::Repository& repository) {
   // Only one time step (predictor vs. corrector) is used in this case.
-  repository.switchToFaceDataExchange();          // Riemann -> face2face
+  repository.switchToFaceDataExchange();  // Riemann -> face2face
   repository.iterate();
-  repository.switchToCorrector();                 // Face to cell
+  repository.switchToCorrector();  // Face to cell
   repository.iterate();
-  repository.switchToGlobalTimeStepComputation(); // Inside cell
+  repository.switchToGlobalTimeStepComputation();  // Inside cell
   repository.iterate();
-  repository.switchToPredictor();                 // Cell onto faces
+  repository.switchToPredictor();  // Cell onto faces
   repository.iterate();
 }

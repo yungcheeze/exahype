@@ -3,7 +3,6 @@
 #ifndef _EXAHYPE_SOLVERS_SOLVER_H_
 #define _EXAHYPE_SOLVERS_SOLVER_H_
 
-
 #include <string>
 #include <vector>
 
@@ -13,77 +12,74 @@
 
 #include "exahype/records/ADERDGCellDescription.h"
 
-
-#define EXAHYPE_FACE_LEFT   0
-#define EXAHYPE_FACE_RIGHT  1
-#define EXAHYPE_FACE_FRONT  2
-#define EXAHYPE_FACE_BACK   3
+#define EXAHYPE_FACE_LEFT 0
+#define EXAHYPE_FACE_RIGHT 1
+#define EXAHYPE_FACE_FRONT 2
+#define EXAHYPE_FACE_BACK 3
 #define EXAHYPE_FACE_BOTTOM 4
-#define EXAHYPE_FACE_TOP    5
+#define EXAHYPE_FACE_TOP 5
 
 // todo 08/02/16:Dominic Etienne Charrier
 // move somewhere else
 // is evaluated at compile time
 constexpr int power(int basis, int exp) {
-  return (exp==0)? 1 : basis * power(basis, exp-1);
+  return (exp == 0) ? 1 : basis * power(basis, exp - 1);
 }
 
 namespace exahype {
-  namespace solvers {
-    class Solver;
+namespace solvers {
+class Solver;
 
-    extern std::vector<Solver*> RegisteredSolvers;
-  }
+extern std::vector<Solver*> RegisteredSolvers;
+}
 }
 
 /**
  * Describes one solver.
  */
 class exahype::solvers::Solver {
-public:
-  enum Type {
-    ADER_DG
-  };
+ public:
+  enum Type { ADER_DG };
 
-/*
-  enum Type {
-    SOLVE, SUBSOLVE
-  };
-*/
+  /*
+    enum Type {
+      SOLVE, SUBSOLVE
+    };
+  */
 
   enum TimeStepping {
-    GlobalTimeStepping, // Local, Anarchic
+    GlobalTimeStepping,  // Local, Anarchic
   };
 
-protected:
+ protected:
   /**
    * Each solver has an identifier/name. It is used for debug purposes only.
    */
-  const std::string  _identifier;
+  const std::string _identifier;
 
-  const Type         _type;
+  const Type _type;
 
   /**
    * Each solver has a kernel number that says which kernel is to be
    * executed. Typically this is an ascending index starting from 0.
    */
-  const int         _kernelNumber;
+  const int _kernelNumber;
 
-  const int         _numberOfVariables;
+  const int _numberOfVariables;
 
-  const int         _nodesPerCoordinateAxis;
+  const int _nodesPerCoordinateAxis;
 
-  const int         _unknownsPerFace;
+  const int _unknownsPerFace;
 
-  const int         _unknownsPerCellBoundary;
+  const int _unknownsPerCellBoundary;
 
-  const int         _unknownsPerCell;
+  const int _unknownsPerCell;
 
-  const int         _fluxUnknownsPerCell;
+  const int _fluxUnknownsPerCell;
 
-  const int         _spaceTimeUnknownsPerCell;
+  const int _spaceTimeUnknownsPerCell;
 
-  const int         _spaceTimeFluxUnknownsPerCell;
+  const int _spaceTimeFluxUnknownsPerCell;
 
   const TimeStepping _timeStepping;
 
@@ -96,30 +92,33 @@ protected:
   /**
    * Minimum corrector time stamp.
    */
-  double             _minCorrectorTimeStamp;
+  double _minCorrectorTimeStamp;
 
   /**
    * Minimum predictor time stamp. Always equal or larger
    * than the minimum corrector time stamp.
    */
-  double             _minPredictorTimeStamp;
+  double _minPredictorTimeStamp;
 
   /**
    * Corrector time step size.
    */
-  double             _minCorrectorTimeStepSize;
+  double _minCorrectorTimeStepSize;
 
   /**
    * Predictor time step size.
    */
-  double             _minPredictorTimeStepSize;
+  double _minPredictorTimeStepSize;
 
   /**
    * Predictor time step size.
    */
-  double             _minNextPredictorTimeStepSize;
-public:
-  Solver(const std::string& identifier, Type type, int kernelNumber, int numberOfVariables, int nodesPerCoordinateAxis, TimeStepping timeStepping);
+  double _minNextPredictorTimeStepSize;
+
+ public:
+  Solver(const std::string& identifier, Type type, int kernelNumber,
+         int numberOfVariables, int nodesPerCoordinateAxis,
+         TimeStepping timeStepping);
 
   virtual ~Solver() {}
 
@@ -188,25 +187,25 @@ public:
    */
   int getNodesPerCoordinateAxis() const;
 
-//  /**
-//   * @brief Prolongates coarse grid face unknowns
-//   * \p levelDifference levels down to the fine grid unknowns.
-//   */
-//  virtual void prolongateCoarseGridFaceUnknowns(
-//      double* fineGridUnknowns,
-//      const double* const coarseGridUnknowns,
-//      const int levelDifference
-//  ) = 0;
-//
-//  /**
-//   * @brief Restricts fine grid face unknowns
-//   * \p levelDifference levels up to the coarse grid unknowns.
-//   */
-//  virtual void updateFineGridFaceUnknowns(
-//      double* fineGridUnknowns,
-//      const double* const fineGridUnknowns,
-//      const int levelDifference
-//  ) = 0;
+  //  /**
+  //   * @brief Prolongates coarse grid face unknowns
+  //   * \p levelDifference levels down to the fine grid unknowns.
+  //   */
+  //  virtual void prolongateCoarseGridFaceUnknowns(
+  //      double* fineGridUnknowns,
+  //      const double* const coarseGridUnknowns,
+  //      const int levelDifference
+  //  ) = 0;
+  //
+  //  /**
+  //   * @brief Restricts fine grid face unknowns
+  //   * \p levelDifference levels up to the coarse grid unknowns.
+  //   */
+  //  virtual void updateFineGridFaceUnknowns(
+  //      double* fineGridUnknowns,
+  //      const double* const fineGridUnknowns,
+  //      const int levelDifference
+  //  ) = 0;
 
   /**
    * @brief Adds the solution update to the solution.
@@ -215,11 +214,8 @@ public:
    * @param[in]    lduh Cell-local update DoF.
    * @param[dt]    dt   Time step size.
    */
-  virtual void solutionUpdate(
-      double * luh,
-      const double * const lduh,
-      const double dt
-  ) = 0;
+  virtual void solutionUpdate(double* luh, const double* const lduh,
+                              const double dt) = 0;
 
   /**
    * @brief Computes the volume flux contribution to the cell update.
@@ -229,10 +225,8 @@ public:
    * @param[dt]    dt   Time step size.
    */
   virtual void volumeIntegral(
-      double * lduh,
-      const double * const lFhi,
-      const tarch::la::Vector<DIMENSIONS,double>& dx
-  ) = 0;
+      double* lduh, const double* const lFhi,
+      const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
 
   /**
    * @brief Computes the surface integral contributions
@@ -243,33 +237,31 @@ public:
    * @param[in]    dx     Extent of the cell in each coordinate direction.
    */
   virtual void surfaceIntegral(
-      double * lduh,
-      const double * const lFhbnd,
-      const tarch::la::Vector<DIMENSIONS,double>& dx
-  ) = 0;
+      double* lduh, const double* const lFhbnd,
+      const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
 
   /**
-   * @brief Computes the normal fluxes (or fluctuations) at the interface of two cells.
+   * @brief Computes the normal fluxes (or fluctuations) at the interface of two
+   *cells.
    *
    * @param[inout] FL             Flux DoF belonging to the left cell.
    * @param[inout] FR             Flux DoF belonging the right cell.
-   * @param[in]    QL             DoF of the boundary extrapolated predictor belonging to the left cell.
-   * @param[in]    QR             DoF of the boundary extrapolated predictor belonging to the right cell.
-   * @param[in]    normalNonZero  Index of the nonzero normal vector component, i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
+   * @param[in]    QL             DoF of the boundary extrapolated predictor
+   *belonging to the left cell.
+   * @param[in]    QR             DoF of the boundary extrapolated predictor
+   *belonging to the right cell.
+   * @param[in]    normalNonZero  Index of the nonzero normal vector component,
+   *i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
    */
-  virtual void riemannSolver(
-      double * FL,
-      double * FR,
-      const double * const QL,
-      const double * const QR,
-      const double dt,
-      const int normalNonZero
-  ) = 0;
+  virtual void riemannSolver(double* FL, double* FR, const double* const QL,
+                             const double* const QR, const double dt,
+                             const int normalNonZero) = 0;
 
   /**
    * @brief Computes cell-local predictor space-time, volume, and face DoF.
    *
-   * Computes the cell-local space-time predictor lQi, the space-time volume flux lFi,
+   * Computes the cell-local space-time predictor lQi, the space-time volume
+   *flux lFi,
    * the predictor lQhi, the volume flux lFhi, the boundary
    * extrapolated predictor lQhbnd and normal flux lFhbnd.
    *
@@ -284,16 +276,9 @@ public:
    * @param[in]    dt     Time step size.
    */
   virtual void spaceTimePredictor(
-      double * lQi,
-      double * lFi,
-      double * lQhi,
-      double * lFhi,
-      double * lQhbnd,
-      double * lFhbnd,
-      const double * const luh,
-      const tarch::la::Vector<DIMENSIONS,double>& dx,
-      const double dt
-  ) = 0;
+      double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
+      double* lFhbnd, const double* const luh,
+      const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt) = 0;
 
   /**
    * @brief Returns a stable time step size.
@@ -302,9 +287,8 @@ public:
    * @param[in] dx        Extent of the cell in each coordinate direction.
    */
   virtual double stableTimeStepSize(
-      const double * const luh,
-      const tarch::la::Vector<DIMENSIONS,double>& dx
-  ) = 0;
+      const double* const luh,
+      const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
 
   /**
    * This operation allows you to impose time-dependent solution values
@@ -314,39 +298,36 @@ public:
    * region.
    */
   virtual void solutionAdjustment(
-    double *                                      luh,
-    const tarch::la::Vector<DIMENSIONS,double>&   center,
-    const tarch::la::Vector<DIMENSIONS,double>&   dx,
-    double                                        t,
-    double                                        dt
-  ) = 0;
+      double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
+      const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) = 0;
 
   virtual bool hasToAdjustSolution(
-    const tarch::la::Vector<DIMENSIONS,double>&   center,
-    const tarch::la::Vector<DIMENSIONS,double>&   dx,
-    double                                        t
-  ) = 0;
+      const tarch::la::Vector<DIMENSIONS, double>& center,
+      const tarch::la::Vector<DIMENSIONS, double>& dx, double t) = 0;
 
   /**
    * @todo Dominic, please add a description what this routine does.
    */
-  void synchroniseTimeStepping(exahype::records::ADERDGCellDescription& p) const;
+  void synchroniseTimeStepping(
+      exahype::records::ADERDGCellDescription& p) const;
 
   void startNewTimeStep();
 
-  void updateMinNextPredictorTimeStepSize (const double& nextPredictorTimeStepSize);
+  void updateMinNextPredictorTimeStepSize(
+      const double& nextPredictorTimeStepSize);
 
-  double getMinNextPredictorTimeStepSize () const;
+  double getMinNextPredictorTimeStepSize() const;
 
-  // todo 16/02/25:Dominic Etienne Charrier: It follows stuff that must be revised:
+  // todo 16/02/25:Dominic Etienne Charrier: It follows stuff that must be
+  // revised:
 
   // todo 25/02/16:Dominic Etienne Charrier
   // Remove the time stamps that are not used in ExaHype.
-  void setMinCorrectorTimeStamp (double minCorectorTimeStamp);
+  void setMinCorrectorTimeStamp(double minCorectorTimeStamp);
 
   double getMinCorrectorTimeStamp() const;
 
-  void setMinPredictorTimeStamp (double minPredictorTimeStamp);
+  void setMinPredictorTimeStamp(double minPredictorTimeStamp);
 
   double getMinPredictorTimeStamp() const;
 
@@ -356,7 +337,7 @@ public:
   // be removed if the time stepping works robust again.
   double getMinCorrectorTimeStepSize() const;
 
-  void setMinPredictorTimeStepSize (double minPredictorTimeStepSize);
+  void setMinPredictorTimeStepSize(double minPredictorTimeStepSize);
 
   double getMinPredictorTimeStepSize() const;
   /**
@@ -371,8 +352,7 @@ public:
    * This operation is not thread safe.
    *
    */
-  void updateNextPredictorTimeStepSize (double nextPredictorTimeStepSize);
+  void updateNextPredictorTimeStepSize(double nextPredictorTimeStepSize);
 };
 
 #endif
-

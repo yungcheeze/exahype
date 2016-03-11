@@ -1,20 +1,20 @@
 #include "tarch/parallel/Node.h"
 #include "peano/utils/Loop.h"
 
-
 template <class Vertex>
-void multiscalelinkedcell::HangingVertexBookkeeper::updateCellIndicesInMergeWithNeighbour(Vertex&   vertex) {
-  for (int i=0; i<TWO_POWER_D; i++) {
-    if (vertex.getAdjacentRanks()(i)!=tarch::parallel::Node::getInstance().getRank()) {
-      vertex.getIndex()(i)=RemoteAdjacencyIndex;
+void multiscalelinkedcell::HangingVertexBookkeeper::
+    updateCellIndicesInMergeWithNeighbour(Vertex& vertex) {
+  for (int i = 0; i < TWO_POWER_D; i++) {
+    if (vertex.getAdjacentRanks()(i) !=
+        tarch::parallel::Node::getInstance().getRank()) {
+      vertex.getIndex()(i) = RemoteAdjacencyIndex;
     }
   }
 }
 
-
-
 //
-//tarch::la::Vector<THREE_POWER_D,int> __THIS_QUALIFIED_TYPENAME__::getAdjacentIndicesOfCell(
+// tarch::la::Vector<THREE_POWER_D,int>
+// __THIS_QUALIFIED_TYPENAME__::getAdjacentIndicesOfCell(
 //  const __NAMESPACE__::Cell&            cell,
 //  __NAMESPACE__::Vertex * const         fineGridVertices,
 //  const peano::grid::VertexEnumerator&  fineGridVerticesEnumerator
@@ -34,7 +34,8 @@ void multiscalelinkedcell::HangingVertexBookkeeper::updateCellIndicesInMergeWith
 //        fineGridVerticesEnumerator.getLevel()
 //      )(kScalar);
 //        if (fineGridVertex.isHangingNode()) {
-//    return multiscalelinkedcell::HangingVertexBookkeeper::getInstance().getAdjacencyEntriesOfVertex(x,level);
+//    return
+//    multiscalelinkedcell::HangingVertexBookkeeper::getInstance().getAdjacencyEntriesOfVertex(x,level);
 //  }
 //  else {
 //    return fineGridVertex.getPARAM0();
@@ -42,7 +43,8 @@ void multiscalelinkedcell::HangingVertexBookkeeper::updateCellIndicesInMergeWith
 //
 //
 //      assertion12(
-//        result(writeIndex) == InvalidAdjacencyIndex || newEntry == InvalidAdjacencyIndex || result(writeIndex)==newEntry,
+//        result(writeIndex) == InvalidAdjacencyIndex || newEntry ==
+//        InvalidAdjacencyIndex || result(writeIndex)==newEntry,
 //        result, newEntry, cell, fineGridVerticesEnumerator.toString(),
 //        fineGridVertices[ fineGridVerticesEnumerator(0) ].toString(),
 //        fineGridVertices[ fineGridVerticesEnumerator(1) ].toString(),
@@ -51,7 +53,8 @@ void multiscalelinkedcell::HangingVertexBookkeeper::updateCellIndicesInMergeWith
 //        j,k,fineGridVertices[ fineGridVerticesEnumerator(j) ],
 //        writeIndex
 //      );
-//      result(writeIndex) = newEntry!=InvalidAdjacencyIndex ? newEntry : result(writeIndex);
+//      result(writeIndex) = newEntry!=InvalidAdjacencyIndex ? newEntry :
+//      result(writeIndex);
 //    enddforx
 //  enddforx
 //
@@ -59,13 +62,7 @@ void multiscalelinkedcell::HangingVertexBookkeeper::updateCellIndicesInMergeWith
 //}
 //
 
-
-
-
-
-
-
-//dfor2(k)
+// dfor2(k)
 //  getAdjacencyEntriesOfVertex(
 //    fineGridVertices[fineGridVerticesEnumerator(k)],
 //    fineGridVerticesEnumerator.getVertexPosition(k),
@@ -73,19 +70,17 @@ void multiscalelinkedcell::HangingVertexBookkeeper::updateCellIndicesInMergeWith
 //  )(TWO_POWER_D-kScalar-1) = fineGridCell.getPARAM0();
 //
 //    if (fineGridVertex.isHangingNode()) {
-//  return multiscalelinkedcell::HangingVertexBookkeeper::getInstance().getAdjacencyEntriesOfVertex(x,level);
+//  return
+//  multiscalelinkedcell::HangingVertexBookkeeper::getInstance().getAdjacencyEntriesOfVertex(x,level);
 //}
-//else {
+// else {
 //  return fineGridVertex.getPARAM0();
 //}
 //
-//enddforx
+// enddforx
 //
-//const tarch::la::Vector<THREE_POWER_D,int> cellDescription = getAdjacentIndicesOfCell(fineGridCell,fineGridVertices,fineGridVerticesEnumerator);
+// const tarch::la::Vector<THREE_POWER_D,int> cellDescription =
+// getAdjacentIndicesOfCell(fineGridCell,fineGridVertices,fineGridVerticesEnumerator);
 //
-//fineGridCell.setPARAM1( !tarch::la::oneEquals(cellDescription,InvalidAdjacencyIndex) );
-
-
-
-
-
+// fineGridCell.setPARAM1(
+// !tarch::la::oneEquals(cellDescription,InvalidAdjacencyIndex) );
