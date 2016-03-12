@@ -99,12 +99,12 @@ public class Helpers {
     String                 pathToLibxsmm
   ) throws IOException {
       
-      String currentDirectory = System.getProperty("user.dir");
-      java.nio.file.Path pathToCodeGenerator = java.nio.file.Paths.get(currentDirectory+"/Miscellaneous/CodeGenerator/Driver.py");
-		    if(java.nio.file.Files.notExists(pathToCodeGenerator)) {
-			    System.err.println("ERROR: Code generator not found. Can't generated optimised kernels.");
-			    return;
-		    }
+    String currentDirectory = System.getProperty("user.dir");
+    java.nio.file.Path pathToCodeGenerator = java.nio.file.Paths.get(currentDirectory+"/Miscellaneous/CodeGenerator/Driver.py");
+	    if(java.nio.file.Files.notExists(pathToCodeGenerator)) {
+		    System.err.println("ERROR: Code generator not found. Can't generated optimised kernels.");
+		    return;
+	    }
 
      String numericsParameter = isLinear ? "linear" : "nonlinear";
 
