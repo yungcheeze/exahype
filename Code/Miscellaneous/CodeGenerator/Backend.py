@@ -116,24 +116,6 @@ def writeCommonHeader(i_pathToHeaderFile):
                        '#define numberOfVariables '+str(m_config['nVar'])+'\n\n')
 
 
-    if(m_config['nDim']==2):
-        pass
-        # TODO
-    elif(m_config['nDim']==3):
-        # global variables/defines
-        # TODO: adapt this when padding is introduced
-        l_sourceFile.write('#define MbasisSize ' + str(m_config['nDof']) +'\n' \
-                           '#define Mvar ' + str(m_config['nVar'])   + '\n'    \
-                           '#define Mvar ' + str(m_config['nDim'])   + '\n'    \
-                           '#define Mface '+ str(m_config['nDim']*2) + '\n'    \
-                           '#define f2p5(var, dim, i, j, k) (var + Mvar*dim + Mvar*Mdim*i + Mvar*Mdim*MbasisSize*j + Mvar*Mdim*MbasisSize*MbasisSize*k)\n' \
-                           '#define p2f5(var, dim, i, j, k) (dim*MbasisSize*MbasisSize*MbasisSize*Mvar + Mvar*i + Mvar*MbasisSize*j + Mvar*MbasisSize*MbasisSize*k + var)\n' \
-                           '#define f2p4(var, face, a, b) (var + Mvar*face + Mvar*Mface*a + Mvar*Mface*MbasisSize*b)\n' \
-                           '#define p2f4(var, face, a, b) (face*MbasisSize*MbasisSize*Mvar + Mvar*a + Mvar*MbasisSize*b + var)\n\n\n'
-                           )
-    else:
-        print("Backend.writeCommonHeader(): nDim not supported")
-
     # nested namespaces
     l_sourceFile.write('namespace kernels {\n'        )
     l_sourceFile.write('  namespace aderdg {\n'       )

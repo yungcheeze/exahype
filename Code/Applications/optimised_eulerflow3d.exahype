@@ -1,11 +1,11 @@
 /**
  
- 2D Euler Flow
+ 3D Euler Flow
  
  A simple project 
 
  */
-exahype-project  Euler2d
+exahype-project  Euler3d
 
   peano-path                 = ./Peano/peano
   tarch-path                 = ./Peano/tarch
@@ -13,13 +13,13 @@ exahype-project  Euler2d
   sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
   exahype-path               = ./ExaHyPE
   libxsmm-path               = ../../libxsmm
-  output-directory           = ./Applications/eulerflow2d
+  output-directory           = ./Applications/eulerflow3d
   architecture               = hsw
   
   computational-domain
-    dimension                = 2
+    dimension                = 3
     width                    = 1.0
-    offset                   = 0.0, 0.0
+    offset                   = 0.0, 0.0, 0.0
     end-time                 = 0.4
   end computational-domain
  
