@@ -57,7 +57,13 @@ def generateAssemblerCode(i_pathToOutputFile,
                                  ' ' + l_matmul.prefetchStrategy+ \
                                  ' ' + m_precision 
         executeLibxsmmGenerator(l_commandLineArguments)
-    
+
+
+def getSizeWithPadding(i_sizeWithoutPadding):
+    l_simdSize        = m_simdWidth[m_precision][m_architecture]
+    l_sizeWithPadding = l_simdSize * ((i_sizeWithoutPadding+(l_simdSize-1))/l_simdSize)
+    return l_sizeWithPadding
+
     
 def prepareOutputDirectory(i_outputDirectory):
     # create directory for output files if not existing
