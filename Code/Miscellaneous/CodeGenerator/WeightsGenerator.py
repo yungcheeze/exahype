@@ -20,27 +20,48 @@ class WeightsGenerator:
 
 
     def writeWeightsCombinations(self, i_pathToOutputFile):
+        # We need two kinds of combinations
+        # (a) aux    = (/ 1.0, wGPN(j), wGPN(k) /)
+        #     weight = PRODUCT(aux(1:nDim))
+        #     suffix := 2
+        # (b) aux    = (/ wGPN(i), wGPN(j), wGPN(k) /)
+        #     weight = PRODUCT(aux(1:nDim))
+        #     suffix := 3
+        
         if(self.m_nDim == 2):
-            pass
+            # case (a)
+            # pad weights vector with zeros
+            l_sizeWithoutPadding = np.size(self.m_wGPN) 
+            l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
+            l_weightVector       = np.pad(self.m_wGPN, (0.0,l_padWidth), mode='constant')
+            
+            self.__writeToFile(i_pathToOutputFile, l_weightsVector, 2)
+            
+            # case (b)
+            # TODO
             
         elif(self.m_nDim == 3):
+            # case (a)
             # all combinations of two weights, written as as 1D array
             l_weightsVector = np.outer(self.m_wGPN, self.m_wGPN).flatten('F')
 
             # pad this vector with zeros
             l_sizeWithoutPadding = np.size(l_weightsVector) 
             l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding) 
-            l_weightsVector      = np.pad(l_weightsVector, (0,l_padWidth), mode='constant')
+            l_weightsVector      = np.pad(l_weightsVector, (0.0,l_padWidth), mode='constant')
 
             self.__writeToFile(i_pathToOutputFile, l_weightsVector, 2)
-            
 
-            print(l_weightsVector)
+            # case (b)
+            # TODO
+            
         else:
             print("WeightsGenerator.generatePredictor(): nDim not supported")
             
 
     def __writeToFile(self, i_pathToOutputFile, i_weightsVector, i_suffix):
+        # TODO include guard, ...
+        
         l_vectorSize = np.size(i_weightsVector)
                
         l_sourceFile = open(i_pathToOutputFile, 'a')
@@ -54,8 +75,8 @@ class WeightsGenerator:
         
         l_content = ""
         for i in range(0, l_vectorSize-1):
-            l_content += "    %.16g,\n" % (i_weightsVector[i])
-        l_content += "    %.16g\n  }" % (i_weightsVector[-1])
+            l_content += "    %.16e,\n" % (i_weightsVector[i])
+        l_content += "    %.16e\n  }\n\n" % (i_weightsVector[-1])
         
         l_sourceFile.write(l_declaration)
         l_sourceFile.write(l_content)
