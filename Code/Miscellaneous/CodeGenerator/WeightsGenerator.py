@@ -33,7 +33,7 @@ class WeightsGenerator:
             # pad weights vector with zeros
             l_sizeWithoutPadding = np.size(self.m_wGPN) 
             l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
-            l_weightVector       = np.pad(self.m_wGPN, (0.0,l_padWidth), mode='constant')
+            l_weightsVector      = np.pad(self.m_wGPN, (0.0,l_padWidth), mode='constant')
             
             self.__writeToFile(i_pathToOutputFile, l_weightsVector, 2)
             
