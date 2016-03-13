@@ -64,6 +64,13 @@ def getSizeWithPadding(i_sizeWithoutPadding):
     l_sizeWithPadding = l_simdSize * ((i_sizeWithoutPadding+(l_simdSize-1))/l_simdSize)
     return l_sizeWithPadding
 
+
+def getPadWidth(i_sizeWithoutPadding):
+    l_simdSize        = m_simdWidth[m_precision][m_architecture]
+    l_sizeWithPadding = l_simdSize * ((i_sizeWithoutPadding+(l_simdSize-1))/l_simdSize)
+    l_padWith         = l_sizeWithPadding - i_sizeWithoutPadding
+    return l_padWith
+
     
 def prepareOutputDirectory(i_outputDirectory):
     # create directory for output files if not existing

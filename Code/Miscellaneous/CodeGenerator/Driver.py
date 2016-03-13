@@ -19,6 +19,7 @@ from Backend import prepareOutputDirectory
 from Backend import moveGeneratedCppFiles
 import Backend
 import os
+from WeightsGenerator import WeightsGenerator
        
 
 # --------------------------------------------------------
@@ -98,4 +99,7 @@ moveGeneratedCppFiles(pathToLibxsmmGenerator, pathToOutputDirectory)
 # move C++ wrapper
 moveGeneratedCppFiles(os.getcwd(), pathToOutputDirectory)
 
+# for testing
+weightsGenerator = WeightsGenerator(config, precision)
+weightsGenerator.writeWeightsCombinations(pathToOutputDirectory+"/Weights.h")
 
