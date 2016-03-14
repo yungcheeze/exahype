@@ -4,7 +4,7 @@ SUBROUTINE ADERSurfaceIntegral(lduh,lFbnd,dx)
     USE, INTRINSIC :: ISO_C_BINDING
     IMPLICIT NONE 
     ! Argument list 
-    REAL, INTENT(IN)    :: lFbnd(nVar,6,nDOF(2),nDOF(3))            ! nonlinear flux tensor in each space-time DOF 
+    REAL, INTENT(IN)    :: lFbnd(nVar,nDOF(2),nDOF(3),6)            ! nonlinear flux tensor in each space-time DOF 
     REAL, INTENT(INOUT) :: lduh(nVar,nDOF(1),nDOF(2),nDOF(3))       ! spatial degrees of freedom 
     DOUBLE PRECISION, INTENT(IN)  :: dx(d)                                          ! 
     ! Local variables 
@@ -18,7 +18,7 @@ SUBROUTINE ADERSurfaceIntegral(lduh,lFbnd,dx)
         DO j = 1, nDOF(2) 
             aux = (/ 1.d0, wGPN(j), wGPN(k) /)
             DO iVar = 1, nVar 
-                lduh(iVar,:,j,k) = lduh(iVar,:,j,k) - PRODUCT(aux(1:nDim))/dx(1)*( lFbnd(iVar,2,j,k)*FRCoeff - lFbnd(iVar,1,j,k)*FLCoeff )      ! left flux minus right flux 
+                lduh(iVar,:,j,k) = lduh(iVar,:,j,k) - PRODUCT(aux(1:nDim))/dx(1)*( lFbnd(iVar,j,k,2)*FRCoeff - lFbnd(iVar,j,k,1)*FLCoeff )      ! left flux minus right flux 
             ENDDO                                                             
         ENDDO
     ENDDO 
@@ -28,7 +28,7 @@ SUBROUTINE ADERSurfaceIntegral(lduh,lFbnd,dx)
             DO i = 1, nDOF(1) 
                 aux = (/ 1.d0, wGPN(i), wGPN(k) /) 
                 DO iVar = 1, nVar 
-                    lduh(iVar,i,:,k) = lduh(iVar,i,:,k) - PRODUCT(aux(1:nDim))/dx(2)*( lFbnd(iVar,4,i,k)*FRCoeff - lFbnd(iVar,3,i,k)*FLCoeff )  ! left flux minus right flux  
+                    lduh(iVar,i,:,k) = lduh(iVar,i,:,k) - PRODUCT(aux(1:nDim))/dx(2)*( lFbnd(iVar,i,k,4)*FRCoeff - lFbnd(iVar,i,k,3)*FLCoeff )  ! left flux minus right flux  
                 ENDDO                                                             
             ENDDO
         ENDDO 
@@ -39,7 +39,7 @@ SUBROUTINE ADERSurfaceIntegral(lduh,lFbnd,dx)
             DO i = 1, nDOF(1) 
                 aux = (/ 1.d0, wGPN(i), wGPN(j) /) 
                 DO iVar = 1, nVar 
-                    lduh(iVar,i,j,:) = lduh(iVar,i,j,:) - PRODUCT(aux(1:nDim))/dx(3)*( lFbnd(iVar,6,i,j)*FRCoeff - lFbnd(iVar,5,i,j)*FLCoeff )  ! left flux minus right flux  
+                    lduh(iVar,i,j,:) = lduh(iVar,i,j,:) - PRODUCT(aux(1:nDim))/dx(3)*( lFbnd(iVar,i,j,6)*FRCoeff - lFbnd(iVar,i,j,5)*FLCoeff )  ! left flux minus right flux  
                 ENDDO                                                             
             ENDDO
         ENDDO 

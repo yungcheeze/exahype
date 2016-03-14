@@ -30,33 +30,50 @@ class WeightsGenerator:
         
         if(self.m_nDim == 2):
             # case (a)
+            # weightsVector is wGPN itself
             # pad weights vector with zeros
             l_sizeWithoutPadding = np.size(self.m_wGPN) 
             l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
-            l_weightVector       = np.pad(self.m_wGPN, (0.0,l_padWidth), mode='constant')
+            l_weightsVector      = np.pad(self.m_wGPN, (0.0, l_padWidth), mode='constant')
             
             self.__writeToFile(i_pathToOutputFile, l_weightsVector, 2)
             
             # case (b)
-            # TODO
+            # all combinations of two weights, written as an 1D array
+            l_weightsVector = np.outer(self.m_wGPN, self.m_wGPN).flatten('F')
+
+            # pad this vector with zeros
+            l_sizeWithoutPadding = np.size(l_weightsVector)
+            l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
+            l_weightsVector      = np.pad(l_weightsVector, (0.0, l_padWidth), mode='constant')
+
+            self.__writeToFile(i_pathToOutputFile, l_weightsVector, 3)
             
         elif(self.m_nDim == 3):
             # case (a)
-            # all combinations of two weights, written as as 1D array
+            # all combinations of two weights, written as an 1D array
             l_weightsVector = np.outer(self.m_wGPN, self.m_wGPN).flatten('F')
 
             # pad this vector with zeros
             l_sizeWithoutPadding = np.size(l_weightsVector) 
             l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding) 
-            l_weightsVector      = np.pad(l_weightsVector, (0.0,l_padWidth), mode='constant')
+            l_weightsVector      = np.pad(l_weightsVector, (0.0, l_padWidth), mode='constant')
 
             self.__writeToFile(i_pathToOutputFile, l_weightsVector, 2)
 
             # case (b)
-            # TODO
+            # all combination of three weights, written as an 1D array
+            l_weightsVector = np.kron(np.outer(self.m_wGPN, self.m_wGPN), self.m_wGPN).flatten('F')
+
+            # pad this vector with zeros
+            l_sizeWithoutPadding = np.size(l_weightsVector)
+            l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
+            l_weightsVector      = np.pad(l_weightsVector, (0.0, l_padWidth), mode='constant')
             
+            self.__writeToFile(i_pathToOutputFile, l_weightsVector, 3)
+
         else:
-            print("WeightsGenerator.generatePredictor(): nDim not supported")
+            print("WeightsGenerator.writeWeightsCombinations(): nDim not supported")
             
 
     def __writeToFile(self, i_pathToOutputFile, i_weightsVector, i_suffix):
