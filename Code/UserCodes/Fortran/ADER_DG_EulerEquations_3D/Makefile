@@ -16,8 +16,12 @@ F90 = ifort
 # LIBRARIES
 #------------------------------------------------------------------------------
 
-LIBDIR      = ./lib
-LTEC   = -ltecio
+#-LIBDIR      = ./lib
+#-LTEC   = -ltecio
+
+# Settings for SuperMUC
+# Run "module load tecplot" before compiling!
+LTEC   = $(TECPLOT_BASE)/tecplot360/lib/libtecio.a
 
 LFLAGS = $(LTEC) -cxxlib
 
