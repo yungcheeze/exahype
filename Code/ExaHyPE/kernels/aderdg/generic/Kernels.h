@@ -214,6 +214,16 @@ void spaceTimePredictorNonlinear(double* lQi, double* lFi, double* lQhi, double*
                                  const double predictorTimeStepSize,
                                  const int numberOfVariables, const int basisSize);
 
+// @todo Dominic Etienne Charrier
+// Inconsistent ordering of inout and in arguments for
+// template argument functions and non-template argument function.
+template <void PDEFlux(const double* const Q, double* f, double* g, double* h)>
+void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi, double* lFhi,
+                              double* lQhbnd, double* lFhbnd, const double* const luh,
+                              const tarch::la::Vector<DIMENSIONS, double>& dx,
+                              const double predictorTimeStepSize,
+                              const int numberOfVariables, const int basisSize);
+
 /**
  * (At the moment, we always evaluate the time averaged space-time
  * predictor unknowns.)
@@ -245,12 +255,20 @@ void solutionUpdate(double* luh, const double* const lduh, const double dt,
 void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                     const tarch::la::Vector<DIMENSIONS, double>& dx,
                     const int numberOfVariables, const int basisSize
-
                     );
 
+void volumeIntegralLinear(double* lduh, const double* const lFhi,
+                    const tarch::la::Vector<DIMENSIONS, double>& dx,
+                    const int numberOfVariables, const int basisSize
+                    );
+                    
 // todo 10/02/16: Dominic
 // Keep only one surfaceIntegral.
 void surfaceIntegralNonlinear(double* lduh, const double* const lFbnd,
+                     const tarch::la::Vector<DIMENSIONS, double>& dx,
+                     const int numberOfVariables, const int basisSize);
+
+void surfaceIntegralLinear(double* lduh, const double* const lFbnd,
                      const tarch::la::Vector<DIMENSIONS, double>& dx,
                      const int numberOfVariables, const int basisSize);
 
@@ -284,6 +302,13 @@ void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
                    const int normalNonZero, const int numberOfVariables,
                    const int basisSize);
 
+template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
+                              double* lambda)>
+void riemannSolverLinear(double* FL, double* FR, const double* const QL,
+                   const double* const QR, const double dt,
+                   const int normalNonZero, const int numberOfVariables,
+                   const int basisSize);
+
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
@@ -306,6 +331,8 @@ double stableTimeStepSize(const double* const luh,
 #include "kernels/aderdg/generic/3D/solutionAdjustment.cpph"
 #include "kernels/aderdg/generic/3D/stableTimeStepSize.cpph"
 #include "kernels/aderdg/generic/3D/spaceTimePredictorNonlinear.cpph"
+#include "kernels/aderdg/generic/3D/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/3D/riemannSolverNonlinear.cpph"
+#include "kernels/aderdg/generic/3D/riemannSolverLinear.cpph"
 #endif
 #endif

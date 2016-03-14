@@ -55,3 +55,82 @@ END SUBROUTINE PDEFlux
     
     
 
+ 
+
+
+SUBROUTINE PDENCP(BgradQ,Q,gradQ) 
+  USE typesDef, ONLY : nVar, d 
+  USE, INTRINSIC :: ISO_C_BINDING 
+  IMPLICIT NONE 
+  ! Argument list  
+  REAL, INTENT(IN)  :: Q(nVar), gradQ(nVar,d) 
+  REAL, INTENT(OUT) :: BgradQ(nVar,d) 
+  ! Local variables  
+  !
+  !@todo Please implement
+  !
+  BgradQ(1, 1) = 0.0
+  BgradQ(2, 1) = 0.0
+  BgradQ(3, 1) = 0.0
+  BgradQ(4, 1) = 0.0
+  BgradQ(5, 1) = 0.0
+  !
+  BgradQ(1, 2) = 0.0
+  BgradQ(2, 2) = 0.0
+  BgradQ(3, 2) = 0.0
+  BgradQ(4, 2) = 0.0
+  BgradQ(5, 2) = 0.0
+  !
+  BgradQ(1, 3) = 0.0
+  BgradQ(2, 3) = 0.0
+  BgradQ(3, 3) = 0.0
+  BgradQ(4, 3) = 0.0
+  BgradQ(5, 3) = 0.0
+  !
+END SUBROUTINE PDENCP 
+ 
+
+
+SUBROUTINE PDEMatrixB(Bn,Q,nv) 
+  USE typesDef, ONLY : nVar, d 
+  USE, INTRINSIC :: ISO_C_BINDING 
+  IMPLICIT NONE 
+  ! Argument list  
+  REAL, INTENT(IN)  :: Q(nVar), nv(d) 
+  REAL, INTENT(OUT) :: Bn(nVar,nVar)  
+  ! Local variables  
+  !
+  !@todo Please implement
+  !
+  Bn(1, 1) = 0.0
+  Bn(1, 2) = 0.0
+  Bn(1, 3) = 0.0
+  Bn(1, 4) = 0.0
+  Bn(1, 5) = 0.0
+  !
+  Bn(2, 1) = 0.0
+  Bn(2, 2) = 0.0
+  Bn(2, 3) = 0.0
+  Bn(2, 4) = 0.0
+  Bn(2, 5) = 0.0
+  !
+  Bn(3, 1) = 0.0
+  Bn(3, 2) = 0.0
+  Bn(3, 3) = 0.0
+  Bn(3, 4) = 0.0
+  Bn(3, 5) = 0.0
+  !
+  Bn(4, 1) = 0.0
+  Bn(4, 2) = 0.0
+  Bn(4, 3) = 0.0
+  Bn(4, 4) = 0.0
+  Bn(4, 5) = 0.0
+  !
+  Bn(5, 1) = 0.0
+  Bn(5, 2) = 0.0
+  Bn(5, 3) = 0.0
+  Bn(5, 4) = 0.0
+  Bn(5, 5) = 0.0
+  !
+  !
+END SUBROUTINE PDEMatrixB 

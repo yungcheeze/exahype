@@ -151,6 +151,57 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
     }
     writer.write("  !\n");
     writer.write("END SUBROUTINE PDEFlux \n");
+    
+    writer.write(" \n\n\n");
+
+    writer.write("SUBROUTINE PDENCP(BgradQ,Q,gradQ) \n");
+    writer.write("  USE typesDef, ONLY : nVar, d \n");
+    writer.write("  USE, INTRINSIC :: ISO_C_BINDING \n");
+    writer.write("  IMPLICIT NONE \n");
+    writer.write("  ! Argument list  \n");
+    writer.write("  REAL, INTENT(IN)  :: Q(nVar), gradQ(nVar,d) \n");
+    writer.write("  REAL, INTENT(OUT) :: BgradQ(nVar,d) \n");
+    writer.write("  ! Local variables  \n");
+    writer.write("  !\n");
+    writer.write("  !@todo Please implement\n");
+    writer.write("  !\n");
+    for (int i = 0; i < _numberOfVariables; i++) {
+      writer.write("  BgradQ(" + String.format("%" + digits + "d", i + 1) + ", 1) = 0.0\n");
+    }
+    writer.write("  !\n");
+    for (int i = 0; i < _numberOfVariables; i++) {
+      writer.write("  BgradQ(" + String.format("%" + digits + "d", i + 1) + ", 2) = 0.0\n");
+    }
+    if (_dimensions == 3) {
+      writer.write("  !\n");
+      for (int i = 0; i < _numberOfVariables; i++) {
+        writer.write("  BgradQ(" + String.format("%" + digits + "d", i + 1) + ", 3) = 0.0\n");
+      }
+    }
+    writer.write("  !\n");
+    writer.write("END SUBROUTINE PDENCP \n");    
+    
+    writer.write(" \n\n\n");
+
+    writer.write("SUBROUTINE PDEMatrixB(Bn,Q,nv) \n");
+    writer.write("  USE typesDef, ONLY : nVar, d \n");
+    writer.write("  USE, INTRINSIC :: ISO_C_BINDING \n");
+    writer.write("  IMPLICIT NONE \n");
+    writer.write("  ! Argument list  \n");
+    writer.write("  REAL, INTENT(IN)  :: Q(nVar), nv(d) \n");
+    writer.write("  REAL, INTENT(OUT) :: Bn(nVar,nVar)  \n");
+    writer.write("  ! Local variables  \n");
+    writer.write("  !\n");
+    writer.write("  !@todo Please implement\n");
+    writer.write("  !\n");
+    for (int i = 0; i < _numberOfVariables; i++) {
+      for (int j = 0; j < _numberOfVariables; j++) {
+        writer.write("  Bn(" + String.format("%" + digits + "d", i + 1) + ", " + String.format("%" + digits + "d", j + 1) + ") = 0.0\n");
+      }
+      writer.write("  !\n");
+    }
+    writer.write("  !\n");
+    writer.write("END SUBROUTINE PDEMatrixB \n");     
   }
   public void writeTypesDef(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
@@ -174,6 +225,8 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
     writer.write(
         "    INTEGER, PARAMETER             :: nVar = 5                            ! The number of variables of the PDE system  \n");
     writer.write(
+        "    INTEGER, PARAMETER             :: nParam = 0                          ! The number of material parameters for the PDE system \n");
+    writer.write(
         "    INTEGER, PARAMETER             :: nDOF(0:3) = (/ 4, 4, 4, 4 /)                           ! The number of degrees of freedom in space and time  \n");
     writer.write(
         "    DOUBLE PRECISION, PARAMETER    :: EQNgamma = 1.4                           ! The Courant-Friedrichs-Lewy number < 1  \n");
@@ -188,6 +241,8 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
         "    DOUBLE PRECISION, PARAMETER    :: FLcoeff(N+1)  = (/ 1.52678812545727, -0.813632449486927, 0.400761520311650, -0.113917196281990 /) \n");
     writer.write(
         "    DOUBLE PRECISION, PARAMETER    :: FRcoeff(N+1)  = (/ -0.113917196281990, 0.400761520311651, -0.813632449486928, 1.52678812545727 /) \n");
+    writer.write(
+        "    DOUBLE PRECISION, PARAMETER    :: dudx(N+1,N+1) = reshape( (/ -6.66400047270456, -1.51511522959847, 0.657396448516548, -1.16125633832453, 9.72030883137039, -0.768828784446417, -2.94134046256143, 4.21756469699036, -4.21756469699036, 2.94134046256143, 0.768828784446416, -9.72030883137039, 1.16125633832453, -0.657396448516549, 1.51511522959847, 6.66400047270456 /), (/N+1,N+1 /) ) \n");
     writer.write(
         "    DOUBLE PRECISION, PARAMETER    :: Kxi(N+1,N+1)  = reshape( (/ -1.15905242621428, 1.69062826161229, -0.733550157264387, 0.201974321866383, -0.494037528020548, -0.250693983347796, 0.959090465730300, -0.214358954361956, 0.214358954361956, -0.959090465730300, 0.250693983347796, 0.494037528020548, -0.201974321866383, 0.733550157264387, -1.69062826161229, 1.15905242621428 /), (/N+1,N+1 /) ) \n");
     writer.write(

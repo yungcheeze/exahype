@@ -106,7 +106,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
           solver = new eu.exahype.solvers.UserDefinedADER_DGinFortran();
           break;
         case eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran.Identifier:
-          solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran();
+          solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran(
+              _dimensions, numberOfVariables, order);
           break;
         case eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran.Identifier:
           solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran(
@@ -177,13 +178,12 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       if (isFortran) {
         if (userTypesDefFile.exists()) {
           System.out.println("create typesDef ...  does exist already. Is overwritten");
-        } else {
-          java.io.BufferedWriter typesDefWriter =
-              new java.io.BufferedWriter(new java.io.FileWriter(userTypesDefFile));
-          solver.writeTypesDef(typesDefWriter, solverName, _projectName);
-          System.out.println("create typesDef of solver " + solverName + " ... ok");
-          typesDefWriter.close();
-        }
+        } 
+        java.io.BufferedWriter typesDefWriter =
+            new java.io.BufferedWriter(new java.io.FileWriter(userTypesDefFile));
+        solver.writeTypesDef(typesDefWriter, solverName, _projectName);
+        System.out.println("create typesDef of solver " + solverName + " ... ok");
+        typesDefWriter.close();
 
         if (userPDEFile.exists()) {
           System.out.println("user's PDE file of solver " + solverName
