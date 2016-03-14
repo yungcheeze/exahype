@@ -1,4 +1,4 @@
-SUBROUTINE ADERRiemannSolver(lQbndL,lFbndL,lQbndR,lFbndR,nv)
+SUBROUTINE ADERRiemannSolverNonlinear(lQbndL,lFbndL,lQbndR,lFbndR,nv)
     USE typesDef
 
     USE, INTRINSIC :: ISO_C_BINDING
@@ -53,4 +53,4 @@ SUBROUTINE ADERRiemannSolver(lQbndL,lFbndL,lQbndR,lFbndR,nv)
     !CALL EXIT    
     !
     
-END SUBROUTINE ADERRiemannSolver 
+END SUBROUTINE ADERRiemannSolverNonlinear 

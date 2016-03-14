@@ -43,7 +43,7 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
     writer.write("void " + projectName + "::" + solverName
         + "::spaceTimePredictor( double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {\n");
     writer.write(
-        "   kernels::aderdg::generic::fortran::spaceTimePredictor<flux>( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        "   kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear<flux>( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
@@ -55,19 +55,19 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
     writer.write("void " + projectName + "::" + solverName
         + "::volumeIntegral(double* lduh, const double* const lFhi, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
     writer.write(
-        "   kernels::aderdg::generic::fortran::volumeIntegral( lduh, lFhi, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        "   kernels::aderdg::generic::fortran::volumeIntegralNonlinear( lduh, lFhi, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
         + "::surfaceIntegral(double* lduh, const double* const lFhbnd, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
     writer.write(
-        "   kernels::aderdg::generic::fortran::surfaceIntegral( lduh, lFhbnd, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        "   kernels::aderdg::generic::fortran::surfaceIntegralNonlinear( lduh, lFhbnd, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
         + "::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex) {\n");
     writer.write(
-        "   kernels::aderdg::generic::fortran::riemannSolver<eigenvalues>( FL, FR, QL, QR, dt, normalNonZeroIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        "   kernels::aderdg::generic::fortran::riemannSolverNonlinear<eigenvalues>( FL, FR, QL, QR, dt, normalNonZeroIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("double " + projectName + "::" + solverName

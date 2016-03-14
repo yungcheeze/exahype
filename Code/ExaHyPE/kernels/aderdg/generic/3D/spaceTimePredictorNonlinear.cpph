@@ -16,20 +16,20 @@ using std::endl;
 using std::cout;
 
 extern "C" {
-void aderpicardloop_(double *luhTemp, double *dtTemp, double *dxTemp,
+void aderpicardloopnonlinear_(double *luhTemp, double *dtTemp, double *dxTemp,
                      double *lQi, double *lFi);
 // void aderpredictor_(double *lQi, double *lFi, double *lQhi, double *lFhi);
-void aderpredictor_(double *lQi, double *lFi_x, double *lFhi_y, double *lFhi_z,
+void aderpredictornonlinear_(double *lQi, double *lFi_x, double *lFhi_y, double *lFhi_z,
                     double *lQhi, double *lFhi);
 // void aderextrapolator_(double *lQhi, double *lFhi, double *lQbnd, double
 // *lFbnd);
-void aderextrapolator_(double *lQhi, double *lFhi_x, double *lFhi_y,
+void aderextrapolatornonlinear_(double *lQhi, double *lFhi_x, double *lFhi_y,
                        double *lFhi_z, double *lQbnd, double *lFbnd);
 }
 
 template <void PDEFlux3d(const double *const Q, double *f, double *g,
                          double *h)>
-void kernels::aderdg::generic::fortran::spaceTimePredictor(
+void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
     double *lQi, double *lFi, double *lQhi, double *lFhi, double *lQbnd,
     double *lFbnd, const double *const luh,
     const tarch::la::Vector<DIMENSIONS, double> &dx, const double dt,
@@ -49,14 +49,14 @@ void kernels::aderdg::generic::fortran::spaceTimePredictor(
   dxTemp[2] = dx[2];
 
   // space-time predictor:
-  aderpicardloop_(luhTemp, dtTemp, dxTemp, lQi, lFi);
+  aderpicardloopnonlinear_(luhTemp, dtTemp, dxTemp, lQi, lFi);
   const int numSpaceDof = numberOfVariables * basisSize * basisSize * basisSize;
   // lFhi = [ lFhi_x | lFhi_y | lFhi_z ]
   // aderpredictor_(lQi,lFi,lQhi,lFhi);
-  aderpredictor_(lQi, lFi, lQhi, &lFhi[0 * numSpaceDof], &lFhi[1 * numSpaceDof],
+  aderpredictornonlinear_(lQi, lFi, lQhi, &lFhi[0 * numSpaceDof], &lFhi[1 * numSpaceDof],
                  &lFhi[2 * numSpaceDof]);
   // aderextrapolator_(lQhi,lFhi,lQbnd,lFbnd);
-  aderextrapolator_(lQhi, &lFhi[0 * numSpaceDof], &lFhi[1 * numSpaceDof],
+  aderextrapolatornonlinear_(lQhi, &lFhi[0 * numSpaceDof], &lFhi[1 * numSpaceDof],
                     &lFhi[2 * numSpaceDof], lQbnd, lFbnd);
 
   delete[] luhTemp;

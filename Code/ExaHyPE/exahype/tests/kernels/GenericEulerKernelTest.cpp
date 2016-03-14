@@ -1170,7 +1170,7 @@ void exahype::tests::GenericEulerKernelTest::testVolumeIntegral3d() {
     lFhi_z[i + 3] = 1.;
   }
 
-  kernels::aderdg::generic::fortran::volumeIntegral(
+  kernels::aderdg::generic::fortran::volumeIntegralNonlinear(
       lduh, lFhi, dx[0],
       5,  // getNumberOfVariables(),
       4);  // getNodesPerCoordinateAxis()
@@ -1532,7 +1532,7 @@ void exahype::tests::GenericEulerKernelTest::testSurfaceIntegral3d() {
   }
 
   // lFhbnd = [ FLeft | FRight | FFront | FBack | FBottom | FTop ]
-  kernels::aderdg::generic::fortran::surfaceIntegral(
+  kernels::aderdg::generic::fortran::surfaceIntegralNonlinear(
       lduh, lFhbnd, dx[0],
       5,  // getNumberOfVariables(),
       4);  // getNodesPerCoordinateAxis()
@@ -2233,7 +2233,7 @@ void exahype::tests::GenericEulerKernelTest::testSpaceTimePredictor3d() {
   double *lQhbnd = new double[480];
   double *lFhbnd = new double[480];
 
-  kernels::aderdg::generic::fortran::spaceTimePredictor<testFlux>(
+  kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear<testFlux>(
       lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx[0], timeStepSize, 5, 4);
 
   validateNumericalEqualsWithEps(lQhi[0], 1.00000000000000, eps);

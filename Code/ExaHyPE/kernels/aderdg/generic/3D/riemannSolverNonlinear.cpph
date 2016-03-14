@@ -16,7 +16,7 @@ using std::endl;
 using std::cout;
 
 extern "C" {
-void aderriemannsolver_(double* lQbndL, double* lFbndL, double* lQbndR,
+void aderriemannsolvernonlinear_(double* lQbndL, double* lFbndL, double* lQbndR,
                         double* lFbndR, double* nv);
 }
 
@@ -36,7 +36,7 @@ void aderriemannsolver_(double* lQbndL, double* lFbndL, double* lQbndR,
 // template <void PDEFlux2d(const double * const Q, double * f, double * g)>
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda)>
-void kernels::aderdg::generic::fortran::riemannSolver(
+void kernels::aderdg::generic::fortran::riemannSolverNonlinear(
     double* FL, double* FR, const double* const QL, const double* const QR,
     const double dt, const int normalNonZero, const int numberOfVariables,
     const int basisSize) {
@@ -66,7 +66,7 @@ void kernels::aderdg::generic::fortran::riemannSolver(
   nv[2] = 0.0;
   nv[normalNonZero] = 1.0;
 
-  aderriemannsolver_(QlFortran, FlFortran, QrFortran, FrFortran, nv);
+  aderriemannsolvernonlinear_(QlFortran, FlFortran, QrFortran, FrFortran, nv);
 
   // // Permutation of lQbnd
 

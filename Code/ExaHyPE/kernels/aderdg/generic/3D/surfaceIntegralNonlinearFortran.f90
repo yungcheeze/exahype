@@ -1,4 +1,4 @@
-SUBROUTINE ADERSurfaceIntegral(lduh,lFbnd,dx)
+SUBROUTINE ADERSurfaceIntegralNonlinear(lduh,lFbnd,dx)
     USE typesDef
 
     USE, INTRINSIC :: ISO_C_BINDING
@@ -48,12 +48,12 @@ SUBROUTINE ADERSurfaceIntegral(lduh,lFbnd,dx)
     !OPEN(UNIT=12, FILE="aoutput.txt", ACTION="write", STATUS="replace")
     !WRITE(12, '(ES24.16,1x)') , lduh
 
-    !PRINT *, ' --------lduh-ADERSurfaceIntegral-------------------------------- ' 
+    !PRINT *, ' --------lduh-ADERSurfaceIntegralNonlinear-------------------------------- ' 
     !PRINT *, lduh
-    !PRINT *, ' --------lduh-ADERSurfaceIntegral-------------------------------- ' 
+    !PRINT *, ' --------lduh-ADERSurfaceIntegralNonlinear-------------------------------- ' 
     !CALL EXIT
     
     !
-END SUBROUTINE ADERSurfaceIntegral 
+END SUBROUTINE ADERSurfaceIntegralNonlinear 
     
     

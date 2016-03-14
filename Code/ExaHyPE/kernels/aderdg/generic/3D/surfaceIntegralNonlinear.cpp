@@ -12,10 +12,10 @@ using std::endl;
 using std::cout;
 
 extern "C" {
-void adersurfaceintegral_(double* lduh, double* lFhi, double* dx);
+void adersurfaceintegralnonlinear_(double* lduh, double* lFhi, double* dx);
 }
 
-void kernels::aderdg::generic::fortran::surfaceIntegral(
+void kernels::aderdg::generic::fortran::surfaceIntegralNonlinear(
     double* lduh, const double* const lFbnd,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     const int numberOfVariables, const int basisSize) {
@@ -31,7 +31,7 @@ void kernels::aderdg::generic::fortran::surfaceIntegral(
   dxTemp[1] = dx[1];
   dxTemp[2] = dx[2];
 
-  adersurfaceintegral_(lduh, lFbndFortran, dxTemp);
+  adersurfaceintegralnonlinear_(lduh, lFbndFortran, dxTemp);
 
   delete[] lFbndFortran;
   delete[] dxTemp;

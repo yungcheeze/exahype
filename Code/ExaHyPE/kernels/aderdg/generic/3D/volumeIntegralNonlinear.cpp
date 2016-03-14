@@ -14,11 +14,11 @@ using std::endl;
 using std::cout;
 
 extern "C" {
-void adervolumeintegral_(double* lduh, double* lFhi_x, double* lFhi_y,
+void adervolumeintegralnonlinear_(double* lduh, double* lFhi_x, double* lFhi_y,
                          double* lFhi_z, double* dx);
 }
 
-void kernels::aderdg::generic::fortran::volumeIntegral(
+void kernels::aderdg::generic::fortran::volumeIntegralNonlinear(
     double* lduh, const double* const lFhi,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     const int numberOfVariables, const int basisSize) {
@@ -74,7 +74,7 @@ void kernels::aderdg::generic::fortran::volumeIntegral(
   dxTemp[1] = dx[1];
   dxTemp[2] = dx[2];
 
-  adervolumeintegral_(lduh, lFhi_x, lFhi_y, lFhi_z, dxTemp);
+  adervolumeintegralnonlinear_(lduh, lFhi_x, lFhi_y, lFhi_z, dxTemp);
 
   delete[] lFhiFortran;
   delete[] dxTemp;

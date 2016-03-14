@@ -208,11 +208,11 @@ namespace fortran {
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
 template <void PDEFlux(const double* const Q, double* f, double* g, double* h)>
-void spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi,
-                        double* lQhbnd, double* lFhbnd, const double* const luh,
-                        const tarch::la::Vector<DIMENSIONS, double>& dx,
-                        const double predictorTimeStepSize,
-                        const int numberOfVariables, const int basisSize);
+void spaceTimePredictorNonlinear(double* lQi, double* lFi, double* lQhi, double* lFhi,
+                                 double* lQhbnd, double* lFhbnd, const double* const luh,
+                                 const tarch::la::Vector<DIMENSIONS, double>& dx,
+                                 const double predictorTimeStepSize,
+                                 const int numberOfVariables, const int basisSize);
 
 /**
  * (At the moment, we always evaluate the time averaged space-time
@@ -242,7 +242,7 @@ void extrapolatedPredictor(double* lQhbnd, double* lFhbnd,
 void solutionUpdate(double* luh, const double* const lduh, const double dt,
                     const int numberOfVariables, const int basisSize);
 
-void volumeIntegral(double* lduh, const double* const lFhi,
+void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                     const tarch::la::Vector<DIMENSIONS, double>& dx,
                     const int numberOfVariables, const int basisSize
 
@@ -250,7 +250,7 @@ void volumeIntegral(double* lduh, const double* const lFhi,
 
 // todo 10/02/16: Dominic
 // Keep only one surfaceIntegral.
-void surfaceIntegral(double* lduh, const double* const lFbnd,
+void surfaceIntegralNonlinear(double* lduh, const double* const lFbnd,
                      const tarch::la::Vector<DIMENSIONS, double>& dx,
                      const int numberOfVariables, const int basisSize);
 
@@ -279,7 +279,7 @@ void solutionAdjustment(double* luh,
 // template argument functions and non-template argument function.
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda)>
-void riemannSolver(double* FL, double* FR, const double* const QL,
+void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
                    const double* const QR, const double dt,
                    const int normalNonZero, const int numberOfVariables,
                    const int basisSize);
@@ -305,7 +305,7 @@ double stableTimeStepSize(const double* const luh,
 #elif DIMENSIONS == 3
 #include "kernels/aderdg/generic/3D/solutionAdjustment.cpph"
 #include "kernels/aderdg/generic/3D/stableTimeStepSize.cpph"
-#include "kernels/aderdg/generic/3D/spaceTimePredictor.cpph"
-#include "kernels/aderdg/generic/3D/riemannSolver.cpph"
+#include "kernels/aderdg/generic/3D/spaceTimePredictorNonlinear.cpph"
+#include "kernels/aderdg/generic/3D/riemannSolverNonlinear.cpph"
 #endif
 #endif
