@@ -12,7 +12,7 @@ exahype-project  Euler3d
   multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
   sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
   exahype-path               = ./ExaHyPE
-  libxsmm-path               = ../../libxsmm
+  libxsmm-path               = ../libxsmm
   output-directory           = ./Applications/eulerflow3d
   architecture               = hsw
   

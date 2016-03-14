@@ -126,11 +126,18 @@ public class Helpers {
     Process codeGenerator = runtime.exec(bashCommand);
 
     // capture any output that is produced by the code generator and print it line-by-line
-    java.io.BufferedReader codeGeneratorsOutputReader = new java.io.BufferedReader(new java.io.InputStreamReader(codeGenerator.getInputStream()));
+    java.io.InputStream stdout = codeGenerator.getInputStream();
+    java.io.BufferedReader stdoutReader = new java.io.BufferedReader(new java.io.InputStreamReader(stdout));
     String line = "";
-    while((line = codeGeneratorsOutputReader.readLine()) != null) {
-      System.out.println(line);
+    while((line = stdoutReader.readLine()) != null) {
+      System.out.println("CodeGenerator: "+line);
     }
+    java.io.InputStream stderr = codeGenerator.getErrorStream();
+    java.io.BufferedReader stderrReader = new java.io.BufferedReader(new java.io.InputStreamReader(stderr));
+    while((line = stderrReader.readLine()) != null) {
+      System.out.println("CodeGenerator: "+line);
+    }
+
   }
 }  
 
