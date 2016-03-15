@@ -106,6 +106,11 @@ public class GenericFluxesLinearADER_DGinFortran implements Solver {
     }
     writer.write("}\n");
     writer.write("\n\n\n");
+    writer.write("//************************************************* \n");
+    writer.write("//for FORTRAN kernels the fluxes and eigenvalues \n");
+    writer.write("//have to be implemented in the file ./PDE.f90 \n" );
+    writer.write("//************************************************* \n");
+    writer.write("\n\n\n");
   }
   public void writeUserPDE(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {

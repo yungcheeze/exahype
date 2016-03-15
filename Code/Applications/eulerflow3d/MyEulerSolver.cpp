@@ -45,3 +45,13 @@ void Euler3d::MyEulerSolver::adjustedSolutionValues(const double* const x,
     //  Q[4] = 2.5;
   }
 }
+
+
+
+//************************************************* 
+//for FORTRAN kernels the fluxes and eigenvalues 
+//have to be implemented in the file ./PDE.f90 
+//************************************************* 
+
+
+
