@@ -12,7 +12,7 @@ SUBROUTINE ADERRiemannSolverLinear(lQbndL,lFbndL,lQbndR,lFbndR,nv)
     ! Local variables 
     INTEGER           :: i,j,k,l
     REAL              :: aux(d), QavL(nVar), QavR(nVar), Id(nVar,nVar), smax
-    REAL              :: parL(nParam), parR(nParam), Bn(nVar,nVar) 
+    REAL              :: Bn(nVar,nVar) 
     REAL              :: LL(nVar), LR(nVar) 
     !
     ! Identity matrix 
@@ -51,17 +51,11 @@ SUBROUTINE ADERRiemannSolverLinear(lQbndL,lFbndL,lQbndR,lFbndR,nv)
     ! Here, we implement a very simple Rusanov scheme with scalar dissipation (smax*Id). 
     ! We can change this into a more sophisticated Osher or HLLEM Riemann solver whenever needed! 
     !
+    !CALL PDEEigenvalues(LL,QavL,parL,nv) 
+    !CALL PDEEigenvalues(LR,QavR,parR,nv) 
     
     !@todo anisotropic material
-    parL(1) = 100;
-    parL(2) = 100;
-    parL(3) = 100;
-    !CALL PDEEigenvalues(LL,QavL,parL,nv) 
     CALL PDEEigenvalues(LL,QavL,nv) 
-    parR(1) = 100;
-    parR(2) = 100;
-    parR(3) = 100;
-    !CALL PDEEigenvalues(LR,QavR,parR,nv) 
     CALL PDEEigenvalues(LR,QavR,nv) 
     
     smax = MAX( MAXVAL(ABS(LL)), MAXVAL(ABS(LR)) ) 
@@ -70,7 +64,7 @@ SUBROUTINE ADERRiemannSolverLinear(lQbndL,lFbndL,lQbndR,lFbndR,nv)
     ! CONSERVATION FORM => no fluctuations, but real fluxes. 
     ! Later, this will be converted into the left and right fluctuations. 
     !
-    CALL PDEMatrixB(Bn,0.5*(QavL+QavR),nv,0.5*(parL+parR)) ! evaluate the system matrix just once in the averaged state 
+    CALL PDEMatrixB(Bn,0.5*(QavL+QavR),nv) ! evaluate the system matrix just once in the averaged state 
     DO k = 1, nDOF(3)
       DO j = 1, nDOF(2)
             !CALL PDEMatrixB(Bn,0.5*(lQbndL(:,j,k)+lQbndR(:,j,k)),nv,0.5*(lparbndL(:,j,k)+lparbndR(:,j,k))) ! evaluate the system matrix in each Gaussian point again (slow) 

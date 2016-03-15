@@ -221,19 +221,13 @@ public class GenericFluxesLinearADER_DGinFortran implements Solver {
     writer.write(
         "    INTEGER, PARAMETER             :: d = 3                               ! This is the maximum number of space dimensions we want to deal with in our heads. !! NEVER change this parameter, unless you are bold and want to solve the Boltzmann equation !!  \n");
     writer.write(
-        "    INTEGER, PARAMETER             :: N = 3                               ! Polynomial degree of our approximation in space and time  \n");
+        "    INTEGER, PARAMETER             :: N = " + _order + "                               ! Polynomial degree of our approximation in space and time  \n");
     writer.write(
-        "    INTEGER, PARAMETER             :: nDim = 3                            ! The number of space dimensions that we actually want to simulate  \n");
+        "    INTEGER, PARAMETER             :: nDim = "+ _dimensions + "                            ! The number of space dimensions that we actually want to simulate  \n");
     writer.write(
-        "    DOUBLE PRECISION, PARAMETER    :: CFL = 0.9                           ! The Courant-Friedrichs-Lewy number < 1  \n");
+        "    INTEGER, PARAMETER             :: nVar = "+ _numberOfVariables + "                            ! The number of variables of the PDE system  \n");
     writer.write(
-        "    INTEGER, PARAMETER             :: nVar = 9                            ! The number of variables of the PDE system  \n");
-    writer.write(
-        "    INTEGER, PARAMETER             :: nParam = 3                          ! The number of material parameters for the PDE system \n");
-    writer.write(
-        "    INTEGER, PARAMETER             :: nDOF(0:3) = (/ 4, 4, 4, 4 /)                           ! The number of degrees of freedom in space and time  \n");
-    writer.write(
-        "    DOUBLE PRECISION, PARAMETER    :: EQNgamma = 1.4                           ! The Courant-Friedrichs-Lewy number < 1  \n");
+        "    INTEGER, PARAMETER             :: nDOF(0:3) = (/ " + (_order+1) + ", " + (_order+1) + ", " + (_order+1) + ", " + (_order+1) + " /)                           ! The number of degrees of freedom in space and time  \n");
     writer.write("     \n");
     writer.write(
         "    DOUBLE PRECISION, PARAMETER    :: wGPN(N+1)     = (/ 0.1739274225687273, 0.3260725774312732, 0.3260725774312732, 0.1739274225687273 /) \n");
