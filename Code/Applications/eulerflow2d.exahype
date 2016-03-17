@@ -26,7 +26,8 @@ exahype-project  Euler2d
  
   
   solver ADER-DG MyEulerSolver
-    variables = 5
+    unknowns  = 5 
+    parameters= 0 
     order     = 3
     kernel    = generic::fluxes::nonlinear
     language  = C
