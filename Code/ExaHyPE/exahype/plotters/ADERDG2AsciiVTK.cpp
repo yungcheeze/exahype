@@ -70,7 +70,9 @@ void exahype::plotters::ADERDG2AsciiVTK::plotPatch(
              tarch::plotter::griddata::Writer::VertexDataWriter*>::iterator p =
              _vertexDataWriter.begin();
          p != _vertexDataWriter.end(); p++) {
-      (*p)->plotVertex(vertexIndex, u[i * _unknowns + unknown]);
+      const double value = u[i * _unknowns + unknown];
+      assertion3(value==value,offsetOfPatch,sizeOfPatch,i);
+      (*p)->plotVertex(vertexIndex, value);
       unknown++;
     }
 
