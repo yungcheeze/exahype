@@ -76,7 +76,7 @@ public class Helpers {
     writer.write("\n\n\n");
     writer.write(projectName + "::" + solverName + "::" + solverName + "( int kernelNumber):\n");
     writer.write("  exahype::solvers::Solver(\"" + solverName
-        + "\",exahype::solvers::Solver::ADER_DG,kernelNumber," + numberOfUnknowns + "," + numberOfParameters + "," + order
+        + "\",exahype::solvers::Solver::ADER_DG,kernelNumber," + (numberOfUnknowns + numberOfParameters) + "," + order
         + "+1,exahype::solvers::Solver::GlobalTimeStepping) {\n");
     writer.write("  // @todo Please implement/augment if required\n");
     writer.write("}\n");
