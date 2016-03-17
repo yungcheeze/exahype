@@ -359,7 +359,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
 
   if (solver->hasToAdjustSolution(fineGridVerticesEnumerator.getCellCenter(),
                                   fineGridVerticesEnumerator.getCellSize(),
-                                  p->getCorrectorTimeStepSize())) {
+                                  p->getCorrectorTimeStamp())) {
     solver->solutionAdjustment(luh, fineGridVerticesEnumerator.getCellCenter(),
                                fineGridVerticesEnumerator.getCellSize(),
                                p->getCorrectorTimeStamp(),
