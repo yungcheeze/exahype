@@ -473,8 +473,8 @@ void kernels::aderdg::generic::c::spaceTimePredictor(
   constexpr int numberOfSpaceTimeDof =
       NVAR * BASISSIZE * BASISSIZE *
       BASISSIZE; /*tarch::la::aPowI(dim+1,BASISSIZE); */
-  constexpr int numberOfDof =
-      NVAR * BASISSIZE * BASISSIZE; /*tarch::la::aPowI(dim,BASISSIZE);*/
+//  constexpr int numberOfDof =
+//      NVAR * BASISSIZE * BASISSIZE; /*tarch::la::aPowI(dim,BASISSIZE);*/
 
   double* rhs0 = new double[numberOfSpaceTimeDof];
   double* rhs = new double[numberOfSpaceTimeDof];
