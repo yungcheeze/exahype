@@ -4,12 +4,14 @@ public class GenericFluxesNonlinearADER_DGinC implements Solver {
   public static final String Identifier = "generic::fluxes::nonlinear";
 
   private int _dimensions;
-  private int _numberOfVariables;
+  private int _numberOfUnknowns;
+  private int _numberOfParameters;
   private int _order;
 
-  public GenericFluxesNonlinearADER_DGinC(int dimensions, int numberOfVariables, int order) {
+  public GenericFluxesNonlinearADER_DGinC(int dimensions, int numberOfUnknowns, int numberOfParameters, int order) {
     _dimensions = dimensions;
-    _numberOfVariables = numberOfVariables;
+    _numberOfUnknowns = numberOfUnknowns;
+    _numberOfParameters = numberOfParameters;
     _order = order;
   }
 
@@ -87,9 +89,9 @@ public class GenericFluxesNonlinearADER_DGinC implements Solver {
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
     Helpers.writeMinimalADERDGSolverUserImplementation(
-        solverName, writer, projectName, _numberOfVariables, _order);
+        solverName, writer, projectName, _numberOfUnknowns, _numberOfParameters, _order);
 
-    int digits = String.valueOf(_numberOfVariables).length();
+    int digits = String.valueOf(_numberOfUnknowns + _numberOfParameters).length();
 
     if (_dimensions == 2) {
       writer.write("void " + projectName + "::" + solverName
@@ -99,21 +101,21 @@ public class GenericFluxesNonlinearADER_DGinC implements Solver {
           + "::flux(const double* const Q, double* f, double* g, double* h) {\n");
     }
     writer.write("  // Dimensions             = " + _dimensions + "\n");
-    writer.write("  // Number of variables    = " + Integer.toString(_numberOfVariables) + "\n");
+    writer.write("  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters) + " (#unknowns + #parameters)\n");
     writer.write("  // f\n");
     writer.write("  // @todo Please implement\n");
-    for (int i = 0; i < _numberOfVariables; i++) {
+    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
       writer.write("  f[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
     }
     writer.write("  // g\n");
     writer.write("  // @todo Please implement\n");
-    for (int i = 0; i < _numberOfVariables; i++) {
+    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
       writer.write("  g[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
     }
     if (_dimensions == 3) {
       writer.write("  // h\n");
       writer.write("  // @todo Please implement\n");
-      for (int i = 0; i < _numberOfVariables; i++) {
+      for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
         writer.write("  h[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
       }
     }
@@ -122,9 +124,9 @@ public class GenericFluxesNonlinearADER_DGinC implements Solver {
     writer.write("void " + projectName + "::" + solverName
         + "::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {\n");
     writer.write("  // Dimensions             = " + _dimensions + "\n");
-    writer.write("  // Number of variables    = " + Integer.toString(_numberOfVariables) + "\n");
+    writer.write("  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters) + " (#unknowns + #parameters)\n");
     writer.write("  // @todo Please implement\n");
-    for (int i = 0; i < _numberOfVariables; i++) {
+    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
       writer.write("  lambda[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
     }
     writer.write("}\n");
@@ -132,9 +134,9 @@ public class GenericFluxesNonlinearADER_DGinC implements Solver {
     writer.write("void " + projectName + "::" + solverName
         + "::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {\n");
     writer.write("  // Dimensions             = " + _dimensions + "\n");
-    writer.write("  // Number of variables    = " + Integer.toString(_numberOfVariables) + "\n");
+    writer.write("  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters) + " (#unknowns + #parameters)\n");
     writer.write("  // @todo Please implement\n");
-    for (int i = 0; i < _numberOfVariables; i++) {
+    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
       writer.write("  Q[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
     }
     writer.write("}\n");

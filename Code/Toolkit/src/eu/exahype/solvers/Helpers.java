@@ -70,13 +70,13 @@ public class Helpers {
   }
 
   public static void writeMinimalADERDGSolverUserImplementation(String solverName,
-      java.io.BufferedWriter writer, String projectName, int numberOfVariables, int order)
+      java.io.BufferedWriter writer, String projectName, int numberOfUnknowns, int numberOfParameters, int order)
       throws IOException {
     writer.write("#include \"" + solverName + ".h\"\n");
     writer.write("\n\n\n");
     writer.write(projectName + "::" + solverName + "::" + solverName + "( int kernelNumber):\n");
     writer.write("  exahype::solvers::Solver(\"" + solverName
-        + "\",exahype::solvers::Solver::ADER_DG,kernelNumber," + numberOfVariables + "," + order
+        + "\",exahype::solvers::Solver::ADER_DG,kernelNumber," + numberOfUnknowns + "," + numberOfParameters + "," + order
         + "+1,exahype::solvers::Solver::GlobalTimeStepping) {\n");
     writer.write("  // @todo Please implement/augment if required\n");
     writer.write("}\n");
@@ -94,7 +94,7 @@ public class Helpers {
     writer.write("\n\n\n");
   }
 
-  static public void invokeCodeGenerator(String solverName, int numberOfVariables, int order,
+  static public void invokeCodeGenerator(String solverName, int numberOfUnknowns, int numberOfParameters, int order,
       boolean isLinear, int dimensions, String microarchitecture, String pathToLibxsmm)
       throws IOException {
     String currentDirectory = System.getProperty("user.dir");
@@ -108,7 +108,7 @@ public class Helpers {
     String numericsParameter = isLinear ? "linear" : "nonlinear";
 
     // set up the command to execute the code generator
-    String args = " " + solverName + " " + numberOfVariables + " " + order + " "
+    String args = " " + solverName + " " + numberOfUnknowns + " " + order + " "
         + Integer.toString(dimensions) + " " + numericsParameter + " " + microarchitecture + " "
         + pathToLibxsmm + " "
         + "--precision=DP"; // double precision

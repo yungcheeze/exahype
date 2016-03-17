@@ -4,12 +4,14 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
   public static final String Identifier = GenericFluxesNonlinearADER_DGinC.Identifier;
 
   private int _dimensions;
-  private int _numberOfVariables;
+  private int _numberOfUnknowns;
+  private int _numberOfParameters;
   private int _order;
 
-  public GenericFluxesNonlinearADER_DGinFortran(int dimensions, int numberOfVariables, int order) {
+  public GenericFluxesNonlinearADER_DGinFortran(int dimensions, int numberOfUnknowns, int numberOfParameters, int order) {
     _dimensions = dimensions;
-    _numberOfVariables = numberOfVariables;
+    _numberOfUnknowns = numberOfUnknowns;
+    _numberOfParameters = numberOfParameters;
     _order = order;
   }
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
@@ -87,16 +89,16 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
     Helpers.writeMinimalADERDGSolverUserImplementation(
-        solverName, writer, projectName, _numberOfVariables, _order);
+        solverName, writer, projectName, _numberOfUnknowns, _numberOfParameters, _order);
 
-    int digits = String.valueOf(_numberOfVariables).length();
+    int digits = String.valueOf(_numberOfUnknowns + _numberOfParameters).length();
 
     writer.write("void " + projectName + "::" + solverName
         + "::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {\n");
     writer.write("  // Dimensions             = " + _dimensions + "\n");
-    writer.write("  // Number of variables    = " + Integer.toString(_numberOfVariables) + "\n");
+    writer.write("  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters) + " (#unknowns + #parameters)\n");
     writer.write("  // @todo Please implement\n");
-    for (int i = 0; i < _numberOfVariables; i++) {
+    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
       writer.write("  Q[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
     }
     writer.write("}\n");
@@ -110,7 +112,7 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
   public void writeUserPDE(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
     // @todo Implement
-    int digits = String.valueOf(_numberOfVariables).length();
+    int digits = String.valueOf(_numberOfUnknowns + _numberOfParameters).length();
 
     writer.write("SUBROUTINE PDEEigenvalues(Lambda,Q,nv) \n");
     writer.write("  USE typesDef, ONLY : nVar, d \n");
@@ -122,7 +124,7 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
     writer.write("  ! Local variables  \n");
     writer.write("  !\n");
     writer.write("  !@todo Please implement\n");
-    for (int i = 0; i < _numberOfVariables; i++) {
+    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
       writer.write("  Lambda(" + String.format("%" + digits + "d", i + 1) + ") = 0.0\n");
     }
     writer.write("  !\n");
@@ -141,16 +143,16 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
     writer.write("  !\n");
     writer.write("  !@todo Please implement\n");
     writer.write("  !\n");
-    for (int i = 0; i < _numberOfVariables; i++) {
+    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
       writer.write("  F(" + String.format("%" + digits + "d", i + 1) + ", 1) = 0.0\n");
     }
     writer.write("  !\n");
-    for (int i = 0; i < _numberOfVariables; i++) {
+    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
       writer.write("  F(" + String.format("%" + digits + "d", i + 1) + ", 2) = 0.0\n");
     }
     if (_dimensions == 3) {
       writer.write("  !\n");
-      for (int i = 0; i < _numberOfVariables; i++) {
+      for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
         writer.write("  F(" + String.format("%" + digits + "d", i + 1) + ", 3) = 0.0\n");
       }
     }
@@ -193,7 +195,7 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
     writer.write(
         "    INTEGER, PARAMETER             :: nDim = "+ _dimensions + "                            ! The number of space dimensions that we actually want to simulate  \n");
     writer.write(
-        "    INTEGER, PARAMETER             :: nVar = "+ _numberOfVariables + "                            ! The number of variables of the PDE system  \n");
+        "    INTEGER, PARAMETER             :: nVar = "+ _numberOfUnknowns + "                            ! The number of variables of the PDE system  \n");
     writer.write(
         "    INTEGER, PARAMETER             :: nDOF(0:3) = (/ " + (_order+1) + ", " + (_order+1) + ", " + (_order+1) + ", " + (_order+1) + " /)                           ! The number of degrees of freedom in space and time  \n");
     writer.write("     \n");

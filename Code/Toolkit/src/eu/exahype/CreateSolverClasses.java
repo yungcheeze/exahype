@@ -96,8 +96,9 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       return;
     }
 
-    int numberOfVariables = Integer.parseInt(node.getVariables().toString().trim());
-    int order = Integer.parseInt(node.getOrder().toString().trim());
+    int numberOfUnknowns   = Integer.parseInt(node.getUnknowns().toString().trim());
+    int numberOfParameters = Integer.parseInt(node.getParameters().toString().trim());
+    int order              = Integer.parseInt(node.getOrder().toString().trim());
 
     eu.exahype.solvers.Solver solver = null;
     if (isFortran) {
@@ -107,32 +108,32 @@ public class CreateSolverClasses extends DepthFirstAdapter {
           break;
         case eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran.Identifier:
           solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran(
-              _dimensions, numberOfVariables, order);
+              _dimensions, numberOfUnknowns, numberOfParameters, order);
           break;
         case eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran.Identifier:
           solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran(
-              _dimensions, numberOfVariables, order);
+              _dimensions, numberOfUnknowns, numberOfParameters, order);
           break;
       }
     } else {
       switch (kernel) {
         case eu.exahype.solvers.UserDefinedADER_DGinC.Identifier:
-          solver = new eu.exahype.solvers.UserDefinedADER_DGinC(numberOfVariables, order);
+          solver = new eu.exahype.solvers.UserDefinedADER_DGinC(numberOfUnknowns, numberOfParameters, order);
           break;
         case eu.exahype.solvers.GenericFluxesLinearADER_DGinC.Identifier:
           solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinC(_dimensions);
           break;
         case eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC.Identifier:
           solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC(
-              _dimensions, numberOfVariables, order);
+              _dimensions, numberOfUnknowns, numberOfParameters, order);
           break;
         case eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier:
           solver = new eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC(
-              _dimensions, numberOfVariables, order, _microarchitecture, _pathToLibxsmm);
+              _dimensions, numberOfUnknowns, numberOfParameters, order, _microarchitecture, _pathToLibxsmm);
           break;
         case eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier:
           solver = new eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC(
-              _dimensions, numberOfVariables, order, _microarchitecture, _pathToLibxsmm);
+              _dimensions, numberOfUnknowns, numberOfParameters, order, _microarchitecture, _pathToLibxsmm);
           break;
         case eu.exahype.solvers.KernelEuler2d.Identifier:
           solver = new eu.exahype.solvers.KernelEuler2d();

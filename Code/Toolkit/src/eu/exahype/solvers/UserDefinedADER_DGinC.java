@@ -3,11 +3,13 @@ package eu.exahype.solvers;
 public class UserDefinedADER_DGinC implements Solver {
   public static final String Identifier = "user::defined";
 
-  private int _numberOfVariables;
+  private int _numberOfUnknowns;
+  private int _numberOfParameters;
   private int _order;
 
-  public UserDefinedADER_DGinC(int numberOfVariables, int order) {
-    _numberOfVariables = numberOfVariables;
+  public UserDefinedADER_DGinC(int numberOfUnknowns, int numberOfParameters, int order) {
+    _numberOfUnknowns = numberOfUnknowns;
+    _numberOfParameters = numberOfParameters;
     _order = order;
   }
 
@@ -36,7 +38,7 @@ public class UserDefinedADER_DGinC implements Solver {
     writer.write("\n\n\n");
     writer.write(projectName + "::" + solverName + "::" + solverName + "( int kernelNumber):\n");
     writer.write("  exahype::solvers::Solver(\"" + solverName
-        + "\",exahype::solvers::Solver::ADER_DG,kernelNumber," + _numberOfVariables + "," + _order
+        + "\",exahype::solvers::Solver::ADER_DG,kernelNumber," + _numberOfUnknowns + "," + _numberOfParameters + "," + _order
         + "+1,exahype::solvers::Solver::GlobalTimeStepping) {\n");
     writer.write("  // @todo Please implement/augment if required\n");
     writer.write("}\n");
