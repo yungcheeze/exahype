@@ -178,14 +178,13 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{ADER-DG Implementation}
+\chapter{ADERDG Implementation}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Notation}
 \begin{itemize}
-  \item Scalar quantities with physical meaning (coordinates, pressures,
-  components of vectors with physical meaning,\ldots) are written in italic
-  letters.
+  \item Scalar quantities with physical meaning (coordinates, pressures, \ldots)
+  are written in italic letters.
   This also includes the components of vectors and tensors with physical meaning;
   see the next bullet point.
   \item Vectors and tensors with physical meaning (points, velocities, forces,
@@ -205,7 +204,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 Let $\tria$ be a partition of the domain
 $\domain\subset\mathbb{R}^d$ consisting of quadrilateral/hexahedral elements.
-We refer to the disjoint open sets $\cell \in \tria$ as grid cells. We denote by
+We refer to the disjoint open sets $\cell \in \tria$ as mesh cells. We denote by
 $\hcell$ the diameter of $\cell$.
 We store the local quantities $\hcell$ in the vector
 $\laVec{h} = \{ \hcell \}_{\cell \in \tria}$, and
@@ -228,9 +227,9 @@ case $d=2$.
 \section{Mappings}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-In this section, we introduce mappings between the grid cells
+In this section, we introduce mappings between the mesh cells
 $\cell\in\tria$ and a reference cell. Mappings allow
-us to treat integrals over grid cells with non-uniform extent in an
+us to treat integrals over mesh cells with non-uniform extent in an
 uniform manner.
 To ease the presentation, we only consider the two-dimensional case here.
 \\[5pt]
@@ -244,7 +243,7 @@ We can express $\cell$ according to
 \cell &= \mapping (\refCell),
 \notag
 \intertext{where we define the mapping $\mapping : \refCell \to \cell$ as}
-\label{eq:aderdg_impl:mapping}
+\label{eq:aderdg_impl:mapping:mapping_2d}
 \vec{x} = \mapping(\refVec{x})
 &=
 \begin{pmatrix}
@@ -261,10 +260,12 @@ We can express $\cell$ according to
 \hat{x}-0.5 \\ \hat{y}-0.5
 \end{pmatrix}
 \end{align}
+We will further denote the inverse mapping by
+$\imapping\colon\,\cell \to \refCell$.
 
-We denote the inverse mapping by $\imapping\colon\,\cell \to \refCell$.
-It is easy to see that the considered elements have a constant Jacobian matrix,
+The considered quadrilateral cells have a constant Jacobian matrix, i.e.,
 \begin{align}
+\label{eq:ader_impl:mappings:constant_jacobian}
 \jacobian (\refVec{x})&=
 \begin{pmatrix}
 \jacobianT{x}{\hat{x}} & \jacobianT{x}{\hat{y}} \\
@@ -276,16 +277,13 @@ It is easy to see that the considered elements have a constant Jacobian matrix,
 0 & \Delta y
 \end{pmatrix},
 \notag
-\intertext{and thus also a constant Jacobian determinant}
-\detJ(\refVec{x}) = \textup{det}\left(\jacobian\right)(\refVec{x})&=
-\Delta x\,\Delta y.
-\notag
+\intertext{and thus also a constant Jacobian determinant:}
+\detJ(\refVec{x}) &= \textup{det}\left(\jacobian\right)(\refVec{x})\notag\\
+&= \Delta x\,\Delta y.
 \end{align}
 
-For the affine cells considered here, we can easily proof the
-following identity.
-Let $\hat{f}$ be a sufficiently regular function on the reference cell $\refCell$, and
-let $f$ be sufficiently regular on $\cell$ and such that
+Let $\hat{f}$ be a sufficiently regular function on the reference cell
+$\refCell$. Further let $f$ be sufficiently regular on $\cell$ and such that
 \begin{align}
 \label{eq:aderdg_impl:imapping_scalar_function}
 f(\vec{x}) &= (\hat{f} \circ \imapping)(\vec{x}) = \hat{f}(\refVec{x}),
@@ -294,6 +292,7 @@ f(\vec{x}) &= (\hat{f} \circ \imapping)(\vec{x}) = \hat{f}(\refVec{x}),
 \end{align}
 Then, it holds that
 \begin{align}
+\label{eq:aderdg_impl:mapping:gradient_2d}
 \nabla\,f(\vec{x})
 &= \left(\jacobian^{-\textup{T}}\,\cdot\hat{\nabla}\,\hat{f}\right)(\refVec{x})
 =
@@ -302,69 +301,175 @@ Then, it holds that
 0 & \frac{1}{\Delta y}
 \end{pmatrix}\,
 \hat{\nabla}\,\hat{f}(\refVec{x})
-\notag
 \intertext{where}
-\hat{\nabla} &= \left(\frac{\partialup}{\partialup \hat{x}},\,\frac{\partialup}{\partialup \hat{y}}\right)\transp
+\hat{\nabla} &= \left(\frac{\partial}{\partial \hat{x}},\,\frac{\partial}{\partial \hat{y}}\right)\transp
 \notag
 \end{align}
 denotes the gradient with respect to the reference coordinates. This follows
 from \eqref{eq:aderdg_impl:imapping_scalar_function} and using the chain rule.
 A similar identity can be derived for vector-valued functions.
-We can further express volume integrals over the element $\cell$
+
+We can also express integrals over the volume of cell $\cell$
 with respect to the reference coordinates and the invertible mapping $\mapping$.
 Let $\hat{f}$ and $f$ be defined as in \eqref{eq:aderdg_impl:imapping_scalar_function},
 we have
 \begin{align}
-\intCell f(\vec{x})\,\dV &= \intRefCell \hat{f}(\refVec{x})\,|\detJ(\refVec{x})|\,\refdV
-=
-\int_{0}^1\int_{0}^1 \hat{f}(\hat{x},\hat{y})\,|\detJ(\hat{x},\hat{y})|\,\refdV\,\refdy.
-\notag
-\end{align}
-Further, if we define the faces of the reference cell according to
-\begin{align}
-\refFace_{1} &= \{ \refVec{x} \in \refCell : \hat{x} = 0\},\qquad
-\refFace_{3} =  \{ \refVec{x} \in \refCell : \hat{y} = 0\},
+\intCell f(\vec{x})\,\dV 
+&\overset{\phantom{\eqref{eq:ader_impl:mappings:constant_jacobian}}}{=} 
+\intRefCell \hat{f}(\refVec{x})\,|\detJ(\refVec{x})|\,\refdV
+= \int_{0}^1\int_{0}^1
+\hat{f}(\hat{x},\hat{y})\,|\detJ(\hat{x},\hat{y})|\,\refdx\,\refdy \notag\\
+&\overset{\eqref{eq:ader_impl:mappings:constant_jacobian}}{=}
+\detJ\,
+\int_{0}^1\int_{0}^1
+\hat{f}(\hat{x},\hat{y})\,\,\refdx\,\refdy
 \notag\\
-\refFace_{2} &= \{ \refVec{x} \in \refCell : \hat{x} = 1\},\qquad
-\refFace_{4} =  \{ \refVec{x} \in \refCell : \hat{y} = 1\},
+&\overset{\phantom{\eqref{eq:ader_impl:mappings:constant_jacobian}}}{=}
+\Delta x\,\Delta y\,
+\int_{0}^1\int_{0}^1
+\hat{f}(\hat{x},\hat{y})\,\,\refdx\,\refdy.
 \notag
 \end{align}
-we can define the four faces belonging to the boundary of $\cell$ by
+Let us indicate the faces of the reference cell 
+using a tuple $(\xi, f)$, $\xi\in\{0,1,\ldots,d-1\}$, $f\in\{0,1\}$,
+where the first index corresponds to the fixed coordinate direction:
 \begin{align}
-\face_{1} &= \mapping(\refFace_1),\qquad
-\face_{2} = \mapping(\refFace_2),\qquad
-\face_{3} = \mapping(\refFace_3),\qquad
-\face_{4} = \mapping(\refFace_4).
+\refFace^{1,0} &= \{ \refVec{x} \in \refCell : \hat{x} = 0\},\qquad
+\refFace^{1,1} =  \{ \refVec{x} \in \refCell : \hat{y} = 0\},
+\notag\\
+\refFace^{2,0} &= \{ \refVec{x} \in \refCell : \hat{x} = 1\},\qquad
+\refFace^{2,1} =  \{ \refVec{x} \in \refCell : \hat{y} = 1\},
+\notag
+\end{align}
+Then, we can define the four faces belonging to the boundary of $\cell$
+according to:
+\begin{align}
+\face^{1,0} &= \mapping(\refFace^{1,0}),\qquad
+\face^{1,1} =  \mapping(\refFace^{1,1}),\qquad
+\face^{2,0} =  \mapping(\refFace^{2,0}),\qquad
+\face^{2,1} =  \mapping(\refFace^{2,1}).
 \notag
 \end{align}
 Now we can express integrals over faces belonging to the boundary of $\cell$ with respect to
 the reference coordinates and the mapping $\mapping$.
 Let $\hat{f}$ and $f$ be defined as in \eqref{eq:aderdg_impl:imapping_scalar_function},
 we have
+
 \begin{align}
-\int_{\face_1} f(\vec{x})\,\ds &=
-\int_{0}^1\hat{f}(0,\hat{x})\,|\detJ(0,\hat{x})|\,\refdx,
+\int_{\face^{1,0}} f(\vec{x})\,\ds(\vec{x}) &=
+\int_{0}^1\hat{f}(0,\hat{y})\,\left|\frac{\partial
+\mapping(0,\hat{y})}{\partial\,\hat{y}}\right|\,\refdy
 \notag\\
-\int_{\face_2} f(\vec{x})\,\ds &=
-\int_{0}^1\hat{f}(1,\hat{x})\,|\detJ(1,\hat{x})|\,\refdx,
+&\overset{\textup{\eqref{eq:aderdg_impl:mapping:mapping_2d}}}{=}
+\Delta y
+\int_{0}^1\hat{f}(0,\hat{y})\,\,\refdy,
+\\
+%%%%
+\int_{\face^{1,1}} f(\vec{x})\,\ds(\vec{x}) &=
+\int_{0}^1\hat{f}(1,\hat{y})\,\left|\frac{\partial
+\mapping(1,\hat{y})}{\partial\,\hat{y}}\right|\,\refdy
 \notag\\
-\int_{\face_3} f(\vec{x})\,\ds &=
-\int_{0}^1\hat{f}(\hat{y},0)\,|\detJ(\hat{y},0)|\,\refdy,
+&\overset{\phantom{\textup{\eqref{eq:aderdg_impl:mapping:mapping_2d}}}}{=}
+\Delta y
+\int_{0}^1\hat{f}(1,\hat{y})\,\,\refdy,
+\\
+%%%%
+\int_{\face^{2,0}} f(\vec{x})\,\ds(\vec{x}) &=
+\int_{0}^1\hat{f}(\hat{x},0)\,\left|\frac{\partial
+\mapping(\hat{x},0)}{\partial\,\hat{x}}\right|\,\refdx
 \notag\\
-\int_{\face_4} f(\vec{x})\,\ds &=
-\int_{0}^1\hat{f}(\hat{y},1)\,|\detJ(\hat{y},1)|\,\refdy.
+&\overset{\textup{\eqref{eq:aderdg_impl:mapping:mapping_2d}}}{=}
+\Delta x
+\int_{0}^1\hat{f}(\hat{x},0)\,\,\refdx,
+\\
+%%%
+\int_{\face^{2,1}} f(\vec{x})\,\ds(\vec{x}) &=
+\int_{0}^1\hat{f}(\hat{x},1)\,\left|\frac{\partial
+\mapping(\hat{x},1)}{\partial\,\hat{x}}\right|\,\refdx
+\notag
+\\
+&\overset{\phantom{\textup{\eqref{eq:aderdg_impl:mapping:mapping_2d}}}}{=}
+\Delta x
+\int_{0}^1\hat{f}(\hat{x},1)\,\,\refdx,
+\end{align}
+
+\subsection{Mappings in arbitrary dimensions}
+
+All concepts considered in the previous section naturally extend to
+higher dimensions.
+Let us consider in this sections a reference cell $\refCell\in[0,1]^d$.
+
+For the Jacobian determinant, we obtain in this case:
+\begin{align}
+\detJ\,
+&=
+\prod_{\xi=1}^{d}
+\Delta x_\xi.
+\end{align}
+
+For a volume integral, we obtain:
+\begin{align}
+\label{eq:ader_impl:mappings:volume_integral}
+\int_\cell f(\vec{x})\,\dV 
+&=
+\detJ\,
+\int_{\refCell} f(\refVec{x})\,\dV
+\notag
+\\
+&=
+\prod_{\xi=1}^{d}
+\Delta x_\xi
+\,
+\int_{\refCell} \hat{f}(\refVec{x})\,\refdV
+\end{align} 
+
+And for an integral over a face $e^{\xi,f}$, $\xi\in\{1,2,\ldots,d\}$,
+$f\in\{0,1\}$, we obtain:
+\begin{align}
+\label{eq:ader_impl:mappings:face_integral}
+\int_{\face^{\xi,f}} f(\vec{x})\,\ds (\vec{x}) 
+&=
+\prod_{\zeta=1,\zeta\neq\xi}^{d}
+\Delta x_\zeta
+\,
+\int_{\refFace^{\xi,f}} \hat{f}(\refVec{x})\,
+\refds (\refVec{x})
+\notag\\
+&=
+\frac{\detJ}{\Delta x_\xi}
+\,
+\int_{\refFace^{\xi,f}} \hat{f}(\refVec{x})\,
+\refds (\refVec{x})  
+\end{align}
+
+Let $\hat{f}$ be a sufficiently regular function on the reference cell $\refCell$, and
+let $f$ be sufficiently regular on $\cell$ and such that
+\begin{align}
+\label{eq:aderdg_impl:imapping_scalar_function}
+f(\vec{x}) &= (\hat{f} \circ \imapping)(\vec{x}) = \hat{f}(\refVec{x}),
+\qquad
+\refVec{x}\in\refCell,\,\vec{x}=\mapping(\refVec{x})\in\cell.
 \notag
 \end{align}
-Please note that all concepts considered in this chapter naturally extend to the
-three-dimensional case.
+Then, partial derivatives of $f$ can be expressed with respect
+to the reference coordinates according to: 
+\begin{align}
+\label{eq:aderdg_impl:mapping:gradient}
+\frac{\partial f(\vec{x})}{\partial x_\xi}
+&=
+\frac{1}{\Delta x_\xi}
+\frac{\partial \hat{f}(\refVec{x})}{\partial
+\hat{x}_\xi},
+\end{align}
+where $\xi\in\{1,2,\ldots,d\}$.
 
 \subsection{Space-time mappings}
 We can express the tuple $(\cell,t)$ according to
 \begin{align}
 (\cell,t) &= \mappingst (\refCell,\hat{t}),
 \notag
-\intertext{where we define the mapping $\mappingst\colon\, \refCell\times[0,1]
-\to \cell\times[t^K,t^K+\Delta t]$ according to}
+\intertext{where we have introduced the mapping $\mappingst\colon\,
+\refCell\times[0,1] \to \cell\times[t^K,t^K+\Delta t]$ with:}
 \label{eq:aderdg_impl:mapping}
 (\vec{x},t) = \mappingst(\refVec{x})
 &=
@@ -389,7 +494,7 @@ i\leq N}$, the corresponding interpolation polynomial in the Lagrange form
 can be constructed according to:
 \begin{align}
 f_N (x) &= \sum_{i=0}^{N}\,f(x_i)\,\varphi_i(x),
-\intertext{where the Lagrange basis polynomials are defined by}
+\intertext{where the Lagrange basis polynomials are defined as}
 L_i(x) &=
 \left(\prod_{\begin{smallmatrix}0\le l\le N\\ l\neq i\end{smallmatrix}}
 \frac{x-x_l}{x_i-x_l}\right),
@@ -407,12 +512,12 @@ functions have the property} L_i(x_j) &=
 \qquad i,j = 0,\ldots,N,
 \end{align}
 
-Let $I\in\mathbb{R}$ be a open or closed real interval.
+Let $I\in\mathbb{R}$ be a real interval.
 With respect to the Gauss-Legendre quadrature of degree $2\,(N+1)-1$,
 we define a discrete scalar product
 $\langle \cdot,\cdot \rangle_{L^2(I)}$ according to:
 \begin{align*}
-\langle f,g\rangle_{L^2(K)} =
+\langle f,g\rangle_{L^2(I)} =
 \sum_{n=0}^N\,w_n\,f(x_n)\,g(x_n),
 \end{align*}
 where $x_n$ denotes a quadrature node and $w_n$ denotes a quadrature
@@ -455,13 +560,13 @@ Kronecker delta.
 An analogous condition holds for $\varphi_j$.
 
 We want to evaluate the scalar product
-$(\cdot,\cdot)_{L^2(K)}$ by using the Gauss-Legendre
+$(\cdot,\cdot)_{L^2(I)}$ by using the Gauss-Legendre
 quadrature of degree $2\,(N+1)-1$.
 We obtain:
 \begin{align*}
-(\varphi_i,\,\varphi_j)_{L^2(K)}
+(\varphi_i,\,\varphi_j)_{L^2(I)}
 &=
-\langle\varphi_i,\,\varphi_j\rangle_{L^2(K)}
+\langle\varphi_i,\,\varphi_j\rangle_{L^2(I)}
 =
 \sum_{n=0}^{N} w_n\,\varphi_{i}(x_n)\,\varphi_{j}(x_n) =
 \sum_{n=0}^{N} w_n\,\delta_{ij}\,\delta_{nj} =
@@ -490,7 +595,7 @@ functions by $\hat{\varphi}_i(\hat{x})$, $i=0,1,\ldots,N$.
 
 Let us define scalar-valued multivariate polynomials on the reference cell
 $\refCell=[0,1]^d$,
-and on each grid cell $\cell\in\tria$
+and on each mesh cell $\cell\in\tria$
 according to:
 \begin{align}
 \label{eq:ader_impl:basis:basis_definition_ref_3d}
@@ -498,7 +603,7 @@ according to:
 \prod^{d}_{\xi=1}
 \hat{\varphi}_{n_\xi} (\hat{x}_\xi),
 \\
-\label{eq:ader_impl:basis:basis_definition_grid_3d}
+\label{eq:ader_impl:basis:basis_definition_mesh_3d}
 \phi^{K}_n (\vec{x}) &=
 \begin{cases}
 (\hat{\phi}_n \circ \imapping) (\vec{x}) & \vec{x}\in\cell,
@@ -510,13 +615,13 @@ for $n_\xi=0,1,\ldots,N$, $n_\xi\in\{1,\ldots,d\}$,
 and a linearised index $n=0,1,\ldots,(N+1)^{d}-1$
 that is constructed according to:
 \begin{align*}
-n = \sum_{\xi=1}^{d} M_\xi\,n_\xi,
+n = \sum_{\xi=1}^{d} N_\xi\,n_\xi,
 \end{align*}
 using the one-dimensional basis indices $n_\xi={0,1,\ldots,N}$ and some strides
-$M_\xi$, $\xi \in \{1,2,\ldots,d\}$ that define an unique order of the degrees
-of freedom.
+$N_\xi\in\{0,N+1\}$, $\xi \in \{1,2,\ldots,d\}$ that define an unique order of
+the degrees of freedom.
 
-Notice that \eqref{eq:ader_impl:basis:basis_definition_grid_3d} implies that
+Notice that \eqref{eq:ader_impl:basis:basis_definition_mesh_3d} implies that
 \begin{align*}
 \vec{x} = \mapping \refVec{x}
 \qquad
@@ -544,17 +649,17 @@ One can show that the polynomials $\{\hat{\phi}_n
 0 \leq n_i \leq N,\,i=1,\ldots,d,\, \text{ and } \refVec{x} \in \refCell
 \right\}
 \end{align*}
-The corresponding $d$-dimensional support points ($d$-dimensional
-Gauss-Legendre quadrature nodes) on the reference cell are constructed as tensor
-products of the one-dimensional quadrature nodes:
+The $d$-dimensional support points for the multivariate
+basis functions on the mesh cells
+$\cell\in\tria$ are then constructed by means of the mapping $\mapping:$ 
 \begin{align*}
-\refVec{x}_n = (\hat{x}_{n,1},\ldots,\hat{x}_{n,d})\transp,
-%\intertext{and the corresponding quadrature weights are constructed according
-%to:} w_n = \prod_{\xi=1}^{d} w_{n_\xi},
+(x_{n,1},\ldots,x_{n,d})\transp
+&=
+\mapping\refVec{x}_n,
 \end{align*}
 with $n=0,1\ldots,(N+1)^d-1$ denoting the global index.
 
-Since we only consider affine reference cell to grid cell mappings, we can
+Since we only consider affine reference cell to mesh cell mappings, we can
 further show that the polynomials $\{{\phi}^K_n
 (\vec{x})\}_{n=0,1,\ldots,(N+1)^d-1}$ form a basis of the space
 \begin{align*}
@@ -771,7 +876,7 @@ The basis functions have the following properties:
 \item Sampling property (reference cell):
 \begin{align}
 \label{eq:ader_impl:basis:sampling_ref_1d}
-\langle \hat{f},\,\hat{\varphi}_{l'}\rangle_{L^2([0,1])}   &=
+\langle \hat{f},\,\hat{\varphi}_{l'}\rangle_{L^2([0,1])} &=
 w_{l'}\,\hat{f}(\hat{x}_{l'}),
 \\
 %%%%%%%%
@@ -779,7 +884,7 @@ w_{l'}\,\hat{f}(\hat{x}_{l'}),
 &=
 \prod_{\xi=1}^d
 \langle \hat{f},\,\hat{\varphi}_{n'_\xi}\rangle_{L^2([0,1])}
-\\
+\notag\\
 &=
 w_{n}\,
 \hat{f}(\refVec{x}_n),
@@ -787,27 +892,48 @@ w_{n}\,
 %%%%%%%%
 \langle\hat{f},\,\hat{\theta}_{l';n'}\rangle
 _{L^2(\refCell\times[0,1])}
+&= 
+\langle \hat{f},\,\hat{\varphi}_{l'}\rangle_{L^2([0,1])}\,
+\langle \hat{f},\,\hat{\phi}_{n'}\rangle_{L^2(\refCell)} 
+\notag
+\\
 &= w_{l}\,w_{n}\,
 \hat{f}(\refVec{x}_n,t_l),
 \end{align}
-\item Sampling property (grid cell):
+\item Sampling property (mesh cell):
 \begin{align}
-\label{eq:ader_impl:basis:sampling_grid_1d}
-\langle f,\,\varphi_{l}\rangle_{L^2([t_0,t_0+\Delta t])}   &=
-\Delta t\,w_l\,f(t_l),
+\label{eq:ader_impl:basis:sampling_mesh_1d}
+\langle f,\,\varphi_{l'}\rangle_{L^2([t^\cell,t^\cell+\Delta t])}
+&
+\overset{\eqref{eq:ader_impl:mappings:volume_integral}}{=}
+\Delta t\,
+\langle \hat{f},\,\hat{\varphi}_{l'}\rangle_{L^2([0,1])} \\
+&\overset{\phantom{\eqref{eq:ader_impl:mappings:volume_integral}}}{=}
+\Delta t\,w_{l'}\,f(t_{l'}),
 \\
 %%%%%%%%
-\label{eq:ader_impl:basis:sampling_grid_3d}
-\langle f,\,\phi_{n}\rangle_{L^2(\cell)}
-&=
+\label{eq:ader_impl:basis:sampling_mesh_3d}
+\langle f,\,\phi_{n'}\rangle_{L^2(\cell)}
+&\overset{\eqref{eq:ader_impl:mappings:volume_integral}}{=}
 \detJ\,
-w_{n}\,
-f(\vec{x}_n),
+\langle \hat{f},\,\hat{\phi}_{n'}\rangle_{L^2(\refCell)}
+\notag\\
+&\overset{\phantom{\eqref{eq:ader_impl:mappings:volume_integral}}}{=}
+\detJ\,
+w_{n'}\,
+f(\vec{x}_{n'}),
 \\
 %%%%%%%%
 \langle f,\,\theta_{l';n'}\rangle
 _{L^2(\cell\times[t^\cell,t^\cell+\Delta t])}
-&=
+&
+\overset{\phantom{\eqref{eq:ader_impl:mappings:volume_integral}}}{=}
+\langle f,\,\varphi_{l}\rangle_{L^2([t^\cell,t^\cell+\Delta t])}\,
+\langle f,\,\phi_{n}\rangle_{L^2(\cell)}
+\notag
+\\
+&
+\overset{\phantom{\eqref{eq:ader_impl:mappings:volume_integral}}}{=}
 \Delta t\,\detJ\,
 w_{l'}\,w_{n'}\,
 f(\vec{x}_{n'},t_{l'}),
@@ -845,13 +971,13 @@ _{L^2(\refCell\times[0,1])}
 \delta_{l l'}\,\delta_{n n'}.
 \end{align}
 %%%%%%%%%%%%%%%%
-\item Discrete orthogonality (grid cell)
+\item Discrete orthogonality (mesh cell)
 \begin{align}
 \langle \varphi^\cell_{l},\,\varphi^\cell_{l'}\rangle_{L^2([t^K,t^K+\Delta
 t])} &= \Delta t\,w_l\,\delta_{ll'},
 \\
 %%%%%%%%
-\label{eq:ader_impl:basis:discrete_ortho_grid_3d}
+\label{eq:ader_impl:basis:discrete_ortho_mesh_3d}
 \langle \phi^\cell_{n},\,\phi^\cell_{n'}\rangle_{L^2(\cell)}
 &=
 \detJ\,\langle \hat{\phi}_{n},\,\hat{\phi}_{n'}\rangle_{L^2(\refCell)}\notag
@@ -948,7 +1074,7 @@ that projects the coefficients associated
 with the univariate reference basis functions on 
 the $(N+1)$ nodes of a regular partition of interval $[0,1]$:
 \begin{align}
-\label{eq:ader_impl:operators:regular_grid_projector_1d}
+\label{eq:ader_impl:operators:regular_mesh_projector_1d}
 \hat{P}_{ij} &= \varphi_i \left({\frac{j}{N}}\right),\qquad 
 i,j=0,1,\ldots,N.
 \end{align}
@@ -997,11 +1123,11 @@ w_{n}\,
 \delta_{n n'},
 \\
 %%%%%%
-\label{eq:ader_impl:operators:tau_operator_1_grid}
+\label{eq:ader_impl:operators:tau_operator_1_mesh}
 \left[\theta^{\cell;v}_{l;n},\,\phi^{\cell;v}_{n'}\right]^{\tau}_{L^2(\cell)}
 &=
 \detJ\,
-\left[\hat{\theta}_{l;n},\,\hat{\phi}_{n'}\left]^{\tau}_{L^2(\refCell)}
+\left[\hat{\theta}_{l;n},\,\hat{\phi}_{n'}\right]^{\tau}_{L^2(\refCell)}
 \notag
 \\
 &=
@@ -1031,7 +1157,7 @@ w_{n}\,
 \delta_{n n'},
 \\
 %%%%%%
-\label{eq:ader_impl:operators:tau_operator_2_grid}
+\label{eq:ader_impl:operators:tau_operator_2_mesh}
 \left[\theta^{\cell;v}_{l;n},\,\theta^{\cell;v}_{l';n'}\right]^{\tau}_{L^2(\cell)}
 &=
 \detJ
@@ -1076,7 +1202,7 @@ $\laMat{\hat{K}}\in\mathbb{R}^{(N+1)^2}$ according to:
 \partial_{\hat{x}}\,\hat{\varphi}_{i},\,\hat{\varphi}_{j}\rangle_{L^2([0,1])}
 \notag\\
 &
-\overset{\eqref{eq:ader_impl:basis:sampling_grid_1d}}
+\overset{\eqref{eq:ader_impl:basis:sampling_mesh_1d}}
 =
 w_{j}\,
 \partial_{\hat{x}}\,\hat{\varphi}_{i}(\hat{x}_{j}),\qquad
@@ -1084,7 +1210,7 @@ i,j\in\{0,1,\ldots,N\}.
 \end{align}
 
 Let us further introduce time derivative operators on the space-time reference
-cell and the space-time grid cells $\cell\in\tria$:
+cell and the space-time mesh cells $\cell\in\tria$:
 \begin{align}
 \label{eq:ader_impl:operators:stiffness_operator_time_ref}
 \left\langle
@@ -1102,7 +1228,7 @@ _{L^2(\refCell\times[0,1])}
 w_{n}\,\hat{K}_{ll'}\,\delta_{n n'},
 \\
 %%%
-\label{eq:ader_impl:operators:stiffness_operator_time_grid}
+\label{eq:ader_impl:operators:stiffness_operator_time_mesh}
 \left\langle
 \partial_{\hat{t}}\theta^{\cell;v}_{l;n},\,
 \theta^{\cell;v}_{l';n'}
@@ -1210,7 +1336,7 @@ the previous section.
   \theta^{\cell;v}_{l;n}.
   \end{align*}
   We store the space-time predictor coefficients in the vector
-  $\laVec{\widetilde{q}}^\cell\in\matbb{R}^{N_\textup{var}(N+1)^{d+1}}$.
+  $\laVec{\widetilde{q}}^\cell\in\mathbb{R}^{N_\textup{var}(N+1)^{d+1}}$.
   \item Space-time volume flux
   $\stvec{F}^{\cell}\in\polyspace{Q}{N}{\cell\times[t^\cell,t^\cell+\Delta
   t]}^{N_\textup{var}\times d}$:
@@ -1231,7 +1357,7 @@ the previous section.
   (\widetilde{F}^{K;v}_{l;n,1},\ldots,\widetilde{F}^{K;v}_{l;n,d})\,{\theta}^{K;v}_{l;n}.
   \end{align*}
 %   We store the space-time volume flux coefficients in the matrix\; 
-%   $\laVec{\widetilde{F}}^{\cell}\in\matbb{R}^{N_\textup{var}\,(N+1)^{d+1}\times
+%   $\laVec{\widetilde{F}}^{\cell}\in\mathbb{R}^{N_\textup{var}\,(N+1)^{d+1}\times
 %   d}$.
   \item Predictor $q_h^{\cell}\in\polyspace{Q}{N}{\cell}^{N_\textup{var}}$:
   \begin{align*}
@@ -1246,7 +1372,7 @@ the previous section.
   \phi^{\cell;v}_{n}
   \end{align*}	  
   We store the predictor coefficients in the vector
-  $\laVec{q}^\cell\in\matbb{R}^{N_\textup{var}(N+1)^{d}}$.
+  $\laVec{q}^\cell\in\mathbb{R}^{N_\textup{var}(N+1)^{d}}$.
   \item Solution $u_h^{\cell}\in\polyspace{Q}{N}{\cell}^{N_\textup{var}}$:
   \begin{align*}
   u_h^{\cell}
@@ -1260,7 +1386,7 @@ the previous section.
   \phi^{\cell;v}_{n}
   \end{align*}
   We store the solution coefficients in the vector
-  $\laVec{u}^\cell\in\matbb{R}^{N_\textup{var}(N+1)^{d}}$.
+  $\laVec{u}^\cell\in\mathbb{R}^{N_\textup{var}(N+1)^{d}}$.
   \item Volume flux
   $\vec{F}_h^{\cell}\in\polyspace{Q}{N}{\cell}^{N_\textup{var}\times d}$:
   \begin{align*}
@@ -1278,7 +1404,7 @@ the previous section.
   (F^{K;v}_{n,1},\ldots,F^{K;v}_{n,d})\,{\phi}^{K;v}_{n}.
   \end{align*}
 %   We store the volume flux coefficients in the matrix
-%   $\laMat{F}^\cell\in\matbb{R}^{N_\textup{var}\,(N+1)^{d}\times d}$.
+%   $\laMat{F}^\cell\in\mathbb{R}^{N_\textup{var}\,(N+1)^{d}\times d}$.
 \end{itemize}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Space-time predictor computation}
@@ -1312,7 +1438,7 @@ u^{\cell;v}_{n'}
 &-
 \sum_{l'=0}^{N}
 \sum_{n'=0}^{(N+1)^d-1}
-\stvec{F}^{\cell;v}_{l'n'}
+\stvec{F}^{\cell;v}_{l';n'}
 (\widetilde{q}^{\cell;(r)})
 \,
 \left\langle
@@ -1320,7 +1446,20 @@ u^{\cell;v}_{n'}
 \nabla
 \theta^{\cell;v}_{l;n}
 \right\rangle
-_{L^2(\cell\times[t^\cell,t^\cell+\Delta t])},
+_{L^2(\cell\times[t^\cell,t^\cell+\Delta t])}
+\\
+&+ 
+\sum_{l'=0}^{N}
+\sum_{n'=0}^{(N+1)^d-1}
+S^{\cell;v}_{l';n'}
+(\widetilde{q}^{\cell;(r)})
+\,
+\left\langle
+\theta^{\cell;v}_{l';n'},\,
+\theta^{\cell;v}_{l;n}
+\right\rangle
+_{L^2(\cell\times[t^\cell,t^\cell+\Delta t])}
+,
 \end{align}
 where $r\in\{0,1,\ldots,N_\textup{var}\}$ denotes the
 current iteration.
@@ -1345,10 +1484,10 @@ $\laMat{L}^{\cell\cell}\in\mathbb{R}^{N_\textup{var}\,(N+1)^{d+1}\times
 N_\textup{var}\,(N+1)^{d+1}}$, and the right-hand side vectors
 $\laVec{v}^{\cell}(\laVec{u}^{\cell})\in\mathbb{R}^{N_\textup{var}\,(N+1)^{d+1}}$,
 and
-$\laVec{w}^{\cell;(r)}(\widetilde{\laVec{q}}^{\cell;(r)})\in\mathbb{R}^{N_\textup{var}\,(N+1)^{d+1}}.
+$\laVec{w}^{\cell;(r)}(\widetilde{\laVec{q}}^{\cell;(r)})\in\mathbb{R}^{N_\textup{var}\,(N+1)^{d+1}}$.
 \begin{framed}
-{\large \textbf{TODO}}: If we have a source term in the PDE, do we have to
-consider that also in the predictor computation? I tend to say yes.
+{\large \textbf{TODO}}: If we have a source term in the PDE, we have to
+consider it also in the predictor computation.
 \end{framed}
 %%%
 \subsection{Left-hand side operator}
@@ -1399,23 +1538,37 @@ where $l,l'\in\{0,1,\ldots,N\}$, and
 $n,n'\in\{0,1,\ldots,(N+1)^{d}-1\}$.
 In step I of the above derivations, we
 used
-\eqref{eq:ader_impl:operators:tau_operator_1_grid}
+\eqref{eq:ader_impl:operators:tau_operator_1_mesh}
 and
-\eqref{eq:ader_impl:operators:stiffness_operator_time_grid}.
+\eqref{eq:ader_impl:operators:stiffness_operator_time_mesh}.
 \subsection{Constant right-hand side term}
 The elements of vector
 $\laVec{v}^{\cell;v}$, $v\in\{0,1,\ldots,N_\textup{var}\}$, are computed
 according to:
 \begin{align*}
 \laVecel{v}^{\cell;v}_{l;n}
-&{=}
+&
+\overset{\phantom{\textup{(I)}}}{=}
 \sum_{n'=0}^{(N+1)^{d}-1}
 \left[\theta^{\cell;v}_{l;n},\,\phi^{\cell;v}_{n'}\right]^{0}_{L^2(\cell)}
 \,
 u^{\cell;v}_{n'}
 \\
+&
+\overset{\phantom{\textup{(I)}}}{+}
+\sum_{l'=0}^{N}
+\sum_{n'=0}^{(N+1)^{d}-1}
+S^{\cell;v}_{l';n'}
+(\widetilde{q}^{\cell;(r)})
+\,
+\left\langle
+\theta^{\cell;v}_{l';n'},\,
+\theta^{\cell;v}_{l;n}
+\right\rangle
+_{L^2(\cell\times[t^\cell,t^\cell+\Delta t])}
+\\
 %%%
-&\overset{\eqref{eq:ader_impl:operators:tau_operator_1_grid}}=
+&\overset{\textup{(I)}}=
 \sum_{n'=0}^{(N+1)^{d}-1}
 \detJ\,
 w_{n}\,
@@ -1423,17 +1576,34 @@ w_{n}\,
 \delta_{\cell\cell'}\,\delta_{vv'}\,
 \delta_{n n'}
 \,
-u^{\cell;v}_{n'}\,
+u^{\cell;v}_{n'}
+\\
+&
+\overset{\phantom{\textup{(I)}}}{+}
+\sum_{l'=0}^{N}
+\sum_{n'=0}^{(N+1)^{d}-1}
+S^{\cell;v}_{l';n'}\,
+\Delta t\,\detJ\,w_{l}\,w_{n}\,
+\delta_{\cell\cell'}\,\delta_{vv'}\,\delta_{l l'}\,\delta_{n n'}
 \\
 %%%
-&=
+&
+\overset{\phantom{\textup{(I)}}}{=}
 \detJ\,
 w_{n}\,
 \hat{F}^0_l\,
-u^{\cell;v}_{n},
+u^{\cell;v}_{n}
+\overset{\phantom{\textup{(I)}}}{+}
+\Delta t\,\detJ\,w_{l}\,w_{n}\,
+S^{\cell;v}_{l;n},
 \end{align*}
 where $l\in\{0,1,\ldots,N\}$, and
 $n\in\{0,1,\ldots,(N+1)^{d}-1\}$.
+We have used
+\eqref{eq:ader_impl:basis:orthogonal_variables_spacetime}
+and 
+\eqref{eq:ader_impl:operators:tau_operator_1_mesh}
+in step I of the above derivations.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Space-time volume flux integral}
 \label{sec:ader_impl:predictor:space_time_volume_flux_integral}
@@ -1445,7 +1615,7 @@ $v\in\{0,1,\ldots,N_\textup{var}\}$, are computed according to:
 &{=}
 \sum_{l'=0}^{N}
 \sum_{n'=0}^{(N+1)^d-1}
-\stvec{F}^{K;v}_{l'n'}\,
+\stvec{F}^{K;v}_{l';n'}\,
 \left\langle
 \theta^{K;v}_{l';n'},\,
 \nabla
@@ -1467,7 +1637,7 @@ _{L^2(\cell\times[t^\cell,t^\cell+\Delta t])}
 %\left(\frac{\partial\,\vec{x}}{\partial\,\refVec{x}}\right)^{-\textup{T}}
 \sum_{l'=0}^{N}
 \sum_{n'=0}^{(N+1)^d-1}
-\stvec{F}^{K;v}_{l'n'}\,
+\stvec{F}^{K;v}_{l';n'}\,
 \jacobian^{-\textup{T}}\,
 \left\langle
 \hat{\theta}_{l';n'}\,
@@ -1581,7 +1751,7 @@ q^{\cell;v}_{n'}\,
 \varphi^{\cell;v}_{l'}\,
 \rangle_{L^2[t^\cell,t^\cell+\Delta t]}
 \\
-&\overset{\eqref{eq:ader_impl:basis:sampling_grid_1d}}
+&\overset{\eqref{eq:ader_impl:basis:sampling_mesh_1d}}
 {=}
 \sum_{n'=0}^{(N+1)^{d}-1}
 \phi^{\cell;v}_{n'}\,
@@ -1613,7 +1783,7 @@ the surface integral discussed in the next section.
 
 Let us define on the reference element $2\,d$ sets of support points
 \begin{align*}
-\{\refVec{x}_{k}\}&_{k=0,1,\ldots,(N+1)^{d-1}-1}^{\xi f}
+\{\refVec{x}_{k}\}&_{k=0,1,\ldots,(N+1)^{d-1}-1}^{\xi, f}
 \\
 &=
 \left\{\refVec{x}_{n}\colon\; \hat{x}_{n,\xi}=0\textup{ if }f=0
@@ -1621,18 +1791,18 @@ Let us define on the reference element $2\,d$ sets of support points
 \right\},
 \end{align*}
 where $\xi=1,2,\ldots,d$, and $f=0,1$.
-We construct the corresponding support points on the grid cells $\cell\in\tria$
+We construct the corresponding support points on the mesh cells $\cell\in\tria$
 by applying a mapping:
 \begin{align*}
-\{\vec{x}_{k}\}&_{k=0,1,\ldots,(N+1)^{d-1}-1}^{\xi f}
+\{\vec{x}_{k}\}&_{k=0,1,\ldots,(N+1)^{d-1}-1}^{\xi, f}
 \\
 &=
 \mapping
-{\{\refVec{x}_{k}\}_{k=0,1,\ldots,(N+1)^{d-1}-1}^{\xi f}}
+{\{\refVec{x}_{k}\}_{k=0,1,\ldots,(N+1)^{d-1}-1}^{\xi, f}}
 \end{align*}
 
 The boundary extrapolation requires us to sum the contributions of the basis
-functions at the quadrature points on each face $\face^{\xi f}$.
+functions at the quadrature points on each face $\face^{\xi, f}$.
 
 Let us start with the extrapolation of the
 normal flux tensor components
@@ -1644,41 +1814,41 @@ $\xi\in\{1,2,\ldots,d\}$,
 which are scalar-valued quantities.
 
 Using the quadrature nodes
-$\vec{x}^{\xi f}_k\in\{\refVec{x}_{k}\}_{k=0,1,\ldots,(N+1)^{d-1}-1}^{\xi f}$
+$\vec{x}^{\xi, f}_k\in\{\refVec{x}_{k}\}_{k=0,1,\ldots,(N+1)^{d-1}-1}^{\xi, f}$
 ,$k=0,1,\ldots,(N+1)^{d-1}-1$,
-located on face $e^{\xi f}$,
+located on face $e^{\xi, f}$,
 $\xi=1,2,\ldots,d$, $f=0,1$,
 we obtain for the components of the normal flux vector
-$\laVec{g}^{K;\xi f}\in\mathbb{R}^{N_\textup{var}\,(N+1)^{d-1}}$:
+$\laVec{g}^{K;\xi, f}\in\mathbb{R}^{N_\textup{var}\,(N+1)^{d-1}}$:
 \begin{align*}
-\laVecel{g}^{K;\xi f;v}_k
+\laVecel{g}^{K;\xi, f;v}_k
 &=
 \sum_{n'=0}^{(N+1)^{d}-1}
 (\vec{F}^{\cell;v}\,\vec{n}^{\xi})_{n'}\,
-\phi^{\cell;v}_{n'}(\vec{x}^{\xi f}_k)
+\phi^{\cell;v}_{n'}(\vec{x}^{\xi, f}_k)
 \\
 &
 \overset{\textup{(I)}}
 {=}
 \sum_{n'=0}^{(N+1)^{d}-1}
 (\vec{F}^{\cell;v}\,\vec{n}^{\xi})_{n'}\,
-\hat{\phi}_{n'}(\refVec{x}^{\xi f}_k)
+\hat{\phi}_{n'}(\refVec{x}^{\xi, f}_k)
 \\
 &
 \overset{\textup{(II)}}
 {=}
 \sum_{n'=0}^{(N+1)^{d}-1}
 (\vec{F}^{\cell;v}\,\vec{n}^{\xi})_{n'}\,
-\hat{\varphi}_{n'_\zeta}(\hat{x}^{\xi f}_{k,\xi})
+\hat{\varphi}_{n'_\zeta}(\hat{x}^{\xi, f}_{k,\xi})
 \prod_{\zeta=1,\zeta\neq\xi}^{d}
-\hat{\varphi}_{n'_\zeta}(\hat{x}^{\xi f}_{k,\zeta})
+\hat{\varphi}_{n'_\zeta}(\hat{x}^{\xi, f}_{k,\zeta})
 \\
 &
 \overset{\textup{(III)}}
 {=}
 \sum_{n'=0}^{(N+1)^{d}-1}
 (\vec{F}^{\cell;v}\,\vec{n}^{\xi})_{n'}\,
-\hat{\varphi}_{n'_\xi}(\hat{x}^{\xi f}_{k,\xi})
+\hat{\varphi}_{n'_\xi}(\hat{x}^{\xi, f}_{k,\xi})
 \prod_{\zeta=1,\zeta\neq\xi}^{d}
 \delta_{n'_\zeta k_\zeta}
 \\
@@ -1695,7 +1865,7 @@ where $k\in\{1,2,\ldots,(N+1)^{d-1}-1\}$, and
 where the vectors $\hat{F}^f \in \mathbb{R}^{N+1}$,
 $f=0,1$, are defined by \eqref{eq:ader_impl:operators:boundary_values}.
 In step I of the above calculations, we made use of the definition of the
-multivariate basis functions; cf.~\eqref{eq:ader_impl:basis:basis_definition_grid_3d}.
+multivariate basis functions; cf.~\eqref{eq:ader_impl:basis:basis_definition_mesh_3d}.
 In step II, we split the multivariate reference basis functions
 into the univariate ones; cf.~\eqref{eq:ader_impl:basis:basis_definition_ref_3d}.
 In step III, we made use of the Lagrange basis property
@@ -1706,11 +1876,11 @@ predictor vectors $\laVec{e}^{K;\xi
 f}\in\mathbb{R}^{N_\textup{var}\,(N+1)^{d-1}}$ $\xi=1,2,\ldots,d$, $f=0,1$
 :
 \begin{align*}
-\laVecel{e}^{K;\xi f;v}_{k}
+\laVecel{e}^{K;\xi, f;v}_{k}
 &=
 \sum_{n'=0}^{(N+1)^{d}-1}
 q^{\cell;v}_{n'}\,
-\phi^{\cell;v}_{n'}(\vec{x}^{\xi f}_k)
+\phi^{\cell;v}_{n'}(\vec{x}^{\xi, f}_k)
 \\
 &
 \overset{\phantom{\textup{(IV)}}}
@@ -1753,7 +1923,8 @@ _{L^2(\cell)}
 &+
 \int_{t^\cell}^{t^\cell+\Delta t}
 \int_\cellBnd
-\phi^{\cell;v}_{n}\,\vec{G}(q^{\cell+}_h,q^{\cell-}_h\,\vec{n})\,
+\phi^{\cell;v}_{n}\,\vec{G}(q^{\cell+}_h,q^{\cell-}_h)
+\vec{n}\,
 \dV\,\dt
 \notag
 \\
@@ -1787,8 +1958,8 @@ where the solution update vector is constructed according to:
 All the operators and vectors introduced above will be discussed
 in detail in the next sections. 
 \begin{framed}
-{\large \textbf{TODO}}: If we have a source term in the PDE, do we have to
-consider that also in the predictor computation? I tend to say yes.
+{\large \textbf{TODO}}: If we have a source term in the PDE, we have to
+consider it also in the predictor computation.
 \end{framed}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Mass operator}
@@ -1798,7 +1969,7 @@ size $(N+1)^d$, where $N_\cell$ denotes the number of elements and
 $d$ denotes the space dimension.
 
 Let us pick two variables $v,v'\in\{0,1,\ldots,N_\textup{var}-1\}$
-and two grid cells $\cell,\cell'\in\tria$.
+and two mesh cells $\cell,\cell'\in\tria$.
 The block $\laMat{M}^{\cell\cell';vv'}\in\mathbb{R}^{(N+1)^{d}\times(N+1)^{d}}$
 has the elements:
 \begin{align}
@@ -1904,7 +2075,7 @@ From this definition of the fluctuations, it follows that
 the face fluctuations with respect to the outward directed
 normal vectors can be computed according to:
 \begin{align}
-(\vec{G}^{\cell;v}\,\vec{n}^{\xi f})
+(\vec{G}^{\cell;v}\,\vec{n}^{\xi, f})
 &=
 \begin{cases}
 -(\vec{G}^{\cell;v}\,\vec{n}^{\xi}) & f=0, \\
@@ -1912,10 +2083,10 @@ normal vectors can be computed according to:
 \end{cases},
 \end{align}
 where $(\vec{G}^{\cell;v}\,\vec{n}^{\xi})\in\mathbb{R}^{(N+1)^{d-1}}$
-denote the face fluctuations, and $\vec{n}^{\xi f}$ denote the
+denote the face fluctuations, and $\vec{n}^{\xi, f}$ denote the
 outward directed normal vectors, $\xi\in\{1,2,\ldots,d\}$, $f\in\{0,1\}$.
 
-Evaluating the values of the grid cell basis functions on a face of the mesh,
+Evaluating the values of the mesh cell basis functions on a face of the mesh,
 leads to the evaluation of the reference basis functions at
 either $\hat{x}_\xi=0$ or $\hat{x}_\xi=1$, $\xi\in\{1,2,\ldots,d\}$.
 
@@ -1936,7 +2107,7 @@ The vector has the entries
 \laVecel{b}^{\cell;v}_n &=
 \sum_{\xi=1}^{d}
 \sum_{f=0}^{1}
-\int_{\face^{\xi f}} {\phi}^{K;v}_{n}\,
+\int_{\face^{\xi, f}} {\phi}^{K;v}_{n}\,
 \hat{F}^f\otimes(\vec{G}^{\cell;v}\,\vec{n}^{\xi
 f})
 \,\ds
@@ -1944,7 +2115,7 @@ f})
 &=
 \sum_{\xi=1}^{d}
 \sum_{f=0}^{1}
-\int_{\face^{\xi f}} {\phi}^{K;v}_{n}\,
+\int_{\face^{\xi, f}} {\phi}^{K;v}_{n}\,
 \sum_{n'=0}^{(N+1)^{d}-1}
 (\hat{F}^f\otimes(\vec{G}^{\cell;v}\,\vec{n}^{\xi
 f}))_{n'}
@@ -1955,13 +2126,12 @@ f}))_{n'}
 \sum_{\xi=1}^{d}
 \sum_{f=0}^{1}
 \sum_{i=0}^{(N+1)^{d-1}-1}
-|e^{\xi f}|\,
+|e^{\xi, f}|\,
 \prod_{\zeta=1,\zeta\neq\xi}^d
 w_{i_\zeta}\,
 \sum_{n'=0}^{(N+1)^{d}-1}
 \hat{\phi}_{n}(\refVec{x}_i)\,
-(\hat{F}^f\otimes(\vec{G}^{\cell;v}\,\vec{n}^{\xi
-f}))_{n'}
+(\hat{F}^f\otimes(\vec{G}^{\cell;v}\,\vec{n}^{\xi,f}))_{n'}
 \,
 \hat{\phi}_{n'}(\refVec{x}_i)
 \\
@@ -1974,7 +2144,7 @@ f}))_{n'}
 w_{i_\zeta}\,
 \sum_{n'=0}^{(N+1)^{d}-1}
 \delta_{n i}\,
-(\hat{F}^f\otimes(\vec{G}^{\cell;v}\,\vec{n}^{\xi
+(\hat{F}^f\otimes(\vec{G}^{\cell;v}\,\vec{n}^{\xi,
 f}))_{n'}
 \,
 \delta_{n' i}
@@ -2033,9 +2203,9 @@ w_{n}
 S^{\cell;v}_{n}\,\phi^{\cell;v}_{n}.
 \end{align*}
 where we have used the sampling property
-\eqref{eq:ader_impl:basis:sampling_grid_3d}, and
+\eqref{eq:ader_impl:basis:sampling_mesh_3d}, and
 the discrete orthogonality property
-\eqref{eq:ader_impl:basis:discrete_ortho_grid_3d}
+\eqref{eq:ader_impl:basis:discrete_ortho_mesh_3d}
 of the basis polynomials in step I.
 
 We thus obtain for the elements of the source term contribution vector
@@ -2055,7 +2225,7 @@ S^{\cell;v}_{n'}\,
 \phi^{\cell;v}_{n}\,
 \rangle_{L^2(\cell)}
 \\
-\overset{\textup{\eqref{eq:ader_impl:basis:discrete_ortho_grid_3d}}}{=}&
+\overset{\textup{\eqref{eq:ader_impl:basis:discrete_ortho_mesh_3d}}}{=}&
 \sum_{n'=1}^{(N+1)^d-1}
 \delta_{n n'}\,
 \detJ\,
@@ -2088,7 +2258,7 @@ equation for $\laVec{u}^{\cell}$
 &= \Delta t\,\left (
 \laVec{\Delta u}^{\cell}
 +
-\laVec{S}^{\cell}
+\laVec{s}^{\cell}
 \right)
 \\
 \intertext{Fixing the variable $v'\in{0,1,\ldots,N_\textup{var}}$
@@ -2105,7 +2275,7 @@ J_\cell\,w_{n}\,
 \laVecel{u}_{n'}^{\cell;v';(\textup{old})}) &= \Delta t\,\left (
 \laVecel{\Delta u}^{\cell;v'}_{n'}
 +
-\laVecel{S}^{\cell;v'}_{n'}
+\laVecel{s}^{\cell;v'}_{n'}
 \right)
 \\
 \Rightarrow J_\cell\,w_{n}\,
@@ -2113,7 +2283,7 @@ J_\cell\,w_{n}\,
 &= \Delta t\,\left (
 \laVecel{\Delta u}^{\cell;v}_{n}
 +
-\laVecel{S}^{\cell;v}_{n}
+\laVecel{s}^{\cell;v}_{n}
 \right)
 \end{align*}
 From rearranging the equation, we finally obtain
@@ -2127,65 +2297,11 @@ From rearranging the equation, we finally obtain
 \laVecel{\Delta u}^{\cell;v}_{n}
 +
 \frac{1}{J_\cell}
-\laVecel{S}^{\cell;v}_{n}
+\laVecel{s}^{\cell;v}_{n}
 \right),
 \end{align*}
 where $v\in{0,1,\ldots,N_\textup{var}}$
 and $n\in{0,1,\ldots,(N+1)^d-1}$.
 Notice the division by $\detJ$ on the right-hand side.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Projecting the ADER-DG degrees of freedom on a regular grid (``Sub
-output matrix'')}
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-The DG degrees of freedom can be projected on a regular partition
-of a cell $\cell\in\tria$
-using a $d$-dimensional tensor product of the 1-$d$
-regular grid projector defined
-by \eqref{eq:ader_impl:operators:regular_grid_projector_1d}.
- 
-Let $u_h^{(\textup{reg})}\in\polyspace{Q}{N}{{(N+1)^d}}$ denote the
-solution $u_h$ projected on a regular partition of $\cell$.
-
-We compute the coefficients of $u_h^{(\textup{reg})}$
-according to:
-\begin{align}
-u_{h;n}^{(\textup{reg})}
-&\overset{\eqref{eq:ader_impl:basis:basis_definition_grid_3d}}
-{=}
-\sum_{n'=0}^{(N+1)^d-1}
-u_{h;n'}
-\prod_{\xi=1}^{d}
-\hat{P}_{n'_\xi,n_{\xi}}
-,
-\qquad n=0,1,\ldots,(N+1)^d-1,
-\end{align}
-
-\section{Remarks on the current ExaHyPE implementation}
-\begin{enumerate}
-\item If we store the 1-$d$ regular grid projector $\hat{P}$, we
-do not need to store the operators $\hat{F}^f$, $f=0,1$
-(\texttt{FLCoeff},\texttt{FRCoeff},\texttt{FCoeff}).
-We further need not to store the large sub output operators
-(\texttt{subOutputMatrix})
-which are $d$-dimensional tensor products of $\hat{P}$.
-\item There is no need to allocate extra memory for the time 
-boundary values, i.e., $\hat{F}^0$ (\texttt{F0})
-since these values are already stored
-in \texttt{FLCoeff}, and \texttt{FCoeff}. 
-\item \texttt{FLCoeff} and \texttt{FRCoeff}  
-contain the same information as \texttt{FCoeff}. 
-\end{enumerate}
-
-Conclusion:
-\begin{itemize}
-\item
-The operators
-\texttt{FLCoeff}$\in\mathbb{R}^{N+1}$,\texttt{FRCoeff}
-$\in\mathbb{R}^{N+1}$,\texttt{FCoeff}$\in\mathbb{R}^{2\,(N+1)}$,\\
-and \texttt{subOutputMatrix}$\in\mathbb{R}^{(N+1)^d\times(N+1)^d\times\ldots}$
-can all be realised by storing a 1-$d$ regular grid projector
-$\hat{P}\in\mathbb{R}^{(N+1)\times(N+1)}$.
-\end{itemize}
 
 \end{document}
