@@ -39,7 +39,7 @@ exahype-project  Euler2d
   end solver
   
   shared-memory
-    identifier               = sampling
+    identifier               = autotuning
     cores                    = 4
     properties-file          = sharedmemory.properties
   end shared-memory  
@@ -49,7 +49,7 @@ exahype-project  Euler2d
   end distributed-memory  
 
   optimisation
-    fuse-algorithmic-steps   = off
+    fuse-algorithmic-steps   = on
   end optimisation  
 
 end exahype-project  
