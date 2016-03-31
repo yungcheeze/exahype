@@ -153,9 +153,6 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 }
 
 int exahype::runners::Runner::run() {
-  initSharedMemoryConfiguration();
-  initDistributedMemoryConfiguration();
-
   logInfo("run(...)", "create computational domain at " << _parser.getOffset()
                                                         << " of width/size "
                                                         << _parser.getSize());
@@ -170,6 +167,9 @@ int exahype::runners::Runner::run() {
               geometry,
               tarch::la::Vector<DIMENSIONS, double>(_parser.getSize()),
               tarch::la::Vector<DIMENSIONS, double>(_parser.getOffset()));
+
+  initSharedMemoryConfiguration();
+  initDistributedMemoryConfiguration();
 
   int result = 0;
   if (tarch::parallel::Node::getInstance().isGlobalMaster()) {

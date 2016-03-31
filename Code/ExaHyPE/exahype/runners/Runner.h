@@ -44,7 +44,10 @@ class exahype::runners::Runner {
    * - If autotuning is enabled and no valid properties file is provided, we
    *
    *
-   * @todo Weiterschreiben
+   * <h2>Invocation sequence</h2>
+   *
+   * It is important that we init the shared memory environment after we have
+   * created the repository. See Orace::loadStatistics().
    */
   void initSharedMemoryConfiguration();
   void initDistributedMemoryConfiguration();
