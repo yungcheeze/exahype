@@ -92,14 +92,12 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
   const int numberOfThreads = _parser.getNumberOfThreads();
   tarch::multicore::Core::getInstance().configure(numberOfThreads);
 
-  std::ifstream f(_parser.getMulticorePropertiesFile().c_str());
-  bool multicorePropertiesFileDoesExist = f.good();
-  f.close();
-
   switch (_parser.getMulticoreOracleType()) {
     case Parser::Dummy:
-      logInfo("initSharedMemoryConfiguration()",
-              "use dummy shared memory oracle");
+      logInfo(
+        "initSharedMemoryConfiguration()",
+        "use dummy shared memory oracle"
+      );
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
           new peano::datatraversal::autotuning::OracleForOnePhaseDummy(
               true, false,
@@ -107,23 +105,33 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
           );
       break;
     case Parser::Autotuning:
-      logInfo("initSharedMemoryConfiguration()",
-              "use autotuning shared memory oracle");
+      logInfo(
+        "initSharedMemoryConfiguration()",
+        "use autotuning shared memory oracle"
+      );
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
-          new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize()
-          );
+        new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize()
+      );
       break;
     case Parser::GrainSizeSampling:
-      logInfo("initSharedMemoryConfiguration()",
-              "use shared memory oracle sampling");
+      logInfo(
+        "initSharedMemoryConfiguration()",
+        "use shared memory oracle sampling"
+      );
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
-          new sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling(
-              32,
-              false,  // useThreadPipelining,
-              true    // logarithmicDistribution
-              ));
+        new sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling(
+          32,
+          false,  // useThreadPipelining,
+          true    // logarithmicDistribution
+      ));
       break;
   }
+
+  std::ifstream f(_parser.getMulticorePropertiesFile().c_str());
+  if (f.good()) {
+    peano::datatraversal::autotuning::Oracle::getInstance().loadStatistics( _parser.getMulticorePropertiesFile() );
+  }
+  f.close();
   #endif
 }
 
