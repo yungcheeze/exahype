@@ -133,7 +133,6 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
     case Parser::Dummy:
       break;
     case Parser::Autotuning:
-      break;
     case Parser::GrainSizeSampling:
       logInfo("shutdownSharedMemoryConfiguration()",
               "wrote statistics into file "
