@@ -19,4 +19,8 @@ info               peano    -1                      black
 # App-specific output
 #
 info             peano::utils::UserInterface    -1  white
-info               exahype  -1                      white
+info             exahype  -1                      white
+
+
+info             sharedmemoryoracles  -1            white
+
