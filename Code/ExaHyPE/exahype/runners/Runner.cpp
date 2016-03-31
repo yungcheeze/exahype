@@ -26,6 +26,7 @@
 #include "peano/datatraversal/autotuning/OracleForOnePhaseDummy.h"
 
 #include "sharedmemoryoracles/OracleForOnePhaseWithGrainSizeSampling.h"
+#include "sharedmemoryoracles/OracleForOnePhaseWithShrinkingGrainSize.h"
 
 #include "exahype/plotters/Plotter.h"
 
@@ -87,7 +88,7 @@ void exahype::runners::Runner::shutdownDistributedMemoryConfiguration() {
 }
 
 void exahype::runners::Runner::initSharedMemoryConfiguration() {
-#ifdef SharedMemoryParallelisation
+  #ifdef SharedMemoryParallelisation
   const int numberOfThreads = _parser.getNumberOfThreads();
   tarch::multicore::Core::getInstance().configure(numberOfThreads);
 
@@ -108,6 +109,9 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
     case Parser::Autotuning:
       logInfo("initSharedMemoryConfiguration()",
               "use autotuning shared memory oracle");
+      peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
+          new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize()
+          );
       break;
     case Parser::GrainSizeSampling:
       logInfo("initSharedMemoryConfiguration()",
@@ -120,7 +124,7 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
               ));
       break;
   }
-#endif
+  #endif
 }
 
 void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
