@@ -78,7 +78,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::parallelSectio
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling::loadStatistics(const std::string& filename) {
-  assertionMsg( false, "not yet implemented" );
+  logWarning( "loadStatistics(std::string)", "reload of statistics is not supported. Statistics file will be overwritten" );
 }
 
 
