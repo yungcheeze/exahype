@@ -338,50 +338,48 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
           .getData(fineGridCell.getADERDGCellDescriptionsIndex())
           .size());
   const peano::datatraversal::autotuning::MethodTrace methodTrace =
-      peano::datatraversal::autotuning::UserDefined1;  // Dominic, please use a
+      peano::datatraversal::autotuning::UserDefined1;  // Always use a
                                                        // different UserDefined
                                                        // per mapping/event.
-                                                       // There should be enough
-                                                       // by now.
   const int grainSize =
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
           numberOfADERDGCellDescriptions, methodTrace);
   pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      records::ADERDGCellDescription* p =
-          &(ADERDGCellDescriptionHeap::getInstance().getData(
-              fineGridCell.getADERDGCellDescriptionsIndex())[i]);
+    records::ADERDGCellDescription& p =
+        ADERDGCellDescriptionHeap::getInstance().getData(
+          fineGridCell.getADERDGCellDescriptionsIndex())[i];
 
-  exahype::solvers::Solver* solver =
-      exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
+    exahype::solvers::Solver* solver =
+    exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-  double* luh = DataHeap::getInstance().getData(p->getSolution()).data();
+    double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
 
-  double admissibleTimeStepSize =
-      solver->stableTimeStepSize(luh, fineGridVerticesEnumerator.getCellSize());
+    double admissibleTimeStepSize = solver->stableTimeStepSize(luh,
+                                             fineGridVerticesEnumerator.getCellSize());
 
-  logDebug("enterCell(...)::dt_adm", admissibleTimeStepSize);  // Delta tp+1
+    logDebug("enterCell(...)::dt_adm", admissibleTimeStepSize);  // Delta tp+1
 
-  // direct update of the cell description time steps
-  p->setCorrectorTimeStamp(p->getPredictorTimeStamp());
-  p->setCorrectorTimeStepSize(p->getPredictorTimeStepSize());
-  p->setPredictorTimeStamp(p->getPredictorTimeStamp() + admissibleTimeStepSize);
-  p->setPredictorTimeStepSize(admissibleTimeStepSize);
-  //    p->setNextPredictorTimeStepSize(admissibleTimeStepSize);
+    // direct update of the cell description time steps
+    p.setCorrectorTimeStamp(p.getPredictorTimeStamp());
+    p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
+    p.setPredictorTimeStamp(p.getPredictorTimeStamp() + admissibleTimeStepSize);
+    p.setPredictorTimeStepSize(admissibleTimeStepSize);
+    //p.setNextPredictorTimeStepSize(admissibleTimeStepSize);
 
-  // todo 16/02/27:Dominic Etienne Charrier
-  // in case we use optimistic time stepping:
-  // if last predictor time step size is larger
-  // as admissibleTimeStepSize + tolerance:
-  // make sure that corrector time step size
-  // will equal predictor time step size in next
-  // sweep.
-  // Extra attention must be paid to time stamps.
-  // All this should be done by the solver.
+    // todo 16/02/27:Dominic Etienne Charrier
+    // in case we use optimistic time stepping:
+    // if last predictor time step size is larger
+    // as admissibleTimeStepSize + tolerance:
+    // make sure that corrector time step size
+    // will equal predictor time step size in next
+    // sweep.
+    // Extra attention must be paid to time stamps.
+    // All this should be done by the solver.
 
-  // indirect update of the solver time step sizes
-  tarch::multicore::Lock lock(_semaphore);
-  solver->updateMinNextPredictorTimeStepSize(admissibleTimeStepSize);
-  lock.free();
+    // indirect update of the solver time step sizes
+    tarch::multicore::Lock lock(_semaphore);
+    solver->updateMinNextPredictorTimeStepSize(admissibleTimeStepSize);
+    lock.free();
   endpfor peano::datatraversal::autotuning::Oracle::getInstance()
       .parallelSectionHasTerminated(methodTrace);
 

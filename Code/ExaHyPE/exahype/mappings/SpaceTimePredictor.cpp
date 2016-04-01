@@ -340,50 +340,46 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
           numberOfADERDGCellDescriptions, methodTrace);
   pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      // todo ugly
-      // This is not beautiful and should be replaced by a reference next. I
-      // just
-      // use it to mirror the aforementioned realisation. Dominic, please change
-      // successively to a simpler scheme with just references. Pointers are
-      // ugly.
-      records::ADERDGCellDescription* p =
-          &(ADERDGCellDescriptionHeap::getInstance().getData(
-              fineGridCell.getADERDGCellDescriptionsIndex())[i]);
 
-  exahype::solvers::Solver* solver =
-      exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
+    records::ADERDGCellDescription& p =
+        ADERDGCellDescriptionHeap::getInstance().getData(
+            fineGridCell.getADERDGCellDescriptionsIndex())[i];
 
-  // space-time DoF (basisSize**(DIMENSIONS+1))
-  double* lQi =
-      DataHeap::getInstance().getData(p->getSpaceTimePredictor()).data();
-  double* lFi =
-      DataHeap::getInstance().getData(p->getSpaceTimeVolumeFlux()).data();
+    exahype::solvers::Solver* solver =
+        exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-  // volume DoF (basisSize**(DIMENSIONS))
-  double* luh = DataHeap::getInstance().getData(p->getSolution()).data();
-  double* lQhi = DataHeap::getInstance().getData(p->getPredictor()).data();
-  double* lFhi = DataHeap::getInstance().getData(p->getVolumeFlux()).data();
+    // space-time DoF (basisSize**(DIMENSIONS+1))
+    double* lQi =
+        DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
+    double* lFi =
+        DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
 
-  // face DoF (basisSize**(DIMENSIONS-1))
-  double* lQhbnd =
-      DataHeap::getInstance().getData(p->getExtrapolatedPredictor()).data();
-  double* lFhbnd = DataHeap::getInstance().getData(p->getFluctuation()).data();
+    // volume DoF (basisSize**(DIMENSIONS))
+    double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
+    double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
+    double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
 
-  solver->spaceTimePredictor(lQi, lFi, lQhi, lFhi,
-                             lQhbnd,  // da kommt was drauf
-                             lFhbnd,  // da kommt was drauf
-                             luh, fineGridVerticesEnumerator.getCellSize(),
-                             p->getPredictorTimeStepSize());
+    // face DoF (basisSize**(DIMENSIONS-1))
+    double* lQhbnd =
+        DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
+    double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
-  logDebug("enterCell(...)::debug::after::luh[0]", luh[0]);
-  logDebug("enterCell(...)::debug::after::lQi[0]", lQi[0]);
-  logDebug("enterCell(...)::debug::after::lFi[0]", lFi[0]);
-  logDebug("enterCell(...)::debug::after::lQhi[0]", lQhi[0]);
-  logDebug("enterCell(...)::debug::after::lFhi[0]", lFhi[0]);
-  logDebug("enterCell(...)::debug::after::lQhbnd[0]", lQhbnd[0]);
-  logDebug("enterCell(...)::debug::after::lFhbnd[0]", lFhbnd[0]);
+    solver->spaceTimePredictor(lQi, lFi, lQhi, lFhi,
+                               lQhbnd,  // da kommt was drauf todo
+                               lFhbnd,  // da kommt was drauf todo
+                               luh, fineGridVerticesEnumerator.getCellSize(),
+                               p.getPredictorTimeStepSize());
+
+    logDebug("enterCell(...)::debug::after::luh[0]", luh[0]);
+    logDebug("enterCell(...)::debug::after::lQi[0]", lQi[0]);
+    logDebug("enterCell(...)::debug::after::lFi[0]", lFi[0]);
+    logDebug("enterCell(...)::debug::after::lQhi[0]", lQhi[0]);
+    logDebug("enterCell(...)::debug::after::lFhi[0]", lFhi[0]);
+    logDebug("enterCell(...)::debug::after::lQhbnd[0]", lQhbnd[0]);
+    logDebug("enterCell(...)::debug::after::lFhbnd[0]", lFhbnd[0]);
+
   endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-      .parallelSectionHasTerminated(methodTrace);
+  .parallelSectionHasTerminated(methodTrace);
 
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }

@@ -330,14 +330,14 @@ void exahype::mappings::RiemannSolverReset::enterCell(
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
           numberOfADERDGCellDescriptions, methodTrace);
   pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      records::ADERDGCellDescription* p =
-          &(ADERDGCellDescriptionHeap::getInstance().getData(
-              fineGridCell.getADERDGCellDescriptionsIndex())[i]);
+    records::ADERDGCellDescription& p =
+          ADERDGCellDescriptionHeap::getInstance().getData(
+              fineGridCell.getADERDGCellDescriptionsIndex())[i];
 
-  std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed;
-  p->setRiemannSolvePerformed(riemannSolvePerformed);
+    std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed;
+    p.setRiemannSolvePerformed(riemannSolvePerformed);
 
-  assertion1(p->getRiemannSolvePerformed().none(), p->toString());
+    assertion1(p.getRiemannSolvePerformed().none(), p.toString());
   endpfor peano::datatraversal::autotuning::Oracle::getInstance()
       .parallelSectionHasTerminated(methodTrace);
 

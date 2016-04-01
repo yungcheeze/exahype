@@ -397,79 +397,69 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
           numberOfADERDGCellDescriptions, methodTrace);
   pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      // todo ugly
-      // This is not beautiful and should be replaced by a reference next. I
-      // just
-      // use it to mirror the aforementioned realisation. Dominic, please change
-      // successively to a simpler scheme with just references. Pointers are
-      // ugly.
-      records::ADERDGCellDescription* p =
-          &(ADERDGCellDescriptionHeap::getInstance().getData(
-              adjacentADERDGCellDescriptionsIndices[cellIndexL])[i]);
+    records::ADERDGCellDescription& p =
+        ADERDGCellDescriptionHeap::getInstance().getData(
+            adjacentADERDGCellDescriptionsIndices[cellIndexL])[i];
 
-  exahype::solvers::Solver* solver =
-      exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
+    exahype::solvers::Solver* solver =
+        exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-  // Lock the critical multithreading area.
-  bool riemannSolveNotPerformed = false;
-  tarch::multicore::Lock lock(_semaphore);
-  assertionEquals(cellDescriptionsL[i].getRiemannSolvePerformed(faceL),
-                  cellDescriptionsR[i].getRiemannSolvePerformed(faceR));
+    // Lock the critical multithreading area.
+    bool riemannSolveNotPerformed = false;
+    tarch::multicore::Lock lock(_semaphore);
+    assertionEquals(cellDescriptionsL[i].getRiemannSolvePerformed(faceL),
+                    cellDescriptionsR[i].getRiemannSolvePerformed(faceR));
 
-  riemannSolveNotPerformed =
-      !cellDescriptionsL[i].getRiemannSolvePerformed(faceL);
-  if (riemannSolveNotPerformed) {
-    cellDescriptionsL[i].setRiemannSolvePerformed(faceL, true);
-    cellDescriptionsR[i].setRiemannSolvePerformed(faceR, true);
-  }
-  lock.free();
+    riemannSolveNotPerformed =
+        !cellDescriptionsL[i].getRiemannSolvePerformed(faceL);
+    if (riemannSolveNotPerformed) {
+      cellDescriptionsL[i].setRiemannSolvePerformed(faceL, true);
+      cellDescriptionsR[i].setRiemannSolvePerformed(faceR, true);
+    }
+    lock.free();
 
-  if (riemannSolveNotPerformed) {
-    const int numberOfFaceDof =
-        solver
-            ->getUnknownsPerFace();  // solver->getNumberOfVariables() *
-                                     // tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
+    if (riemannSolveNotPerformed) {
+      const int numberOfFaceDof =
+          solver
+          ->getUnknownsPerFace();  // solver->getNumberOfVariables() *
+      // tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
 
-    double* QL = DataHeap::getInstance()
-                     .getData(cellDescriptionsL[i].getExtrapolatedPredictor())
-                     .data() +
-                 (faceL * numberOfFaceDof);
-    double* QR = DataHeap::getInstance()
-                     .getData(cellDescriptionsR[i].getExtrapolatedPredictor())
-                     .data() +
-                 (faceR * numberOfFaceDof);
-    double* FL = DataHeap::getInstance()
-                     .getData(cellDescriptionsL[i].getFluctuation())
-                     .data() +
-                 (faceL * numberOfFaceDof);
-    double* FR = DataHeap::getInstance()
-                     .getData(cellDescriptionsR[i].getFluctuation())
-                     .data() +
-                 (faceR * numberOfFaceDof);
+      double* QL = DataHeap::getInstance()
+      .getData(cellDescriptionsL[i].getExtrapolatedPredictor())
+      .data() +
+      (faceL * numberOfFaceDof);
+      double* QR = DataHeap::getInstance()
+      .getData(cellDescriptionsR[i].getExtrapolatedPredictor())
+      .data() +
+      (faceR * numberOfFaceDof);
+      double* FL = DataHeap::getInstance()
+      .getData(cellDescriptionsL[i].getFluctuation())
+      .data() +
+      (faceL * numberOfFaceDof);
+      double* FR = DataHeap::getInstance()
+      .getData(cellDescriptionsR[i].getFluctuation())
+      .data() +
+      (faceR * numberOfFaceDof);
 
-    solver->synchroniseTimeStepping(cellDescriptionsL[i]);
-    solver->synchroniseTimeStepping(cellDescriptionsR[i]);
+      solver->synchroniseTimeStepping(cellDescriptionsL[i]);
+      solver->synchroniseTimeStepping(cellDescriptionsR[i]);
 
-    logDebug("touchVertexLastTime(...)::debug::before::QL[0]*", QL[0]);
-    logDebug("touchVertexLastTime(...)::debug::before::QR[0]*", QR[0]);
-    logDebug("touchVertexLastTime(...)::debug::before::FL[0]", FL[0]);
-    logDebug("touchVertexLastTime(...)::debug::before::FR[0]", FR[0]);
+      logDebug("touchVertexLastTime(...)::debug::before::QL[0]*", QL[0]);
+      logDebug("touchVertexLastTime(...)::debug::before::QR[0]*", QR[0]);
+      logDebug("touchVertexLastTime(...)::debug::before::FL[0]", FL[0]);
+      logDebug("touchVertexLastTime(...)::debug::before::FR[0]", FR[0]);
 
-    // @todo 08/02/16:Dominic Etienne Charrier
-    // if left or right is coarse grid cell
-    //  gather contributions of fine grid cells
+      solver->riemannSolver(
+          FL, FR, QL, QR,
+          std::min(cellDescriptionsL[i].getCorrectorTimeStepSize(),
+                   cellDescriptionsR[i].getCorrectorTimeStepSize()),
+                   normalNonZero);
 
-    solver->riemannSolver(
-        FL, FR, QL, QR,
-        std::min(cellDescriptionsL[i].getCorrectorTimeStepSize(),
-                 cellDescriptionsR[i].getCorrectorTimeStepSize()),
-        normalNonZero);
-
-    logDebug("touchVertexLastTime(...)::debug::after::QL[0]*", QL[0]);
-    logDebug("touchVertexLastTime(...)::debug::after::QR[0]*", QR[0]);
-    logDebug("touchVertexLastTime(...)::debug::after::FL[0]", FL[0]);
-    logDebug("touchVertexLastTime(...)::debug::after::FR[0]", FR[0]);
-  }
+      logDebug("touchVertexLastTime(...)::debug::after::QL[0]*", QL[0]);
+      logDebug("touchVertexLastTime(...)::debug::after::QR[0]*", QR[0]);
+      logDebug("touchVertexLastTime(...)::debug::after::FL[0]", FL[0]);
+      logDebug("touchVertexLastTime(...)::debug::after::FR[0]", FR[0]);
+    }
   endpfor peano::datatraversal::autotuning::Oracle::getInstance()
       .parallelSectionHasTerminated(methodTrace);
 }

@@ -326,13 +326,13 @@ void exahype::mappings::NewTimeStep::enterCell(
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
           numberOfADERDGCellDescriptions, methodTrace);
   pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      records::ADERDGCellDescription* p =
-          &(ADERDGCellDescriptionHeap::getInstance().getData(
-              fineGridCell.getADERDGCellDescriptionsIndex())[i]);
-  const exahype::solvers::Solver* solver =
-      solvers::RegisteredSolvers[p->getSolverNumber()];
+    records::ADERDGCellDescription& p =
+          ADERDGCellDescriptionHeap::getInstance().getData(
+              fineGridCell.getADERDGCellDescriptionsIndex())[i];
+    const exahype::solvers::Solver* solver =
+      solvers::RegisteredSolvers[p.getSolverNumber()];
 
-  solver->synchroniseTimeStepping(*p);
+    solver->synchroniseTimeStepping(p);
   endpfor peano::datatraversal::autotuning::Oracle::getInstance()
       .parallelSectionHasTerminated(methodTrace);
 }

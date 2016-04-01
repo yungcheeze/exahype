@@ -331,30 +331,26 @@ void exahype::mappings::VolumeIntegral::enterCell(
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
           numberOfADERDGCellDescriptions, methodTrace);
   pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      // todo ugly
-      // This is not beautiful and should be replaced by a reference next. I
-      // just
-      // use it to mirror the aforementioned realisation. Dominic, please change
-      // successively to a simpler scheme with just references. Pointers are
-      // ugly.
-      records::ADERDGCellDescription* p =
-          &(ADERDGCellDescriptionHeap::getInstance().getData(
-              fineGridCell.getADERDGCellDescriptionsIndex())[i]);
+  {
+      records::ADERDGCellDescription& p =
+          ADERDGCellDescriptionHeap::getInstance().getData(
+              fineGridCell.getADERDGCellDescriptionsIndex())[i];
 
-  exahype::solvers::Solver* solver =
-      exahype::solvers::RegisteredSolvers[p->getSolverNumber()];
+      exahype::solvers::Solver* solver =
+          exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-  double* lduh = DataHeap::getInstance().getData(p->getUpdate()).data();
-  double* lFhi = DataHeap::getInstance().getData(p->getVolumeFlux()).data();
+      double* lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
+      double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
 
-  logDebug("enterCell(...)::debug::before::lduh[0]", lduh[0]);
-  logDebug("enterCell(...)::debug::before::lFhi[0]", lFhi[0]);
+      logDebug("enterCell(...)::debug::before::lduh[0]", lduh[0]);
+      logDebug("enterCell(...)::debug::before::lFhi[0]", lFhi[0]);
 
-  solver->volumeIntegral(lduh, lFhi, fineGridVerticesEnumerator.getCellSize());
+      solver->volumeIntegral(lduh, lFhi, fineGridVerticesEnumerator.getCellSize());
 
-  logDebug("enterCell(...)::debug::after::lduh[0]", lduh[0]);
+      logDebug("enterCell(...)::debug::after::lduh[0]", lduh[0]);
+  }
   endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-      .parallelSectionHasTerminated(methodTrace);
+  .parallelSectionHasTerminated(methodTrace);
 
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
