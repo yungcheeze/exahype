@@ -11,98 +11,209 @@ Constant: DIMENSIONS;
 Constant: DIMENSIONS_TIMES_TWO;
 
 class exahype::records::ADERDGCellDescription {
-  parallelise persistent int    solverNumber;      
-  
-  /** 
-   * Indicates if this a parent cell (true) or a leaf cell that holds data.
+  /** Solver */
+  ///@{
+  /**
+   * Points to a solver in the solver registry.
    */
-  parallelise persistent bool isParent;
+  parallelise persistent int  solverNumber;
   
   /** 
-   * Indicates if this a real cell (false) that holds space-time, volume, and face data
-   * or a virtual cell that holds only face data.
-   */
-  parallelise persistent bool isGhost; 
-  
-  /** 
-   * We hold a bool for each face belonging to this ADER-DG cell stating
-   * if a Riemann solve has already performed on it.
+   * These flags indicate on which face a Riemann solve has already been performed.
    */
   parallelise persistent bool riemannSolvePerformed[DIMENSIONS_TIMES_TWO];
+  ///@}
   
   /**
-   * Time integration.
+   * @defgroup TimeInfo Time Stamps and Step Sizes
+   * 
+   * Time stamps and step sizes that are used for different
+   * phases of the algorithm.
    */
    ///@{
    /**  
-   * The time step size the time lagging corrector is working with, i.e.,
-   * the predictor time step size of the previous sweep.
+   * The time step size correction phase is working with.
    */
   parallelise persistent double correctorTimeStepSize;
  
   /**  
-   * The time stamp the time lagging corrector is working with.
-   * the predictor time stamp of the previous sweep.
+   * The time stamp the correction phase is working with.
    */
   parallelise persistent double correctorTimeStamp;
   
   /** 
-   * The time step size the predictor is working with.
+   * The time step size the prediction phase is working with.
    */
   parallelise persistent double predictorTimeStepSize;
  
   /** 
-   * The time stamp the predictor is working with.
+   * The time stamp the prediction phase is working with.
    */
   parallelise persistent double predictorTimeStamp;
   
   /** 
-   * The predictor time step size for the next sweep.
+   * The prediction phase time step size for the next sweep.
    */
   parallelise persistent double nextPredictorTimeStepSize;
    ///@}
   
   
-  /** Space-time data on each patch. Size: #var*(N+1)^(d+1)
+  /** 
+   * @defgroup SpaceTimeDataIndices Space Time Data Indices
    * 
-   * \note Only for local time stepping we really need to keep the entire space-time degrees of freedom of the ADER approach.
-   * */
+   * Index pointing to an array of size \f$ N_\mathrm{var}\,(N+1)^{d+1} \f$.  
+   * 
+   * \note Only for local time stepping we really need to keep the entire
+   *       space-time degrees of freedom of the ADER approach.
+   */
   ///@{ 
-  parallelise persistent int spaceTimePredictor; //!< The indices of the space-time predictor DoF belonging to this cell. Variable: q.
-  ///@}	
+  /**
+   * Index pointing to the space-time predictor DoF belonging to this cell.
+   * Symbol: \f$ q \f$.
+   */
+  parallelise persistent int spaceTimePredictor;
+  ///@}
   
-  /** Space-time flux data on each patch. Size: (d*#var)*(N+1)^(d+1)
-   * 
+  /** 
+   * @defgroup SpaceTimeDataIndices Space Time Data Indices
+   *
+   * Index pointing to an array of size \f$ d\,N_\mathrm{var}\,(N+1)^{d+1} \f$
+   *  
    * \note Only for local time stepping we really need to keep the entire space-time degrees of freedom of the ADER approach.
    * */ 
   ///@{ 
-  parallelise persistent int spaceTimeVolumeFlux; //!< The indices of the space-time volume fluxes DoF belonging to this cell. Variable: F. 
-  ///@}	
+  /**
+   * Index pointing to the space-time volume fluxes DoF belonging to this cell.
+   * Symbol: \f$ \textbf{F} \f$.
+   */
+  parallelise persistent int spaceTimeVolumeFlux; 
+  ///@}
 
-  /** Volume data on each patch. Size: #var*(N+1)^d * size */
+  /** 
+   * @defgroup VolumeDataIndices Volume Data Indices
+   * 
+   * Index pointing to an array of size \f$ N_\mathrm{var}\,(N+1)^{d} \f$.  
+   */
   ///@{
-  parallelise persistent int solution;  //!< The indices of the DoF belonging to this cell. Resembles also the state of the previous time step during update calculations. Variable: u.
-  parallelise persistent int update;    //!< The indices of the update DoF belonging to this cell. All volume updates and face fluctuations contribute to this variable. Variable: du.
-  parallelise persistent int predictor; //!< The indices of the predictor DoF belonging to this cell, i.e., the time integrated space-time DoF. Variable: qA.  
-  ///@}	
-
-  /** Volume flux data on each patch. Size: (d*#var)*(N+1)^d */
-  ///@{
-  parallelise persistent int volumeFlux; //!< The indices of the volume flux DoF belonging to this cell, i.e., the time integrated space-time DoF. Variable: FA. 
-  ///@}	
-
-  /** Face data on each patch. Size: [d*2] * #var*(N+1)^(d-1) */
-  ///@{
-  parallelise persistent int extrapolatedPredictor; //!< The indices of the predictor DoF extrapolated to the bounding faces of the cell. Variables: uN,uS,uW,uE,..
-  parallelise persistent int fluctuation;           //!< The indices of the normal fluxes computed at the bounding faces of the cell. Variables: FN,FS,FW,FE,.. 
-  // ! Removed the normalFlux field since we can use the fluctuation field to store both quantities.
-  // ! Removed: parallelise persistent int normalFlux; //!< The indices of the fluctuations DoF computed at the bounding faces of the cell. Variables: DLN,DLS,DLW,DLE,.. 
-  ///@}	
+  /**
+   *  Index pointing to the solution DoF belonging to this cell. 
+   *  Resembles also the state of the previous time step during update calculations.
+   *  Symbol: \f$ u_h \f$.
+   */
+  parallelise persistent int solution; 
   
-  /** Grid information */
+  /**
+   * Index pointing to the update DoF belonging to this cell. All volume updates
+   * and face fluctuations contribute to this Symbol. Symbol: 
+   * \f$ \Delta u_h \f$.
+   */
+  parallelise persistent int update;   
+  
+  /**
+   * Index pointing to the predictor DoF belonging to this cell, i.e., the time 
+   * integrated space-time DoF. Symbol: \f$q_h\f$.
+  /* 
+  parallelise persistent int predictor;  
+  ///@}
+
+  /**
+   * @defgroup VolumeFluxDataIndices Volume Flux Data Indices
+   *
+   * Index pointing to an array of size \f$ d\,N_\mathrm{var}\,(N+1)^{d} \f$. 
+   */
   ///@{
-  parallelise persistent int    level;              // !< Space-tree level of the cell owning this cell description.
-  parallelise persistent double offset[DIMENSIONS]; // !< Offest of the "lower left" node of the lower left ghost cell from the lower left node of the cell.
-  parallelise persistent double size  [DIMENSIONS]; // !< Dimension of the cell owning this cell description in x,y, and z direction.
-  ///@}s
+  /**
+   * Index pointing to the volume flux DoF belonging to this cell, i.e., the time
+   * integrated space-time DoF. Symbol: \f$ \textbf{F}_h \f$.
+   */
+  parallelise persistent int volumeFlux; 
+  ///@}
+
+  /** 
+   * @name FaceDataIndices Face Data Indices
+   *
+   * Index pointing to an array of size \f$ 2\,d\,N_\mathrm{var}\,(N+1)^{d-1} \f$.
+   */ 
+  ///@{
+  /**
+   * Index pointing to the predictor DoF extrapolated to the bounding faces of the
+   * cell. 
+   */
+  parallelise persistent int extrapolatedPredictor; 
+  
+  /**
+   * Index pointing to the normal fluxes computed at the bounding faces of the
+   * cell.
+   */
+  parallelise persistent int fluctuation;            
+  ///@}
+  
+  /** 
+   * @name CellInfo Cell Info 
+   * 
+   * Information on the grid cell this ADERDGCellDescription is associated
+   * with.
+   */
+  ///@{
+  /**
+   * Space-tree level of the cell this ADERDGCellDescription is associated
+   * with.
+   */
+  parallelise persistent int    level;                            
+  /**
+   * Offset of the "lower left" node of the lower left ghost cell from the
+   * lower left node of the cell.
+   */
+  parallelise persistent double offset                [DIMENSIONS]; 
+  /**
+   * Dimension of the cell associated with this ADERDGCellDescription in the
+   * respective dimension.
+   */
+  parallelise persistent double size                  [DIMENSIONS];
+  
+  /**
+   * Position of the cell associated with this ADERDGCellDescription with
+   * respect to the parent cell in the respective dimension.
+   * 
+   * For a level difference \f$l>0\f$, the indices in 
+   * \p fineGridPositionOfCell are in the range \f$\{0,1,\ldots,3^l-1\}\f$.
+   *
+   * The difference in levels of the cell associated with this 
+   * ADERDGCellDescription and the cell associated with this 
+   * ADERDGCellDescription's parent depends on the AMR strategy.
+   * It is not necessary identical to one.  
+   */
+  parallelise persistent double fineGridPositionOfCell[DIMENSIONS];
+ 
+  ///@}
+  /** 
+   * @defgroup AMRInfo AMR information
+   *
+   * Additional information that is necessary to realise adaptive mesh 
+   * refinement (AMR).
+   */
+  ///@{
+  /** 
+   * The type of this ADERDGCellDescription. See the documentation of Cell for more details.
+   */
+  parallelise persistent int type;
+
+  /** 
+   * Indicates if other ADERDGCellDescriptions consider this ADERDGCellDescription
+   * as their parent.
+   */
+  parallelise persistent bool isParent;	
+   
+  /**
+   * The index of the ADERDGCellDescription that is the parent of
+   * this ADERDGCellDescription or "-1" if no parent is specified.
+   */
+  parallelise persistent int parentIndex;
+  
+  /**
+   * Indicates if this ADERDGCellDescription should be accessed by
+   * the AMR and Solver routines.
+   */ 
+  parallelise persistent bool isActive;
+  ///@}
 };

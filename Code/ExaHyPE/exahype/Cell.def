@@ -1,10 +1,14 @@
 Packed-Type: int;
 
-Constant: EXAHYPE_NPROBLEMS;
-
 class exahype::dastgen::Cell {
   /**
-   * We specify a ADERDGCellDescription for each PDE that should run on the grid.
+   * We specify a ADERDGCellDescription for each Solver that should run on the grid.
    */
   parallelise persistent int ADERDGCellDescriptionsIndex;
+
+  /**
+   * Indicates if this cell should be considered by the AMR
+   * and solver routines.
+   */ 
+  parallelise persistent bool isActive;
 };
