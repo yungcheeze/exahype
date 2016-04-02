@@ -202,8 +202,8 @@ class exahype::records::ADERDGCellDescription {
    * Indicates if other ADERDGCellDescriptions consider this ADERDGCellDescription
    * as their parent.
    */
-  parallelise persistent bool isParent;	
-   
+  parallelise persistent bool parent;	
+  
   /**
    * The index of the ADERDGCellDescription that is the parent of
    * this ADERDGCellDescription or "-1" if no parent is specified.
@@ -214,6 +214,20 @@ class exahype::records::ADERDGCellDescription {
    * Indicates if this ADERDGCellDescription should be accessed by
    * the AMR and Solver routines.
    */ 
-  parallelise persistent bool isActive;
+  parallelise persistent bool active;
+  
+  /** 
+   * Indicates if this ADERDGCellDescription
+   * requests its associated spacetree cell to be refined
+   * according to a solver refinement criterion.
+   */
+  parallelise persistent bool refinementNecessary;
+  
+  /** 
+   * Indicates if this ADERDGCellDescription
+   * requests its associated spacetree cell to be refined
+   * according to a virtual refinement criterion.
+   */
+  parallelise persistent bool virtualRefinementNecessary;
   ///@}
 };
