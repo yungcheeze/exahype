@@ -340,7 +340,6 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
           numberOfADERDGCellDescriptions, methodTrace);
   pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-
     records::ADERDGCellDescription& p =
         ADERDGCellDescriptionHeap::getInstance().getData(
             fineGridCell.getADERDGCellDescriptionsIndex())[i];
@@ -377,7 +376,6 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
     logDebug("enterCell(...)::debug::after::lFhi[0]", lFhi[0]);
     logDebug("enterCell(...)::debug::after::lQhbnd[0]", lQhbnd[0]);
     logDebug("enterCell(...)::debug::after::lFhbnd[0]", lFhbnd[0]);
-
   endpfor peano::datatraversal::autotuning::Oracle::getInstance()
   .parallelSectionHasTerminated(methodTrace);
 

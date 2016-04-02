@@ -334,7 +334,6 @@ void exahype::mappings::SurfaceIntegral::enterCell(
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
           numberOfADERDGCellDescriptions, methodTrace);
   pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-
     records::ADERDGCellDescription& p =
         ADERDGCellDescriptionHeap::getInstance().getData(
             fineGridCell.getADERDGCellDescriptionsIndex())[i];
@@ -347,7 +346,6 @@ void exahype::mappings::SurfaceIntegral::enterCell(
 
     solver->surfaceIntegral(lduh, lFhbnd,
                             fineGridVerticesEnumerator.getCellSize());
-
   endpfor peano::datatraversal::autotuning::Oracle::getInstance()
       .parallelSectionHasTerminated(methodTrace);
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);

@@ -331,7 +331,6 @@ void exahype::mappings::VolumeIntegral::enterCell(
       peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
           numberOfADERDGCellDescriptions, methodTrace);
   pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-  {
       records::ADERDGCellDescription& p =
           ADERDGCellDescriptionHeap::getInstance().getData(
               fineGridCell.getADERDGCellDescriptionsIndex())[i];
@@ -348,7 +347,6 @@ void exahype::mappings::VolumeIntegral::enterCell(
       solver->volumeIntegral(lduh, lFhi, fineGridVerticesEnumerator.getCellSize());
 
       logDebug("enterCell(...)::debug::after::lduh[0]", lduh[0]);
-  }
   endpfor peano::datatraversal::autotuning::Oracle::getInstance()
   .parallelSectionHasTerminated(methodTrace);
 
