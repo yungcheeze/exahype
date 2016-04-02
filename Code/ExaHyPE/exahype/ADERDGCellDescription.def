@@ -183,7 +183,7 @@ class exahype::records::ADERDGCellDescription {
    * ADERDGCellDescription's parent depends on the AMR strategy.
    * It is not necessary identical to one.  
    */
-  parallelise persistent double fineGridPositionOfCell[DIMENSIONS];
+  parallelise persistent int fineGridPositionOfCell[DIMENSIONS];
  
   ///@}
   /** 

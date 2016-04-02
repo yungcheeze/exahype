@@ -23,6 +23,12 @@ event-mapping:
 
 event-mapping:
   name: GlobalTimeStepComputation
+
+event-mapping:
+  name: RegularMesh
+
+event-mapping:
+  name: CellDescriptionInit
   
 event-mapping:
   name: SolutionUpdate

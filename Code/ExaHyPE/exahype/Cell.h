@@ -19,12 +19,12 @@
 // ! End of code for multiscalelinkedcell toolbox.
 
 namespace exahype {
-class Cell;
-// ! Begin of code for multiscalelinkedcell toolbox..
-typedef peano::heap::PlainHeap<exahype::records::ADERDGCellDescription>
-    ADERDGCellDescriptionHeap;
-typedef peano::heap::PlainDoubleHeap DataHeap;
-// ! End of code for multiscalelinkedcell toolbox.
+  class Cell;
+  // ! Begin of code for multiscalelinkedcell toolbox..
+  typedef peano::heap::PlainHeap<exahype::records::ADERDGCellDescription>
+  ADERDGCellDescriptionHeap;
+  typedef peano::heap::PlainDoubleHeap DataHeap;
+  // ! End of code for multiscalelinkedcell toolbox.
 }
 
 /**
@@ -35,12 +35,29 @@ typedef peano::heap::PlainDoubleHeap DataHeap;
  * the needs of your application. We do not recommend to remove anything!
  */
 class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
- private:
+private:
   typedef class peano::grid::Cell<exahype::records::Cell> Base;
 
   static tarch::logging::Log _log;
 
- public:
+public:
+  /**
+   * Type of a cell description.
+   * Cell descriptions of type \p Cell hold cell and face data,
+   * while the ones of type \p Shell hold only face data.
+   * Both belong to the original spacetree that
+   * is constructed according to solver-based refinement criteria.
+   * Virtual shells hold also only face data but belong to
+   * the virtual part of the augmented spacetree that
+   * is created to store prolongated face data.
+   */
+  enum Type {
+    Unspecified,
+    Cell,
+    Shell,
+    VirtualShell
+  };
+
   /**
    * Default Constructor
    *
@@ -68,14 +85,45 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    */
   Cell(const Base::PersistentCell& argument);
 
-  // ! Begin of code for multiscalelinkedcell toolbox
+  /**
+   * Returns the heap index of the first ADERDGCellDescription associated
+   * with this cell.
+   */
   int getADERDGCellDescriptionsIndex() const;
 
+  /**
+   * Loads the ADERDGCellDescription associated
+   * with this cell and the solver with index \p solverIndex.
+   */
   inline exahype::records::ADERDGCellDescription& getADERDGCellDescription(
-      int pdeIndex) {
+      int solverIndex) {
     return ADERDGCellDescriptionHeap::getInstance().getData(
-        getADERDGCellDescriptionsIndex())[pdeIndex];
+        getADERDGCellDescriptionsIndex())[solverIndex];
   }
+
+
+  /**
+   * Per existing cell, the configuration runs over all solvers that
+   * shall be realised and links the associated cell descriptions
+   * to their parents.
+   */
+  void configureCellDescription(
+      const int solverNumber,
+      const Cell::Type cellType,
+      const int level,
+      const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      const tarch::la::Vector<DIMENSIONS, double>& size,
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      );
+
+  /**
+   * Per existing cell, the initialisation runs over all solvers that
+   * shall be realised and allocates memory for the associated.
+   * cell descriptions.
+   */
+  void initialiseCellDescription(
+      const int solverNumber);
 
   /**
    * Per existing cell, the initialisation has to run over all solvers that
@@ -85,7 +133,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    */
   void init(const int level, const tarch::la::Vector<DIMENSIONS, double>& size,
             const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
-  // ! End of code for multiscalelinkedcell toolbox
 };
 
 #endif
