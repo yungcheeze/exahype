@@ -55,8 +55,22 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::changeMeasure
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::makeAttributesLearn() {
   assertion( _currentMeasurement.isAccurateValue() );
 
-  // If max problem size has increased, notably as soon as serial size is known
-  if (_biggestProblemSize < _currentGrainSize) {
+  if (_biggestProblemSize < _currentGrainSize && _currentSearchDelta==0) {
+    _currentSearchDelta   = 1;
+    _biggestProblemSize   = 0;
+    _currentGrainSize     = std::numeric_limits<int>::max();
+    _previousMeasuredTime = -1.0;
+    _lastProblemSize      = 0.0;
+
+    _currentMeasurement   = tarch::timing::Measurement(1.0);
+
+    logInfo(
+      "makeAttributesLearn()",
+      "found new problem size that has been unknown before. Restart analysis. grain size=" << _currentGrainSize
+      << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
+    );
+  }
+  else if (_biggestProblemSize < _currentGrainSize) {
     assertion(_previousMeasuredTime==-1.0);
     assertion(_oracleIsSearching);
 
@@ -76,57 +90,83 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::makeAttribute
   }
   else if (
     _previousMeasuredTime > _currentMeasurement.getValue() 
-    && 
-    _currentGrainSize > _currentSearchDelta
+    &&
+    _currentSearchDelta>0
   ) {
-    _currentGrainSize     -= _currentSearchDelta;
-    _previousMeasuredTime  = _currentMeasurement.getValue();
-
-    _currentMeasurement.erase();
-
     logInfo(
       "makeAttributesLearn()",
-      "algorithm part seems to scale. Continue to search for higher performance with halved grain size. new grain size=" << _currentGrainSize
+      "found scaling parameter configuration with grain size=" << _currentGrainSize
       << ", currentSearchDelta=" << _currentSearchDelta
       << ", biggest-problem-size=" << _biggestProblemSize
       << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
     );
+
+    if (_currentGrainSize > _currentSearchDelta) {
+      _currentGrainSize     -= _currentSearchDelta;
+      _previousMeasuredTime  = _currentMeasurement.getValue();
+      _currentMeasurement.erase();
+
+      logInfo(
+        "makeAttributesLearn()",
+        "continue to study smaller grain size=" << _currentGrainSize
+        << ", currentSearchDelta=" << _currentSearchDelta
+        << ", biggest-problem-size=" << _biggestProblemSize
+        << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
+      );
+    } 
+    else {
+      _currentSearchDelta /= 2;
+      _currentMeasurement.increaseAccuracy(2.0);  
+      
+      logInfo(
+        "makeAttributesLearn()",
+        "reduce delta (zero implies switch off), increase sensitivity and continue to study grain size=" << _currentGrainSize
+        << ", currentSearchDelta=" << _currentSearchDelta
+        << ", biggest-problem-size=" << _biggestProblemSize
+        << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
+      );
+    }
   }
   else if (
-    _previousMeasuredTime > _currentMeasurement.getValue()
+    _previousMeasuredTime < _currentMeasurement.getValue()
+    &&
+    _currentSearchDelta>0
   ) {
-    _currentSearchDelta = 0;
-    _currentGrainSize   = 0;
-
     logInfo(
       "makeAttributesLearn()",
-      "algorithm does benefit from smallest grain size possible or is inherently sequential. Stop search. grain size=" << _currentGrainSize
+      "studied parameter configuration does not scale. grain size=" << _currentGrainSize
       << ", currentSearchDelta=" << _currentSearchDelta
       << ", biggest-problem-size=" << _biggestProblemSize
       << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
     );
-  }
-  else {
+
     _currentGrainSize     += _currentSearchDelta;
-    _currentSearchDelta   /=2;
-    _previousMeasuredTime  = std::numeric_limits<double>::max();
-
-    _currentMeasurement.erase();
-    _currentMeasurement.increaseAccuracy(2.0);
-
-    logInfo(
-      "makeAttributesLearn()",
-      "algorithm does not benefit from small grain size currently studied. Stop search. grain size=" << _currentGrainSize
-      << ", biggest-problem-size=" << _biggestProblemSize
-      << ", currentSearchDelta=" << _currentSearchDelta
-      << ", accuracy=" << _currentMeasurement.toString()
-      << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
-    );
+    if (_currentGrainSize>_biggestProblemSize/2) {
+      _currentGrainSize   = 0;
+      _currentSearchDelta = 0;
+      logInfo(
+        "makeAttributesLearn()",
+        "switch off multithreading for " 
+        << "method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
+      );
+    }
+    else {
+      _currentSearchDelta   /=2;
+      _previousMeasuredTime  = std::numeric_limits<double>::max();
+ 
+      _currentMeasurement.erase();
+      _currentMeasurement.increaseAccuracy(2.0);
+ 
+      logInfo(
+        "makeAttributesLearn()",
+        "fall back to previous grain size, reduce search step size and increase sensitivity. grain size=" << _currentGrainSize
+        << ", biggest-problem-size=" << _biggestProblemSize
+        << ", currentSearchDelta=" << _currentSearchDelta
+        << ", accuracy=" << _currentMeasurement.toString()
+        << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
+      );
+    }
   }
-
-//  _previousMeasuredTime = _currentMeasurement.getValue();
-//  _currentMeasurement.erase();
-//  _currentMeasurement.increaseAccuracy(2.0);
 }
 
 
@@ -215,8 +255,6 @@ peano::datatraversal::autotuning::OracleForOnePhase* sharedmemoryoracles::Oracle
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::informAboutElapsedTimeOfLastTraversal(double elapsedTime) {
   if (
     _currentMeasurement.isAccurateValue()
-    &&
-    _currentSearchDelta>0
     &&
     peano::datatraversal::autotuning::toMethodTrace( _activeMethodTrace ) == _methodTrace
   ) {
