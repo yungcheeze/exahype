@@ -118,18 +118,17 @@ endif
 # Assemble Compiler Flags depending on the environment variable [SHAREDMEM]={OMP, TBB, None}
 # -----------------------
 ifeq ($(SHAREDMEM),OMP)
-	SYSTEM_CFLAGS = $(INCLUDE_OMP) 
-	SYSTEM_LFLAGS = $(LINK_OMP) 
+	SYSTEM_CFLAGS   += $(INCLUDE_OMP) 
+	SYSTEM_LFLAGS   += $(LINK_OMP) 
 	COMPILER_CFLAGS += -DSharedOMP
 else ifeq ($(SHAREDMEM),TBB)
-	SYSTEM_CFLAGS = $(INCLUDE_TBB)
-	SYSTEM_LFLAGS = $(LINK_TBB)
+	SYSTEM_CFLAGS   += $(INCLUDE_TBB)
+	SYSTEM_LFLAGS   += $(LINK_TBB)
 	COMPILER_CFLAGS += -DSharedTBB
-else ifeq ($(SHAREDMEM),None)
-	SYSTEM_LFLAGS = -lrt 
-else
-	SYSTEM_CFLAGS = $(INCLUDE_TBB) $(INCLUDE_MPI)
-	SYSTEM_LFLAGS = $(LINK_TBB)    $(LINK_MPI)
+else 
+	SYSTEM_LFLAGS   += -lrt 
+	#SYSTEM_CFLAGS = $(INCLUDE_TBB) $(INCLUDE_MPI)
+	#SYSTEM_LFLAGS = $(LINK_TBB)    $(LINK_MPI)
 endif
 
 
