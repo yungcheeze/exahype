@@ -49,7 +49,10 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
   private:
     static tarch::logging::Log                           _log;
 
-    static int                                           _finishIterationCallsSinceLastOracleUpdate;
+    /**
+     * We never do optimise all traces. We only do it with one trace at a time.
+     */
+    static int                                           _activeMethodTrace;
 
     const peano::datatraversal::autotuning::MethodTrace  _methodTrace;
     const int                                            _adapterNumber;

@@ -10,7 +10,7 @@
 tarch::logging::Log  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_log( "sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize" );
 
 
-int  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_finishIterationCallsSinceLastOracleUpdate(0);
+int  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_activeMethodTrace(0);
 
 
 sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseWithShrinkingGrainSize(
@@ -45,86 +45,69 @@ std::pair<int,bool> sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::makeAttributesLearn() {
-  /**
-   * Whenever we update an oracle, this update has a side effect, i.e. it
-   * might render other measurements invalid. We hence restrict the number
-   * of updates, we wait always for some oracles to come up with new
-   * valid results before we update the next value.
-   *
-   * Setting this difference to the number of methods calling seems to be a
-   * good heuristic if we call the learning process each parallel section
-   * has terminated event. If we call the operation only once per iteration,
-   * this index should be significantly smaller, as some methods never call
-   * the oracle in rather regular grids (where the multicore is important).
-   */
-  const int  FinishCallsBetweenTwoOracleUpdates =
-    peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling;
+  assertion( _currentMeasurement.isAccurateValue() );
 
-
-  if (_currentMeasurement.isAccurateValue()) {
-    _finishIterationCallsSinceLastOracleUpdate++;
-
-    const bool mayUpdate =
-      _finishIterationCallsSinceLastOracleUpdate>FinishCallsBetweenTwoOracleUpdates;
-
-    if (mayUpdate) {
-      _finishIterationCallsSinceLastOracleUpdate = 0;
-
-      logInfo(
-        "makeAttributesLearn()",
-        "update thresholds for " << peano::datatraversal::autotuning::toString( _methodTrace ) <<
-        " given biggest problem size of " << _biggestProblemSize
-      );
-      logInfo(
-        "makeAttributesLearn()",
-        "old grain size=" << _currentGrainSize
-      );
-
-      _currentMeasurement.increaseAccuracy(2.0);
-
-      // first phase has finished
-      if (_biggestProblemSize < _currentGrainSize) {
-        assertion(_previousMeasuredTime==-1.0);
-        assertion(_oracleIsSearching);
-        _currentGrainSize = _biggestProblemSize / 2 + 1;
-      }
-      else if (
-        _previousMeasuredTime > _currentMeasurement.getValue() &&
-        _currentGrainSize >= 2
-      ) {
-        _currentGrainSize /= 2;
-      }
-      else if (
-        _previousMeasuredTime > _currentMeasurement.getValue()
-      ) {
-        _oracleIsSearching  = false;
-      }
-      else {
-        _oracleIsSearching  = false;
-        _currentGrainSize  *= 2;
-      }
-
-     _previousMeasuredTime = _currentMeasurement.getValue();
-      _currentMeasurement.erase();
-
-      logInfo(
-        "makeAttributesLearn()",
-        "new grain size=" << _currentGrainSize
-        << ", oracle continues to search=" << _oracleIsSearching
-        << ", biggest-problem-size=" << _biggestProblemSize
-        << ", method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
-      );
-    }
+  // Switch to next method type
+  _activeMethodTrace++;
+  if (_activeMethodTrace>=peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling) {
+    _activeMethodTrace = 0;
   }
-  else {
-    logDebug(
+
+  // If max problem size has increased, notably as soon as serial size is known
+  if (_biggestProblemSize < _currentGrainSize) {
+    assertion(_previousMeasuredTime==-1.0);
+    assertion(_oracleIsSearching);
+    _currentGrainSize   = _biggestProblemSize / 2 + 1;
+    _oracleIsSearching  = true;
+
+    logInfo(
       "makeAttributesLearn()",
-      "can't learn for " << peano::datatraversal::autotuning::toString( _methodTrace )
-      << " yet as measurements are noisy"
-      << ", biggest-problem-size=" << _biggestProblemSize
+      "identified new maximum problem size or finished serial analysis. new grain size=" << _currentGrainSize << ", biggest-problem-size=" << _biggestProblemSize
       << ", method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
     );
   }
+  else if (
+    _previousMeasuredTime > _currentMeasurement.getValue() &&
+    _currentGrainSize >= 2
+  ) {
+    _currentGrainSize /= 2;
+    _oracleIsSearching  = true;
+
+    logInfo(
+      "makeAttributesLearn()",
+      "algorithm part seems to scale. Continue to search for higher performance with halved grain size. new grain size=" << _currentGrainSize
+      << ", oracle continues to search=" << _oracleIsSearching
+     << ", biggest-problem-size=" << _biggestProblemSize
+      << ", method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
+    );
+  }
+  else if (
+    _previousMeasuredTime > _currentMeasurement.getValue()
+  ) {
+    _oracleIsSearching  = false;
+
+    logInfo(
+      "makeAttributesLearn()",
+      "algorithm does benefit from smallest grain size possible or is inherently sequential. Stop search. grain size=" << _currentGrainSize
+     << ", biggest-problem-size=" << _biggestProblemSize
+      << ", method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
+    );
+  }
+  else {
+    _oracleIsSearching  = false;
+    _currentGrainSize  *= 2;
+
+    logInfo(
+      "makeAttributesLearn()",
+      "algorithm does not benefit from small grain size currently studied. Stop search. grain size=" << _currentGrainSize
+     << ", biggest-problem-size=" << _biggestProblemSize
+      << ", method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
+    );
+  }
+
+  _previousMeasuredTime = _currentMeasurement.getValue();
+  _currentMeasurement.erase();
+  _currentMeasurement.increaseAccuracy(2.0);
 }
 
 
@@ -133,9 +116,6 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::parallelSecti
   assertion(_lastProblemSize!=0.0);
 
   _currentMeasurement.setValue(elapsedCalendarTime/_lastProblemSize);
-
-  makeAttributesLearn();
-
 }
 
 
@@ -213,4 +193,11 @@ peano::datatraversal::autotuning::OracleForOnePhase* sharedmemoryoracles::Oracle
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::informAboutElapsedTimeOfLastTraversal(double elapsedTime) {
+  if (
+    _currentMeasurement.isAccurateValue()
+    &&
+    peano::datatraversal::autotuning::toMethodTrace( _activeMethodTrace ) == _methodTrace
+  ) {
+    makeAttributesLearn();
+  }
 }
