@@ -1,0 +1,6 @@
+set SHAREDMEM TBB
+set DISTRIBUTEDMEM MPI
+
+module load intel/xe_2015.2
+module load slurm
+
