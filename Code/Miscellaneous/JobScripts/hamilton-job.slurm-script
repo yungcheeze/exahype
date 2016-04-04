@@ -1,0 +1,16 @@
+#SBATCH -p par6.q
+#SBATCH -N 1
+#SBATCH --ntasks-per-node=1
+#SBATCH -t 02:00:00
+#SBATCH --exclusive
+module purge
+module load intel/xe_2015.2
+
+#cd ExaHyPE/Code/Applications/eulerflow2d
+pwd
+
+
+./ExaHyPE-Euler2d ../../Toolkit/examples/euler-2d.exahype
+
+echo done
+
