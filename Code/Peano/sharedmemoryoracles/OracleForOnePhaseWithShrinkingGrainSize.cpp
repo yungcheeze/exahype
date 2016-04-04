@@ -11,11 +11,12 @@ tarch::logging::Log  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSiz
 
 
 int  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_activeMethodTrace(0);
+int  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_delayBetweenTwoUpdates(0);
 
 
 sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseWithShrinkingGrainSize(
-  const peano::datatraversal::autotuning::MethodTrace&  methodTrace,
-  int                                                   adapterNumber
+  int                                                   adapterNumber,
+  const peano::datatraversal::autotuning::MethodTrace&  methodTrace
 ):
   _methodTrace(methodTrace),
   _adapterNumber(adapterNumber),
@@ -44,14 +45,17 @@ std::pair<int,bool> sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize
 }
 
 
-void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::makeAttributesLearn() {
-  assertion( _currentMeasurement.isAccurateValue() );
 
-  // Switch to next method type
+void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::changeMeasuredMethodTrace() {
   _activeMethodTrace++;
   if (_activeMethodTrace>=peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling) {
     _activeMethodTrace = 0;
   }
+}
+
+
+void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::makeAttributesLearn() {
+  assertion( _currentMeasurement.isAccurateValue() );
 
   // If max problem size has increased, notably as soon as serial size is known
   if (_biggestProblemSize < _currentGrainSize) {
@@ -60,10 +64,11 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::makeAttribute
     _currentGrainSize   = _biggestProblemSize / 2 + 1;
     _oracleIsSearching  = true;
 
-    logInfo(
+    // This is not an info as it is a standard behaviour that has to arise at least once.
+    logDebug(
       "makeAttributesLearn()",
-      "identified new maximum problem size or finished serial analysis. new grain size=" << _currentGrainSize << ", biggest-problem-size=" << _biggestProblemSize
-      << ", method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
+      "identified new maximum problem size and/or finished serial analysis. new grain size=" << _currentGrainSize << ", biggest-problem-size=" << _biggestProblemSize
+      << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
     );
   }
   else if (
@@ -78,7 +83,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::makeAttribute
       "algorithm part seems to scale. Continue to search for higher performance with halved grain size. new grain size=" << _currentGrainSize
       << ", oracle continues to search=" << _oracleIsSearching
      << ", biggest-problem-size=" << _biggestProblemSize
-      << ", method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
+      << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
     );
   }
   else if (
@@ -90,7 +95,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::makeAttribute
       "makeAttributesLearn()",
       "algorithm does benefit from smallest grain size possible or is inherently sequential. Stop search. grain size=" << _currentGrainSize
      << ", biggest-problem-size=" << _biggestProblemSize
-      << ", method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
+      << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
     );
   }
   else {
@@ -101,7 +106,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::makeAttribute
       "makeAttributesLearn()",
       "algorithm does not benefit from small grain size currently studied. Stop search. grain size=" << _currentGrainSize
      << ", biggest-problem-size=" << _biggestProblemSize
-      << ", method-trace=" << toString(_methodTrace) << "," << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
+      << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
     );
   }
 
@@ -188,16 +193,27 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::~OracleForOnePhase
 
 
 peano::datatraversal::autotuning::OracleForOnePhase* sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::createNewOracle(int adapterNumber, const peano::datatraversal::autotuning::MethodTrace& methodTrace) const {
-  return new OracleForOnePhaseWithShrinkingGrainSize(methodTrace,adapterNumber);
+  return new OracleForOnePhaseWithShrinkingGrainSize(adapterNumber, methodTrace);
 }
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::informAboutElapsedTimeOfLastTraversal(double elapsedTime) {
+  _delayBetweenTwoUpdates++;
+
   if (
     _currentMeasurement.isAccurateValue()
     &&
     peano::datatraversal::autotuning::toMethodTrace( _activeMethodTrace ) == _methodTrace
+    &&
+    _delayBetweenTwoUpdates > peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling * 32
   ) {
     makeAttributesLearn();
+    changeMeasuredMethodTrace();
+    _delayBetweenTwoUpdates = 0;
+  }
+  else if (
+    _currentMeasurement.getNumberOfMeasurements()==0
+  ) {
+    changeMeasuredMethodTrace();
   }
 }

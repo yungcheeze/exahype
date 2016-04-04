@@ -53,6 +53,7 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
      * We never do optimise all traces. We only do it with one trace at a time.
      */
     static int                                           _activeMethodTrace;
+    static int                                           _delayBetweenTwoUpdates;
 
     const peano::datatraversal::autotuning::MethodTrace  _methodTrace;
     const int                                            _adapterNumber;
@@ -65,11 +66,16 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
     double                                               _lastProblemSize;
 
     void makeAttributesLearn();
+
+    /**
+     * We do only measure one method trace at a time.
+     */
+    void changeMeasuredMethodTrace();
   public:
     /**
      * Oracle Constructor
      */
-    OracleForOnePhaseWithShrinkingGrainSize(const peano::datatraversal::autotuning::MethodTrace& methodTrace = peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling, int adapterNumber=-1);
+    OracleForOnePhaseWithShrinkingGrainSize(int adapterNumber=-1, const peano::datatraversal::autotuning::MethodTrace& methodTrace = peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling);
 
     virtual ~OracleForOnePhaseWithShrinkingGrainSize();
 
