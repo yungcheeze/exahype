@@ -11,7 +11,6 @@ tarch::logging::Log  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSiz
 
 
 int  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_activeMethodTrace(0);
-int  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_delayBetweenTwoUpdates(0);
 
 
 sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseWithShrinkingGrainSize(
@@ -20,10 +19,10 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseW
 ):
   _methodTrace(methodTrace),
   _adapterNumber(adapterNumber),
-  _oracleIsSearching(true),
+  _currentSearchDelta(1),
   _biggestProblemSize(0),
   _currentGrainSize(std::numeric_limits<int>::max()),
-  _currentMeasurement(1.0e-0), // magic constant war vorher 1.0e-2
+  _currentMeasurement(1.0e-0), 
   _previousMeasuredTime(-1.0),
   _lastProblemSize(0.0) {
 }
@@ -32,15 +31,14 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseW
 std::pair<int,bool> sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::parallelise(int problemSize) {
   assertion( problemSize>0 );
 
-  if (_biggestProblemSize<problemSize) _biggestProblemSize = problemSize;
-
-  _lastProblemSize = problemSize;
+  _biggestProblemSize = std::max( _biggestProblemSize,problemSize );
+  _lastProblemSize    = problemSize;
 
   if (problemSize <= _currentGrainSize) {
-    return std::pair<int,bool>(0,_oracleIsSearching);
+    return std::pair<int,bool>(0,_currentSearchDelta>0);
   }
   else {
-    return std::pair<int,bool>(_currentGrainSize,_oracleIsSearching);
+    return std::pair<int,bool>(_currentGrainSize,_currentSearchDelta>0);
   }
 }
 
@@ -61,58 +59,74 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::makeAttribute
   if (_biggestProblemSize < _currentGrainSize) {
     assertion(_previousMeasuredTime==-1.0);
     assertion(_oracleIsSearching);
-    _currentGrainSize   = _biggestProblemSize / 2 + 1;
-    _oracleIsSearching  = true;
+
+    _currentSearchDelta   = std::max(_biggestProblemSize/2,1);
+    _currentGrainSize     = _currentSearchDelta;
+    _previousMeasuredTime = _currentMeasurement.getValue();
+
+    _currentMeasurement.erase();
 
     // This is not an info as it is a standard behaviour that has to arise at least once.
     logDebug(
       "makeAttributesLearn()",
       "identified new maximum problem size and/or finished serial analysis. new grain size=" << _currentGrainSize << ", biggest-problem-size=" << _biggestProblemSize
+      << ", currentSearchDelta=" << _currentSearchDelta
       << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
     );
   }
   else if (
-    _previousMeasuredTime > _currentMeasurement.getValue() &&
-    _currentGrainSize >= 2
+    _previousMeasuredTime > _currentMeasurement.getValue() 
+    && 
+    _currentGrainSize > _currentSearchDelta
   ) {
-    _currentGrainSize /= 2;
-    _oracleIsSearching  = true;
+    _currentGrainSize     -= _currentSearchDelta;
+    _previousMeasuredTime  = _currentMeasurement.getValue();
+
+    _currentMeasurement.erase();
 
     logInfo(
       "makeAttributesLearn()",
       "algorithm part seems to scale. Continue to search for higher performance with halved grain size. new grain size=" << _currentGrainSize
-      << ", oracle continues to search=" << _oracleIsSearching
-     << ", biggest-problem-size=" << _biggestProblemSize
+      << ", currentSearchDelta=" << _currentSearchDelta
+      << ", biggest-problem-size=" << _biggestProblemSize
       << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
     );
   }
   else if (
     _previousMeasuredTime > _currentMeasurement.getValue()
   ) {
-    _oracleIsSearching  = false;
+    _currentSearchDelta = 0;
+    _currentGrainSize   = 0;
 
     logInfo(
       "makeAttributesLearn()",
       "algorithm does benefit from smallest grain size possible or is inherently sequential. Stop search. grain size=" << _currentGrainSize
-     << ", biggest-problem-size=" << _biggestProblemSize
+      << ", currentSearchDelta=" << _currentSearchDelta
+      << ", biggest-problem-size=" << _biggestProblemSize
       << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
     );
   }
   else {
-    _oracleIsSearching  = false;
-    _currentGrainSize  *= 2;
+    _currentGrainSize     += _currentSearchDelta;
+    _currentSearchDelta   /=2;
+    _previousMeasuredTime  = std::numeric_limits<double>::max();
+
+    _currentMeasurement.erase();
+    _currentMeasurement.increaseAccuracy(2.0);
 
     logInfo(
       "makeAttributesLearn()",
       "algorithm does not benefit from small grain size currently studied. Stop search. grain size=" << _currentGrainSize
-     << ", biggest-problem-size=" << _biggestProblemSize
+      << ", biggest-problem-size=" << _biggestProblemSize
+      << ", currentSearchDelta=" << _currentSearchDelta
+      << ", accuracy=" << _currentMeasurement.toString()
       << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
     );
   }
 
-  _previousMeasuredTime = _currentMeasurement.getValue();
-  _currentMeasurement.erase();
-  _currentMeasurement.increaseAccuracy(2.0);
+//  _previousMeasuredTime = _currentMeasurement.getValue();
+//  _currentMeasurement.erase();
+//  _currentMeasurement.increaseAccuracy(2.0);
 }
 
 
@@ -127,11 +141,12 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::parallelSecti
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::loadStatistics(const std::string& filename) {
   std::ifstream file(filename);
   std::string str;
-  std::string rightEntry = "adapter=" + std::to_string( _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 ) + ", method=" + toString(_methodTrace) + ":";
+// @todo Please remove as soon as Intel supports this properly (according to standard should work without cast)
+  std::string rightEntry = "adapter=" + std::to_string( (long long)(_adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1) ) + ", method=" + toString(_methodTrace) + ":";
   while (std::getline(file, str)) {
     if (str.substr(0,rightEntry.size())==rightEntry) {
-      str = str.substr(  str.find("oracleIsSearching=") + std::string("oracleIsSearching=").length() );
-      std::string oracleIsSearching = str.substr(0,str.find(","));
+      str = str.substr(  str.find("currentSearchDelta=") + std::string("currentSearchDelta=").length() );
+      std::string currentSearchDelta = str.substr(0,str.find(","));
 
       str = str.substr(  str.find("biggestProblemSize=") + std::string("biggestProblemSize=").length() );
       std::string biggestProblemSize = str.substr(0,str.find(","));
@@ -148,23 +163,23 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::loadStatistic
       str = str.substr(  str.find("accuracy=") + std::string("accuracy=").length() );
       std::string accuracy = str.substr(0,str.find(","));
 
-      _oracleIsSearching    = oracleIsSearching=="1";
+      _currentSearchDelta   = atoi( currentSearchDelta.c_str() );
       _biggestProblemSize   = atoi( biggestProblemSize.c_str() );
       _currentGrainSize     = atoi( currentGrainSize.c_str() );
       _previousMeasuredTime = atof( previousMeasuredTime.c_str() );
       _lastProblemSize      = atoi( lastProblemSize.c_str() );
       _currentMeasurement   = tarch::timing::Measurement(atof(accuracy.c_str()));
 
-      logInfo( "loadStatistics(std::string)", "found data for " << rightEntry << " " << _oracleIsSearching << "," << _biggestProblemSize << "," << _currentGrainSize << "," << _previousMeasuredTime << ":" << _lastProblemSize << "," << _currentMeasurement.toString());
+      logInfo( "loadStatistics(std::string)", "found data for " << rightEntry << " " << _currentSearchDelta << "," << _biggestProblemSize << "," << _currentGrainSize << "," << _previousMeasuredTime << ":" << _lastProblemSize << "," << _currentMeasurement.toString());
     }
   }
 }
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::plotStatistics(std::ostream& out) const {
-  if (_currentMeasurement.getNumberOfMeasurements()>0 || !_oracleIsSearching) {
+  if (_currentMeasurement.getNumberOfMeasurements()>0) {
     out << "adapter=" << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << ", method=" << toString(_methodTrace) << ":";
-    out << "oracleIsSearching="     << _oracleIsSearching
+    out << "currentSearchDelta="    << _currentSearchDelta
         << ",biggestProblemSize="   << _biggestProblemSize
         << ",currentGrainSize="     << _currentGrainSize
         << ",previousMeasuredTime=" << _previousMeasuredTime
@@ -172,10 +187,10 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::plotStatistic
         << ",accuracy="             << _currentMeasurement.getAccuracy()
         << ",currentMeasurement="   << _currentMeasurement.toString();
 
-    if (_biggestProblemSize < _currentGrainSize && _oracleIsSearching) {
+    if (_biggestProblemSize < _currentGrainSize && _currentSearchDelta>0) {
       out << " (still determining serial runtime)" << std::endl;
     }
-    else if (_oracleIsSearching) {
+    else if (_currentSearchDelta>0) {
       out << " (still searching for optimal grain size)" << std::endl;
     }
     else if (_biggestProblemSize<=_currentGrainSize) {
@@ -198,22 +213,21 @@ peano::datatraversal::autotuning::OracleForOnePhase* sharedmemoryoracles::Oracle
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::informAboutElapsedTimeOfLastTraversal(double elapsedTime) {
-  _delayBetweenTwoUpdates++;
-
   if (
     _currentMeasurement.isAccurateValue()
     &&
-    peano::datatraversal::autotuning::toMethodTrace( _activeMethodTrace ) == _methodTrace
+    _currentSearchDelta>0
     &&
-    _delayBetweenTwoUpdates > peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling * 32
+    peano::datatraversal::autotuning::toMethodTrace( _activeMethodTrace ) == _methodTrace
   ) {
     makeAttributesLearn();
-    changeMeasuredMethodTrace();
-    _delayBetweenTwoUpdates = 0;
   }
-  else if (
-    _currentMeasurement.getNumberOfMeasurements()==0
+
+  if (
+    _methodTrace==0 && _adapterNumber==0
   ) {
     changeMeasuredMethodTrace();
+
+    logDebug( "informAboutElapsedTimeOfLastTraversal(double)", "new active method trace is=" << peano::datatraversal::autotuning::toMethodTrace( _activeMethodTrace ) );
   }
 }

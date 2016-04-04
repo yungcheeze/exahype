@@ -53,12 +53,15 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
      * We never do optimise all traces. We only do it with one trace at a time.
      */
     static int                                           _activeMethodTrace;
-    static int                                           _delayBetweenTwoUpdates;
 
     const peano::datatraversal::autotuning::MethodTrace  _methodTrace;
     const int                                            _adapterNumber;
 
-    bool                                                 _oracleIsSearching;
+    /**
+     * How to change grain size if we start new test. Equals 0 to switch search 
+     * off.
+     */
+    int                                                  _currentSearchDelta;
     int                                                  _biggestProblemSize;
     int                                                  _currentGrainSize;
     tarch::timing::Measurement                           _currentMeasurement;
