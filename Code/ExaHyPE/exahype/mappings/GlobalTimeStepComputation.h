@@ -22,11 +22,14 @@
 #include "exahype/Cell.h"
 #include "exahype/State.h"
 
+
 namespace exahype {
-namespace mappings {
-class GlobalTimeStepComputation;
+  namespace mappings {
+    class GlobalTimeStepComputation;
+  }
 }
-}
+
+
 
 /**
  * This is a mapping from the spacetree traversal events to your user-defined
@@ -44,11 +47,21 @@ class exahype::mappings::GlobalTimeStepComputation {
   static tarch::logging::Log _log;
 
   /**
-   * Individual patches compute a global time step.
+   * We could directly compute the minimal time step sizes and the minimum time
+   * stamp: Run per cell through all patch descriptions and update the global
+   * solver objects immediately. This is not very clever in a multicore
+   * environment as we then have to protect the global data access with a
+   * semaphore which serialises the computation (that, in the worst case, is
+   * done in each time step). So we do compute the time step size and the stamp
+   * locally in a vector, and we project it back to the global data in
+   * endIteration().
    */
-  static tarch::multicore::BooleanSemaphore _semaphore;
+  std::vector<double>   _minTimeStepSizes;
+  std::vector<double>   _minTimeStamps;
 
 
+  void prepareEmptyLocalTimeStepData();
+  void mergeLocalTimeStepDataIntoSolvers();
  public:
   /**
    * These flags are used to inform Peano about your operation. It tells the
