@@ -99,18 +99,11 @@ exahype::mappings::GlobalTimeStepComputation::~GlobalTimeStepComputation() {
 }
 
 #if defined(SharedMemoryParallelisation)
-// @todo Remove _localState copying and merging
 exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(
-    const GlobalTimeStepComputation& masterThread)
-    : _localState(masterThread._localState) {}
+    const GlobalTimeStepComputation& masterThread) {}
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(
     const GlobalTimeStepComputation& workerThread) {
-  logTraceIn("mergeWithWorkerThread(GlobalTimeStepComputation)");
-
-  _localState.merge(workerThread._localState);
-
-  logTraceOut("mergeWithWorkerThread(GlobalTimeStepComputation)");
 }
 #endif
 
@@ -253,9 +246,22 @@ void exahype::mappings::GlobalTimeStepComputation::prepareSendToMaster(
     const exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     const exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell
+) {
+  double minSolverTimeStampAndTimeStepSize[2];
+
+  for (
+    std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
+    p != exahype::solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    minSolverTimeStampAndTimeStepSize[0] = (*p)->getMinCorrectorTimeStamp();
+    minSolverTimeStampAndTimeStepSize[1] = (*p)->getMinCorrectorTimeStepSize();
+
+    MPI_Send( minSolverTimeStampAndTimeStepSize, 2, MPI_DOUBLE, tarch::parallel::NodePool::getInstance().getMasterRank(), x, tarch::parallel::Node::getInstance().getCommunicator() );
+  }
 }
+
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithMaster(
     const exahype::Cell& workerGridCell,
@@ -400,22 +406,11 @@ void exahype::mappings::GlobalTimeStepComputation::leaveCell(
 
 void exahype::mappings::GlobalTimeStepComputation::beginIteration(
     exahype::State& solverState) {
-  logTraceInWith1Argument("beginIteration(State)", solverState);
-
-  // @todo Please remove as soon a all time stepping data is removed from the
-  // state
-  _localState = solverState;
-
-  logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
 
 void exahype::mappings::GlobalTimeStepComputation::endIteration(
-    exahype::State& solverState) {
-  logTraceInWith1Argument("endIteration(State)", solverState);
-
-  solverState.merge(_localState);
-
-  logTraceOutWith1Argument("endIteration(State)", solverState);
+  exahype::State& solverState
+) {
 }
 
 void exahype::mappings::GlobalTimeStepComputation::descend(
