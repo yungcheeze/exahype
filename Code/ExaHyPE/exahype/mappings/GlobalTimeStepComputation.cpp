@@ -51,7 +51,7 @@ peano::MappingSpecification exahype::mappings::GlobalTimeStepComputation::
 peano::MappingSpecification
 exahype::mappings::GlobalTimeStepComputation::enterCellSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::OnlyLeaves,
+      peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
@@ -370,7 +370,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  if (CellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
       const int numberOfADERDGCellDescriptions = static_cast<int>(
           ADERDGCellDescriptionHeap::getInstance()
       .getData(fineGridCell.getADERDGCellDescriptionsIndex())
@@ -387,7 +387,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
           ADERDGCellDescriptionHeap::getInstance().getData(
               fineGridCell.getADERDGCellDescriptionsIndex())[i];
 
-      if (p.getType()==exahype::Cell::Type::Cell) {
+      if (p.getType()==exahype::Cell::RealCell) {
         exahype::solvers::Solver* solver =
             exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 

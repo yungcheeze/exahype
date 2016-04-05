@@ -2,6 +2,8 @@
 
 #include "exahype/solvers/Solver.h"
 
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
@@ -293,18 +295,30 @@ void exahype::mappings::PatchInitialisation::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  fineGridCell.init(fineGridVerticesEnumerator.getLevel(),
-                    fineGridVerticesEnumerator.getCellSize(),
-                    fineGridVerticesEnumerator.getCellCenter());
-
-  // @todo Too restrictive for AMR
-  assertion2(fineGridCell.isRefined() ||
-                 !ADERDGCellDescriptionHeap::getInstance()
-                      .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-                      .empty() ||
-                 fineGridCell.isAssignedToRemoteRank(),
-             fineGridCell.toString(), fineGridVerticesEnumerator.toString());
-
+  // @todo 16/04/05:Dominic Etienne Charrier: this mapping functionality will be replaced
+  // by a regular mesh and cell a cell description init
+  // mapping
+  int solverNumber=0;
+  if (!DataHeap::getInstance().isValidIndex(
+      fineGridCell.getADERDGCellDescriptionsIndex())) {
+    for (std::vector<exahype::solvers::Solver*>::const_iterator p =
+            exahype::solvers::RegisteredSolvers.begin();
+            p != exahype::solvers::RegisteredSolvers.end(); p++) {
+      if (fineGridVerticesEnumerator.getLevel()==(*p)->getMinimumTreeDepth()+1) {
+          fineGridCell.addNewCellDescription(
+              solverNumber,
+              exahype::Cell::RealCell,
+              fineGridVerticesEnumerator.getLevel(),
+              multiscalelinkedcell::HangingVertexBookkeeper::
+              InvalidAdjacencyIndex,
+              fineGridPositionOfCell,
+              fineGridVerticesEnumerator.getCellSize(),
+              fineGridVerticesEnumerator.getCellCenter());
+          fineGridCell.initialiseCellDescription(solverNumber);
+        }
+      }
+      solverNumber++;
+    }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 

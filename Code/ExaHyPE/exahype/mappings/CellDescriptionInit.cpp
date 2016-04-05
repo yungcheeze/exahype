@@ -2,6 +2,8 @@
 
 #include "exahype/solvers/Solver.h"
 
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
@@ -297,28 +299,17 @@ void exahype::mappings::CellDescriptionInit::enterCell(
   for (std::vector<exahype::solvers::Solver*>::const_iterator p =
       solvers::RegisteredSolvers.begin();
       p != solvers::RegisteredSolvers.end(); p++) {
-    exahype::solvers::Solver* solver = *p;
-
     if (
         fineGridVerticesEnumerator.getLevel()>=(*p)->getMinimumTreeDepth()
         &&
-        fineGridCell.getADERDGCellDescriptionsIndex()>multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex
+        fineGridCell.getADERDGCellDescriptionsIndex() >
+    multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex
     ) {
       fineGridCell.initialiseCellDescription(solverNumber);
     }
+    solverNumber++;
   }
-  solverNumber++;
-}
-
-//  // @todo Too restrictive for AMR
-//  assertion2(fineGridCell.isRefined() ||
-//                 !ADERDGCellDescriptionHeap::getInstance()
-//                      .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-//                      .empty() ||
-//                 fineGridCell.isAssignedToRemoteRank(),
-//             fineGridCell.toString(), fineGridVerticesEnumerator.toString());
-
-logTraceOutWith1Argument("enterCell(...)", fineGridCell);
+  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
 void exahype::mappings::CellDescriptionInit::leaveCell(

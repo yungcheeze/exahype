@@ -39,7 +39,7 @@ exahype::mappings::BoundaryConditions::touchVertexLastTimeSpecification() {
 peano::MappingSpecification
 exahype::mappings::BoundaryConditions::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::OnlyLeaves,
+      peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
@@ -303,10 +303,6 @@ void exahype::mappings::BoundaryConditions::touchVertexFirstTime(
 
   tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
       fineGridVertex.getADERDGCellDescriptionsIndex();
-  // todo: DEC: Reverse engineered indices from
-  // PatchInitialisation2MultiscaleLinkedCell_1::touchVertextFirstTime(...)
-  // Not sure what happens with hanging nodes.
-
   /*
    * Right cell-left cell   pair indices: 0,1; 2,3;   4,5; 6;7
    * Front cell-back cell   pair indices: 0,2; 1,3;   4,6; 5;7
@@ -317,7 +313,6 @@ void exahype::mappings::BoundaryConditions::touchVertexFirstTime(
    * problem on the left face of the right cell (which
    * is the right face of the left cell).
    */
-  // index maps (
   constexpr int cellIndicesLeft[4] = {0, 2, 4, 6};
   constexpr int cellIndicesRight[4] = {1, 3, 5, 7};
   constexpr int cellIndicesFront[4] = {0, 1, 4, 5};
@@ -350,15 +345,13 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
     tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices,
     const int cellIndexL, const int cellIndexR, const int faceIndexL,
     const int faceIndexR, const int normalNonZero) {
-  bool noBoundaryFace = true;
-  bool bothAreBoundaryFaces = false;
   int cellIndex =
       multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex;
   int faceIndex = -1;
 
-  if (  // If cellIndexL refers to a boundary index then cellIndexR refers to a
-        // cell.
-      adjacentADERDGCellDescriptionsIndices[cellIndexL] ==
+  bool noBoundaryFace = true;
+  bool bothAreBoundaryFaces = false;
+  if (adjacentADERDGCellDescriptionsIndices[cellIndexL] ==
       multiscalelinkedcell::HangingVertexBookkeeper::
           DomainBoundaryAdjacencyIndex) {
     noBoundaryFace = false;
@@ -376,95 +369,100 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
     faceIndex = faceIndexL;
   }
 
-  // Only continue if this is a boundary face. See
-  // multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex.
-  if (noBoundaryFace || bothAreBoundaryFaces) {
-    return;
-  }
+  // Only continue if this is a boundary face.
+  if (!noBoundaryFace && !bothAreBoundaryFaces) {
+    if (ADERDGCellDescriptionHeap::getInstance().
+        isValidIndex(adjacentADERDGCellDescriptionsIndices[cellIndex])) {
 
-  assertion1(adjacentADERDGCellDescriptionsIndices[cellIndexL] >
-                     multiscalelinkedcell::HangingVertexBookkeeper::
-                         InvalidAdjacencyIndex ||
-                 adjacentADERDGCellDescriptionsIndices[cellIndexR] >
-                     multiscalelinkedcell::HangingVertexBookkeeper::
-                         InvalidAdjacencyIndex,
-             adjacentADERDGCellDescriptionsIndices.toString());
+      assertion1(adjacentADERDGCellDescriptionsIndices[cellIndexL] >
+        multiscalelinkedcell::HangingVertexBookkeeper::
+        InvalidAdjacencyIndex
+        ||
+        adjacentADERDGCellDescriptionsIndices[cellIndexR] >
+        multiscalelinkedcell::HangingVertexBookkeeper::
+        InvalidAdjacencyIndex,
+        adjacentADERDGCellDescriptionsIndices.toString());
 
-  const auto numberOfADERDGCellDescriptions =
-      ADERDGCellDescriptionHeap::getInstance()
-          .getData(adjacentADERDGCellDescriptionsIndices[cellIndex])
-          .size();
-  const peano::datatraversal::autotuning::MethodTrace methodTrace =
-      peano::datatraversal::autotuning::UserDefined0;  // Dominic, please use a
-                                                       // different UserDefined
-                                                       // per mapping/event.
-                                                       // There should be enough
-                                                       // by now.
-  const int grainSize =
-      peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-          numberOfADERDGCellDescriptions, methodTrace);
-  pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-    records::ADERDGCellDescription& p =
-        ADERDGCellDescriptionHeap::getInstance().getData(
-            adjacentADERDGCellDescriptionsIndices[cellIndex])[i];
+      const auto numberOfADERDGCellDescriptions =
+          ADERDGCellDescriptionHeap::getInstance()
+      .getData(adjacentADERDGCellDescriptionsIndices[cellIndex])
+      .size();
 
-    exahype::solvers::Solver* solver =
-        exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+      const peano::datatraversal::autotuning::MethodTrace methodTrace =
+          peano::datatraversal::autotuning::UserDefined0;
+      const int grainSize =
+          peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+              numberOfADERDGCellDescriptions, methodTrace);
+      pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
 
-    // Lock the critical multithreading area.
-    // Note that two boundary vertices can operate on the same face at the same
-    // time.
-    bool riemannSolveNotPerformed = false;
-    tarch::multicore::Lock lock(_semaphore);
-    riemannSolveNotPerformed = !p.getRiemannSolvePerformed(faceIndex);
-    if (riemannSolveNotPerformed) {
-      p.setRiemannSolvePerformed(faceIndex, true);
-    }
-    lock.free();
+        records::ADERDGCellDescription& p =
+            ADERDGCellDescriptionHeap::getInstance().getData(
+                adjacentADERDGCellDescriptionsIndices[cellIndex])[i];
 
-    // Apply the boundary conditions.
-    // todo Copy and periodic boundary conditions should be configured by
-    // additional mappings after
-    // the initial grid refinement and the initialisation of the cell
-    // descriptions.
-    // The configuration should only involve an edit of the index maps generated
-    // by the multiscalelinkedcell toolbox. In case of consequent mesh-refinement,
-    // these indices should be propagated down to the finer cells.
-    // The resulting Riemann problems are then simply solved
-    // by exahype::mappings::RiemannSolver.
-    if (riemannSolveNotPerformed) {
-      // @todo 03/02/16:Dominic Etienne Charrier
-      // Change to solver->getUnknownsPerFace()
-      const int numberOfFaceDof =
-          solver->getNumberOfVariables() *
-          tarch::la::aPowI(DIMENSIONS - 1, solver->getNodesPerCoordinateAxis());
+        if (p.getType()==exahype::Cell::RealCell) {
+          exahype::solvers::Solver* solver =
+              exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-      double* Qhbnd =
-          DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data() +
-          (faceIndex * numberOfFaceDof);
-      double* Fhbnd =
-          DataHeap::getInstance().getData(p.getFluctuation()).data() +
-          (faceIndex * numberOfFaceDof);
+          // Lock the critical multithreading area.
+          // Note that two boundary vertices can operate on the same face at the same
+          // time.
+          bool riemannSolveNotPerformed = false;
+          tarch::multicore::Lock lock(_semaphore);
+          riemannSolveNotPerformed = !p.getRiemannSolvePerformed(faceIndex);
+          if (riemannSolveNotPerformed) {
+            p.setRiemannSolvePerformed(faceIndex, true);
+          }
+          lock.free();
 
-      // @todo
-      //      timestepping::synchroniseTimeStepping(solve,*p);
-      logDebug("touchVertexLastTime(...)::debug::before::Qhbnd[0]*", Qhbnd[0]);
-      logDebug("touchVertexLastTime(...)::debug::before::Fhbnd[0]", Fhbnd[0]);
+          // Apply the boundary conditions.
+          // todo Copy and periodic boundary conditions should be configured by
+          // additional mappings after
+          // the initial grid refinement and the initialisation of the cell
+          // descriptions.
+          // The configuration should only involve an edit of the index maps generated
+          // by the multiscalelinkedcell toolbox. In case of consequent mesh-refinement,
+          // these indices should be propagated down to the finer cells.
+          // The resulting Riemann problems are then simply solved
+          // by exahype::mappings::RiemannSolver.
+          if (riemannSolveNotPerformed) {
+            // @todo 03/02/16:Dominic Etienne Charrier
+            // Change to solver->getUnknownsPerFace()
+            const int numberOfFaceDof =
+                solver->getNumberOfVariables() *
+                tarch::la::aPowI(DIMENSIONS - 1,
+                solver->getNodesPerCoordinateAxis());
 
-      // todo Dominic Charrier2503
-      // Do not solve a Riemann problem here:
-      // Invoke user defined boundary condition function
-      // At the moment, we simply copy the cell solution to the boundary.
-      solver->riemannSolver(
-          Fhbnd, Fhbnd, Qhbnd, Qhbnd,
-          p.getCorrectorTimeStepSize(),  // solve.getCorrectorTimeStepSize(),//_localState.getPreviousMinTimeStepSize(),
-          normalNonZero);
+            double* Qhbnd =
+                DataHeap::getInstance().getData(
+                p.getExtrapolatedPredictor()).data() +
+                (faceIndex * numberOfFaceDof);
+            double* Fhbnd =
+                DataHeap::getInstance().getData(
+                p.getFluctuation()).data() +
+                (faceIndex * numberOfFaceDof);
 
-      logDebug("touchVertexLastTime(...)::debug::after::Qhbnd[0]*", Qhbnd[0]);
-      logDebug("touchVertexLastTime(...)::debug::after::Fhbnd[0]", Fhbnd[0]);
-    }
-  endpfor peano::datatraversal::autotuning::Oracle::getInstance()
+            // @todo
+            // timestepping::synchroniseTimeStepping(solve,*p);
+            logDebug("touchVertexLastTime(...)::debug::before::Qhbnd[0]*", Qhbnd[0]);
+            logDebug("touchVertexLastTime(...)::debug::before::Fhbnd[0]", Fhbnd[0]);
+
+            // todo Dominic Charrier2503
+            // Do not solve a Riemann problem here:
+            // Invoke user defined boundary condition function
+            // At the moment, we simply copy the cell solution to the boundary.
+            solver->riemannSolver(
+                Fhbnd, Fhbnd, Qhbnd, Qhbnd,
+                p.getCorrectorTimeStepSize(),  // solve.getCorrectorTimeStepSize(),//_localState.getPreviousMinTimeStepSize(),
+                normalNonZero);
+
+            logDebug("touchVertexLastTime(...)::debug::after::Qhbnd[0]*", Qhbnd[0]);
+            logDebug("touchVertexLastTime(...)::debug::after::Fhbnd[0]", Fhbnd[0]);
+          }
+        }
+      endpfor peano::datatraversal::autotuning::Oracle::getInstance()
       .parallelSectionHasTerminated(methodTrace);
+    }
+  }
 }
 
 void exahype::mappings::BoundaryConditions::touchVertexLastTime(

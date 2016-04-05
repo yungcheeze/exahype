@@ -37,7 +37,7 @@ exahype::mappings::RiemannSolver::touchVertexLastTimeSpecification() {
 peano::MappingSpecification
 exahype::mappings::RiemannSolver::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::OnlyLeaves,
+      peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
@@ -323,13 +323,13 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
    * is the right face of the left cell).
    */
   // index maps (
-  constexpr int cellIndicesLeft[4] = {0, 2, 4, 6};
-  constexpr int cellIndicesRight[4] = {1, 3, 5, 7};
-  constexpr int cellIndicesFront[4] = {0, 1, 4, 5};
-  constexpr int cellIndicesBack[4] = {2, 3, 6, 7};
+  constexpr int cellIndicesLeft  [4] = {0, 2, 4, 6};
+  constexpr int cellIndicesRight [4] = {1, 3, 5, 7};
+  constexpr int cellIndicesFront [4] = {0, 1, 4, 5};
+  constexpr int cellIndicesBack  [4] = {2, 3, 6, 7};
 #if DIMENSIONS == 3
   constexpr int cellIndicesBottom[4] = {0, 1, 2, 3};
-  constexpr int cellIndicesTop[4] = {4, 5, 6, 7};
+  constexpr int cellIndicesTop   [4] = {4, 5, 6, 7};
 #endif
   // Left/right face
   for (int i = 0; i < TWO_POWER_D_DIVIDED_BY_TWO; i++) {
@@ -354,114 +354,115 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
     tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices,
     const int cellIndexL, const int cellIndexR, const int faceL,
     const int faceR, const int normalNonZero) {
-  // Only continue if this is an internal face. See
-  // multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex.
-  if (adjacentADERDGCellDescriptionsIndices[cellIndexL] < 0 ||
-      adjacentADERDGCellDescriptionsIndices[cellIndexR] < 0) {
-    return;
-  }
+  // Only continue if this is an internal face, i.e.,
+  // both cell description indices are valid
+  if (ADERDGCellDescriptionHeap::getInstance().
+      isValidIndex(adjacentADERDGCellDescriptionsIndices[cellIndexL])
+      &&
+      ADERDGCellDescriptionHeap::getInstance().
+      isValidIndex(adjacentADERDGCellDescriptionsIndices[cellIndexR])){
+    logDebug("touchVertexLastTime(...)::solveRiemannProblem(...)",
+             "Performing Riemann solve. "
+             << "faceL:" << faceL << " faceR:" << faceR
+             << " cell descr. index L:"
+             << adjacentADERDGCellDescriptionsIndices[cellIndexL]
+             << " cell descr. index R:"
+             << adjacentADERDGCellDescriptionsIndices[cellIndexR]);
 
-  logDebug("touchVertexLastTime(...)::solveRiemannProblem(...)",
-           "Performing Riemann solve. "
-               << "faceL:" << faceL << " faceR:" << faceR
-               << " cell descr. index L:"
-               << adjacentADERDGCellDescriptionsIndices[cellIndexL]
-               << " cell descr. index R:"
-               << adjacentADERDGCellDescriptionsIndices[cellIndexR]);
-
-  std::vector<records::ADERDGCellDescription>& cellDescriptionsL =
-      ADERDGCellDescriptionHeap::getInstance().getData(
-          adjacentADERDGCellDescriptionsIndices[cellIndexL]);
-  std::vector<records::ADERDGCellDescription>& cellDescriptionsR =
-      ADERDGCellDescriptionHeap::getInstance().getData(
-          adjacentADERDGCellDescriptionsIndices[cellIndexR]);
-
-  // @todo 08/02/16:Dominic Etienne Charrier
-  // Assumes that the both elements hold the same (number of) solvers
-  assertion1WithExplanation(
-      cellDescriptionsL.size() == cellDescriptionsR.size(),
-      cellDescriptionsL.size(),
-      "The number of ADERDGCellDescriptions is not the same for both cells!");
-
-  const int numberOfADERDGCellDescriptions = static_cast<int>(
-      ADERDGCellDescriptionHeap::getInstance()
-          .getData(adjacentADERDGCellDescriptionsIndices[cellIndexL])
-          .size());
-  const peano::datatraversal::autotuning::MethodTrace methodTrace =
-      peano::datatraversal::autotuning::UserDefined2;  // Dominic, please use a
-                                                       // different UserDefined
-                                                       // per mapping/event.
-                                                       // There should be enough
-                                                       // by now.
-  const int grainSize =
-      peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-          numberOfADERDGCellDescriptions, methodTrace);
-  pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-    records::ADERDGCellDescription& p =
+    std::vector<records::ADERDGCellDescription>& cellDescriptionsL =
         ADERDGCellDescriptionHeap::getInstance().getData(
-            adjacentADERDGCellDescriptionsIndices[cellIndexL])[i];
+            adjacentADERDGCellDescriptionsIndices[cellIndexL]);
+    std::vector<records::ADERDGCellDescription>& cellDescriptionsR =
+        ADERDGCellDescriptionHeap::getInstance().getData(
+            adjacentADERDGCellDescriptionsIndices[cellIndexR]);
 
-    exahype::solvers::Solver* solver =
-        exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+    // @todo 08/02/16:Dominic Etienne Charrier
+    // Assumes that the both elements hold the same (number of) solvers
+    assertion1WithExplanation(
+        cellDescriptionsL.size() == cellDescriptionsR.size(),
+        cellDescriptionsL.size(),
+        "The number of ADERDGCellDescriptions is not the same for both cells!");
 
-    // Lock the critical multithreading area.
-    bool riemannSolveNotPerformed = false;
-    tarch::multicore::Lock lock(_semaphore);
-    assertionEquals(cellDescriptionsL[i].getRiemannSolvePerformed(faceL),
-                    cellDescriptionsR[i].getRiemannSolvePerformed(faceR));
+    const int numberOfADERDGCellDescriptions = static_cast<int>(
+        ADERDGCellDescriptionHeap::getInstance()
+        .getData(adjacentADERDGCellDescriptionsIndices[cellIndexL])
+        .size());
+    const peano::datatraversal::autotuning::MethodTrace methodTrace =
+        peano::datatraversal::autotuning::UserDefined2;  // Dominic, please use a
+    // different UserDefined
+    // per mapping/event.
+    // There should be enough
+    // by now.
+    const int grainSize =
+        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+            numberOfADERDGCellDescriptions, methodTrace);
+    pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
+      if (cellDescriptionsL[i].getType()==exahype::Cell::RealCell
+          ||
+          cellDescriptionsR[i].getType()==exahype::Cell::RealCell
+      ) {
+        exahype::solvers::Solver* solver =
+            exahype::solvers::RegisteredSolvers[cellDescriptionsL[i].getSolverNumber()];
 
-    riemannSolveNotPerformed =
-        !cellDescriptionsL[i].getRiemannSolvePerformed(faceL);
-    if (riemannSolveNotPerformed) {
-      cellDescriptionsL[i].setRiemannSolvePerformed(faceL, true);
-      cellDescriptionsR[i].setRiemannSolvePerformed(faceR, true);
-    }
-    lock.free();
+        // Lock the critical multithreading area.
+        bool riemannSolveNotPerformed = false;
+        tarch::multicore::Lock lock(_semaphore);
+        assertionEquals(cellDescriptionsL[i].getRiemannSolvePerformed(faceL),
+                        cellDescriptionsR[i].getRiemannSolvePerformed(faceR));
 
-    if (riemannSolveNotPerformed) {
-      const int numberOfFaceDof =
-          solver
-          ->getUnknownsPerFace();  // solver->getNumberOfVariables() *
-      // tarch::la::aPowI(DIMENSIONS-1,solver->getNodesPerCoordinateAxis());
+        riemannSolveNotPerformed =
+            !cellDescriptionsL[i].getRiemannSolvePerformed(faceL);
+        if (riemannSolveNotPerformed) {
+          cellDescriptionsL[i].setRiemannSolvePerformed(faceL, true);
+          cellDescriptionsR[i].setRiemannSolvePerformed(faceR, true);
+        }
+        lock.free();
 
-      double* QL = DataHeap::getInstance()
-      .getData(cellDescriptionsL[i].getExtrapolatedPredictor())
-      .data() +
-      (faceL * numberOfFaceDof);
-      double* QR = DataHeap::getInstance()
-      .getData(cellDescriptionsR[i].getExtrapolatedPredictor())
-      .data() +
-      (faceR * numberOfFaceDof);
-      double* FL = DataHeap::getInstance()
-      .getData(cellDescriptionsL[i].getFluctuation())
-      .data() +
-      (faceL * numberOfFaceDof);
-      double* FR = DataHeap::getInstance()
-      .getData(cellDescriptionsR[i].getFluctuation())
-      .data() +
-      (faceR * numberOfFaceDof);
+        if (riemannSolveNotPerformed) {
+          const int numberOfFaceDof =
+              solver
+              ->getUnknownsPerFace();
 
-      solver->synchroniseTimeStepping(cellDescriptionsL[i]);
-      solver->synchroniseTimeStepping(cellDescriptionsR[i]);
+          double* QL = DataHeap::getInstance()
+              .getData(cellDescriptionsL[i].getExtrapolatedPredictor()).
+              data() +
+              (faceL * numberOfFaceDof);
+          double* QR = DataHeap::getInstance()
+              .getData(cellDescriptionsR[i].getExtrapolatedPredictor())
+               .data() +
+               (faceR * numberOfFaceDof);
+          double* FL = DataHeap::getInstance()
+              .getData(cellDescriptionsL[i].getFluctuation())
+               .data() +
+               (faceL * numberOfFaceDof);
+          double* FR = DataHeap::getInstance()
+              .getData(cellDescriptionsR[i].getFluctuation())
+              .data() +
+              (faceR * numberOfFaceDof);
 
-      logDebug("touchVertexLastTime(...)::debug::before::QL[0]*", QL[0]);
-      logDebug("touchVertexLastTime(...)::debug::before::QR[0]*", QR[0]);
-      logDebug("touchVertexLastTime(...)::debug::before::FL[0]", FL[0]);
-      logDebug("touchVertexLastTime(...)::debug::before::FR[0]", FR[0]);
+          solver->synchroniseTimeStepping(cellDescriptionsL[i]);
+          solver->synchroniseTimeStepping(cellDescriptionsR[i]);
 
-      solver->riemannSolver(
-          FL, FR, QL, QR,
-          std::min(cellDescriptionsL[i].getCorrectorTimeStepSize(),
-                   cellDescriptionsR[i].getCorrectorTimeStepSize()),
-                   normalNonZero);
+          logDebug("touchVertexLastTime(...)::debug::before::QL[0]*", QL[0]);
+          logDebug("touchVertexLastTime(...)::debug::before::QR[0]*", QR[0]);
+          logDebug("touchVertexLastTime(...)::debug::before::FL[0]", FL[0]);
+          logDebug("touchVertexLastTime(...)::debug::before::FR[0]", FR[0]);
 
-      logDebug("touchVertexLastTime(...)::debug::after::QL[0]*", QL[0]);
-      logDebug("touchVertexLastTime(...)::debug::after::QR[0]*", QR[0]);
-      logDebug("touchVertexLastTime(...)::debug::after::FL[0]", FL[0]);
-      logDebug("touchVertexLastTime(...)::debug::after::FR[0]", FR[0]);
-    }
-  endpfor peano::datatraversal::autotuning::Oracle::getInstance()
+          solver->riemannSolver(
+              FL, FR, QL, QR,
+              std::min(cellDescriptionsL[i].getCorrectorTimeStepSize(),
+                       cellDescriptionsR[i].getCorrectorTimeStepSize()),
+                       normalNonZero);
+
+          logDebug("touchVertexLastTime(...)::debug::after::QL[0]*", QL[0]);
+          logDebug("touchVertexLastTime(...)::debug::after::QR[0]*", QR[0]);
+          logDebug("touchVertexLastTime(...)::debug::after::FL[0]", FL[0]);
+          logDebug("touchVertexLastTime(...)::debug::after::FR[0]", FR[0]);
+        }
+      endpfor peano::datatraversal::autotuning::Oracle::getInstance()
       .parallelSectionHasTerminated(methodTrace);
+    }
+  }
 }
 
 void exahype::mappings::RiemannSolver::touchVertexLastTime(

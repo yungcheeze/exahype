@@ -5,6 +5,8 @@
 #include "kernels/KernelCalls.h"
 #include "exahype/solvers/Solver.h"
 
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
@@ -325,12 +327,14 @@ void exahype::mappings::RegularMesh::enterCell(
           exahype::solvers::RegisteredSolvers.begin();
           p != exahype::solvers::RegisteredSolvers.end(); p++) {
     if (fineGridVerticesEnumerator.getLevel()==(*p)->getMinimumTreeDepth()+1) {
-      if (fineGridCell.getADERDGCellDescriptionsIndex()==multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
-        fineGridCell.configureCellDescription(
+      if (!DataHeap::getInstance().isValidIndex(
+          fineGridCell.getADERDGCellDescriptionsIndex())) {
+        fineGridCell.addNewCellDescription(
             solverNumber,
-            exahype::Cell::Type::Cell,
+            exahype::Cell::RealCell,
             fineGridVerticesEnumerator.getLevel(),
-            multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
+            multiscalelinkedcell::HangingVertexBookkeeper::
+            InvalidAdjacencyIndex,
             fineGridPositionOfCell,
             fineGridVerticesEnumerator.getCellSize(),
             fineGridVerticesEnumerator.getCellCenter());

@@ -46,7 +46,7 @@ exahype::mappings::SpaceTimePredictor::touchVertexFirstTimeSpecification() {
 peano::MappingSpecification
 exahype::mappings::SpaceTimePredictor::enterCellSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::OnlyLeaves,
+      peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
@@ -318,67 +318,60 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  // todo 17/02/16:Dominic Etienne Charrier: Assertion not valid anymore if
-  // adaptive mesh refinement is switches on.
-  assertion1(fineGridCell.isRefined() ||
-                 !ADERDGCellDescriptionHeap::getInstance()
-                      .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-                      .empty(),
-             fineGridCell.toString());
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
+    const int numberOfADERDGCellDescriptions = static_cast<int>(
+        ADERDGCellDescriptionHeap::getInstance()
+        .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+        .size());
 
-  const int numberOfADERDGCellDescriptions = static_cast<int>(
-      ADERDGCellDescriptionHeap::getInstance()
-          .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-          .size());
-  const peano::datatraversal::autotuning::MethodTrace methodTrace =
-      peano::datatraversal::autotuning::UserDefined4;  // Dominic, please use a
-                                                       // different UserDefined
-                                                       // per mapping/event.
-                                                       // There should be enough
-                                                       // by now.
-  const int grainSize =
-      peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-          numberOfADERDGCellDescriptions, methodTrace);
-  pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-    records::ADERDGCellDescription& p =
-        ADERDGCellDescriptionHeap::getInstance().getData(
-            fineGridCell.getADERDGCellDescriptionsIndex())[i];
+    // please use a different UserDefined per mapping/event
+    const peano::datatraversal::autotuning::MethodTrace methodTrace =
+        peano::datatraversal::autotuning::UserDefined4;
+    const int grainSize =
+        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+            numberOfADERDGCellDescriptions, methodTrace);
+    pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
+      records::ADERDGCellDescription& p =
+          ADERDGCellDescriptionHeap::getInstance().getData(
+              fineGridCell.getADERDGCellDescriptionsIndex())[i];
 
-    exahype::solvers::Solver* solver =
-        exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+      if (p.getType()==exahype::Cell::RealCell) {
+        exahype::solvers::Solver* solver =
+            exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-    // space-time DoF (basisSize**(DIMENSIONS+1))
-    double* lQi =
-        DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
-    double* lFi =
-        DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
+        // space-time DoF (basisSize**(DIMENSIONS+1))
+        double* lQi =
+            DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
+        double* lFi =
+            DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
 
-    // volume DoF (basisSize**(DIMENSIONS))
-    double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
-    double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
-    double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
+        // volume DoF (basisSize**(DIMENSIONS))
+        double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
+        double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
+        double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
 
-    // face DoF (basisSize**(DIMENSIONS-1))
-    double* lQhbnd =
-        DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
-    double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
+        // face DoF (basisSize**(DIMENSIONS-1))
+        double* lQhbnd =
+            DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
+        double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
-    solver->spaceTimePredictor(lQi, lFi, lQhi, lFhi,
-                               lQhbnd,  // da kommt was drauf todo
-                               lFhbnd,  // da kommt was drauf todo
-                               luh, fineGridVerticesEnumerator.getCellSize(),
-                               p.getPredictorTimeStepSize());
+        solver->spaceTimePredictor(lQi, lFi, lQhi, lFhi,
+                                   lQhbnd,  // da kommt was drauf todo what does this mean?
+                                   lFhbnd,  // da kommt was drauf todo what does this mean?
+                                   luh, fineGridVerticesEnumerator.getCellSize(),
+                                   p.getPredictorTimeStepSize());
 
-    logDebug("enterCell(...)::debug::after::luh[0]", luh[0]);
-    logDebug("enterCell(...)::debug::after::lQi[0]", lQi[0]);
-    logDebug("enterCell(...)::debug::after::lFi[0]", lFi[0]);
-    logDebug("enterCell(...)::debug::after::lQhi[0]", lQhi[0]);
-    logDebug("enterCell(...)::debug::after::lFhi[0]", lFhi[0]);
-    logDebug("enterCell(...)::debug::after::lQhbnd[0]", lQhbnd[0]);
-    logDebug("enterCell(...)::debug::after::lFhbnd[0]", lFhbnd[0]);
-  endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-  .parallelSectionHasTerminated(methodTrace);
-
+        logDebug("enterCell(...)::debug::after::luh[0]", luh[0]);
+        logDebug("enterCell(...)::debug::after::lQi[0]", lQi[0]);
+        logDebug("enterCell(...)::debug::after::lFi[0]", lFi[0]);
+        logDebug("enterCell(...)::debug::after::lQhi[0]", lQhi[0]);
+        logDebug("enterCell(...)::debug::after::lFhi[0]", lFhi[0]);
+        logDebug("enterCell(...)::debug::after::lQhbnd[0]", lQhbnd[0]);
+        logDebug("enterCell(...)::debug::after::lFhbnd[0]", lFhbnd[0]);
+      }
+    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
+    .parallelSectionHasTerminated(methodTrace);
+  }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
