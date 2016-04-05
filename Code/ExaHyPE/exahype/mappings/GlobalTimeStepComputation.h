@@ -57,8 +57,6 @@ class exahype::mappings::GlobalTimeStepComputation {
    * endIteration().
    */
   std::vector<double>   _minTimeStepSizes;
-  std::vector<double>   _minTimeStamps;
-
 
   void prepareEmptyLocalTimeStepData();
   void mergeLocalTimeStepDataIntoSolvers();
