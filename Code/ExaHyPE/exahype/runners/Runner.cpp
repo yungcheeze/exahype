@@ -157,6 +157,8 @@ int exahype::runners::Runner::run() {
                                                         << " of width/size "
                                                         << _parser.getSize());
 
+  initDistributedMemoryConfiguration();
+
   peano::geometry::Hexahedron geometry(
       _parser.getSize(),
       tarch::la::Vector<DIMENSIONS, double>(_parser.getOffset()));
@@ -169,7 +171,6 @@ int exahype::runners::Runner::run() {
               tarch::la::Vector<DIMENSIONS, double>(_parser.getOffset()));
 
   initSharedMemoryConfiguration();
-  initDistributedMemoryConfiguration();
 
   int result = 0;
   if (tarch::parallel::Node::getInstance().isGlobalMaster()) {

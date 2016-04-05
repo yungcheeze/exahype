@@ -42,12 +42,12 @@ class exahype::mappings::GlobalTimeStepComputation {
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
-  static tarch::multicore::BooleanSemaphore _semaphore;
 
   /**
-   * Local copy of the state.
+   * Individual patches compute a global time step.
    */
-  exahype::State _localState;
+  static tarch::multicore::BooleanSemaphore _semaphore;
+
 
  public:
   /**
