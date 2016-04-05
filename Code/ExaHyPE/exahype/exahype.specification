@@ -23,12 +23,6 @@ event-mapping:
 
 event-mapping:
   name: GlobalTimeStepComputation
-
-event-mapping:
-  name: RegularMesh
-
-event-mapping:
-  name: CellDescriptionInit
   
 event-mapping:
   name: SolutionUpdate
@@ -57,6 +51,17 @@ event-mapping:
 event-mapping:
   name: Plot
 
+
+// // //
+event-mapping:
+  name: RegularMesh
+
+event-mapping:
+  name: AdaptiveRefinement
+
+event-mapping:
+  name: CellDescriptionInit
+// // //    
     
 adapter:
   name: InitialGrid

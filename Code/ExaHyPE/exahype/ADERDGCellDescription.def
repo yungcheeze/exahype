@@ -11,7 +11,9 @@ Constant: DIMENSIONS;
 Constant: DIMENSIONS_TIMES_TWO;
 
 class exahype::records::ADERDGCellDescription {
-  /** Solver */
+  /** 
+   * @defgroup SolverInfo Meta information on and for the solver
+   */
   ///@{
   /**
    * Points to a solver in the solver registry.
@@ -112,7 +114,7 @@ class exahype::records::ADERDGCellDescription {
   /**
    * Index pointing to the predictor DoF belonging to this cell, i.e., the time 
    * integrated space-time DoF. Symbol: \f$q_h\f$.
-  /* 
+  */ 
   parallelise persistent int predictor;  
   ///@}
 
@@ -180,12 +182,13 @@ class exahype::records::ADERDGCellDescription {
    *
    * The difference in levels of the cell associated with this 
    * ADERDGCellDescription and the cell associated with this 
-   * ADERDGCellDescription's parent depends on the AMR strategy.
+   * ADERDGCellDescription's parent depends on the AMR strategy
+   * and the type of the ADERCellDescription.
    * It is not necessary identical to one.  
    */
   parallelise persistent int fineGridPositionOfCell[DIMENSIONS];
- 
   ///@}
+  
   /** 
    * @defgroup AMRInfo AMR information
    *
@@ -213,8 +216,10 @@ class exahype::records::ADERDGCellDescription {
   /**
    * Indicates if this ADERDGCellDescription should be accessed by
    * the AMR and Solver routines.
+   * 
+   * \note Only relevant for cell descriptions of type virtual shell.
    */ 
-  parallelise persistent bool active;
+  parallelise persistent bool hasNeighboursOfTypeCell;
   
   /** 
    * Indicates if this ADERDGCellDescription

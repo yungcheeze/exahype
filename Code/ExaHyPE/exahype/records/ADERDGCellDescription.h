@@ -32,7 +32,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   02/04/2016 15:19
+ * @date   05/04/2016 18:05
  */
 class exahype::records::ADERDGCellDescription { 
    
@@ -56,6 +56,7 @@ class exahype::records::ADERDGCellDescription {
          int _spaceTimeVolumeFlux;
          int _solution;
          int _update;
+         int _predictor;
          int _volumeFlux;
          int _extrapolatedPredictor;
          int _fluctuation;
@@ -78,7 +79,7 @@ class exahype::records::ADERDGCellDescription {
          int _type;
          bool _parent;
          int _parentIndex;
-         bool _active;
+         bool _hasNeighboursOfTypeCell;
          bool _refinementNecessary;
          bool _virtualRefinementNecessary;
          /**
@@ -89,7 +90,7 @@ class exahype::records::ADERDGCellDescription {
          /**
           * Generated
           */
-         PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& active, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+         PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
          
          
          inline int getSolverNumber() const 
@@ -346,6 +347,26 @@ class exahype::records::ADERDGCellDescription {
  #endif 
  {
             _update = update;
+         }
+         
+         
+         
+         inline int getPredictor() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _predictor;
+         }
+         
+         
+         
+         inline void setPredictor(const int& predictor) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _predictor = predictor;
          }
          
          
@@ -664,22 +685,22 @@ class exahype::records::ADERDGCellDescription {
          
          
          
-         inline bool getActive() const 
+         inline bool getHasNeighboursOfTypeCell() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _active;
+            return _hasNeighboursOfTypeCell;
          }
          
          
          
-         inline void setActive(const bool& active) 
+         inline void setHasNeighboursOfTypeCell(const bool& hasNeighboursOfTypeCell) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _active = active;
+            _hasNeighboursOfTypeCell = hasNeighboursOfTypeCell;
          }
          
          
@@ -743,7 +764,7 @@ class exahype::records::ADERDGCellDescription {
       /**
        * Generated
        */
-      ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& active, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+      ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
       
       /**
        * Generated
@@ -1043,6 +1064,26 @@ class exahype::records::ADERDGCellDescription {
  #endif 
  {
          _persistentRecords._update = update;
+      }
+      
+      
+      
+      inline int getPredictor() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         return _persistentRecords._predictor;
+      }
+      
+      
+      
+      inline void setPredictor(const int& predictor) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+         _persistentRecords._predictor = predictor;
       }
       
       
@@ -1439,22 +1480,22 @@ class exahype::records::ADERDGCellDescription {
       
       
       
-      inline bool getActive() const 
+      inline bool getHasNeighboursOfTypeCell() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._active;
+         return _persistentRecords._hasNeighboursOfTypeCell;
       }
       
       
       
-      inline void setActive(const bool& active) 
+      inline void setHasNeighboursOfTypeCell(const bool& hasNeighboursOfTypeCell) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._active = active;
+         _persistentRecords._hasNeighboursOfTypeCell = hasNeighboursOfTypeCell;
       }
       
       
@@ -1571,7 +1612,7 @@ class exahype::records::ADERDGCellDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   02/04/2016 15:19
+          * @date   05/04/2016 18:05
           */
          class exahype::records::ADERDGCellDescriptionPacked { 
             
@@ -1589,6 +1630,7 @@ class exahype::records::ADERDGCellDescription {
                   int _spaceTimeVolumeFlux;
                   int _solution;
                   int _update;
+                  int _predictor;
                   int _volumeFlux;
                   int _extrapolatedPredictor;
                   int _fluctuation;
@@ -1599,7 +1641,7 @@ class exahype::records::ADERDGCellDescription {
                   int _type;
                   bool _parent;
                   int _parentIndex;
-                  bool _active;
+                  bool _hasNeighboursOfTypeCell;
                   bool _refinementNecessary;
                   bool _virtualRefinementNecessary;
                   /**
@@ -1610,7 +1652,7 @@ class exahype::records::ADERDGCellDescription {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& active, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+                  PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
                   
                   
                   inline int getSolverNumber() const 
@@ -1867,6 +1909,26 @@ class exahype::records::ADERDGCellDescription {
  #endif 
  {
                      _update = update;
+                  }
+                  
+                  
+                  
+                  inline int getPredictor() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _predictor;
+                  }
+                  
+                  
+                  
+                  inline void setPredictor(const int& predictor) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _predictor = predictor;
                   }
                   
                   
@@ -2185,22 +2247,22 @@ class exahype::records::ADERDGCellDescription {
                   
                   
                   
-                  inline bool getActive() const 
+                  inline bool getHasNeighboursOfTypeCell() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _active;
+                     return _hasNeighboursOfTypeCell;
                   }
                   
                   
                   
-                  inline void setActive(const bool& active) 
+                  inline void setHasNeighboursOfTypeCell(const bool& hasNeighboursOfTypeCell) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _active = active;
+                     _hasNeighboursOfTypeCell = hasNeighboursOfTypeCell;
                   }
                   
                   
@@ -2264,7 +2326,7 @@ class exahype::records::ADERDGCellDescription {
                /**
                 * Generated
                 */
-               ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& active, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+               ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
                
                /**
                 * Generated
@@ -2564,6 +2626,26 @@ class exahype::records::ADERDGCellDescription {
  #endif 
  {
                   _persistentRecords._update = update;
+               }
+               
+               
+               
+               inline int getPredictor() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._predictor;
+               }
+               
+               
+               
+               inline void setPredictor(const int& predictor) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._predictor = predictor;
                }
                
                
@@ -2960,22 +3042,22 @@ class exahype::records::ADERDGCellDescription {
                
                
                
-               inline bool getActive() const 
+               inline bool getHasNeighboursOfTypeCell() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._active;
+                  return _persistentRecords._hasNeighboursOfTypeCell;
                }
                
                
                
-               inline void setActive(const bool& active) 
+               inline void setHasNeighboursOfTypeCell(const bool& hasNeighboursOfTypeCell) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._active = active;
+                  _persistentRecords._hasNeighboursOfTypeCell = hasNeighboursOfTypeCell;
                }
                
                
