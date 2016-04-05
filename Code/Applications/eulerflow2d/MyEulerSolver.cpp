@@ -15,7 +15,7 @@ int Euler2d::MyEulerSolver::getMinimumTreeDepth() const {
 bool Euler2d::MyEulerSolver::hasToAdjustSolution(
     const tarch::la::Vector<DIMENSIONS, double> &center,
     const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
-  if (tarch::la::equals(t, 0.0, 1e-15)) {  // @todo precision
+  if (tarch::la::equals(t, 0.0)) {
     return true;
   }
   return false;
@@ -66,7 +66,7 @@ void Euler2d::MyEulerSolver::adjustedSolutionValues(const double *const x,
                                                     const double t,
                                                     const double dt,
                                                     double *Q) {
-  if (tarch::la::equals(t, 0.0, 1e-15)) {  // @todo precision
+  if (tarch::la::equals(t, 0.0)) {
     const double GAMMA = 1.4;
 
     Q[0] = 1.;
