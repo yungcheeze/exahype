@@ -50,6 +50,11 @@ class exahype::runners::Runner {
    * created the repository. See Orace::loadStatistics().
    */
   void initSharedMemoryConfiguration();
+
+  /**
+   * The shared memory environment has to be set up before we create the
+   * repository.
+   */
   void initDistributedMemoryConfiguration();
   void shutdownSharedMemoryConfiguration();
   void shutdownDistributedMemoryConfiguration();
