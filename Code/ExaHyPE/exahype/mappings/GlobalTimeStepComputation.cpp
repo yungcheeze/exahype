@@ -130,7 +130,10 @@ exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(
 void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(
   const GlobalTimeStepComputation& workerThread
 ) {
-  mergeLocalTimeStepDataIntoSolvers();
+  for (int i=0; i<static_cast<int>( exahype::solvers::RegisteredSolvers.size() ); i++) {
+    _minTimeStepSizes[i] = std::min( _minTimeStepSizes[i], workerThread._minTimeStepSizes[i] );
+    _minTimeStamps[i]    = std::min( _minTimeStamps[i],    workerThread._minTimeStamps[i] );
+  }
 }
 #endif
 
