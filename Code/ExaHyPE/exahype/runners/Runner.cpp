@@ -264,7 +264,7 @@ int exahype::runners::Runner::runAsMaster(
     logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
   }
 
-  repository.logIterationStatistics();
+  repository.logIterationStatistics(true);
   repository.terminate();
 
   return 0;
