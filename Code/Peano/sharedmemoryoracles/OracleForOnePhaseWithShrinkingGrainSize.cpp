@@ -72,7 +72,6 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::makeAttribute
   }
   else if (_biggestProblemSize < _currentGrainSize) {
     assertion(_previousMeasuredTime==-1.0);
-    assertion(_oracleIsSearching);
 
     _currentSearchDelta   = std::max(_biggestProblemSize/2,1);
     _currentGrainSize     = _currentSearchDelta;
@@ -171,7 +170,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::makeAttribute
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::parallelSectionHasTerminated(double elapsedCalendarTime) {
-  assertion(_oracleIsSearching);
+  assertion(_currentSearchDelta>0);
   assertion(_lastProblemSize!=0.0);
 
   _currentMeasurement.setValue(elapsedCalendarTime/_lastProblemSize);
@@ -233,7 +232,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::plotStatistic
     else if (_currentSearchDelta>0) {
       out << " (still searching for optimal grain size)" << std::endl;
     }
-    else if (_biggestProblemSize<=_currentGrainSize) {
+    else if (_currentSearchDelta==0 && _currentGrainSize==0) {
       out << "  (does not scale, oracle is not searching anymore)" << std::endl;
     }
     else {
