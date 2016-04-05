@@ -187,25 +187,54 @@ class exahype::solvers::Solver {
    */
   int getNodesPerCoordinateAxis() const;
 
+  /**
+    * @defgroup AMR Solver routines for adaptive mesh refinement
+    */
+  ///@{
+  /**
+   * \todo:16/04/02:Dominic Etienne Charrier:
+   * non-virtual method is only for now; The refinement criterion must be
+   * specified by the user. So replace method by virtual one later.
+   *
+   * Note that this refinement criterion depends on the
+   * solution values it can thus not be used to create the
+   * initial regular mesh.
+   *
+   * Consider to correct the level in the invoking code, i.e., level-> level-1
+   */
+  bool refinementCriterion(
+      const double* luh,
+      const tarch::la::Vector<DIMENSIONS, double>& center,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      double t,
+      const int level);
+
+//    virtual bool refinementCriterion(
+//        const double* luh,
+//        const tarch::la::Vector<DIMENSIONS, double>& center,
+//        const tarch::la::Vector<DIMENSIONS, double>& dx,
+//        double t,
+//        const int level) = 0;
   //  /**
-  //   * @brief Prolongates coarse grid face unknowns
-  //   * \p levelDifference levels down to the fine grid unknowns.
-  //   */
-  //  virtual void prolongateCoarseGridFaceUnknowns(
-  //      double* fineGridUnknowns,
-  //      const double* const coarseGridUnknowns,
-  //      const int levelDifference
-  //  ) = 0;
-  //
-  //  /**
-  //   * @brief Restricts fine grid face unknowns
-  //   * \p levelDifference levels up to the coarse grid unknowns.
-  //   */
-  //  virtual void updateFineGridFaceUnknowns(
-  //      double* fineGridUnknowns,
-  //      const double* const fineGridUnknowns,
-  //      const int levelDifference
-  //  ) = 0;
+    //   * @brief Prolongates coarse grid face unknowns
+    //   * \p levels levels down to the fine grid unknowns.
+    //   */
+    //  virtual void prolongateFaceUnknowns(
+    //      double* fineGridUnknowns,
+    //      const double* const coarseGridUnknowns,
+    //      const int levelDifference
+    //  ) = 0;
+    //
+    //  /**
+    //   * @brief Restricts fine grid face unknowns
+    //   * \p levels levels up to the coarse grid unknowns.
+    //   */
+    //  virtual void restrictFaceUnknowns(
+    //      double* fineGridUnknowns,
+    //      const double* const fineGridUnknowns,
+    //      const int levelDifference
+    //  ) = 0;
+  ///@}
 
   /**
    * @brief Adds the solution update to the solution.

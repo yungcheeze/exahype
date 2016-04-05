@@ -6,26 +6,26 @@ exahype::solvers::Solver::Solver(const std::string& identifier, Type type,
                                  int kernelNumber, int numberOfVariables,
                                  int nodesPerCoordinateAxis,
                                  TimeStepping timeStepping)
-    : _identifier(identifier),
-      _type(type),
-      _kernelNumber(kernelNumber),
-      _numberOfVariables(numberOfVariables),
-      _nodesPerCoordinateAxis(nodesPerCoordinateAxis),
-      _unknownsPerFace(numberOfVariables *
-                       power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
-      _unknownsPerCellBoundary(DIMENSIONS_TIMES_TWO * _unknownsPerFace),
-      _unknownsPerCell(numberOfVariables *
-                       power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
-      _fluxUnknownsPerCell(_unknownsPerCell * DIMENSIONS),
-      _spaceTimeUnknownsPerCell(numberOfVariables *
-                                power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
-      _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell * DIMENSIONS),
-      _timeStepping(timeStepping),
-      _minCorrectorTimeStamp(std::numeric_limits<double>::max()),
-      _minPredictorTimeStamp(std::numeric_limits<double>::max()),
-      _minCorrectorTimeStepSize(std::numeric_limits<double>::max()),
-      _minPredictorTimeStepSize(std::numeric_limits<double>::max()),
-      _minNextPredictorTimeStepSize(std::numeric_limits<double>::max()) {
+: _identifier(identifier),
+  _type(type),
+  _kernelNumber(kernelNumber),
+  _numberOfVariables(numberOfVariables),
+  _nodesPerCoordinateAxis(nodesPerCoordinateAxis),
+  _unknownsPerFace(numberOfVariables *
+                   power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
+  _unknownsPerCellBoundary(DIMENSIONS_TIMES_TWO * _unknownsPerFace),
+  _unknownsPerCell(numberOfVariables *
+                         power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
+  _fluxUnknownsPerCell(_unknownsPerCell * DIMENSIONS),
+  _spaceTimeUnknownsPerCell(numberOfVariables *
+                            power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
+  _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell * DIMENSIONS),
+  _timeStepping(timeStepping),
+  _minCorrectorTimeStamp(std::numeric_limits<double>::max()),
+  _minPredictorTimeStamp(std::numeric_limits<double>::max()),
+  _minCorrectorTimeStepSize(std::numeric_limits<double>::max()),
+  _minPredictorTimeStepSize(std::numeric_limits<double>::max()),
+  _minNextPredictorTimeStepSize(std::numeric_limits<double>::max()) {
   // do nothing
 }
 
@@ -69,6 +69,29 @@ int exahype::solvers::Solver::getSpaceTimeFluxUnknownsPerCell() const {
   return _spaceTimeFluxUnknownsPerCell;
 }
 
+/*
+ * \todo 16/04/02:Dominic Etienne Charrier:
+ * non-virtual method is only for now; The refinement criterion must be
+ * specified by the user. So replace method by virtual one later.
+ */
+bool exahype::solvers::Solver::refinementCriterion(
+    const double* luh,
+    const tarch::la::Vector<DIMENSIONS, double>& center,
+    const tarch::la::Vector<DIMENSIONS, double>& dx,
+    double t,
+    const int level) {
+  assertion(level>=getMinimumTreeDepth()+1);
+
+  if (level<getMinimumTreeDepth()+4) {
+    if (center[0]<0.5 && center[0]>0.25) {
+      if (center[1]<0.5 && center[1]>0.25) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 void exahype::solvers::Solver::synchroniseTimeStepping(
     exahype::records::ADERDGCellDescription& p) const {
   // todo 16/02/27:Dominic Etienne Charrier
@@ -96,16 +119,16 @@ void exahype::solvers::Solver::synchroniseTimeStepping(
         assertionNumericalEquals1(p.getPredictorTimeStamp()
        ,solve.getPredictorTimeStamp(),   1e-12);
         assertionNumericalEquals1(p.getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
-    */
+     */
   }
-/*  if (!solve.isCorrectorTimeLagging()) {*/
-//    p.setCorrectorTimeStamp   (p.getPredictorTimeStamp   ());
-//    p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
-//  }
+  /*  if (!solve.isCorrectorTimeLagging()) {*/
+  //    p.setCorrectorTimeStamp   (p.getPredictorTimeStamp   ());
+  //    p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
+  //  }
 
 #if defined(Debug) || defined(Asserts)
-// @ŧodo Wieder reinnehmen
-/*
+  // @ŧodo Wieder reinnehmen
+  /*
   if (solver.getTimeStepping()==exahype::solvers::Solver::GLOBAL &&
   !solver.isCorrectorTimeLagging()) {
     // Note that the solve time stamps and time step sizes are not modified if
@@ -120,7 +143,7 @@ void exahype::solvers::Solver::synchroniseTimeStepping(
   ,solver.getPredictorTimeStamp(),   1e-12);
     assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solver.getPredictorTimeStepSize(),1e-12);
   }
-*/
+   */
 #endif
 }
 
