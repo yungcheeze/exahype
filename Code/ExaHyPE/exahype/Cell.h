@@ -51,10 +51,10 @@ public:
    * the virtual part of the augmented spacetree that
    * is created to store prolongated face data.
    */
-  enum Type {
+  enum CellDescriptionType {
     Unspecified,
-    Cell,
-    Shell,
+    RealCell,
+    RealShell,
     VirtualShell
   };
 
@@ -101,29 +101,32 @@ public:
         getADERDGCellDescriptionsIndex())[solverIndex];
   }
 
-
   /**
    * Per existing cell, the configuration runs over all solvers that
    * shall be realised and links the associated cell descriptions
    * to their parents.
    */
-  void configureCellDescription(
+  void addNewCellDescription(
       const int solverNumber,
-      const Cell::Type cellType,
+      const exahype::Cell::CellDescriptionType cellType,
       const int level,
       const int parentIndex,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const tarch::la::Vector<DIMENSIONS, double>& size,
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      );
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
 
   /**
    * Per existing cell, the initialisation runs over all solvers that
    * shall be realised and allocates memory for the associated.
    * cell descriptions.
    */
-  void initialiseCellDescription(
-      const int solverNumber);
+  void cleanCellDescription(const int solverNumber);
+
+  /**
+   * Per existing cell, the initialisation runs over all solvers
+   * and frees unused heap storage that was allocated for the cell descriptions.
+   */
+  void initialiseCellDescription(const int solverNumber);
 
   /**
    * Per existing cell, the initialisation has to run over all solvers that
