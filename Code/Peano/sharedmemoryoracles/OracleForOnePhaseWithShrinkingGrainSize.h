@@ -49,12 +49,19 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
   private:
     static tarch::logging::Log                           _log;
 
-    static int                                           _finishIterationCallsSinceLastOracleUpdate;
+    /**
+     * We never do optimise all traces. We only do it with one trace at a time.
+     */
+    static int                                           _activeMethodTrace;
 
     const peano::datatraversal::autotuning::MethodTrace  _methodTrace;
     const int                                            _adapterNumber;
 
-    bool                                                 _oracleIsSearching;
+    /**
+     * How to change grain size if we start new test. Equals 0 to switch search 
+     * off.
+     */
+    int                                                  _currentSearchDelta;
     int                                                  _biggestProblemSize;
     int                                                  _currentGrainSize;
     tarch::timing::Measurement                           _currentMeasurement;
@@ -62,11 +69,16 @@ class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano
     double                                               _lastProblemSize;
 
     void makeAttributesLearn();
+
+    /**
+     * We do only measure one method trace at a time.
+     */
+    void changeMeasuredMethodTrace();
   public:
     /**
      * Oracle Constructor
      */
-    OracleForOnePhaseWithShrinkingGrainSize(const peano::datatraversal::autotuning::MethodTrace& methodTrace = peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling, int adapterNumber=-1);
+    OracleForOnePhaseWithShrinkingGrainSize(int adapterNumber=-1, const peano::datatraversal::autotuning::MethodTrace& methodTrace = peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling);
 
     virtual ~OracleForOnePhaseWithShrinkingGrainSize();
 

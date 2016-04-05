@@ -72,7 +72,11 @@ void exahype::plotters::ADERDG2BinaryVTK::plotPatch(
              _vertexDataWriter.begin();
          p != _vertexDataWriter.end(); p++) {
       const double value = u[i * _unknowns + unknown];
-      assertion3(value==value,offsetOfPatch,sizeOfPatch,i);
+      assertion7(
+        value==value,
+        offsetOfPatch,sizeOfPatch,i,unknown,
+        _filename,_order,_unknowns
+      );
       (*p)->plotVertex(vertexIndex, value);
       unknown++;
     }
