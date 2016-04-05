@@ -97,11 +97,9 @@ exahype::mappings::GlobalTimeStepComputation::~GlobalTimeStepComputation() {
 
 void exahype::mappings::GlobalTimeStepComputation::prepareEmptyLocalTimeStepData() {
   _minTimeStepSizes.resize( exahype::solvers::RegisteredSolvers.size() );
-  _minTimeStamps.resize(    exahype::solvers::RegisteredSolvers.size() );
 
   for (int i=0; i<static_cast<int>( exahype::solvers::RegisteredSolvers.size() ); i++) {
     _minTimeStepSizes[i] = std::numeric_limits<double>::max();
-    _minTimeStamps[i]    = std::numeric_limits<double>::max();
   }
 }
 
@@ -132,7 +130,6 @@ void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(
 ) {
   for (int i=0; i<static_cast<int>( exahype::solvers::RegisteredSolvers.size() ); i++) {
     _minTimeStepSizes[i] = std::min( _minTimeStepSizes[i], workerThread._minTimeStepSizes[i] );
-    _minTimeStamps[i]    = std::min( _minTimeStamps[i],    workerThread._minTimeStamps[i] );
   }
 }
 #endif
