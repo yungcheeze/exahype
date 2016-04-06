@@ -53,7 +53,7 @@ void exahype::Cell::addNewCellDescription(
       exahype::records::ADERDGCellDescription newCellDescription;
       newCellDescription.setSolverNumber(solverNumber);
 
-      // AMR information
+      // Default AMR settings
       newCellDescription.setType(cellType);
       newCellDescription.setParentIndex(parentIndex);
       newCellDescription.setLevel(level);
@@ -62,6 +62,9 @@ void exahype::Cell::addNewCellDescription(
       newCellDescription.setHasNeighboursOfTypeCell(false);
       newCellDescription.setRefinementNecessary(false);
       newCellDescription.setVirtualRefinementNecessary(false);
+
+      std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed; // default construction: no bit set
+      newCellDescription.setRiemannSolvePerformed(riemannSolvePerformed);
 
       // Pass geometry information to the cellDescription description
       newCellDescription.setSize(size);
