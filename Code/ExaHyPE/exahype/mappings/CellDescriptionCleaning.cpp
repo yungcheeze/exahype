@@ -1,85 +1,85 @@
-#include "exahype/mappings/RegularMesh.h"
+#include "exahype/mappings/CellDescriptionCleaning.h"
 
-#include "peano/utils/Globals.h"
-
-#include "kernels/KernelCalls.h"
 #include "exahype/solvers/Solver.h"
-
-#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::CommunicationSpecification
-exahype::mappings::RegularMesh::communicationSpecification() {
+exahype::mappings::CellDescriptionCleaning::communicationSpecification() {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::
-          SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      SendDataAndStateBeforeFirstTouchVertexFirstTime,
       peano::CommunicationSpecification::
-          SendDataAndStateAfterLastTouchVertexLastTime,
+      SendDataAndStateAfterLastTouchVertexLastTime,
       false);
 }
 
 peano::MappingSpecification
-exahype::mappings::RegularMesh::touchVertexLastTimeSpecification() {
+exahype::mappings::CellDescriptionCleaning::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 peano::MappingSpecification
-exahype::mappings::RegularMesh::touchVertexFirstTimeSpecification() {
+exahype::mappings::CellDescriptionCleaning::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
+
 peano::MappingSpecification
-exahype::mappings::RegularMesh::enterCellSpecification() {
+exahype::mappings::CellDescriptionCleaning::enterCellSpecification() {
+  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,
+                                     peano::MappingSpecification::Serial);
+}
+
+peano::MappingSpecification
+exahype::mappings::CellDescriptionCleaning::leaveCellSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::OnlyLeaves,
+      peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces);
 }
 peano::MappingSpecification
-exahype::mappings::RegularMesh::leaveCellSpecification() {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidFineGridRaces);
-}
-peano::MappingSpecification
-exahype::mappings::RegularMesh::ascendSpecification() {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidCoarseGridRaces);
-}
-peano::MappingSpecification
-exahype::mappings::RegularMesh::descendSpecification() {
+exahype::mappings::CellDescriptionCleaning::ascendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
-tarch::logging::Log exahype::mappings::RegularMesh::_log(
-    "exahype::mappings::RegularMesh");
+/**
+ * @todo Please tailor the parameters to your mapping's properties.
+ */
+peano::MappingSpecification
+exahype::mappings::CellDescriptionCleaning::descendSpecification() {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::Nop,
+      peano::MappingSpecification::AvoidCoarseGridRaces);
+}
 
-exahype::mappings::RegularMesh::RegularMesh() {
+tarch::logging::Log exahype::mappings::CellDescriptionCleaning::_log(
+    "exahype::mappings::CellDescriptionCleaning");
+
+exahype::mappings::CellDescriptionCleaning::CellDescriptionCleaning() {
   // do nothing
 }
 
-exahype::mappings::RegularMesh::~RegularMesh() {
+exahype::mappings::CellDescriptionCleaning::~CellDescriptionCleaning() {
   // do nothing
 }
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::RegularMesh::RegularMesh(const RegularMesh& masterThread) {
-  // do nothing
-}
+exahype::mappings::CellDescriptionCleaning::CellDescriptionCleaning(
+    const CellDescriptionCleaning& masterThread)
+: _localState(masterThread._localState) {}
 
-void exahype::mappings::RegularMesh::mergeWithWorkerThread(
-    const RegularMesh& workerThread) {
+void exahype::mappings::CellDescriptionCleaning::mergeWithWorkerThread(
+    const CellDescriptionCleaning& workerThread) {
   // do nothing
 }
 #endif
 
-void exahype::mappings::RegularMesh::createHangingVertex(
+void exahype::mappings::CellDescriptionCleaning::createHangingVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -90,7 +90,7 @@ void exahype::mappings::RegularMesh::createHangingVertex(
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::destroyHangingVertex(
+void exahype::mappings::CellDescriptionCleaning::destroyHangingVertex(
     const exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -101,7 +101,7 @@ void exahype::mappings::RegularMesh::destroyHangingVertex(
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::createInnerVertex(
+void exahype::mappings::CellDescriptionCleaning::createInnerVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -109,24 +109,10 @@ void exahype::mappings::RegularMesh::createInnerVertex(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  logTraceInWith6Arguments("createInnerVertex(...)", fineGridVertex, fineGridX,
-                           fineGridH, coarseGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfVertex);
-
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-      exahype::solvers::RegisteredSolvers.begin();
-      p != exahype::solvers::RegisteredSolvers.end(); p++) {
-    if (
-        coarseGridVerticesEnumerator.getLevel() < (*p)->getMinimumTreeDepth()
-    ) {
-      fineGridVertex.refine();
-    }
-  }
-
-  logTraceOutWith1Argument("createInnerVertex(...)", fineGridVertex);
+  // do nothing
 }
 
-void exahype::mappings::RegularMesh::createBoundaryVertex(
+void exahype::mappings::CellDescriptionCleaning::createBoundaryVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -134,27 +120,10 @@ void exahype::mappings::RegularMesh::createBoundaryVertex(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  logTraceInWith6Arguments("createBoundaryVertex(...)", fineGridVertex,
-                           fineGridX, fineGridH,
-                           coarseGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfVertex);
-
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-        exahype::solvers::RegisteredSolvers.begin();
-        p != exahype::solvers::RegisteredSolvers.end(); p++) {
-      if (
-          coarseGridVerticesEnumerator.getLevel() < (*p)->getMinimumTreeDepth()
-      ) {
-        fineGridVertex.refine();
-      } else {
-
-      }
-    }
-
-  logTraceOutWith1Argument("createBoundaryVertex(...)", fineGridVertex);
+  // do nothing
 }
 
-void exahype::mappings::RegularMesh::destroyVertex(
+void exahype::mappings::CellDescriptionCleaning::destroyVertex(
     const exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -165,17 +134,15 @@ void exahype::mappings::RegularMesh::destroyVertex(
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::createCell(
+void exahype::mappings::CellDescriptionCleaning::createCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
-}
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {}
 
-void exahype::mappings::RegularMesh::destroyCell(
+void exahype::mappings::CellDescriptionCleaning::destroyCell(
     const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -186,49 +153,49 @@ void exahype::mappings::RegularMesh::destroyCell(
 }
 
 #ifdef Parallel
-void exahype::mappings::RegularMesh::mergeWithNeighbour(
+void exahype::mappings::CellDescriptionCleaning::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::prepareSendToNeighbour(
+void exahype::mappings::CellDescriptionCleaning::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::prepareCopyToRemoteNode(
+void exahype::mappings::CellDescriptionCleaning::prepareCopyToRemoteNode(
     exahype::Vertex& localVertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::prepareCopyToRemoteNode(
+void exahype::mappings::CellDescriptionCleaning::prepareCopyToRemoteNode(
     exahype::Cell& localCell, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::CellDescriptionCleaning::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::CellDescriptionCleaning::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-bool exahype::mappings::RegularMesh::prepareSendToWorker(
+bool exahype::mappings::CellDescriptionCleaning::prepareSendToWorker(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -240,7 +207,7 @@ bool exahype::mappings::RegularMesh::prepareSendToWorker(
   return true;
 }
 
-void exahype::mappings::RegularMesh::prepareSendToMaster(
+void exahype::mappings::CellDescriptionCleaning::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
     const exahype::Vertex* const coarseGridVertices,
@@ -250,7 +217,7 @@ void exahype::mappings::RegularMesh::prepareSendToMaster(
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::mergeWithMaster(
+void exahype::mappings::CellDescriptionCleaning::mergeWithMaster(
     const exahype::Cell& workerGridCell,
     exahype::Vertex* const workerGridVertices,
     const peano::grid::VertexEnumerator& workerEnumerator,
@@ -265,7 +232,7 @@ void exahype::mappings::RegularMesh::mergeWithMaster(
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::receiveDataFromMaster(
+void exahype::mappings::CellDescriptionCleaning::receiveDataFromMaster(
     exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
     const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
     exahype::Vertex* const receivedCoarseGridVertices,
@@ -278,14 +245,14 @@ void exahype::mappings::RegularMesh::receiveDataFromMaster(
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::mergeWithWorker(
+void exahype::mappings::CellDescriptionCleaning::mergeWithWorker(
     exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::mergeWithWorker(
+void exahype::mappings::CellDescriptionCleaning::mergeWithWorker(
     exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
@@ -293,7 +260,7 @@ void exahype::mappings::RegularMesh::mergeWithWorker(
 }
 #endif
 
-void exahype::mappings::RegularMesh::touchVertexFirstTime(
+void exahype::mappings::CellDescriptionCleaning::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -304,7 +271,7 @@ void exahype::mappings::RegularMesh::touchVertexFirstTime(
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::touchVertexLastTime(
+void exahype::mappings::CellDescriptionCleaning::touchVertexLastTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -315,7 +282,7 @@ void exahype::mappings::RegularMesh::touchVertexLastTime(
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::enterCell(
+void exahype::mappings::CellDescriptionCleaning::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -326,30 +293,22 @@ void exahype::mappings::RegularMesh::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  int solverNumber=0;
-  if (!DataHeap::getInstance().isValidIndex(
-      fineGridCell.getADERDGCellDescriptionsIndex())) {
-    for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-        exahype::solvers::RegisteredSolvers.begin();
-        p != exahype::solvers::RegisteredSolvers.end(); p++) {
-      if (fineGridVerticesEnumerator.getLevel()==(*p)->getMinimumTreeDepth()+1) {
-        fineGridCell.addNewCellDescription(
-            solverNumber,
-            exahype::Cell::RealCell,
-            fineGridVerticesEnumerator.getLevel(),
-            multiscalelinkedcell::HangingVertexBookkeeper::
-            InvalidAdjacencyIndex,
-            fineGridPositionOfCell,
-            fineGridVerticesEnumerator.getCellSize(),
-            fineGridVerticesEnumerator.getCellCenter());
-      }
+  int solverNumber = 0;
+  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
+      solvers::RegisteredSolvers.begin();
+      p != solvers::RegisteredSolvers.end(); p++) {
+    if (fineGridVerticesEnumerator.getLevel()>=(*p)->getMinimumTreeDepth()
+        &&
+        ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+            fineGridCell.getADERDGCellDescriptionsIndex())) {
+      fineGridCell.cleanCellDescription(solverNumber);
     }
     solverNumber++;
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
-void exahype::mappings::RegularMesh::leaveCell(
+void exahype::mappings::CellDescriptionCleaning::leaveCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -359,16 +318,24 @@ void exahype::mappings::RegularMesh::leaveCell(
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::beginIteration(
+void exahype::mappings::CellDescriptionCleaning::beginIteration(
+    exahype::State& solverState) {
+  logTraceInWith1Argument("beginIteration(State)", solverState);
+
+  _localState = solverState;
+
+  ADERDGCellDescriptionHeap::getInstance().setName("cell-description-heap");
+  DataHeap::getInstance().setName("data-heap");
+
+  logTraceOutWith1Argument("beginIteration(State)", solverState);
+}
+
+void exahype::mappings::CellDescriptionCleaning::endIteration(
     exahype::State& solverState) {
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::endIteration(exahype::State& solverState) {
-  // do nothing
-}
-
-void exahype::mappings::RegularMesh::descend(
+void exahype::mappings::CellDescriptionCleaning::descend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -377,7 +344,7 @@ void exahype::mappings::RegularMesh::descend(
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::ascend(
+void exahype::mappings::CellDescriptionCleaning::ascend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,

@@ -83,7 +83,14 @@ void exahype::Cell::addNewCellDescription(
       ADERDGCellDescriptionHeap::getInstance()
       .getData(_cellData.getADERDGCellDescriptionsIndex())
       .push_back(newCellDescription);
-    }
+
+    } break;
+    default: {
+      logDebug("addNewCellDescription(...)", "could not add a cell descriptions for this solver. cell="
+               << toString() << ", level=" << level
+               << ", size=" << size
+               << ",offset=" << cellCentre);
+    } break;
   }
 }
 
@@ -91,22 +98,23 @@ void exahype::Cell::initialiseCellDescription(const int solverNumber) {
   const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
   switch (solver->getType()) {
     case exahype::solvers::Solver::ADER_DG: {
-      // @todo ask Tobias
-      // Ensure that default data field index initialisation value is invalid.
+      // Ensure that -1 value is invalid index (cf. addNewCellDescription)
       assertion(!DataHeap::getInstance().isValidIndex(-1));
 
-      // calling method should check if index is valid
       assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
           _cellData.getADERDGCellDescriptionsIndex()),
           toString());
+
       assertion1(static_cast<unsigned int>(solverNumber) <
-          ADERDGCellDescriptionHeap::getInstance().getData(
-          _cellData.getADERDGCellDescriptionsIndex()).size(),
-          toString());
+                 ADERDGCellDescriptionHeap::getInstance().getData(
+                     _cellData.getADERDGCellDescriptionsIndex()).size(),
+                     toString());
 
       records::ADERDGCellDescription& cellDescription =
           ADERDGCellDescriptionHeap::getInstance().getData(
               _cellData.getADERDGCellDescriptionsIndex())[solverNumber];
+
+      assertion(solverNumber==cellDescription.getSolverNumber());
 
       if (cellDescription.getType()==exahype::Cell::RealCell) {
         if (!DataHeap::getInstance().isValidIndex(
@@ -178,6 +186,12 @@ void exahype::Cell::initialiseCellDescription(const int solverNumber) {
         }
       }
     } break;
+    default: {
+      logDebug("initialiseCellDescription(...)", "solver is not associated with any cell descriptions of this cell. cell="
+               << toString() << ", level=" << level
+               << ", size=" << size
+               << ",offset=" << cellCentre);
+    } break;
   }
 }
 
@@ -189,16 +203,23 @@ void exahype::Cell::cleanCellDescription(const int solverNumber) {
           _cellData.getADERDGCellDescriptionsIndex()),
           toString());
 
+      assertion1(static_cast<unsigned int>(solverNumber) <
+                       ADERDGCellDescriptionHeap::getInstance().getData(
+                           _cellData.getADERDGCellDescriptionsIndex()).size(),
+                           toString());
+
       records::ADERDGCellDescription& cellDescription =
           ADERDGCellDescriptionHeap::getInstance().getData(
-              this->getADERDGCellDescriptionsIndex())[solverNumber];
+              _cellData.getADERDGCellDescriptionsIndex())[solverNumber];
+
+      assertion(solverNumber==cellDescription.getSolverNumber());
 
       assertion1(cellDescription.getType()==RealCell
                  ||
                  cellDescription.getType()==RealShell
                  ||
                  cellDescription.getType()==VirtualShell,
-                toString());
+                 toString());
 
       if (cellDescription.getType()==RealShell
           ||
@@ -230,8 +251,8 @@ void exahype::Cell::cleanCellDescription(const int solverNumber) {
       }
 
       if(cellDescription.getType()==VirtualShell
-         &&
-         !cellDescription.getHasNeighboursOfTypeCell()) {
+          &&
+          !cellDescription.getHasNeighboursOfTypeCell()) {
         if (!DataHeap::getInstance().isValidIndex(
             cellDescription.getExtrapolatedPredictor())) {
           assertion(!DataHeap::getInstance().isValidIndex(
@@ -243,7 +264,13 @@ void exahype::Cell::cleanCellDescription(const int solverNumber) {
               cellDescription.getFluctuation());
         }
       }
-    }
+    } break;
+    default: {
+      logDebug("cleanCellDescription(...)", "solver is not associated with any cell descriptions of this cell. cell="
+               << toString() << ", level=" << level
+               << ", size=" << size
+               << ",offset=" << cellCentre);
+    } break;
   }
 }
 
