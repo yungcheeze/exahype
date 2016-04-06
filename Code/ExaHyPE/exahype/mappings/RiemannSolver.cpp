@@ -305,14 +305,11 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
       "touchVertexFirstTime(...)",
       "cell descriptions around vertex. "
           << "coarse grid level: " << coarseGridVerticesEnumerator.getLevel()
-          << ", fine grid pos.:" << fineGridPositionOfVertex
-          << ", adjac. cell descr.:" << adjacentADERDGCellDescriptionsIndices);
+          << ", fine grid position:" << fineGridPositionOfVertex
+          << ", adjacent cell descriptions indices:" << adjacentADERDGCellDescriptionsIndices);
   logDebug("touchVertexFirstTime(...)", "cell descriptions around vertex. "
                                             << "fine grid x " << fineGridX);
 
-  // todo: Dominic Etienne Charrier: Reverse engineered indices from
-  // PatchInitialisation2MultiscaleLinkedCell_1::touchVertexFirstTime(...)
-  // Not sure what happens with hanging nodes.
   /* Right cell-left cell   pair indices: 0,1; 2,3;   4,5; 6;7
    * Front cell-back cell   pair indices: 0,2; 1,3;   4,6; 5;7
    * Top   cell-bottom cell pair indices: 0,4; 1,5;   2,6; 3;7
@@ -322,7 +319,6 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
    * problem on the left face of the right cell (which
    * is the right face of the left cell).
    */
-  // index maps (
   constexpr int cellIndicesLeft  [4] = {0, 2, 4, 6};
   constexpr int cellIndicesRight [4] = {1, 3, 5, 7};
   constexpr int cellIndicesFront [4] = {0, 1, 4, 5};
@@ -331,7 +327,6 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
   constexpr int cellIndicesBottom[4] = {0, 1, 2, 3};
   constexpr int cellIndicesTop   [4] = {4, 5, 6, 7};
 #endif
-  // Left/right face
   for (int i = 0; i < TWO_POWER_D_DIVIDED_BY_TWO; i++) {
     solveRiemannProblem(adjacentADERDGCellDescriptionsIndices,
                         cellIndicesLeft[i], cellIndicesRight[i],
@@ -364,9 +359,9 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
     logDebug("touchVertexLastTime(...)::solveRiemannProblem(...)",
              "Performing Riemann solve. "
              << "faceL:" << faceL << " faceR:" << faceR
-             << " cell descr. index L:"
+             << " cellDescrIndexL:"
              << adjacentADERDGCellDescriptionsIndices[cellIndexL]
-             << " cell descr. index R:"
+             << " cellDescrIndexR:"
              << adjacentADERDGCellDescriptionsIndices[cellIndexR]);
 
     std::vector<records::ADERDGCellDescription>& cellDescriptionsL =
@@ -377,7 +372,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
             adjacentADERDGCellDescriptionsIndices[cellIndexR]);
 
     // @todo 08/02/16:Dominic Etienne Charrier
-    // Assumes that the both elements hold the same (number of) solvers
+    // Assumes that the both cells hold the same number of cell descriptions
     assertion1WithExplanation(
         cellDescriptionsL.size() == cellDescriptionsR.size(),
         cellDescriptionsL.size(),
