@@ -318,9 +318,11 @@ void exahype::mappings::VirtualRefinement::enterCell(
         // If coarse grid cell description requested refinement
         if (cellDescriptionParent.getVirtualRefinementNecessary()) {
           assertion(cellDescriptionParent.
-                    getType()==exahype::Cell::RealCell);
-          assertion(cellDescriptionParent.
+                    getType()==exahype::Cell::RealCell
+                    ||
+                    cellDescriptionParent.
                     getType()==exahype::Cell::VirtualShell);
+          assertion(cellDescriptionParent.getParent());
 
           fineGridCell.addNewCellDescription(
               solverNumber,
