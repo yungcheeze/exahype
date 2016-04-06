@@ -424,21 +424,21 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
               ->getUnknownsPerFace();
 
           double* QL = DataHeap::getInstance()
-              .getData(cellDescriptionsL[i].getExtrapolatedPredictor()).
-              data() +
-              (faceL * numberOfFaceDof);
+          .getData(cellDescriptionsL[i].getExtrapolatedPredictor()).
+          data() +
+          (faceL * numberOfFaceDof);
           double* QR = DataHeap::getInstance()
-              .getData(cellDescriptionsR[i].getExtrapolatedPredictor())
-               .data() +
-               (faceR * numberOfFaceDof);
+          .getData(cellDescriptionsR[i].getExtrapolatedPredictor())
+          .data() +
+          (faceR * numberOfFaceDof);
           double* FL = DataHeap::getInstance()
-              .getData(cellDescriptionsL[i].getFluctuation())
-               .data() +
-               (faceL * numberOfFaceDof);
+          .getData(cellDescriptionsL[i].getFluctuation())
+          .data() +
+          (faceL * numberOfFaceDof);
           double* FR = DataHeap::getInstance()
-              .getData(cellDescriptionsR[i].getFluctuation())
-              .data() +
-              (faceR * numberOfFaceDof);
+          .getData(cellDescriptionsR[i].getFluctuation())
+          .data() +
+          (faceR * numberOfFaceDof);
 
           solver->synchroniseTimeStepping(cellDescriptionsL[i]);
           solver->synchroniseTimeStepping(cellDescriptionsR[i]);
@@ -459,9 +459,9 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
           logDebug("touchVertexLastTime(...)::debug::after::FL[0]", FL[0]);
           logDebug("touchVertexLastTime(...)::debug::after::FR[0]", FR[0]);
         }
-      endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-      .parallelSectionHasTerminated(methodTrace);
-    }
+      }
+    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
+    .parallelSectionHasTerminated(methodTrace);
   }
 }
 
