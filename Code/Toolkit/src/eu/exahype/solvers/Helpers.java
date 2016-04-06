@@ -33,11 +33,20 @@ public class Helpers {
         "    virtual void riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex);\n");
     writer.write(
         "    virtual double stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx );\n");
-
     writer.write(
         "    virtual void solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt);\n");
     writer.write(
         "    virtual bool hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t);\n");
+    writer.write(
+        "    virtual bool refinementCriterion(const double* luh,const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx,double t,const int level);\n");    
+    writer.write(
+        "    virtual void faceUnknownsProlongation(double* lQhbndFine,double* lFhbndFine,const double* lQhbndCoarse,const double* lFhbndCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex);\n");
+    writer.write(
+        "    virtual void faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex);\n");
+    writer.write(
+        "    virtual void volumeUnknownsProlongation(double* luhFine, const double* luhCoarse, const int coarseGridLevel, const int fineGridLevel, const tarch::la::Vector<DIMENSIONS, int>& subcellIndex);\n");
+    writer.write(
+        "    virtual void volumeUnknownsRestriction(double* luhCoarse, const double* luhFine, const int coarseGridLevel, const int fineGridLevel, const tarch::la::Vector<DIMENSIONS, int>& subcellIndex);\n");
   }
 
   /**
