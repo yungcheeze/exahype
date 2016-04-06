@@ -102,7 +102,7 @@ public class GenericFluxesNonlinearADER_DGinC implements Solver {
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
             + "::volumeUnknownsRestriction(  double* luhCoarse, const double* luhFine, const int coarseGridLevel, const int fineGridLevel, const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {\n");
-    writer.write("  // kernels::aderdg::generic::c::volumeUnknownsRestriction( luhCoarse, luhFine, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("   kernels::aderdg::generic::c::volumeUnknownsRestriction( luhCoarse, luhFine, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
   }
@@ -173,7 +173,7 @@ public class GenericFluxesNonlinearADER_DGinC implements Solver {
     writer.write("bool " + projectName + "::" + solverName
             + "::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {\n");
     writer.write("  // @todo Please implement\n");
-    writer.write("  return false;");
+    writer.write("  return false;\n");
     writer.write("}\n");
     writer.write("\n\n\n");
   }
