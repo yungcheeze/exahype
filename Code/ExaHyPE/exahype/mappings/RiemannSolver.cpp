@@ -407,8 +407,12 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
         // Lock the critical multithreading area.
         bool riemannSolveNotPerformed = false;
         tarch::multicore::Lock lock(_semaphore);
-        assertionEquals(cellDescriptionsL[i].getRiemannSolvePerformed(faceL),
-                        cellDescriptionsR[i].getRiemannSolvePerformed(faceR));
+        assertionEquals4(
+          cellDescriptionsL[i].getRiemannSolvePerformed(faceL), cellDescriptionsR[i].getRiemannSolvePerformed(faceR),
+          faceL, faceR,
+          cellDescriptionsL[i].toString(),
+          cellDescriptionsR[i].toString()
+        );
 
         riemannSolveNotPerformed =
             !cellDescriptionsL[i].getRiemannSolvePerformed(faceL);
