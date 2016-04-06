@@ -188,55 +188,6 @@ class exahype::solvers::Solver {
   int getNodesPerCoordinateAxis() const;
 
   /**
-    * @defgroup AMR Solver routines for adaptive mesh refinement
-    */
-  ///@{
-  /**
-   * \todo:16/04/02:Dominic Etienne Charrier:
-   * non-virtual method is only for now; The refinement criterion must be
-   * specified by the user. So replace method by virtual one later.
-   *
-   * Note that this refinement criterion depends on the
-   * solution values it can thus not be used to create the
-   * initial regular mesh.
-   *
-   * Consider to correct the level in the invoking code, i.e., level-> level-1
-   */
-  bool refinementCriterion(
-      const double* luh,
-      const tarch::la::Vector<DIMENSIONS, double>& center,
-      const tarch::la::Vector<DIMENSIONS, double>& dx,
-      double t,
-      const int level);
-
-//    virtual bool refinementCriterion(
-//        const double* luh,
-//        const tarch::la::Vector<DIMENSIONS, double>& center,
-//        const tarch::la::Vector<DIMENSIONS, double>& dx,
-//        double t,
-//        const int level) = 0;
-  //  /**
-    //   * @brief Prolongates coarse grid face unknowns
-    //   * \p levels levels down to the fine grid unknowns.
-    //   */
-    //  virtual void prolongateFaceUnknowns(
-    //      double* fineGridUnknowns,
-    //      const double* const coarseGridUnknowns,
-    //      const int levelDifference
-    //  ) = 0;
-    //
-    //  /**
-    //   * @brief Restricts fine grid face unknowns
-    //   * \p levels levels up to the coarse grid unknowns.
-    //   */
-    //  virtual void restrictFaceUnknowns(
-    //      double* fineGridUnknowns,
-    //      const double* const fineGridUnknowns,
-    //      const int levelDifference
-    //  ) = 0;
-  ///@}
-
-  /**
    * @brief Adds the solution update to the solution.
    *
    * @param[inout] luh  Cell-local solution DoF.
@@ -333,6 +284,97 @@ class exahype::solvers::Solver {
   virtual bool hasToAdjustSolution(
       const tarch::la::Vector<DIMENSIONS, double>& center,
       const tarch::la::Vector<DIMENSIONS, double>& dx, double t) = 0;
+
+  /**
+   * @defgroup AMR Solver routines for adaptive mesh refinement
+   */
+  ///@{
+  /**
+   * The refinement criterion that must be defined by the user.
+   *
+   */
+  // @todo: 16/04/06:Dominic Etienne Charrier Consider to correct the level in the invoking code, i.e., level-> level-1
+  // since this is was the user expects.
+  virtual bool refinementCriterion(
+      const double* luh,
+      const tarch::la::Vector<DIMENSIONS, double>& center,
+      const tarch::la::Vector<DIMENSIONS, double>& dx,
+      double t,
+      const int level) = 0; // @todo make abstract
+
+  /**
+   * Project coarse grid face unknowns
+   * on level \p coarseGridLevel down to level \p fineGridLevel
+   * and writes them to the fine grid unknowns
+   *
+   * \note For the considered AMR concept, the difference in levels can
+   * be larger than one. Let \f$l\f$ be the level difference. The
+   * vector \p subfaceIndex does contain values in the range
+   * \f$0,1,\ldots,3^l-1\f$.
+   */
+  virtual void faceUnknownsProlongation(
+      double* lQhbndFine,
+      double* lFhbndFine,
+      const double* lQhbndCoarse,
+      const double* lFhbndCoarse,
+      const int coarseGridLevel,
+      const int fineGridLevel,
+      const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex
+  ) = 0;
+
+  /**
+   * Restricts fine grid face unknowns on level \p fineGridLevel
+   * up to level \p coarseGridLevel and adds them to the coarse grid unknowns.
+   *
+   * \note For the considered AMR concept, the difference in levels is always
+   * equal to one. The vector \p subfaceIndex does contain values in the range
+   * \f$0,1,2\f$.
+   */
+  virtual void faceUnknownsRestriction(
+      double* lQhbndCoarse,
+      double* lFhbndCoarse,
+      const double* lQhbndFine,
+      const double* lFhbndFine,
+      const int coarseGridLevel,
+      const int fineGridLevel,
+      const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex
+  ) = 0;
+
+  /**
+     * Project coarse grid face unknowns
+     * on level \p coarseGridLevel down to level \p fineGridLevel
+     * and writes them to the fine grid unknowns
+     *
+     * \note For the considered AMR concept, the difference in levels can
+     * be larger than one. Let \f$l\f$ be the level difference. The
+     * vector \p subcellIndex does contain values in the range
+     * \f$0,1,\ldots,3^l-1\f$.
+     */
+    virtual void volumeUnknownsProlongation(
+        double* luhFine,
+        const double* luhCoarse,
+        const int coarseGridLevel,
+        const int fineGridLevel,
+        const tarch::la::Vector<DIMENSIONS, int>& subcellIndex
+    ) = 0;
+
+    /**
+     * Restricts fine grid volume unknowns on level \p fineGridLevel
+     * up to level \p coarseGridLevel and adds them to the coarse grid unknowns.
+     *
+     * \note For the considered AMR concept, the difference in levels is always
+     * equal to one. The vector \p subcellIndex does contain values in the range
+     * \f$0,1,2\f$.
+     */
+    virtual void volumeUnknownsRestriction(
+        double* luhCoarse,
+        const double* luhFine,
+        const int coarseGridLevel,
+        const int fineGridLevel,
+        const tarch::la::Vector<DIMENSIONS, int>& subcellIndex
+    ) = 0;
+    ///@}
+  ///@}
 
   /**
    * @todo Dominic, please add a description what this routine does.

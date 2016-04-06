@@ -12,9 +12,7 @@ int Euler2d::MyEulerSolver::getMinimumTreeDepth() const {
   return 4;
 }
 
-bool Euler2d::MyEulerSolver::hasToAdjustSolution(
-    const tarch::la::Vector<DIMENSIONS, double> &center,
-    const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
+bool Euler2d::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
   if (tarch::la::equals(t, 0.0)) {
     return true;
   }
@@ -79,4 +77,17 @@ void Euler2d::MyEulerSolver::adjustedSolutionValues(const double *const x,
                  (0.05 * 0.05)) *
             1.0e-3;
   }
+}
+
+bool exahype::solvers::Solver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
+  assertion(level>=getMinimumTreeDepth()+1);
+
+  if (level<getMinimumTreeDepth()+4) {
+    if (center[0]<0.5 && center[0]>0.25) {
+      if (center[1]<0.5 && center[1]>0.25) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
