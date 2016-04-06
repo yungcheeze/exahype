@@ -294,70 +294,84 @@ void exahype::mappings::AdaptiveRefinement::enterCell(
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
                              fineGridVerticesEnumerator.toString(),
                              coarseGridCell, fineGridPositionOfCell);
-
-  bool refineFineGridCell=false;
-
-  int  solverNumber=0;
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-          exahype::solvers::RegisteredSolvers.begin();
-          p != exahype::solvers::RegisteredSolvers.end(); p++) {
-    if (fineGridVerticesEnumerator.getLevel()>=(*p)->getMinimumTreeDepth()+1) {
-      // If fine grid cell description does not exist, i.e. cell is new
-      if (!ADERDGCellDescriptionHeap::getInstance().
-          isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
-        // If coarse grid cell description does(!) exist
-        if (ADERDGCellDescriptionHeap::getInstance().
-            isValidIndex(coarseGridCell.getADERDGCellDescriptionsIndex())) {
-          exahype::records::ADERDGCellDescription& cellDescriptionParent =
-              fineGridCell.getADERDGCellDescription(solverNumber);
-          // If coarse grid cell description requested refinement
-          if (cellDescriptionParent.getRefinementNecessary()) {
-            fineGridCell.addNewCellDescription(
-                solverNumber,
-                exahype::Cell::RealCell,
-                fineGridVerticesEnumerator.getLevel(),
-                coarseGridCell.getADERDGCellDescriptionsIndex(),
-                fineGridPositionOfCell,
-                fineGridVerticesEnumerator.getCellSize(),
-                fineGridVerticesEnumerator.getCellCenter());
-            cellDescriptionParent.setRefinementNecessary(false);
-          }
-        }
-      } else {
-        exahype::records::ADERDGCellDescription& cellDescription =
+  // If fine grid cell description does not exist, i.e. cell is new
+  if (!ADERDGCellDescriptionHeap::getInstance().
+      isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
+    assertion(ADERDGCellDescriptionHeap::getInstance().
+              isValidIndex(coarseGridCell.getADERDGCellDescriptionsIndex()));
+    int  solverNumber=0;
+    for (std::vector<exahype::solvers::Solver*>::const_iterator p =
+        exahype::solvers::RegisteredSolvers.begin();
+        p != exahype::solvers::RegisteredSolvers.end(); p++) { // @todo replace by parloops?
+      if (fineGridVerticesEnumerator.getLevel()>=(*p)->getMinimumTreeDepth()+1) {
+        exahype::records::ADERDGCellDescription& cellDescriptionParent =
             fineGridCell.getADERDGCellDescription(solverNumber);
+        // If coarse grid cell description requested refinement
+        if (cellDescriptionParent.getRefinementNecessary()) {
+          assertion(cellDescriptionParent.getType()==exahype::Cell::RealShell);
+          assertion(cellDescriptionParent.getParent());
 
-        // we can only refine real cells
-        if (cellDescription.getType()==exahype::Cell::RealCell) {
-          double* solution = DataHeap::getInstance().getData(
-              cellDescription.getSolution()).data();
-
-          if ((*p)->refinementCriterion(solution,
-              fineGridVerticesEnumerator.getCellCenter(),
+          fineGridCell.addNewCellDescription(
+              solverNumber,
+              exahype::Cell::RealCell,
+              fineGridVerticesEnumerator.getLevel(),
+              coarseGridCell.getADERDGCellDescriptionsIndex(),
+              fineGridPositionOfCell,
               fineGridVerticesEnumerator.getCellSize(),
-              cellDescription.getCorrectorTimeStamp(), // todo careful with the time stamps
-              cellDescription.getLevel())) {
-            cellDescription.setType(exahype::Cell::RealShell);
-            cellDescription.setParent(true);
+              fineGridVerticesEnumerator.getCellCenter());
 
-            cellDescription.setRefinementNecessary(true);
-            refineFineGridCell = true;
-          }
+          cellDescriptionParent.setRefinementNecessary(false);
         }
       }
+      solverNumber++;
     }
-    solverNumber++;
-  }
+  } else {
+    assertion(ADERDGCellDescriptionHeap::getInstance().
+              isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex()));
 
-  // Note that fineGridVertices->refine() refines all adjacent cell
-  // not only the targeted fineGridCell (Peano Cookbook)
-  if (refineFineGridCell) {
-    dfor2(k) // loop over 2^d vertices and set the refinement flag
-      if (fineGridVertices[kScalar].getRefinementControl()==
-            Vertex::Records::Unrefined) {
-        fineGridVertices->refine();
+    bool refineFineGridCell=false;
+
+    int  solverNumber=0;
+    for (std::vector<exahype::solvers::Solver*>::const_iterator p =
+        exahype::solvers::RegisteredSolvers.begin(); // @todo replace by parloops?
+        p != exahype::solvers::RegisteredSolvers.end(); p++) {
+      assertion(static_cast<unsigned int>(solverNumber) <
+                ADERDGCellDescriptionHeap::getInstance().
+                getData(fineGridCell.getADERDGCellDescriptionsIndex()).size());
+
+      exahype::records::ADERDGCellDescription& cellDescription =
+          fineGridCell.getADERDGCellDescription(solverNumber);
+
+      // only refine real cells
+      if (cellDescription.getType()==exahype::Cell::RealCell) {
+        double* solution = DataHeap::getInstance().getData(
+            cellDescription.getSolution()).data();
+
+        if ((*p)->refinementCriterion(solution,
+                                      fineGridVerticesEnumerator.getCellCenter(),
+                                      fineGridVerticesEnumerator.getCellSize(),
+                                      cellDescription.getCorrectorTimeStamp(), // todo careful with the time stamps
+                                      cellDescription.getLevel())) {
+          cellDescription.setRefinementNecessary(true);
+          cellDescription.setType(exahype::Cell::RealShell);
+          cellDescription.setParent(true);
+
+          refineFineGridCell = true;
+        }
       }
-    enddforx
+      solverNumber++;
+    }
+
+    // Note that fineGridVertices->refine() refines all adjacent cell
+    // not only the targeted fineGridCell (Peano Cookbook)
+    if (refineFineGridCell) {
+      dfor2(k) // loop over 2^d vertices and set the refinement flag
+            if (fineGridVertices[kScalar].getRefinementControl()==
+                Vertex::Records::Unrefined) {
+              fineGridVertices->refine();
+            }
+      enddforx
+    }
   }
 
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);

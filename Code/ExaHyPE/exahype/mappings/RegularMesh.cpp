@@ -331,7 +331,7 @@ void exahype::mappings::RegularMesh::enterCell(
       fineGridCell.getADERDGCellDescriptionsIndex())) {
     for (std::vector<exahype::solvers::Solver*>::const_iterator p =
         exahype::solvers::RegisteredSolvers.begin();
-        p != exahype::solvers::RegisteredSolvers.end(); p++) {
+        p != exahype::solvers::RegisteredSolvers.end(); p++) { // @todo replace by parloops?
       if (fineGridVerticesEnumerator.getLevel()==(*p)->getMinimumTreeDepth()+1) {
         fineGridCell.addNewCellDescription(
             solverNumber,
