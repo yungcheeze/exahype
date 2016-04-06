@@ -96,9 +96,9 @@ public:
    * with this cell and the solver with index \p solverIndex.
    */
   inline exahype::records::ADERDGCellDescription& getADERDGCellDescription(
-      int solverIndex) {
+      int solverNumber) {
     return ADERDGCellDescriptionHeap::getInstance().getData(
-        getADERDGCellDescriptionsIndex())[solverIndex];
+        getADERDGCellDescriptionsIndex())[solverNumber];
   }
 
   /**
