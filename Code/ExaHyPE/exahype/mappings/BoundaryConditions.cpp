@@ -40,7 +40,7 @@ peano::MappingSpecification
 exahype::mappings::BoundaryConditions::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+      peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 /**
