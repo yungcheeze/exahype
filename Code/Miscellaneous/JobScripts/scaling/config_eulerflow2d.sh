@@ -1,7 +1,11 @@
 #!/bin/bash
 # General config file. This file is included by the specialised config files.
-export EXAHYPE_INTERACTIVE=1
-export EXAHYPE_PROJECT_DIR=eulerflow2d
-export EXAHYPE_EXECUTABLE=$EXAHYPE_PROJECT_DIR/ExaHyPE-Euler2d
-export EXAHYPE_OUTPUT_DIR=$EXAHYPE_PROJECT_DIR/scaling
-export EXAHYPE_SPEC_FILE=eulerflow2d.exahype
+export SCHEDULER_INTERACTIVE=1
+# relative from working dir or absolute
+export SCHEDULER_PROJECT_DIR=eulerflow2d
+export SCHEDULER_SCRIPT=./scheduler_submit_job.sh
+export SCHEDULER_OUTPUT_DIR=${SCHEDULER_PROJECT_DIR}/scaling
+# relative from project dir
+export SCHEDULER_EXECUTABLE=./ExaHyPE-Euler2d-TBB
+export SCHEDULER_EXECUTABLE_SERIAL=./ExaHyPE-Euler2d-None
+export SCHEDULER_SPEC_FILE=../eulerflow2d.exahype
