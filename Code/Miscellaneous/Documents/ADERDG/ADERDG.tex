@@ -7,6 +7,7 @@
 \usepackage[amsmath,framed,thmmarks]{ntheorem}  
 \usepackage{hyperref}
 \usepackage{framed}
+\usepackage{graphicx}
 
 % shortcuts
 
@@ -314,8 +315,8 @@ with respect to the reference coordinates and the invertible mapping $\mapping$.
 Let $\hat{f}$ and $f$ be defined as in \eqref{eq:aderdg_impl:imapping_scalar_function},
 we have
 \begin{align}
-\intCell f(\vec{x})\,\dV 
-&\overset{\phantom{\eqref{eq:ader_impl:mappings:constant_jacobian}}}{=} 
+\intCell f(\vec{x})\,\dV
+&\overset{\phantom{\eqref{eq:ader_impl:mappings:constant_jacobian}}}{=}
 \intRefCell \hat{f}(\refVec{x})\,|\detJ(\refVec{x})|\,\refdV
 = \int_{0}^1\int_{0}^1
 \hat{f}(\hat{x},\hat{y})\,|\detJ(\hat{x},\hat{y})|\,\refdx\,\refdy \notag\\
@@ -330,7 +331,7 @@ we have
 \hat{f}(\hat{x},\hat{y})\,\,\refdx\,\refdy.
 \notag
 \end{align}
-Let us indicate the faces of the reference cell 
+Let us indicate the faces of the reference cell
 using a tuple $(\xi, f)$, $\xi\in\{0,1,\ldots,d-1\}$, $f\in\{0,1\}$,
 where the first index corresponds to the fixed coordinate direction:
 \begin{align}
@@ -410,7 +411,7 @@ For the Jacobian determinant, we obtain in this case:
 For a volume integral, we obtain:
 \begin{align}
 \label{eq:ader_impl:mappings:volume_integral}
-\int_\cell f(\vec{x})\,\dV 
+\int_\cell f(\vec{x})\,\dV
 &=
 \detJ\,
 \int_{\refCell} f(\refVec{x})\,\dV
@@ -421,13 +422,13 @@ For a volume integral, we obtain:
 \Delta x_\xi
 \,
 \int_{\refCell} \hat{f}(\refVec{x})\,\refdV
-\end{align} 
+\end{align}
 
 And for an integral over a face $e^{\xi,f}$, $\xi\in\{1,2,\ldots,d\}$,
 $f\in\{0,1\}$, we obtain:
 \begin{align}
 \label{eq:ader_impl:mappings:face_integral}
-\int_{\face^{\xi,f}} f(\vec{x})\,\ds (\vec{x}) 
+\int_{\face^{\xi,f}} f(\vec{x})\,\ds (\vec{x})
 &=
 \prod_{\zeta=1,\zeta\neq\xi}^{d}
 \Delta x_\zeta
@@ -439,7 +440,7 @@ $f\in\{0,1\}$, we obtain:
 \frac{\detJ}{\Delta x_\xi}
 \,
 \int_{\refFace^{\xi,f}} \hat{f}(\refVec{x})\,
-\refds (\refVec{x})  
+\refds (\refVec{x})
 \end{align}
 
 Let $\hat{f}$ be a sufficiently regular function on the reference cell $\refCell$, and
@@ -452,7 +453,7 @@ f(\vec{x}) &= (\hat{f} \circ \imapping)(\vec{x}) = \hat{f}(\refVec{x}),
 \notag
 \end{align}
 Then, partial derivatives of $f$ can be expressed with respect
-to the reference coordinates according to: 
+to the reference coordinates according to:
 \begin{align}
 \label{eq:aderdg_impl:mapping:gradient}
 \frac{\partial f(\vec{x})}{\partial x_\xi}
@@ -464,11 +465,11 @@ to the reference coordinates according to:
 where $\xi\in\{1,2,\ldots,d\}$.
 
 \subsection{Space-time mappings}
-We can express the tuple $(\cell,t)$ according to
+We can express the tuple $(\cell,[t^\cell,t^\cell+\Delta t])$ according to
 \begin{align}
-(\cell,t) &= \mappingst (\refCell,\hat{t}),
+(\cell,[t^\cell,t^\cell+\Delta t]) &= \mappingst (\refCell,[0,1]),
 \notag
-\intertext{where we have introduced the mapping $\mappingst\colon\,
+\intertext{where we have introduced the space-time mapping $\mappingst\colon\,
 \refCell\times[0,1] \to \cell\times[t^K,t^K+\Delta t]$ with:}
 \label{eq:aderdg_impl:mapping}
 (\vec{x},t) = \mappingst(\refVec{x})
@@ -490,7 +491,7 @@ can be approximated by a polynomial of order $N$, i.e.,
 the leading approximation error term is of order $\mathcal{O}(N+1)$.
 
 Given a set of support point and function value pairs $\{(x_i,f(x_i))\}_{0\leq
-i\leq N}$, the corresponding interpolation polynomial in the Lagrange form
+i\leq N}$, the corresponding prolongation polynomial in the Lagrange form
 can be constructed according to:
 \begin{align}
 f_N (x) &= \sum_{i=0}^{N}\,f(x_i)\,\varphi_i(x),
@@ -651,7 +652,7 @@ One can show that the polynomials $\{\hat{\phi}_n
 \end{align*}
 The $d$-dimensional support points for the multivariate
 basis functions on the mesh cells
-$\cell\in\tria$ are then constructed by means of the mapping $\mapping:$ 
+$\cell\in\tria$ are then constructed by means of the mapping $\mapping:$
 \begin{align*}
 (x_{n,1},\ldots,x_{n,d})\transp
 &=
@@ -892,9 +893,9 @@ w_{n}\,
 %%%%%%%%
 \langle\hat{f},\,\hat{\theta}_{l';n'}\rangle
 _{L^2(\refCell\times[0,1])}
-&= 
+&=
 \langle \hat{f},\,\hat{\varphi}_{l'}\rangle_{L^2([0,1])}\,
-\langle \hat{f},\,\hat{\phi}_{n'}\rangle_{L^2(\refCell)} 
+\langle \hat{f},\,\hat{\phi}_{n'}\rangle_{L^2(\refCell)}
 \notag
 \\
 &= w_{l}\,w_{n}\,
@@ -1071,11 +1072,11 @@ $\cell,\cell'\in\tria$ and $v,v'\in\{0,1,\ldots,N_\textup{var}\}$.
 
 First, let us introduce an operator $\hat{P}\in\mathbb{R}^{(N+1)\times(N+1)}$
 that projects the coefficients associated
-with the univariate reference basis functions on 
+with the univariate reference basis functions on
 the $(N+1)$ nodes of a regular partition of interval $[0,1]$:
 \begin{align}
 \label{eq:ader_impl:operators:regular_mesh_projector_1d}
-\hat{P}_{ij} &= \varphi_i \left({\frac{j}{N}}\right),\qquad 
+\hat{P}_{ij} &= \varphi_i \left({\frac{j}{N}}\right),\qquad
 i,j=0,1,\ldots,N.
 \end{align}
 
@@ -1194,10 +1195,10 @@ where $i\in\{0,1,\ldots,N\}$.
 % and $n,n'\in\{0,1,\ldots,(N+1)^d-1\}$.
 
 We define the reference stiffness operator
-$\laMat{\hat{K}}\in\mathbb{R}^{(N+1)^2}$ according to:
+$\laMat{\refCell}\in\mathbb{R}^{(N+1)^2}$ according to:
 \begin{align}
 \label{eq:ader_impl:operators:stiffness_operator_1d}
-\laMatel{\hat{K}}_{ij} &=
+\laMatel{\refCell}_{ij} &=
 \langle
 \partial_{\hat{x}}\,\hat{\varphi}_{i},\,\hat{\varphi}_{j}\rangle_{L^2([0,1])}
 \notag\\
@@ -1225,7 +1226,7 @@ _{L^2(\refCell\times[0,1])}
 \langle \hat{\phi}_{n},\,\hat{\phi}_{n'}\rangle_{L^2(\refCell)}\notag
 \\
 &\overset{\textup{(I)}}{=}
-w_{n}\,\hat{K}_{ll'}\,\delta_{n n'},
+w_{n}\,\refCell_{ll'}\,\delta_{n n'},
 \\
 %%%
 \label{eq:ader_impl:operators:stiffness_operator_time_mesh}
@@ -1246,7 +1247,7 @@ _{L^2(\refCell\times[0,1])}
 &=
 \detJ\,
 w_{n}\,
-\hat{K}_{ll'}\,
+\refCell_{ll'}\,
 \delta_{\cell\cell'}\,\delta_{vv'}\,
 \delta_{n n'},
 \end{align}
@@ -1281,7 +1282,7 @@ _{L^2(\refCell)}
 \notag
 \\
 &=
-\hat{K}_{n_\xi'n_\xi }\,
+\refCell_{n_\xi'n_\xi }\,
 \prod_{\zeta=1,\zeta\neq\xi}^d
 w_{n_\zeta}\,
 \delta_{n_\zeta n'_\zeta},
@@ -1305,7 +1306,7 @@ _{L^2(\refCell\times[0,1])}
 \\
 &=
 w_{l}\,
-\hat{K}_{n_\xi'n_\xi }\,
+\refCell_{n_\xi'n_\xi }\,
 \delta_{ll'}\,
 \prod_{\zeta=1,\zeta\neq\xi}^d
 w_{n_\zeta}\,
@@ -1324,85 +1325,85 @@ the previous section.
   $q^\cell\in\polyspace{Q}{N}{\cell\times[t^\cell,t^\cell+\Delta
   t]}^{N_\textup{var}}$:
   \begin{align*}
-  q^{\cell}
-  &=
-  \sum_{v=0}^{N_\textup{var}}
-  q^{\cell;v}
-  =
-  \sum_{v=0}^{N_\textup{var}}
-  \sum_{l=0}^{N}
-  \sum_{n=0}^{(N+1)^{d}-1}
-  \widetilde{q}^{\cell;v}_{l;n}\,
-  \theta^{\cell;v}_{l;n}.
-  \end{align*}
-  We store the space-time predictor coefficients in the vector
-  $\laVec{\widetilde{q}}^\cell\in\mathbb{R}^{N_\textup{var}(N+1)^{d+1}}$.
-  \item Space-time volume flux
-  $\stvec{F}^{\cell}\in\polyspace{Q}{N}{\cell\times[t^\cell,t^\cell+\Delta
-  t]}^{N_\textup{var}\times d}$:
-  \begin{align*}
-  \stvec{F}^\cell
-  =
-  \sum_{v=0}^{N_\textup{var}}
-  \stvec{F}^{K;v}
-  &=
-  \sum_{v=0}^{N_\textup{var}}
-  \sum_{l=0}^{N}
-  \sum_{n=0}^{(N+1)^d-1}
-  \stvec{F}^{K;v}_{l;n}\,{\theta}^{K;v}_{l;n} \\
-  &=
-  \sum_{v=0}^{N_\textup{var}}
-  \sum_{l=0}^{N}
-  \sum_{n=0}^{(N+1)^d-1}
-  (\widetilde{F}^{K;v}_{l;n,1},\ldots,\widetilde{F}^{K;v}_{l;n,d})\,{\theta}^{K;v}_{l;n}.
-  \end{align*}
-%   We store the space-time volume flux coefficients in the matrix\; 
+q^{\cell}
+&=
+\sum_{v=0}^{N_\textup{var}}
+q^{\cell;v}
+=
+\sum_{v=0}^{N_\textup{var}}
+\sum_{l=0}^{N}
+\sum_{n=0}^{(N+1)^{d}-1}
+\widetilde{q}^{\cell;v}_{l;n}\,
+\theta^{\cell;v}_{l;n}.
+\end{align*}
+We store the space-time predictor coefficients in the vector
+$\laVec{\widetilde{q}}^\cell\in\mathbb{R}^{N_\textup{var}(N+1)^{d+1}}$.
+\item Space-time volume flux
+$\stvec{F}^{\cell}\in\polyspace{Q}{N}{\cell\times[t^\cell,t^\cell+\Delta
+t]}^{N_\textup{var}\times d}$:
+\begin{align*}
+\stvec{F}^\cell
+=
+\sum_{v=0}^{N_\textup{var}}
+\stvec{F}^{K;v}
+&=
+\sum_{v=0}^{N_\textup{var}}
+\sum_{l=0}^{N}
+\sum_{n=0}^{(N+1)^d-1}
+\stvec{F}^{K;v}_{l;n}\,{\theta}^{K;v}_{l;n} \\
+&=
+\sum_{v=0}^{N_\textup{var}}
+\sum_{l=0}^{N}
+\sum_{n=0}^{(N+1)^d-1}
+(\widetilde{F}^{K;v}_{l;n,1},\ldots,\widetilde{F}^{K;v}_{l;n,d})\,{\theta}^{K;v}_{l;n}.
+\end{align*}
+%   We store the space-time volume flux coefficients in the matrix\;
 %   $\laVec{\widetilde{F}}^{\cell}\in\mathbb{R}^{N_\textup{var}\,(N+1)^{d+1}\times
 %   d}$.
-  \item Predictor $q_h^{\cell}\in\polyspace{Q}{N}{\cell}^{N_\textup{var}}$:
-  \begin{align*}
-  q_h^{\cell}
-  &=
-  \sum_{v=0}^{N_\textup{var}}
-  q_h^{\cell;v}
-  =
-  \sum_{v=0}^{N_\textup{var}}
-  \sum_{n=0}^{(N+1)^{d}-1}
-  q^{\cell;v}_{n}\,
-  \phi^{\cell;v}_{n}
-  \end{align*}	  
-  We store the predictor coefficients in the vector
-  $\laVec{q}^\cell\in\mathbb{R}^{N_\textup{var}(N+1)^{d}}$.
-  \item Solution $u_h^{\cell}\in\polyspace{Q}{N}{\cell}^{N_\textup{var}}$:
-  \begin{align*}
-  u_h^{\cell}
-  &=
-  \sum_{v=0}^{N_\textup{var}}
-  u_h^{\cell;v} 
-  =
-  \sum_{v=0}^{N_\textup{var}}
-  \sum_{n=0}^{(N+1)^{d}-1}
-  u^{\cell;v}_{n}\,
-  \phi^{\cell;v}_{n}
-  \end{align*}
-  We store the solution coefficients in the vector
-  $\laVec{u}^\cell\in\mathbb{R}^{N_\textup{var}(N+1)^{d}}$.
-  \item Volume flux
-  $\vec{F}_h^{\cell}\in\polyspace{Q}{N}{\cell}^{N_\textup{var}\times d}$:
-  \begin{align*}
-  \vec{F}_h^\cell
-  =
-  \sum_{v=0}^{N_\textup{var}}
-  \vec{F}^{K;v}
-  &=
-  \sum_{v=0}^{N_\textup{var}}
-  \sum_{n=0}^{(N+1)^d-1}
-  \vec{F}^{K;v}_{n}\,{\phi}^{K;v}_{n} \\
-  &=
-  \sum_{v=0}^{N_\textup{var}}
-  \sum_{n=0}^{(N+1)^d-1}
-  (F^{K;v}_{n,1},\ldots,F^{K;v}_{n,d})\,{\phi}^{K;v}_{n}.
-  \end{align*}
+\item Predictor $q_h^{\cell}\in\polyspace{Q}{N}{\cell}^{N_\textup{var}}$:
+\begin{align*}
+q_h^{\cell}
+&=
+\sum_{v=0}^{N_\textup{var}}
+q_h^{\cell;v}
+=
+\sum_{v=0}^{N_\textup{var}}
+\sum_{n=0}^{(N+1)^{d}-1}
+q^{\cell;v}_{n}\,
+\phi^{\cell;v}_{n}
+\end{align*}
+We store the predictor coefficients in the vector
+$\laVec{q}^\cell\in\mathbb{R}^{N_\textup{var}(N+1)^{d}}$.
+\item Solution $u_h^{\cell}\in\polyspace{Q}{N}{\cell}^{N_\textup{var}}$:
+\begin{align*}
+u_h^{\cell}
+&=
+\sum_{v=0}^{N_\textup{var}}
+u_h^{\cell;v}
+=
+\sum_{v=0}^{N_\textup{var}}
+\sum_{n=0}^{(N+1)^{d}-1}
+u^{\cell;v}_{n}\,
+\phi^{\cell;v}_{n}
+\end{align*}
+We store the solution coefficients in the vector
+$\laVec{u}^\cell\in\mathbb{R}^{N_\textup{var}(N+1)^{d}}$.
+\item Volume flux
+$\vec{F}_h^{\cell}\in\polyspace{Q}{N}{\cell}^{N_\textup{var}\times d}$:
+\begin{align*}
+\vec{F}_h^\cell
+=
+\sum_{v=0}^{N_\textup{var}}
+\vec{F}^{K;v}
+&=
+\sum_{v=0}^{N_\textup{var}}
+\sum_{n=0}^{(N+1)^d-1}
+\vec{F}^{K;v}_{n}\,{\phi}^{K;v}_{n} \\
+&=
+\sum_{v=0}^{N_\textup{var}}
+\sum_{n=0}^{(N+1)^d-1}
+(F^{K;v}_{n,1},\ldots,F^{K;v}_{n,d})\,{\phi}^{K;v}_{n}.
+\end{align*}
 %   We store the volume flux coefficients in the matrix
 %   $\laMat{F}^\cell\in\mathbb{R}^{N_\textup{var}\,(N+1)^{d}\times d}$.
 \end{itemize}
@@ -1448,7 +1449,7 @@ u^{\cell;v}_{n'}
 \right\rangle
 _{L^2(\cell\times[t^\cell,t^\cell+\Delta t])}
 \\
-&+ 
+&+
 \sum_{l'=0}^{N}
 \sum_{n'=0}^{(N+1)^d-1}
 S^{\cell;v}_{l';n'}
@@ -1510,7 +1511,7 @@ _{L^2(\cell\times[t^\cell,t^\cell+\Delta t])}
 w_{n}\,
 (\hat{F}^1_{l}\,
 \hat{F}^1_{l'}\,
--\hat{K}_{ll'})\,
+-\refCell_{ll'})\,
 \delta_{\cell\cell'}\,\delta_{vv'}\,
 \delta_{n n'}
 \notag
@@ -1528,7 +1529,7 @@ where we have introduced the reference cell operator
 &=
 \hat{F}^1_{l}\,
 \hat{F}^1_{l'}\,
--\hat{K}_{ll'},
+-\refCell_{ll'},
 \end{align}
 where $l,l'\in\{0,1,\ldots,N\}$, and
 $n,n'\in\{0,1,\ldots,(N+1)^{d}-1\}$.
@@ -1597,7 +1598,7 @@ where $l\in\{0,1,\ldots,N\}$, and
 $n\in\{0,1,\ldots,(N+1)^{d}-1\}$.
 We have used
 \eqref{eq:ader_impl:basis:orthogonal_variables_spacetime}
-and 
+and
 \eqref{eq:ader_impl:operators:tau_operator_1_mesh}
 in step I of the above derivations.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1636,7 +1637,7 @@ _{L^2(\cell\times[t^\cell,t^\cell+\Delta t])}
 \stvec{F}^{K;v}_{l';n'}\,
 \jacobian^{-\textup{T}}\,
 \left\langle
-\hat{\theta}_{l';n'}\,
+\hat{\theta}_{l';n'},\,
 \hat{\nabla}
 \hat{\theta}_{l;n}
 \right\rangle
@@ -1671,7 +1672,7 @@ _{L^2(\refCell\times[0,1])}
 \sum_{n'=0}^{(N+1)^d-1}
 \sum_{\xi =1}^d
 \frac{\Delta t}{\Delta x_{\xi}}\,
-\laMatel{\hat{K}}_{n_\xi n'_\xi}\,
+\laMatel{\refCell}_{n_\xi n'_\xi}\,
 \widetilde{F}^{\cell;v}_{l';n',\xi}\,
 w_{l}\,
 \delta_{ll'}\,
@@ -1907,7 +1908,7 @@ $u^{\cell;v}_{n}$,
 $n\in\{0,1,\ldots,(N+1)^{d}-1\}$:
 \begin{align}
 \sum_{n'=0}^{(N+1)^d-1}
-&\left\langle 
+&\left\langle
 \phi^{\cell;v}_{n},\,\phi^{\cell;v}_{n'}
 \right\rangle
 _{L^2(\cell)}
@@ -1952,7 +1953,7 @@ where the solution update vector is constructed according to:
 \laVec{b}^{\cell}
 \end{align*}
 All the operators and vectors introduced above will be discussed
-in detail in the next sections. 
+in detail in the next sections.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Mass operator}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1982,7 +1983,7 @@ The mass matrix is thus completely diagonal.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Volume integral}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-The evaluation of the volume integral is very similar 
+The evaluation of the volume integral is very similar
 to the evaluation of the space-time volume flux integral
 (Section \ref{sec:ader_impl:predictor:space_time_volume_flux_integral}).
 
@@ -1999,7 +2000,7 @@ according to:
 \sum_{n'=0}^{(N+1)^d-1}
 \vec{F}^{K;v}_{n'}\,
 \left\langle
-{\phi}^{K;v}_{n'}\,
+{\phi}^{K;v}_{n'},\,
 \nabla {\phi}^{K;v}_{n}\,
 \right\rangle
 _{L^2(\cell)}
@@ -2042,7 +2043,7 @@ J_\cell
 \sum_{\xi =1}^d
 \frac{1}{\Delta x_\xi}
 \sum_{n'=0}^{(N+1)^d-1}
-\laMatel{\hat{K}}_{n_\xi n'_\xi}\,
+\laMatel{\refCell}_{n_\xi n'_\xi}\,
 F^{\cell;v}_{n',\xi}\,
 \,\prod^{d}_{\zeta=1,\zeta\neq\xi}\,w_{n'_\zeta}\,\delta_{n'_\zeta\,n_\zeta},
 \end{align*}
@@ -2295,5 +2296,714 @@ From rearranging the equation, we finally obtain
 where $v\in{0,1,\ldots,N_\textup{var}}$
 and $n\in{0,1,\ldots,(N+1)^d-1}$.
 Notice the division by $\detJ$ on the right-hand side.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Projecting the ADER-DG degrees of freedom on a regular mesh (``Sub
+output matrix'')}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+The DG degrees of freedom can be projected on a regular partition
+of a cell $\cell\in\tria$
+using a $d$-dimensional tensor product of the 1-$d$
+regular mesh projector defined
+by \eqref{eq:ader_impl:operators:regular_mesh_projector_1d}.
+
+Let $u_h^{(\textup{reg})}\in\polyspace{Q}{N}{{(N+1)^d}}$ denote the
+solution $u_h$ projected on a regular partition of $\cell$.
+
+We compute the coefficients of $u_h^{(\textup{reg})}$
+according to:
+\begin{align}
+u_{h;n}^{(\textup{reg})}
+&\overset{\eqref{eq:ader_impl:basis:basis_definition_mesh_3d}}
+{=}
+\sum_{n'=0}^{(N+1)^d-1}
+u_{h;n'}
+\prod_{\xi=1}^{d}
+\hat{P}_{n'_\xi,n_{\xi}}
+,
+\qquad n=0,1,\ldots,(N+1)^d-1,
+\end{align}
+
+\section{Remarks on the current ExaHyPE implementation}
+\begin{enumerate}
+  \item If we store the 1-$d$ regular mesh projector $\hat{P}$, we
+  do not need to store the operators $\hat{F}^f$, $f=0,1$
+  (\texttt{FLCoeff},\texttt{FRCoeff},\texttt{FCoeff}).
+  We further need not to store the large sub output operators
+  (\texttt{subOutputMatrix})
+  which are $d$-dimensional tensor products of $\hat{P}$.
+  \item There is no need to allocate extra memory for the time
+  boundary values, i.e., $\hat{F}^0$ (\texttt{F0})
+  since these values are already stored
+  in \texttt{FLCoeff}, and \texttt{FCoeff}.
+  \item \texttt{FLCoeff} and \texttt{FRCoeff}
+  contain the same information as \texttt{FCoeff}.
+\end{enumerate}
+
+Conclusion:
+\begin{itemize}
+  \item
+  The operators
+  \texttt{FLCoeff}$\in\mathbb{R}^{N+1}$,\texttt{FRCoeff}
+  $\in\mathbb{R}^{N+1}$,\texttt{FCoeff}$\in\mathbb{R}^{2\,(N+1)}$,\\
+  and \texttt{subOutputMatrix}$\in\mathbb{R}^{(N+1)^d\times(N+1)^d\times\ldots}$
+  can all be realised by storing a 1-$d$ regular mesh projector
+  $\hat{P}\in\mathbb{R}^{(N+1)\times(N+1)}$.
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Adaptive mesh refinement operators for 
+maxtrixfree quadraturefree nodal DG
+methods}
+\label{ch:amr}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+This chapter is organised as follows:
+In the first section, we introduce subinterval projectors
+for $(k=3)$-spacetrees in one space dimension.
+These projectors are used to realise the
+prolongation operation in one space dimension.
+In the sections \ref{sec:amr:subcell_operators}
+and \ref{sec:amr:subface_operators},
+we then introduce suitable subcell and subface
+prolongation and restriction operators for more
+than one space dimension.
+
+Throughout this chapter, we consider matrixfree DG methods that utilise
+nodal (Lagrange) basis functions that are located 
+at the nodes of a Gauss-Legendre quadrature.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Prolongation and restriction operators in one
+space dimension}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+In this section, we introduce the basic prolongation
+and restriction operators for one space dimension.
+
+Let us split the interval $\hat{C}=[0,1]$ into ${3}^{l}$ subintervals,
+where $l$ denotes the level. We can project coefficients associated
+with the univariate basis functions onto each subinterval
+\begin{align}
+\hat{C}^{0,l;i^{0;l}} &= \frac{1}{3^l}[i^{0,l},i^{0,l}+1],\quad
+i^{0,l}=0,1,\ldots,3^l-1,
+\end{align}
+using an operator $\hat{\Pi}^{0,l;i^{0,l}}\in\mathbb{R}^{(N+1)\times(N+1)}$
+with
+\begin{align}
+\hat{\Pi}^{0,l;i^{0,l}}_{mn}
+&=
+\varphi_m \left( \frac{1}{3^l} (\hat{x}_n+i^{0,l})\right),
+\quad m,n=0,1,\ldots,N,
+\end{align}
+which is exactly the $L^2$ projector
+that projects the $0$-th level coefficients
+on the $l$-th level coefficients
+located in the subinterval $\hat{C}^{0,l;i^{0;l}}$:
+\begin{align}
+g^{l;i^{0;l}}_k &=
+\sum_{k'=0}^N
+g_{k'}\,
+\frac{\left \langle
+\hat{\varphi}_{k'},
+\,\hat{\varphi}^{l;i^{0;l}}_{k}
+\right\rangle
+_{L^2(\hat{C}^{0,l;i^{0;l}})}}
+{\left \langle
+\,\hat{\varphi}^{l;i^{0;l}}_{k},
+\,\hat{\varphi}^{l;i^{0;l}}_{k}
+\right\rangle
+_{L^2(\hat{C}^{0,l;i^{0;l}})}}
+\notag
+\\
+&\overset{\textup{(I)}}{=}
+\sum_{k'=0}^N
+g_{k'}\,
+\frac{\frac{1}{3^{l}}\,
+w_k\,
+\hat{\varphi}_{k'}
+\left(
+\frac{1}{3^l} (\hat{x}_k+i^{0,l})
+\right)}{\frac{1}{3^{l}}\,
+w_k\,}
+\notag
+\\
+&=
+\sum_{k'=0}^N
+g_{k'}\,
+\hat{\varphi}_{k'}
+\left(
+\frac{1}{3^l} (\hat{x}_k+i^{0,l})
+\right)
+\notag
+\\
+&=
+\sum_{k'=0}^N
+g_{k'}\,
+\hat{\Pi}^{0,l;i^{0,l}}_{k'k},
+\end{align}
+where we haved used the sampling property \eqref{eq:ader_impl:basis:sampling_mesh_1d}
+and the discrete orthogonality 
+\eqref{eq:ader_impl:basis:discrete_ortho_ref_1d}
+of the basis functions in step I.
+
+We observe that piecewise Lagrange prolongation and $L^2$ projection
+coincide for the chosen type of basis functions.
+It then follows directly from the exactness of the Lagrange prolongation
+utilising polynomials of order $N$ for polynomials of the same order,
+that the original level $0$ polynomial is exactly represented by the
+level $l$ subinterval polynomials in the corresponding subinterval
+\cite{???}.
+\subsection{Restriction}
+We define the restriction of the subinterval degrees of 
+$L^2$ projection on the coarse level degrees of freedom:
+\begin{align}
+g_k
+&=
+\sum_{i^{0,l}=0}^{3^l-1}
+\sum_{k'=0}^N
+\frac{
+\left\langle
+\hat{\varphi}_{k},
+\hat{\varphi}_{k'}^{l;i^{0;l}}
+\right\rangle
+_{L^2(\hat{C})}
+}
+{
+\left\langle
+\hat{\varphi}_{k},
+\hat{\varphi}_{k}
+\right\rangle
+_{L^2(\hat{C})}
+}\,
+g^{l;i^{0,l}}_{k'}
+\\
+&\overset{\textup{(I)}}{=}
+\sum_{i^{0,l}=0}^{3^l-1}
+\sum_{k'=0}^N
+\frac{
+\left\langle
+\hat{\varphi}_{k},
+\hat{\varphi}_{k'}^{l;i^{0;l}}
+\right\rangle
+_{L^2(\hat{C}^{0,l;i^{0;l}})}
+}
+{
+\left\langle
+\hat{\varphi}_{k},
+\hat{\varphi}_{k}
+\right\rangle
+_{L^2(\hat{C})}
+}\,
+g^{l;i^{0,l}}_{k'}
+\\
+&\overset{\textup{(II)}}{=}
+\sum_{i^{0,l}=0}^{3^l-1}
+\sum_{k'=0}^N
+\frac{
+\frac{1}{3^l}\,
+w_{k'}\,
+\hat{\varphi}_{k}
+\left(
+\frac{1}{3^l} (\hat{x}_{k'}+i^{0,l})
+\right)
+}
+{
+w_k
+}
+\,
+g^{l;i^{0,l}}_{k'}
+\\
+&=
+\sum_{i^{0,l}=0}^{3^l-1}
+\sum_{k'=0}^N
+\frac{1}{3^l}\,
+\left(
+\frac{w_{k'}}{w_k}\,
+\hat{\Pi}^{0,l;i^{0,l}}_{k k'}
+\right)
+\,
+g^{l;i^{0,l}}_{k'}
+\end{align}
+where we have used the compact support of the basis functions 
+in step I and the sampling property of the basis functions
+\eqref{eq:ader_impl:basis:sampling_mesh_1d} in step II.
+
+This results in an averaging of the fine grid coefficients.
+
+\subsection{Recursive construction of the subinterval projectors}
+The projectors $\hat{\Pi}^{0,l;i_l}\in\mathbb{R}^{(N+1)\times(N+1)}$, $l>0$,
+can be constructed using a cascade of the single-level
+projectors $\hat{\Pi}^{0,1;0}$, $\hat{\Pi}^{0,1;1}$, and $\hat{\Pi}^{0,1;2}$
+(Figure \ref{fig:amr:prolongation}).
+This follows directly from the exactness of the Lagrange prolongation
+utilising polynomials of order $N$ for polynomials of the same order.
+The original polynomial is thus
+exactly represented by the subinterval polynomials in
+the corresponding subinterval.
+
+\begin{figure}
+\centering
+\includegraphics{amr_prolongation.pdf}
+\caption[AMR prolongation]{Prolongation of coefficients from level $0$
+down to level $2$. See
+text for details on the prolongation operators. \textbf{TODO: Change to
+top-down.}}
+\label{fig:amr:prolongation}
+\end{figure}
+To this end, let us express the indices
+$i^{0,l}=0,1,\ldots,3^l-1$
+in terms of a tertiary basis:
+\begin{align}
+\label{eq:ader_impl:amr:subinterval_index}
+i^{0,l} = \sum_{\beta=1}^{l}\,3^{l-\beta}\,j_\beta,\qquad j_\beta \in \{ 0,
+1, 2 \}.
+\end{align}
+
+The support points and the corresponding
+Lagrange basis functions
+on the sub intervals can now be constructed in a recursive fashion
+by downscaling and shifting the parent intervals:
+\begin{align}
+\hat{x}^{l;i^{0,l}}_k &= \frac{1}{3^l} (\hat{x}_k+i^{0,l})
+= \frac{1}{3}\,(\hat{x}^{(l-1);i^{0,l-1}}_k+j_{l}), \\
+\hat{\varphi}^{l;i^{0,l}}_k (\hat{x}) &=
+\left(\prod_{\begin{smallmatrix}0\le n\le N\\ n\neq k\end{smallmatrix}}
+\frac{\hat{x}-\hat{x}^{l;i^{0,l}}_n}{x^{l;i^{0,l}}_k-\hat{x}^{l;i^{0,l}}_n}\right),
+\qquad k = 0,\ldots,N,
+\end{align}
+where $j_{l-1}\in\{0,1,2\}$ denotes the sub
+interval index with respect to the parent interval.
+
+The  level $0$ coefficients are then projected onto the $i^{0,l}$-th
+subinterval of level $l$ in a recursive way similar to the way the 
+subintervals are constructed, i.e.:
+\begin{align}
+\label{eq:amr:subinterval_recursion}
+\hat{\Pi}^{0,l;i^{0,l}}_{m_0\,m_{l}}
+&=
+\sum_{m_{1}=0,\,m_{2}=0,\,\ldots,m_{l-1}=0}^N
+\hat{\Pi}^{0,1;j_1}_{m_{0}\,m_{1}}\,
+\ldots\,
+\hat{\Pi}^{(l-2),(l-1);j_{l-1}}_{m_{l-2}\,m_{l-1}}\,\hat{\Pi}^{(l-1),l;j_l}_{m_{l-1}\,m_l}
+\\
+&=
+\sum_{m_{1}=0,\,m_{2}=0,\,\ldots,m_{l-1}=0}^N
+\hat{\Pi}^{0,1;j_1}_{m_{0}\,m_{1}}\,
+\hat{\Pi}^{0,1;j_2}_{m_{1}\,m_{2}}\,
+\ldots\,
+\hat{\Pi}^{0,1;j_{l-1}}_{m_{l-2}\,m_{l-1}}\,\hat{\Pi}^{0,1;j_l}_{m_{l-1}\,m_l},
+\end{align}
+where $m_{0},m_{l}=0,1,\ldots,N$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Subcell prolongation and restriction operators}
+\label{sec:amr:subcell_operators}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Subcell prolongation and restriction operators are important for the
+prolongation and restriction of volume data in the context of dynamic
+adaptive mesh refinement.
+
+The prolongation operator can be simply constructed as tensor product of the
+subinterval prolongation operators.
+
+To this end, let us split the reference cell $\refCell=[0,1]^{d}$ into
+$3^{l\,d}$, $l>0$, sub intervals
+\begin{align}
+\refCell^{l;i_l} = \frac{1}{3^{l}}[i_{l,1},\,i_{l,1}+1] \times
+\frac{1}{3^{l}}[i_{l,2},i_{l,2}+1] \times \ldots \times
+\frac{1}{3^{l}}[i_{l,{d}},\,i_{l,{d}}+1],
+\end{align}
+and let us further introduce a linear index
+\begin{align}
+\label{eq:ader_impl:amr:subface_index}
+i^{0,l} = \sum_{\xi=1}^{d} I_{l,\xi}\,i_{l,\xi},
+\end{align}
+where the $I_{l,\xi}\in\{0,3^l\}$, $\xi \in \{1,2,\ldots,d\}$ denote some
+strides that ensure the uniqueness of the index.
+
+We can project coefficients associated with functions that
+are constructed as $d$-dimensional tensor product
+of the univariate basis functions onto the subcells
+$\refCell^{l;i^{0,l}}$ by using a tensor product of the subinterval projectors
+$\hat{\Pi}^{0,l;i^{0;l}_\xi}$, $\xi\in\{0,1,\ldots,d-1\}$
+defined in the previous section:
+\begin{align}
+u^{l;i^{0,l}}_n
+&=
+\sum_{k'=0}^{(N+1)^{d}-1} u_{n'}\,
+\frac{
+\left\langle
+\hat{\phi}_{n'},
+\hat{\phi}^{l;i^{0,l}}
+_{n}
+\right\rangle
+_{L^2(\refCell^{l;i^{0,l}})}
+}
+{
+\left\langle
+\hat{\phi}^{l;i^{0,l}}_{n}
+\hat{\phi}^{l;i^{0,l}}_{n}
+\right\rangle
+_{L^2(\refCell^{l;i^{0,l}})}
+}
+\notag
+\\
+&=
+\sum_{k'=0}^{(N+1)^{d}-1} u_{n'}\,
+\prod_{\xi=1}^{d}
+\frac{
+\left\langle
+\hat{\varphi}_{n'_\xi},
+\hat{\varphi}^{l;i^{0,l}}_{n_\xi}
+\right\rangle
+_{L^2(\refCell^{l;i^{0,l}})}
+}
+{
+\left\langle
+\hat{\varphi}^{l;i^{0,l}}_{n_\xi}
+\hat{\varphi}^{l;i^{0,l}}_{n_\xi}
+\right\rangle
+_{L^2(\refCell^{l;i^{0,l}})}
+}
+\notag
+\\
+&= \sum_{k'=0}^{(N+1)^{d}-1} u_{n'}\,\prod_{\xi=1}^{d}
+\hat{\Pi}^{0,l;i^{0,l}_\xi}_{n'_\xi,n_\xi},\qquad n =
+0,1,\ldots,(N+1)^{d}-1,
+\end{align}
+where the values $u_{n'}$, $n=0,\ldots,(N+1)^d$, denote coefficients
+located at $d$-dimensional quadrature nodes on the reference element.  
+
+\subsection{Restriction}
+In the context of matrixfree nodal DG, the degrees of freedom of 
+volume data $u_n$, $n=0,1,\ldots,(N+1)^d-1$, are located at the quadrature
+nodes of a $d$-dimensional Gauss-Legendre quadrature.
+
+We obtain from the $L^2$ projection of the 
+subcell degrees of freedoms:
+\begin{align}
+u_n
+&=
+\sum_{i^{0,l}=0}^{3^{l\,d}-1}
+\sum_{n'=0}^{(N+1)^{d}-1}
+\prod_{\xi=1}^{d}\,
+\frac{
+\left\langle
+\hat{\varphi}_{n_{\xi}},
+\hat{\varphi}_{n'_{\xi}}^{l;i^{0;l}_\xi}
+\right\rangle
+_{L^2(\refCell^{0,l;i^{0;l}})}
+}
+{
+\left\langle
+\hat{\varphi}_{n_{\xi}},
+\hat{\varphi}_{n_{\xi}}
+\right\rangle
+_{L^2(\refCell)}
+}
+\,u^{l;i^{0,l}}_{n'}
+\\
+&=
+\sum_{i^{0,l}=0}^{3^{l\,d}-1}
+\sum_{n'=0}^{(N+1)^{d}-1}
+\prod_{\xi=1}^{d}\,
+\frac{
+\left\langle
+\hat{\varphi}_{n_\xi},
+\hat{\varphi}_{n'_\xi}^{l;i^{0;l}_\xi}
+\right\rangle
+_{L^2(\refCell^{0,l;i^{0;l}})}
+}
+{
+\left\langle
+\hat{\varphi}_{n_\xi},
+\hat{\varphi}_{n_\xi}
+\right\rangle
+_{L^2(\refCell)}
+}
+\,
+u^{l;i^{0,l}}_{n'}
+\\
+&=
+\sum_{i^{0,l}=0}^{3^{l\,d}-1}
+\sum_{n'=0}^{(N+1)^{d}-1}
+\prod_{\xi=1}^{d}\,
+\frac{
+\frac{1}{3^{l}}\,
+w_{n'_\xi}\,
+\hat{\varphi}_{n_\xi}
+\left(
+\frac{1}{3^{l}} (\hat{x}_{n',\xi}+i_\xi^{0,l})
+\right)
+}
+{
+w_{n_\xi}
+}
+\,
+u^{l;i^{0,l}}_{n'}
+\\
+&=
+\sum_{i^{0,l}=0}^{3^{l\,d}-1}
+\sum_{n'=0}^{(N+1)^{d}-1}
+\frac{1}{3^{l\,d}}\,
+\left(
+\prod_{\xi=1}^{d}\,
+\frac{w_{n'_\xi}}{w_{n_\xi}}\,
+\hat{\Pi}^{0,l;i^{0,l}_\xi}_{n_\xi n'_\xi}
+\right)
+u^{l;i^{0,l}}_{n'}.
+\end{align}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Subface prolongation and restriction operators}
+\label{sec:amr:subface_operators}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Subface projectors are important for performing the numerical flux
+computation
+on the interface between two mesh cells:
+They are used to perform the prolongation and restriction
+operation that is required if the two cells that share
+the interface do not belong to the same refinement level.
+
+Let us split the reference cell face $\hat{C}=[0,1]^{d-1}$ into $3^{l\,(d-1)}$
+sub intervals
+\begin{align}
+\hat{C}^{l;i_l} = \frac{1}{3^l}[i_{l,1},\,i_{l,1}+1] \times
+\frac{1}{3^l}[i_{l,2},i_{l,2}+1] \times \ldots \times
+\frac{1}{3^l}[i_{l,{d-1}},\,i_{l,{d-1}}+1],
+\end{align}
+where the subinterval indices $i_{l,\zeta}=0,1,\ldots,3^l$, $\zeta\in\{0,1,d-1\}$
+are defined by \eqref{eq:ader_impl:amr:subinterval_index}
+,
+and where we have introduced an unique index
+\begin{align}
+\label{eq:ader_impl:amr:subface_index}
+i^{0,l} = \sum_{\zeta=1}^{d-1} I_{l,\zeta}\,i_{l,\zeta},
+\end{align}
+where the $I_{l,\zeta}\in\{0,3^l\}$, $\zeta \in \{1,2,\ldots,d-1\}$ denote some
+strides that ensure the uniqueness of the index.
+
+We can again project coefficients associated with functions that
+are constructed as $(d-1)$-dimensional tensor product
+of the univariate basis functions onto the subfaces
+$C^{l;i^{0,l}}$ by using a tensor product of the subinterval projectors
+$\hat{\Pi}^{0,l;i^{0;l}_\zeta}$, $\zeta\in\{0,1,\ldots,d-1\}$:
+\begin{align}
+g^{l;i^{0,l}}_k = \sum_{k'=0}^{(N+1)^{d-1}-1} g_{k'}\,\prod_{\zeta=1}^{d-1}
+\hat{\Pi}^{0,l;i^{0,l}_\zeta}_{k'_\zeta,k_\zeta},\qquad k = 0,1,\ldots,(N+1)^{d-1}-1,
+\end{align}
+where the values $g_{k'}$, $k=0,\ldots,(N+1)^{d-1}-1$, denote coefficients
+located at $(d-1)$-dimensional quadrature nodes located at the reference cell. 
+
+\subsection{Restriction}
+In the context of matrixfree nodal DG, the boundary extrapolated
+values $g_k$, $k=0,1,\ldots,(N+1)^{d-1}-1$ are located at the quadrature
+nodes of a ${d-1}$-dimensional Gauss-Legendre quadrature.
+
+Since we can split the original integral over $\hat{C}=[0,1]^{d-1}$
+into $3^{l\,(d-1)}$ integrals over each subface, the inverse operation
+to the prolongation operation is to sum the integrals
+over the subfaces.
+The projection can thus be expressed as $L^2$-projection:
+\begin{align} 
+g_k
+&\overset{\textup{(I)}}{=}
+\sum_{i^{0,l}=0}^{3^{l\,(d-1)}-1}
+\sum_{k'=0}^{(N+1)^{d-1}-1}
+\prod_{\zeta=1}^{d-1}\,
+\frac{
+\left\langle
+\hat{\varphi}_{k_\zeta},
+\hat{\varphi}_{k'_\zeta}^{l;i^{0;l}_\zeta}
+\right\rangle
+_{L^2(\hat{C}^{0,l;i^{0;l}})}
+}
+{
+\left\langle
+\hat{\varphi}_{k_\zeta},
+\hat{\varphi}_{k_\zeta}
+\right\rangle
+_{L^2(\hat{C})}
+}
+g^{l;i^{0,l}}_{k'}
+\\
+&=
+\sum_{i^{0,l}=0}^{3^{l\,(d-1)}-1}
+\sum_{k'=0}^{(N+1)^{d-1}-1}
+\prod_{\zeta=1}^{d-1}\,
+\frac{
+\frac{1}{3^{l}}\,
+w_{k'_\zeta}\,
+\hat{\varphi}_{k_\zeta}
+\left(
+\frac{1}{3^{l}} (\hat{x}_{k',\zeta}+i_\zeta^{0,l})
+\right)
+}
+{
+w_{k_\zeta}
+}
+g^{l;i^{0,l}}_{k'}
+\\
+&=
+\sum_{i^{0,l}=0}^{3^{l\,(d-1)}-1}
+\sum_{k'=0}^{(N+1)^{d-1}-1}
+\frac{1}{3^{l\,(d-1)}}\,
+\left(
+\prod_{\zeta=1}^{d-1}\,
+\frac{w_{k'_\zeta}}{w_{k_\zeta}}\,
+\hat{\Pi}^{0,l;i^{0,l}_\zeta}_{k_\zeta k'_\zeta}
+\right)
+g^{l;i^{0,l}}_{k'}.
+\end{align}
+\subsection{Determining the subface index from a subcell index}
+For a given face $(\xi,f)$ of a cell on level $l-1$ and a single-level subcell
+index $(c_1,c_2,\ldots,c_{d})$, $c_{\xi}\in\{0,1,2\}$,
+$\xi\in\{0,1,\ldots,d\}$ we can reconstruct the single-level subface indices
+$j_{l,\zeta}$, $\zeta\in\{0,1,\ldots,d-1\}$ according to Table
+\ref{tab:ader_impl:amr:map_face_index_to_subcell_indices}.
+
+With respect to the topmost face at level $l=0$
+that contains the subface at level $l$, we
+can then construct a projector for the respective subface
+by recursively (bottom-up) determining the subface indices of all
+intermediate levels and then computing an index (top-down) according to
+\eqref{eq:ader_impl:amr:subface_index} and
+\eqref{eq:ader_impl:amr:subinterval_index}
+\begin{table}
+\centering
+\footnotesize
+\renewcommand*{\arraystretch}{1.5}
+\begin{tabular}{c|rrrrrrr}
+$(\xi,f)$ & $(0,0)$ & $(0,1)$ & $(1,0)$ & $(1,1)$ & $(2,0)$ & $(2,1)$ & $\cdots$
+\\
+\hline
+$c_{1}$ & 0 & 2 & $\in\{0,1,2\}$ & $\in\{0,1,2\}$ & $\in\{0,1,2\}$ &
+$\in\{0,1,2\}$ & $\cdots$
+\\
+$c_{2}$ & $\in\{0,1,2\}$ & $\in\{0,1,2\}$ & 0 & 2 & $\in\{0,1,2\}$ & $\in\{0,1,2\}$
+& $\cdots$
+\\
+$c_{3}$ & $\in\{0,1,2\}$ & $\in\{0,1,2\}$ & $\in\{0,1,2\}$ & $\in\{0,1,2\}$ & 0 & 2
+& $\cdots$
+\\
+$\vdots$ & $\vdots\ddots$ & $\ddots$ & $\ddots$ & $\ddots$ & $\ddots$ & $\ddots$
+& $\ddots$
+\end{tabular}
+\caption{Indices $(c_1,c_2,\ldots,c_d)$ of subcells that are adjacent
+to the parent cell face with index $(\xi,f)$. The difference
+in levels of the subcells and the parent cell is 1.}
+\label{tab:ader_impl:amr:map_face_index_to_subcell_indices}
+\end{table}
+
+\section{Remarks on the ExaHyPE implementation}
+\begin{enumerate}
+  \item \textbf{Three additional DG operators:} Need to store the three
+  order-dependent projectors $\hat{\Pi}^{0,1;j}\in\mathbb{R}^{(N+1)\times(N+1)}$
+with
+\begin{align}
+\hat{\Pi}^{0,1;j}_{mn}
+&=
+\varphi_m \left( \frac{1}{3} (\hat{x}_n+j)\right),
+\quad m,n=0,1,\ldots,N,
+\end{align}
+where $j\in\{0,1,2\}$.
+Remark: This can be done with a lookup table similar to the one for \texttt{Kxi}.
+\item \textbf{Face data restriction} is performed level by level: We thus
+need to implement an one-level face data restriction operator such that:
+\begin{align}
+g_k &=
+\sum_{i^{0,1}=0}^{3^{(d-1)}-1}
+\left(
+\sum_{k'=0}^{(N+1)^{d-1}-1}
+\frac{1}{3^{(d-1)}}\,
+\prod_{\zeta=1}^{d-1}\,
+\frac{w_{k'_\zeta}}{w_{k_\zeta}}\,
+\hat{\Pi}^{0,1;i^{0,1}_\zeta}_{k_\zeta k'_\zeta}
+\right)
+\,
+g^{l;i^{0,1}}_{k'}
+,
+\end{align}
+where $k=1,\ldots,(N+1)^{d-1}-1$.
+The values $g_{k}$, $k=0,\ldots,(N+1)^{d-1}-1$, denote coefficients
+associated with $(d-1)$-dimensional quadrature nodes on the boundary
+of the coarse grid cell.
+
+The values $g^{l;i^{0,1}}_{k'}$, $k'=0,\ldots,(N+1)^{d-1}-1$, denote
+coefficients associated with $(d-1)$-dimensional quadrature nodes on the boundary
+of the fine grid cell. 
+
+Note that in the above notation level 0 refers
+denotes the coarse grid level $l_\textup{coarse}$ and level $l$ refers to
+the fine grid level $l_\textup{fine}$.
+
+Since we loop over all subcells/subfaces in
+the spacetree code, only the part in
+the brackets has to be implemented on the solver side.
+
+The spacetree code supplies the restriction
+routine with the subinterval indices
+$i^{0,1}_\zeta\in\{0,1,\ldots,2\}$, $\zeta\in\{1,2,\ldots,d-1\}$.
+\item \textbf{Face data prolongation} is performed over multiple levels.
+We want to do to that in a recursive fashion; cf.
+\eqref{eq:amr:subinterval_recursion}.
+We thus need to implement a face data prolongation operator such that:
+$\hat{\Pi}^{0,l;i^{0;l}_\zeta}$, $\zeta\in\{0,1,\ldots,d-1\}$:
+\begin{align}
+g^{l;i^{0,l}}_k = \sum_{k'=0}^{(N+1)^{d-1}-1} g_{k'}\,\prod_{\zeta=1}^{d-1}
+\hat{\Pi}^{0,l;i^{0,l}_\zeta}_{k'_\zeta,k_\zeta},\qquad k = 0,1,\ldots,(N+1)^{d-1}-1,
+\end{align}
+where the values $g_{k'}$, $k'=0,\ldots,(N+1)^{d-1}-1$, denote coefficients
+located at $(d-1)$-dimensional quadrature nodes on the boundary
+of the coarse grid cell.
+\\ 
+${k=1,\ldots,(N+1)^{d-1}-1}$.
+
+The values $g^{l;i^{0,1}}_{k}$, $k=0,\ldots,(N+1)^{d-1}-1$, denote
+coefficients associated with $(d-1)$-dimensional quadrature nodes on the boundary
+of the fine grid cell.
+Note that in the above notation level 0 refers
+denotes the coarse grid level $l_\textup{coarse}$ and level $l$ refers to
+the fine grid level $l_\textup{fine}$.
+
+The spacetree code supplies the prolongation
+routine with the subinterval indices
+$i^{0,l}_\zeta\in\{0,1,\ldots,3^l-1\}$, $\zeta\in\{1,2,\ldots,d-1\}$. 
+These indices are encoded 
+in terms of a tertiary basis:
+\begin{align}
+\label{eq:ader_impl:amr:subinterval_index}
+i^{0,l}_\zeta = \sum_{\beta=1}^{l}\,3^{l-\beta}\,j_{\beta,\zeta},\qquad
+j_{\beta,\zeta} \in \{ 0, 1, 2 \}.
+\end{align}
+The ``basis vector'' of the first projection level ($\beta=1$) is $3^{l-1}$,
+the ``basis vector'' of the second projection level is
+$3^{l-2}$, and so on.
+This can be used to
+reconstruct the sequence of subintervals
+$\{j_1,j_2,j_3,j_4,\ldots,j_l\}$
+
+A straightforward decoding of the subinterval indices
+$i^{0,l}_\zeta$
+would thus work like this:
+\\
+0. Allocate extra memory to store intermediate results.
+We need to perform a chain of $l_\textup{fine}-l_\textup{coarse}-1$ MatVecs.
+\\
+1. Initialise fine grid values or temporay vector as coarse grid values.
+\\
+2. The solver code loops from 1 to up to the level
+difference $l_\textup{fine}-l_\textup{coarse}$.
+In each iteration, it has then to determine the 
+indices $j_{\beta,}$ (how many $3^{l-\beta}$?), prolongate the fine grid data by
+one level and write the result to
+the temporary vector or the fine grid values
+in an alternating manner.
+
+\item \textbf{Volume data restriction:} 
+Ignore for the time being.
+\item \textbf{Volume data prolongation:} 
+Ignore for the time being.
+\end{enumerate}
 
 \end{document}
