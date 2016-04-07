@@ -314,7 +314,7 @@ void exahype::mappings::VirtualRefinement::enterCell(
         p != exahype::solvers::RegisteredSolvers.end(); p++) { // @todo replace by parloops?
       if (fineGridVerticesEnumerator.getLevel()>=(*p)->getMinimumTreeDepth()+1) {
         exahype::records::ADERDGCellDescription& cellDescriptionParent =
-            fineGridCell.getADERDGCellDescription(solverNumber);
+            coarseGridCell.getADERDGCellDescription(solverNumber);
         // If coarse grid cell description requested refinement
         if (cellDescriptionParent.getVirtualRefinementNecessary()) {
           assertion(cellDescriptionParent.

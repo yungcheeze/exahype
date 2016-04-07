@@ -305,8 +305,7 @@ void exahype::mappings::AdaptiveRefinement::enterCell(
         p != exahype::solvers::RegisteredSolvers.end(); p++) { // @todo replace by parloops?
       if (fineGridVerticesEnumerator.getLevel()>=(*p)->getMinimumTreeDepth()+1) {
         exahype::records::ADERDGCellDescription& cellDescriptionParent =
-            fineGridCell.getADERDGCellDescription(solverNumber);
-        // If coarse grid cell description requested refinement
+            coarseGridCell.getADERDGCellDescription(solverNumber);
         if (cellDescriptionParent.getRefinementNecessary()) {
           assertion(cellDescriptionParent.getType()==exahype::Cell::RealShell);
           assertion(cellDescriptionParent.getParent());
@@ -358,7 +357,22 @@ void exahype::mappings::AdaptiveRefinement::enterCell(
 
           refineFineGridCell = true;
         }
+      } else if (cellDescription.getType()==exahype::Cell::VirtualShell) {
+        // Change virtual shell to real cell if parent
+        // requested (real) refinement
+        if (fineGridVerticesEnumerator.getLevel()>=(*p)->getMinimumTreeDepth()+1) {
+             exahype::records::ADERDGCellDescription& cellDescriptionParent =
+                 coarseGridCell.getADERDGCellDescription(solverNumber);
+             if (cellDescriptionParent.getRefinementNecessary()) {
+               assertion(cellDescriptionParent.getType()==exahype::Cell::RealShell);
+               assertion(cellDescriptionParent.getParent());
+
+               cellDescription.setType(exahype::Cell::RealCell);
+               cellDescriptionParent.setRefinementNecessary(false);
+             }
+        }
       }
+
       solverNumber++;
     }
 
