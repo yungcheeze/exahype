@@ -152,13 +152,12 @@ public class GenericFluxesNonlinearADER_DGinC implements Solver {
     }
     writer.write("}\n");
     writer.write("\n\n\n");
-    
-    writer.write("void " + projectName + "::" + solverName
+    writer.write("bool " + projectName + "::" + solverName
             + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {\n");
     writer.write("  // @todo Please implement\n");
+    writer.write("  return false;\n");
     writer.write("}\n");
     writer.write("\n\n\n");
-    
     writer.write("void " + projectName + "::" + solverName
         + "::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {\n");
     writer.write("  // Dimensions             = " + _dimensions + "\n");
@@ -169,7 +168,6 @@ public class GenericFluxesNonlinearADER_DGinC implements Solver {
     }
     writer.write("}\n");
     writer.write("\n\n\n");
-
     writer.write("bool " + projectName + "::" + solverName
             + "::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {\n");
     writer.write("  // @todo Please implement\n");

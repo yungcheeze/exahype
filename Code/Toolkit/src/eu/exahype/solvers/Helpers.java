@@ -95,12 +95,6 @@ public class Helpers {
     writer.write("  return 3;\n");
     writer.write("}\n");
     writer.write("\n\n\n");
-    writer.write("bool " + projectName + "::" + solverName
-        + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t) {\n");
-    writer.write("  // @todo Please implement/augment if required\n");
-    writer.write("  return false;\n");
-    writer.write("}\n");
-    writer.write("\n\n\n");
   }
 
   static public void invokeCodeGenerator(String solverName, int numberOfUnknowns, int numberOfParameters, int order,

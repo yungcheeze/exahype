@@ -86,23 +86,30 @@ public class UserDefinedADER_DGinC implements Solver {
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("bool " + projectName + "::" + solverName
+            + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {\n");
+    writer.write("  // @todo Please implement\n");
+    writer.write("  return false;\n");
+    writer.write("}\n");
+    writer.write("\n\n\n");
+    writer.write("bool " + projectName + "::" + solverName
             + "::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {\n");
-    writer.write("   @todo Please implement\n");
+    writer.write("  // @todo Please implement\n");
+    writer.write("  return false;\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
             + "::faceUnknownsProlongation(double* lQhbndFine,double* lFhbndFine,const double* lQhbndCoarse,const double* lFhbndCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex) {\n");
-    writer.write("   @todo Please implement\n");
+    writer.write("  // @todo Please implement\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
             + "::faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex) {\n");
-    writer.write("   @todo Please implement\n");
+    writer.write("  // @todo Please implement\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
             + "::volumeUnknownsProlongation(  double* luhFine, const double* luhCoarse, const int coarseGridLevel, const int fineGridLevel, const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {\n");
-    writer.write("   @todo Please implement\n");
+    writer.write("  //@todo Please implement\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
