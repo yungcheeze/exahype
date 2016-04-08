@@ -33,7 +33,7 @@ printf "SCHEDULER_SCRIPT=${SCHEDULER_SCRIPT}\n"
 printf "SCHEDULER_EXECUTABLE_SERIAL=${SCHEDULER_EXECUTABLE_SERIAL}\n"
 printf "SCHEDULER_SPEC_FILE=${SCHEDULER_SPEC_FILE}\n"
 printf "SCHEDULER_SYSTEM_ID=${SCHEDULER_SYSTEM_ID}\n"
-printf "SCHEDULER_PREFIX=${SCHEDULER_PREFIX}\n"
+printf "SCHEDULER_OUTPUT_PREFIX=${SCHEDULER_OUTPUT_PREFIX}\n"
 printf "SCHEDULER_OUTPUT_DIR=${SCHEDULER_OUTPUT_DIR}\n"
 printf "SCHEDULER_RUNS=${SCHEDULER_RUNS}\n"
 printf "SCHEDULER_INTERACTIVE=${SCHEDULER_INTERACTIVE}\n\n"
@@ -59,7 +59,7 @@ fi
 ###############################################################################
 # CREATE OUTPUT DIRECTORIES
 ###############################################################################
-PREFIX=$(date +"%y%m%d")_${SCHEDULER_PREFIX}
+PREFIX=$(date +"%y%m%d")_${SCHEDULER_OUTPUT_PREFIX}
 OUTPUT_DIR=${SCHEDULER_OUTPUT_DIR}/${PREFIX}
 
 printf "Trying to create output dir \'${SCHEDULER_OUTPUT_DIR}\' \n"
