@@ -401,7 +401,6 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
 
         // Lock the critical multithreading area.
         bool riemannSolveNotPerformed = false;
-        tarch::multicore::Lock lock(_semaphore);
         assertionEquals4(
           cellDescriptionsL[i].getRiemannSolvePerformed(faceL), cellDescriptionsR[i].getRiemannSolvePerformed(faceR),
           faceL, faceR,
@@ -415,7 +414,6 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
           cellDescriptionsL[i].setRiemannSolvePerformed(faceL, true);
           cellDescriptionsR[i].setRiemannSolvePerformed(faceR, true);
         }
-        lock.free();
 
         if (riemannSolveNotPerformed) {
           const int numberOfFaceDof =

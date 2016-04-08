@@ -407,12 +407,10 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
           // Note that two boundary vertices can operate on the same face at the same
           // time.
           bool riemannSolveNotPerformed = false;
-          tarch::multicore::Lock lock(_semaphore);
           riemannSolveNotPerformed = !p.getRiemannSolvePerformed(faceIndex);
           if (riemannSolveNotPerformed) {
             p.setRiemannSolvePerformed(faceIndex, true);
           }
-          lock.free();
 
           // Apply the boundary conditions.
           // todo Copy and periodic boundary conditions should be configured by

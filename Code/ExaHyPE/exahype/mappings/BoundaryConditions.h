@@ -39,11 +39,6 @@ class BoundaryConditions;
 class exahype::mappings::BoundaryConditions {
  private:
   /**
-   * Semaphore for locking critical multithreading code areas.
-   */
-  tarch::multicore::BooleanSemaphore _semaphore;
-
-  /**
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
