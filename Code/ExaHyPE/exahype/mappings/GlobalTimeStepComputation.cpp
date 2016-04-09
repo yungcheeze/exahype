@@ -8,8 +8,6 @@
 
 #include "exahype/solvers/Solver.h"
 
-#include "tarch/multicore/Lock.h"
-
 #include <limits>
 
 /**
@@ -378,7 +376,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
 
       // please use a different UserDefined per mapping/event
       const peano::datatraversal::autotuning::MethodTrace methodTrace =
-          peano::datatraversal::autotuning::UserDefined1;
+          peano::datatraversal::autotuning::UserDefined2;
       const int grainSize =
           peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
               numberOfADERDGCellDescriptions, methodTrace);

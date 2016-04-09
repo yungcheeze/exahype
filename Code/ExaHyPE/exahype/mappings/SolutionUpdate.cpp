@@ -327,7 +327,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
 
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
-        peano::datatraversal::autotuning::UserDefined3;
+        peano::datatraversal::autotuning::UserDefined6;
     const int grainSize =
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
@@ -337,7 +337,6 @@ void exahype::mappings::SolutionUpdate::enterCell(
               fineGridCell.getADERDGCellDescriptionsIndex())[i];
 
       if (p.getType()==exahype::Cell::RealCell) {
-
         exahype::solvers::Solver* solver =
             exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
@@ -352,13 +351,15 @@ void exahype::mappings::SolutionUpdate::enterCell(
             p.getCorrectorTimeStepSize()
         );
 
-        if (solver->hasToAdjustSolution(fineGridVerticesEnumerator.getCellCenter(),
-                                        fineGridVerticesEnumerator.getCellSize(),
-                                        p.getCorrectorTimeStamp())) {
-          solver->solutionAdjustment(luh, fineGridVerticesEnumerator.getCellCenter(),
-                                     fineGridVerticesEnumerator.getCellSize(),
-                                     p.getCorrectorTimeStamp(),
-                                     p.getCorrectorTimeStepSize());
+        if (solver->hasToAdjustSolution(
+            fineGridVerticesEnumerator.getCellCenter(),
+            fineGridVerticesEnumerator.getCellSize(),
+            p.getCorrectorTimeStamp())) {
+          solver->solutionAdjustment(
+              luh, fineGridVerticesEnumerator.getCellCenter(),
+              fineGridVerticesEnumerator.getCellSize(),
+              p.getCorrectorTimeStamp(),
+              p.getCorrectorTimeStepSize());
         }
 
         logDebug("enterCell(...)::debug::after::luh[0]", luh[0]);

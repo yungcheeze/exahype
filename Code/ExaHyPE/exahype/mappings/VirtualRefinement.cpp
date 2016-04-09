@@ -381,7 +381,8 @@ void exahype::mappings::VirtualRefinement::enterCell(
       }
     }
     // Note that fineGridVertices->refine() refines all adjacent cell
-    // not only the targeted fineGridCell (Peano Cookbook)
+    // not only the targeted fineGridCell (Peano Cookbook).
+    // That's why we use the virtualRefinementNecessary flag.
     if (refineFineGridCell) {
       dfor2(k) // loop over 2^d vertices and set the refinement flag
         if (fineGridVertices[kScalar].getRefinementControl()==

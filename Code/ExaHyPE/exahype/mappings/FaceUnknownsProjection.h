@@ -5,8 +5,8 @@
 // this file and your project to your needs as long as the license is in
 // agreement with the original Peano user constraints. A reference to/citation
 // of  Peano and its author is highly appreciated.
-#ifndef EXAHYPE_MAPPINGS_AdaptiveRefinement_H_
-#define EXAHYPE_MAPPINGS_AdaptiveRefinement_H_
+#ifndef EXAHYPE_MAPPINGS_FaceUnknownsProjection_H_
+#define EXAHYPE_MAPPINGS_FaceUnknownsProjection_H_
 
 #include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
@@ -27,7 +27,7 @@
 
 namespace exahype {
 namespace mappings {
-class AdaptiveRefinement;
+class FaceUnknownsProjection;
 }
 }
 
@@ -39,13 +39,47 @@ class AdaptiveRefinement;
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::mappings::AdaptiveRefinement {
+class exahype::mappings::FaceUnknownsProjection {
  private:
   /**
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
 
+  /**
+   * Prolongates face data from a parent cell description to
+   * \p cellDescription if the fine grid cell associated with
+   * \p cellDescription is adjacent to a boundary of the
+   * coarse grid cell associated with the parent cell description.
+   *
+   * \note This method makes only sense for virtual shells
+   * in the current AMR concept.
+   */
+  void prolongateFaceData(
+      const exahype::records::ADERDGCellDescription& cellDescription,
+      const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) const;
+
+  /**
+   * Restricts face data from \p cellDescriptio to
+   * a parent cell description if the fine grid cell associated with
+   * \p cellDescription is adjacent to a boundary of the
+   * coarse grid cell associated with the parent cell description.
+   *
+   * \note This method makes only sense for real cells.
+   * in the current AMR concept.
+   */
+  void restrictFaceData(
+      const exahype::records::ADERDGCellDescription& cellDescription,
+      const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) const;
+
+  /**
+   * Picks out the subcell indices that are not at position \p.
+   */
+  tarch::la::Vector<DIMENSIONS-1,int> getSubfaceIndex(
+      const tarch::la::Vector<DIMENSIONS,int>& subcellIndex,
+      const int d) const;
 
  public:
   /**
@@ -96,7 +130,7 @@ class exahype::mappings::AdaptiveRefinement {
    * that your code works on a parallel machine and for any mapping/algorithm
    * modification.
    */
-  AdaptiveRefinement();
+  FaceUnknownsProjection();
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -109,13 +143,13 @@ class exahype::mappings::AdaptiveRefinement {
    *
    * @see mergeWithWorkerThread()
    */
-  AdaptiveRefinement(const AdaptiveRefinement& masterThread);
+  FaceUnknownsProjection(const FaceUnknownsProjection& masterThread);
 #endif
 
   /**
    * Destructor. Typically does not implement any operation.
    */
-  virtual ~AdaptiveRefinement();
+  virtual ~FaceUnknownsProjection();
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -146,7 +180,7 @@ class exahype::mappings::AdaptiveRefinement {
    * on the heap. However, you should protect this object by a BooleanSemaphore
    * and a lock to serialise all accesses to the plotter.
    */
-  void mergeWithWorkerThread(const AdaptiveRefinement& workerThread);
+  void mergeWithWorkerThread(const FaceUnknownsProjection& workerThread);
 #endif
 
   /**
@@ -1076,7 +1110,7 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
    * beginIteration() might not be called prior to any other event. See the
    * documentation of CommunicationSpecification for details.
    *
-   * @see AdaptiveRefinement()
+   * @see FaceUnknownsProjection()
    */
   void beginIteration(exahype::State& solverState);
 
@@ -1106,7 +1140,7 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
    * might not be called after all other events. See the documentation
    * of CommunicationSpecification for details.
    *
-   * @see AdaptiveRefinement()
+   * @see FaceUnknownsProjection()
    */
   void endIteration(exahype::State& solverState);
 

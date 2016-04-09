@@ -274,6 +274,54 @@ void exahype::Cell::cleanCellDescription(const int solverNumber) {
   }
 }
 
+exahype::Cell::SubcellPosition exahype::Cell::getSubcellPositionOfVirtualShell(
+    const int solverNumber,
+    const int parentIndex,
+    const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell) const {
+
+  assertion1(static_cast<unsigned int>(solverNumber) <
+                   ADERDGCellDescriptionHeap::getInstance().getData(
+                       _cellData.getADERDGCellDescriptionsIndex()).size(),
+                       toString());
+  exahype::Cell::SubcellPosition subcellPosition;
+
+  // initialise recursion
+  for (int d=0; d < DIMENSIONS; d++) {
+    subcellPosition.subcellIndex[d] = fineGridPositionOfCell[d];
+  }
+
+  subcellPosition.parentIndex = parentIndex;
+  assertion(ADERDGCellDescriptionHeap::getInstance().
+            isValidIndex(subcellPosition.parentIndex));
+  exahype::records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().
+      getData(subcellPosition.parentIndex)[solverNumber]);
+
+  // recursion
+  int i = 1;
+  while ((!p->getHasNeighboursOfTypeCell() &&
+      p->getType()==exahype::Cell::VirtualShell)
+      ||
+      p->getType()!=exahype::Cell::RealCell) {
+    for (int d=0; d < DIMENSIONS; d++) {
+      subcellPosition.subcellIndex[d] +=
+          tarch::la::aPowI(i,3) * p->getFineGridPositionOfCell(d);
+    }
+
+    subcellPosition.parentIndex = p->getParentIndex();
+    assertion(ADERDGCellDescriptionHeap::getInstance().
+              isValidIndex(subcellPosition.parentIndex));
+    p = &(ADERDGCellDescriptionHeap::getInstance().
+        getData(subcellPosition.parentIndex)[solverNumber]);
+    i++;
+  }
+
+  assertion((p->getHasNeighboursOfTypeCell() &&
+            p->getType()==exahype::Cell::VirtualShell)
+            ||
+            p->getType()==exahype::Cell::RealCell)
+  return subcellPosition;
+}
+
 void exahype::Cell::init(
     const int level, const tarch::la::Vector<DIMENSIONS, double>& size,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre) {

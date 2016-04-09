@@ -46,7 +46,14 @@ class exahype::mappings::VirtualRefinement {
    */
   static tarch::logging::Log _log;
 
-  int getMinimumTreeDepth();
+  /**
+   * Check if a tree cell has neighbours that hold a cell description of a particular
+   * type \p cellType for the solver \p solverNumber.
+   */
+  bool hasNeighboursOfType(
+      const int solverNumber,
+      exahype::Cell::CellDescriptionType cellType,
+      const tarch::la::Vector<THREE_POWER_D,int>& neighbourCellDescriptionIndices);
 
  public:
   /**
@@ -1179,15 +1186,6 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
               exahype::Vertex* const coarseGridVertices,
               const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
               exahype::Cell& coarseGridCell);
-
-  /**
-   * Check if a tree cell has neighbours that hold a cell description of a particular
-   * type \p cellType for the solver \p solverNumber.
-   */
-  bool hasNeighboursOfType(
-      const int solverNumber,
-      exahype::Cell::CellDescriptionType cellType,
-      const tarch::la::Vector<THREE_POWER_D,int>& neighbourCellDescriptionIndices);
 };
 
 #endif
