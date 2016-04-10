@@ -21,9 +21,12 @@ void kernels::aderdg::generic::c::volumeIntegral(
   // Please remove the typedefs in generic kernels again since numberOf(...)Dof
   // is not
   // a compile time variable anymore
-  constexpr int numberOfDof =
-      5 * (3 + 1) * (3 + 1);  // tarch::la::aPowI(3+1,DIMENSIONS);
-  constexpr int order = 3;
+  //constexpr int numberOfDof =
+  //    5 * (3 + 1) * (3 + 1);  // tarch::la::aPowI(3+1,DIMENSIONS);
+  //constexpr int order = 3;
+
+  const int order       = basisSize-1;
+  const int numberOfDof = numberOfVariables * basisSize * basisSize;
 
   // memory layout of lFhi:
   // lFhi = [ lFhi_x | lFhi_y ] ordered as follows
@@ -39,8 +42,8 @@ void kernels::aderdg::generic::c::volumeIntegral(
   // access lduh(nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array
   // manner
   // @todo Angelika
-  typedef double tensor_t[3 + 1][5];
-  tensor_t *lduh3D = (tensor_t *)lduh;
+  //typedef double tensor_t[3 + 1][5];
+  //tensor_t *lduh3D = (tensor_t *)lduh;
 
   // lduh is (nDofy x nDofx x nVar)
 
@@ -48,6 +51,9 @@ void kernels::aderdg::generic::c::volumeIntegral(
   // x direction (independent from the y and z derivatives)
   for (int jj = 0; jj < basisSize; jj++) {
     for (int ii = 0; ii < basisSize; ii++) {
+      const int nodeIndex     = basisSize * jj +  ii;
+      const int dofStartIndex = nodeIndex * numberOfVariables;
+
       double weight = kernels::gaussLegendreWeights[order][jj];
 
       // MATMUL: Kxi * lFhi_x
@@ -56,8 +62,10 @@ void kernels::aderdg::generic::c::volumeIntegral(
         const int mmDofStartIndex = mmNodeIndex * numberOfVariables;
 
         for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-          lduh3D[jj][ii][ivar] += weight / dx[0] * kernels::Kxi[order][ii][mm] *
-                                  lFhi_x[mmDofStartIndex + ivar];
+            lduh[dofStartIndex+ivar]  += weight / dx[0] * kernels::Kxi[order][ii][mm] *
+                                                        lFhi_x[mmDofStartIndex + ivar];
+//          lduh3D[jj][ii][ivar] += weight / dx[0] * kernels::Kxi[order][ii][mm] *
+//                                  lFhi_x[mmDofStartIndex + ivar];
         }
       }
     }
@@ -69,6 +77,9 @@ void kernels::aderdg::generic::c::volumeIntegral(
   // y direction (independent from the x and z derivatives)
   for (int jj = 0; jj < basisSize; jj++) {
     for (int ii = 0; ii < basisSize; ii++) {
+      const int nodeIndex     = basisSize * jj +  ii;
+      const int dofStartIndex = nodeIndex * numberOfVariables;
+
       double weight = kernels::gaussLegendreWeights[order][ii];
 
       // MATMUL: Kxi * lFhi_y
@@ -76,13 +87,15 @@ void kernels::aderdg::generic::c::volumeIntegral(
         // without reordering:
         // const int mmNodeIndex         = ii + basisSize * mm;
         // const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
-        const int mmNodeIndex = mm + basisSize * ii;
+        const int mmNodeIndex     = mm + basisSize * ii;
         const int mmDofStartIndex = mmNodeIndex * numberOfVariables;
 
         // now we benefit from the reordering of lFhi_y
         for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-          lduh3D[jj][ii][ivar] += weight / dx[1] * kernels::Kxi[order][jj][mm] *
-                                  lFhi_y[mmDofStartIndex + ivar];
+          lduh[dofStartIndex+ivar] += weight / dx[1] * kernels::Kxi[order][jj][mm] *
+                                            lFhi_y[mmDofStartIndex + ivar];
+//          lduh3D[jj][ii][ivar] += weight / dx[1] * kernels::Kxi[order][jj][mm] *
+//                                  lFhi_y[mmDofStartIndex + ivar];
         }
       }
     }

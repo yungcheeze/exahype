@@ -15,9 +15,12 @@ void kernels::aderdg::generic::c::surfaceIntegral(
     double *lduh, const double *const lFbnd,
     const tarch::la::Vector<DIMENSIONS, double> &dx,
     const int numberOfVariables, const int basisSize) {
-  constexpr int numberOfFaceDof =
-      5 *
-      (3 + 1);  // numberOfVariables * tarch::la::aPowI(DIMENSIONS-1,basisSize);
+
+  const int numberOfFaceDof = numberOfVariables * basisSize;
+
+  //  constexpr int numberOfFaceDof =
+  //      5 *
+  //      (3 + 1);  // numberOfVariables * tarch::la::aPowI(DIMENSIONS-1,basisSize);
   const double *FLeft = &(lFbnd[EXAHYPE_FACE_LEFT * numberOfFaceDof]);
   const double *FRight = &(lFbnd[EXAHYPE_FACE_RIGHT * numberOfFaceDof]);
   const double *FFront = &(lFbnd[EXAHYPE_FACE_FRONT * numberOfFaceDof]);
@@ -44,12 +47,12 @@ void kernels::aderdg::generic::c::surfaceIntegralXDirection(
   // a compile time variable anymore
   // constexpr int numberOfFaceDof = 5 * (3+1);//numberOfVariables *
   // tarch::la::aPowI(DIMENSIONS-1,basisSize);
-  constexpr int order = 3;
+  const int order = basisSize-1;
 
   // access lduh(nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array
   // manner
-  typedef double tensor_t[3 + 1][5];
-  tensor_t *lduh3D = (tensor_t *)lduh;
+//  typedef double tensor_t[3 + 1][5];
+//  tensor_t *lduh3D = (tensor_t *)lduh;
 
   // x direction (independent from the y and z)
   for (int jj = 0; jj < basisSize; jj++) {
@@ -59,11 +62,15 @@ void kernels::aderdg::generic::c::surfaceIntegralXDirection(
     double weight = kernels::gaussLegendreWeights[order][jj];
 
     for (int mm = 0; mm < basisSize; mm++) {
+      const int mmNodeStartIndex = jj*basisSize + mm;
+      const int mmDofStartIndex  = numberOfVariables * mmNodeStartIndex;
+
       for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-        lduh3D[jj][mm][ivar]  // direction dependent!
-            += updateSign * weight / dx *
-               (kernels::FCoeff[order][facePosition][mm] *
-                lFhbnd[dofStartIndex + ivar]);
+        //           lduh3D[jj][mm][ivar]  // direction dependent!
+        lduh[mmDofStartIndex + ivar]  // direction dependent!
+             += updateSign * weight / dx *
+             (kernels::FCoeff[order][facePosition][mm] *
+                 lFhbnd[dofStartIndex + ivar]);
       }
     }
   }
@@ -80,12 +87,12 @@ void kernels::aderdg::generic::c::surfaceIntegralYDirection(
   // a compile time variable anymore
   // constexpr int numberOfFaceDof = 5 * (3+1);//numberOfVariables *
   // tarch::la::aPowI(DIMENSIONS-1,basisSize);
-  constexpr int order = 3;
+  const int order = basisSize-1;
 
   // access lduh(nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array
   // manner
-  typedef double tensor_t[3 + 1][5];
-  tensor_t *lduh3D = (tensor_t *)lduh;
+//  typedef double tensor_t[3 + 1][5];
+//  tensor_t *lduh3D = (tensor_t *)lduh;
 
   // y direction (independent from the y and z)
   for (int ii = 0; ii < basisSize; ii++) {
@@ -96,10 +103,14 @@ void kernels::aderdg::generic::c::surfaceIntegralYDirection(
 
     for (int mm = 0; mm < basisSize; mm++) {
       for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-        lduh3D[mm][ii][ivar]  // direction dependent!
-            += updateSign * weight / dy *
-               (kernels::FCoeff[order][facePosition][mm] *
-                lFhbnd[dofStartIndex + ivar]);
+        const int mmNodeIndex = mm*basisSize+ii;
+        const int mmDofStartIndex = numberOfVariables * mmNodeIndex;
+
+//       lduh3D[mm][ii][ivar]  // direction dependent!
+        lduh[mmDofStartIndex+ivar]  // direction dependent!
+                       += updateSign * weight / dy *
+                       (kernels::FCoeff[order][facePosition][mm] *
+                           lFhbnd[dofStartIndex + ivar]);
       }
     }
   }
