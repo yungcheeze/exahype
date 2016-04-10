@@ -314,7 +314,6 @@ void exahype::mappings::PatchInitialisation::enterCell(
             fineGridPositionOfCell,
             fineGridVerticesEnumerator.getCellSize(),
             fineGridVerticesEnumerator.getCellCenter());
-        std::cout << "PatchInitialisation + " << solverNumber  << std::endl;
         fineGridCell.initialiseCellDescription(solverNumber);
       }
       solverNumber++;
