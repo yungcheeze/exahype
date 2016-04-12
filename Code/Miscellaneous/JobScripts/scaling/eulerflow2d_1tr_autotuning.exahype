@@ -21,7 +21,7 @@ exahype-project  Euler2d
     dimension                = 2
     width                    = 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 0.02
+    end-time                 = 0.015
   end computational-domain
  
   
@@ -31,14 +31,14 @@ exahype-project  Euler2d
     kernel    = user::fluxes
    
     plot vtk::ascii
-      time     = 1000000.0
+      time     = 1.0
       repeat   = 1.0
       filename = ./solution
     end plot
   end solver
 
   shared-memory
-    identifier               = dummy
+    identifier               = autotuning
     cores                    = 8
     properties-file          = sharedmemory.properties
   end shared-memory  

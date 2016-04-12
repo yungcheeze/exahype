@@ -76,7 +76,9 @@ do
     # Create temporary spec file with new core count
     ( \
     cd ${SCHEDULER_PROJECT_DIR} && \
-    sed "s/cores                    =.*/cores                    = ${t}/" ${SCHEDULER_SPEC_FILE} > ${SCHEDULER_SPEC_FILE}_$t \
+    sed "s/cores                    =.*/cores                    = ${t}/" ${SCHEDULER_SPEC_FILE} > ${SCHEDULER_SPEC_FILE}_${t}2 && \
+    sed "s/properties-file          =.*/properties-file          = sharedmemory.properties_${t}/" ${SCHEDULER_SPEC_FILE}_${t}2 > ${SCHEDULER_SPEC_FILE}_${t} && \
+    rm ${SCHEDULER_SPEC_FILE}_${t}2 \
     )
     for r in $(seq 1 ${SCHEDULER_RUNS})
     do  

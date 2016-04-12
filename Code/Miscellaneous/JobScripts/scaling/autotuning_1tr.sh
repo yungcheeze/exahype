@@ -9,17 +9,10 @@ export SCHEDULER_EXECUTABLE=./ExaHyPE-Euler2d-TBB
 export SCHEDULER_EXECUTABLE_SERIAL=./ExaHyPE-Euler2d-None
 export SCHEDULER_OUTPUT_DIR=${SCHEDULER_PROJECT_DIR}/scaling
 
-export SCHEDULER_RUNS=2
+export SCHEDULER_RUNS=1
 
-export SCHEDULER_OUTPUT_PREFIX=1tr_dummy
-export SCHEDULER_SPEC_FILE=../eulerflow2d.exahype
-export SHAREDMEM=TBB
-BASH_ENV=params_sandybridge.sh ./scheduler.sh
-export SHAREDMEM=None
-BASH_ENV=params_sandybridge.sh ./scheduler_serial.sh
-
-export SCHEDULER_OUTPUT_PREFIX=4tr_dummy
-export SCHEDULER_SPEC_FILE=../eulerflow2d_4tr.exahype
+export SCHEDULER_OUTPUT_PREFIX=1tr_autotuning
+export SCHEDULER_SPEC_FILE=../eulerflow2d_1tr_autotuning.exahype
 export SHAREDMEM=TBB
 BASH_ENV=params_sandybridge.sh ./scheduler.sh
 export SHAREDMEM=None
