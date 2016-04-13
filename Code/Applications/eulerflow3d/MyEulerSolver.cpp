@@ -1,9 +1,7 @@
 #include "MyEulerSolver.h"
 
-Euler3d::MyEulerSolver::MyEulerSolver(int kernelNumber)
-    : exahype::solvers::Solver(
-          "MyEulerSolver", exahype::solvers::Solver::ADER_DG, kernelNumber, 5,
-          3 + 1, exahype::solvers::Solver::GlobalTimeStepping) {
+Euler3d::MyEulerSolver::MyEulerSolver( int kernelNumber):
+  exahype::solvers::Solver("MyEulerSolver",exahype::solvers::Solver::ADER_DG,kernelNumber,5,3+1,exahype::solvers::Solver::GlobalTimeStepping) {
   // @todo Please implement/augment if required
 }
 
@@ -45,6 +43,16 @@ void Euler3d::MyEulerSolver::adjustedSolutionValues(const double* const x,
     //  Q[4] = 2.5;
   }
 }
+
+
+
+bool Euler3d::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
+  // @todo Please implement
+  return false;
+}
+
+
+
 
 
 
