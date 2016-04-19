@@ -322,13 +322,17 @@ void exahype::mappings::RegularMesh::enterCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  logTraceInWith4Arguments("enterCell(...)", fineGridCell,
+                           fineGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfCell);
+
   int solverNumber=0;
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-          exahype::solvers::RegisteredSolvers.begin();
-          p != exahype::solvers::RegisteredSolvers.end(); p++) {
-    if (fineGridVerticesEnumerator.getLevel()==(*p)->getMinimumTreeDepth()+1) {
-      if (!DataHeap::getInstance().isValidIndex(
-          fineGridCell.getADERDGCellDescriptionsIndex())) {
+  if (!DataHeap::getInstance().isValidIndex(
+      fineGridCell.getADERDGCellDescriptionsIndex())) {
+    for (std::vector<exahype::solvers::Solver*>::const_iterator p =
+        exahype::solvers::RegisteredSolvers.begin();
+        p != exahype::solvers::RegisteredSolvers.end(); p++) { // @todo replace by parloops?
+      if (fineGridVerticesEnumerator.getLevel()==(*p)->getMinimumTreeDepth()+1) {
         fineGridCell.addNewCellDescription(
             solverNumber,
             exahype::Cell::RealCell,
@@ -342,6 +346,7 @@ void exahype::mappings::RegularMesh::enterCell(
     }
     solverNumber++;
   }
+  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
 void exahype::mappings::RegularMesh::leaveCell(

@@ -46,7 +46,6 @@ class exahype::mappings::RegularMesh {
    */
   static tarch::logging::Log _log;
 
-  int getMinimumTreeDepth();
 
  public:
   /**

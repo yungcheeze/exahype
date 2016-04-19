@@ -298,27 +298,27 @@ void exahype::mappings::PatchInitialisation::enterCell(
   // @todo 16/04/05:Dominic Etienne Charrier: this mapping functionality will be replaced
   // by a regular mesh and cell a cell description init
   // mapping
-  int solverNumber=0;
-  if (!DataHeap::getInstance().isValidIndex(
+  if (!ADERDGCellDescriptionHeap::getInstance().isValidIndex(
       fineGridCell.getADERDGCellDescriptionsIndex())) {
+    int solverNumber=0;
     for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-            exahype::solvers::RegisteredSolvers.begin();
-            p != exahype::solvers::RegisteredSolvers.end(); p++) {
+        exahype::solvers::RegisteredSolvers.begin();
+        p != exahype::solvers::RegisteredSolvers.end(); p++) {
       if (fineGridVerticesEnumerator.getLevel()==(*p)->getMinimumTreeDepth()+1) {
-          fineGridCell.addNewCellDescription(
-              solverNumber,
-              exahype::Cell::RealCell,
-              fineGridVerticesEnumerator.getLevel(),
-              multiscalelinkedcell::HangingVertexBookkeeper::
-              InvalidAdjacencyIndex,
-              fineGridPositionOfCell,
-              fineGridVerticesEnumerator.getCellSize(),
-              fineGridVerticesEnumerator.getCellCenter());
-          fineGridCell.initialiseCellDescription(solverNumber);
-        }
+        fineGridCell.addNewCellDescription(
+            solverNumber,
+            exahype::Cell::RealCell,
+            fineGridVerticesEnumerator.getLevel(),
+            multiscalelinkedcell::HangingVertexBookkeeper::
+            InvalidAdjacencyIndex,
+            fineGridPositionOfCell,
+            fineGridVerticesEnumerator.getCellSize(),
+            fineGridVerticesEnumerator.getCellCenter());
+        fineGridCell.initialiseCellDescription(solverNumber);
       }
       solverNumber++;
     }
+  }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 

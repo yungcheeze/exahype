@@ -5,18 +5,19 @@
 # runs an ExaHyPE project executable.
 ###############################################################################
 # User needs to provide the following parameters
-# CC                    (string)
-# MODE                  (string)
-# SHAREDMEM             (string)
-# EXAHYPE_PROJECT_DIR   (string)
-# EXAHYPE_EXECUTABLE    (string)
-# EXAHYPE_SPEC_FILE     (string)
-# EXAHYPE_PROCESSOR_ID  (string)
-# EXAHYPE_OUTPUT_PREFIX (string)
-# EXAHYPE_OUTPUT_DIR    (string)
-# EXAHYPE_MPI           (array)
-# EXAHYPE_CORES         (array)
-# EXAHYPE_RUNS          (number)
+# CC                          (string)
+# MODE                        (string)
+# SHAREDMEM                   (string)
+# SCHEDULER_PROJECT_DIR       (string)
+# SCHEDULER_SCRIPT            (string)
+# SCHEDULER_EXECUTABLE_SERIAL (string)
+# SCHEDULER_SPEC_FILE         (string)
+# SCHEDULER_PROCESSOR_ID      (string)
+# SCHEDULER_OUTPUT_PREFIX     (string)
+# SCHEDULER_OUTPUT_DIR        (string)
+# SCHEDULER_MPI               (array)
+# SCHEDULER_CORES             (array)
+# SCHEDULER_RUNS              (number)
 
 ###############################################################################
 # READ IN PARAMETERS
@@ -27,14 +28,15 @@ printf "########################################################################
 printf "CC=${CC}\n"
 printf "MODE=${MODE}\n"
 printf "SHAREDMEM=${SHAREDMEM}\n\n"
-printf "EXAHYPE_PROJECT_DIR=${EXAHYPE_PROJECT_DIR}\n"
-printf "EXAHYPE_EXECUTABLE=${EXAHYPE_EXECUTABLE}\n"
-printf "EXAHYPE_SPEC_FILE=${EXAHYPE_SPEC_FILE}\n"
-printf "EXAHYPE_SYSTEM_ID=${EXAHYPE_SYSTEM_ID}\n"
-printf "EXAHYPE_PREFIX=${EXAHYPE_PREFIX}\n"
-printf "EXAHYPE_OUTPUT_DIR=${EXAHYPE_OUTPUT_DIR}\n"
-printf "EXAHYPE_RUNS=${EXAHYPE_RUNS}\n"
-printf "EXAHYPE_INTERACTIVE=${EXAHYPE_INTERACTIVE}\n\n"
+printf "SCHEDULER_PROJECT_DIR=${SCHEDULER_PROJECT_DIR}\n"
+printf "SCHEDULER_SCRIPT=${SCHEDULER_SCRIPT}\n"
+printf "SCHEDULER_EXECUTABLE_SERIAL=${SCHEDULER_EXECUTABLE_SERIAL}\n"
+printf "SCHEDULER_SPEC_FILE=${SCHEDULER_SPEC_FILE}\n"
+printf "SCHEDULER_SYSTEM_ID=${SCHEDULER_SYSTEM_ID}\n"
+printf "SCHEDULER_OUTPUT_PREFIX=${SCHEDULER_OUTPUT_PREFIX}\n"
+printf "SCHEDULER_OUTPUT_DIR=${SCHEDULER_OUTPUT_DIR}\n"
+printf "SCHEDULER_RUNS=${SCHEDULER_RUNS}\n"
+printf "SCHEDULER_INTERACTIVE=${SCHEDULER_INTERACTIVE}\n\n"
 printf "\n"
 
 if [ "${SHAREDMEM}" != "None" ]
@@ -46,8 +48,8 @@ then
   exit 1
 fi
 
-printf "Turn interactive mode on or off by setting EXAHYPE_INTERACTIVE=\'1\' or \n\'0\', respectively.\n"
-if [ "${EXAHYPE_INTERACTIVE}" == "1" ]
+printf "Turn interactive mode on or off by setting SCHEDULER_INTERACTIVE=\'1\' or \n\'0\', respectively.\n"
+if [ "${SCHEDULER_INTERACTIVE}" == "1" ]
 then
 printf "###############################################################################\n"
   printf "NOTE: Check the parameters make sure that they are correct\n      and not empty!\n\n"
@@ -57,13 +59,13 @@ fi
 ###############################################################################
 # CREATE OUTPUT DIRECTORIES
 ###############################################################################
-PREFIX=$(date +"%y%m%d")_${EXAHYPE_PREFIX}
-OUTPUT_DIR=${EXAHYPE_OUTPUT_DIR}/${PREFIX}
+PREFIX=$(date +"%y%m%d")_${SCHEDULER_OUTPUT_PREFIX}
+OUTPUT_DIR=${SCHEDULER_OUTPUT_DIR}/${PREFIX}
 
-printf "Trying to create scaling subfolder \'${EXAHYPE_OUTPUT_DIR}\' \n"
-mkdir ${EXAHYPE_OUTPUT_DIR}
+printf "Trying to create output dir \'${SCHEDULER_OUTPUT_DIR}\' \n"
+mkdir ${SCHEDULER_OUTPUT_DIR}
 
-printf "Trying to create output directory \'${OUTPUT_DIR}\' \n"
+printf "Trying to create prefixed subfolder \'${OUTPUT_DIR}\' \n"
 mkdir ${OUTPUT_DIR}
 
 ###############################################################################
@@ -72,18 +74,21 @@ mkdir ${OUTPUT_DIR}
 for t in 1
 do
   # Create temporary spec file with new core count
-  sed "s/cores                    =.*/cores                    = ${t}/" ${EXAHYPE_SPEC_FILE} > ${EXAHYPE_SPEC_FILE}_$t
-  for r in $(seq 1 ${EXAHYPE_RUNS})
+
+  ( \
+  cd ${SCHEDULER_PROJECT_DIR} && \
+  sed "s/cores                    =.*/cores                    = ${t}/" ${SCHEDULER_SPEC_FILE} > ${SCHEDULER_SPEC_FILE}_$t \
+  )
+  
+for r in $(seq 1 ${SCHEDULER_RUNS})
   do  
     OUTPUT_FILE=${OUTPUT_DIR}/${PREFIX}_n1_t${t}_r${r}_${CC}_${SHAREDMEM}.txt
       
     printf "Writing file \'$OUTPUT_FILE\'... "
-    # RUN THE EXECUTABLE AND PIPE IT INTO OUTPUT FILE 
-    # @VASCO: YOU HAVE TO APPLY YOUR CHANGES HERE!
-    ${EXAHYPE_EXECUTABLE} ${EXAHYPE_SPEC_FILE}_$t > ${OUTPUT_FILE}
+    ${SCHEDULER_SCRIPT} ${SCHEDULER_PROJECT_DIR} ${SCHEDULER_EXECUTABLE_SERIAL} ${SCHEDULER_SPEC_FILE}_$t ${OUTPUT_FILE}
     printf "done!\n"
   done
   # Delete temporary spec file 
-  rm ${EXAHYPE_SPEC_FILE}_$t
+  #(cd ${SCHEDULER_PROJECT_DIR}  &&  rm ${SCHEDULER_SPEC_FILE}_$t)
 done
 printf "Script finished successfully!\n"

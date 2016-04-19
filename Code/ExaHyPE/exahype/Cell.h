@@ -13,18 +13,15 @@
 #include "exahype/records/Cell.h"
 #include "peano/grid/Cell.h"
 
-// ! Begin of code for multiscalelinkedcell toolbox.
 #include "peano/heap/DoubleHeap.h"
 #include "exahype/records/ADERDGCellDescription.h"
-// ! End of code for multiscalelinkedcell toolbox.
 
 namespace exahype {
   class Cell;
-  // ! Begin of code for multiscalelinkedcell toolbox..
+
   typedef peano::heap::PlainHeap<exahype::records::ADERDGCellDescription>
   ADERDGCellDescriptionHeap;
   typedef peano::heap::PlainDoubleHeap DataHeap;
-  // ! End of code for multiscalelinkedcell toolbox.
 }
 
 /**
@@ -57,6 +54,11 @@ public:
     RealShell,
     VirtualShell
   };
+
+  typedef struct {
+    int parentIndex;
+    tarch::la::Vector<DIMENSIONS,int> subcellIndex;
+  } SubcellPosition;
 
   /**
    * Default Constructor
@@ -96,9 +98,9 @@ public:
    * with this cell and the solver with index \p solverIndex.
    */
   inline exahype::records::ADERDGCellDescription& getADERDGCellDescription(
-      int solverIndex) {
+      int solverNumber) {
     return ADERDGCellDescriptionHeap::getInstance().getData(
-        getADERDGCellDescriptionsIndex())[solverIndex];
+        getADERDGCellDescriptionsIndex())[solverNumber];
   }
 
   /**
@@ -136,6 +138,22 @@ public:
    */
   void init(const int level, const tarch::la::Vector<DIMENSIONS, double>& size,
             const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
+
+  /**
+   * Determine the position of a virtual shell with respect
+   * to a  real parent cell or a virtual parent shell that contains data, i.e.,
+   * has at least one neighbour that is a real cell.
+   *
+   * This method is required for the face data prolongation, the
+   * volume data prolongation, and the FV volume data prolongation.
+   *
+   * @todo:16/04/09:Dominic Etienne Charrier: I am not sure if this the
+   * right file/class to hold this functionality.
+   */
+  SubcellPosition getSubcellPositionOfVirtualShell(
+      const int solverNumber,
+      const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell) const;
 };
 
 #endif

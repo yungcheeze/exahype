@@ -69,29 +69,6 @@ int exahype::solvers::Solver::getSpaceTimeFluxUnknownsPerCell() const {
   return _spaceTimeFluxUnknownsPerCell;
 }
 
-/*
- * \todo 16/04/02:Dominic Etienne Charrier:
- * non-virtual method is only for now; The refinement criterion must be
- * specified by the user. So replace method by virtual one later.
- */
-bool exahype::solvers::Solver::refinementCriterion(
-    const double* luh,
-    const tarch::la::Vector<DIMENSIONS, double>& center,
-    const tarch::la::Vector<DIMENSIONS, double>& dx,
-    double t,
-    const int level) {
-  assertion(level>=getMinimumTreeDepth()+1);
-
-  if (level<getMinimumTreeDepth()+4) {
-    if (center[0]<0.5 && center[0]>0.25) {
-      if (center[1]<0.5 && center[1]>0.25) {
-        return true;
-      }
-    }
-  }
-  return false;
-}
-
 void exahype::solvers::Solver::synchroniseTimeStepping(
     exahype::records::ADERDGCellDescription& p) const {
   // todo 16/02/27:Dominic Etienne Charrier

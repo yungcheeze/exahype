@@ -194,6 +194,38 @@ template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
 double stableTimeStepSize(const double* const luh,
                           const tarch::la::Vector<DIMENSIONS, double>& dx,
                           const int numberOfVariables, const int basisSize);
+
+void faceUnknownsProlongation(double* lQhbndFine,
+                              double* lFhbndFine,
+                              const double* lQhbndCoarse,
+                              const double* lFhbndCoarse,
+                              const int coarseGridLevel,
+                              const int fineGridLevel,
+                              const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex,
+                              const int numberOfVariables, const int basisSize);
+
+void faceUnknownsRestriction(double* lQhbndCoarse,
+                             double* lFhbndCoarse,
+                             const double* lQhbndFine,
+                             const double* lFhbndFine,
+                             const int coarseGridLevel,
+                             const int fineGridLevel,
+                             const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex,
+                             const int numberOfVariables, const int basisSize);
+
+void volumeUnknownsProlongation(double* luhFine,
+                                const double* luhCoarse,
+                                const int coarseGridLevel,
+                                const int fineGridLevel,
+                                const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
+                                const int numberOfVariables, const int basisSize);
+
+void volumeUnknownsRestriction(double* luhCoarse,
+                               const double* luhFine,
+                               const int coarseGridLevel,
+                               const int fineGridLevel,
+                               const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
+                               const int numberOfVariables, const int basisSize);
 }
 }
 }
@@ -317,6 +349,39 @@ template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
 double stableTimeStepSize(const double* const luh,
                           const tarch::la::Vector<DIMENSIONS, double>& dx,
                           const int numberOfVariables, const int basisSize);
+
+void faceUnknownsProlongation(double* lQhbndFine,
+                              double* lFhbndFine,
+                              const double* lQhbndCoarse,
+                              const double* lFhbndCoarse,
+                              const int coarseGridLevel,
+                              const int fineGridLevel,
+                              const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex,
+                              const int numberOfVariables, const int basisSize);
+
+void faceUnknownsRestriction(double* lQhbndCoarse,
+                             double* lFhbndCoarse,
+                             const double* lQhbndFine,
+                             const double* lFhbndFine,
+                             const int coarseGridLevel,
+                             const int fineGridLevel,
+                             const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex,
+                             const int numberOfVariables, const int basisSize);
+
+void volumeUnknownsProlongation(double* luhFine,
+                                const double* luhCoarse,
+                                const int coarseGridLevel,
+                                const int fineGridLevel,
+                                const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
+                                const int numberOfVariables, const int basisSize);
+
+void volumeUnknownsRestriction(double* luhCoarse,
+                               const double* luhFine,
+                               const int coarseGridLevel,
+                               const int fineGridLevel,
+                               const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
+                               const int numberOfVariables, const int basisSize);
+
 }
 }
 }

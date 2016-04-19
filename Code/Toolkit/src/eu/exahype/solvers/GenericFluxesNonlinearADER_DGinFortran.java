@@ -84,6 +84,26 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
         "   kernels::aderdg::generic::fortran::solutionAdjustment<adjustedSolutionValues>( luh, center, dx, t, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
+    writer.write("void " + projectName + "::" + solverName
+            + "::faceUnknownsProlongation(double* lQhbndFine,double* lFhbndFine,const double* lQhbndCoarse,const double* lFhbndCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex) {\n");
+    writer.write("   kernels::aderdg::generic::fortran::faceUnknownsProlongation( lQhbndFine, lFhbndFine, lQhbndCoarse, lFhbndCoarse, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("}\n");
+    writer.write("\n\n\n");
+    writer.write("void " + projectName + "::" + solverName
+            + "::faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex) {\n");
+    writer.write("   kernels::aderdg::generic::fortran::faceUnknownsRestriction( lQhbndCoarse, lFhbndCoarse, lQhbndFine, lFhbndFine, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("}\n");
+    writer.write("\n\n\n");
+    writer.write("void " + projectName + "::" + solverName
+            + "::volumeUnknownsProlongation(double* luhFine, const double* luhCoarse, const int coarseGridLevel, const int fineGridLevel, const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {\n");
+    writer.write("   kernels::aderdg::generic::fortran::volumeUnknownsProlongation( luhFine, luhCoarse, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("}\n");
+    writer.write("\n\n\n");
+    writer.write("void " + projectName + "::" + solverName
+            + "::volumeUnknownsRestriction(double* luhCoarse, const double* luhFine, const int coarseGridLevel, const int fineGridLevel, const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {\n");
+    writer.write("   kernels::aderdg::generic::fortran::volumeUnknownsRestriction( luhCoarse, luhFine, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("}\n");
+    writer.write("\n\n\n");
   }
 
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
@@ -93,6 +113,12 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
 
     int digits = String.valueOf(_numberOfUnknowns + _numberOfParameters).length();
 
+    writer.write("bool " + projectName + "::" + solverName
+            + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {\n");
+    writer.write("  // @todo Please implement\n");
+    writer.write("  return false;\n");
+    writer.write("}\n");
+    writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
         + "::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {\n");
     writer.write("  // Dimensions             = " + _dimensions + "\n");
@@ -102,6 +128,13 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
       writer.write("  Q[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
     }
     writer.write("}\n");
+    writer.write("\n\n\n");
+    writer.write("bool " + projectName + "::" + solverName
+            + "::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {\n");
+    writer.write("  // @todo Please implement\n");
+    writer.write("  return false;\n");
+    writer.write("}\n");
+    writer.write("\n\n\n");
     writer.write("\n\n\n");
     writer.write("//************************************************* \n");
     writer.write("//for FORTRAN kernels the fluxes and eigenvalues \n");
