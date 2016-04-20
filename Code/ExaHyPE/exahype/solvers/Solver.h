@@ -27,11 +27,15 @@ constexpr int power(int basis, int exp) {
 }
 
 namespace exahype {
-namespace solvers {
-class Solver;
+  namespace solvers {
+    class Solver;
 
-extern std::vector<Solver*> RegisteredSolvers;
-}
+    /**
+     * All the registered solvers. Has to be declared extern in C++ standard as
+     * it is instantiated in the corresponding cpp file.
+     */
+    extern std::vector<Solver*> RegisteredSolvers;
+  }
 }
 
 /**
@@ -424,6 +428,15 @@ class exahype::solvers::Solver {
    *
    */
   void updateNextPredictorTimeStepSize(double nextPredictorTimeStepSize);
+
+  /**
+   * This operation has to different branches: one for the master and one for
+   * the worker. If we are in the master, we basically do only send out all
+   * the solver data to the worker. If we are on the worker, we do overwrite
+   * all solver data accordingly.
+   */
+  void sendToRank(int rank, int tag);
+  void receiveFromRank(int rank, int tag);
 };
 
 #endif
