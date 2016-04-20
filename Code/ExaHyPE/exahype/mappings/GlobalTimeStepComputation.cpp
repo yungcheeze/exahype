@@ -292,7 +292,6 @@ void exahype::mappings::GlobalTimeStepComputation::mergeWithMaster(
   exahype::State& masterState
 ) {
   std::vector<double>  receivedMinTimeStepSizes(_minTimeStepSizes.size());
-  MPI_Status           status;
 
   MPI_Recv(
     receivedMinTimeStepSizes.data(),
@@ -301,7 +300,7 @@ void exahype::mappings::GlobalTimeStepComputation::mergeWithMaster(
     worker,
     _mpiTag,
     tarch::parallel::Node::getInstance().getCommunicator(),
-    &status
+    MPI_STATUS_IGNORE
   );
 
   for( int i=0; i<static_cast<int>(_minTimeStepSizes.size()); i++ ) {
