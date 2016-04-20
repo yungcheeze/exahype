@@ -83,7 +83,9 @@ exahype::mappings::GlobalTimeStepComputation::descendSpecification() {
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
+
 tarch::logging::Log exahype::mappings::GlobalTimeStepComputation::_log( "exahype::mappings::GlobalTimeStepComputation" );
+
 
 exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation() {
   // do nothing
@@ -98,19 +100,6 @@ void exahype::mappings::GlobalTimeStepComputation::prepareEmptyLocalTimeStepData
 
   for (int i=0; i<static_cast<int>( exahype::solvers::RegisteredSolvers.size() ); i++) {
     _minTimeStepSizes[i] = std::numeric_limits<double>::max();
-  }
-}
-
-
-void exahype::mappings::GlobalTimeStepComputation::mergeLocalTimeStepDataIntoSolvers() {
-  for (int i=0; i<static_cast<int>( exahype::solvers::RegisteredSolvers.size() ); i++) {
-    exahype::solvers::Solver* solver =
-      exahype::solvers::RegisteredSolvers[i];
-
-    // might be too restrictive later
-    // assertion( _minTimeStepSizes[i] < std::numeric_limits<double>::max() );
-//    logInfo( "mergeLocalTimeStepDataIntoSolvers()", "solver " << i << " is updated with time step size " << _minTimeStepSizes[i] );
-    solver->updateMinNextPredictorTimeStepSize( _minTimeStepSizes[i] );
   }
 }
 
@@ -447,7 +436,14 @@ void exahype::mappings::GlobalTimeStepComputation::beginIteration(
 void exahype::mappings::GlobalTimeStepComputation::endIteration(
   exahype::State& solverState
 ) {
-  mergeLocalTimeStepDataIntoSolvers();
+  for (int i=0; i<static_cast<int>( exahype::solvers::RegisteredSolvers.size() ); i++) {
+    exahype::solvers::Solver* solver =
+      exahype::solvers::RegisteredSolvers[i];
+
+    logDebug( "mergeLocalTimeStepDataIntoSolvers()", "solver " << i << " is updated with time step size " << _minTimeStepSizes[i] );
+    solver->updateMinNextPredictorTimeStepSize( _minTimeStepSizes[i] );
+    solver->reduceToGlobalMaster();
+  }
 }
 
 

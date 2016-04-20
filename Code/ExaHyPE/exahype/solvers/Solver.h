@@ -115,6 +115,12 @@ class exahype::solvers::Solver {
    */
   double _minNextPredictorTimeStepSize;
 
+ private:
+   /**
+    * Tag that is used to exchange all the solver instances in MPI
+    */
+   static int                 _mpiTag;
+
  public:
   Solver(const std::string& identifier, Type type, int kernelNumber,
          int numberOfVariables, int nodesPerCoordinateAxis,
@@ -424,6 +430,9 @@ class exahype::solvers::Solver {
    *
    */
   void updateNextPredictorTimeStepSize(double nextPredictorTimeStepSize);
+
+
+  void reduceToGlobalMaster();
 };
 
 #endif
