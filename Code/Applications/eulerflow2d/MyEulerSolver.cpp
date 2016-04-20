@@ -8,8 +8,11 @@ Euler2d::MyEulerSolver::MyEulerSolver(int kernelNumber)
 }
 
 int Euler2d::MyEulerSolver::getMinimumTreeDepth() const {
-  // @todo Please implement
+  #if defined(Asserts)
+  return 3;
+  #else
   return 4;
+  #endif
 }
 
 bool Euler2d::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
