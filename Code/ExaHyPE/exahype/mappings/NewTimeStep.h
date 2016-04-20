@@ -43,6 +43,11 @@ class exahype::mappings::NewTimeStep {
   static tarch::logging::Log _log;
 
   /**
+   * Tag that is used to exchange all the solver instances in MPI
+   */
+  static int                 _mpiTag;
+
+  /**
    * Local copy of the state.
    */
   exahype::State _localState;

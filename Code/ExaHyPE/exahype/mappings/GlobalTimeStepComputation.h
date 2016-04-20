@@ -32,11 +32,31 @@ namespace exahype {
 
 
 /**
- * This is a mapping from the spacetree traversal events to your user-defined
- *activities.
- * The latter are realised within the mappings.
+ * Determine a global time step size
  *
- * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
+ * The global time step computation runs through all the cells. Per cell, it
+ * runs through all involved solvers and determines the corresponding minimal
+ * time step sizes. Once the traversal terminates, all solvers thus know what
+ * the minimal permitted time step size is. We now take the minimal time step
+ * sizes and inform the solvers about them through
+ * updateMinNextPredictorTimeStepSize().
+ *
+ * In the subsequent time step, these minimal time step sizes then are used by
+ * synchroniseTimeStepping() (see notably the mapping NewTimeStep) to move the
+ * patch forward in time. There is no need to take extra care for the
+ * optimistic time step choice - we can determine from outside whether we tend
+ * to overshoot and thus have to rerun the predictor. This is done in the
+ * runner.
+ *
+ * <h2>Multicore parallelisation</h2>
+ * See documentation of _minTimeStepSizes/
+ *
+ * <h2>MPI parallelisation</h2>
+ *
+ *
+ *
+ *
+ * @author Dominic Charrier, Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
 class exahype::mappings::GlobalTimeStepComputation {
@@ -45,6 +65,11 @@ class exahype::mappings::GlobalTimeStepComputation {
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
+
+  /**
+   * Tag that is used to exchange all the solver instances in MPI
+   */
+  static int                 _mpiTag;
 
   /**
    * We could directly compute the minimal time step sizes and the minimum time
@@ -59,7 +84,6 @@ class exahype::mappings::GlobalTimeStepComputation {
   std::vector<double>   _minTimeStepSizes;
 
   void prepareEmptyLocalTimeStepData();
-  void mergeLocalTimeStepDataIntoSolvers();
  public:
   /**
    * These flags are used to inform Peano about your operation. It tells the
@@ -752,51 +776,18 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
       int worker, const exahype::State& workerState,
       exahype::State& masterState);
 
-  /**
-   * Prepare send to master
-   *
-   * Counterpart of prepareSendToWorker() that is called at the end of each
-   * iteration if data reduction is switched on. At the moment this function
-   * is called, all the data on the local worker are already streamed to the
-   * stacks, i.e. you basically receive copies of the local cell and the
-   * local vertices. If you modify them, these changes will become undone in
-   * the subsequent iteration.
-   *
-   * !!! Data Consistency
-   *
-   * Multilevel data consistency in Peano can be tricky. Most codes thus
-   * introduce a rigorous master-owns pattern. In this case, always the
-   * vertex and cell state on the master is valid, i.e. prepareSendToMaster()
-   * informs the master about state changes. In return, prepareSendToWorker()
-   * feeds the worker with new valid state of vertices and cells.
-   * Receive from master operations thus overwrite the worker's local
-   * records with the master's data, as the master always rules.
-   *
-   * The coarse data is a copy from the master and may not be modified.
-   *
-   * !!! Special case: Fork process
-   *
-   * In the very first iteration on the worker, the receive process accepting
-   * data from the master is not followed by the corresponding send back even
-   * if the reduction is switched on. Hence, you have two times receive data
-   * from master before this operation is invoked for the first time. See
-   * Node::updateCellsParallelStateBeforeStore() for details on the technical
-   * reasons for this assymetry.
-   *
-   * !!! Skip sends to master
-   *
-   * If you switch off the global reduction, i.e. if you call iterate() on
-   * the repository with the parameter false, Peano does not send any data
-   * up along the spacetree. It does not reduce the cell, state, and vertex
-   * data. See State::reduceDataToMaster().
-   */
-  void prepareSendToMaster(
+    /**
+     * Send the local array of minimal time step sizes up to the master. This is
+     * one MPI_Send on the whole array.
+     */
+    void prepareSendToMaster(
       exahype::Cell& localCell, exahype::Vertex* vertices,
       const peano::grid::VertexEnumerator& verticesEnumerator,
       const exahype::Vertex* const coarseGridVertices,
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       const exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell
+    );
 
   /**
    * Counterpart of prepareSendToWorker(). This operation is called once when
@@ -1075,8 +1066,14 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
   void beginIteration(exahype::State& solverState);
 
   /**
-   * Merge back the local state into the solverState. This way, a new max
+   * Merge back the local state into the solverState
+   * through mergeLocalTimeStepDataIntoSolvers(). This way, a new max
    * global time step size might become active.
+   *
+   * One might expect also a solver reduction in here, but the actual
+   * reduction of distributed solver states in an MPI environment is
+   * done in prepareSendToMaster() which naturally reflects Peano's
+   * tree topology.
    */
   void endIteration(exahype::State& solverState);
 

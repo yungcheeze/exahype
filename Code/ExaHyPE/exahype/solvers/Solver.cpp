@@ -1,6 +1,8 @@
 #include "exahype/solvers/Solver.h"
 
+
 std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
+
 
 exahype::solvers::Solver::Solver(const std::string& identifier, Type type,
                                  int kernelNumber, int numberOfVariables,
@@ -174,4 +176,24 @@ void exahype::solvers::Solver::setMinPredictorTimeStepSize(
 
 double exahype::solvers::Solver::getMinPredictorTimeStepSize() const {
   return _minPredictorTimeStepSize;
+}
+
+void exahype::solvers::Solver::sendToRank(int rank, int tag) {
+  #ifdef Parallel
+  MPI_Send( &_minCorrectorTimeStamp,     1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator() );
+  MPI_Send( &_minCorrectorTimeStepSize,     1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator() );
+  MPI_Send( &_minPredictorTimeStepSize,     1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator() );
+  MPI_Send( &_minPredictorTimeStamp,        1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator() );
+  MPI_Send( &_minNextPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator() );
+  #endif
+}
+
+void exahype::solvers::Solver::receiveFromRank(int rank, int tag) {
+  #ifdef Parallel
+  MPI_Recv( &_minCorrectorTimeStamp, 1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+  MPI_Recv( &_minCorrectorTimeStepSize, 1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+  MPI_Recv( &_minPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+  MPI_Recv( &_minPredictorTimeStamp, 1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+  MPI_Recv( &_minNextPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+  #endif
 }

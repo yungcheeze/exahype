@@ -79,8 +79,8 @@ exahype::mappings::NewTimeStep::descendSpecification() {
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
-tarch::logging::Log exahype::mappings::NewTimeStep::_log(
-    "exahype::mappings::NewTimeStep");
+tarch::logging::Log exahype::mappings::NewTimeStep::_log( "exahype::mappings::NewTimeStep" );
+int                 exahype::mappings::NewTimeStep::_mpiTag = tarch::parallel::Node::reserveFreeTag( "exahype::mappings::NewTimeStep" );
 
 exahype::mappings::NewTimeStep::NewTimeStep() {
   // do nothing
@@ -218,17 +218,27 @@ void exahype::mappings::NewTimeStep::mergeWithRemoteDataDueToForkOrJoin(
   // do nothing
 }
 
+
 bool exahype::mappings::NewTimeStep::prepareSendToWorker(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    int worker) {
-  // do nothing
+  exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+  const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+  exahype::Vertex* const coarseGridVertices,
+  const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+  exahype::Cell& coarseGridCell,
+  const tarch::la::Vector<DIMENSIONS, int>&  fineGridPositionOfCell,
+  int                                        worker
+) {
+  for (
+    std::vector<exahype::solvers::Solver*>::iterator p = exahype::solvers::RegisteredSolvers.begin();
+    p != exahype::solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    (*p)->sendToRank(worker, _mpiTag);
+  }
+
   return true;
 }
+
 
 void exahype::mappings::NewTimeStep::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
@@ -264,8 +274,15 @@ void exahype::mappings::NewTimeStep::receiveDataFromMaster(
     exahype::Vertex* const workersCoarseGridVertices,
     const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
     exahype::Cell& workersCoarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell
+) {
+  for (
+    std::vector<exahype::solvers::Solver*>::iterator p = exahype::solvers::RegisteredSolvers.begin();
+    p != exahype::solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    (*p)->receiveFromRank(tarch::parallel::NodePool::getInstance().getMasterRank(),_mpiTag);
+  }
 }
 
 void exahype::mappings::NewTimeStep::mergeWithWorker(

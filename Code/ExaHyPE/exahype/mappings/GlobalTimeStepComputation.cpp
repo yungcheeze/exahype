@@ -3,6 +3,7 @@
 #include "peano/utils/Globals.h"
 
 #include "tarch/multicore/Loop.h"
+#include "tarch/parallel/Node.h"
 
 #include "peano/datatraversal/autotuning/Oracle.h"
 
@@ -83,7 +84,10 @@ exahype::mappings::GlobalTimeStepComputation::descendSpecification() {
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
+
 tarch::logging::Log exahype::mappings::GlobalTimeStepComputation::_log( "exahype::mappings::GlobalTimeStepComputation" );
+int                 exahype::mappings::GlobalTimeStepComputation::_mpiTag = tarch::parallel::Node::reserveFreeTag( "exahype::mappings::GlobalTimeStepComputation" );
+
 
 exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation() {
   // do nothing
@@ -98,19 +102,6 @@ void exahype::mappings::GlobalTimeStepComputation::prepareEmptyLocalTimeStepData
 
   for (int i=0; i<static_cast<int>( exahype::solvers::RegisteredSolvers.size() ); i++) {
     _minTimeStepSizes[i] = std::numeric_limits<double>::max();
-  }
-}
-
-
-void exahype::mappings::GlobalTimeStepComputation::mergeLocalTimeStepDataIntoSolvers() {
-  for (int i=0; i<static_cast<int>( exahype::solvers::RegisteredSolvers.size() ); i++) {
-    exahype::solvers::Solver* solver =
-      exahype::solvers::RegisteredSolvers[i];
-
-    // might be too restrictive later
-    // assertion( _minTimeStepSizes[i] < std::numeric_limits<double>::max() );
-//    logInfo( "mergeLocalTimeStepDataIntoSolvers()", "solver " << i << " is updated with time step size " << _minTimeStepSizes[i] );
-    solver->updateMinNextPredictorTimeStepSize( _minTimeStepSizes[i] );
   }
 }
 
@@ -266,6 +257,7 @@ bool exahype::mappings::GlobalTimeStepComputation::prepareSendToWorker(
   return true;
 }
 
+
 void exahype::mappings::GlobalTimeStepComputation::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
@@ -274,37 +266,48 @@ void exahype::mappings::GlobalTimeStepComputation::prepareSendToMaster(
     const exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell
 ) {
-/*
-  double minSolverTimeStampAndTimeStepSize[2];
-
-  for (
-    std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin();
-    p != exahype::solvers::RegisteredSolvers.end();
-    p++
-  ) {
-    minSolverTimeStampAndTimeStepSize[0] = (*p)->getMinCorrectorTimeStamp();
-    minSolverTimeStampAndTimeStepSize[1] = (*p)->getMinCorrectorTimeStepSize();
-
-    MPI_Send( minSolverTimeStampAndTimeStepSize, 2, MPI_DOUBLE, tarch::parallel::NodePool::getInstance().getMasterRank(), x, tarch::parallel::Node::getInstance().getCommunicator() );
-  }
-*/
+  MPI_Send(
+    _minTimeStepSizes.data(),
+    _minTimeStepSizes.size(),
+    MPI_DOUBLE,
+    tarch::parallel::NodePool::getInstance().getMasterRank(),
+    _mpiTag,
+    tarch::parallel::Node::getInstance().getCommunicator()
+  );
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithMaster(
-    const exahype::Cell& workerGridCell,
-    exahype::Vertex* const workerGridVertices,
-    const peano::grid::VertexEnumerator& workerEnumerator,
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    int worker, const exahype::State& workerState,
-    exahype::State& masterState) {
-  // do nothing
+  const exahype::Cell& workerGridCell,
+  exahype::Vertex* const workerGridVertices,
+  const peano::grid::VertexEnumerator& workerEnumerator,
+  exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+  const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+  exahype::Vertex* const coarseGridVertices,
+  const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+  exahype::Cell& coarseGridCell,
+  const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+  int worker,
+  const exahype::State& workerState,
+  exahype::State& masterState
+) {
+  std::vector<double>  receivedMinTimeStepSizes(_minTimeStepSizes.size());
+
+  MPI_Recv(
+    receivedMinTimeStepSizes.data(),
+    receivedMinTimeStepSizes.size(),
+    MPI_DOUBLE,
+    worker,
+    _mpiTag,
+    tarch::parallel::Node::getInstance().getCommunicator(),
+    MPI_STATUS_IGNORE
+  );
+
+  for( int i=0; i<static_cast<int>(_minTimeStepSizes.size()); i++ ) {
+    _minTimeStepSizes[i] = std::min( _minTimeStepSizes[i], receivedMinTimeStepSizes[i] );
+  }
 }
+
 
 void exahype::mappings::GlobalTimeStepComputation::receiveDataFromMaster(
     exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
@@ -447,7 +450,13 @@ void exahype::mappings::GlobalTimeStepComputation::beginIteration(
 void exahype::mappings::GlobalTimeStepComputation::endIteration(
   exahype::State& solverState
 ) {
-  mergeLocalTimeStepDataIntoSolvers();
+  for (int i=0; i<static_cast<int>( exahype::solvers::RegisteredSolvers.size() ); i++) {
+    exahype::solvers::Solver* solver =
+      exahype::solvers::RegisteredSolvers[i];
+
+    logDebug( "mergeLocalTimeStepDataIntoSolvers()", "solver " << i << " is updated with time step size " << _minTimeStepSizes[i] );
+    solver->updateMinNextPredictorTimeStepSize( _minTimeStepSizes[i] );
+  }
 }
 
 

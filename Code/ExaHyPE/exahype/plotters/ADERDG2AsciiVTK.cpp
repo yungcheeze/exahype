@@ -13,9 +13,6 @@ exahype::plotters::ADERDG2AsciiVTK::ADERDG2AsciiVTK(const std::string& filename,
   _gridWriter = _patchWriter->createSinglePatchWriter();
   _timeStampDataWriter = _patchWriter->createVertexDataWriter("time", 1);
 
-  /// @todo Remove
-  assertionEquals(order, 3);
-
   for (int i = 0; i < unknowns; i++) {
     std::ostringstream identifier;
     identifier << "Q" << i;
@@ -57,12 +54,17 @@ exahype::plotters::ADERDG2AsciiVTK::~ADERDG2AsciiVTK() {
 }
 
 void exahype::plotters::ADERDG2AsciiVTK::plotPatch(
-    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
-    double timeStamp) {
+  const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+  const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+  double* u,
+  double timeStamp
+) {
   int vertexIndex =
       _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _order).first;
 
+  // @todo This is wrong. We are running equidistantly through the data
+  //       structure though the data structure are Gauss-Lagrange points.
+  //       There has to be some kind of interpolation involved.
   for (int i = 0; i < tarch::la::aPowI(DIMENSIONS, _order + 1); i++) {
     _timeStampDataWriter->plotVertex(vertexIndex, timeStamp);
     int unknown = 0;
