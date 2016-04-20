@@ -1,9 +1,7 @@
 #include "exahype/solvers/Solver.h"
-#include "tarch/parallel/Node.h"
 
 
 std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
-int                                    exahype::solvers::Solver::_mpiTag = tarch::parallel::Node::reserveFreeTag( "exahype::mappings::GlobalTimeStepComputation" );
 
 
 exahype::solvers::Solver::Solver(const std::string& identifier, Type type,
@@ -178,8 +176,4 @@ void exahype::solvers::Solver::setMinPredictorTimeStepSize(
 
 double exahype::solvers::Solver::getMinPredictorTimeStepSize() const {
   return _minPredictorTimeStepSize;
-}
-
-void exahype::solvers::Solver::reduceToGlobalMaster() {
-
 }
