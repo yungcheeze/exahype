@@ -180,7 +180,7 @@ double exahype::solvers::Solver::getMinPredictorTimeStepSize() const {
 
 void exahype::solvers::Solver::sendToRank(int rank, int tag) {
   #ifdef Parallel
-  MPI_Send( &_minCorrectorTimeStamp,     1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator() );
+  MPI_Send( &_minCorrectorTimeStamp,        1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator() );
   MPI_Send( &_minCorrectorTimeStepSize,     1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator() );
   MPI_Send( &_minPredictorTimeStepSize,     1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator() );
   MPI_Send( &_minPredictorTimeStamp,        1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator() );
@@ -190,35 +190,42 @@ void exahype::solvers::Solver::sendToRank(int rank, int tag) {
 
 void exahype::solvers::Solver::receiveFromRank(int rank, int tag) {
   #ifdef Parallel
-  MPI_Recv( &_minCorrectorTimeStamp, 1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
-  MPI_Recv( &_minCorrectorTimeStepSize, 1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
-  MPI_Recv( &_minPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
-  MPI_Recv( &_minPredictorTimeStamp, 1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+  MPI_Recv( &_minCorrectorTimeStamp,        1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+  MPI_Recv( &_minCorrectorTimeStepSize,     1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+  MPI_Recv( &_minPredictorTimeStepSize,     1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
+  MPI_Recv( &_minPredictorTimeStamp,        1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
   MPI_Recv( &_minNextPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
   #endif
 }
 
+
 double exahype::solvers::Solver::getMinSolverTimeStamp() {
   double currentMinTimeStamp = std::numeric_limits<double>::max();
 
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end(); p++) {
-    currentMinTimeStamp =
-        std::min(currentMinTimeStamp, (*p)->getMinCorrectorTimeStamp());
+  for (
+    std::vector<exahype::solvers::Solver*>::const_iterator p =
+      exahype::solvers::RegisteredSolvers.begin();
+    p != exahype::solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    currentMinTimeStamp = std::min(currentMinTimeStamp, (*p)->getMinCorrectorTimeStamp());
   }
+
   return currentMinTimeStamp;
 }
+
 
 double exahype::solvers::Solver::getMinSolverTimeStepSize() {
   double currentMinTimeStepSize = std::numeric_limits<double>::max();
 
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end(); p++) {
-    currentMinTimeStepSize =
-        std::min(currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
+  for (
+    std::vector<exahype::solvers::Solver*>::const_iterator p =
+      exahype::solvers::RegisteredSolvers.begin();
+    p != exahype::solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    currentMinTimeStepSize = std::min(currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
   }
+
   return currentMinTimeStepSize;
 }
-
