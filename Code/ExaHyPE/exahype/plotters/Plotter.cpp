@@ -123,3 +123,9 @@ void exahype::plotters::finishedPlotting() {
     }
   }
 }
+
+std::string exahype::plotters::Plotter::getFileName() const {
+  return _filename;
+}
+
+

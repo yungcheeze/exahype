@@ -28,19 +28,20 @@ class exahype::plotters::Plotter {
     virtual ~Device() {}
 
     virtual void plotPatch(
-        const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-        const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
-        double timeStamp) = 0;
+     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
+     double timeStamp
+    ) = 0;
   };
 
  private:
   static tarch::logging::Log _log;
 
-  const int _solver;
-  const std::string _identifier;
-  double _time;
-  const double _repeat;
-  const std::string _filename;
+  const int           _solver;
+  const std::string   _identifier;
+  double              _time;
+  const double        _repeat;
+  const std::string   _filename;
 
   Device* _device;
 
@@ -59,6 +60,8 @@ class exahype::plotters::Plotter {
   void plotPatch(const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
                  const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
                  double* u, double timeStamp);
+
+  std::string getFileName() const;
 };
 
 #endif
