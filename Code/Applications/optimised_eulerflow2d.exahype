@@ -25,7 +25,8 @@ exahype-project  Euler2d
  
   
   solver ADER-DG MyEulerSolver
-    variables = 5
+    unknowns  = 5 
+    parameters= 0 
     order     = 3
     kernel    = optimised::fluxes::nonlinear
     language  = C
@@ -42,6 +43,10 @@ exahype-project  Euler2d
     cores                    = 2
     properties-file          = sharedmemory.properties
   end shared-memory  
+
+  distributed-memory
+    identifier               = static_load_balancing
+  end distributed-memory  
 
   optimisation
     fuse-algorithmic-steps   = on
