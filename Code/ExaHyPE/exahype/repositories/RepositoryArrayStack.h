@@ -25,6 +25,7 @@
  #include "exahype/adapters/GlobalTimeStepComputation.h" 
  #include "exahype/adapters/FaceDataExchange.h" 
  #include "exahype/adapters/Predictor.h" 
+ #include "exahype/adapters/PredictorRerun.h" 
  #include "exahype/adapters/Corrector.h" 
 
 
@@ -60,6 +61,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GlobalTimeStepComputation> _gridWithGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::FaceDataExchange> _gridWithFaceDataExchange;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Predictor> _gridWithPredictor;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictorRerun> _gridWithPredictorRerun;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Corrector> _gridWithCorrector;
 
   
@@ -74,6 +76,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measureGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measureFaceDataExchangeCPUTime;
     tarch::timing::Measurement _measurePredictorCPUTime;
+    tarch::timing::Measurement _measurePredictorRerunCPUTime;
     tarch::timing::Measurement _measureCorrectorCPUTime;
 
     tarch::timing::Measurement _measureInitialGridCalendarTime;
@@ -85,6 +88,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     tarch::timing::Measurement _measureGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measureFaceDataExchangeCalendarTime;
     tarch::timing::Measurement _measurePredictorCalendarTime;
+    tarch::timing::Measurement _measurePredictorRerunCalendarTime;
     tarch::timing::Measurement _measureCorrectorCalendarTime;
 
 
@@ -140,6 +144,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual void switchToGlobalTimeStepComputation();    
     virtual void switchToFaceDataExchange();    
     virtual void switchToPredictor();    
+    virtual void switchToPredictorRerun();    
     virtual void switchToCorrector();    
 
     virtual bool isActiveAdapterInitialGrid() const;
@@ -151,6 +156,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual bool isActiveAdapterGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterFaceDataExchange() const;
     virtual bool isActiveAdapterPredictor() const;
+    virtual bool isActiveAdapterPredictorRerun() const;
     virtual bool isActiveAdapterCorrector() const;
 
      

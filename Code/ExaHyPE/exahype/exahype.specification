@@ -124,6 +124,17 @@ adapter:
   merge-with-user-defined-mapping: SpaceTimePredictor 
   merge-with-user-defined-mapping: VolumeIntegral
 
+/**
+ * In a serial version, running the predictor is the same for optimistic time 
+ * steppingn and the non-fused algorithm. In the MPI case however a rerun in 
+ * optimistic time stepping has to remove all old MPI messages from the queues
+ * and resend the updated boundary values, so it is slightly different
+ */
+adapter:
+  name: PredictorRerun
+  merge-with-user-defined-mapping: SpaceTimePredictor 
+  merge-with-user-defined-mapping: VolumeIntegral
+
 adapter:
   name: Corrector
   merge-with-user-defined-mapping: RiemannSolverReset

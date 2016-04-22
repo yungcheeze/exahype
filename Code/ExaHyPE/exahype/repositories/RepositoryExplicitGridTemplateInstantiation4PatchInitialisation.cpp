@@ -22,6 +22,7 @@
  #include "exahype/adapters/GlobalTimeStepComputation.h" 
  #include "exahype/adapters/FaceDataExchange.h" 
  #include "exahype/adapters/Predictor.h" 
+ #include "exahype/adapters/PredictorRerun.h" 
  #include "exahype/adapters/Corrector.h" 
 
 

@@ -71,6 +71,7 @@ class exahype::repositories::Repository {
     virtual void switchToGlobalTimeStepComputation() = 0;    
     virtual void switchToFaceDataExchange() = 0;    
     virtual void switchToPredictor() = 0;    
+    virtual void switchToPredictorRerun() = 0;    
     virtual void switchToCorrector() = 0;    
 
     virtual bool isActiveAdapterInitialGrid() const = 0;
@@ -82,6 +83,7 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterFaceDataExchange() const = 0;
     virtual bool isActiveAdapterPredictor() const = 0;
+    virtual bool isActiveAdapterPredictorRerun() const = 0;
     virtual bool isActiveAdapterCorrector() const = 0;
 
 

@@ -411,7 +411,7 @@ void exahype::runners::Runner::startNewTimeStepAndRecomputePredictorIfNecessary(
     logInfo("startNewTimeStep(...)",
             "\t\t Space-time predictor must be recomputed.");
 
-    repository.switchToPredictor();
+    repository.switchToPredictorRerun();
     repository.iterate();
   }
 }
