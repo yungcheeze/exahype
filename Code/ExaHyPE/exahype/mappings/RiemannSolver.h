@@ -44,6 +44,11 @@ class exahype::mappings::RiemannSolver {
   static tarch::logging::Log _log;
 
   /**
+   * Tag that is used to exchange all the solver instances in MPI
+   */
+  static int                 _mpiTag;
+
+  /**
    * Local copy of the state.
    */
   exahype::State _localState;
@@ -698,26 +703,7 @@ class exahype::mappings::RiemannSolver {
   /**
    * Prepare startup send to worker
    *
-   * This operation is called always when we send data to a worker. It is not
-   * called when we are right in a join or fork. The operation is kind of the
-   * replacement of enterCell() on the master, i.e. called for this one instead
-   * of.
-   *
-   * !!! Reduction
-   *
-   * With the result, you can control whether the worker shall send back its
-   * data from the master rank or not. In accordance, prepareSendToMaster() and
-   * corresponding receive are then not called if reduction is switched off.
-   * However, the result is only a recommendation: On the one hand, the
-   * results of all the active mappings is combined. If one of them requires
-   * reduction, Peano does reduce data to the master. On the other hand, Peano
-   * itself might decide that it reduces nevertheless. The latter case
-   * happens if the master decides that load balancing should be made.
-   *
-   *
-   * @see
-   *peano::kernel::spacetreegrid::nodes::Node::updateCellsParallelStateAfterLoad()
-   * @return Whether this node needs to send back data to its master.
+   * @see receiveDataFromMaster() for a discussion of data flow.
    */
   bool prepareSendToWorker(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -812,73 +798,15 @@ class exahype::mappings::RiemannSolver {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
+   * Receive kick-off message from master
+   *
    * Counterpart of prepareSendToWorker(). This operation is called once when
-   * we receive data from the master node. You can manipulate the received
-   * records - get additional data from the heap, e.g. Afterwards, the
-   * received records are merged into the worker's local data due to
-   * mergeWithWorker(). While this operation gives you access to both the
-   * cell and its adjacent vertices in the same order as prepareSendToWorker(),
-   * the mergeWithWorker() operations are called on-the-fly in a (probably)
-   * different order, as their order depends on the global space-filling curve.
+   * we receive data from the master node.
    *
-   * If you manipulate receivedCell or receivedVertices(), respectively,
-   * these modified values will be passed to mergeWithWorker(). The classical
-   * use case is that prepareSendToWorker() sends away some heap data. This
-   * heap data then should be received in this operation, as you have all data
-   * available here in the same order as prepareSendToWorker(). Distribute the
-   * received heap data among the @f$ 2^d +1 @f$ out arguments you have
-   * available. The modified arguments then are forwarded by Peano to
-   * mergeWithWorker().
-   *
-   * !!! Rationale
-   *
-   * The split of the receive process into two stages seems to be artificial
-   * and not very much straightforward. However, two constraints make it
-   * necessary:
-   * - Some applications need a single receive point where the data received
-   *   has the same order as prepareSendToWorker().
-   * - Some applications need well-initialised vertices when they descend
-   *   somewhere in the worker tree. This descend usually not in the central
-   *   element but an outer part of the tree, i.e. some vertices have to be
-   *   merged before we can also merge the cell and all other vertices.
-   *
-   * !!! Heap data
-   *
-   * If you are working with a heap data structure, your vertices or cells,
-   * respectively, hold pointers to the heap. The received records hold
-   * pointer indices as well. However, these pointers are copies from the
-   * remote ranks, i.e. the pointers are invalid though seem to be set.
-   * Receive heap data instead separately without taking the pointers in
-   * the arguments into account.
-   *
-   * If you receive heap data and need it in the actual merge operation,
-   * i.e. in mergeWithWorker(), we recommend to follow the subsequent steps:
-   *
-   * - Create an entry on the heap here for each vertex.
-   * - Store the received data within these heap entries.
-   * - Merge the heap data within mergeWithWorker().
-   *
-   * - Remove the heap entries created in this operation within
-   *mergeWithWorker().
-   *
-   * @param coarseGridVertices  Copy of the coarse vertices of the master
-   *                            node as well worker's records. As you receive
-   *                            the copy, you can alter the local ones, but
-   *                            any change to this data will remain local on
-   *this
-   *                            worker, i.e. changes are not committed back to
-   *the
-   *                            master. Also, the changes might be lost from
-   *adapter
-   *                            run to adapter run, i.e. if you switch the
-   *adapter
-   *                            you wanna use, Peano might come up with
-   *different
-   *                            coarse vertices and you have to reset data there
-   *                            again.
-   * @param coarseGridCell      Copy fo the coarse cell of the master.
-   * @param fineGridPositionOfCell Position of receivedCell relative to coarse
-   *                            cell on master.
+   * To do a proper Riemann solve, it is important that all the solvers have
+   * the right state. We therefore receive for each individual solver a couple
+   * of messages and merge them into the global instance before we continue
+   * with the actual iteration.
    */
   void receiveDataFromMaster(
       exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
@@ -890,6 +818,8 @@ class exahype::mappings::RiemannSolver {
       const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
       exahype::Cell& workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
+
 
   /**
    * Counterpart of mergeWithMaster()
