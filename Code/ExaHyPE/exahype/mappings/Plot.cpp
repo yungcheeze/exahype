@@ -313,6 +313,7 @@ void exahype::mappings::Plot::enterCell(
   }
 }
 
+
 void exahype::mappings::Plot::leaveCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -323,13 +324,24 @@ void exahype::mappings::Plot::leaveCell(
   // do nothing at all
 }
 
+
 void exahype::mappings::Plot::beginIteration(exahype::State& solverState) {
-  // do nothing
+  if (exahype::plotters::RegisteredPlotters.empty()) {
+    logError( "beginIteration(State)", "plot mapping invoked though no plotters are registered at all" );
+  }
+
+  if ( !tarch::parallel::Node::getInstance().isGlobalMaster() ) {
+    if ( !exahype::plotters::isAPlotterActive(solvers::Solver::getMinSolverTimeStamp()) ) {
+      logWarning( "beginIteration(State)", "plot invoked though no plotter is active at all at min solver time stamp " << solvers::Solver::getMinSolverTimeStamp() );
+    }
+  }
 }
 
+
 void exahype::mappings::Plot::endIteration(exahype::State& solverState) {
-  // do nothing
+  exahype::plotters::finishedPlotting();
 }
+
 
 void exahype::mappings::Plot::descend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,

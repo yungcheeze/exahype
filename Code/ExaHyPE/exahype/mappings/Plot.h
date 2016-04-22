@@ -22,18 +22,16 @@
 #include "exahype/State.h"
 
 namespace exahype {
-namespace mappings {
-class Plot;
-}
+  namespace mappings {
+    class Plot;
+  }
 }
 
 /**
- * This is a mapping from the spacetree traversal events to your user-defined
- *activities.
- * The latter are realised within the mappings.
+ * Plot the data
  *
- * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
- * @version $Revision: 1.10 $
+ * We run through all the cells and evaluate per cell whether this plotter
+ * setup is hot. See the plotters' plotDataFromSolver().
  */
 class exahype::mappings::Plot {
  private:
@@ -1057,62 +1055,22 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
   /**
    * Begin an iteration
    *
-   * This operation is called whenever the algorithm tells Peano that the grid
-   * is to be traversed, i.e. this operation is called before any creational
-   * mapping operation or touchVertexFirstTime() or handleCell() is called.
-   * The operation receives a solver state that has to
-   * encode the solver's state. Take this attribute to set the mapping's
-   * attributes. This class' attributes will remain valid until endIteration()
-   * is called. Afterwards they might contain garbage.
-   *
-   * !!! Parallelisation
-   *
-   * If you run your code in parallel, beginIteration() and endIteration()
-   * realise the following lifecycle together with the state object:
-   *
-   * - Receive the state from the master if there is a master.
-   * - beginIteration()
-   * - Distribute the state among the workers if there are workers.
-   * - Merge the states from the workers (if they exist) into the own state.
-   * - endIteration()
-   * - Send the state to the master if there is a master.
-   *
-   * Please note that the beginIteration() time constraint is weakened in the
-   * parallel case if you choose to receive data on the worker late. Then,
-   * beginIteration() might not be called prior to any other event. See the
-   * documentation of CommunicationSpecification for details.
-   *
-   * @see Plot()
+   * Besides some checks, we do invoke isAPlotterActive() if we are not on the
+   * global master. The name isAPlotterActive() is not 100 percent right as
+   * this routine on the one hand checks whether a plotter is active. On the
+   * other hand, it also switches them on if neccessary. Therefore, it is
+   * important that we do this on each and every rank. On the global master,
+   * the runner does it himself.
    */
   void beginIteration(exahype::State& solverState);
 
   /**
    * Iteration is done
    *
-   * This operation is called at the very end, i.e. after all the handleCell()
-   * and touchVertexLastTime() operations have been invoked. In this
-   * operation, you have to write all the data you will need later on back to
-   * the state object passed. Afterwards, the attributes of your mapping
-   * object (as well as global static fields) might be overwritten.
-   *
-   * !!! Parallelisation
-   *
-   * If you run your code in parallel, beginIteration() and endIteration()
-   * realise the following lifecycle together with the state object:
-   *
-   * - Receive the state from the master if there is a master.
-   * - beginIteration()
-   * - Distribute the state among the workers if there are workers.
-   * - Merge the states from the workers (if they exist) into the own state.
-   * - endIteration()
-   * - Send the state to the master if there is a master.
-   *
-   * Please note that the endIteration() time constraint is weakened in the
-   * parallel case if you choose to send back data eagerly. Then, endIteration()
-   * might not be called after all other events. See the documentation
-   * of CommunicationSpecification for details.
-   *
-   * @see Plot()
+   * We run through all the plotters and notify them that the plot has
+   * finished. This is triggered by a call to
+   * exahype::plotters::finishedPlotting(). They then can prepare to do the
+   * next plot if they are repeating plotters.
    */
   void endIteration(exahype::State& solverState);
 
