@@ -251,7 +251,6 @@ int exahype::runners::Runner::runAsMaster(
     if (exahype::plotters::isAPlotterActive(solvers::Solver::getMinSolverTimeStamp())) {
       repository.switchToPlot();
       repository.iterate();
-      exahype::plotters::finishedPlotting();
       logDebug("runAsMaster(...)", "all snapshots written");
     }
 
