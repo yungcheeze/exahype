@@ -80,8 +80,11 @@ exahype::mappings::SpaceTimePredictor::descendSpecification() {
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
-tarch::logging::Log exahype::mappings::SpaceTimePredictor::_log(
-    "exahype::mappings::SpaceTimePredictor");
+
+tarch::logging::Log exahype::mappings::SpaceTimePredictor::_log( "exahype::mappings::SpaceTimePredictor");
+int                 exahype::mappings::SpaceTimePredictor::_mpiTag = tarch::parallel::Node::reserveFreeTag( "exahype::mappings::SpaceTimePredictor" );
+
+
 
 exahype::mappings::SpaceTimePredictor::SpaceTimePredictor() {
   // do nothing
@@ -185,12 +188,14 @@ void exahype::mappings::SpaceTimePredictor::mergeWithNeighbour(
   // do nothing
 }
 
+
 void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
+
 
 void exahype::mappings::SpaceTimePredictor::prepareCopyToRemoteNode(
     exahype::Vertex& localVertex, int toRank,
@@ -199,12 +204,14 @@ void exahype::mappings::SpaceTimePredictor::prepareCopyToRemoteNode(
   // do nothing
 }
 
+
 void exahype::mappings::SpaceTimePredictor::prepareCopyToRemoteNode(
     exahype::Cell& localCell, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
+
 
 void exahype::mappings::SpaceTimePredictor::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
@@ -213,6 +220,7 @@ void exahype::mappings::SpaceTimePredictor::mergeWithRemoteDataDueToForkOrJoin(
   // do nothing
 }
 
+
 void exahype::mappings::SpaceTimePredictor::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
@@ -220,17 +228,27 @@ void exahype::mappings::SpaceTimePredictor::mergeWithRemoteDataDueToForkOrJoin(
   // do nothing
 }
 
+
 bool exahype::mappings::SpaceTimePredictor::prepareSendToWorker(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    int worker) {
-  // do nothing
+  exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+  const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+  exahype::Vertex* const coarseGridVertices,
+  const peano::grid::VertexEnumerator&      coarseGridVerticesEnumerator,
+  exahype::Cell&                            coarseGridCell,
+  const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+  int worker
+) {
+  for (
+    std::vector<exahype::solvers::Solver*>::iterator p = exahype::solvers::RegisteredSolvers.begin();
+    p != exahype::solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    (*p)->sendToRank(worker, _mpiTag);
+  }
+
   return true;
 }
+
 
 void exahype::mappings::SpaceTimePredictor::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
@@ -257,18 +275,28 @@ void exahype::mappings::SpaceTimePredictor::mergeWithMaster(
   // do nothing
 }
 
+
 void exahype::mappings::SpaceTimePredictor::receiveDataFromMaster(
-    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
-    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
-    exahype::Vertex* const receivedCoarseGridVertices,
-    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
-    exahype::Cell& receivedCoarseGridCell,
-    exahype::Vertex* const workersCoarseGridVertices,
-    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
-    exahype::Cell& workersCoarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
+  exahype::Cell&                              receivedCell,
+  exahype::Vertex*                            receivedVertices,
+  const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
+  exahype::Vertex* const                      receivedCoarseGridVertices,
+  const peano::grid::VertexEnumerator&        receivedCoarseGridVerticesEnumerator,
+  exahype::Cell&                              receivedCoarseGridCell,
+  exahype::Vertex* const                      workersCoarseGridVertices,
+  const peano::grid::VertexEnumerator&        workersCoarseGridVerticesEnumerator,
+  exahype::Cell&                              workersCoarseGridCell,
+  const tarch::la::Vector<DIMENSIONS, int>&   fineGridPositionOfCell
+) {
+  for (
+    std::vector<exahype::solvers::Solver*>::iterator p = exahype::solvers::RegisteredSolvers.begin();
+    p != exahype::solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    (*p)->receiveFromRank(tarch::parallel::NodePool::getInstance().getMasterRank(),_mpiTag);
+  }
 }
+
 
 void exahype::mappings::SpaceTimePredictor::mergeWithWorker(
     exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,

@@ -23,9 +23,9 @@
 #include "exahype/State.h"
 
 namespace exahype {
-namespace mappings {
-class RiemannSolver;
-}
+ namespace mappings {
+  class RiemannSolver;
+ }
 }
 
 /**
@@ -42,11 +42,6 @@ class exahype::mappings::RiemannSolver {
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
-
-  /**
-   * Tag that is used to exchange all the solver instances in MPI
-   */
-  static int                 _mpiTag;
 
   /**
    * Local copy of the state.
@@ -806,7 +801,10 @@ class exahype::mappings::RiemannSolver {
    * To do a proper Riemann solve, it is important that all the solvers have
    * the right state. We therefore receive for each individual solver a couple
    * of messages and merge them into the global instance before we continue
-   * with the actual iteration.
+   * with the actual iteration. However, this data exchange in the mapping
+   * SpaceTimePredictor. See the documentation there for rationale.
+   *
+   * @see SpaceTimePredictor::receiveDataFromMaster()
    */
   void receiveDataFromMaster(
       exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,

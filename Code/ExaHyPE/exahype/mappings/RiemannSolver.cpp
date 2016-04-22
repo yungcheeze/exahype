@@ -83,7 +83,6 @@ exahype::mappings::RiemannSolver::descendSpecification() {
 
 
 tarch::logging::Log exahype::mappings::RiemannSolver::_log( "exahype::mappings::RiemannSolver" );
-int                 exahype::mappings::RiemannSolver::_mpiTag = tarch::parallel::Node::reserveFreeTag( "exahype::mappings::RiemannSolver" );
 
 
 exahype::mappings::RiemannSolver::RiemannSolver() {
@@ -188,12 +187,14 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
   // do nothing
 }
 
+
 void exahype::mappings::RiemannSolver::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
+
 
 void exahype::mappings::RiemannSolver::prepareCopyToRemoteNode(
     exahype::Vertex& localVertex, int toRank,
@@ -202,12 +203,14 @@ void exahype::mappings::RiemannSolver::prepareCopyToRemoteNode(
   // do nothing
 }
 
+
 void exahype::mappings::RiemannSolver::prepareCopyToRemoteNode(
     exahype::Cell& localCell, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
+
 
 void exahype::mappings::RiemannSolver::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
@@ -216,12 +219,14 @@ void exahype::mappings::RiemannSolver::mergeWithRemoteDataDueToForkOrJoin(
   // do nothing
 }
 
+
 void exahype::mappings::RiemannSolver::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
+
 
 bool exahype::mappings::RiemannSolver::prepareSendToWorker(
   exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -232,16 +237,11 @@ bool exahype::mappings::RiemannSolver::prepareSendToWorker(
   const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
   int worker
 ) {
-  for (
-    std::vector<exahype::solvers::Solver*>::iterator p = exahype::solvers::RegisteredSolvers.begin();
-    p != exahype::solvers::RegisteredSolvers.end();
-    p++
-  ) {
-    (*p)->sendToRank(worker, _mpiTag);
-  }
+  // do nothing but please consult header documentation.
 
   return true;
 }
+
 
 void exahype::mappings::RiemannSolver::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
@@ -252,6 +252,7 @@ void exahype::mappings::RiemannSolver::prepareSendToMaster(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   // do nothing
 }
+
 
 void exahype::mappings::RiemannSolver::mergeWithMaster(
     const exahype::Cell& workerGridCell,
@@ -268,6 +269,7 @@ void exahype::mappings::RiemannSolver::mergeWithMaster(
   // do nothing
 }
 
+
 void exahype::mappings::RiemannSolver::receiveDataFromMaster(
   exahype::Cell&                              receivedCell,
   exahype::Vertex*                            receivedVertices,
@@ -280,13 +282,7 @@ void exahype::mappings::RiemannSolver::receiveDataFromMaster(
   exahype::Cell&                              workersCoarseGridCell,
   const tarch::la::Vector<DIMENSIONS, int>&   fineGridPositionOfCell
 ) {
-  for (
-    std::vector<exahype::solvers::Solver*>::iterator p = exahype::solvers::RegisteredSolvers.begin();
-    p != exahype::solvers::RegisteredSolvers.end();
-    p++
-  ) {
-    (*p)->receiveFromRank(tarch::parallel::NodePool::getInstance().getMasterRank(),_mpiTag);
-  }
+  // do nothing but please consult header documentation
 }
 
 
@@ -297,6 +293,7 @@ void exahype::mappings::RiemannSolver::mergeWithWorker(
   // do nothing
 }
 
+
 void exahype::mappings::RiemannSolver::mergeWithWorker(
     exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -304,6 +301,7 @@ void exahype::mappings::RiemannSolver::mergeWithWorker(
   // do nothing
 }
 #endif
+
 
 void exahype::mappings::RiemannSolver::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
