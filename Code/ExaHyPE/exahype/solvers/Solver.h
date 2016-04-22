@@ -437,6 +437,16 @@ class exahype::solvers::Solver {
    */
   void sendToRank(int rank, int tag);
   void receiveFromRank(int rank, int tag);
+
+  /**
+   * Run over all solvers and identify the minimal time stamp.
+   */
+  static double getMinSolverTimeStamp();
+
+  /**
+   * Run over all solvers and identify the minimal time step size.
+   */
+  static double getMinSolverTimeStepSize();
 };
 
 #endif

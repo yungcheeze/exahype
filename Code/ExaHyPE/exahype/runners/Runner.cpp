@@ -243,9 +243,12 @@ int exahype::runners::Runner::runAsMaster(
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n = 1;
 
-  while ((getMinSolverTimeStamp() < simulationEndTime) &&
-         tarch::la::greater(getMinSolverTimeStepSize(), 0.0)) {
-    if (exahype::plotters::isAPlotterActive(getMinSolverTimeStamp())) {
+  while (
+    (solvers::Solver::getMinSolverTimeStamp() < simulationEndTime)
+    &&
+    tarch::la::greater(solvers::Solver::getMinSolverTimeStepSize(), 0.0)
+  ) {
+    if (exahype::plotters::isAPlotterActive(solvers::Solver::getMinSolverTimeStamp())) {
       repository.switchToPlot();
       repository.iterate();
       exahype::plotters::finishedPlotting();
@@ -270,29 +273,6 @@ int exahype::runners::Runner::runAsMaster(
   return 0;
 }
 
-double exahype::runners::Runner::getMinSolverTimeStamp() {
-  double currentMinTimeStamp = std::numeric_limits<double>::max();
-
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end(); p++) {
-    currentMinTimeStamp =
-        std::min(currentMinTimeStamp, (*p)->getMinCorrectorTimeStamp());
-  }
-  return currentMinTimeStamp;
-}
-
-double exahype::runners::Runner::getMinSolverTimeStepSize() {
-  double currentMinTimeStepSize = std::numeric_limits<double>::max();
-
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end(); p++) {
-    currentMinTimeStepSize =
-        std::min(currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
-  }
-  return currentMinTimeStepSize;
-}
 
 void exahype::runners::Runner::initSolvers() {
   // todo 16/02/26:Dominic Etienne Charrier: The initial time stamp

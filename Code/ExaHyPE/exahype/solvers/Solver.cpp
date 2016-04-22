@@ -197,3 +197,28 @@ void exahype::solvers::Solver::receiveFromRank(int rank, int tag) {
   MPI_Recv( &_minNextPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
   #endif
 }
+
+double exahype::solvers::Solver::getMinSolverTimeStamp() {
+  double currentMinTimeStamp = std::numeric_limits<double>::max();
+
+  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
+           exahype::solvers::RegisteredSolvers.begin();
+       p != exahype::solvers::RegisteredSolvers.end(); p++) {
+    currentMinTimeStamp =
+        std::min(currentMinTimeStamp, (*p)->getMinCorrectorTimeStamp());
+  }
+  return currentMinTimeStamp;
+}
+
+double exahype::solvers::Solver::getMinSolverTimeStepSize() {
+  double currentMinTimeStepSize = std::numeric_limits<double>::max();
+
+  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
+           exahype::solvers::RegisteredSolvers.begin();
+       p != exahype::solvers::RegisteredSolvers.end(); p++) {
+    currentMinTimeStepSize =
+        std::min(currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
+  }
+  return currentMinTimeStepSize;
+}
+
