@@ -51,9 +51,9 @@ class exahype::mappings::VirtualRefinement {
    * type \p cellType for the solver \p solverNumber.
    */
   bool hasNeighboursOfType(
-      const int solverNumber,
-      exahype::Cell::CellDescriptionType cellType,
-      const tarch::la::Vector<THREE_POWER_D,int>& neighbourCellDescriptionIndices);
+    const int                                      solverNumber,
+    exahype::records::ADERDGCellDescription::Type  cellType,
+    const tarch::la::Vector<THREE_POWER_D,int>&    neighbourCellDescriptionIndices);
 
  public:
   /**

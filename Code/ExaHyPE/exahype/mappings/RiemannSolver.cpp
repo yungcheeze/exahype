@@ -389,9 +389,9 @@ void exahype::mappings::RiemannSolver::solveRiemannProblem(
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      if (cellDescriptionsL[i].getType()==exahype::Cell::RealCell
+      if (cellDescriptionsL[i].getType()==exahype::records::ADERDGCellDescription::RealCell
           ||
-          cellDescriptionsR[i].getType()==exahype::Cell::RealCell
+          cellDescriptionsR[i].getType()==exahype::records::ADERDGCellDescription::RealCell
       ) {
         exahype::solvers::Solver* solver =
             exahype::solvers::RegisteredSolvers[cellDescriptionsL[i].getSolverNumber()];

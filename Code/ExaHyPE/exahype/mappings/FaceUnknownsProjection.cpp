@@ -325,7 +325,7 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
       // if we have at least one parent
       if (ADERDGCellDescriptionHeap::getInstance().
           isValidIndex(cellDescription.getParentIndex())) {
-        if (cellDescription.getType() == exahype::Cell::VirtualShell
+        if (cellDescription.getType() == exahype::records::ADERDGCellDescription::VirtualShell
             &&
             cellDescription.getHasNeighboursOfTypeCell()) {
           exahype::Cell::SubcellPosition subcellPosition =
@@ -337,9 +337,9 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
               cellDescription,
               subcellPosition.parentIndex,
               subcellPosition.subcellIndex);
-        } else if (cellDescription.getType() == exahype::Cell::RealCell
+        } else if (cellDescription.getType() == exahype::records::ADERDGCellDescription::RealCell
             ||
-            cellDescription.getType() == exahype::Cell::RealShell
+            cellDescription.getType() == exahype::records::ADERDGCellDescription::RealShell
         ) {
           restrictFaceData(
               cellDescription,
@@ -366,11 +366,11 @@ void exahype::mappings::FaceUnknownsProjection::prolongateFaceData(
   assertion(cellDescriptionParent.getSolverNumber()==
           cellDescription.getSolverNumber());
   assertion(cellDescriptionParent.getParent());
-  assertion(cellDescriptionParent.getType()==exahype::Cell::RealCell
+  assertion(cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::RealCell
             ||
-            cellDescriptionParent.getType()==exahype::Cell::VirtualShell);
+            cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::VirtualShell);
 #if defined(Debug) || defined(Asserts)
-              if (cellDescriptionParent.getType()==exahype::Cell::VirtualShell) {
+              if (cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::VirtualShell) {
                 assertion(cellDescriptionParent.getHasNeighboursOfTypeCell());
               }
 #endif
@@ -444,7 +444,7 @@ void exahype::mappings::FaceUnknownsProjection::restrictFaceData(
   assertion(cellDescriptionParent.getSolverNumber()==
           cellDescription.getSolverNumber());
   assertion(cellDescriptionParent.getParent());
-  assertion(cellDescriptionParent.getType()==exahype::Cell::RealShell);
+  assertion(cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::RealShell);
 
   const int levelFine   = cellDescription.getLevel();
   const int levelCoarse = cellDescriptionParent.getLevel();

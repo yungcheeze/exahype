@@ -307,12 +307,12 @@ void exahype::mappings::AdaptiveRefinement::enterCell(
         exahype::records::ADERDGCellDescription& cellDescriptionParent =
             coarseGridCell.getADERDGCellDescription(solverNumber);
         if (cellDescriptionParent.getRefinementNecessary()) {
-          assertion(cellDescriptionParent.getType()==exahype::Cell::RealShell);
+          assertion(cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::RealShell);
           assertion(cellDescriptionParent.getParent());
 
           fineGridCell.addNewCellDescription(
               solverNumber,
-              exahype::Cell::RealCell,
+              exahype::records::ADERDGCellDescription::RealCell,
               fineGridVerticesEnumerator.getLevel(),
               coarseGridCell.getADERDGCellDescriptionsIndex(),
               fineGridPositionOfCell,
@@ -342,7 +342,7 @@ void exahype::mappings::AdaptiveRefinement::enterCell(
           fineGridCell.getADERDGCellDescription(solverNumber);
 
       // only refine real cells
-      if (cellDescription.getType()==exahype::Cell::RealCell) {
+      if (cellDescription.getType()==exahype::records::ADERDGCellDescription::RealCell) {
         double* solution = DataHeap::getInstance().getData(
             cellDescription.getSolution()).data();
 
@@ -352,22 +352,22 @@ void exahype::mappings::AdaptiveRefinement::enterCell(
                                       cellDescription.getCorrectorTimeStamp(), // todo careful with the time stamps
                                       cellDescription.getLevel())) {
           cellDescription.setRefinementNecessary(true);
-          cellDescription.setType(exahype::Cell::RealShell);
+          cellDescription.setType(exahype::records::ADERDGCellDescription::RealShell);
           cellDescription.setParent(true);
 
           refineFineGridCell = true;
         }
-      } else if (cellDescription.getType()==exahype::Cell::VirtualShell) {
+      } else if (cellDescription.getType()==exahype::records::ADERDGCellDescription::VirtualShell) {
         // Change virtual shell to real cell if parent
         // requested (real) refinement
         if (fineGridVerticesEnumerator.getLevel()>=(*p)->getMinimumTreeDepth()+1) {
              exahype::records::ADERDGCellDescription& cellDescriptionParent =
                  coarseGridCell.getADERDGCellDescription(solverNumber);
              if (cellDescriptionParent.getRefinementNecessary()) {
-               assertion(cellDescriptionParent.getType()==exahype::Cell::RealShell);
+               assertion(cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::RealShell);
                assertion(cellDescriptionParent.getParent());
 
-               cellDescription.setType(exahype::Cell::RealCell);
+               cellDescription.setType(exahype::records::ADERDGCellDescription::RealCell);
                cellDescriptionParent.setRefinementNecessary(false);
              }
         }

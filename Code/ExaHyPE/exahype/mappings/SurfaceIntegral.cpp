@@ -337,7 +337,7 @@ void exahype::mappings::SurfaceIntegral::enterCell(
           ADERDGCellDescriptionHeap::getInstance().getData(
               fineGridCell.getADERDGCellDescriptionsIndex())[i];
 
-      if (p.getType()==exahype::Cell::RealCell) {
+      if (p.getType()==exahype::records::ADERDGCellDescription::RealCell) {
         exahype::solvers::Solver* solver =
             exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 

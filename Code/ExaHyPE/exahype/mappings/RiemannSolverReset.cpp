@@ -333,11 +333,11 @@ void exahype::mappings::RiemannSolverReset::enterCell(
           ADERDGCellDescriptionHeap::getInstance().getData(
               fineGridCell.getADERDGCellDescriptionsIndex())[i];
 
-      if (p.getType()==exahype::Cell::RealCell
+      if (p.getType()==exahype::records::ADERDGCellDescription::RealCell
           ||
-          p.getType()==exahype::Cell::RealShell
+          p.getType()==exahype::records::ADERDGCellDescription::RealShell
           ||
-          (p.getType()==exahype::Cell::VirtualShell
+          (p.getType()==exahype::records::ADERDGCellDescription::VirtualShell
           && p.getHasNeighboursOfTypeCell())) {
         // all bits are initialised to 'off'
         std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed;
@@ -346,9 +346,9 @@ void exahype::mappings::RiemannSolverReset::enterCell(
         assertion1(p.getRiemannSolvePerformed().none(), p.toString());
       }
 
-      if (p.getType()==exahype::Cell::RealShell
+      if (p.getType()==exahype::records::ADERDGCellDescription::RealShell
           ||
-          (p.getType()==exahype::Cell::VirtualShell
+          (p.getType()==exahype::records::ADERDGCellDescription::VirtualShell
           &&
           p.getHasNeighboursOfTypeCell())) {
         exahype::solvers::Solver* solver =

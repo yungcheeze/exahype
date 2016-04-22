@@ -299,7 +299,7 @@ void exahype::mappings::Plot::enterCell(
           .end();
           pPatch++) {
 
-        if (pPatch->getType()==exahype::Cell::RealCell) {;
+        if (pPatch->getType()==exahype::records::ADERDGCellDescription::RealCell) {;
           if ((*pPlotter)->plotDataFromSolver(pPatch->getSolverNumber())) {
             double* u =
                 DataHeap::getInstance().getData(pPatch->getSolution()).data();

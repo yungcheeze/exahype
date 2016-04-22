@@ -5,7 +5,7 @@ exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords() 
 }
 
 
-exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary):
+exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary):
 _solverNumber(solverNumber),
 _riemannSolvePerformed(riemannSolvePerformed),
 _correctorTimeStepSize(correctorTimeStepSize),
@@ -45,7 +45,7 @@ _persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSo
 }
 
 
-exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary):
+exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary):
 _persistentRecords(solverNumber, riemannSolvePerformed, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size, fineGridPositionOfCell, type, parent, parentIndex, hasNeighboursOfTypeCell, refinementNecessary, virtualRefinementNecessary) {
    
 }
@@ -53,6 +53,19 @@ _persistentRecords(solverNumber, riemannSolvePerformed, correctorTimeStepSize, c
 
 exahype::records::ADERDGCellDescription::~ADERDGCellDescription() { }
 
+std::string exahype::records::ADERDGCellDescription::toString(const Type& param) {
+   switch (param) {
+      case Unspecified: return "Unspecified";
+      case RealCell: return "RealCell";
+      case RealShell: return "RealShell";
+      case VirtualShell: return "VirtualShell";
+   }
+   return "undefined";
+}
+
+std::string exahype::records::ADERDGCellDescription::getTypeMapping() {
+   return "Type(Unspecified=0,RealCell=1,RealShell=2,VirtualShell=3)";
+}
 
 
 std::string exahype::records::ADERDGCellDescription::toString() const {
@@ -117,7 +130,7 @@ void exahype::records::ADERDGCellDescription::toString (std::ostream& out) const
    }
    out << getFineGridPositionOfCell(DIMENSIONS-1) << "]";
    out << ",";
-   out << "type:" << getType();
+   out << "type:" << toString(getType());
    out << ",";
    out << "parent:" << getParent();
    out << ",";
@@ -615,7 +628,7 @@ exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentReco
 }
 
 
-exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary):
+exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary):
 _solverNumber(solverNumber),
 _riemannSolvePerformed(riemannSolvePerformed),
 _correctorTimeStepSize(correctorTimeStepSize),
@@ -655,13 +668,21 @@ _persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSo
 }
 
 
-exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary):
+exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary):
 _persistentRecords(solverNumber, riemannSolvePerformed, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size, fineGridPositionOfCell, type, parent, parentIndex, hasNeighboursOfTypeCell, refinementNecessary, virtualRefinementNecessary) {
    
 }
 
 
 exahype::records::ADERDGCellDescriptionPacked::~ADERDGCellDescriptionPacked() { }
+
+std::string exahype::records::ADERDGCellDescriptionPacked::toString(const Type& param) {
+   return exahype::records::ADERDGCellDescription::toString(param);
+}
+
+std::string exahype::records::ADERDGCellDescriptionPacked::getTypeMapping() {
+   return exahype::records::ADERDGCellDescription::getTypeMapping();
+}
 
 
 
@@ -727,7 +748,7 @@ void exahype::records::ADERDGCellDescriptionPacked::toString (std::ostream& out)
    }
    out << getFineGridPositionOfCell(DIMENSIONS-1) << "]";
    out << ",";
-   out << "type:" << getType();
+   out << "type:" << toString(getType());
    out << ",";
    out << "parent:" << getParent();
    out << ",";

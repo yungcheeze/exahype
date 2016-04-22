@@ -399,7 +399,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
             ADERDGCellDescriptionHeap::getInstance().getData(
                 adjacentADERDGCellDescriptionsIndices[cellIndex])[i];
 
-        if (p.getType()==exahype::Cell::RealCell) {
+        if (p.getType()==exahype::records::ADERDGCellDescription::RealCell) {
           exahype::solvers::Solver* solver =
               exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 

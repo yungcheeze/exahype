@@ -32,13 +32,17 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   05/04/2016 18:05
+ * @date   22/04/2016 11:10
  */
 class exahype::records::ADERDGCellDescription { 
    
    public:
       
       typedef exahype::records::ADERDGCellDescriptionPacked Packed;
+      
+      enum Type {
+         Unspecified = 0, RealCell = 1, RealShell = 2, VirtualShell = 3
+      };
       
       struct PersistentRecords {
          int _solverNumber;
@@ -76,7 +80,7 @@ class exahype::records::ADERDGCellDescription {
          #else
          tarch::la::Vector<DIMENSIONS,int> _fineGridPositionOfCell;
          #endif
-         int _type;
+         Type _type;
          bool _parent;
          int _parentIndex;
          bool _hasNeighboursOfTypeCell;
@@ -90,7 +94,7 @@ class exahype::records::ADERDGCellDescription {
          /**
           * Generated
           */
-         PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+         PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
          
          
          inline int getSolverNumber() const 
@@ -625,7 +629,7 @@ class exahype::records::ADERDGCellDescription {
          
          
          
-         inline int getType() const 
+         inline Type getType() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -635,7 +639,7 @@ class exahype::records::ADERDGCellDescription {
          
          
          
-         inline void setType(const int& type) 
+         inline void setType(const Type& type) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -764,7 +768,7 @@ class exahype::records::ADERDGCellDescription {
       /**
        * Generated
        */
-      ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+      ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
       
       /**
        * Generated
@@ -1420,7 +1424,7 @@ class exahype::records::ADERDGCellDescription {
       
       
       
-      inline int getType() const 
+      inline Type getType() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1430,7 +1434,7 @@ class exahype::records::ADERDGCellDescription {
       
       
       
-      inline void setType(const int& type) 
+      inline void setType(const Type& type) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -1542,6 +1546,16 @@ class exahype::records::ADERDGCellDescription {
       /**
        * Generated
        */
+      static std::string toString(const Type& param);
+      
+      /**
+       * Generated
+       */
+      static std::string getTypeMapping();
+      
+      /**
+       * Generated
+       */
       std::string toString() const;
       
       /**
@@ -1612,11 +1626,13 @@ class exahype::records::ADERDGCellDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   05/04/2016 18:05
+          * @date   22/04/2016 11:10
           */
          class exahype::records::ADERDGCellDescriptionPacked { 
             
             public:
+               
+               typedef exahype::records::ADERDGCellDescription::Type Type;
                
                struct PersistentRecords {
                   int _solverNumber;
@@ -1638,7 +1654,7 @@ class exahype::records::ADERDGCellDescription {
                   tarch::la::Vector<DIMENSIONS,double> _offset;
                   tarch::la::Vector<DIMENSIONS,double> _size;
                   tarch::la::Vector<DIMENSIONS,int> _fineGridPositionOfCell;
-                  int _type;
+                  Type _type;
                   bool _parent;
                   int _parentIndex;
                   bool _hasNeighboursOfTypeCell;
@@ -1652,7 +1668,7 @@ class exahype::records::ADERDGCellDescription {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+                  PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
                   
                   
                   inline int getSolverNumber() const 
@@ -2187,7 +2203,7 @@ class exahype::records::ADERDGCellDescription {
                   
                   
                   
-                  inline int getType() const 
+                  inline Type getType() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2197,7 +2213,7 @@ class exahype::records::ADERDGCellDescription {
                   
                   
                   
-                  inline void setType(const int& type) 
+                  inline void setType(const Type& type) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2326,7 +2342,7 @@ class exahype::records::ADERDGCellDescription {
                /**
                 * Generated
                 */
-               ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const int& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+               ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
                
                /**
                 * Generated
@@ -2982,7 +2998,7 @@ class exahype::records::ADERDGCellDescription {
                
                
                
-               inline int getType() const 
+               inline Type getType() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -2992,7 +3008,7 @@ class exahype::records::ADERDGCellDescription {
                
                
                
-               inline void setType(const int& type) 
+               inline void setType(const Type& type) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
@@ -3100,6 +3116,16 @@ class exahype::records::ADERDGCellDescription {
                   _persistentRecords._virtualRefinementNecessary = virtualRefinementNecessary;
                }
                
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const Type& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getTypeMapping();
                
                /**
                 * Generated

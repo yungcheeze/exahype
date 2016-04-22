@@ -318,15 +318,15 @@ void exahype::mappings::VirtualRefinement::enterCell(
         // If coarse grid cell description requested refinement
         if (cellDescriptionParent.getVirtualRefinementNecessary()) {
           assertion(cellDescriptionParent.
-                    getType()==exahype::Cell::RealCell
+                    getType()==exahype::records::ADERDGCellDescription::RealCell
                     ||
                     cellDescriptionParent.
-                    getType()==exahype::Cell::VirtualShell);
+                    getType()==exahype::records::ADERDGCellDescription::VirtualShell);
           assertion(cellDescriptionParent.getParent());
 
           fineGridCell.addNewCellDescription(
               solverNumber,
-              exahype::Cell::VirtualShell,
+              exahype::records::ADERDGCellDescription::VirtualShell,
               fineGridVerticesEnumerator.getLevel(),
               coarseGridCell.getADERDGCellDescriptionsIndex(),
               fineGridPositionOfCell,
@@ -355,11 +355,13 @@ void exahype::mappings::VirtualRefinement::enterCell(
           fineGridCell.getADERDGCellDescription(solverNumber);
 
       // check if virtual shell has real cell neighbours
-      if (cellDescription.getType()==exahype::Cell::VirtualShell) {
+      if (cellDescription.getType()==exahype::records::ADERDGCellDescription::VirtualShell) {
         cellDescription.setHasNeighboursOfTypeCell(
-            hasNeighboursOfType(
-                solverNumber,exahype::Cell::RealCell,
-                neighbourCellDescriptionIndices)
+          hasNeighboursOfType(
+            solverNumber,
+            exahype::records::ADERDGCellDescription::RealCell,
+            neighbourCellDescriptionIndices
+          )
         );
       }
 
@@ -367,12 +369,12 @@ void exahype::mappings::VirtualRefinement::enterCell(
       // if they have real shells as neighbour
       if (!cellDescription.getParent()
           &&
-          (cellDescription.getType()==exahype::Cell::RealCell
+          (cellDescription.getType()==exahype::records::ADERDGCellDescription::RealCell
           ||
-          cellDescription.getType()==exahype::Cell::VirtualShell)
+          cellDescription.getType()==exahype::records::ADERDGCellDescription::VirtualShell)
           &&
           hasNeighboursOfType(
-            solverNumber,exahype::Cell::RealShell,
+            solverNumber,exahype::records::ADERDGCellDescription::RealShell,
             neighbourCellDescriptionIndices)) {
         cellDescription.setVirtualRefinementNecessary(true);
         cellDescription.setParent(true);
@@ -395,10 +397,12 @@ void exahype::mappings::VirtualRefinement::enterCell(
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
-  bool exahype::mappings::VirtualRefinement::hasNeighboursOfType(
-      const int solverNumber,
-      exahype::Cell::CellDescriptionType cellType,
-      const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionIndices) {
+
+bool exahype::mappings::VirtualRefinement::hasNeighboursOfType(
+  const int                                      solverNumber,
+  exahype::records::ADERDGCellDescription::Type  cellType,
+  const tarch::la::Vector<THREE_POWER_D, int>&   neighbourCellDescriptionIndices
+) {
     // left,right,front,back,(front,back)
 #if DIMENSIONS == 2
     constexpr int neighbourPositions[4] = {3,5,1,7};
@@ -419,7 +423,7 @@ void exahype::mappings::VirtualRefinement::enterCell(
 
         if (neighbourCellDescription.getType()==cellType) {
 #if defined(Debug) || defined(Asserts)
-          if (neighbourCellDescription.getType()==exahype::Cell::RealShell) {
+          if (neighbourCellDescription.getType()==exahype::records::ADERDGCellDescription::RealShell) {
             assertion(neighbourCellDescription.getParent());
           }
 #endif

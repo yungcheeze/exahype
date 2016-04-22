@@ -33,13 +33,14 @@ int exahype::Cell::getADERDGCellDescriptionsIndex() const {
 }
 
 void exahype::Cell::addNewCellDescription(
-    const int solverNumber,
-    const exahype::Cell::CellDescriptionType cellType,
-    const int level,
-    const int parentIndex,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    const tarch::la::Vector<DIMENSIONS, double>& size,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre) {
+  const int                                            solverNumber,
+  const exahype::records::ADERDGCellDescription::Type  cellType,
+  const int                                            level,
+  const int                                            parentIndex,
+  const tarch::la::Vector<DIMENSIONS, int>&            fineGridPositionOfCell,
+  const tarch::la::Vector<DIMENSIONS, double>&         size,
+  const tarch::la::Vector<DIMENSIONS, double>&         cellCentre
+) {
   if (!ADERDGCellDescriptionHeap::getInstance().isValidIndex(
       _cellData.getADERDGCellDescriptionsIndex())) {
     const int ADERDGCellDescriptionIndex =
@@ -116,7 +117,7 @@ void exahype::Cell::initialiseCellDescription(const int solverNumber) {
 
       assertion(solverNumber==cellDescription.getSolverNumber());
 
-      if (cellDescription.getType()==exahype::Cell::RealCell) {
+      if (cellDescription.getType()==exahype::records::ADERDGCellDescription::RealCell) {
         if (!DataHeap::getInstance().isValidIndex(
             cellDescription.getSolution())) {
           assertion(!DataHeap::getInstance().isValidIndex(
@@ -162,11 +163,11 @@ void exahype::Cell::initialiseCellDescription(const int solverNumber) {
       }
 
       // Allocate face DoF
-      if (cellDescription.getType()==RealCell
+      if (cellDescription.getType()==exahype::records::ADERDGCellDescription::RealCell
           ||
-          cellDescription.getType()==RealShell
+          cellDescription.getType()==exahype::records::ADERDGCellDescription::RealShell
           ||
-          (cellDescription.getType()==VirtualShell
+          (cellDescription.getType()==exahype::records::ADERDGCellDescription::VirtualShell
           &&
           cellDescription.getHasNeighboursOfTypeCell())) {
 
@@ -214,16 +215,16 @@ void exahype::Cell::cleanCellDescription(const int solverNumber) {
 
       assertion(solverNumber==cellDescription.getSolverNumber());
 
-      assertion1(cellDescription.getType()==RealCell
+      assertion1(cellDescription.getType()==exahype::records::ADERDGCellDescription::RealCell
                  ||
-                 cellDescription.getType()==RealShell
+                 cellDescription.getType()==exahype::records::ADERDGCellDescription::RealShell
                  ||
-                 cellDescription.getType()==VirtualShell,
+                 cellDescription.getType()==exahype::records::ADERDGCellDescription::VirtualShell,
                  toString());
 
-      if (cellDescription.getType()==RealShell
+      if (cellDescription.getType()==exahype::records::ADERDGCellDescription::RealShell
           ||
-          cellDescription.getType()==VirtualShell) {
+          cellDescription.getType()==exahype::records::ADERDGCellDescription::VirtualShell) {
         if (DataHeap::getInstance().isValidIndex(
             cellDescription.getSolution())) {
           assertion(!DataHeap::getInstance().isValidIndex(
@@ -250,7 +251,7 @@ void exahype::Cell::cleanCellDescription(const int solverNumber) {
         }
       }
 
-      if(cellDescription.getType()==VirtualShell
+      if(cellDescription.getType()==exahype::records::ADERDGCellDescription::VirtualShell
           &&
           !cellDescription.getHasNeighboursOfTypeCell()) {
         if (!DataHeap::getInstance().isValidIndex(
@@ -298,10 +299,11 @@ exahype::Cell::SubcellPosition exahype::Cell::getSubcellPositionOfVirtualShell(
 
   // recursion
   int i = 1;
-  while ((!p->getHasNeighboursOfTypeCell() &&
-      p->getType()==exahype::Cell::VirtualShell)
-      ||
-      p->getType()!=exahype::Cell::RealCell) {
+  while (
+    (!p->getHasNeighboursOfTypeCell() && p->getType()==exahype::records::ADERDGCellDescription::VirtualShell)
+    ||
+    p->getType()!=exahype::records::ADERDGCellDescription::RealCell
+  ) {
     for (int d=0; d < DIMENSIONS; d++) {
       subcellPosition.subcellIndex[d] +=
           tarch::la::aPowI(i,3) * p->getFineGridPositionOfCell(d);
@@ -316,9 +318,9 @@ exahype::Cell::SubcellPosition exahype::Cell::getSubcellPositionOfVirtualShell(
   }
 
   assertion((p->getHasNeighboursOfTypeCell() &&
-            p->getType()==exahype::Cell::VirtualShell)
+            p->getType()==exahype::records::ADERDGCellDescription::VirtualShell)
             ||
-            p->getType()==exahype::Cell::RealCell)
+            p->getType()==exahype::records::ADERDGCellDescription::RealCell)
   return subcellPosition;
 }
 

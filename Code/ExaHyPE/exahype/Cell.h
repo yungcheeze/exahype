@@ -24,12 +24,10 @@ namespace exahype {
   typedef peano::heap::PlainDoubleHeap DataHeap;
 }
 
+
+
 /**
- * Blueprint for cell.
- *
- * This file has originally been created by the PDT and may be manually extended
- *to
- * the needs of your application. We do not recommend to remove anything!
+ * @todo Dominic We should add some proper descriptions here one day.
  */
 class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
 private:
@@ -38,23 +36,6 @@ private:
   static tarch::logging::Log _log;
 
 public:
-  /**
-   * Type of a cell description.
-   * Cell descriptions of type \p Cell hold cell and face data,
-   * while the ones of type \p Shell hold only face data.
-   * Both belong to the original spacetree that
-   * is constructed according to solver-based refinement criteria.
-   * Virtual shells hold also only face data but belong to
-   * the virtual part of the augmented spacetree that
-   * is created to store prolongated face data.
-   */
-  enum CellDescriptionType {
-    Unspecified,
-    RealCell,
-    RealShell,
-    VirtualShell
-  };
-
   typedef struct {
     int parentIndex;
     tarch::la::Vector<DIMENSIONS,int> subcellIndex;
@@ -109,13 +90,14 @@ public:
    * to their parents.
    */
   void addNewCellDescription(
-      const int solverNumber,
-      const exahype::Cell::CellDescriptionType cellType,
-      const int level,
-      const int parentIndex,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-      const tarch::la::Vector<DIMENSIONS, double>& size,
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
+    const int                                            solverNumber,
+    const exahype::records::ADERDGCellDescription::Type  cellType,
+    const int                                            level,
+    const int                                            parentIndex,
+    const tarch::la::Vector<DIMENSIONS, int>&            fineGridPositionOfCell,
+    const tarch::la::Vector<DIMENSIONS, double>&         size,
+    const tarch::la::Vector<DIMENSIONS, double>&         cellCentre
+  );
 
   /**
    * Per existing cell, the initialisation runs over all solvers that
