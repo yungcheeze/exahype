@@ -330,6 +330,11 @@ void exahype::mappings::Plot::beginIteration(exahype::State& solverState) {
     logError( "beginIteration(State)", "plot mapping invoked though no plotters are registered at all" );
   }
 
+  // @todo This does not work if we use dynamic lb. In this case, ranks will
+  //       drop out and then rejoin the computation. Whenever a rank drops out,
+  //       its plotters will be out of sync. Therefore, we have to broadcast
+  //       the plotter states per plot run to all non-idle ranks which easily
+  //       should be possible exactly here.
   if ( !tarch::parallel::Node::getInstance().isGlobalMaster() ) {
     if ( !exahype::plotters::isAPlotterActive(solvers::Solver::getMinSolverTimeStamp()) ) {
       logWarning( "beginIteration(State)", "plot invoked though no plotter is active at all at min solver time stamp " << solvers::Solver::getMinSolverTimeStamp() );
