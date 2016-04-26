@@ -76,12 +76,12 @@ public:
 
   /**
    * Loads the ADERDGCellDescription associated
-   * with this cell and the solver with index \p solverIndex.
+   * with this cell.
    */
   inline exahype::records::ADERDGCellDescription& getADERDGCellDescription(
-      int solverNumber) {
+      int index) {
     return ADERDGCellDescriptionHeap::getInstance().getData(
-        getADERDGCellDescriptionsIndex())[solverNumber];
+        getADERDGCellDescriptionsIndex())[index];
   }
 
   /**
@@ -92,6 +92,8 @@ public:
   void addNewCellDescription(
     const int                                            solverNumber,
     const exahype::records::ADERDGCellDescription::Type  cellType,
+    const exahype::records::ADERDGCellDescription::RefinementEvent refinementEvent,
+    const exahype::records::ADERDGCellDescription::RefinementEvent augmentationEvent,
     const int                                            level,
     const int                                            parentIndex,
     const tarch::la::Vector<DIMENSIONS, int>&            fineGridPositionOfCell,
@@ -112,14 +114,14 @@ public:
    */
   void initialiseCellDescription(const int solverNumber);
 
-  /**
-   * Per existing cell, the initialisation has to run over all solvers that
-   * shall be realised. For a given solver/PDE a patch is to be created if
-   * the cell's level equals getMinimumTreeDepth() of if the tree is
-   * unrefined.
-   */
-  void init(const int level, const tarch::la::Vector<DIMENSIONS, double>& size,
-            const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
+//  /**
+//   * Per existing cell, the initialisation has to run over all solvers that
+//   * shall be realised. For a given solver/PDE a patch is to be created if
+//   * the cell's level equals getMinimumTreeDepth() of if the tree is
+//   * unrefined.
+//   */
+//  void init(const int level, const tarch::la::Vector<DIMENSIONS, double>& size,
+//            const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
 
   /**
    * Determine the position of a virtual shell with respect
@@ -133,9 +135,7 @@ public:
    * right file/class to hold this functionality.
    */
   SubcellPosition getSubcellPositionOfVirtualShell(
-      const int solverNumber,
-      const int parentIndex,
-      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell) const;
+      const exahype::records::ADERDGCellDescription& pChild) const;
 };
 
 #endif

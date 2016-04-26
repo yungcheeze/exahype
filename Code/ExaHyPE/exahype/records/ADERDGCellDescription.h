@@ -32,7 +32,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   22/04/2016 19:49
+ * @date   26/04/2016 16:14
  */
 class exahype::records::ADERDGCellDescription { 
    
@@ -40,8 +40,12 @@ class exahype::records::ADERDGCellDescription {
       
       typedef exahype::records::ADERDGCellDescriptionPacked Packed;
       
+      enum RefinementEvent {
+         None = 0, CoarseningPossible = 1, Restriction = 2, Coarsening = 3, CoarseningChildren = 4, Refinement = 5, Prolongation = 6
+      };
+      
       enum Type {
-         Unspecified = 0, RealCell = 1, RealShell = 2, VirtualShell = 3
+         Cell = 0, Shell = 1, VirtualShell = 2
       };
       
       struct PersistentRecords {
@@ -84,8 +88,8 @@ class exahype::records::ADERDGCellDescription {
          bool _parent;
          int _parentIndex;
          bool _hasNeighboursOfTypeCell;
-         bool _refinementNecessary;
-         bool _virtualRefinementNecessary;
+         RefinementEvent _refinementEvent;
+         RefinementEvent _augmentationEvent;
          /**
           * Generated
           */
@@ -94,7 +98,7 @@ class exahype::records::ADERDGCellDescription {
          /**
           * Generated
           */
-         PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+         PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const RefinementEvent& refinementEvent, const RefinementEvent& augmentationEvent);
          
          
          inline int getSolverNumber() const 
@@ -709,42 +713,42 @@ class exahype::records::ADERDGCellDescription {
          
          
          
-         inline bool getRefinementNecessary() const 
+         inline RefinementEvent getRefinementEvent() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _refinementNecessary;
+            return _refinementEvent;
          }
          
          
          
-         inline void setRefinementNecessary(const bool& refinementNecessary) 
+         inline void setRefinementEvent(const RefinementEvent& refinementEvent) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _refinementNecessary = refinementNecessary;
+            _refinementEvent = refinementEvent;
          }
          
          
          
-         inline bool getVirtualRefinementNecessary() const 
+         inline RefinementEvent getAugmentationEvent() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _virtualRefinementNecessary;
+            return _augmentationEvent;
          }
          
          
          
-         inline void setVirtualRefinementNecessary(const bool& virtualRefinementNecessary) 
+         inline void setAugmentationEvent(const RefinementEvent& augmentationEvent) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _virtualRefinementNecessary = virtualRefinementNecessary;
+            _augmentationEvent = augmentationEvent;
          }
          
          
@@ -768,7 +772,7 @@ class exahype::records::ADERDGCellDescription {
       /**
        * Generated
        */
-      ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+      ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const RefinementEvent& refinementEvent, const RefinementEvent& augmentationEvent);
       
       /**
        * Generated
@@ -1504,44 +1508,54 @@ class exahype::records::ADERDGCellDescription {
       
       
       
-      inline bool getRefinementNecessary() const 
+      inline RefinementEvent getRefinementEvent() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._refinementNecessary;
+         return _persistentRecords._refinementEvent;
       }
       
       
       
-      inline void setRefinementNecessary(const bool& refinementNecessary) 
+      inline void setRefinementEvent(const RefinementEvent& refinementEvent) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._refinementNecessary = refinementNecessary;
+         _persistentRecords._refinementEvent = refinementEvent;
       }
       
       
       
-      inline bool getVirtualRefinementNecessary() const 
+      inline RefinementEvent getAugmentationEvent() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._virtualRefinementNecessary;
+         return _persistentRecords._augmentationEvent;
       }
       
       
       
-      inline void setVirtualRefinementNecessary(const bool& virtualRefinementNecessary) 
+      inline void setAugmentationEvent(const RefinementEvent& augmentationEvent) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._virtualRefinementNecessary = virtualRefinementNecessary;
+         _persistentRecords._augmentationEvent = augmentationEvent;
       }
       
+      
+      /**
+       * Generated
+       */
+      static std::string toString(const RefinementEvent& param);
+      
+      /**
+       * Generated
+       */
+      static std::string getRefinementEventMapping();
       
       /**
        * Generated
@@ -1626,13 +1640,15 @@ class exahype::records::ADERDGCellDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   22/04/2016 19:49
+          * @date   26/04/2016 16:14
           */
          class exahype::records::ADERDGCellDescriptionPacked { 
             
             public:
                
                typedef exahype::records::ADERDGCellDescription::Type Type;
+               
+               typedef exahype::records::ADERDGCellDescription::RefinementEvent RefinementEvent;
                
                struct PersistentRecords {
                   int _solverNumber;
@@ -1658,8 +1674,8 @@ class exahype::records::ADERDGCellDescription {
                   bool _parent;
                   int _parentIndex;
                   bool _hasNeighboursOfTypeCell;
-                  bool _refinementNecessary;
-                  bool _virtualRefinementNecessary;
+                  RefinementEvent _refinementEvent;
+                  RefinementEvent _augmentationEvent;
                   /**
                    * Generated
                    */
@@ -1668,7 +1684,7 @@ class exahype::records::ADERDGCellDescription {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+                  PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const RefinementEvent& refinementEvent, const RefinementEvent& augmentationEvent);
                   
                   
                   inline int getSolverNumber() const 
@@ -2283,42 +2299,42 @@ class exahype::records::ADERDGCellDescription {
                   
                   
                   
-                  inline bool getRefinementNecessary() const 
+                  inline RefinementEvent getRefinementEvent() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _refinementNecessary;
+                     return _refinementEvent;
                   }
                   
                   
                   
-                  inline void setRefinementNecessary(const bool& refinementNecessary) 
+                  inline void setRefinementEvent(const RefinementEvent& refinementEvent) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _refinementNecessary = refinementNecessary;
+                     _refinementEvent = refinementEvent;
                   }
                   
                   
                   
-                  inline bool getVirtualRefinementNecessary() const 
+                  inline RefinementEvent getAugmentationEvent() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _virtualRefinementNecessary;
+                     return _augmentationEvent;
                   }
                   
                   
                   
-                  inline void setVirtualRefinementNecessary(const bool& virtualRefinementNecessary) 
+                  inline void setAugmentationEvent(const RefinementEvent& augmentationEvent) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _virtualRefinementNecessary = virtualRefinementNecessary;
+                     _augmentationEvent = augmentationEvent;
                   }
                   
                   
@@ -2342,7 +2358,7 @@ class exahype::records::ADERDGCellDescription {
                /**
                 * Generated
                 */
-               ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+               ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const RefinementEvent& refinementEvent, const RefinementEvent& augmentationEvent);
                
                /**
                 * Generated
@@ -3078,42 +3094,42 @@ class exahype::records::ADERDGCellDescription {
                
                
                
-               inline bool getRefinementNecessary() const 
+               inline RefinementEvent getRefinementEvent() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._refinementNecessary;
+                  return _persistentRecords._refinementEvent;
                }
                
                
                
-               inline void setRefinementNecessary(const bool& refinementNecessary) 
+               inline void setRefinementEvent(const RefinementEvent& refinementEvent) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._refinementNecessary = refinementNecessary;
+                  _persistentRecords._refinementEvent = refinementEvent;
                }
                
                
                
-               inline bool getVirtualRefinementNecessary() const 
+               inline RefinementEvent getAugmentationEvent() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._virtualRefinementNecessary;
+                  return _persistentRecords._augmentationEvent;
                }
                
                
                
-               inline void setVirtualRefinementNecessary(const bool& virtualRefinementNecessary) 
+               inline void setAugmentationEvent(const RefinementEvent& augmentationEvent) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._virtualRefinementNecessary = virtualRefinementNecessary;
+                  _persistentRecords._augmentationEvent = augmentationEvent;
                }
                
                
@@ -3126,6 +3142,16 @@ class exahype::records::ADERDGCellDescription {
                 * Generated
                 */
                static std::string getTypeMapping();
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const RefinementEvent& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getRefinementEventMapping();
                
                /**
                 * Generated

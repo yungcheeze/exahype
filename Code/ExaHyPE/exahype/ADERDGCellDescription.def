@@ -200,12 +200,10 @@ class exahype::records::ADERDGCellDescription {
    * is created to store prolongated face data.
    */
   enum Type {
-    Unspecified,
-    RealCell,
-    RealShell,
+    Cell,
+    Shell,
     VirtualShell
-  };
-  
+  }; 
   
   /** 
    * @defgroup AMRInfo AMR information
@@ -239,18 +237,27 @@ class exahype::records::ADERDGCellDescription {
    */ 
   parallelise persistent bool hasNeighboursOfTypeCell;
   
-  /** 
-   * Indicates if this ADERDGCellDescription
-   * requests its associated spacetree cell to be refined
-   * according to a solver refinement criterion.
-   */
-  parallelise persistent bool refinementNecessary;
+  enum RefinementEvent {
+    None,               // relevant for all cell types
+    
+    CoarseningPossible, // relevant for children Cell
+    Restriction,        // relevant for children Cell
+    Coarsening,         // relevant for children Cell
+    
+    CoarseningChildren, // relevant for (parent) Cell
+    
+    Refinement,         // relevant for (parent) Shell
+    Prolongation        // relevant for parent Shell
+  };
   
   /** 
-   * Indicates if this ADERDGCellDescription
-   * requests its associated spacetree cell to be refined
-   * according to a virtual refinement criterion.
+   * Returns the refinement event.
    */
-  parallelise persistent bool virtualRefinementNecessary;
+  parallelise persistent RefinementEvent refinementEvent;
+  
+  /** 
+   * Returns the augmentation/virtual refinement event.
+   */
+  parallelise persistent RefinementEvent augmentationEvent;
   ///@}
 };

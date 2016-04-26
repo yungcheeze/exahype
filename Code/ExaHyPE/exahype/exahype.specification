@@ -57,7 +57,7 @@ event-mapping:
   name: RegularMesh
 
 event-mapping:
-  name: AdaptiveRefinement
+  name: Marking
 
 event-mapping:
   name: CellDescriptionInit
