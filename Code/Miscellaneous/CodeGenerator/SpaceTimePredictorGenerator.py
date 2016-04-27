@@ -72,13 +72,13 @@ class SpaceTimePredictorGenerator:
 
     def writeHeaderForExtrapolator(self, i_pathToFile):
         l_description = '// Compute the boundary-extrapolated values for Q and F*n \n\n'
-        
+
         l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n'      \
                              '#include "kernels/DGMatrices.h"\n'                    \
                              '#include "kernels/aderdg/optimised/asm_extrapolatedPredictor.cpp"\n\n'
-                                
+
         l_functionSignature = FunctionSignatures.getExtrapolatorSignature()+" {\n"
-                              
+
         l_parameterDocumentation = '// lQbnd[nVar][nDOF][nDOF][2*dim]         : boundary-extrapolated data for the state vector\n'    \
                                    '// lFbnd[nVar][nDOFx][nDOFy][nDOFz][2*dim]: the boundary-extrapolated data for the normal flux\n' \
                                    '// lQhi[nVar][nDOFx][nDOFy][nDOFz]        : time-averaged space-time DOFs\n'                      \
@@ -86,7 +86,7 @@ class SpaceTimePredictorGenerator:
                                    '// where lFhi[nVar][nDOFx][nDOFy][nDOFz][1]\n'                                                    \
                                    '//       lFhi[nVar][nDOFy][nDOFx][nDOFz][2]\n'                                                    \
                                    '//       lFhi[nVar][nDOFz][nDOFy][nDOFx][3]\n\n'                                                  
-        
+
         l_sourceFile = open(i_pathToFile, 'a')
         l_sourceFile.write(l_description)
         l_sourceFile.write(l_includeStatement)
@@ -94,17 +94,17 @@ class SpaceTimePredictorGenerator:
         l_sourceFile.write(l_functionSignature)
         l_sourceFile.close()
 
-    
-    def generateCode(self):      
+
+    def generateCode(self):
         self.generatePicardLoop()
         self.generatePredictor()
         self.generateExtrapolator()
-        
-    
+
+
     def generatePicardLoop(self):
         pass
 
-    
+
     def generatePredictor(self):
         l_filename = "predictor.cpp"
 

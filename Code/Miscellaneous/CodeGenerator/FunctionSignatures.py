@@ -193,10 +193,10 @@ def getRiemannSolverSignature():
     # function signature prototype
     l_functionSignature = "template <void PDEEigenvalues(const DATATYPE* const Q, const int normalNonZero, DATATYPE* lambda)>\n" \
                           "void kernels::aderdg::optimised::riemannSolver( \n"                                                   \
-                          "  DATATYPE* restrict FL,\n"                                                                          \
-                          "  DATATYPE* restrict FR,\n"                                                                          \
-                          "  const DATATYPE* restrict const QL,\n"                                                              \
-                          "  const DATATYPE* restrict const QR,\n"                                                              \
+                          "  DATATYPE* restrict lFbndL,\n"                                                                          \
+                          "  DATATYPE* restrict lFbndR,\n"                                                                          \
+                          "  const DATATYPE* restrict const lQbndL,\n"                                                              \
+                          "  const DATATYPE* restrict const lQbndR,\n"                                                              \
                           "  const DATATYPE dt,\n"                                                                               \
                           "  const int normalNonZero\n"                                                                          \
                           ")" 
@@ -221,7 +221,7 @@ def getInitialConditionSignature():
                           "void initialCondition(\n"                                                \
                           "  DATATYPE* restrict luh,\n"                                             \
                           "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& center,\n"               \
-                          "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx\n"                   \
+                          "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx\n"                    \
                           ")"
     
     # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                         
@@ -241,9 +241,9 @@ def getInitialConditionSignature():
 def getStableTimeStepSizeSignature():
     # function signature prototype:
     l_functionSignature = "template <void PDEEigenvalues(const DATATYPE* const Q, const int normalNonZero, DATATYPE* lambda)>\n" \
-                          "double stableTimeStepSize(\n"                                                                       \
+                          "double stableTimeStepSize(\n"                                                                         \
                           "  const DATATYPE* restrict const luh,\n"                                                              \
-                          "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx\n"                                                \
+                          "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx\n"                                                 \
                           ")"
     
     # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                     

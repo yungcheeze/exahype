@@ -16,7 +16,7 @@ def validateLibxsmmGenerator(i_parser, i_arg):
 
 def validateArchitecture(i_parser, i_arg):
     l_architecture = str(i_arg)
-    
+
     # when we have to postprocess the generated assembly code we may
     # support only a subset of the available microarchitectures
     if(l_architecture not in AvailableConfigs.architectures):
@@ -28,19 +28,18 @@ def validateArchitecture(i_parser, i_arg):
 
 def validatePrecision(i_parser, i_arg):
     l_precision = str(i_arg)
-    
+
     if(l_precision not in AvailableConfigs.precisions):
         print("Unknown precision specified. Continue with double precision")
         l_precision    = 'DP' 
-        
+
     return l_precision
 
 
 def validateNumerics(i_parser, i_arg):
     l_numericsType = i_arg
-    
+
     if(l_numericsType not in AvailableConfigs.numerics):
         i_parser.error("Numerics not supported. Available options are " + str(AvailableConfigs.numerics).format(i_arg))
-    
-    return l_numericsType    
-        
+
+    return l_numericsType

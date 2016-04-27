@@ -7,7 +7,10 @@
 #--------------------------------------------------------------
 #
 # For a quick test, type
-# python Driver.py MyEulerSolver 5 3 2 hsw nonlinear path/to/libxsmmRepository
+# python Driver.py MyEulerSolver 5 3 2 nonlinear hsw path/to/libxsmmRepository
+#
+# for Jenkins this is
+# python Driver.py MyEulerSolver 5 3 2 nonlinear hsw ../../../libxsmm --precision=DP
 #
 # 
 
@@ -15,12 +18,13 @@
 import argparse
 import CodeGenArgumentParser
 from SpaceTimePredictorGenerator import SpaceTimePredictorGenerator
+from RiemannGenerator import RiemannGenerator
 from Backend import prepareOutputDirectory
-from Backend import moveGeneratedCppFiles
+from Backend import moveGeneratedFiles
 import Backend
 import os
-from WeightsGenerator import WeightsGenerator
-       
+#from WeightsGenerator import WeightsGenerator
+
 
 # --------------------------------------------------------
 # Process the command line arguments
@@ -89,17 +93,21 @@ prepareOutputDirectory(pathToOutputDirectory)
 # Now let's generate the compute kernels.
 # --------------------------------------------------------
 
-Backend.writeCommonHeader(pathToOutputDirectory+"/Kernels.h")
-
+Backend.generateCommonHeader()
 spaceTimePredictorGenerator = SpaceTimePredictorGenerator(config)
 spaceTimePredictorGenerator.generateCode()
-
-# move assembler code
-moveGeneratedCppFiles(pathToLibxsmmGenerator, pathToOutputDirectory)
-# move C++ wrapper
-moveGeneratedCppFiles(os.getcwd(), pathToOutputDirectory)
+riemannGenerator = RiemannGenerator(config, numerics, precision)
+riemannGenerator.generateCode()
 
 # for testing
-weightsGenerator = WeightsGenerator(config, precision)
-weightsGenerator.writeWeightsCombinations(pathToOutputDirectory+"/Weights.h")
+#weightsGenerator = WeightsGenerator(config, precision)
+#weightsGenerator.generateCode()
+# TODO move Weights.h to output directory
+# extend the moveGeneratedCppFiles() to also work for .h files
+
+
+# move assembler code
+moveGeneratedFiles(pathToLibxsmmGenerator, pathToOutputDirectory)
+# move C++ wrapper
+moveGeneratedFiles(os.getcwd(), pathToOutputDirectory)
 

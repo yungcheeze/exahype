@@ -5,7 +5,6 @@ from os.path import join
 from os.path import isfile
 import subprocess
 import errno
-from matplotlib.cbook import dedent
 from glob import iglob
 from shutil import move
 import FunctionSignatures
@@ -35,8 +34,8 @@ m_simdWidth              =  {'SP':  {'noarch' : 1,
 def executeLibxsmmGenerator(i_commandLineParameters):
     l_bashCommand = m_pathToLibxsmmGenerator + '/libxsmm_gemm_generator ' + i_commandLineParameters
     subprocess.call(l_bashCommand.split())
-    
-    
+
+
 def generateAssemblerCode(i_pathToOutputFile,
                           i_matmulConfigList):
     for l_matmul in i_matmulConfigList:
@@ -59,19 +58,19 @@ def generateAssemblerCode(i_pathToOutputFile,
         executeLibxsmmGenerator(l_commandLineArguments)
 
 
-def getSizeWithPadding(i_sizeWithoutPadding):
+def getSizeWithPadding(i_sizeWithoutPadding: int) -> int:
     l_simdSize        = m_simdWidth[m_precision][m_architecture]
-    l_sizeWithPadding = l_simdSize * ((i_sizeWithoutPadding+(l_simdSize-1))/l_simdSize)
+    l_sizeWithPadding = l_simdSize * int((i_sizeWithoutPadding+(l_simdSize-1))/l_simdSize)
     return l_sizeWithPadding
 
 
-def getPadWidth(i_sizeWithoutPadding):
+def getPadWidth(i_sizeWithoutPadding: int) -> int:
     l_simdSize        = m_simdWidth[m_precision][m_architecture]
-    l_sizeWithPadding = l_simdSize * ((i_sizeWithoutPadding+(l_simdSize-1))/l_simdSize)
-    l_padWith         = l_sizeWithPadding - i_sizeWithoutPadding
-    return l_padWith
+    l_sizeWithPadding = l_simdSize * int((i_sizeWithoutPadding+(l_simdSize-1))/l_simdSize)
+    l_padWidth        = l_sizeWithPadding - i_sizeWithoutPadding
+    return l_padWidth
 
-    
+
 def prepareOutputDirectory(i_outputDirectory):
     # create directory for output files if not existing
     try:
@@ -79,13 +78,13 @@ def prepareOutputDirectory(i_outputDirectory):
     except OSError as exception:
         if exception.errno != errno.EEXIST:
             raise
-    
+
     # remove all .cpp and .h files (we are in append mode!) 
     for l_fileName in os.listdir(i_outputDirectory):
         _ , l_ext = os.path.splitext(l_fileName)
         if(l_ext in ['.cpp', '.h']):
             os.remove(i_outputDirectory + "/" + l_fileName)
-  
+
 
 
 def executeBashCommand(i_command, i_commandLineParameters):
@@ -94,23 +93,21 @@ def executeBashCommand(i_command, i_commandLineParameters):
     l_commandOutput = subprocess.check_output(l_bashCommand, shell=True)
     return l_commandOutput
 
-   
-     
+
+
 def writeIntrinsicsInclude(i_pathToFile):
-    l_includeStatement = dedent(  """
-                                  #if defined( __SSE3__) || defined(__MIC__) 
-                                  #include <immintrin.h>
-                                  #endif                                  
-                                  """)
-    l_includeStatement += "\n\n"
+    l_includeStatement = "#if defined( __SSE3__) || defined(__MIC__)\n"\
+                         "#include <immintrin.h>\n"\
+                         "#endif\n\n"
     l_sourceFile = open(i_pathToFile, 'a')
     l_sourceFile.write(l_includeStatement)
     l_sourceFile.close()
-     
-    
-def writeCommonHeader(i_pathToHeaderFile):
-    # typically we write to Kernels.h
-    l_sourceFile = open(i_pathToHeaderFile, 'a')
+
+
+def generateCommonHeader():
+    # name of generated output file
+    l_filename = "Kernels.h"
+    l_sourceFile = open(l_filename, 'a')
 
     # include guard
     l_sourceFile.write('#ifndef EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_\n'   \
@@ -125,8 +122,9 @@ def writeCommonHeader(i_pathToHeaderFile):
 
     # TODO temporary solution
     # necessary till all generic kernels have been replaced with generated ones
-    l_sourceFile.write('#define basisSize '+str(m_config['nDof'])+'\n'    \
-                       '#define numberOfVariables '+str(m_config['nVar'])+'\n\n')
+    l_sourceFile.write('// temporary solution')
+    l_sourceFile.write('#define BASISSIZE '+str(m_config['nDof'])+'\n'    \
+                       '#define NVAR '+str(m_config['nVar'])+'\n\n')
 
 
     # nested namespaces
@@ -136,7 +134,7 @@ def writeCommonHeader(i_pathToHeaderFile):
 
     # we are inside of a nested namespace and add extra spaces to our function signatures
     l_indentation = 6
-    
+
     # fetch function signatures
     l_functionList = []
     l_functionList.append(FunctionSignatures.getPicardLoopSignature(m_config['nDim']))
@@ -158,28 +156,32 @@ def writeCommonHeader(i_pathToHeaderFile):
         l_functionSignature = reindentBlock(l_functionSignature, l_indentation)
         # write function declarations one after another
         l_sourceFile.write(l_functionSignature+";\n\n")
-    
+
 
     # closing brackets of namespace
     l_sourceFile.write('    }\n')
     l_sourceFile.write('  }\n'  )
     l_sourceFile.write('}\n\n'  )
-    
+
     # include template functions
     l_sourceFile.write('#include "kernels/aderdg/optimised/solutionAdjustment.cpph"\n\n')
     l_sourceFile.write('#include "kernels/aderdg/optimised/stableTimeStepSize.cpph"\n\n')
     l_sourceFile.write('#include "kernels/aderdg/optimised/spaceTimePredictor.cpph"\n\n')
     l_sourceFile.write('#include "kernels/aderdg/optimised/riemannSolver.cpph"\n\n')
-    
+
     # close include guard
     l_sourceFile.write('#endif // EXAHYPE_KERNELS_OPTIMISED_KERNELS_H_')
-         
+
     l_sourceFile.close()
 
 
-def moveGeneratedCppFiles(i_pathToSrc,i_pathToDest):
-    l_files = iglob(join(i_pathToSrc, "*.cpp"))
-    for l_file in l_files:
+def moveGeneratedFiles(i_pathToSrc,i_pathToDest):
+    l_fileTypes = ('*.h', '*.cpp', '*.c')
+    l_fileList = []
+    for l_file in l_fileTypes:
+        l_fileList.extend(iglob(i_pathToSrc+"/"+l_file))
+
+    for l_file in l_fileList:
         if(isfile(l_file)):
             move(l_file, i_pathToDest)
 
@@ -208,9 +210,12 @@ def setPathToLibxsmmGenerator(i_pathToLibxsmmGenerator):
 
 # -------------------------------------------------------------------
 # helpers
-# -------------------------------------------------------------------    
+# -------------------------------------------------------------------
+def reindentLine(i_line, i_nSpaces=8):
+    return (' ' * i_nSpaces) + i_line
+
 def reindentBlock(i_string, i_nSpaces):
-    l_string = string.split(i_string, '\n')
-    l_string = map(lambda line, ns=i_nSpaces: (' '*ns)+line, l_string)
-    l_string = string.join(l_string, '\n')
+    l_stringList = i_string.split('\n')
+    l_stringList = list(map(lambda line, ns=i_nSpaces: reindentLine(line, ns), l_stringList))
+    l_string = "\n".join(l_stringList)
     return l_string
