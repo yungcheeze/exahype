@@ -5,8 +5,8 @@
 // this file and your project to your needs as long as the license is in
 // agreement with the original Peano user constraints. A reference to/citation
 // of  Peano and its author is highly appreciated.
-#ifndef EXAHYPE_MAPPINGS_VolumeUnknownsProjection_H_
-#define EXAHYPE_MAPPINGS_VolumeUnknownsProjection_H_
+#ifndef EXAHYPE_MAPPINGS_MarkingForRefinement_H_
+#define EXAHYPE_MAPPINGS_MarkingForRefinement_H_
 
 #include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
@@ -27,7 +27,7 @@
 
 namespace exahype {
 namespace mappings {
-class VolumeUnknownsProjection;
+class MarkingForRefinement;
 }
 }
 
@@ -39,40 +39,13 @@ class VolumeUnknownsProjection;
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::mappings::VolumeUnknownsProjection {
+class exahype::mappings::MarkingForRefinement {
  private:
   /**
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
 
-  /**
-   * Prolongates Volume data from a parent cell description to
-   * \p cellDescription if the fine grid cell associated with
-   * \p cellDescription is adjacent to a boundary of the
-   * coarse grid cell associated with the parent cell description.
-   *
-   * \note This method makes only sense for virtual shells
-   * in the current AMR concept.
-   */
-  void prolongateVolumeData(
-      const exahype::records::ADERDGCellDescription& p,
-      const exahype::records::ADERDGCellDescription& pParent,
-      const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) const;
-
-  /**
-   * Restricts Volume data from \p cellDescriptio to
-   * a parent cell description if the fine grid cell associated with
-   * \p cellDescription is adjacent to a boundary of the
-   * coarse grid cell associated with the parent cell description.
-   *
-   * \note This method makes only sense for real cells.
-   * in the current AMR concept.
-   */
-  void restrictVolumeData(
-      const exahype::records::ADERDGCellDescription& p,
-      const exahype::records::ADERDGCellDescription& pParent,
-      const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) const;
 
  public:
   /**
@@ -123,7 +96,7 @@ class exahype::mappings::VolumeUnknownsProjection {
    * that your code works on a parallel machine and for any mapping/algorithm
    * modification.
    */
-  VolumeUnknownsProjection();
+  MarkingForRefinement();
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -136,13 +109,13 @@ class exahype::mappings::VolumeUnknownsProjection {
    *
    * @see mergeWithWorkerThread()
    */
-  VolumeUnknownsProjection(const VolumeUnknownsProjection& masterThread);
+  MarkingForRefinement(const MarkingForRefinement& masterThread);
 #endif
 
   /**
    * Destructor. Typically does not implement any operation.
    */
-  virtual ~VolumeUnknownsProjection();
+  virtual ~MarkingForRefinement();
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -173,7 +146,7 @@ class exahype::mappings::VolumeUnknownsProjection {
    * on the heap. However, you should protect this object by a BooleanSemaphore
    * and a lock to serialise all accesses to the plotter.
    */
-  void mergeWithWorkerThread(const VolumeUnknownsProjection& workerThread);
+  void mergeWithWorkerThread(const MarkingForRefinement& workerThread);
 #endif
 
   /**
@@ -543,7 +516,7 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
    * distinguish between inner and boundary cells, i.e. if you want to react
    * differently, you have to implement this manually.
    *
-   * Remarks:
+   * ReMarkingForRefinements:
    * - If you need the position of the vertices of the cell or its size, use the
    *   enumerator.
    * - If the destory is invoked due to load balancing, it is called after the
@@ -1103,7 +1076,7 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
    * beginIteration() might not be called prior to any other event. See the
    * documentation of CommunicationSpecification for details.
    *
-   * @see VolumeUnknownsProjection()
+   * @see MarkingForRefinement()
    */
   void beginIteration(exahype::State& solverState);
 
@@ -1133,7 +1106,7 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
    * might not be called after all other events. See the documentation
    * of CommunicationSpecification for details.
    *
-   * @see VolumeUnknownsProjection()
+   * @see MarkingForRefinement()
    */
   void endIteration(exahype::State& solverState);
 

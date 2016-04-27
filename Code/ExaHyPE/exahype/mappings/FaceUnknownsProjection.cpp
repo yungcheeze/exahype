@@ -319,32 +319,32 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
       assertion(static_cast<unsigned int>(i) <
                 ADERDGCellDescriptionHeap::getInstance().
                 getData(fineGridCell.getADERDGCellDescriptionsIndex()).size());
-      records::ADERDGCellDescription& cellDescription =
+      records::ADERDGCellDescription& p =
         fineGridCell.getADERDGCellDescription(i);
+
+      // todo revise this section; loop over cell descriptions
 
       // if we have at least one parent
       if (ADERDGCellDescriptionHeap::getInstance().
-          isValidIndex(cellDescription.getParentIndex())) {
-        if (cellDescription.getType() == exahype::records::ADERDGCellDescription::VirtualShell
+          isValidIndex(p.getParentIndex())) {
+        if (p.getType() == exahype::records::ADERDGCellDescription::VirtualShell
             &&
-            cellDescription.getHasNeighboursOfTypeCell()) {
+            p.getHasNeighboursOfTypeCell()) {
           exahype::Cell::SubcellPosition subcellPosition =
-              fineGridCell.getSubcellPositionOfVirtualShell(
-                  i,coarseGridCell.getADERDGCellDescriptionsIndex(),
-                  cellDescription.getFineGridPositionOfCell());
+              fineGridCell.getSubcellPositionOfVirtualShell(p);
 
           prolongateFaceData(
-              cellDescription,
+              p,
               subcellPosition.parentIndex,
               subcellPosition.subcellIndex);
-        } else if (cellDescription.getType() == exahype::records::ADERDGCellDescription::Cell
+        } else if (p.getType() == exahype::records::ADERDGCellDescription::Cell
             ||
-            cellDescription.getType() == exahype::records::ADERDGCellDescription::Shell
+            p.getType() == exahype::records::ADERDGCellDescription::Shell
         ) {
           restrictFaceData(
-              cellDescription,
-              cellDescription.getParentIndex(),
-              cellDescription.getFineGridPositionOfCell());
+              p,
+              p.getParentIndex(),
+              fineGridPositionOfCell);
         }
       }
 

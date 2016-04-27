@@ -1,4 +1,4 @@
-#include "exahype/mappings/Marking.h"
+#include "exahype/mappings/MarkingForAugmentation.h"
 
 #include "peano/utils/Globals.h"
 
@@ -11,7 +11,7 @@
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::CommunicationSpecification
-exahype::mappings::Marking::communicationSpecification() {
+exahype::mappings::MarkingForAugmentation::communicationSpecification() {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::
       SendDataAndStateBeforeFirstTouchVertexFirstTime,
@@ -21,65 +21,65 @@ exahype::mappings::Marking::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::Marking::touchVertexLastTimeSpecification() {
+exahype::mappings::MarkingForAugmentation::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 peano::MappingSpecification
-exahype::mappings::Marking::touchVertexFirstTimeSpecification() {
+exahype::mappings::MarkingForAugmentation::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 peano::MappingSpecification
-exahype::mappings::Marking::enterCellSpecification() {
+exahype::mappings::MarkingForAugmentation::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 peano::MappingSpecification
-exahype::mappings::Marking::leaveCellSpecification() {
+exahype::mappings::MarkingForAugmentation::leaveCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces);
 }
 peano::MappingSpecification
-exahype::mappings::Marking::ascendSpecification() {
+exahype::mappings::MarkingForAugmentation::ascendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 peano::MappingSpecification
-exahype::mappings::Marking::descendSpecification() {
+exahype::mappings::MarkingForAugmentation::descendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
-tarch::logging::Log exahype::mappings::Marking::_log(
-    "exahype::mappings::Marking");
+tarch::logging::Log exahype::mappings::MarkingForAugmentation::_log(
+    "exahype::mappings::MarkingForAugmentation");
 
-exahype::mappings::Marking::Marking() {
+exahype::mappings::MarkingForAugmentation::MarkingForAugmentation() {
   // do nothing
 }
 
-exahype::mappings::Marking::~Marking() {
+exahype::mappings::MarkingForAugmentation::~MarkingForAugmentation() {
   // do nothing
 }
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::Marking::Marking(const Marking& masterThread) {
+exahype::mappings::MarkingForAugmentation::MarkingForAugmentation(const MarkingForAugmentation& masterThread) {
   // do nothing
 }
 
-void exahype::mappings::Marking::mergeWithWorkerThread(
-    const Marking& workerThread) {
+void exahype::mappings::MarkingForAugmentation::mergeWithWorkerThread(
+    const MarkingForAugmentation& workerThread) {
   // do nothing
 }
 #endif
 
-void exahype::mappings::Marking::createHangingVertex(
+void exahype::mappings::MarkingForAugmentation::createHangingVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -90,7 +90,7 @@ void exahype::mappings::Marking::createHangingVertex(
   // do nothing
 }
 
-void exahype::mappings::Marking::destroyHangingVertex(
+void exahype::mappings::MarkingForAugmentation::destroyHangingVertex(
     const exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -101,7 +101,7 @@ void exahype::mappings::Marking::destroyHangingVertex(
   // do nothing
 }
 
-void exahype::mappings::Marking::createInnerVertex(
+void exahype::mappings::MarkingForAugmentation::createInnerVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -112,7 +112,7 @@ void exahype::mappings::Marking::createInnerVertex(
   // do nothing
 }
 
-void exahype::mappings::Marking::createBoundaryVertex(
+void exahype::mappings::MarkingForAugmentation::createBoundaryVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -123,7 +123,7 @@ void exahype::mappings::Marking::createBoundaryVertex(
   // do nothing
 }
 
-void exahype::mappings::Marking::destroyVertex(
+void exahype::mappings::MarkingForAugmentation::destroyVertex(
     const exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -134,7 +134,7 @@ void exahype::mappings::Marking::destroyVertex(
   // do nothing
 }
 
-void exahype::mappings::Marking::createCell(
+void exahype::mappings::MarkingForAugmentation::createCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -144,7 +144,7 @@ void exahype::mappings::Marking::createCell(
   // do nothing
 }
 
-void exahype::mappings::Marking::destroyCell(
+void exahype::mappings::MarkingForAugmentation::destroyCell(
     const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -155,49 +155,49 @@ void exahype::mappings::Marking::destroyCell(
 }
 
 #ifdef Parallel
-void exahype::mappings::Marking::mergeWithNeighbour(
+void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
   // do nothing
 }
 
-void exahype::mappings::Marking::prepareSendToNeighbour(
+void exahype::mappings::MarkingForAugmentation::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::Marking::prepareCopyToRemoteNode(
+void exahype::mappings::MarkingForAugmentation::prepareCopyToRemoteNode(
     exahype::Vertex& localVertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::Marking::prepareCopyToRemoteNode(
+void exahype::mappings::MarkingForAugmentation::prepareCopyToRemoteNode(
     exahype::Cell& localCell, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-void exahype::mappings::Marking::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::MarkingForAugmentation::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::Marking::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::MarkingForAugmentation::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-bool exahype::mappings::Marking::prepareSendToWorker(
+bool exahype::mappings::MarkingForAugmentation::prepareSendToWorker(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -209,7 +209,7 @@ bool exahype::mappings::Marking::prepareSendToWorker(
   return true;
 }
 
-void exahype::mappings::Marking::prepareSendToMaster(
+void exahype::mappings::MarkingForAugmentation::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
     const exahype::Vertex* const coarseGridVertices,
@@ -219,7 +219,7 @@ void exahype::mappings::Marking::prepareSendToMaster(
   // do nothing
 }
 
-void exahype::mappings::Marking::mergeWithMaster(
+void exahype::mappings::MarkingForAugmentation::mergeWithMaster(
     const exahype::Cell& workerGridCell,
     exahype::Vertex* const workerGridVertices,
     const peano::grid::VertexEnumerator& workerEnumerator,
@@ -234,7 +234,7 @@ void exahype::mappings::Marking::mergeWithMaster(
   // do nothing
 }
 
-void exahype::mappings::Marking::receiveDataFromMaster(
+void exahype::mappings::MarkingForAugmentation::receiveDataFromMaster(
     exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
     const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
     exahype::Vertex* const receivedCoarseGridVertices,
@@ -247,14 +247,14 @@ void exahype::mappings::Marking::receiveDataFromMaster(
   // do nothing
 }
 
-void exahype::mappings::Marking::mergeWithWorker(
+void exahype::mappings::MarkingForAugmentation::mergeWithWorker(
     exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-void exahype::mappings::Marking::mergeWithWorker(
+void exahype::mappings::MarkingForAugmentation::mergeWithWorker(
     exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
@@ -262,7 +262,7 @@ void exahype::mappings::Marking::mergeWithWorker(
 }
 #endif
 
-void exahype::mappings::Marking::touchVertexFirstTime(
+void exahype::mappings::MarkingForAugmentation::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -273,7 +273,7 @@ void exahype::mappings::Marking::touchVertexFirstTime(
   // do nothing
 }
 
-void exahype::mappings::Marking::touchVertexLastTime(
+void exahype::mappings::MarkingForAugmentation::touchVertexLastTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -284,7 +284,7 @@ void exahype::mappings::Marking::touchVertexLastTime(
   // do nothing
 }
 
-void exahype::mappings::Marking::enterCell(
+void exahype::mappings::MarkingForAugmentation::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -296,49 +296,101 @@ void exahype::mappings::Marking::enterCell(
       coarseGridCell, fineGridPositionOfCell);
   if (ADERDGCellDescriptionHeap::getInstance().
       isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
+    const tarch::la::Vector<THREE_POWER_D,int> neighbourCellDescriptionIndices =
+        multiscalelinkedcell::getIndicesAroundCell(
+            VertexOperations::readADERDGCellDescriptionsIndex(
+                fineGridVerticesEnumerator,fineGridVertices));
 
     for (std::vector<exahype::records::ADERDGCellDescription>::
         iterator pFine = ADERDGCellDescriptionHeap::getInstance().getData(
             fineGridCell.getADERDGCellDescriptionsIndex()).begin();
         pFine != ADERDGCellDescriptionHeap::getInstance().getData(
             fineGridCell.getADERDGCellDescriptionsIndex()).end();
-        pFine++) {
-      switch (pFine->getRefinementEvent()) {
-      case exahype::records::ADERDGCellDescription::None:
-        switch (pFine->getType()) {
-        case exahype::records::ADERDGCellDescription::Cell:
-          double* solution = DataHeap::getInstance().getData(
-              pFine->getSolution()).data();
-
-          exahype::solvers::Solver* solver =
-              exahype::solvers::RegisteredSolvers[pFine->getSolverNumber()];
-          exahype::solvers::Solver::RefinementControl refinementControl =
-              solver->refinementCriterion(solution,
-                  fineGridVerticesEnumerator.getCellCenter(),
-                  fineGridVerticesEnumerator.getCellSize(),
-                  pFine->getCorrectorTimeStamp(), // todo careful with the time stamps
-                  pFine->getLevel());
-
-          switch (refinementControl) {
-          case exahype::solvers::Solver::Refine:
-            pFine->setRefinementEvent(exahype::records::ADERDGCellDescription::Refinement);
-            pFine->setType(exahype::records::ADERDGCellDescription::Shell);
-            pFine->setParent(true);
+        ++pFine) {
+      if (!pFine->getParent()) { // pFine is no parent
+        switch (pFine->getRefinementEvent()) {
+        case exahype::records::ADERDGCellDescription::None:
+          switch (pFine->getType()) {
+          case exahype::records::ADERDGCellDescription::Cell:
+            exahype::solvers::Solver::RefinementControl refinementControl =
+                virtualRefinementCriterion(
+                    pFine->getSolverNumber(), neighbourCellDescriptionIndices);
+            switch (refinementControl) {
+            case exahype::solvers::Solver::Refine:
+              pFine->setAugmentationEvent(exahype::records::ADERDGCellDescription::Refinement);
+              pFine->setParent(true);
+              break;
+            }
             break;
-          case exahype::solvers::Solver::Coarsen:
-            pFine->setRefinementEvent(exahype::records::ADERDGCellDescription::CoarseningPossible);
+          case exahype::records::ADERDGCellDescription::VirtualShell:
+            exahype::solvers::Solver::RefinementControl refinementControl =
+                virtualRefinementCriterion(
+                    pFine->getSolverNumber(), neighbourCellDescriptionIndices);
+            switch (refinementControl) {
+            case exahype::solvers::Solver::Refine:
+              pFine->setAugmentationEvent(exahype::records::ADERDGCellDescription::Refinement);
+              pFine->setParent(true);
+              break;
+            case exahype::solvers::Solver::Coarsen:
+              pFine->setAugmentationEvent(exahype::records::ADERDGCellDescription::CoarseningPossible);
+              pFine->setHasNeighboursOfTypeCell(false);
+              break;
+            default: // exahype::solvers::Solver::Keep
+              pFine->setHasNeighboursOfTypeCell(true);
+              break;
+            }
             break;
           }
-          break;
         }
-        break;
       }
     }
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
-void exahype::mappings::Marking::leaveCell(
+exahype::solvers::Solver::RefinementControl
+exahype::mappings::MarkingForAugmentation::virtualRefinementCriterion(
+    const int solverNumber,
+    const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionIndices) const {
+  // left,right,front,back,(front,back)
+#if DIMENSIONS == 2
+  constexpr int neighbourPositions[4] = {3,5,1,7};
+#else
+  constexpr int neighbourPositions[6] = {12,14,10,16,4,22};
+#endif
+
+  for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
+    const int neighbourCellDescriptionIndex =
+        neighbourCellDescriptionIndices[neighbourPositions[i]];
+
+    if (DataHeap::getInstance().isValidIndex(neighbourCellDescriptionIndex)) {
+      for (std::vector<exahype::records::ADERDGCellDescription>::
+          iterator pNeighbour = ADERDGCellDescriptionHeap::getInstance().getData(
+              neighbourCellDescriptionIndex).begin();
+          pNeighbour != ADERDGCellDescriptionHeap::getInstance().getData(
+              neighbourCellDescriptionIndex).end();
+          ++pNeighbour) {
+        if (pNeighbour->getSolverNumber()==solverNumber) {
+          assertion(pNeighbour.getType()!=
+              exahype::records::ADERDGCellDescription::Shell
+              || pNeighbour.getParent());
+          switch (pNeighbour->getType()) {
+          case exahype::records::ADERDGCellDescription::Shell:
+            return exahype::solvers::Solver::Refine;
+            break;
+          case exahype::records::ADERDGCellDescription::Cell:
+            return exahype::solvers::Solver::Keep;
+            break;
+          }
+        }
+      }
+    }
+  }
+  return exahype::solvers::Solver::Coarsen;
+}
+
+
+void exahype::mappings::MarkingForAugmentation::leaveCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -348,16 +400,16 @@ void exahype::mappings::Marking::leaveCell(
   // do nothing
 }
 
-void exahype::mappings::Marking::beginIteration(
+void exahype::mappings::MarkingForAugmentation::beginIteration(
     exahype::State& solverState) {
   // do nothing
 }
 
-void exahype::mappings::Marking::endIteration(exahype::State& solverState) {
+void exahype::mappings::MarkingForAugmentation::endIteration(exahype::State& solverState) {
   // do nothing
 }
 
-void exahype::mappings::Marking::descend(
+void exahype::mappings::MarkingForAugmentation::descend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -372,32 +424,38 @@ void exahype::mappings::Marking::descend(
             coarseGridCell.getADERDGCellDescriptionsIndex()).begin();
         pCoarse != ADERDGCellDescriptionHeap::getInstance().getData(
             coarseGridCell.getADERDGCellDescriptionsIndex()).end();
-        pCoarse++) {
+        ++pCoarse) {
       switch (pCoarse->getType()) {
-      case exahype::records::ADERDGCellDescription::Shell:
+      case exahype::records::ADERDGCellDescription::Cell:
+      case exahype::records::ADERDGCellDescription::VirtualShell:
         switch (pCoarse->getRefinementEvent()) {
         case exahype::records::ADERDGCellDescription::None:
           bool coarsen = true;
           dfor3(k)
-            for (std::vector<exahype::records::ADERDGCellDescription>::
-                iterator pFine = ADERDGCellDescriptionHeap::getInstance().
-                getData(fineGridCells[kScalar].
-                    getADERDGCellDescriptionsIndex()).begin();
-                pFine != ADERDGCellDescriptionHeap::getInstance().
-                    getData(fineGridCells[kScalar].
-                        getADERDGCellDescriptionsIndex()).end();
-                pFine++) {
-              if (pCoarse->getSolverNumber()==pFine->getSolverNumber()) {
-                coarsen = coarsen & pFine->getRefinementEvent()==
-                    exahype::records::ADERDGCellDescription::CoarseningPossible;
-              }
+          for (std::vector<exahype::records::ADERDGCellDescription>::
+              iterator pFine = ADERDGCellDescriptionHeap::getInstance().
+              getData(fineGridCells[kScalar].
+                  getADERDGCellDescriptionsIndex()).begin();
+              pFine != ADERDGCellDescriptionHeap::getInstance().
+                  getData(fineGridCells[kScalar].
+                      getADERDGCellDescriptionsIndex()).end();
+              ++pFine) {
+            if (pCoarse->getSolverNumber()==pFine->getSolverNumber()) {
+              assertion1(pFine->getType()==
+                  exahype::records::ADERDGCellDescription::VirtualShell);
+              assertion1(pFine->getType()==
+                  exahype::records::ADERDGCellDescription::);
+              assertion1(pFine->getType()==
+                  exahype::records::ADERDGCellDescription::VirtualShell);
+              coarsen = coarsen && pFine->getAugmentationEvent()==
+                  exahype::records::ADERDGCellDescription::CoarseningPossible;
             }
+          }
           enddforx
 
           if (coarsen) {
-            pCoarse->setType( exahype::records::ADERDGCellDescription::Cell);
-            coarseGridCell.initialiseCellDescription(pCoarse->getSolverNumber());
-            pCoarse->setRefinementEvent(exahype::records::ADERDGCellDescription::CoarseningChildren);
+            pCoarse->setAugmentationEvent(exahype::records::ADERDGCellDescription::CoarseningChildren);
+            pCoarse->setParent(false);
 
             dfor3(k)
             for (std::vector<exahype::records::ADERDGCellDescription>::
@@ -407,12 +465,12 @@ void exahype::mappings::Marking::descend(
                 pFine != ADERDGCellDescriptionHeap::getInstance().
                     getData(fineGridCells[kScalar].
                         getADERDGCellDescriptionsIndex()).end();
-                pFine++) {
+                ++pFine) {
               if (pCoarse->getSolverNumber()==pFine->getSolverNumber()) {
                 switch (pFine->getType()) {
-                  pFine->setRefinementEvent(
-                      exahype::records::ADERDGCellDescription::Restriction);
-                  break;
+                pFine->setAugmentationEvent(
+                    exahype::records::ADERDGCellDescription::Coarsening);
+                break;
                 }
               }
             }
@@ -428,7 +486,7 @@ void exahype::mappings::Marking::descend(
   logTraceOut( "descend(...)" );
 }
 
-void exahype::mappings::Marking::ascend(
+void exahype::mappings::MarkingForAugmentation::ascend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,

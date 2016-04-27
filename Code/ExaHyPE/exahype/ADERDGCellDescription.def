@@ -172,21 +172,6 @@ class exahype::records::ADERDGCellDescription {
    * respective dimension.
    */
   parallelise persistent double size                  [DIMENSIONS];
-  
-  /**
-   * Position of the cell associated with this ADERDGCellDescription with
-   * respect to the parent cell in the respective dimension.
-   * 
-   * For a level difference \f$l>0\f$, the indices in 
-   * \p fineGridPositionOfCell are in the range \f$\{0,1,\ldots,3^l-1\}\f$.
-   *
-   * The difference in levels of the cell associated with this 
-   * ADERDGCellDescription and the cell associated with this 
-   * ADERDGCellDescription's parent depends on the AMR strategy
-   * and the type of the ADERCellDescription.
-   * It is not necessary identical to one.  
-   */
-  parallelise persistent int fineGridPositionOfCell[DIMENSIONS];
   ///@}
   
   /**
@@ -203,7 +188,15 @@ class exahype::records::ADERDGCellDescription {
     Cell,
     Shell,
     VirtualShell
-  }; 
+  };
+  
+//  enum Type {
+//    Cell,
+//    ParentCell,
+//    AugmentedCell,
+//    VirtualCell,
+//    VirtualParentCell
+//  };
   
   /** 
    * @defgroup AMRInfo AMR information

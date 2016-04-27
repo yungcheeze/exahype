@@ -397,43 +397,6 @@ void exahype::mappings::VirtualRefinement::enterCell(
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
-
-bool exahype::mappings::VirtualRefinement::hasNeighboursOfType(
-  const int                                      solverNumber,
-  exahype::records::ADERDGCellDescription::Type  cellType,
-  const tarch::la::Vector<THREE_POWER_D, int>&   neighbourCellDescriptionIndices
-) {
-    // left,right,front,back,(front,back)
-#if DIMENSIONS == 2
-    constexpr int neighbourPositions[4] = {3,5,1,7};
-#else
-    constexpr int neighbourPositions[6] = {12,14,10,16,4,22};
-#endif
-
-    for (int i=0; i<DIMENSIONS_TIMES_TWO; i++) {
-      const int neighbourCellDescriptionIndex =
-          neighbourCellDescriptionIndices[neighbourPositions[i]];
-
-      if (DataHeap::getInstance().isValidIndex(neighbourCellDescriptionIndex)) {
-        exahype::records::ADERDGCellDescription& neighbourCellDescription =
-            ADERDGCellDescriptionHeap::getInstance().getData(
-                neighbourCellDescriptionIndex)[solverNumber];
-
-        assertion(neighbourCellDescription.getSolverNumber()==solverNumber);
-
-        if (neighbourCellDescription.getType()==cellType) {
-#if defined(Debug) || defined(Asserts)
-          if (neighbourCellDescription.getType()==exahype::records::ADERDGCellDescription::RealShell) {
-            assertion(neighbourCellDescription.getParent());
-          }
-#endif
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
   void exahype::mappings::VirtualRefinement::leaveCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,

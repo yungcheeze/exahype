@@ -5,8 +5,8 @@
 // this file and your project to your needs as long as the license is in
 // agreement with the original Peano user constraints. A reference to/citation
 // of  Peano and its author is highly appreciated.
-#ifndef EXAHYPE_MAPPINGS_Marking_H_
-#define EXAHYPE_MAPPINGS_Marking_H_
+#ifndef EXAHYPE_MAPPINGS_MarkingForAugmentation_H_
+#define EXAHYPE_MAPPINGS_MarkingForAugmentation_H_
 
 #include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
@@ -27,7 +27,7 @@
 
 namespace exahype {
 namespace mappings {
-class Marking;
+class MarkingForAugmentation;
 }
 }
 
@@ -39,12 +39,18 @@ class Marking;
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::mappings::Marking {
+class exahype::mappings::MarkingForAugmentation {
  private:
   /**
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
+
+  exahype::solvers::Solver::RefinementControl
+  virtualRefinementCriterion(
+      const int solverNumber,
+      const tarch::la::Vector<THREE_POWER_D, int>&
+      neighbourCellDescriptionIndices) const;
 
 
  public:
@@ -96,7 +102,7 @@ class exahype::mappings::Marking {
    * that your code works on a parallel machine and for any mapping/algorithm
    * modification.
    */
-  Marking();
+  MarkingForAugmentation();
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -109,13 +115,13 @@ class exahype::mappings::Marking {
    *
    * @see mergeWithWorkerThread()
    */
-  Marking(const Marking& masterThread);
+  MarkingForAugmentation(const MarkingForAugmentation& masterThread);
 #endif
 
   /**
    * Destructor. Typically does not implement any operation.
    */
-  virtual ~Marking();
+  virtual ~MarkingForAugmentation();
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -146,7 +152,7 @@ class exahype::mappings::Marking {
    * on the heap. However, you should protect this object by a BooleanSemaphore
    * and a lock to serialise all accesses to the plotter.
    */
-  void mergeWithWorkerThread(const Marking& workerThread);
+  void mergeWithWorkerThread(const MarkingForAugmentation& workerThread);
 #endif
 
   /**
@@ -516,7 +522,7 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
    * distinguish between inner and boundary cells, i.e. if you want to react
    * differently, you have to implement this manually.
    *
-   * ReMarkings:
+   * ReMarkingForAugmentations:
    * - If you need the position of the vertices of the cell or its size, use the
    *   enumerator.
    * - If the destory is invoked due to load balancing, it is called after the
@@ -1076,7 +1082,7 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
    * beginIteration() might not be called prior to any other event. See the
    * documentation of CommunicationSpecification for details.
    *
-   * @see Marking()
+   * @see MarkingForAugmentation()
    */
   void beginIteration(exahype::State& solverState);
 
@@ -1106,7 +1112,7 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
    * might not be called after all other events. See the documentation
    * of CommunicationSpecification for details.
    *
-   * @see Marking()
+   * @see MarkingForAugmentation()
    */
   void endIteration(exahype::State& solverState);
 
