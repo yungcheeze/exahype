@@ -1,11 +1,14 @@
 # This is the ExaHyPE project #
 
+## General remarks ##
+
+* Run tests before you commit
+* Document your code with doxygen
+* Disable auto-formatting of your IDE or follow the google code-style => Code/Miscellaneous/.clang-format
+
 ## Commit guidelines ##
 
-Please
-* Run tests before you commit
-
-*    Don't commit the following:
+Please, don't commit the following:
     
      * Binary files (\*\.o, executables, \.\.\. ) excluding those necessary for the documentation 
     
