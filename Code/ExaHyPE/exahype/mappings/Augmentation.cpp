@@ -296,140 +296,117 @@ void exahype::mappings::VirtualRefinement::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-                           fineGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfCell);
-  const tarch::la::Vector<THREE_POWER_D,int> neighbourCellDescriptionIndices =
-      multiscalelinkedcell::getIndicesAroundCell(
-          VertexOperations::readADERDGCellDescriptionsIndex(
-              fineGridVerticesEnumerator,fineGridVertices));
-
-  // If fine grid cell description does not exist, i.e. cell is new
-  if (!ADERDGCellDescriptionHeap::getInstance().
+      fineGridVerticesEnumerator.toString(),
+      coarseGridCell, fineGridPositionOfCell);
+  if (ADERDGCellDescriptionHeap::getInstance().
       isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
-    assertion(ADERDGCellDescriptionHeap::getInstance().
-           isValidIndex(coarseGridCell.getADERDGCellDescriptionsIndex()));
-    int  solverNumber=0;
-    for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-        exahype::solvers::RegisteredSolvers.begin();
-        p != exahype::solvers::RegisteredSolvers.end(); p++) { // @todo replace by parloops?
-      if (fineGridVerticesEnumerator.getLevel()>=(*p)->getMinimumTreeDepth()+1) {
-        exahype::records::ADERDGCellDescription& cellDescriptionParent =
-            coarseGridCell.getADERDGCellDescription(solverNumber);
-        // If coarse grid cell description requested refinement
-        if (cellDescriptionParent.getVirtualRefinementNecessary()) {
-          assertion(cellDescriptionParent.
-                    getType()==exahype::records::ADERDGCellDescription::RealCell
-                    ||
-                    cellDescriptionParent.
-                    getType()==exahype::records::ADERDGCellDescription::VirtualShell);
-          assertion(cellDescriptionParent.getParent());
 
-          fineGridCell.addNewCellDescription(
-              solverNumber,
-              exahype::records::ADERDGCellDescription::VirtualShell,
-              fineGridVerticesEnumerator.getLevel(),
-              coarseGridCell.getADERDGCellDescriptionsIndex(),
-              fineGridPositionOfCell,
-              fineGridVerticesEnumerator.getCellSize(),
-              fineGridVerticesEnumerator.getCellCenter());
-
-          cellDescriptionParent.setVirtualRefinementNecessary(false);
-        }
-      }
-      solverNumber++;
-    }
-
-  } else {
     bool refineFineGridCell=false;
-
-    int  solverNumber=0;
-    for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-        exahype::solvers::RegisteredSolvers.begin();
-        p != exahype::solvers::RegisteredSolvers.end(); p++) { // @todo replace by parloops?
-
-      assertion(static_cast<unsigned int>(solverNumber) <
-                ADERDGCellDescriptionHeap::getInstance().
-                getData(fineGridCell.getADERDGCellDescriptionsIndex()).size());
-
-      exahype::records::ADERDGCellDescription& cellDescription =
-          fineGridCell.getADERDGCellDescription(solverNumber);
-
-      // check if virtual shell has real cell neighbours
-      if (cellDescription.getType()==exahype::records::ADERDGCellDescription::VirtualShell) {
-        cellDescription.setHasNeighboursOfTypeCell(
-          hasNeighboursOfType(
-            solverNumber,
-            exahype::records::ADERDGCellDescription::RealCell,
-            neighbourCellDescriptionIndices
-          )
-        );
-      }
-
-      // only refine non-parent real cells and virtual shells virtually
-      // if they have real shells as neighbour
-      if (!cellDescription.getParent()
-          &&
-          (cellDescription.getType()==exahype::records::ADERDGCellDescription::RealCell
-          ||
-          cellDescription.getType()==exahype::records::ADERDGCellDescription::VirtualShell)
-          &&
-          hasNeighboursOfType(
-            solverNumber,exahype::records::ADERDGCellDescription::RealShell,
-            neighbourCellDescriptionIndices)) {
-        cellDescription.setVirtualRefinementNecessary(true);
-        cellDescription.setParent(true);
-
-        refineFineGridCell = true;
-      }
+    for (std::vector<exahype::records::ADERDGCellDescription>::
+        iterator pFine = ADERDGCellDescriptionHeap::getInstance().getData(
+            fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+        pFine != ADERDGCellDescriptionHeap::getInstance().getData(
+            fineGridCell.getADERDGCellDescriptionsIndex()).end();
+        pFine++) {
+      if (!pFine->getParent())
+        switch (pFine->getRefinementEvent()) {
+        case exahype::records::ADERDGCellDescription::None:
+          switch (pFine->getAugmentationEvent()) {
+          case exahype::records::ADERDGCellDescription::Refinement:
+            switch (pFine->getType()) {
+            case exahype::records::ADERDGCellDescription::Cell:
+            case exahype::records::ADERDGCellDescription::VirtualShell:
+              refineFineGridCell=true;
+              break;
+            }
+            break;
+          }
+          break;
+        }
     }
-    // Note that fineGridVertices->refine() refines all adjacent cell
-    // not only the targeted fineGridCell (Peano Cookbook).
-    // That's why we use the virtualRefinementNecessary flag.
+    // Loop over the 2^d adjacent vertices and set the refinement flag.
+    // Note that fineGridVertices->refine() refines all adjacent cells
+    // not only the targeted fineGridCell.
     if (refineFineGridCell) {
-      dfor2(k) // loop over 2^d vertices and set the refinement flag
+      dfor2(k)
         if (fineGridVertices[kScalar].getRefinementControl()==
             Vertex::Records::Unrefined) {
           fineGridVertices->refine();
         }
       enddforx
     }
+  } else { // !ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())
+    if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(coarseGridCell.getADERDGCellDescriptionsIndex())) {
+      for (std::vector<exahype::records::ADERDGCellDescription>::
+          iterator pCoarse = ADERDGCellDescriptionHeap::getInstance().getData(
+              coarseGridCell.getADERDGCellDescriptionsIndex()).begin();
+          pCoarse != ADERDGCellDescriptionHeap::getInstance().getData(
+              coarseGridCell.getADERDGCellDescriptionsIndex()).end();
+          pCoarse++) { // Loop over coarse grid cell descriptions.
+        exahype::solvers::Solver* solver =
+            exahype::solvers::RegisteredSolvers[pCoarse->getSolverNumber()];
+        switch (pCoarse->getType()) {
+        case exahype::records::ADERDGCellDescription::Cell:
+        case exahype::records::ADERDGCellDescription::VirtualShell:
+          switch (pCoarse->getAugmentationEvent()) {
+          case exahype::records::ADERDGCellDescription::Refinement:
+            assertion(cellDescriptionParent.getParent());
+            fineGridCell.addNewCellDescription(
+                pCoarse->getSolverNumber(),
+                exahype::records::ADERDGCellDescription::Cell,
+                exahype::records::ADERDGCellDescription::Prolongation,
+                exahype::records::ADERDGCellDescription::None,
+                fineGridVerticesEnumerator.getLevel(),
+                coarseGridCell.getADERDGCellDescriptionsIndex(),
+                fineGridPositionOfCell,
+                fineGridVerticesEnumerator.getCellSize(),
+                fineGridVerticesEnumerator.getCellCenter());
+            fineGridCell.initialiseCellDescription(pCoarse->getSolverNumber());
+            break;
+          }
+          break;
+        }
+      }
+    }
   }
+
+  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
-  void exahype::mappings::VirtualRefinement::leaveCell(
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-    // do nothing
-  }
+void exahype::mappings::VirtualRefinement::leaveCell(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
 
-  void exahype::mappings::VirtualRefinement::beginIteration(
-      exahype::State& solverState) {
-    // do nothing
-  }
+void exahype::mappings::VirtualRefinement::beginIteration(
+    exahype::State& solverState) {
+  // do nothing
+}
 
-  void exahype::mappings::VirtualRefinement::endIteration(exahype::State& solverState) {
-    // do nothing
-  }
+void exahype::mappings::VirtualRefinement::endIteration(exahype::State& solverState) {
+  // do nothing
+}
 
-  void exahype::mappings::VirtualRefinement::descend(
-      exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell) {
-    // do nothing
-  }
+void exahype::mappings::VirtualRefinement::descend(
+    exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell) {
+  // do nothing
+}
 
-  void exahype::mappings::VirtualRefinement::ascend(
-      exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell) {
-    // do nothing
-  }
+void exahype::mappings::VirtualRefinement::ascend(
+    exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell) {
+  // do nothing
+}

@@ -184,19 +184,14 @@ class exahype::records::ADERDGCellDescription {
    * the virtual part of the augmented spacetree that
    * is created to store prolongated face data.
    */
-  enum Type {
-    Cell,
-    Shell,
-    VirtualShell
-  };
   
-//  enum Type {
-//    Cell,
-//    ParentCell,
-//    AugmentedCell,
-//    VirtualCell,
-//    VirtualParentCell
-//  };
+  enum Type {
+    Ancestor,
+    EmptyAncestor,
+    Cell,
+    Descendant,
+    EmptyDescendant
+  };
   
   /** 
    * @defgroup AMRInfo AMR information
@@ -208,13 +203,7 @@ class exahype::records::ADERDGCellDescription {
   /** 
    * The type of this ADERDGCellDescription. See the documentation of Cell for more details.
    */
-  parallelise persistent Type type;
-
-  /** 
-   * Indicates if other ADERDGCellDescriptions consider this ADERDGCellDescription
-   * as their parent.
-   */
-  parallelise persistent bool parent;	
+  parallelise persistent Type type;	
   
   /**
    * The index of the ADERDGCellDescription that is the parent of
@@ -222,35 +211,33 @@ class exahype::records::ADERDGCellDescription {
    */
   parallelise persistent int parentIndex;
   
-  /**
-   * Indicates if this ADERDGCellDescription should be accessed by
-   * the AMR and Solver routines.
-   * 
-   * \note Only relevant for cell descriptions of type virtual shell.
-   */ 
-  parallelise persistent bool hasNeighboursOfTypeCell;
-  
   enum RefinementEvent {
-    None,               // relevant for all cell types
-    
-    CoarseningPossible, // relevant for children Cell
-    Restriction,        // relevant for children Cell
-    Coarsening,         // relevant for children Cell
-    
-    CoarseningChildren, // relevant for (parent) Cell
-    
-    Refinement,         // relevant for (parent) Shell
-    Prolongation        // relevant for parent Shell
+//    None,               // relevant for all cell types
+//    
+//    CoarseningPossible, // relevant for children Cell
+//    Restriction,        // relevant for children Cell
+//    Coarsening,         // relevant for children Cell
+//    
+//    CoarseningChildren, // relevant for (parent) Cell
+//    
+//    Refinement,         // relevant for (parent) Shell
+//    Prolongation        // relevant for parent Shell
+     None,
+     CoarseningRequested, // post
+     Restricting, // pre
+     Coarsening,  // pre
+     CoarseningChildren, // pre
+     Refining,     // pre
+     Prolongating, // pre   
+     DeaugmentingRequested, // post
+     Deaugmenting, // pre    
+     DeaugmentingChildren,    
+     Augmenting   // pre
   };
   
   /** 
    * Returns the refinement event.
    */
   parallelise persistent RefinementEvent refinementEvent;
-  
-  /** 
-   * Returns the augmentation/virtual refinement event.
-   */
-  parallelise persistent RefinementEvent augmentationEvent;
   ///@}
 };

@@ -5,7 +5,7 @@ exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords() 
 }
 
 
-exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const RefinementEvent& refinementEvent, const RefinementEvent& augmentationEvent):
+exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
 _solverNumber(solverNumber),
 _riemannSolvePerformed(riemannSolvePerformed),
 _correctorTimeStepSize(correctorTimeStepSize),
@@ -24,13 +24,9 @@ _fluctuation(fluctuation),
 _level(level),
 _offset(offset),
 _size(size),
-_fineGridPositionOfCell(fineGridPositionOfCell),
 _type(type),
-_parent(parent),
 _parentIndex(parentIndex),
-_hasNeighboursOfTypeCell(hasNeighboursOfTypeCell),
-_refinementEvent(refinementEvent),
-_augmentationEvent(augmentationEvent) {
+_refinementEvent(refinementEvent) {
    
 }
 
@@ -40,13 +36,13 @@ exahype::records::ADERDGCellDescription::ADERDGCellDescription() {
 
 
 exahype::records::ADERDGCellDescription::ADERDGCellDescription(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._spaceTimePredictor, persistentRecords._spaceTimeVolumeFlux, persistentRecords._solution, persistentRecords._update, persistentRecords._predictor, persistentRecords._volumeFlux, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._fineGridPositionOfCell, persistentRecords._type, persistentRecords._parent, persistentRecords._parentIndex, persistentRecords._hasNeighboursOfTypeCell, persistentRecords._refinementEvent, persistentRecords._augmentationEvent) {
+_persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._spaceTimePredictor, persistentRecords._spaceTimeVolumeFlux, persistentRecords._solution, persistentRecords._update, persistentRecords._predictor, persistentRecords._volumeFlux, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._type, persistentRecords._parentIndex, persistentRecords._refinementEvent) {
    
 }
 
 
-exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const RefinementEvent& refinementEvent, const RefinementEvent& augmentationEvent):
-_persistentRecords(solverNumber, riemannSolvePerformed, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size, fineGridPositionOfCell, type, parent, parentIndex, hasNeighboursOfTypeCell, refinementEvent, augmentationEvent) {
+exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
+_persistentRecords(solverNumber, riemannSolvePerformed, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size, type, parentIndex, refinementEvent) {
    
 }
 
@@ -56,30 +52,36 @@ exahype::records::ADERDGCellDescription::~ADERDGCellDescription() { }
 std::string exahype::records::ADERDGCellDescription::toString(const RefinementEvent& param) {
    switch (param) {
       case None: return "None";
-      case CoarseningPossible: return "CoarseningPossible";
-      case Restriction: return "Restriction";
+      case CoarseningRequested: return "CoarseningRequested";
+      case Restricting: return "Restricting";
       case Coarsening: return "Coarsening";
       case CoarseningChildren: return "CoarseningChildren";
-      case Refinement: return "Refinement";
-      case Prolongation: return "Prolongation";
+      case Refining: return "Refining";
+      case Prolongating: return "Prolongating";
+      case DeaugmentingRequested: return "DeaugmentingRequested";
+      case Deaugmenting: return "Deaugmenting";
+      case DeaugmentingChildren: return "DeaugmentingChildren";
+      case Augmenting: return "Augmenting";
    }
    return "undefined";
 }
 
 std::string exahype::records::ADERDGCellDescription::getRefinementEventMapping() {
-   return "RefinementEvent(None=0,CoarseningPossible=1,Restriction=2,Coarsening=3,CoarseningChildren=4,Refinement=5,Prolongation=6)";
+   return "RefinementEvent(None=0,CoarseningRequested=1,Restricting=2,Coarsening=3,CoarseningChildren=4,Refining=5,Prolongating=6,DeaugmentingRequested=7,Deaugmenting=8,DeaugmentingChildren=9,Augmenting=10)";
 }
 std::string exahype::records::ADERDGCellDescription::toString(const Type& param) {
    switch (param) {
+      case Ancestor: return "Ancestor";
+      case EmptyAncestor: return "EmptyAncestor";
       case Cell: return "Cell";
-      case Shell: return "Shell";
-      case VirtualShell: return "VirtualShell";
+      case Descendant: return "Descendant";
+      case EmptyDescendant: return "EmptyDescendant";
    }
    return "undefined";
 }
 
 std::string exahype::records::ADERDGCellDescription::getTypeMapping() {
-   return "Type(Cell=0,Shell=1,VirtualShell=2)";
+   return "Type(Ancestor=0,EmptyAncestor=1,Cell=2,Descendant=3,EmptyDescendant=4)";
 }
 
 
@@ -139,23 +141,11 @@ void exahype::records::ADERDGCellDescription::toString (std::ostream& out) const
    }
    out << getSize(DIMENSIONS-1) << "]";
    out << ",";
-   out << "fineGridPositionOfCell:[";
-   for (int i = 0; i < DIMENSIONS-1; i++) {
-      out << getFineGridPositionOfCell(i) << ",";
-   }
-   out << getFineGridPositionOfCell(DIMENSIONS-1) << "]";
-   out << ",";
    out << "type:" << toString(getType());
-   out << ",";
-   out << "parent:" << getParent();
    out << ",";
    out << "parentIndex:" << getParentIndex();
    out << ",";
-   out << "hasNeighboursOfTypeCell:" << getHasNeighboursOfTypeCell();
-   out << ",";
    out << "refinementEvent:" << toString(getRefinementEvent());
-   out << ",";
-   out << "augmentationEvent:" << toString(getAugmentationEvent());
    out <<  ")";
 }
 
@@ -184,13 +174,9 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
       getLevel(),
       getOffset(),
       getSize(),
-      getFineGridPositionOfCell(),
       getType(),
-      getParent(),
       getParentIndex(),
-      getHasNeighboursOfTypeCell(),
-      getRefinementEvent(),
-      getAugmentationEvent()
+      getRefinementEvent()
    );
 }
 
@@ -205,7 +191,7 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
       {
          ADERDGCellDescription dummyADERDGCellDescription[2];
          
-         const int Attributes = 26;
+         const int Attributes = 22;
          MPI_Datatype subtypes[Attributes] = {
             MPI_INT,		 //solverNumber
             MPI_INT,		 //riemannSolvePerformed
@@ -225,13 +211,9 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
             MPI_INT,		 //level
             MPI_DOUBLE,		 //offset
             MPI_DOUBLE,		 //size
-            MPI_INT,		 //fineGridPositionOfCell
             MPI_INT,		 //type
-            MPI_CHAR,		 //parent
             MPI_INT,		 //parentIndex
-            MPI_CHAR,		 //hasNeighboursOfTypeCell
             MPI_INT,		 //refinementEvent
-            MPI_INT,		 //augmentationEvent
             MPI_UB		 // end/displacement flag
          };
          
@@ -254,13 +236,9 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
             1,		 //level
             DIMENSIONS,		 //offset
             DIMENSIONS,		 //size
-            DIMENSIONS,		 //fineGridPositionOfCell
             1,		 //type
-            1,		 //parent
             1,		 //parentIndex
-            1,		 //hasNeighboursOfTypeCell
             1,		 //refinementEvent
-            1,		 //augmentationEvent
             1		 // end/displacement flag
          };
          
@@ -286,14 +264,10 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._level))), 		&disp[15] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._offset[0]))), 		&disp[16] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._size[0]))), 		&disp[17] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._fineGridPositionOfCell[0]))), 		&disp[18] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._type))), 		&disp[19] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._parent))), 		&disp[20] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._parentIndex))), 		&disp[21] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._hasNeighboursOfTypeCell))), 		&disp[22] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[23] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._augmentationEvent))), 		&disp[24] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[25] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._type))), 		&disp[18] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._parentIndex))), 		&disp[19] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[20] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[21] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -308,7 +282,7 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
       {
          ADERDGCellDescription dummyADERDGCellDescription[2];
          
-         const int Attributes = 26;
+         const int Attributes = 22;
          MPI_Datatype subtypes[Attributes] = {
             MPI_INT,		 //solverNumber
             MPI_INT,		 //riemannSolvePerformed
@@ -328,13 +302,9 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
             MPI_INT,		 //level
             MPI_DOUBLE,		 //offset
             MPI_DOUBLE,		 //size
-            MPI_INT,		 //fineGridPositionOfCell
             MPI_INT,		 //type
-            MPI_CHAR,		 //parent
             MPI_INT,		 //parentIndex
-            MPI_CHAR,		 //hasNeighboursOfTypeCell
             MPI_INT,		 //refinementEvent
-            MPI_INT,		 //augmentationEvent
             MPI_UB		 // end/displacement flag
          };
          
@@ -357,13 +327,9 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
             1,		 //level
             DIMENSIONS,		 //offset
             DIMENSIONS,		 //size
-            DIMENSIONS,		 //fineGridPositionOfCell
             1,		 //type
-            1,		 //parent
             1,		 //parentIndex
-            1,		 //hasNeighboursOfTypeCell
             1,		 //refinementEvent
-            1,		 //augmentationEvent
             1		 // end/displacement flag
          };
          
@@ -389,14 +355,10 @@ exahype::records::ADERDGCellDescriptionPacked exahype::records::ADERDGCellDescri
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._level))), 		&disp[15] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._offset[0]))), 		&disp[16] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._size[0]))), 		&disp[17] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._fineGridPositionOfCell[0]))), 		&disp[18] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._type))), 		&disp[19] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._parent))), 		&disp[20] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._parentIndex))), 		&disp[21] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._hasNeighboursOfTypeCell))), 		&disp[22] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[23] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._augmentationEvent))), 		&disp[24] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[25] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._type))), 		&disp[18] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._parentIndex))), 		&disp[19] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._refinementEvent))), 		&disp[20] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[1]._persistentRecords._solverNumber))), 		&disp[21] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -643,7 +605,7 @@ exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentReco
 }
 
 
-exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const RefinementEvent& refinementEvent, const RefinementEvent& augmentationEvent):
+exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
 _solverNumber(solverNumber),
 _riemannSolvePerformed(riemannSolvePerformed),
 _correctorTimeStepSize(correctorTimeStepSize),
@@ -662,13 +624,9 @@ _fluctuation(fluctuation),
 _level(level),
 _offset(offset),
 _size(size),
-_fineGridPositionOfCell(fineGridPositionOfCell),
 _type(type),
-_parent(parent),
 _parentIndex(parentIndex),
-_hasNeighboursOfTypeCell(hasNeighboursOfTypeCell),
-_refinementEvent(refinementEvent),
-_augmentationEvent(augmentationEvent) {
+_refinementEvent(refinementEvent) {
    
 }
 
@@ -678,13 +636,13 @@ exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked() {
 
 
 exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._spaceTimePredictor, persistentRecords._spaceTimeVolumeFlux, persistentRecords._solution, persistentRecords._update, persistentRecords._predictor, persistentRecords._volumeFlux, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._fineGridPositionOfCell, persistentRecords._type, persistentRecords._parent, persistentRecords._parentIndex, persistentRecords._hasNeighboursOfTypeCell, persistentRecords._refinementEvent, persistentRecords._augmentationEvent) {
+_persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._spaceTimePredictor, persistentRecords._spaceTimeVolumeFlux, persistentRecords._solution, persistentRecords._update, persistentRecords._predictor, persistentRecords._volumeFlux, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._type, persistentRecords._parentIndex, persistentRecords._refinementEvent) {
    
 }
 
 
-exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const RefinementEvent& refinementEvent, const RefinementEvent& augmentationEvent):
-_persistentRecords(solverNumber, riemannSolvePerformed, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size, fineGridPositionOfCell, type, parent, parentIndex, hasNeighboursOfTypeCell, refinementEvent, augmentationEvent) {
+exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent):
+_persistentRecords(solverNumber, riemannSolvePerformed, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, spaceTimePredictor, spaceTimeVolumeFlux, solution, update, predictor, volumeFlux, extrapolatedPredictor, fluctuation, level, offset, size, type, parentIndex, refinementEvent) {
    
 }
 
@@ -765,23 +723,11 @@ void exahype::records::ADERDGCellDescriptionPacked::toString (std::ostream& out)
    }
    out << getSize(DIMENSIONS-1) << "]";
    out << ",";
-   out << "fineGridPositionOfCell:[";
-   for (int i = 0; i < DIMENSIONS-1; i++) {
-      out << getFineGridPositionOfCell(i) << ",";
-   }
-   out << getFineGridPositionOfCell(DIMENSIONS-1) << "]";
-   out << ",";
    out << "type:" << toString(getType());
-   out << ",";
-   out << "parent:" << getParent();
    out << ",";
    out << "parentIndex:" << getParentIndex();
    out << ",";
-   out << "hasNeighboursOfTypeCell:" << getHasNeighboursOfTypeCell();
-   out << ",";
    out << "refinementEvent:" << toString(getRefinementEvent());
-   out << ",";
-   out << "augmentationEvent:" << toString(getAugmentationEvent());
    out <<  ")";
 }
 
@@ -810,13 +756,9 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
       getLevel(),
       getOffset(),
       getSize(),
-      getFineGridPositionOfCell(),
       getType(),
-      getParent(),
       getParentIndex(),
-      getHasNeighboursOfTypeCell(),
-      getRefinementEvent(),
-      getAugmentationEvent()
+      getRefinementEvent()
    );
 }
 
@@ -831,7 +773,7 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
       {
          ADERDGCellDescriptionPacked dummyADERDGCellDescriptionPacked[2];
          
-         const int Attributes = 26;
+         const int Attributes = 22;
          MPI_Datatype subtypes[Attributes] = {
             MPI_INT,		 //solverNumber
             MPI_INT,		 //riemannSolvePerformed
@@ -851,13 +793,9 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
             MPI_INT,		 //level
             MPI_DOUBLE,		 //offset
             MPI_DOUBLE,		 //size
-            MPI_INT,		 //fineGridPositionOfCell
             MPI_INT,		 //type
-            MPI_CHAR,		 //parent
             MPI_INT,		 //parentIndex
-            MPI_CHAR,		 //hasNeighboursOfTypeCell
             MPI_INT,		 //refinementEvent
-            MPI_INT,		 //augmentationEvent
             MPI_UB		 // end/displacement flag
          };
          
@@ -880,13 +818,9 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
             1,		 //level
             DIMENSIONS,		 //offset
             DIMENSIONS,		 //size
-            DIMENSIONS,		 //fineGridPositionOfCell
             1,		 //type
-            1,		 //parent
             1,		 //parentIndex
-            1,		 //hasNeighboursOfTypeCell
             1,		 //refinementEvent
-            1,		 //augmentationEvent
             1		 // end/displacement flag
          };
          
@@ -912,14 +846,10 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._level))), 		&disp[15] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._offset[0]))), 		&disp[16] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[17] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._fineGridPositionOfCell[0]))), 		&disp[18] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[19] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._parent))), 		&disp[20] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[21] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._hasNeighboursOfTypeCell))), 		&disp[22] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[23] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._augmentationEvent))), 		&disp[24] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[25] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[18] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[19] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[20] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[21] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -934,7 +864,7 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
       {
          ADERDGCellDescriptionPacked dummyADERDGCellDescriptionPacked[2];
          
-         const int Attributes = 26;
+         const int Attributes = 22;
          MPI_Datatype subtypes[Attributes] = {
             MPI_INT,		 //solverNumber
             MPI_INT,		 //riemannSolvePerformed
@@ -954,13 +884,9 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
             MPI_INT,		 //level
             MPI_DOUBLE,		 //offset
             MPI_DOUBLE,		 //size
-            MPI_INT,		 //fineGridPositionOfCell
             MPI_INT,		 //type
-            MPI_CHAR,		 //parent
             MPI_INT,		 //parentIndex
-            MPI_CHAR,		 //hasNeighboursOfTypeCell
             MPI_INT,		 //refinementEvent
-            MPI_INT,		 //augmentationEvent
             MPI_UB		 // end/displacement flag
          };
          
@@ -983,13 +909,9 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
             1,		 //level
             DIMENSIONS,		 //offset
             DIMENSIONS,		 //size
-            DIMENSIONS,		 //fineGridPositionOfCell
             1,		 //type
-            1,		 //parent
             1,		 //parentIndex
-            1,		 //hasNeighboursOfTypeCell
             1,		 //refinementEvent
-            1,		 //augmentationEvent
             1		 // end/displacement flag
          };
          
@@ -1015,14 +937,10 @@ exahype::records::ADERDGCellDescription exahype::records::ADERDGCellDescriptionP
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._level))), 		&disp[15] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._offset[0]))), 		&disp[16] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[17] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._fineGridPositionOfCell[0]))), 		&disp[18] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[19] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._parent))), 		&disp[20] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[21] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._hasNeighboursOfTypeCell))), 		&disp[22] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[23] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._augmentationEvent))), 		&disp[24] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[25] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[18] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._parentIndex))), 		&disp[19] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._refinementEvent))), 		&disp[20] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[21] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );

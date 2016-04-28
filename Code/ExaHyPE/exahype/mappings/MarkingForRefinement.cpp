@@ -321,12 +321,12 @@ void exahype::mappings::MarkingForRefinement::enterCell(
 
           switch (refinementControl) {
           case exahype::solvers::Solver::Refine:
-            pFine->setRefinementEvent(exahype::records::ADERDGCellDescription::Refinement);
-            pFine->setType(exahype::records::ADERDGCellDescription::Shell);
-            pFine->setParent(true);
+            pFine->setRefinementEvent(exahype::records::ADERDGCellDescription::Refining);
+            pFine->setType(exahype::records::ADERDGCellDescription::Ancestor);
+            // todo check if EmptyAncestor has no neighbours then change to empty ancestor type
             break;
           case exahype::solvers::Solver::Coarsen:
-            pFine->setRefinementEvent(exahype::records::ADERDGCellDescription::CoarseningPossible);
+            pFine->setRefinementEvent(exahype::records::ADERDGCellDescription::CoarseningRequested);
             break;
           }
           break;
@@ -374,30 +374,31 @@ void exahype::mappings::MarkingForRefinement::descend(
             coarseGridCell.getADERDGCellDescriptionsIndex()).end();
         ++pCoarse) {
       switch (pCoarse->getType()) {
-      case exahype::records::ADERDGCellDescription::Shell:
+      case exahype::records::ADERDGCellDescription::EmptyAncestor:
+      case exahype::records::ADERDGCellDescription::Ancestor:
         switch (pCoarse->getRefinementEvent()) {
         case exahype::records::ADERDGCellDescription::None:
-          bool coarsen = true;
+          bool coarsen                    = true;
+
           dfor3(k)
-            for (std::vector<exahype::records::ADERDGCellDescription>::
-                iterator pFine = ADERDGCellDescriptionHeap::getInstance().
-                getData(fineGridCells[kScalar].
-                    getADERDGCellDescriptionsIndex()).begin();
-                pFine != ADERDGCellDescriptionHeap::getInstance().
-                    getData(fineGridCells[kScalar].
-                        getADERDGCellDescriptionsIndex()).end();
-                ++pFine) {
-              if (pCoarse->getSolverNumber()==pFine->getSolverNumber()) {
-                coarsen = coarsen && pFine->getRefinementEvent()==
-                    exahype::records::ADERDGCellDescription::CoarseningPossible;
-              }
+          for (std::vector<exahype::records::ADERDGCellDescription>::
+              iterator pFine = ADERDGCellDescriptionHeap::getInstance().
+              getData(fineGridCells[kScalar].
+                  getADERDGCellDescriptionsIndex()).begin();
+              pFine != ADERDGCellDescriptionHeap::getInstance().
+                  getData(fineGridCells[kScalar].
+                      getADERDGCellDescriptionsIndex()).end();
+              ++pFine) {
+            if (pCoarse->getSolverNumber()==pFine->getSolverNumber()) {
+              coarsen = coarsen && pFine->getRefinementEvent()==
+                  exahype::records::ADERDGCellDescription::CoarseningRequested;
             }
+          }
           enddforx
 
           if (coarsen) {
             pCoarse->setRefinementEvent(exahype::records::ADERDGCellDescription::CoarseningChildren);
             pCoarse->setType(exahype::records::ADERDGCellDescription::Cell);
-            pCoarse->setParent(false);
 
             // @todo: 16/04/27:Dominic Etienne Charier:
             // Clean the solution field of the newly initialised cell.
@@ -414,9 +415,10 @@ void exahype::mappings::MarkingForRefinement::descend(
                 ++pFine) {
               if (pCoarse->getSolverNumber()==pFine->getSolverNumber()) {
                 switch (pFine->getType()) {
-                  pFine->setRefinementEvent(
-                      exahype::records::ADERDGCellDescription::Restriction);
-                  break;
+                catch
+                pFine->setRefinementEvent(
+                    exahype::records::ADERDGCellDescription::Restriction);
+                break;
                 }
               }
             }
@@ -427,16 +429,15 @@ void exahype::mappings::MarkingForRefinement::descend(
         break;
       }
     }
+
+    logTraceOut( "descend(...)" );
   }
 
-  logTraceOut( "descend(...)" );
-}
-
-void exahype::mappings::MarkingForRefinement::ascend(
-    exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell) {
-  // do nothing
-}
+  void exahype::mappings::MarkingForRefinement::ascend(
+      exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell) {
+    // do nothing
+  }
