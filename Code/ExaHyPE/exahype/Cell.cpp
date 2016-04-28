@@ -189,9 +189,11 @@ void exahype::Cell::initialiseCellDescription(const int solverNumber) {
     } break;
     default: {
       logDebug("initialiseCellDescription(...)", "solver is not associated with any cell descriptions of this cell. cell="
-               << toString() << ", level=" << level
-               << ", size=" << size
-               << ",offset=" << cellCentre);
+               << toString());
+      // logDebug("initialiseCellDescription(...)", "solver is not associated with any cell descriptions of this cell. cell="
+               // << toString() << ", level=" << level
+               // << ", size=" << size
+               // << ",offset=" << cellCentre);
     } break;
   }
 }
@@ -268,9 +270,11 @@ void exahype::Cell::cleanCellDescription(const int solverNumber) {
     } break;
     default: {
       logDebug("cleanCellDescription(...)", "solver is not associated with any cell descriptions of this cell. cell="
-               << toString() << ", level=" << level
-               << ", size=" << size
-               << ",offset=" << cellCentre);
+               << toString());
+      // logDebug("cleanCellDescription(...)", "solver is not associated with any cell descriptions of this cell. cell="
+               // << toString() << ", level=" << level
+               // << ", size=" << size
+               // << ",offset=" << cellCentre);
     } break;
   }
 }
