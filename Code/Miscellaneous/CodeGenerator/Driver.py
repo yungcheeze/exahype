@@ -6,6 +6,8 @@
 # Starting point of the code generator
 #--------------------------------------------------------------
 #
+# Note: requires python3
+#
 # For a quick test, type
 # python Driver.py MyEulerSolver 5 3 2 nonlinear hsw path/to/libxsmmRepository
 #
@@ -19,6 +21,7 @@ import argparse
 import CodeGenArgumentParser
 from SpaceTimePredictorGenerator import SpaceTimePredictorGenerator
 from RiemannGenerator import RiemannGenerator
+from SolutionUpdateGenerator import SolutionUpdateGenerator
 from Backend import prepareOutputDirectory
 from Backend import moveGeneratedFiles
 import Backend
@@ -98,7 +101,8 @@ spaceTimePredictorGenerator = SpaceTimePredictorGenerator(config)
 spaceTimePredictorGenerator.generateCode()
 riemannGenerator = RiemannGenerator(config, numerics, precision)
 riemannGenerator.generateCode()
-
+solutionUpdateGenerator = SolutionUpdateGenerator(config)
+solutionUpdateGenerator.generateCode()
 # for testing
 #weightsGenerator = WeightsGenerator(config, precision)
 #weightsGenerator.generateCode()
