@@ -16,7 +16,7 @@
 // using std::cout;
 
 extern "C" {
-void aderriemannsolvernonlinear_(double* lQbndL, double* lFbndL, double* lQbndR,
+void aderriemannsolvernonlinear_(const double* const lQbndL, double* lFbndL, const double* const lQbndR,
                         double* lFbndR, double* nv);
 }
 
@@ -40,25 +40,6 @@ void kernels::aderdg::generic::fortran::riemannSolverNonlinear(
     double* FL, double* FR, const double* const QL, const double* const QR,
     const double dt, const int normalNonZero, const int numberOfVariables,
     const int basisSize) {
-  double* QlFortran = new double[numberOfVariables * basisSize * basisSize];
-  for (int i = 0; i < numberOfVariables * basisSize * basisSize; i++) {
-    QlFortran[i] = QL[i];
-  }
-
-  double* QrFortran = new double[numberOfVariables * basisSize * basisSize];
-  for (int i = 0; i < numberOfVariables * basisSize * basisSize; i++) {
-    QrFortran[i] = QR[i];
-  }
-
-  double* FlFortran = new double[numberOfVariables * basisSize * basisSize];
-  for (int i = 0; i < numberOfVariables * basisSize * basisSize; i++) {
-    FlFortran[i] = FL[i];
-  }
-
-  double* FrFortran = new double[numberOfVariables * basisSize * basisSize];
-  for (int i = 0; i < numberOfVariables * basisSize * basisSize; i++) {
-    FrFortran[i] = FR[i];
-  }
 
   double* nv = new double[3];
   nv[0] = 0.0;
@@ -66,7 +47,7 @@ void kernels::aderdg::generic::fortran::riemannSolverNonlinear(
   nv[2] = 0.0;
   nv[normalNonZero] = 1.0;
 
-  aderriemannsolvernonlinear_(QlFortran, FlFortran, QrFortran, FrFortran, nv);
+  aderriemannsolvernonlinear_(QL, FL, QR, FR, nv);
 
   // // Permutation of lQbnd
 
@@ -97,9 +78,5 @@ void kernels::aderdg::generic::fortran::riemannSolverNonlinear(
   // }
   // ofs.close();
 
-  delete[] QlFortran;
-  delete[] QrFortran;
-  delete[] FlFortran;
-  delete[] FrFortran;
   delete[] nv;
 }
