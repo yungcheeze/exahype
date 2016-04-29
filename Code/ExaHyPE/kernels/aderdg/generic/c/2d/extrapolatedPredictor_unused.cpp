@@ -1,3 +1,4 @@
+
 #include "kernels/aderdg/generic/Kernels.h"
 
 #include "string.h"
@@ -7,6 +8,8 @@
 
 #include "kernels/GaussLegendreQuadrature.h"
 #include "kernels/DGMatrices.h"
+
+#if DIMENSIONS == 2
 
 void kernels::aderdg::generic::c::extrapolatedPredictor(
     double* lQhbnd, double* lFhbnd, const double* const lQhi,
@@ -189,3 +192,4 @@ void kernels::aderdg::generic::c::extrapolatedPredictorYDirection(
     continue;
   }
 }
+#endif 

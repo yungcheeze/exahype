@@ -1,22 +1,22 @@
-#include "../Kernels.h"
+// #include "kernels/aderdg/generic/Kernels.h"
 
-#include "string.h"
+// #include "string.h"
 
-#include "tarch/la/Scalar.h"
-#include "tarch/la/ScalarOperations.h"
+// #include "tarch/la/Scalar.h"
+// #include "tarch/la/ScalarOperations.h"
 
-#include "kernels/GaussLegendreQuadrature.h"
-#include "kernels/DGMatrices.h"
+// #include "kernels/GaussLegendreQuadrature.h"
+// #include "kernels/DGMatrices.h"
 
-#define EXAHYPE_CFL_FACTOR 0.9
+// #define EXAHYPE_CFL_FACTOR 0.9
 
-#include <fstream>
+// #include <fstream>
 
-using std::endl;
-using std::cout;
+// using std::endl;
+// using std::cout;
 
 template <void PDEFlux2d(const double* const Q, double* f, double* g)>
-void kernels::aderdg::generic::c::spaceTimePredictor(
+void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
     double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
     double* lFhbnd, const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt,
@@ -432,7 +432,7 @@ void kernels::aderdg::generic::c::spaceTimePredictor(
 ******************************************************************************************************/
 
 template <void PDEFlux2d(const double* const Q, double* f, double* g)>
-void kernels::aderdg::generic::c::spaceTimePredictor(
+void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
     double* lQi, double* lFi, const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt,
     int numberOfVariables, int basisSize) {

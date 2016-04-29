@@ -232,7 +232,7 @@ void exahype::tests::c::GenericEulerKernelTest::testSurfaceIntegral() {
       5.14845862726e-17, 7.70481849073, 7.70481849073, 0, 1.80196051954e-16};
 
   // lFhbnd = [ FLeft | FRight | FFront | FBack ]
-  kernels::aderdg::generic::c::surfaceIntegral(lduh, lFhbnd, dx[0],
+  kernels::aderdg::generic::c::surfaceIntegralNonlinear(lduh, lFhbnd, dx[0],
                                                5,  // getNumberOfVariables(),
                                                4  // getNodesPerCoordinateAxis()
                                                );
@@ -332,7 +332,7 @@ void exahype::tests::c::GenericEulerKernelTest::testRiemannSolver() {
   double *FL = new double[20];
   double *FR = new double[20];
 
-  kernels::aderdg::generic::c::riemannSolver<testEigenvalues>(
+  kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
       FL, FR, QL, QR,
       0.0,  // dt
       0,    // normalNonZero
@@ -394,7 +394,7 @@ void exahype::tests::c::GenericEulerKernelTest::testVolumeIntegral() {
         1.23156350651e-17, -4.73179353928e-35, 1, 0, 4.31047227278e-17,
         7.66579600935e-18, 7.37687416339e-35, 1, 0, 2.68302860327e-17};
 
-    kernels::aderdg::generic::c::volumeIntegral(
+    kernels::aderdg::generic::c::volumeIntegralNonlinear(
         lduh, lFhi, dx[0],
         5,  // getNumberOfVariables(),
         4  // getNodesPerCoordinateAxis()
@@ -502,7 +502,7 @@ void exahype::tests::c::GenericEulerKernelTest::testVolumeIntegral() {
     // output:
     double *lduh = new double[80];  // intentionally left uninitialised
 
-    kernels::aderdg::generic::c::volumeIntegral(lduh, lFhi, dx[0], 5, 4);
+    kernels::aderdg::generic::c::volumeIntegralNonlinear(lduh, lFhi, dx[0], 5, 4);
 
     validateNumericalEqualsWithEps(lduh[0], 0.000000000000000E+000, eps);
     validateNumericalEqualsWithEps(lduh[1], -5.70727295609806, eps);
@@ -627,7 +627,7 @@ void exahype::tests::c::GenericEulerKernelTest::testSpaceTimePredictor() {
   );
   */
   // ADDED
-  kernels::aderdg::generic::c::spaceTimePredictor<testFlux>(
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<testFlux>(
       lQi, lFi, luh, dx[0], timeStepSize,
       5,  // getNumberOfVariables(),
       4   // getNodesPerCoordinateAxis()

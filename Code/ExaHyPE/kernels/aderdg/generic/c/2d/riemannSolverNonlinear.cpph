@@ -1,25 +1,25 @@
-#include "../Kernels.h"
+// #include "../Kernels.h"
 
-#include "string.h"
+// #include "string.h"
 
-#include "tarch/la/Scalar.h"
-#include "tarch/la/ScalarOperations.h"
+// #include "tarch/la/Scalar.h"
+// #include "tarch/la/ScalarOperations.h"
 
-#include "kernels/GaussLegendreQuadrature.h"
-#include "kernels/DGMatrices.h"
+// #include "kernels/GaussLegendreQuadrature.h"
+// #include "kernels/DGMatrices.h"
 
-#define EXAHYPE_CFL_FACTOR 0.9
+// #define EXAHYPE_CFL_FACTOR 0.9
 
-#include <fstream>
+// #include <fstream>
 
-using std::endl;
-using std::cout;
+// using std::endl;
+// using std::cout;
 
 // todo change template parameter in header and generator
 // template <void PDEFlux2d(const double * const Q, double * f, double * g)>
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda)>
-void kernels::aderdg::generic::c::riemannSolver(
+void kernels::aderdg::generic::c::riemannSolverNonlinear(
     double* FL, double* FR, const double* const QL, const double* const QR,
     const double dt, const int normalNonZero, const int numberOfVariables,
     const int basisSize) {

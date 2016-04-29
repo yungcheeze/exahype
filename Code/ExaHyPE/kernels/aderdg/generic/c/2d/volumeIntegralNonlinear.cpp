@@ -13,7 +13,7 @@
 using std::endl;
 using std::cout;
 
-void kernels::aderdg::generic::c::volumeIntegral(
+void kernels::aderdg::generic::c::volumeIntegralNonlinear(
     double *lduh, const double *const lFhi,
     const tarch::la::Vector<DIMENSIONS, double> &dx,
     const int numberOfVariables, const int basisSize) {

@@ -1,3 +1,4 @@
+
 #include "kernels/aderdg/generic/Kernels.h"
 
 #include "string.h"
@@ -11,7 +12,9 @@
 using std::endl;
 using std::cout;
 
-void kernels::aderdg::generic::c::surfaceIntegral(
+#if DIMENSIONS == 2
+
+void kernels::aderdg::generic::c::surfaceIntegralNonlinear(
     double *lduh, const double *const lFbnd,
     const tarch::la::Vector<DIMENSIONS, double> &dx,
     const int numberOfVariables, const int basisSize) {
@@ -115,3 +118,4 @@ void kernels::aderdg::generic::c::surfaceIntegralYDirection(
     }
   }
 }
+#endif

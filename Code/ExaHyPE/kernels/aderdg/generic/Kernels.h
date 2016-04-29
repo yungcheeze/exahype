@@ -1,8 +1,17 @@
 #ifndef _EXAHYPE_KERNELS_ADERDG_GENERIC_PDEFLUXES_H_
 #define _EXAHYPE_KERNELS_ADERDG_GENERIC_PDEFLUXES_H_
 
+#include "string.h"
+
 #include "tarch/la/Vector.h"
 #include "peano/utils/Globals.h"
+
+#include "kernels/GaussLegendreQuadrature.h"
+
+#include "kernels/DGMatrices.h"
+
+#include "tarch/la/Scalar.h"
+#include "tarch/la/ScalarOperations.h"
 
 #define MbasisSize 4
 #define Mvar 5
@@ -43,7 +52,7 @@ namespace c {
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
 template <void PDEFlux(const double* const Q, double* f, double* g)>
-void spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi,
+void spaceTimePredictorNonlinear(double* lQi, double* lFi, double* lQhi, double* lFhi,
                         double* lQbnd, double* lFbnd, const double* const luh,
                         const tarch::la::Vector<DIMENSIONS, double>& dx,
                         const double predictorTimeStepSize,
@@ -53,7 +62,7 @@ void spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi,
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
 template <void PDEFlux(const double* const Q, double* f, double* g)>
-void spaceTimePredictor(double* lQi, double* lFi, const double* const luh,
+void spaceTimePredictorNonlinear(double* lQi, double* lFi, const double* const luh,
                         const tarch::la::Vector<DIMENSIONS, double>& dx,
                         const double predictorTimeStepSize,
                         const int numberOfVariables, const int basisSize);
@@ -62,7 +71,7 @@ void spaceTimePredictor(double* lQi, double* lFi, const double* const luh,
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
 template <void PDEFlux(const double* const Q, double* f, double* g, double* h)>
-void spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi,
+void spaceTimePredictorNonlinear(double* lQi, double* lFi, double* lQhi, double* lFhi,
                         double* lQhbnd, double* lFhbnd, const double* const luh,
                         const tarch::la::Vector<DIMENSIONS, double>& dx,
                         const double predictorTimeStepSize,
@@ -129,7 +138,7 @@ void extrapolatedPredictorYDirection(
 void solutionUpdate(double* luh, const double* const lduh, const double dt,
                     const int numberOfVariables, const int basisSize);
 
-void volumeIntegral(double* lduh, const double* const lFhi,
+void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                     const tarch::la::Vector<DIMENSIONS, double>& dx,
                     const int numberOfVariables, const int basisSize
 
@@ -137,7 +146,7 @@ void volumeIntegral(double* lduh, const double* const lFhi,
 
 // todo 10/02/16: Dominic
 // Keep only one surfaceIntegral.
-void surfaceIntegral(double* lduh, const double* const lFbnd,
+void surfaceIntegralNonlinear(double* lduh, const double* const lFbnd,
                      const tarch::la::Vector<DIMENSIONS, double>& dx,
                      const int numberOfVariables, const int basisSize);
 
@@ -181,7 +190,7 @@ void solutionAdjustment(double* luh,
 // template argument functions and non-template argument function.
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda)>
-void riemannSolver(double* FL, double* FR, const double* const QL,
+void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
                    const double* const QR, const double dt,
                    const int normalNonZero, const int numberOfVariables,
                    const int basisSize);
@@ -226,10 +235,29 @@ void volumeUnknownsRestriction(double* luhCoarse,
                                const int fineGridLevel,
                                const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
                                const int numberOfVariables, const int basisSize);
+                               
+                          
 }
 }
 }
 }
+
+#if DIMENSIONS == 2
+  #include "kernels/aderdg/generic/c/2d/solutionAdjustment.cpph"
+  #include "kernels/aderdg/generic/c/2d/stableTimeStepSize.cpph"
+  #include "kernels/aderdg/generic/c/2d/spaceTimePredictorNonlinear.cpph"
+  // #include "kernels/aderdg/generic/c/2d/spaceTimePredictorLinear.cpph"
+  #include "kernels/aderdg/generic/c/2d/riemannSolverNonlinear.cpph"
+  // #include "kernels/aderdg/generic/c/2d/riemannSolverLinear.cpph"
+#elif DIMENSIONS == 3
+  // // //@todo
+  // #include "kernels/aderdg/generic/c/3d/solutionAdjustment.cpph"
+  // #include "kernels/aderdg/generic/c/3d/stableTimeStepSize.cpph"
+  // #include "kernels/aderdg/generic/c/3d/spaceTimePredictorNonlinear.cpph"
+  // #include "kernels/aderdg/generic/c/3d/spaceTimePredictorLinear.cpph"
+  // #include "kernels/aderdg/generic/c/3d/riemannSolverNonlinear.cpph"
+  // #include "kernels/aderdg/generic/c/3d/riemannSolverLinear.cpph"
+#endif     
 
 namespace kernels {
 namespace aderdg {
@@ -382,22 +410,28 @@ void volumeUnknownsRestriction(double* luhCoarse,
                                const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
                                const int numberOfVariables, const int basisSize);
 
+
 }
 }
 }
 }
 
-#if DIMENSIONS == 2
-#include "kernels/aderdg/generic/2D/solutionAdjustment.cpph"
-#include "kernels/aderdg/generic/2D/stableTimeStepSize.cpph"
-#include "kernels/aderdg/generic/2D/spaceTimePredictor.cpph"
-#include "kernels/aderdg/generic/2D/riemannSolver.cpph"
-#elif DIMENSIONS == 3
-#include "kernels/aderdg/generic/3D/solutionAdjustment.cpph"
-#include "kernels/aderdg/generic/3D/stableTimeStepSize.cpph"
-#include "kernels/aderdg/generic/3D/spaceTimePredictorNonlinear.cpph"
-#include "kernels/aderdg/generic/3D/spaceTimePredictorLinear.cpph"
-#include "kernels/aderdg/generic/3D/riemannSolverNonlinear.cpph"
-#include "kernels/aderdg/generic/3D/riemannSolverLinear.cpph"
+#if DIMENSIONS == 3
+  #include "kernels/aderdg/generic/fortran/3d/solutionAdjustment.cpph"
+  #include "kernels/aderdg/generic/fortran/3d/stableTimeStepSize.cpph"
+  #include "kernels/aderdg/generic/fortran/3d/spaceTimePredictorNonlinear.cpph"
+  #include "kernels/aderdg/generic/fortran/3d/spaceTimePredictorLinear.cpph"
+  #include "kernels/aderdg/generic/fortran/3d/riemannSolverNonlinear.cpph"
+  #include "kernels/aderdg/generic/fortran/3d/riemannSolverLinear.cpph"
+// #elif DIMENSIONS == 2
+  // //@todo
+  // #include "kernels/aderdg/generic/fortran/2d/solutionAdjustment.cpph"
+  // #include "kernels/aderdg/generic/fortran/2d/stableTimeStepSize.cpph"
+  // #include "kernels/aderdg/generic/fortran/2d/spaceTimePredictorNonlinear.cpph"
+  // #include "kernels/aderdg/generic/fortran/2d/spaceTimePredictorLinear.cpph"
+  // #include "kernels/aderdg/generic/fortran/2d/riemannSolverNonlinear.cpph"
+  // #include "kernels/aderdg/generic/fortran/2d/riemannSolverLinear.cpph"
 #endif
+
+
 #endif

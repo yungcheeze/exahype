@@ -1,22 +1,22 @@
-#include "../Kernels.h"
+// #include "kernels/aderdg/generic/Kernels.h"
 
-#include "string.h"
+// #include "string.h"
 
-#include "tarch/la/Scalar.h"
-#include "tarch/la/ScalarOperations.h"
+// #include "tarch/la/Scalar.h"
+// #include "tarch/la/ScalarOperations.h"
 
-#include "kernels/GaussLegendreQuadrature.h"
-#include "kernels/DGMatrices.h"
+// #include "kernels/GaussLegendreQuadrature.h"
+// #include "kernels/DGMatrices.h"
 
-#define EXAHYPE_CFL_FACTOR 0.9
+// #define EXAHYPE_CFL_FACTOR 0.9
 
-#include <fstream>
+// #include <fstream>
 
-using std::endl;
-using std::cout;
+// using std::endl;
+// using std::cout;
 
 extern "C" {
-void aderriemannsolverlinear_(double* lQbndL, double* lFbndL, double* lQbndR,
+void aderriemannsolvernonlinear_(double* lQbndL, double* lFbndL, double* lQbndR,
                         double* lFbndR, double* nv);
 }
 
@@ -36,7 +36,7 @@ void aderriemannsolverlinear_(double* lQbndL, double* lFbndL, double* lQbndR,
 // template <void PDEFlux2d(const double * const Q, double * f, double * g)>
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda)>
-void kernels::aderdg::generic::fortran::riemannSolverLinear(
+void kernels::aderdg::generic::fortran::riemannSolverNonlinear(
     double* FL, double* FR, const double* const QL, const double* const QR,
     const double dt, const int normalNonZero, const int numberOfVariables,
     const int basisSize) {
@@ -66,7 +66,7 @@ void kernels::aderdg::generic::fortran::riemannSolverLinear(
   nv[2] = 0.0;
   nv[normalNonZero] = 1.0;
 
-  aderriemannsolverlinear_(QlFortran, FlFortran, QrFortran, FrFortran, nv);
+  aderriemannsolvernonlinear_(QlFortran, FlFortran, QrFortran, FrFortran, nv);
 
   // // Permutation of lQbnd
 
