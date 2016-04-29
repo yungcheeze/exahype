@@ -4,7 +4,7 @@
 
 * Run tests before you commit
 * Document your code with doxygen
-* Disable auto-formatting of your IDE or follow the google code-style => Code/Miscellaneous/.clang-format
+* Disable auto-formatting of your IDE or follow the google code-style => Code/Miscellaneous/.clang-format. For Eclipse users, there is also https://github.com/wangzw/CppStyle
 
 ## Commit guidelines ##
 
