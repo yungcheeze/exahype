@@ -322,11 +322,9 @@ void exahype::mappings::MarkingForRefinement::enterCell(
           switch (refinementControl) {
           case exahype::solvers::Solver::Refine:
             pFine->setRefinementEvent(exahype::records::ADERDGCellDescription::Refining);
-            pFine->setType(exahype::records::ADERDGCellDescription::Ancestor);
-            // todo check if EmptyAncestor has no neighbours then change to empty ancestor type
             break;
           case exahype::solvers::Solver::Coarsen:
-            pFine->setRefinementEvent(exahype::records::ADERDGCellDescription::CoarseningRequested);
+            pFine->setRefinementEvent(exahype::records::ADERDGCellDescription::ErasingRequested);
             break;
           }
           break;
@@ -378,7 +376,7 @@ void exahype::mappings::MarkingForRefinement::descend(
       case exahype::records::ADERDGCellDescription::Ancestor:
         switch (pCoarse->getRefinementEvent()) {
         case exahype::records::ADERDGCellDescription::None:
-          bool coarsen                    = true;
+          bool eraseChildren = true;
 
           dfor3(k)
           for (std::vector<exahype::records::ADERDGCellDescription>::
@@ -390,17 +388,16 @@ void exahype::mappings::MarkingForRefinement::descend(
                       getADERDGCellDescriptionsIndex()).end();
               ++pFine) {
             if (pCoarse->getSolverNumber()==pFine->getSolverNumber()) {
-              coarsen = coarsen && pFine->getRefinementEvent()==
-                  exahype::records::ADERDGCellDescription::CoarseningRequested;
+              eraseChildren = eraseChildren && pFine->getRefinementEvent()==
+                  exahype::records::ADERDGCellDescription::ErasingRequested;
             }
           }
           enddforx
 
-          if (coarsen) {
-            pCoarse->setRefinementEvent(exahype::records::ADERDGCellDescription::CoarseningChildren);
-            pCoarse->setType(exahype::records::ADERDGCellDescription::Cell);
-
+          if (eraseChildren) {
+            pCoarse->setRefinementEvent(exahype::records::ADERDGCellDescription::ErasingChildren);
             // @todo: 16/04/27:Dominic Etienne Charier:
+            // pCoarse->setType(exahype::records::ADERDGCellDescription::Cell);
             // Clean the solution field of the newly initialised cell.
             coarseGridCell.initialiseCellDescription(pCoarse->getSolverNumber());
 
@@ -414,10 +411,9 @@ void exahype::mappings::MarkingForRefinement::descend(
                         getADERDGCellDescriptionsIndex()).end();
                 ++pFine) {
               if (pCoarse->getSolverNumber()==pFine->getSolverNumber()) {
-                switch (pFine->getType()) {
-                catch
-                pFine->setRefinementEvent(
-                    exahype::records::ADERDGCellDescription::Restriction);
+                assertion1(pFine->getRefinementEvent()==exahype::records::ADERDGCellDescription::ErasingRequested,
+                           toString());
+                pFine->setRefinementEvent(exahype::records::ADERDGCellDescription::Restricting);
                 break;
                 }
               }

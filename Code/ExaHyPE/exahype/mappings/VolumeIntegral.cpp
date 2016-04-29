@@ -333,20 +333,27 @@ void exahype::mappings::VolumeIntegral::enterCell(
       records::ADERDGCellDescription& p =
           ADERDGCellDescriptionHeap::getInstance().getData(
               fineGridCell.getADERDGCellDescriptionsIndex())[i];
+      switch(p.getType()) {
+        case exahype::records::ADERDGCellDescription::Cell:
+          switch(p.getRefinementEvent()) {
+            case exahype::records::ADERDGCellDescription::None:
+              exahype::solvers::Solver* solver =
+                  exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-      if (p.getType()==exahype::records::ADERDGCellDescription::RealCell) {
-        exahype::solvers::Solver* solver =
-            exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+              double* lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
+              double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
 
-        double* lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
-        double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
+              assertionEquals(lduh[0],lduh[0]); // assert no nan
+              assertionEquals(lFhi[0],lFhi[0]); // assert no nan
 
-        logDebug("enterCell(...)::debug::before::lduh[0]", lduh[0]);
-        logDebug("enterCell(...)::debug::before::lFhi[0]", lFhi[0]);
+              solver->volumeIntegral(lduh, lFhi, fineGridVerticesEnumerator.getCellSize());
 
-        solver->volumeIntegral(lduh, lFhi, fineGridVerticesEnumerator.getCellSize());
+              assertionEquals(lduh[0],lduh[0]); // assert no nan
 
-        logDebug("enterCell(...)::debug::after::lduh[0]", lduh[0]);
+              logDebug("enterCell(...)::debug::after::lduh[0]", lduh[0]);
+              break;
+          }
+          break;
       }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
     .parallelSectionHasTerminated(methodTrace);

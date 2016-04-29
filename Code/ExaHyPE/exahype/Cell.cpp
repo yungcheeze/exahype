@@ -36,7 +36,6 @@ void exahype::Cell::addNewCellDescription(
     const int                                            solverNumber,
     const exahype::records::ADERDGCellDescription::Type  cellType,
     const exahype::records::ADERDGCellDescription::RefinementEvent refinementEvent,
-    const exahype::records::ADERDGCellDescription::RefinementEvent augmentationEvent,
     const int                                            level,
     const int                                            parentIndex,
     const tarch::la::Vector<DIMENSIONS, int>&            fineGridPositionOfCell,
@@ -52,48 +51,44 @@ void exahype::Cell::addNewCellDescription(
 
   const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
   switch (solver->getType()) {
-  case exahype::solvers::Solver::ADER_DG: {
-    exahype::records::ADERDGCellDescription newCellDescription;
-    newCellDescription.setSolverNumber(solverNumber);
+    case exahype::solvers::Solver::ADER_DG: {
+      exahype::records::ADERDGCellDescription newCellDescription;
+      newCellDescription.setSolverNumber(solverNumber);
 
-    // Default AMR settings
-    newCellDescription.setType(cellType);
-    newCellDescription.setParentIndex(parentIndex);
-    newCellDescription.setLevel(level);
-    newCellDescription.setFineGridPositionOfCell(fineGridPositionOfCell);
-    newCellDescription.setParent(false);
-    newCellDescription.setHasNeighboursOfTypeCell(false);
-    newCellDescription.setRefinementEvent(refinementEvent);
-    newCellDescription.setAugmentationEvent(augmentationEvent);
+      // Default AMR settings
+      newCellDescription.setType(cellType);
+      newCellDescription.setParentIndex(parentIndex);
+      newCellDescription.setLevel(level);
+      newCellDescription.setRefinementEvent(refinementEvent);
 
-    std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed; // default construction: no bit set
-    newCellDescription.setRiemannSolvePerformed(riemannSolvePerformed);
+      std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed; // default construction: no bit set
+      newCellDescription.setRiemannSolvePerformed(riemannSolvePerformed);
 
-    // Pass geometry information to the cellDescription description
-    newCellDescription.setSize(size);
-    newCellDescription.setOffset(cellCentre);
+      // Pass geometry information to the cellDescription description
+      newCellDescription.setSize(size);
+      newCellDescription.setOffset(cellCentre);
 
-    // Default field data indices
-    newCellDescription.setSpaceTimePredictor(-1);
-    newCellDescription.setSpaceTimeVolumeFlux(-1);
-    newCellDescription.setPredictor(-1);
-    newCellDescription.setSolution(-1);
-    newCellDescription.setUpdate(-1);
-    newCellDescription.setVolumeFlux(-1);
-    newCellDescription.setExtrapolatedPredictor(-1);
-    newCellDescription.setFluctuation(-1);
+      // Default field data indices
+      newCellDescription.setSpaceTimePredictor(-1);
+      newCellDescription.setSpaceTimeVolumeFlux(-1);
+      newCellDescription.setPredictor(-1);
+      newCellDescription.setSolution(-1);
+      newCellDescription.setUpdate(-1);
+      newCellDescription.setVolumeFlux(-1);
+      newCellDescription.setExtrapolatedPredictor(-1);
+      newCellDescription.setFluctuation(-1);
 
-    ADERDGCellDescriptionHeap::getInstance()
-    .getData(_cellData.getADERDGCellDescriptionsIndex())
-    .push_back(newCellDescription);
+      ADERDGCellDescriptionHeap::getInstance()
+      .getData(_cellData.getADERDGCellDescriptionsIndex())
+      .push_back(newCellDescription);
 
-  } break;
-  default: {
-    logDebug("addNewCellDescription(...)", "could not add a cell descriptions for this solver. cell="
-        << toString() << ", level=" << level
-        << ", size=" << size
-        << ",offset=" << cellCentre);
-  } break;
+    } break;
+    default: {
+      logDebug("addNewCellDescription(...)", "could not add a cell descriptions for this solver. cell="
+               << toString() << ", level=" << level
+               << ", size=" << size
+               << ",offset=" << cellCentre);
+    } break;
   }
 }
 
@@ -107,122 +102,117 @@ void exahype::Cell::initialiseCellDescription(const int solverNumber) {
 
   const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
   switch (solver->getType()) {
-  case exahype::solvers::Solver::ADER_DG: {
-    for (std::vector<exahype::records::ADERDGCellDescription>::
-        iterator p = ADERDGCellDescriptionHeap::getInstance().getData(
-            _cellData.getADERDGCellDescriptionsIndex()).begin();
-        p != ADERDGCellDescriptionHeap::getInstance().getData(
-            _cellData.getADERDGCellDescriptionsIndex()).end();
-        p++) { // Loop over coarse grid cell descriptions.
+    case exahype::solvers::Solver::ADER_DG: {
+      for (std::vector<exahype::records::ADERDGCellDescription>::
+          iterator p = ADERDGCellDescriptionHeap::getInstance().getData(
+              _cellData.getADERDGCellDescriptionsIndex()).begin();
+          p != ADERDGCellDescriptionHeap::getInstance().getData(
+              _cellData.getADERDGCellDescriptionsIndex()).end();
+          p++) { // Loop over coarse grid cell descriptions.
 
-      if (solverNumber==p->getSolverNumber()) {
-        if (p->getType()==exahype::records::ADERDGCellDescription::Cell) {
-          if (!DataHeap::getInstance().isValidIndex(
-              p->getSolution())) {
-            assertion(!DataHeap::getInstance().isValidIndex(
-                p->getSpaceTimePredictor()));
-            assertion(!DataHeap::getInstance().isValidIndex(
-                p->getSpaceTimeVolumeFlux()));
-            assertion(!DataHeap::getInstance().isValidIndex(
-                p->getPredictor()));
-            assertion(!DataHeap::getInstance().isValidIndex(
-                p->getUpdate()));
-            assertion(!DataHeap::getInstance().isValidIndex(
-                p->getVolumeFlux()));
+        if (solverNumber==p->getSolverNumber()) {
+          if (p->getType()==exahype::records::ADERDGCellDescription::Cell) {
+            if (!DataHeap::getInstance().isValidIndex(
+                p->getSolution())) {
+              assertion(!DataHeap::getInstance().isValidIndex(
+                  p->getSpaceTimePredictor()));
+              assertion(!DataHeap::getInstance().isValidIndex(
+                  p->getSpaceTimeVolumeFlux()));
+              assertion(!DataHeap::getInstance().isValidIndex(
+                  p->getPredictor()));
+              assertion(!DataHeap::getInstance().isValidIndex(
+                  p->getUpdate()));
+              assertion(!DataHeap::getInstance().isValidIndex(
+                  p->getVolumeFlux()));
 
-            p->setPredictorTimeStamp(
-                solver->getMinPredictorTimeStamp());
+              p->setPredictorTimeStamp(
+                  solver->getMinPredictorTimeStamp());
 
-            const int spaceTimeUnknownsPerCell =
-                solver->getSpaceTimeUnknownsPerCell();
-            const int spaceTimeFluxUnknownsPerCell =
-                solver->getSpaceTimeFluxUnknownsPerCell();
-            const int unknownsPerCell = solver->getUnknownsPerCell();
-            const int fluxUnknownsPerCell = solver->getFluxUnknownsPerCell();
+              const int spaceTimeUnknownsPerCell =
+                  solver->getSpaceTimeUnknownsPerCell();
+              const int spaceTimeFluxUnknownsPerCell =
+                  solver->getSpaceTimeFluxUnknownsPerCell();
+              const int unknownsPerCell = solver->getUnknownsPerCell();
+              const int fluxUnknownsPerCell = solver->getFluxUnknownsPerCell();
 
-            // Allocate space-time DoF
-            p->setSpaceTimePredictor(
-                DataHeap::getInstance().createData(spaceTimeUnknownsPerCell,
-                    spaceTimeUnknownsPerCell));
-            p->setSpaceTimeVolumeFlux(
-                DataHeap::getInstance().createData(
-                    spaceTimeFluxUnknownsPerCell,
-                    spaceTimeFluxUnknownsPerCell));
+              // Allocate space-time DoF
+              p->setSpaceTimePredictor(
+                  DataHeap::getInstance().createData(spaceTimeUnknownsPerCell,
+                                                     spaceTimeUnknownsPerCell));
+              p->setSpaceTimeVolumeFlux(
+                  DataHeap::getInstance().createData(
+                      spaceTimeFluxUnknownsPerCell,
+                      spaceTimeFluxUnknownsPerCell));
 
-            // Allocate volume DoF
-            p->setSolution(DataHeap::getInstance().createData(
-                unknownsPerCell, unknownsPerCell));
-            p->setUpdate(DataHeap::getInstance().createData(
-                unknownsPerCell, unknownsPerCell));
-            p->setPredictor(DataHeap::getInstance().createData(
-                unknownsPerCell, unknownsPerCell));
-            p->setVolumeFlux(DataHeap::getInstance().createData(
-                fluxUnknownsPerCell, fluxUnknownsPerCell));
+              // Allocate volume DoF
+              p->setSolution(DataHeap::getInstance().createData(
+                  unknownsPerCell, unknownsPerCell));
+              p->setUpdate(DataHeap::getInstance().createData(
+                  unknownsPerCell, unknownsPerCell));
+              p->setPredictor(DataHeap::getInstance().createData(
+                  unknownsPerCell, unknownsPerCell));
+              p->setVolumeFlux(DataHeap::getInstance().createData(
+                  fluxUnknownsPerCell, fluxUnknownsPerCell));
+            }
           }
-        }
 
-        // Allocate face DoF
-        if (p->getType()==exahype::records::ADERDGCellDescription::Cell
-            ||
-            p->getType()==exahype::records::ADERDGCellDescription::Shell
-            ||
-            (p->getType()==exahype::records::ADERDGCellDescription::VirtualShell
-                &&
-                p->getHasNeighboursOfTypeCell())) {
+          // Allocate face DoF
+          if (p->getType()==exahype::records::ADERDGCellDescription::Cell
+              ||
+              p->getType()==exahype::records::ADERDGCellDescription::Ancestor
+              ||
+              (p->getType()==exahype::records::ADERDGCellDescription::Descendant) {
+            if (!DataHeap::getInstance().isValidIndex(
+                p->getExtrapolatedPredictor())) {
+              assertion(!DataHeap::getInstance().isValidIndex(
+                  p->getFluctuation()));
 
-          if (!DataHeap::getInstance().isValidIndex(
-              p->getExtrapolatedPredictor())) {
-            assertion(!DataHeap::getInstance().isValidIndex(
-                p->getFluctuation()));
+              const int unknownsPerCellBoundary =
+                  solver->getUnknownsPerCellBoundary();
 
-            const int unknownsPerCellBoundary =
-                solver->getUnknownsPerCellBoundary();
-
-            p->setExtrapolatedPredictor(
-                DataHeap::getInstance().createData(unknownsPerCellBoundary,
-                    unknownsPerCellBoundary));
-            p->setFluctuation(DataHeap::getInstance().createData(
-                unknownsPerCellBoundary, unknownsPerCellBoundary));
+              p->setExtrapolatedPredictor(
+                  DataHeap::getInstance().createData(unknownsPerCellBoundary,
+                                                     unknownsPerCellBoundary));
+              p->setFluctuation(DataHeap::getInstance().createData(
+                  unknownsPerCellBoundary, unknownsPerCellBoundary));
+            }
           }
         }
       }
-    }
-  } break;
-  default: {
-    logDebug("initialiseCellDescription(...)", "solver is not associated with any cell descriptions of this cell. cell="
-        << toString() << ", level=" << level
-        << ", size=" << size
-        << ",offset=" << cellCentre);
-  } break;
+    } break;
+    default: {
+      logDebug("initialiseCellDescription(...)", "solver is not associated with any cell descriptions of this cell. cell="
+               << toString() << ", level=" << level
+               << ", size=" << size
+               << ",offset=" << cellCentre);
+    } break;
   }
 }
 
-void exahype::Cell::cleanCellDescription(const int solverNumber) {
+std::vector<exahype::records::ADERDGCellDescription>::iterator
+exahype::Cell::deleteCellDescription(std::vector<exahype::records::ADERDGCellDescription>::iterator p) {
   assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
       _cellData.getADERDGCellDescriptionsIndex()),
       toString());
 
-  const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
+  return ADERDGCellDescriptionHeap::getInstance().getData(
+      _cellData.getADERDGCellDescriptionsIndex()).erase(p);
+}
+
+void exahype::Cell::cleanCellDescription(std::vector<exahype::records::ADERDGCellDescription>::iterator p) {
+  assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+      _cellData.getADERDGCellDescriptionsIndex()),
+      toString());
+
+  const solvers::Solver* solver = solvers::RegisteredSolvers[p->getSolverNumber()];
   switch (solver->getType()) {
-  case exahype::solvers::Solver::ADER_DG: {
-    for (std::vector<exahype::records::ADERDGCellDescription>::
-        iterator p = ADERDGCellDescriptionHeap::getInstance().getData(
-            _cellData.getADERDGCellDescriptionsIndex()).begin();
-        p != ADERDGCellDescriptionHeap::getInstance().getData(
-            _cellData.getADERDGCellDescriptionsIndex()).end();
-        p++) { // Loop over coarse grid cell descriptions.
-
-      if (solverNumber==p->getSolverNumber()) {
-        assertion1(p->getType()==exahype::records::ADERDGCellDescription::Cell
-            ||
-            p->getType()==exahype::records::ADERDGCellDescription::Shell
-            ||
-            p->getType()==exahype::records::ADERDGCellDescription::VirtualShell,
-            toString());
-
-        if (p->getType()==exahype::records::ADERDGCellDescription::Shell
-            ||
-            p->getType()==exahype::records::ADERDGCellDescription::VirtualShell) {
+    case exahype::solvers::Solver::ADER_DG: {
+      switch (p->getType()) {
+        case exahype::records::ADERDGCellDescription::Erased:
+        case exahype::records::ADERDGCellDescription::EmptyAncestor:
+        case exahype::records::ADERDGCellDescription::EmptyDescendant:
+        case exahype::records::ADERDGCellDescription::Ancestor:
+        case exahype::records::ADERDGCellDescription::Descendant:
           if (DataHeap::getInstance().isValidIndex(
               p->getSolution())) {
             assertion(!DataHeap::getInstance().isValidIndex(
@@ -247,11 +237,12 @@ void exahype::Cell::cleanCellDescription(const int solverNumber) {
             DataHeap::getInstance().deleteData(
                 p->getUpdate());
           }
-        }
-
-        if(p->getType()==exahype::records::ADERDGCellDescription::VirtualShell
-            &&
-            !p->getHasNeighboursOfTypeCell()) {
+          break;
+      }
+      switch (p->getType()) {
+        case exahype::records::ADERDGCellDescription::Erased:
+        case exahype::records::ADERDGCellDescription::EmptyAncestor:
+        case exahype::records::ADERDGCellDescription::EmptyDescendant:
           if (!DataHeap::getInstance().isValidIndex(
               p->getExtrapolatedPredictor())) {
             assertion(!DataHeap::getInstance().isValidIndex(
@@ -262,20 +253,20 @@ void exahype::Cell::cleanCellDescription(const int solverNumber) {
             DataHeap::getInstance().deleteData(
                 p->getFluctuation());
           }
-        }
+          break;
       }
+      break;
+        default:
+          logDebug("cleanCellDescription(...)", "solver is not associated with any cell descriptions of this cell. cell="
+                   << toString() << ", level=" << level
+                   << ", size=" << size
+                   << ",offset=" << cellCentre);
+          break;
     }
-  } break;
-  default:
-    logDebug("cleanCellDescription(...)", "solver is not associated with any cell descriptions of this cell. cell="
-        << toString() << ", level=" << level
-        << ", size=" << size
-        << ",offset=" << cellCentre);
-    break;
   }
 }
 
-exahype::Cell::SubcellPosition exahype::Cell::getSubcellPositionOfVirtualShell(
+exahype::Cell::SubcellPosition exahype::Cell::computeSubcellPositionOfCellOrAncestor(
     const exahype::records::ADERDGCellDescription& pChild) const {
   assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
       _cellData.getADERDGCellDescriptionsIndex()),
@@ -284,7 +275,70 @@ exahype::Cell::SubcellPosition exahype::Cell::getSubcellPositionOfVirtualShell(
       solvers::RegisteredSolvers[pChild.getSolverNumber()]->getType()==
           exahype::solvers::Solver::ADER_DG,toString());
   assertion1(
-      pChild->getType()==exahype::records::ADERDGCellDescription::VirtualShell,
+      pChild->getType()==exahype::records::ADERDGCellDescription::Cell,
+      toString());
+
+  exahype::Cell::SubcellPosition subcellPosition;
+  // initialisation
+  subcellPosition.parentIndex = pChild.getParentIndex();
+  exahype::records::ADERDGCellDescription* pParent;
+  assertion(ADERDGCellDescriptionHeap::getInstance().
+            isValidIndex(subcellPosition.parentIndex));
+  for (std::vector<exahype::records::ADERDGCellDescription>::
+      iterator p = ADERDGCellDescriptionHeap::getInstance().getData(
+          subcellPosition.parentIndex).begin();
+      p != ADERDGCellDescriptionHeap::getInstance().getData(
+          subcellPosition.parentIndex).end();
+      p++) { // Loop over cell descriptions
+
+    if (p->getSolverNumber()==pChild.getSolverNumber()) {
+      pParent = &(*p);
+      assertion(ADERDGCellDescriptionHeap::getInstance().
+                isValidIndex(subcellPosition.parentIndex));
+    }
+  }
+
+  // recursion
+  int i = 1;
+  while (pParent->getType()==exahype::records::ADERDGCellDescription::EmptyAncestor) {
+    for (std::vector<exahype::records::ADERDGCellDescription>::
+        iterator p = ADERDGCellDescriptionHeap::getInstance().getData(
+            subcellPosition.parentIndex).begin();
+        p != ADERDGCellDescriptionHeap::getInstance().getData(
+            subcellPosition.parentIndex).end();
+        p++) { // Loop over cell descriptions
+      if (p->getSolverNumber()==pChild.getSolverNumber()) {
+        pParent = &(*p);
+        subcellPosition.parentIndex = p->getParentIndex();
+        assertion(ADERDGCellDescriptionHeap::getInstance().
+                  isValidIndex(subcellPosition.parentIndex));
+      }
+    }
+  }
+  assertion(p->getType()==exahype::records::ADERDGCellDescription::Descendant
+            || p->getType()==exahype::records::ADERDGCellDescription::Cell);
+
+  // compute subcell index
+  const int levelDelta = pChild.getLevel() - pParent->getLevel();
+  double scaling = tarch::la::aPowI(levelDelta,3);
+  for (int xi=0; xi < DIMENSIONS; xi++) {
+    subcellPosition.subcellIndex[xi] = tarch::la::round(
+        scaling * pChild.getOffset(xi) - pParent->getOffset(xi)));
+  }
+
+  return subcellPosition;
+}
+
+exahype::Cell::SubcellPosition exahype::Cell::computeSubcellPositionOfDescendant(
+    const exahype::records::ADERDGCellDescription& pChild) const {
+  assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+      _cellData.getADERDGCellDescriptionsIndex()),
+      toString());
+  assertion1(
+      solvers::RegisteredSolvers[pChild.getSolverNumber()]->getType()==
+          exahype::solvers::Solver::ADER_DG,toString());
+  assertion1(
+      pChild->getType()==exahype::records::ADERDGCellDescription::Descendant,
       toString());
 
   exahype::Cell::SubcellPosition subcellPosition;
@@ -304,19 +358,13 @@ exahype::Cell::SubcellPosition exahype::Cell::getSubcellPositionOfVirtualShell(
       pParent = &(*p);
       subcellPosition.parentIndex = p->getParentIndex();
       assertion(ADERDGCellDescriptionHeap::getInstance().
-          isValidIndex(subcellPosition.parentIndex));
+                isValidIndex(subcellPosition.parentIndex));
     }
   }
 
   // recursion
   int i = 1;
-  while (
-      (!pParent->getHasNeighboursOfTypeCell()
-       &&
-       pParent->getType()==exahype::records::ADERDGCellDescription::VirtualShell)
-      ||
-      pParent->getType()!=exahype::records::ADERDGCellDescription::Cell
-  ) {
+  while (pParent->getType()==exahype::records::ADERDGCellDescription::EmptyDescendant) {
     for (std::vector<exahype::records::ADERDGCellDescription>::
         iterator p = ADERDGCellDescriptionHeap::getInstance().getData(
             subcellPosition.parentIndex).begin();
@@ -327,15 +375,12 @@ exahype::Cell::SubcellPosition exahype::Cell::getSubcellPositionOfVirtualShell(
         pParent = &(*p);
         subcellPosition.parentIndex = p->getParentIndex();
         assertion(ADERDGCellDescriptionHeap::getInstance().
-            isValidIndex(subcellPosition.parentIndex));
+                  isValidIndex(subcellPosition.parentIndex));
       }
     }
   }
-  assertion((p->getHasNeighboursOfTypeCell()
-      &&
-      p->getType()==exahype::records::ADERDGCellDescription::VirtualShell)
-      ||
-      p->getType()==exahype::records::ADERDGCellDescription::Cell);
+  assertion(p->getType()==exahype::records::ADERDGCellDescription::Descendant
+            || p->getType()==exahype::records::ADERDGCellDescription::Cell);
 
   // compute subcell index
   const int levelDelta = pChild.getLevel() - pParent->getLevel();
@@ -347,55 +392,6 @@ exahype::Cell::SubcellPosition exahype::Cell::getSubcellPositionOfVirtualShell(
 
   return subcellPosition;
 }
-
-//exahype::Cell::SubcellPosition exahype::Cell::getSubcellPositionOfVirtualShell(
-//    const int solverNumber,
-//    const int parentIndex,
-//    const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell) const {
-//
-//  assertion1(static_cast<unsigned int>(solverNumber) <
-//      ADERDGCellDescriptionHeap::getInstance().getData(
-//          _cellData.getADERDGCellDescriptionsIndex()).size(),
-//          toString());
-//  exahype::Cell::SubcellPosition subcellPosition;
-//
-//  // initialise recursion
-//  for (int d=0; d < DIMENSIONS; d++) {
-//    subcellPosition.subcellIndex[d] = fineGridPositionOfCell[d];
-//  }
-//
-//  subcellPosition.parentIndex = parentIndex;
-//  assertion(ADERDGCellDescriptionHeap::getInstance().
-//      isValidIndex(subcellPosition.parentIndex));
-//  exahype::records::ADERDGCellDescription* p = &(ADERDGCellDescriptionHeap::getInstance().
-//      getData(subcellPosition.parentIndex)[solverNumber]);
-//
-//  // recursion
-//  int i = 1;
-//  while (
-//      (!p->getHasNeighboursOfTypeCell() && p->getType()==exahype::records::ADERDGCellDescription::VirtualShell)
-//      ||
-//      p->getType()!=exahype::records::ADERDGCellDescription::Cell
-//  ) {
-//    for (int d=0; d < DIMENSIONS; d++) {
-//      subcellPosition.subcellIndex[d] +=
-//          tarch::la::aPowI(i,3) * p->getFineGridPositionOfCell(d);
-//    }
-//
-//    subcellPosition.parentIndex = p->getParentIndex();
-//    assertion(ADERDGCellDescriptionHeap::getInstance().
-//        isValidIndex(subcellPosition.parentIndex));
-//    p = &(ADERDGCellDescriptionHeap::getInstance().
-//        getData(subcellPosition.parentIndex)[solverNumber]);
-//    i++;
-//  }
-//
-//  assertion((p->getHasNeighboursOfTypeCell() &&
-//      p->getType()==exahype::records::ADERDGCellDescription::VirtualShell)
-//      ||
-//      p->getType()==exahype::records::ADERDGCellDescription::Cell)
-//  return subcellPosition;
-//}
 
 //void exahype::Cell::init(
 //    const int level, const tarch::la::Vector<DIMENSIONS, double>& size,

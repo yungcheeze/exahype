@@ -55,12 +55,6 @@ event-mapping:
 // // //
 event-mapping:
   name: RegularMesh
-
-event-mapping:
-  name: Marking
-
-event-mapping:
-  name: CellDescriptionInit
 // // //    
     
 adapter:

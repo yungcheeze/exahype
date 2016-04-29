@@ -93,7 +93,6 @@ public:
     const int                                            solverNumber,
     const exahype::records::ADERDGCellDescription::Type  cellType,
     const exahype::records::ADERDGCellDescription::RefinementEvent refinementEvent,
-    const exahype::records::ADERDGCellDescription::RefinementEvent augmentationEvent,
     const int                                            level,
     const int                                            parentIndex,
     const tarch::la::Vector<DIMENSIONS, int>&            fineGridPositionOfCell,
@@ -102,11 +101,15 @@ public:
   );
 
   /**
-   * Per existing cell, the initialisation runs over all solvers that
-   * shall be realised and allocates memory for the associated.
-   * cell descriptions.
+   * Deletes a cell description.
    */
-  void cleanCellDescription(const int solverNumber);
+  std::vector<exahype::records::ADERDGCellDescription>::iterator
+  deleteCellDescription(std::vector<exahype::records::ADERDGCellDescription>::iterator p);
+
+  /**
+   * Removes unnecessarily allocated memory from a cell description.
+   */
+  void cleanCellDescription(std::vector<exahype::records::ADERDGCellDescription>::iterator p);
 
   /**
    * Per existing cell, the initialisation runs over all solvers
@@ -124,8 +127,21 @@ public:
 //            const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
 
   /**
-   * Determine the position of a virtual shell with respect
-   * to a  real parent cell or a virtual parent shell that contains data, i.e.,
+   * Determine the position of a Cell or Ancestor with respect
+   * to a parent of type Ancestor.
+   *
+   * This method is required for the face data restriction, the
+   * volume data restriction, and the FV volume data restriction.
+   *
+   * @todo:16/04/09:Dominic Etienne Charrier: I am not sure if this the
+   * right file/class to hold this functionality.
+   */
+  SubcellPosition computeSubcellPositionOfCellOrAncestor(
+      const exahype::records::ADERDGCellDescription& pChild) const;
+
+  /**
+   * Determine the position of a Descendant with respect
+   * to a  Cell or Descendant that contains data, i.e.,
    * has at least one neighbour that is a real cell.
    *
    * This method is required for the face data prolongation, the
@@ -134,7 +150,7 @@ public:
    * @todo:16/04/09:Dominic Etienne Charrier: I am not sure if this the
    * right file/class to hold this functionality.
    */
-  SubcellPosition getSubcellPositionOfVirtualShell(
+  SubcellPosition computeSubcellPositionOfDescendant(
       const exahype::records::ADERDGCellDescription& pChild) const;
 };
 

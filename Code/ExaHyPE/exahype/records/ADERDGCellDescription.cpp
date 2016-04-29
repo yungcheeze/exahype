@@ -52,25 +52,24 @@ exahype::records::ADERDGCellDescription::~ADERDGCellDescription() { }
 std::string exahype::records::ADERDGCellDescription::toString(const RefinementEvent& param) {
    switch (param) {
       case None: return "None";
-      case CoarseningRequested: return "CoarseningRequested";
+      case ErasingRequested: return "ErasingRequested";
       case Restricting: return "Restricting";
-      case Coarsening: return "Coarsening";
-      case CoarseningChildren: return "CoarseningChildren";
+      case Erasing: return "Erasing";
+      case ErasingChildren: return "ErasingChildren";
       case Refining: return "Refining";
       case Prolongating: return "Prolongating";
       case DeaugmentingRequested: return "DeaugmentingRequested";
-      case Deaugmenting: return "Deaugmenting";
-      case DeaugmentingChildren: return "DeaugmentingChildren";
       case Augmenting: return "Augmenting";
    }
    return "undefined";
 }
 
 std::string exahype::records::ADERDGCellDescription::getRefinementEventMapping() {
-   return "RefinementEvent(None=0,CoarseningRequested=1,Restricting=2,Coarsening=3,CoarseningChildren=4,Refining=5,Prolongating=6,DeaugmentingRequested=7,Deaugmenting=8,DeaugmentingChildren=9,Augmenting=10)";
+   return "RefinementEvent(None=0,ErasingRequested=1,Restricting=2,Erasing=3,ErasingChildren=4,Refining=5,Prolongating=6,DeaugmentingRequested=7,Augmenting=8)";
 }
 std::string exahype::records::ADERDGCellDescription::toString(const Type& param) {
    switch (param) {
+      case Erased: return "Erased";
       case Ancestor: return "Ancestor";
       case EmptyAncestor: return "EmptyAncestor";
       case Cell: return "Cell";
@@ -81,7 +80,7 @@ std::string exahype::records::ADERDGCellDescription::toString(const Type& param)
 }
 
 std::string exahype::records::ADERDGCellDescription::getTypeMapping() {
-   return "Type(Ancestor=0,EmptyAncestor=1,Cell=2,Descendant=3,EmptyDescendant=4)";
+   return "Type(Erased=0,Ancestor=1,EmptyAncestor=2,Cell=3,Descendant=4,EmptyDescendant=5)";
 }
 
 

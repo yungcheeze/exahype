@@ -350,12 +350,17 @@ void exahype::mappings::NewTimeStep::enterCell(
           ADERDGCellDescriptionHeap::getInstance().getData(
               fineGridCell.getADERDGCellDescriptionsIndex())[i];
 
-      if (p.getType()==exahype::records::ADERDGCellDescription::RealCell) {
-        exahype::solvers::Solver* solver =
-            exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
-
-        solver->synchroniseTimeStepping(p);
-      }
+      switch(p.getType()) {
+        case exahype::records::ADERDGCellDescription::Cell:
+          switch(p.getRefinementEvent()) {
+            case exahype::records::ADERDGCellDescription::None: {
+              exahype::solvers::Solver* solver =
+                  exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+              solver->synchroniseTimeStepping(p);
+              break;
+            }
+            break;
+          }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
     .parallelSectionHasTerminated(methodTrace);
   }

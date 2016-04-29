@@ -339,13 +339,13 @@ void exahype::mappings::RegularMesh::enterCell(
             solverNumber,
             exahype::records::ADERDGCellDescription::Cell,
             exahype::records::ADERDGCellDescription::None,
-            exahype::records::ADERDGCellDescription::None,
             fineGridVerticesEnumerator.getLevel(),
             multiscalelinkedcell::HangingVertexBookkeeper::
             InvalidAdjacencyIndex,
             fineGridPositionOfCell,
             fineGridVerticesEnumerator.getCellSize(),
             fineGridVerticesEnumerator.getCellCenter());
+        fineGridCell.initialiseCellDescription(solverNumber);
       }
     }
     solverNumber++;

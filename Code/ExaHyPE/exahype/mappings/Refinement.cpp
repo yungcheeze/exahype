@@ -292,8 +292,8 @@ void exahype::mappings::Refinement::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-      fineGridVerticesEnumerator.toString(),
-      coarseGridCell, fineGridPositionOfCell);
+                           fineGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfCell);
 
   if (ADERDGCellDescriptionHeap::getInstance().
       isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
@@ -306,15 +306,13 @@ void exahype::mappings::Refinement::enterCell(
             fineGridCell.getADERDGCellDescriptionsIndex()).end();
         pFine++) {
       switch (pFine->getType()) {
-      case exahype::records::ADERDGCellDescription::Shell:
-        switch (pFine->getRefinementEvent()) {
-        case exahype::records::ADERDGCellDescription::Refinement:
-          refineFineGridCell=true;
-          break;
-        }
-        break;
-        case exahype::records::ADERDGCellDescription::Cell:
-
+        case exahype::records::ADERDGCellDescription::Ancestor:
+        case exahype::records::ADERDGCellDescription::EmptyAncestor:
+          switch (pFine->getRefinementEvent()) {
+            case exahype::records::ADERDGCellDescription::Refining:
+              refineFineGridCell=true;
+              break;
+          }
           break;
       }
     }
@@ -338,18 +336,16 @@ void exahype::mappings::Refinement::enterCell(
         pCoarse != ADERDGCellDescriptionHeap::getInstance().getData(
             coarseGridCell.getADERDGCellDescriptionsIndex()).end();
         pCoarse++) { // Loop over coarse grid cell descriptions.
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[pCoarse->getSolverNumber()];
-      switch (pCoarse->getType()) {
-      case exahype::records::ADERDGCellDescription::Shell:
-        switch (pCoarse->getRefinementEvent()) {
-        case exahype::records::ADERDGCellDescription::Refinement:
-          assertion(cellDescriptionParent.getParent());
+      switch (pCoarse->getRefinementEvent()) {
+        case exahype::records::ADERDGCellDescription::Refining:
+//          assertion1(pCoarse->getType()==exahype::records::ADERDGCellDescription::Ancestor ||
+//                     pCoarse->getType()==exahype::records::ADERDGCellDescription::EmptyAncestor,
+//                     toString());
+          assertion1(pCoarse->getType()==exahype::records::ADERDGCellDescription::Cell,toString());
           fineGridCell.addNewCellDescription(
               pCoarse->getSolverNumber(),
               exahype::records::ADERDGCellDescription::Cell,
-              exahype::records::ADERDGCellDescription::Prolongation,
-              exahype::records::ADERDGCellDescription::None,
+              exahype::records::ADERDGCellDescription::Prolongating,
               fineGridVerticesEnumerator.getLevel(),
               coarseGridCell.getADERDGCellDescriptionsIndex(),
               fineGridPositionOfCell,
@@ -357,8 +353,6 @@ void exahype::mappings::Refinement::enterCell(
               fineGridVerticesEnumerator.getCellCenter());
           fineGridCell.initialiseCellDescription(pCoarse->getSolverNumber());
           break;
-        }
-        break;
       }
     }
   }

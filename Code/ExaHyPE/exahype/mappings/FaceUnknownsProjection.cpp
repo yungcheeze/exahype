@@ -300,15 +300,13 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
-  if (!ADERDGCellDescriptionHeap::getInstance().
+  if (ADERDGCellDescriptionHeap::getInstance().
       isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
-    assertion(ADERDGCellDescriptionHeap::getInstance().
-              isValidIndex(coarseGridCell.getADERDGCellDescriptionsIndex()));
 
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
-        .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-        .size());
+    .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+    .size());
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
         peano::datatraversal::autotuning::UserDefined1;
@@ -316,38 +314,43 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      assertion(static_cast<unsigned int>(i) <
-                ADERDGCellDescriptionHeap::getInstance().
-                getData(fineGridCell.getADERDGCellDescriptionsIndex()).size());
       records::ADERDGCellDescription& p =
-        fineGridCell.getADERDGCellDescription(i);
-
-      // todo revise this section; loop over cell descriptions
+          fineGridCell.getADERDGCellDescription(i);
 
       // if we have at least one parent
       if (ADERDGCellDescriptionHeap::getInstance().
           isValidIndex(p.getParentIndex())) {
-        if (p.getType() == exahype::records::ADERDGCellDescription::VirtualShell
-            &&
-            p.getHasNeighboursOfTypeCell()) {
-          exahype::Cell::SubcellPosition subcellPosition =
-              fineGridCell.getSubcellPositionOfVirtualShell(p);
+        for (std::vector<exahype::records::ADERDGCellDescription>::
+            iterator pParent = ADERDGCellDescriptionHeap::getInstance().
+            getData(p.getParentIndex()).begin();
+            pParent != ADERDGCellDescriptionHeap::getInstance().
+                getData(p.getParentIndex()).end();
+            ++pParent) {
+          if (p.getSolverNumber()==pParent->getSolverNumber()) {
+            switch (p.getType()) {
+              case exahype::records::ADERDGCellDescription::Descendant:
+                exahype::Cell::SubcellPosition subcellPosition =
+                    fineGridCell.computeSubcellPositionOfDescendant(p);
 
-          prolongateFaceData(
-              p,
-              subcellPosition.parentIndex,
-              subcellPosition.subcellIndex);
-        } else if (p.getType() == exahype::records::ADERDGCellDescription::Cell
-            ||
-            p.getType() == exahype::records::ADERDGCellDescription::Shell
-        ) {
-          restrictFaceData(
-              p,
-              p.getParentIndex(),
-              fineGridPositionOfCell);
+                prolongateFaceData(
+                    p,
+                    subcellPosition.parentIndex,
+                    subcellPosition.subcellIndex);
+                break;
+              case exahype::records::ADERDGCellDescription::Cell:
+              case exahype::records::ADERDGCellDescription::Ancestor:
+                exahype::Cell::SubcellPosition subcellPosition =
+                    fineGridCell.computeSubcellPositionOfCellOrAncestor(p);
+
+                restrictFaceData(
+                    p,
+                    subcellPosition.parentIndex,
+                    subcellPosition.subcellIndex);
+                break;
+            }
+          }
         }
       }
-
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
     .parallelSectionHasTerminated(methodTrace);
   }

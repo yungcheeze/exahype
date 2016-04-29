@@ -5,8 +5,8 @@
 // this file and your project to your needs as long as the license is in
 // agreement with the original Peano user constraints. A reference to/citation
 // of  Peano and its author is highly appreciated.
-#ifndef EXAHYPE_MAPPINGS_Coarsening_H_
-#define EXAHYPE_MAPPINGS_Coarsening_H_
+#ifndef EXAHYPE_MAPPINGS_Erasing_H_
+#define EXAHYPE_MAPPINGS_Erasing_H_
 
 #include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
@@ -27,7 +27,7 @@
 
 namespace exahype {
 namespace mappings {
-class Coarsening;
+class Erasing;
 }
 }
 
@@ -39,7 +39,7 @@ class Coarsening;
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::mappings::Coarsening {
+class exahype::mappings::Erasing {
  private:
   /**
    * Logging device for the trace macros.
@@ -96,7 +96,7 @@ class exahype::mappings::Coarsening {
    * that your code works on a parallel machine and for any mapping/algorithm
    * modification.
    */
-  Coarsening();
+  Erasing();
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -109,13 +109,13 @@ class exahype::mappings::Coarsening {
    *
    * @see mergeWithWorkerThread()
    */
-  Coarsening(const Coarsening& masterThread);
+  Erasing(const Erasing& masterThread);
 #endif
 
   /**
    * Destructor. Typically does not implement any operation.
    */
-  virtual ~Coarsening();
+  virtual ~Erasing();
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -146,7 +146,7 @@ class exahype::mappings::Coarsening {
    * on the heap. However, you should protect this object by a BooleanSemaphore
    * and a lock to serialise all accesses to the plotter.
    */
-  void mergeWithWorkerThread(const Coarsening& workerThread);
+  void mergeWithWorkerThread(const Erasing& workerThread);
 #endif
 
   /**
@@ -180,7 +180,7 @@ assertion1( isInside() || isBoundary(), *this );
    * inner point). This is possible, if the type is switched after the
    * initialisation.
    *
-   * The Coarsening process cuts a coarse grid cell into pieces. You have
+   * The Erasing process cuts a coarse grid cell into pieces. You have
    * access to this coarse grid data via coarseGridCell (coarse grid's cell
    * data), coarseGridVertices, and the corresponding
    * coarseGridVerticesEnumerator. The coarse grid cell always is cut into
@@ -299,7 +299,7 @@ assertion1( isInside() || isBoundary(), *this );
    * inner point). This is possible, if the type is switched after the
    * initialisation.
    *
-   * The Coarsening process cuts a coarse grid cell into pieces. You have
+   * The Erasing process cuts a coarse grid cell into pieces. You have
    * access to this coarse grid data via coarseGridCell (coarse grid's cell
    * data), coarseGridVertices, and the corresponding
    * coarseGridVerticesEnumerator. The coarse grid cell always is cut into
@@ -516,7 +516,7 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
    * distinguish between inner and boundary cells, i.e. if you want to react
    * differently, you have to implement this manually.
    *
-   * ReCoarsenings:
+   * ReErasings:
    * - If you need the position of the vertices of the cell or its size, use the
    *   enumerator.
    * - If the destory is invoked due to load balancing, it is called after the
@@ -1076,7 +1076,7 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
    * beginIteration() might not be called prior to any other event. See the
    * documentation of CommunicationSpecification for details.
    *
-   * @see Coarsening()
+   * @see Erasing()
    */
   void beginIteration(exahype::State& solverState);
 
@@ -1106,7 +1106,7 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
    * might not be called after all other events. See the documentation
    * of CommunicationSpecification for details.
    *
-   * @see Coarsening()
+   * @see Erasing()
    */
   void endIteration(exahype::State& solverState);
 

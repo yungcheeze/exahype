@@ -186,6 +186,7 @@ class exahype::records::ADERDGCellDescription {
    */
   
   enum Type {
+  	Erased,
     Ancestor,
     EmptyAncestor,
     Cell,
@@ -212,26 +213,14 @@ class exahype::records::ADERDGCellDescription {
   parallelise persistent int parentIndex;
   
   enum RefinementEvent {
-//    None,               // relevant for all cell types
-//    
-//    CoarseningPossible, // relevant for children Cell
-//    Restriction,        // relevant for children Cell
-//    Coarsening,         // relevant for children Cell
-//    
-//    CoarseningChildren, // relevant for (parent) Cell
-//    
-//    Refinement,         // relevant for (parent) Shell
-//    Prolongation        // relevant for parent Shell
      None,
-     CoarseningRequested, // post
+     ErasingRequested, // post
      Restricting, // pre
-     Coarsening,  // pre
-     CoarseningChildren, // pre
+     Erasing,  // pre
+     ErasingChildren, // pre
      Refining,     // pre
      Prolongating, // pre   
-     DeaugmentingRequested, // post
-     Deaugmenting, // pre    
-     DeaugmentingChildren,    
+     DeaugmentingRequested, // post 
      Augmenting   // pre
   };
   

@@ -32,7 +32,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   28/04/2016 16:41
+ * @date   30/04/2016 00:09
  */
 class exahype::records::ADERDGCellDescription { 
    
@@ -41,11 +41,11 @@ class exahype::records::ADERDGCellDescription {
       typedef exahype::records::ADERDGCellDescriptionPacked Packed;
       
       enum RefinementEvent {
-         None = 0, CoarseningRequested = 1, Restricting = 2, Coarsening = 3, CoarseningChildren = 4, Refining = 5, Prolongating = 6, DeaugmentingRequested = 7, Deaugmenting = 8, DeaugmentingChildren = 9, Augmenting = 10
+         None = 0, ErasingRequested = 1, Restricting = 2, Erasing = 3, ErasingChildren = 4, Refining = 5, Prolongating = 6, DeaugmentingRequested = 7, Augmenting = 8
       };
       
       enum Type {
-         Ancestor = 0, EmptyAncestor = 1, Cell = 2, Descendant = 3, EmptyDescendant = 4
+         Erased = 0, Ancestor = 1, EmptyAncestor = 2, Cell = 3, Descendant = 4, EmptyDescendant = 5
       };
       
       struct PersistentRecords {
@@ -1370,7 +1370,7 @@ class exahype::records::ADERDGCellDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   28/04/2016 16:41
+          * @date   30/04/2016 00:09
           */
          class exahype::records::ADERDGCellDescriptionPacked { 
             
