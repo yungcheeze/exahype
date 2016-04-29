@@ -7,10 +7,12 @@ using std::endl;
 
 #if DIMENSIONS == 3
 
-// copied from MyEulerSolver.cpp
-void exahype::tests::c::GenericEulerKernelTest::testFlux(const double *const Q,
-                                                      double *f, double *g,
-                                                      double *h) {
+namespace exahype {
+namespace tests {
+namespace c {
+
+void GenericEulerKernelTest::testFlux(const double *const Q, double *f,
+                                      double *g, double *h) {
   const double GAMMA = 1.4;
 
   const double irho = 1.0 / Q[0];
@@ -36,7 +38,7 @@ void exahype::tests::c::GenericEulerKernelTest::testFlux(const double *const Q,
   h[4] = irho * Q[3] * (Q[4] + p);
 }
 
-void exahype::tests::c::GenericEulerKernelTest::testPDEFluxes() {
+void GenericEulerKernelTest::testPDEFluxes() {
   cout << "Test PDE-related functions, DIM=3" << endl;
 
   double Q[5] = {1., 0.1, 0.2, 0.3, 3.5};  // pressure = 1.39
@@ -62,7 +64,7 @@ void exahype::tests::c::GenericEulerKernelTest::testPDEFluxes() {
   validateNumericalEquals(1.4670, h[4]);
 }  // testPDEFluxes
 
-void exahype::tests::c::GenericEulerKernelTest::testVolumeIntegral() {
+void GenericEulerKernelTest::testVolumeIntegral() {
   cout << "Test volume integral, ORDER=3, DIM=3" << endl;
 
   // output:
@@ -85,7 +87,7 @@ void exahype::tests::c::GenericEulerKernelTest::testVolumeIntegral() {
 
   kernels::aderdg::generic::fortran::volumeIntegralNonlinear(
       lduh, lFhi, dx[0],
-      5,  // getNumberOfVariables(),
+      5,   // getNumberOfVariables(),
       4);  // getNodesPerCoordinateAxis()
 
   validateNumericalEqualsWithEps(lduh[0], 0.000000000000000E+000, eps);
@@ -413,7 +415,7 @@ void exahype::tests::c::GenericEulerKernelTest::testVolumeIntegral() {
   delete[] lFhi;
 }  // testVolumeIntegral
 
-void exahype::tests::c::GenericEulerKernelTest::testSurfaceIntegral() {
+void GenericEulerKernelTest::testSurfaceIntegral() {
   cout << "Test surface integral, ORDER=3, DIM=3" << endl;
 
   // inputs:
@@ -447,7 +449,7 @@ void exahype::tests::c::GenericEulerKernelTest::testSurfaceIntegral() {
   // lFhbnd = [ FLeft | FRight | FFront | FBack | FBottom | FTop ]
   kernels::aderdg::generic::fortran::surfaceIntegralNonlinear(
       lduh, lFhbnd, dx[0],
-      5,  // getNumberOfVariables(),
+      5,   // getNumberOfVariables(),
       4);  // getNodesPerCoordinateAxis()
 
   validateNumericalEqualsWithEps(lduh[0], 6.845895347955754E-016, eps);
@@ -775,10 +777,9 @@ void exahype::tests::c::GenericEulerKernelTest::testSurfaceIntegral() {
   delete[] lduh;
 }  // testSurfaceIntegral
 
-void exahype::tests::c::GenericEulerKernelTest::testRiemannSolver() {
-  
-}
-void exahype::tests::c::GenericEulerKernelTest::testSolutionUpdate() {
+void GenericEulerKernelTest::testRiemannSolver() {}
+
+void GenericEulerKernelTest::testSolutionUpdate() {
   cout << "Test solution update, ORDER=3, DIM=3" << endl;
 
   // in/out:
@@ -795,11 +796,10 @@ void exahype::tests::c::GenericEulerKernelTest::testSolutionUpdate() {
     lduh[i] = i;
   }
 
-  kernels::aderdg::generic::fortran::solutionUpdate(
-      luh, lduh, dt,
-      5,  // getNumberOfVariables(),
-      4  // getNodesPerCoordinateAxis()
-      );
+  kernels::aderdg::generic::c::solutionUpdate(luh, lduh, dt,
+                                              5,  // getNumberOfVariables(),
+                                              4   // getNodesPerCoordinateAxis()
+                                              );
 
   validateNumericalEqualsWithEps(luh[0], 1.00000000000000, eps);
   validateNumericalEqualsWithEps(luh[1], 0.267667977113063, eps);
@@ -1126,7 +1126,7 @@ void exahype::tests::c::GenericEulerKernelTest::testSolutionUpdate() {
   delete[] lduh;
 }  // testSolutionUpdate
 
-void exahype::tests::c::GenericEulerKernelTest::testSpaceTimePredictor() {
+void GenericEulerKernelTest::testSpaceTimePredictor() {
   cout << "Test space time predictor, ORDER=3, DIM=3" << endl;
 
   // inputs:
@@ -1481,5 +1481,9 @@ void exahype::tests::c::GenericEulerKernelTest::testSpaceTimePredictor() {
   delete[] lQhbnd;
   delete[] lFhbnd;
 }  // testSpaceTimePredictor
+
+}  // namespace c
+}  // namespace tests
+}  // namespace exahype
 
 #endif  // DIMENSIONS==3

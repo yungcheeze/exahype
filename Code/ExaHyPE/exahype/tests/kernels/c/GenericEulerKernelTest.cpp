@@ -8,19 +8,22 @@
 using std::cout;
 using std::endl;
 
-registerTest(exahype::tests::c::GenericEulerKernelTest)
+registerTest(exahype::tests::c::GenericEulerKernelTest);
+
 #ifdef UseTestSpecificCompilerSettings
 #pragma optimize("", off)
 #endif
 
-    exahype::tests::c::GenericEulerKernelTest::GenericEulerKernelTest()
-    : tarch::tests::TestCase("exahype::tests::c::GenericEulerKernelTest") {
-}
+namespace exahype {
+namespace tests {
+namespace c {
 
-exahype::tests::c::GenericEulerKernelTest::~GenericEulerKernelTest() {}
+GenericEulerKernelTest::GenericEulerKernelTest()
+    : tarch::tests::TestCase("exahype::tests::c::GenericEulerKernelTest") {}
 
-void exahype::tests::c::GenericEulerKernelTest::run() {
+GenericEulerKernelTest::~GenericEulerKernelTest() {}
 
+void GenericEulerKernelTest::run() {
   testMethod(testPDEFluxes);
 
   testMethod(testSpaceTimePredictor);
@@ -29,8 +32,11 @@ void exahype::tests::c::GenericEulerKernelTest::run() {
   testMethod(testSurfaceIntegral);
 
   testMethod(testSolutionUpdate);
-
 }
+
+}  // namespace c
+}  // namespace tests
+}  // namespace exahype
 
 #ifdef UseTestSpecificCompilerSettings
 #pragma optimize("", on)
