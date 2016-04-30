@@ -1,3 +1,0 @@
-[submodule "Code/Miscellaneous/Microbenchmarks/lib"]
-	path = Code/Miscellaneous/Microbenchmarks/lib
-	url = git@github.com:google/benchmark.git

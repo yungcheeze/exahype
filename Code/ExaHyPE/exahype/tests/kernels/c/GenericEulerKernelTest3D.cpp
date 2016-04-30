@@ -85,7 +85,7 @@ void GenericEulerKernelTest::testVolumeIntegral() {
     lFhi_z[i + 3] = 1.;
   }
 
-  kernels::aderdg::generic::c::volumeIntegralNonlinear(
+  kernels::aderdg::generic::fortran::volumeIntegralNonlinear(
       lduh, lFhi, dx[0],
       5,   // getNumberOfVariables(),
       4);  // getNodesPerCoordinateAxis()
