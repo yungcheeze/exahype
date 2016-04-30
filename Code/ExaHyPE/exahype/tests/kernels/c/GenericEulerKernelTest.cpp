@@ -8,7 +8,10 @@
 using std::cout;
 using std::endl;
 
-registerTest(exahype::tests::c::GenericEulerKernelTest);
+// TODO: Do not conclude macro definitions with a semicolon?!
+//       (https://goo.gl/22Ac4j)
+// clang-format off
+registerTest(exahype::tests::c::GenericEulerKernelTest)
 
 #ifdef UseTestSpecificCompilerSettings
 #pragma optimize("", off)
@@ -44,3 +47,5 @@ void GenericEulerKernelTest::run() {
 //#else
 // todo VV TestCase
 //#endif
+
+// clang-format on
