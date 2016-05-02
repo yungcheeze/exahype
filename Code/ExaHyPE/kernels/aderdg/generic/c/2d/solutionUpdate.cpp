@@ -11,6 +11,8 @@
 using std::endl;
 using std::cout;
 
+#if DIMENSIONS == 2
+
 extern "C" {
 void elementupdate_(double *luh, double *lduh, double *dt);
 }
@@ -36,3 +38,5 @@ void kernels::aderdg::generic::c::solutionUpdate(double *luh,
     }
   }
 }
+
+#endif  // DIMENSIONS == 2

@@ -7,12 +7,12 @@
 #include "../../../../DGMatrices.h"
 #include "../../../../GaussLegendreQuadrature.h"
 
-#if DIMENSIONS == 3
-
 namespace kernels {
 namespace aderdg {
 namespace generic {
 namespace c {
+
+#if DIMENSIONS == 3
 
 void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
@@ -116,4 +116,3 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
 }  // namespace kernels
 
 #endif  // DIMENSIONS == 3
-
