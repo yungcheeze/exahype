@@ -38,6 +38,10 @@ class SolutionUpdateGenerator:
         # padding of lduh, luh?
         #self.m_chunkSize    = Backend.getSizeWithPadding(self.m_config['nDof']**(self.m_config['nDim']-1))
         #self.m_vectorLength = self.m_config['nVar'] * self.m_chunkSize
+        #
+        # alternatively
+        #self.m_chunkSize    = self.m_config['nDof']**self.m_config['nDim']
+        #self.m_vectorLength = Backend.getSizeWithPadding(self.m_chunkSize)
 
 
 

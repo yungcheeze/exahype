@@ -45,7 +45,7 @@ class RiemannGenerator:
         self.m_vectorLength = self.m_config['nVar'] * self.m_chunkSize
 
 
-    def writeHeaderForRiemannSolver(self, i_pathToFile):
+    def writeHeaderForRiemannSolver(self):
         l_description = '// Solve the Riemann problems \n\n'
 
         l_includeStatement = '#include "string.h"\n'                             \
@@ -54,7 +54,7 @@ class RiemannGenerator:
 
         l_functionSignature = FunctionSignatures.getRiemannSolverSignature()+" {\n"
 
-        l_sourceFile = open(i_pathToFile, 'a')
+        l_sourceFile = open(self.m_filename, 'a')
         l_sourceFile.write(l_description)
         l_sourceFile.write(l_includeStatement)
         l_sourceFile.write(l_functionSignature)
@@ -114,7 +114,7 @@ class RiemannGenerator:
 
     def generateRusanovSolverForNonlinear(self):
         # write #include's and function signature
-        self.writeHeaderForRiemannSolver(self.m_filename)
+        self.writeHeaderForRiemannSolver()
 
         self.__generateAverageStates()
 
@@ -160,7 +160,7 @@ class RiemannGenerator:
 
     def generateRusanovSolverForLinear(self):
         # TODO is this still feasible when we have material parameters?
-        self.writeHeaderForRiemannSolver(self.m_filename)
+        self.writeHeaderForRiemannSolver()
 
         self.__generateAverageStates()
 
