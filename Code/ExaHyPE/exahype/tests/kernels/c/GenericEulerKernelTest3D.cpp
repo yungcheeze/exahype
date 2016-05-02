@@ -447,7 +447,7 @@ void GenericEulerKernelTest::testSurfaceIntegral() {
   }
 
   // lFhbnd = [ FLeft | FRight | FFront | FBack | FBottom | FTop ]
-  kernels::aderdg::generic::fortran::surfaceIntegralNonlinear(
+  kernels::aderdg::generic::c::surfaceIntegralNonlinear(
       lduh, lFhbnd, dx[0],
       5,   // getNumberOfVariables(),
       4);  // getNodesPerCoordinateAxis()
