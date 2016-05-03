@@ -58,7 +58,7 @@ public:
   enum RefinementControl {
     Keep,
     Refine,
-    Coarsen
+    Erase
   };
 
 protected:
@@ -75,8 +75,15 @@ protected:
    */
   const int _kernelNumber;
 
+  /**
+   * Each solver has a kernel number that says which kernel is to be
+   * executed. Typically this is an ascending index starting from 0.
+   */
   const int _numberOfVariables;
 
+  /**
+   * The numbe
+   */
   const int _nodesPerCoordinateAxis;
 
   const int _unknownsPerFace;
