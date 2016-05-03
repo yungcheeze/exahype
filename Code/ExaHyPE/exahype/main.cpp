@@ -148,5 +148,7 @@ int main(int argc, char** argv) {
   peano::shutdownSharedMemoryEnvironment();
   peano::releaseCachedData();
 
+  kernels::freeDGMatrices();
+
   return programExitCode;
 }

@@ -10,13 +10,14 @@
 
 namespace kernels {
 void initDGMatrices();
+void freeDGMatrices();
 
 /**
  * \brief Element stiffness matrix
  */
 // todo Dominic Etienne Charrier
 // order,row,column
-// [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1][EXAHYPE_ORDER+1]
+// [order+1][order+1][order+1]
 extern double*** Kxi;
 
 /**
@@ -24,7 +25,7 @@ extern double*** Kxi;
  */
 // todo Dominic Etienne Charrier
 // order, row
-// [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1]
+// [order+1][order+1]
 extern double** F0;
 
 /**
@@ -33,7 +34,7 @@ extern double** F0;
  */
 // todo Dominic Etienne Charrier
 // order, row
-// [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1]
+// [order+1][order+1]
 extern double** F1;
 
 /**
@@ -41,7 +42,7 @@ extern double** F1;
  */
 // todo Dominic Etienne Charrier
 // order, row, column
-// [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1][EXAHYPE_ORDER+1]
+// [order+1][order+1][order+1]
 extern double*** iK1;
 
 /**
@@ -49,7 +50,7 @@ extern double*** iK1;
  */
 // todo Dominic Etienne Charrier
 // order, row,
-// [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1]
+// [order+1][order+1]
 extern double** FLCoeff;
 
 /**
@@ -57,7 +58,7 @@ extern double** FLCoeff;
  */
 // todo Dominic Etienne Charrier
 // order, row
-// [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
+// [order+1][order+1];
 extern double** FRCoeff;
 
 /**
@@ -67,17 +68,27 @@ extern double** FRCoeff;
  */
 // todo Dominic Etienne Charrier
 // order, left/right, row
-// [EXAHYPE_ORDER+1][2][EXAHYPE_ORDER+1];
+// [order][2][order+1];
 extern double*** FCoeff;
 
 /**
- * \brief Projects the nodal DoF located at the Gauss-Legendre nodes
- * onto an uniform grid.
+ * Transforms the degrees of freedom located at the non-equidistant Gauss-Legendre
+ * nodes to degrees of freedoms located at nodes of an equidistant grid over (0,1).
+ * Let us denote by \f$P\f$ the 1-$d$ projection operator. The equidistant DoF
+ * are computed according to:
+ *
+ * The matrix is indexed the following way: [order][DG DoF][equidistant grid DoF].
  */
-// todo Dominic Etienne Charrier
-// order, row, column
-// [EXAHYPE_ORDER+1][EXAHYPE_ORDER+1][EXAHYPE_ORDER+1];
-extern double*** subOutputMatrix;
+extern double*** equidistantGridProjector1d;
+
+/**
+ * This operator is used to transforms the degrees of freedom (DoF) located on a coarse grid edge
+ * nodes to degrees of freedoms located on nodes of a fine grid edge and vice versa.
+ * The difference in levels is always equal to 1.
+ *
+ * The matrix is indexed the following way: [order][subinterval][coarse grid DoF][fine grid DoF].
+ */
+extern double**** fineGridProjector1d;
 }
 
 #endif
