@@ -110,9 +110,10 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
   }
 }
 
+#endif  // DIMENSIONS == 3
+
 }  // namespace c
 }  // namespace generic
 }  // namespace aderdg
 }  // namespace kernels
 
-#endif  // DIMENSIONS == 3

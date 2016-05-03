@@ -9,10 +9,10 @@ namespace aderdg {
 namespace generic {
 namespace c {
 
-void kernels::aderdg::generic::c::surfaceIntegralNonlinear(
-    double *lduh, const double *const lFbnd,
-    const tarch::la::Vector<DIMENSIONS, double> &dx,
-    const int numberOfVariables, const int basisSize) {
+void surfaceIntegralNonlinear(double *lduh, const double *const lFbnd,
+                              const tarch::la::Vector<DIMENSIONS, double> &dx,
+                              const int numberOfVariables,
+                              const int basisSize) {
   const int basisSize2 = basisSize * basisSize;
   const int order = basisSize - 1;
 
