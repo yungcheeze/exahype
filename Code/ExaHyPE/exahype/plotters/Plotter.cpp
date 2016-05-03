@@ -47,6 +47,9 @@ bool exahype::plotters::Plotter::checkWetherSolverBecomesActive(
           );
           _device = new ADERDG2BinaryVTK(
             _filename,
+            // @todo 16/05/03:Dominic Etienne Charrier
+            // Internally, we always use the nodes per coordinate axis, i.e., "order+1"
+            // Consider to pass the nodes per coordinate axis instead of the order
             solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis() - 1,
             solvers::RegisteredSolvers[_solver]->getNumberOfVariables()
           );
@@ -57,6 +60,9 @@ bool exahype::plotters::Plotter::checkWetherSolverBecomesActive(
           );
           _device = new ADERDG2AsciiVTK(
             _filename,
+            // @todo 16/05/03:Dominic Etienne Charrier
+            // Internally, we always use the nodes per coordinate axis, i.e., "order+1"
+            // Consider to pass the nodes per coordinate axis instead of the order
             solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis() - 1,
             solvers::RegisteredSolvers[_solver]->getNumberOfVariables()
           );
