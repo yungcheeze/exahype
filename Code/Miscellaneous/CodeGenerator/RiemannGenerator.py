@@ -17,9 +17,6 @@ import FunctionSignatures
 class RiemannGenerator:
     m_config = {}
 
-    # for accessing the quadrature weights and so forth
-    m_order  = ""
-
     # linear/nonlinear; later on maybe different types of Riemann solvers
     m_type   = ""
 
@@ -37,15 +34,15 @@ class RiemannGenerator:
 
 
     def __init__(self, i_config, i_numerics, i_precision):
-        self.m_config = i_config
-        self.m_order  = str(self.m_config['nDof']-1)
-        self.m_type   = i_numerics
+        self.m_config    = i_config
+        self.m_type      = i_numerics
+        self.m_precision = i_precision
 
         self.m_chunkSize    = Backend.getSizeWithPadding(self.m_config['nDof']**(self.m_config['nDim']-1))
         self.m_vectorLength = self.m_config['nVar'] * self.m_chunkSize
 
 
-    def writeHeaderForRiemannSolver(self):
+    def __writeHeaderForRiemannSolver(self):
         l_description = '// Solve the Riemann problems \n\n'
 
         l_includeStatement = '#include "string.h"\n'                             \
@@ -63,9 +60,9 @@ class RiemannGenerator:
 
     def generateCode(self):
         if(self.m_type == 'linear'):
-            self.generateRusanovSolverForLinear()
+            self.__generateRusanovSolverForLinear()
         else:
-            self.generateRusanovSolverForNonlinear()
+            self.__generateRusanovSolverForNonlinear()
 
         # fix datatype choice
         l_sourceCode=open(self.m_filename).read()
@@ -112,9 +109,9 @@ class RiemannGenerator:
 
         l_file.close()
 
-    def generateRusanovSolverForNonlinear(self):
+    def __generateRusanovSolverForNonlinear(self):
         # write #include's and function signature
-        self.writeHeaderForRiemannSolver()
+        self.__writeHeaderForRiemannSolver()
 
         self.__generateAverageStates()
 
@@ -158,9 +155,9 @@ class RiemannGenerator:
         l_file.write('}')
         l_file.close()
 
-    def generateRusanovSolverForLinear(self):
+    def __generateRusanovSolverForLinear(self):
         # TODO is this still feasible when we have material parameters?
-        self.writeHeaderForRiemannSolver()
+        self.__writeHeaderForRiemannSolver()
 
         self.__generateAverageStates()
 
