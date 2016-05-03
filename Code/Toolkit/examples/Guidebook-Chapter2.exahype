@@ -1,8 +1,9 @@
 /**
- 
- Trivial Project
- 
- A trivial project without any content.
+
+ A simple 2d Euler flow
+
+ A brief demonstration how to realise a 2d Euler flow within
+ ExaHyPE.
 
  */
 exahype-project MyEuler
@@ -12,33 +13,39 @@ exahype-project MyEuler
   multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
   sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
   exahype-path               = ./ExaHyPE
-  
   output-directory           = ./Applications/guidebook-chapter-2
+  architecture               = noarch
   
-  
-  computational-domain
+ computational-domain
     dimension                = 2
     width                    = 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 0.1
+    end-time                 = 0.4
   end computational-domain
- 
-  
-  solver ADER-DG MySolver
-    variables = 5
+
+
+  solver ADER-DG MyEulerSolver
+    unknowns  = 0 
+    parameters= 5 
     order     = 3
-    kernel    = kernel::euler2d
-    
-    plot vtk::binary
+    kernel    = generic::fluxes::nonlinear
+    language  = C
+   
+    plot vtk::ascii
       time     = 0.0
-      repeat   = 0.02
+      repeat   = 0.05
       filename = ./solution
     end plot
   end solver
 
+  shared-memory
+    identifier               = dummy
+    cores                    = 2
+    properties-file          = sharedmemory.properties
+  end shared-memory
 
   optimisation
     fuse-algorithmic-steps   = on
-  end optimisation  
-  
-end exahype-project  
+  end optimisation
+
+end exahype-project
