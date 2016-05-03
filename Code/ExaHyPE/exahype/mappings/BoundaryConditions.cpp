@@ -426,9 +426,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
             // @todo 03/02/16:Dominic Etienne Charrier
             // Change to solver->getUnknownsPerFace()
             const int numberOfFaceDof =
-                solver->getNumberOfVariables() *
-                tarch::la::aPowI(DIMENSIONS - 1,
-                solver->getNodesPerCoordinateAxis());
+                solver->getUnknownsPerFace();
 
             double* Qhbnd =
                 DataHeap::getInstance().getData(
