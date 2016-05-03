@@ -105,6 +105,9 @@ while (order <= maxOrder):
     #----------------------------------------------------------------
     # compute matrices and export
     #----------------------------------------------------------------
+###############################################################################
+# Stiffness matrix
+###############################################################################
     Kxi  = assembleStiffnessMatrix(xGPN, wGPN, order)
 #    Kxi2 = assembleStiffnessMatrixShorter(xGPN, wGPN, order)
 #    
@@ -115,39 +118,68 @@ while (order <= maxOrder):
     #                (data, n,      m,       name,  aligned?, namespace, output file)
     #writeMatrixToFile(Kxi, order+1, order+1, "Kxi", True, "exahype::dg::", filename)
     writeMatrixLookupTableInitToFile( out,"",Kxi,order+1,order+1,"Kxi[%d]" % order );
-    writeMatrixLookupTableInitToFile( out,"",np.transpose(Kxi),order+1,order+1,"Kxi_transposed[%d]" % order);
-    
-    MM = assembleMassMatrix(xGPN, wGPN, order)
+#    writeMatrixLookupTableInitToFile( out,"",np.transpose(Kxi),order+1,order+1,"Kxi_transposed[%d]" % order);
+
+###############################################################################
+# Mass matrix
+###############################################################################
+#    MM = assembleMassMatrix(xGPN, wGPN, order)
     #writeMatrixToFile(MM, order+1, order+1, "MM", filename)
-    
+
+
+###############################################################################
+# Time lifting operator (is the same as FLCoeff)
+###############################################################################
     F0 = assembleTimeFluxMatrixF0(xGPN, order)
     writeVectorLookupTableInitToFile(out, "", F0, order+1, "F0[%d]" % order)
-    
+
+###############################################################################
+# Left-hand side matrix appearing in predictor computation 
+###############################################################################
     K1 = assembleK1(Kxi, xGPN, order) 
     iK1 = np.linalg.inv(K1)
     writeMatrixLookupTableInitToFile( out,"",iK1,order+1,order+1,"iK1[%d]" % order)
-    
-    FLCoeff, _ = BaseFunc1D(0.0, xGPN, order) 
-    FRCoeff, _ = BaseFunc1D(1.0, xGPN, order)
+
+###############################################################################
+# Lifting operators
+# (Do not see a reason to store FLCoeff and FRCoeff if we have FCoeff)
+# (Do not see a reason to store FLCoeff, FRCoeff, and FCoeff if
+# we have the equidistiantGridProjectors)
+###############################################################################
+    FLCoeff, _ = BaseFunc1d(0.0, xGPN, order) 
+    FRCoeff, _ = BaseFunc1d(1.0, xGPN, order)
     FCoeff = [FLCoeff, FRCoeff]
 
     writeVectorLookupTableInitToFile(out, "", FLCoeff, order+1, "FLCoeff[%d]" % order)
     writeVectorLookupTableInitToFile(out, "", FRCoeff, order+1, "FRCoeff[%d]" % order)
     writeMatrixLookupTableInitToFile(out, "", FCoeff, 2, order+1, "FCoeff[%d]" % order)
 
+###############################################################################
+# Equidistant grid projectors
+###############################################################################
 ##    dudx = assembleDiscreteDerivativeOperator(MM, Kxi)
 ##    writeMatrixToFile(dudx, order+1, order+1, "dudx", True, "exahype::dg::", filename)
-    
     # dim == 2 only
-    subOutputMatrix  = assembleSubOutputMatrix(xGPN, order, dim)
-#    subOutputMatrix2 = assembleEquidistantGridProjector2D(xGPN, order, dim)    
+#    subOutputMatrix  = assembleSubOutputMatrix(xGPN, order, dim)
+#    subOutputMatrix2 = assembleEquidistantGridProjector2d(xGPN, order, dim)    
 #    for j in range(0, order+1):
 #        for i in range(0, order+1):
 #            print (subOutputMatrix[i][j] - subOutputMatrix2[i][j])
 
-    writeMatrixLookupTableInitToFile(out, "", subOutputMatrix, (order+1)**dim, (order+1)**dim, "subOutputMatrix[%d]" % order)
+#    writeMatrixLookupTableInitToFile(out, "", subOutputMatrix, (order+1)**dim, (order+1)**dim, "subOutputMatrix[%d]" % order)
+    equidistantGridProjector1d = assembleEquidistantGridProjector2d(xGPN, order, dim)
+    writeMatrixLookupTableInitToFile(out, "", equidistantGridProjector1d, (order+1), (order+1), "equidistantGridProjector1d[%d]" % order)
 
-    
+###############################################################################
+# Fine grid projectors
+###############################################################################
+    fineGridProjector1d0 = assembleFineGridProjector1d(xGPN, 0, order, dim)
+    fineGridProjector1d1 = assembleFineGridProjector1d(xGPN, 1, order, dim)
+    fineGridProjector1d2 = assembleFineGridProjector1d(xGPN, 2, order, dim)
+    writeMatrixLookupTableInitToFile(out, "", fineGridProjector1d0, (order+1), (order+1), "fineGridProjector[%d][0]" % order)
+    writeMatrixLookupTableInitToFile(out, "", fineGridProjector1d1, (order+1), (order+1), "fineGridProjector[%d][1]" % order)
+    writeMatrixLookupTableInitToFile(out, "", fineGridProjector1d2, (order+1), (order+1), "fineGridProjector[%d][2]" % order)
+
     print("Done with order "+ str(order))
     order+=1
 out.close()
