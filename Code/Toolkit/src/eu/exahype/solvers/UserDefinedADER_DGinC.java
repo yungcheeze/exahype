@@ -91,10 +91,10 @@ public class UserDefinedADER_DGinC implements Solver {
     writer.write("  return false;\n");
     writer.write("}\n");
     writer.write("\n\n\n");
-    writer.write("bool " + projectName + "::" + solverName
+    writer.write("exahype::solvers::Solver::RefinementControl " + projectName + "::" + solverName
             + "::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {\n");
     writer.write("  // @todo Please implement\n");
-    writer.write("  return false;\n");
+    writer.write("  return exahype::solvers::Solver::Keep;\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
