@@ -336,9 +336,10 @@ public:
    * Restricts fine grid face unknowns on level \p fineGridLevel
    * up to level \p coarseGridLevel and adds them to the coarse grid unknowns.
    *
-   * \note For the considered AMR concept, the difference in levels is always
-   * equal to one. The vector \p subfaceIndex does contain values in the range
-   * \f$0,1,2\f$.
+   * \note For the considered AMR concept, the difference in levels can
+   * be larger than one. Let \f$l\f$ be the level difference. The
+   * vector \p subfaceIndex does contain values in the range
+   * \f$0,1,\ldots,3^l-1\f$.
    */
   virtual void faceUnknownsRestriction(
       double* lQhbndCoarse,
