@@ -202,9 +202,23 @@ class exahype::mappings::SpaceTimePredictor {
    * This algorithm translates into a loop very similar to
    * RiemannSolver::touchVertexFirstTime():
    *
+   * - Run through all the $2^d$ adjacent cells. Only those that belong to
+   *   toRank are of interest. Skip the others.
+   * - For any cell assigned to toRank, there are d faces that are adjacent to
+   *   vertex.
    * - Get the heap indices of all the surrounding cells. Not that some of
    *   them, by definition, are remote.
    *
+   *
+   * <h2>Enumeration</h2>
+   *
+   * The faces are enumerated: left, right, bottom, top, front, back. Let n be
+   * the normal of the face starting with 0. Then, the face index is 2i+f where
+   * f means whether it is the face that runs through the left bottom corner (0)
+   * or not (1).
+   *
+   *
+   * <h2>MPI administration</h2>
    *
    * Please note that the communication specification deploys the whole heap
    * management to the Peano kernel. There is thus no need to invoke any

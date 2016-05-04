@@ -171,12 +171,14 @@ void exahype::mappings::SpaceTimePredictor::mergeWithNeighbour(
 
 
 void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
-    exahype::Vertex& vertex, int toRank,
-    const tarch::la::Vector<DIMENSIONS, double>& x,
-    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-
+    exahype::Vertex&                              vertex,
+    int                                           toRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const tarch::la::Vector<DIMENSIONS, double>&  h,
+    int                                           level
+) {
   tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
-      fineGridVertex.getADERDGCellDescriptionsIndex();
+      vertex.getADERDGCellDescriptionsIndex();
 
   /* Right cell-left cell   pair indices: 0,1; 2,3;   4,5; 6;7
    * Front cell-back cell   pair indices: 0,2; 1,3;   4,6; 5;7
@@ -195,23 +197,38 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
   constexpr int cellIndicesBottom[4] = {0, 1, 2, 3};
   constexpr int cellIndicesTop   [4] = {4, 5, 6, 7};
 #endif
-  for (int i = 0; i < TWO_POWER_D_DIVIDED_BY_TWO; i++) {
-    solveRiemannProblem(adjacentADERDGCellDescriptionsIndices,
-                        cellIndicesLeft[i], cellIndicesRight[i],
-                        EXAHYPE_FACE_RIGHT, EXAHYPE_FACE_LEFT, 0);
+  dfor2(dest)
+  dfor2(src)
+    if (
+      vertex.getAdjacentRanks()(destScalar)==toRank
+      &&
+      vertex.getAdjacentRanks()(srcScalar)==tarch::parallel::Node::getInstance().getRank()
+      &&
+      tarch::la::countEqualEntries(dest,src)==1    // we are solely exchanging faces
+    ) {
+      std::vector<records::ADERDGCellDescription>& cellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(srcScalar);
+      for (int currentSolver=0; currentSolver<static_cast<int>(cellDescriptions.size()); currentSolver++) {
+        if (cellDescriptions[currentSolver].getType()==exahype::records::ADERDGCellDescription::RealCell) {
+          exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[cellDescriptions[currentSolver].getSolverNumber()];
 
-    solveRiemannProblem(adjacentADERDGCellDescriptionsIndices,
-                        cellIndicesFront[i], cellIndicesBack[i],
-                        EXAHYPE_FACE_BACK, EXAHYPE_FACE_FRONT, 1);
+          const int numberOfFaceDof       = solver->getUnknownsPerFace();
+          const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src,dest);
+          assertion(normalOfExchangedFace>=0 && normalOfExchangedFace<DIMENSIONS);
+          const int offsetInFaceArray     = 2*normalOfExchangedFace + src(normalOfExchangedFace)<dest(normalOfExchangedFace) ? 1 : 0;
 
-#if DIMENSIONS == 3
-    solveRiemannProblem(adjacentADERDGCellDescriptionsIndices,
-                        cellIndicesBottom[i], cellIndicesTop[i],
-                        EXAHYPE_FACE_TOP, EXAHYPE_FACE_BOTTOM, 2);
-#endif
-  }
+          const double* lQhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getExtrapolatedPredictor()).data() + (offsetInFaceArray * numberOfFaceDof);
+          const double* lFhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getFluctuation()).data()           + (offsetInFaceArray * numberOfFaceDof);
 
-
+          DataHeap::getInstance().sendData( lQhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
+          DataHeap::getInstance().sendData( lFhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
+        }
+        else {
+          assertionMsg( false, "Dominic, please implement" );
+        }
+      }
+    }
+  enddforx
+  enddforx
 }
 
 
