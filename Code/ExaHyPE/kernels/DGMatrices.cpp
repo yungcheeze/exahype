@@ -1,5 +1,4 @@
 #include "kernels/DGMatrices.h"
-#include <iostream>
 
 double** kernels::F0;
 double** kernels::FLCoeff;
@@ -14,11 +13,11 @@ double*** kernels::equidistantGridProjector1d;
 
 double**** kernels::fineGridProjector1d;
 
-void kernels::freeDGMatrices() {
-  const int MaxOrder = 9; // todo dangerous
+void kernels::freeDGMatrices(const std::set<int>& orders) {
+  const int MAX_ORDER = 9;
 
   // vectors
-  for (int ii = 0; ii < MaxOrder + 1; ii++) {
+  for (int ii = 0; ii < MAX_ORDER + 1; ii++) {
     for (int jj = 0; jj < ii + 1; jj++) {
       delete [] Kxi[ii][jj];
       delete [] iK1[ii][jj];
@@ -45,7 +44,7 @@ void kernels::freeDGMatrices() {
   delete [] Kxi;
   delete [] iK1;
 
-  for (int ii = 0; ii < MaxOrder + 1; ii++) {
+  for (int ii = 0; ii < MAX_ORDER + 1; ii++) {
     for (int jj = 0; jj < ii + 1; jj++) {
       delete [] equidistantGridProjector1d[ii][jj];
       delete [] fineGridProjector1d[ii][0][jj];
@@ -63,19 +62,20 @@ void kernels::freeDGMatrices() {
   delete [] fineGridProjector1d;
 }
 
-void kernels::initDGMatrices() {
-  const int MaxOrder = 9; // todo dangerous
+void kernels::initDGMatrices(const std::set<int>& orders) {
+  // \todo please implement!
+  const int MAX_ORDER = 9; // todo dangerous
 
-  F0 = new double* [MaxOrder + 1];       // **
-  FLCoeff = new double* [MaxOrder + 1];  // **
-  FRCoeff = new double* [MaxOrder + 1];  // **
+  F0 = new double* [MAX_ORDER + 1];       // **
+  FLCoeff = new double* [MAX_ORDER + 1];  // **
+  FRCoeff = new double* [MAX_ORDER + 1];  // **
 
-  FCoeff = new double** [MaxOrder + 1];  // ***
-  Kxi = new double** [MaxOrder + 1];     // ***
-  iK1 = new double** [MaxOrder + 1];     // ***
+  FCoeff = new double** [MAX_ORDER + 1];  // ***
+  Kxi = new double** [MAX_ORDER + 1];     // ***
+  iK1 = new double** [MAX_ORDER + 1];     // ***
 
   // vectors
-  for (int ii = 0; ii < MaxOrder + 1; ii++) {
+  for (int ii = 0; ii < MAX_ORDER + 1; ii++) {
     F0[ii] = new double[ii + 1];
     FLCoeff[ii] = new double[ii + 1];
     FRCoeff[ii] = new double[ii + 1];
@@ -93,10 +93,10 @@ void kernels::initDGMatrices() {
     }
   }
 
-  equidistantGridProjector1d = new double**  [MaxOrder + 1];  // ***
-  fineGridProjector1d        = new double*** [MaxOrder + 1];  // ****
+  equidistantGridProjector1d = new double**  [MAX_ORDER + 1];  // ***
+  fineGridProjector1d        = new double*** [MAX_ORDER + 1];  // ****
 
-  for (int ii = 0; ii < MaxOrder + 1; ii++) {
+  for (int ii = 0; ii < MAX_ORDER + 1; ii++) {
     equidistantGridProjector1d[ii] = new double* [ii + 1];
     fineGridProjector1d[ii] = new double** [3];
     fineGridProjector1d[ii][0] = new double* [ii+1];
@@ -110,8 +110,6 @@ void kernels::initDGMatrices() {
       fineGridProjector1d[ii][2][jj] = new double [ii+1];
     }
   }
-
-  std::cout << "Hallo" << std::endl;
 
   // N=0
   Kxi[0][0][0] = 0.000000000000e+00;

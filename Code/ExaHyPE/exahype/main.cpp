@@ -61,16 +61,11 @@ int main(int argc, char** argv) {
     return -2;
   }
 
-  // @todo 04/02/16:Dominic Etienne Charrier
-  // initGauss.. and initDG.. must be called before
-  // we can run any kernel tests.
   //
-  //   Init registries and lookup tables
+  //   Init solver registries
   // =====================================
   //
   kernels::initSolvers(parser);
-  kernels::initGaussLegendreNodesAndWeights();
-  kernels::initDGMatrices();
 
   //
   //   Configure the logging
@@ -148,7 +143,7 @@ int main(int argc, char** argv) {
   peano::shutdownSharedMemoryEnvironment();
   peano::releaseCachedData();
 
-  kernels::freeDGMatrices();
+  kernels::finalise();
 
   return programExitCode;
 }

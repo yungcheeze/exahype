@@ -8,9 +8,30 @@
 #ifndef EXAHYPE_KERNELS_DGMATRICES_H
 #define EXAHYPE_KERNELS_DGMATRICES_H
 
+#include <set>
+
 namespace kernels {
-void initDGMatrices();
-void freeDGMatrices();
+/**
+ * Initialises the lookup tables
+ * \p Kxi, \p F0, \p F1, ... \p fineGridProjector1d
+ * for the specified \p orders.
+ *
+ * \todo default implementation!
+ *
+ * \see freeDGMatrices
+ */
+void initDGMatrices(const std::set<int>& orders);
+
+/**
+ * Frees the memory that was allocated for the lookup tables
+ * \p Kxi, \p F0, \p F1, ... \p fineGridProjector1d
+ * for the specified \p orders.
+ *
+ * \todo default implementation!
+ *
+ * \see initGaussLegendreNodesAndWeights
+ */
+void freeDGMatrices(const std::set<int>& orders);
 
 /**
  * \brief Element stiffness matrix

@@ -4,8 +4,11 @@ double** kernels::gaussLegendreWeights;
 
 double** kernels::gaussLegendreNodes;
 
-void kernels::freeGaussLegendreNodesAndWeights(const int maxOrder) {
-  for (int i = 0; i < maxOrder + 1; i++) {
+void kernels::freeGaussLegendreNodesAndWeights(const std::set<int>& orders) {
+  // @todo The argument is not used yet.
+  constexpr int MAX_ORDER=9;
+
+  for (int i = 0; i < MAX_ORDER + 1; i++) {
     delete [] gaussLegendreNodes[i];
     delete [] gaussLegendreWeights[i];
   }
@@ -14,11 +17,14 @@ void kernels::freeGaussLegendreNodesAndWeights(const int maxOrder) {
   delete [] gaussLegendreWeights;
 }
 
-void kernels::initGaussLegendreNodesAndWeights(const int maxOrder) {
-  gaussLegendreNodes = new double* [maxOrder + 1];
-  gaussLegendreWeights = new double* [maxOrder + 1];
+void kernels::initGaussLegendreNodesAndWeights(const std::set<int>& orders) {
+  // @todo The argument is not used yet.
+  constexpr int MAX_ORDER=9;
 
-  for (int i = 0; i < maxOrder + 1; i++) {
+  gaussLegendreNodes = new double* [MAX_ORDER + 1];
+  gaussLegendreWeights = new double* [MAX_ORDER + 1];
+
+  for (int i = 0; i < MAX_ORDER + 1; i++) {
     gaussLegendreNodes[i] = new double[i + 1];
     gaussLegendreWeights[i] = new double[i + 1];
   }
