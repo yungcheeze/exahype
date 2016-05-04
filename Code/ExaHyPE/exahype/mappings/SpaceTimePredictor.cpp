@@ -13,36 +13,11 @@
 peano::CommunicationSpecification
 exahype::mappings::SpaceTimePredictor::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::
-          SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::
-          SendDataAndStateAfterLastTouchVertexLastTime,
-      false);
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+      true);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
-peano::MappingSpecification
-exahype::mappings::SpaceTimePredictor::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
-}
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
-peano::MappingSpecification
-exahype::mappings::SpaceTimePredictor::touchVertexFirstTimeSpecification() {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
-}
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification
 exahype::mappings::SpaceTimePredictor::enterCellSpecification() {
   return peano::MappingSpecification(
@@ -50,29 +25,32 @@ exahype::mappings::SpaceTimePredictor::enterCellSpecification() {
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
+// The remainder specs all are nop
+peano::MappingSpecification
+exahype::mappings::SpaceTimePredictor::touchVertexLastTimeSpecification() {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::Nop,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+}
+peano::MappingSpecification
+exahype::mappings::SpaceTimePredictor::touchVertexFirstTimeSpecification() {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::Nop,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+}
 peano::MappingSpecification
 exahype::mappings::SpaceTimePredictor::leaveCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces);
 }
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification
 exahype::mappings::SpaceTimePredictor::ascendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification
 exahype::mappings::SpaceTimePredictor::descendSpecification() {
   return peano::MappingSpecification(
@@ -96,8 +74,10 @@ exahype::mappings::SpaceTimePredictor::~SpaceTimePredictor() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::SpaceTimePredictor::SpaceTimePredictor(
-    const SpaceTimePredictor& masterThread)
-    : _localState(masterThread._localState) {}
+  const SpaceTimePredictor& masterThread
+) {
+  // do nothing
+}
 
 void exahype::mappings::SpaceTimePredictor::mergeWithWorkerThread(
     const SpaceTimePredictor& workerThread) {
@@ -171,7 +151,8 @@ void exahype::mappings::SpaceTimePredictor::createCell(
 }
 
 void exahype::mappings::SpaceTimePredictor::destroyCell(
-    const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const exahype::Cell& fineGridCell,
+exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
@@ -193,7 +174,10 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // do nothing
+
+
+
+
 }
 
 
@@ -403,16 +387,17 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
             luh, fineGridVerticesEnumerator.getCellSize(),
             p.getPredictorTimeStepSize());
 
-        logDebug("enterCell(...)::debug::after::luh[0]", luh[0]);
-        logDebug("enterCell(...)::debug::after::lQi[0]", lQi[0]);
-        logDebug("enterCell(...)::debug::after::lFi[0]", lFi[0]);
-        logDebug("enterCell(...)::debug::after::lQhi[0]", lQhi[0]);
-        logDebug("enterCell(...)::debug::after::lFhi[0]", lFhi[0]);
-        logDebug("enterCell(...)::debug::after::lQhbnd[0]", lQhbnd[0]);
-        logDebug("enterCell(...)::debug::after::lFhbnd[0]", lFhbnd[0]);
+        logDebug("enterCell(...)", "debug::after::luh[0]" << luh[0]);
+        logDebug("enterCell(...)", "debug::after::lQi[0]" << lQi[0]);
+        logDebug("enterCell(...)", "debug::after::lFi[0]" << lFi[0]);
+        logDebug("enterCell(...)", "debug::after::lQhi[0]" << lQhi[0]);
+        logDebug("enterCell(...)", "debug::after::lFhi[0]" << lFhi[0]);
+        logDebug("enterCell(...)", "debug::after::lQhbnd[0]" << lQhbnd[0]);
+        logDebug("enterCell(...)", "debug::after::lFhbnd[0]" << lFhbnd[0]);
       }
-    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-    .parallelSectionHasTerminated(methodTrace);
+    endpfor
+
+    peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
@@ -427,13 +412,8 @@ void exahype::mappings::SpaceTimePredictor::leaveCell(
   // do nothing
 }
 
-void exahype::mappings::SpaceTimePredictor::beginIteration(
-    exahype::State& solverState) {
-  logTraceInWith1Argument("beginIteration(State)", solverState);
-
-  _localState = solverState;
-
-  logTraceOutWith1Argument("beginIteration(State)", solverState);
+void exahype::mappings::SpaceTimePredictor::beginIteration(exahype::State& solverState) {
+  // do nothing
 }
 
 void exahype::mappings::SpaceTimePredictor::endIteration(
