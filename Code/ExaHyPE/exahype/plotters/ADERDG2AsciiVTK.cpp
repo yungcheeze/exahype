@@ -91,9 +91,9 @@ void exahype::plotters::ADERDG2AsciiVTK::plotPatch(
                 kernels::equidistantGridProjector1d[_order][ii][i] *
                 kernels::equidistantGridProjector1d[_order][jj][j] *
                 u[iGauss * _unknowns + unknown];
+            assertion3(value==value,offsetOfPatch,sizeOfPatch,iGauss);
           }
         }
-        assertion3(value==value,offsetOfPatch,sizeOfPatch,iGauss);
         (*p)->plotVertex(vertexIndex, value);
         unknown++;
       }
@@ -126,10 +126,10 @@ void exahype::plotters::ADERDG2AsciiVTK::plotPatch(
                     kernels::equidistantGridProjector1d[_order][jj][j] *
                     kernels::equidistantGridProjector1d[_order][kk][k] *
                     u[iGauss * _unknowns + unknown];
+                assertion3(value==value,offsetOfPatch,sizeOfPatch,iGauss);
               }
             }
           }
-          assertion3(value==value,offsetOfPatch,sizeOfPatch,iGauss);
           (*p)->plotVertex(vertexIndex, value);
           unknown++;
         }
