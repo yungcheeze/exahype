@@ -9,8 +9,8 @@
 /** \file gausslegendre.h
  *  \brief Header including Gauss-Legendre quadrature weights and abscissas
  *
- *  A Gauss-Legendre quadrature with @f$n@f$ nodes integrates a polynomial
- *  of order @f$2\,n-1@f$ exactly.
+ *  A Gauss-Legendre quadrature with \f$n\f$ nodes integrates a polynomial
+ *  of order \f$2\,n-1\f$ exactly.
  */
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -18,7 +18,21 @@
 #define GAUSSLEGENDRE_H_
 
 namespace kernels {
-void initGaussLegendreNodesAndWeights();
+/**
+ * Initialises the lookup tables \p gaussLegendreWeights
+ * and \p gaussLegendreNodes.
+ *
+ * \see freeGaussLegendreNodesAndWeights
+ */
+void initGaussLegendreNodesAndWeights(const int maxOrder);
+
+/**
+ * Frees the memory that was allocated for the lookup tables \p gaussLegendreWeights
+ * and \p gaussLegendreNodes.
+ *
+ * \see initGaussLegendreNodesAndWeights
+ */
+void freeGaussLegendreNodesAndWeights(const int maxOrder);
 
 /**
  * The Gauss-Legendre weights mapped onto [0,1]. Array of arrays. The first

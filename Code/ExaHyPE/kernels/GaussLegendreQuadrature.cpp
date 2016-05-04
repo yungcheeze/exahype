@@ -4,13 +4,21 @@ double** kernels::gaussLegendreWeights;
 
 double** kernels::gaussLegendreNodes;
 
-void kernels::initGaussLegendreNodesAndWeights() {
-  const int MaxOrder = 9;
+void kernels::freeGaussLegendreNodesAndWeights(const int maxOrder) {
+  for (int i = 0; i < maxOrder + 1; i++) {
+    delete [] gaussLegendreNodes[i];
+    delete [] gaussLegendreWeights[i];
+  }
 
-  gaussLegendreNodes = new double* [MaxOrder + 1];
-  gaussLegendreWeights = new double* [MaxOrder + 1];
+  delete [] gaussLegendreNodes;
+  delete [] gaussLegendreWeights;
+}
 
-  for (int i = 0; i < MaxOrder + 1; i++) {
+void kernels::initGaussLegendreNodesAndWeights(const int maxOrder) {
+  gaussLegendreNodes = new double* [maxOrder + 1];
+  gaussLegendreWeights = new double* [maxOrder + 1];
+
+  for (int i = 0; i < maxOrder + 1; i++) {
     gaussLegendreNodes[i] = new double[i + 1];
     gaussLegendreWeights[i] = new double[i + 1];
   }
