@@ -196,7 +196,15 @@ class exahype::mappings::SpaceTimePredictor {
   /**
    * Prepare a vertex that is sent to the neighbour
    *
-   * We run the $2^d$ adjacent cells and for each cell that is local, we do sends
+   * We run the $2^d$ adjacent cells and for each cell that is local, we do
+   * send its d boundary values that are adjacent to the vertex away.
+   *
+   * This algorithm translates into a loop very similar to
+   * RiemannSolver::touchVertexFirstTime():
+   *
+   * - Get the heap indices of all the surrounding cells. Not that some of
+   *   them, by definition, are remote.
+   *
    *
    * Please note that the communication specification deploys the whole heap
    * management to the Peano kernel. There is thus no need to invoke any

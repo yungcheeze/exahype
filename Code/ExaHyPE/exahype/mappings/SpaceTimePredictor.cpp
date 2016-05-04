@@ -175,7 +175,41 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
 
+  tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
+      fineGridVertex.getADERDGCellDescriptionsIndex();
 
+  /* Right cell-left cell   pair indices: 0,1; 2,3;   4,5; 6;7
+   * Front cell-back cell   pair indices: 0,2; 1,3;   4,6; 5;7
+   * Top   cell-bottom cell pair indices: 0,4; 1,5;   2,6; 3;7
+   *
+   * Note that from the viewpoint of a cell, the face
+   * has always the "opposite" index, i.e., we solve a Riemann
+   * problem on the left face of the right cell (which
+   * is the right face of the left cell).
+   */
+  constexpr int cellIndicesLeft  [4] = {0, 2, 4, 6};
+  constexpr int cellIndicesRight [4] = {1, 3, 5, 7};
+  constexpr int cellIndicesFront [4] = {0, 1, 4, 5};
+  constexpr int cellIndicesBack  [4] = {2, 3, 6, 7};
+#if DIMENSIONS == 3
+  constexpr int cellIndicesBottom[4] = {0, 1, 2, 3};
+  constexpr int cellIndicesTop   [4] = {4, 5, 6, 7};
+#endif
+  for (int i = 0; i < TWO_POWER_D_DIVIDED_BY_TWO; i++) {
+    solveRiemannProblem(adjacentADERDGCellDescriptionsIndices,
+                        cellIndicesLeft[i], cellIndicesRight[i],
+                        EXAHYPE_FACE_RIGHT, EXAHYPE_FACE_LEFT, 0);
+
+    solveRiemannProblem(adjacentADERDGCellDescriptionsIndices,
+                        cellIndicesFront[i], cellIndicesBack[i],
+                        EXAHYPE_FACE_BACK, EXAHYPE_FACE_FRONT, 1);
+
+#if DIMENSIONS == 3
+    solveRiemannProblem(adjacentADERDGCellDescriptionsIndices,
+                        cellIndicesBottom[i], cellIndicesTop[i],
+                        EXAHYPE_FACE_TOP, EXAHYPE_FACE_BOTTOM, 2);
+#endif
+  }
 
 
 }
