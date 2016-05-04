@@ -268,7 +268,7 @@ public:
    * @param[inout] lFhi   Volume flux DoF.
    * @param[inout] lQhbnd Boundary extrapolated predictor DoF.
    * @param[inout] lFhbnd Boundary extrapolated normal fluxes (or fluctuations).
-   * @param[ino]   luh    Solution DoF.
+   * @param[out]   luh    Solution DoF.
    * @param[in]    dx     Extent of the cell in each coordinate direction.
    * @param[in]    dt     Time step size.
    */
