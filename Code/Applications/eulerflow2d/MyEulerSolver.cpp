@@ -82,7 +82,7 @@ void Euler2d::MyEulerSolver::adjustedSolutionValues(const double *const x,
   }
 }
 
-exahype::solvers::Solver::RefinementControl MyEuler::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
+exahype::solvers::Solver::RefinementControl Euler2d::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
   assertion(level>=getMinimumTreeDepth()+1);
 
   if (level<getMinimumTreeDepth()+4) {
