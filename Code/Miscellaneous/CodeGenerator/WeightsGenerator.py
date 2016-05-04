@@ -9,7 +9,7 @@ class WeightsGenerator:
     # number of dimensions we simulate
     m_nDim       = -1
 
-    # quadrature nodes mapped onto [0,1]
+    # quadrature weights mapped onto [0,1]
     m_wGPN       = []
 
     # SP, DP
