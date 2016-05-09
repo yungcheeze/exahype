@@ -12,15 +12,15 @@
 #include "tarch/multicore/Core.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "tarch/parallel/FCFSNodePoolStrategy.h"
 #include "peano/parallel/JoinDataBufferPool.h"
-#include "peano/parallel/loadbalancing/OracleForOnePhaseWithGreedyPartitioning.h"
-#include "peano/parallel/loadbalancing/Oracle.h"
+#include "peano/parallel/JoinDataBufferPool.h"
 #include "peano/parallel/SendReceiveBufferPool.h"
-#include "peano/parallel/JoinDataBufferPool.h"
+#include "peano/parallel/loadbalancing/Oracle.h"
+#include "peano/parallel/loadbalancing/OracleForOnePhaseWithGreedyPartitioning.h"
+#include "tarch/parallel/FCFSNodePoolStrategy.h"
 
-#include "peano/utils/UserInterface.h"
 #include "peano/geometry/Hexahedron.h"
+#include "peano/utils/UserInterface.h"
 
 #include "peano/datatraversal/autotuning/Oracle.h"
 #include "peano/datatraversal/autotuning/OracleForOnePhaseDummy.h"
@@ -88,16 +88,14 @@ void exahype::runners::Runner::shutdownDistributedMemoryConfiguration() {
 }
 
 void exahype::runners::Runner::initSharedMemoryConfiguration() {
-  #ifdef SharedMemoryParallelisation
+#ifdef SharedMemoryParallelisation
   const int numberOfThreads = _parser.getNumberOfThreads();
   tarch::multicore::Core::getInstance().configure(numberOfThreads);
 
   switch (_parser.getMulticoreOracleType()) {
     case Parser::Dummy:
-      logInfo(
-        "initSharedMemoryConfiguration()",
-        "use dummy shared memory oracle"
-      );
+      logInfo("initSharedMemoryConfiguration()",
+              "use dummy shared memory oracle");
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
           new peano::datatraversal::autotuning::OracleForOnePhaseDummy(
               true, false,
@@ -105,34 +103,30 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
           );
       break;
     case Parser::Autotuning:
-      logInfo(
-        "initSharedMemoryConfiguration()",
-        "use autotuning shared memory oracle"
-      );
+      logInfo("initSharedMemoryConfiguration()",
+              "use autotuning shared memory oracle");
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
-        new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize()
-      );
+          new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize());
       break;
     case Parser::GrainSizeSampling:
-      logInfo(
-        "initSharedMemoryConfiguration()",
-        "use shared memory oracle sampling"
-      );
+      logInfo("initSharedMemoryConfiguration()",
+              "use shared memory oracle sampling");
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
-        new sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling(
-          32,
-          false,  // useThreadPipelining,
-          true    // logarithmicDistribution
-      ));
+          new sharedmemoryoracles::OracleForOnePhaseWithGrainSizeSampling(
+              32,
+              false,  // useThreadPipelining,
+              true    // logarithmicDistribution
+              ));
       break;
   }
 
   std::ifstream f(_parser.getMulticorePropertiesFile().c_str());
   if (f.good()) {
-    peano::datatraversal::autotuning::Oracle::getInstance().loadStatistics( _parser.getMulticorePropertiesFile() );
+    peano::datatraversal::autotuning::Oracle::getInstance().loadStatistics(
+        _parser.getMulticorePropertiesFile());
   }
   f.close();
-  #endif
+#endif
 }
 
 void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
@@ -204,11 +198,16 @@ int exahype::runners::Runner::runAsMaster(
    * Build up the initial space tree.
    */
   repository.switchToInitialGrid();
+  //  repository.switchToAugmentedAMRGrid();
+
   int gridSetupIterations = 0;
   do {
     repository.iterate();
     gridSetupIterations++;
   } while (!repository.getState().isGridBalanced());
+
+  //  repository.switchToPlotAugmentedAMRGrid();
+  //  repository.iterate();
 
   logInfo("runAsMaster()",
           "grid setup iterations=" << gridSetupIterations << ", max-level="
@@ -243,12 +242,10 @@ int exahype::runners::Runner::runAsMaster(
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n = 1;
 
-  while (
-    (solvers::Solver::getMinSolverTimeStamp() < simulationEndTime)
-    &&
-    tarch::la::greater(solvers::Solver::getMinSolverTimeStepSize(), 0.0)
-  ) {
-    if (exahype::plotters::isAPlotterActive(solvers::Solver::getMinSolverTimeStamp())) {
+  while ((solvers::Solver::getMinSolverTimeStamp() < simulationEndTime) &&
+         tarch::la::greater(solvers::Solver::getMinSolverTimeStepSize(), 0.0)) {
+    if (exahype::plotters::isAPlotterActive(
+            solvers::Solver::getMinSolverTimeStamp())) {
       repository.switchToPlot();
       repository.iterate();
       logDebug("runAsMaster(...)", "all snapshots written");
@@ -271,7 +268,6 @@ int exahype::runners::Runner::runAsMaster(
 
   return 0;
 }
-
 
 void exahype::runners::Runner::initSolvers() {
   // todo 16/02/26:Dominic Etienne Charrier: The initial time stamp

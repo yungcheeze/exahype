@@ -32,7 +32,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   22/04/2016 19:49
+ * @date   08/05/2016 20:12
  */
 class exahype::records::ADERDGCellDescription { 
    
@@ -40,8 +40,12 @@ class exahype::records::ADERDGCellDescription {
       
       typedef exahype::records::ADERDGCellDescriptionPacked Packed;
       
+      enum RefinementEvent {
+         None = 0, ErasingRequested = 1, Restricting = 2, Erasing = 3, ErasingChildren = 4, Refining = 5, Prolongating = 6, DeaugmentingRequested = 7, Augmenting = 8
+      };
+      
       enum Type {
-         Unspecified = 0, RealCell = 1, RealShell = 2, VirtualShell = 3
+         Erased = 0, Ancestor = 1, EmptyAncestor = 2, Cell = 3, Descendant = 4, EmptyDescendant = 5
       };
       
       struct PersistentRecords {
@@ -75,17 +79,9 @@ class exahype::records::ADERDGCellDescription {
          #else
          tarch::la::Vector<DIMENSIONS,double> _size;
          #endif
-         #ifdef UseManualAlignment
-         tarch::la::Vector<DIMENSIONS,int> _fineGridPositionOfCell __attribute__((aligned(VectorisationAlignment)));
-         #else
-         tarch::la::Vector<DIMENSIONS,int> _fineGridPositionOfCell;
-         #endif
          Type _type;
-         bool _parent;
          int _parentIndex;
-         bool _hasNeighboursOfTypeCell;
-         bool _refinementNecessary;
-         bool _virtualRefinementNecessary;
+         RefinementEvent _refinementEvent;
          /**
           * Generated
           */
@@ -94,7 +90,7 @@ class exahype::records::ADERDGCellDescription {
          /**
           * Generated
           */
-         PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+         PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
          
          
          inline int getSolverNumber() const 
@@ -571,64 +567,6 @@ class exahype::records::ADERDGCellDescription {
          
          
          
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline tarch::la::Vector<DIMENSIONS,int> getFineGridPositionOfCell() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _fineGridPositionOfCell;
-         }
-         
-         
-         
-         /**
-          * Generated and optimized
-          * 
-          * If you realise a for loop using exclusively arrays (vectors) and compile 
-          * with -DUseManualAlignment you may add 
-          * \code
-          #pragma vector aligned
-          #pragma simd
-          \endcode to this for loop to enforce your compiler to use SSE/AVX.
-          * 
-          * The alignment is tied to the unpacked records, i.e. for packed class
-          * variants the machine's natural alignment is switched off to recude the  
-          * memory footprint. Do not use any SSE/AVX operations or 
-          * vectorisation on the result for the packed variants, as the data is misaligned. 
-          * If you rely on vectorisation, convert the underlying record 
-          * into the unpacked version first. 
-          * 
-          * @see convert()
-          */
-         inline void setFineGridPositionOfCell(const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _fineGridPositionOfCell = (fineGridPositionOfCell);
-         }
-         
-         
-         
          inline Type getType() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -645,26 +583,6 @@ class exahype::records::ADERDGCellDescription {
  #endif 
  {
             _type = type;
-         }
-         
-         
-         
-         inline bool getParent() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _parent;
-         }
-         
-         
-         
-         inline void setParent(const bool& parent) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _parent = parent;
          }
          
          
@@ -689,62 +607,22 @@ class exahype::records::ADERDGCellDescription {
          
          
          
-         inline bool getHasNeighboursOfTypeCell() const 
+         inline RefinementEvent getRefinementEvent() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _hasNeighboursOfTypeCell;
+            return _refinementEvent;
          }
          
          
          
-         inline void setHasNeighboursOfTypeCell(const bool& hasNeighboursOfTypeCell) 
+         inline void setRefinementEvent(const RefinementEvent& refinementEvent) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _hasNeighboursOfTypeCell = hasNeighboursOfTypeCell;
-         }
-         
-         
-         
-         inline bool getRefinementNecessary() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _refinementNecessary;
-         }
-         
-         
-         
-         inline void setRefinementNecessary(const bool& refinementNecessary) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _refinementNecessary = refinementNecessary;
-         }
-         
-         
-         
-         inline bool getVirtualRefinementNecessary() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _virtualRefinementNecessary;
-         }
-         
-         
-         
-         inline void setVirtualRefinementNecessary(const bool& virtualRefinementNecessary) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _virtualRefinementNecessary = virtualRefinementNecessary;
+            _refinementEvent = refinementEvent;
          }
          
          
@@ -768,7 +646,7 @@ class exahype::records::ADERDGCellDescription {
       /**
        * Generated
        */
-      ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+      ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
       
       /**
        * Generated
@@ -1340,90 +1218,6 @@ class exahype::records::ADERDGCellDescription {
       
       
       
-      /**
-       * Generated and optimized
-       * 
-       * If you realise a for loop using exclusively arrays (vectors) and compile 
-       * with -DUseManualAlignment you may add 
-       * \code
-       #pragma vector aligned
-       #pragma simd
-       \endcode to this for loop to enforce your compiler to use SSE/AVX.
-       * 
-       * The alignment is tied to the unpacked records, i.e. for packed class
-       * variants the machine's natural alignment is switched off to recude the  
-       * memory footprint. Do not use any SSE/AVX operations or 
-       * vectorisation on the result for the packed variants, as the data is misaligned. 
-       * If you rely on vectorisation, convert the underlying record 
-       * into the unpacked version first. 
-       * 
-       * @see convert()
-       */
-      inline tarch::la::Vector<DIMENSIONS,int> getFineGridPositionOfCell() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         return _persistentRecords._fineGridPositionOfCell;
-      }
-      
-      
-      
-      /**
-       * Generated and optimized
-       * 
-       * If you realise a for loop using exclusively arrays (vectors) and compile 
-       * with -DUseManualAlignment you may add 
-       * \code
-       #pragma vector aligned
-       #pragma simd
-       \endcode to this for loop to enforce your compiler to use SSE/AVX.
-       * 
-       * The alignment is tied to the unpacked records, i.e. for packed class
-       * variants the machine's natural alignment is switched off to recude the  
-       * memory footprint. Do not use any SSE/AVX operations or 
-       * vectorisation on the result for the packed variants, as the data is misaligned. 
-       * If you rely on vectorisation, convert the underlying record 
-       * into the unpacked version first. 
-       * 
-       * @see convert()
-       */
-      inline void setFineGridPositionOfCell(const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         _persistentRecords._fineGridPositionOfCell = (fineGridPositionOfCell);
-      }
-      
-      
-      
-      inline int getFineGridPositionOfCell(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         assertion(elementIndex>=0);
-         assertion(elementIndex<DIMENSIONS);
-         return _persistentRecords._fineGridPositionOfCell[elementIndex];
-         
-      }
-      
-      
-      
-      inline void setFineGridPositionOfCell(int elementIndex, const int& fineGridPositionOfCell) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         assertion(elementIndex>=0);
-         assertion(elementIndex<DIMENSIONS);
-         _persistentRecords._fineGridPositionOfCell[elementIndex]= fineGridPositionOfCell;
-         
-      }
-      
-      
-      
       inline Type getType() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -1440,26 +1234,6 @@ class exahype::records::ADERDGCellDescription {
  #endif 
  {
          _persistentRecords._type = type;
-      }
-      
-      
-      
-      inline bool getParent() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         return _persistentRecords._parent;
-      }
-      
-      
-      
-      inline void setParent(const bool& parent) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         _persistentRecords._parent = parent;
       }
       
       
@@ -1484,64 +1258,34 @@ class exahype::records::ADERDGCellDescription {
       
       
       
-      inline bool getHasNeighboursOfTypeCell() const 
+      inline RefinementEvent getRefinementEvent() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         return _persistentRecords._hasNeighboursOfTypeCell;
+         return _persistentRecords._refinementEvent;
       }
       
       
       
-      inline void setHasNeighboursOfTypeCell(const bool& hasNeighboursOfTypeCell) 
+      inline void setRefinementEvent(const RefinementEvent& refinementEvent) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-         _persistentRecords._hasNeighboursOfTypeCell = hasNeighboursOfTypeCell;
+         _persistentRecords._refinementEvent = refinementEvent;
       }
       
       
+      /**
+       * Generated
+       */
+      static std::string toString(const RefinementEvent& param);
       
-      inline bool getRefinementNecessary() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         return _persistentRecords._refinementNecessary;
-      }
-      
-      
-      
-      inline void setRefinementNecessary(const bool& refinementNecessary) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         _persistentRecords._refinementNecessary = refinementNecessary;
-      }
-      
-      
-      
-      inline bool getVirtualRefinementNecessary() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         return _persistentRecords._virtualRefinementNecessary;
-      }
-      
-      
-      
-      inline void setVirtualRefinementNecessary(const bool& virtualRefinementNecessary) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-         _persistentRecords._virtualRefinementNecessary = virtualRefinementNecessary;
-      }
-      
+      /**
+       * Generated
+       */
+      static std::string getRefinementEventMapping();
       
       /**
        * Generated
@@ -1626,13 +1370,15 @@ class exahype::records::ADERDGCellDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   22/04/2016 19:49
+          * @date   08/05/2016 20:12
           */
          class exahype::records::ADERDGCellDescriptionPacked { 
             
             public:
                
                typedef exahype::records::ADERDGCellDescription::Type Type;
+               
+               typedef exahype::records::ADERDGCellDescription::RefinementEvent RefinementEvent;
                
                struct PersistentRecords {
                   int _solverNumber;
@@ -1653,13 +1399,9 @@ class exahype::records::ADERDGCellDescription {
                   int _level;
                   tarch::la::Vector<DIMENSIONS,double> _offset;
                   tarch::la::Vector<DIMENSIONS,double> _size;
-                  tarch::la::Vector<DIMENSIONS,int> _fineGridPositionOfCell;
                   Type _type;
-                  bool _parent;
                   int _parentIndex;
-                  bool _hasNeighboursOfTypeCell;
-                  bool _refinementNecessary;
-                  bool _virtualRefinementNecessary;
+                  RefinementEvent _refinementEvent;
                   /**
                    * Generated
                    */
@@ -1668,7 +1410,7 @@ class exahype::records::ADERDGCellDescription {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+                  PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                   
                   
                   inline int getSolverNumber() const 
@@ -2145,64 +1887,6 @@ class exahype::records::ADERDGCellDescription {
                   
                   
                   
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline tarch::la::Vector<DIMENSIONS,int> getFineGridPositionOfCell() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _fineGridPositionOfCell;
-                  }
-                  
-                  
-                  
-                  /**
-                   * Generated and optimized
-                   * 
-                   * If you realise a for loop using exclusively arrays (vectors) and compile 
-                   * with -DUseManualAlignment you may add 
-                   * \code
-                   #pragma vector aligned
-                   #pragma simd
-                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                   * 
-                   * The alignment is tied to the unpacked records, i.e. for packed class
-                   * variants the machine's natural alignment is switched off to recude the  
-                   * memory footprint. Do not use any SSE/AVX operations or 
-                   * vectorisation on the result for the packed variants, as the data is misaligned. 
-                   * If you rely on vectorisation, convert the underlying record 
-                   * into the unpacked version first. 
-                   * 
-                   * @see convert()
-                   */
-                  inline void setFineGridPositionOfCell(const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _fineGridPositionOfCell = (fineGridPositionOfCell);
-                  }
-                  
-                  
-                  
                   inline Type getType() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -2219,26 +1903,6 @@ class exahype::records::ADERDGCellDescription {
  #endif 
  {
                      _type = type;
-                  }
-                  
-                  
-                  
-                  inline bool getParent() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _parent;
-                  }
-                  
-                  
-                  
-                  inline void setParent(const bool& parent) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _parent = parent;
                   }
                   
                   
@@ -2263,62 +1927,22 @@ class exahype::records::ADERDGCellDescription {
                   
                   
                   
-                  inline bool getHasNeighboursOfTypeCell() const 
+                  inline RefinementEvent getRefinementEvent() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _hasNeighboursOfTypeCell;
+                     return _refinementEvent;
                   }
                   
                   
                   
-                  inline void setHasNeighboursOfTypeCell(const bool& hasNeighboursOfTypeCell) 
+                  inline void setRefinementEvent(const RefinementEvent& refinementEvent) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _hasNeighboursOfTypeCell = hasNeighboursOfTypeCell;
-                  }
-                  
-                  
-                  
-                  inline bool getRefinementNecessary() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _refinementNecessary;
-                  }
-                  
-                  
-                  
-                  inline void setRefinementNecessary(const bool& refinementNecessary) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _refinementNecessary = refinementNecessary;
-                  }
-                  
-                  
-                  
-                  inline bool getVirtualRefinementNecessary() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _virtualRefinementNecessary;
-                  }
-                  
-                  
-                  
-                  inline void setVirtualRefinementNecessary(const bool& virtualRefinementNecessary) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _virtualRefinementNecessary = virtualRefinementNecessary;
+                     _refinementEvent = refinementEvent;
                   }
                   
                   
@@ -2342,7 +1966,7 @@ class exahype::records::ADERDGCellDescription {
                /**
                 * Generated
                 */
-               ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell, const Type& type, const bool& parent, const int& parentIndex, const bool& hasNeighboursOfTypeCell, const bool& refinementNecessary, const bool& virtualRefinementNecessary);
+               ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
                
                /**
                 * Generated
@@ -2914,90 +2538,6 @@ class exahype::records::ADERDGCellDescription {
                
                
                
-               /**
-                * Generated and optimized
-                * 
-                * If you realise a for loop using exclusively arrays (vectors) and compile 
-                * with -DUseManualAlignment you may add 
-                * \code
-                #pragma vector aligned
-                #pragma simd
-                \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                * 
-                * The alignment is tied to the unpacked records, i.e. for packed class
-                * variants the machine's natural alignment is switched off to recude the  
-                * memory footprint. Do not use any SSE/AVX operations or 
-                * vectorisation on the result for the packed variants, as the data is misaligned. 
-                * If you rely on vectorisation, convert the underlying record 
-                * into the unpacked version first. 
-                * 
-                * @see convert()
-                */
-               inline tarch::la::Vector<DIMENSIONS,int> getFineGridPositionOfCell() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._fineGridPositionOfCell;
-               }
-               
-               
-               
-               /**
-                * Generated and optimized
-                * 
-                * If you realise a for loop using exclusively arrays (vectors) and compile 
-                * with -DUseManualAlignment you may add 
-                * \code
-                #pragma vector aligned
-                #pragma simd
-                \endcode to this for loop to enforce your compiler to use SSE/AVX.
-                * 
-                * The alignment is tied to the unpacked records, i.e. for packed class
-                * variants the machine's natural alignment is switched off to recude the  
-                * memory footprint. Do not use any SSE/AVX operations or 
-                * vectorisation on the result for the packed variants, as the data is misaligned. 
-                * If you rely on vectorisation, convert the underlying record 
-                * into the unpacked version first. 
-                * 
-                * @see convert()
-                */
-               inline void setFineGridPositionOfCell(const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._fineGridPositionOfCell = (fineGridPositionOfCell);
-               }
-               
-               
-               
-               inline int getFineGridPositionOfCell(int elementIndex) const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  assertion(elementIndex>=0);
-                  assertion(elementIndex<DIMENSIONS);
-                  return _persistentRecords._fineGridPositionOfCell[elementIndex];
-                  
-               }
-               
-               
-               
-               inline void setFineGridPositionOfCell(int elementIndex, const int& fineGridPositionOfCell) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  assertion(elementIndex>=0);
-                  assertion(elementIndex<DIMENSIONS);
-                  _persistentRecords._fineGridPositionOfCell[elementIndex]= fineGridPositionOfCell;
-                  
-               }
-               
-               
-               
                inline Type getType() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -3014,26 +2554,6 @@ class exahype::records::ADERDGCellDescription {
  #endif 
  {
                   _persistentRecords._type = type;
-               }
-               
-               
-               
-               inline bool getParent() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._parent;
-               }
-               
-               
-               
-               inline void setParent(const bool& parent) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._parent = parent;
                }
                
                
@@ -3058,62 +2578,22 @@ class exahype::records::ADERDGCellDescription {
                
                
                
-               inline bool getHasNeighboursOfTypeCell() const 
+               inline RefinementEvent getRefinementEvent() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  return _persistentRecords._hasNeighboursOfTypeCell;
+                  return _persistentRecords._refinementEvent;
                }
                
                
                
-               inline void setHasNeighboursOfTypeCell(const bool& hasNeighboursOfTypeCell) 
+               inline void setRefinementEvent(const RefinementEvent& refinementEvent) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                  _persistentRecords._hasNeighboursOfTypeCell = hasNeighboursOfTypeCell;
-               }
-               
-               
-               
-               inline bool getRefinementNecessary() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._refinementNecessary;
-               }
-               
-               
-               
-               inline void setRefinementNecessary(const bool& refinementNecessary) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._refinementNecessary = refinementNecessary;
-               }
-               
-               
-               
-               inline bool getVirtualRefinementNecessary() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._virtualRefinementNecessary;
-               }
-               
-               
-               
-               inline void setVirtualRefinementNecessary(const bool& virtualRefinementNecessary) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._virtualRefinementNecessary = virtualRefinementNecessary;
+                  _persistentRecords._refinementEvent = refinementEvent;
                }
                
                
@@ -3126,6 +2606,16 @@ class exahype::records::ADERDGCellDescription {
                 * Generated
                 */
                static std::string getTypeMapping();
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const RefinementEvent& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getRefinementEventMapping();
                
                /**
                 * Generated

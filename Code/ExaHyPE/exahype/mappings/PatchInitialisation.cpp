@@ -305,7 +305,8 @@ void exahype::mappings::PatchInitialisation::enterCell(
       if (fineGridVerticesEnumerator.getLevel()==(*p)->getMinimumTreeDepth()+1) {
         fineGridCell.addNewCellDescription(
             solverNumber,
-            exahype::records::ADERDGCellDescription::RealCell,
+            exahype::records::ADERDGCellDescription::Cell,
+            exahype::records::ADERDGCellDescription::None,
             fineGridVerticesEnumerator.getLevel(),
             multiscalelinkedcell::HangingVertexBookkeeper::
             InvalidAdjacencyIndex,

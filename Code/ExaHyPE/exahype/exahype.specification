@@ -51,23 +51,55 @@ event-mapping:
 event-mapping:
   name: Plot
 
+event-mapping:
+  name: FaceUnknownsProjection  
 
-// // //
+// GridUpdate   
 event-mapping:
   name: RegularMesh
 
 event-mapping:
-  name: AdaptiveRefinement
+  name: MarkingForRefinement
+  
+event-mapping:
+  name: Refinement
 
 event-mapping:
-  name: CellDescriptionInit
-// // //    
+  name: MarkingForAugmentation
+  
+event-mapping:
+  name: Augmentation
+
+event-mapping:
+  name: VolumeUnknownsProjection  
+
+event-mapping:
+  name: Erasing    
+// 
     
 adapter:
   name: InitialGrid
   merge-with-user-defined-mapping: InitialGrid
   // tracks vertex creation events here; sets domain boundary and processor boundary indices
   merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex) 
+
+adapter:
+  name: AugmentedAMRGrid
+  merge-with-user-defined-mapping: RegularMesh           
+  merge-with-user-defined-mapping: MarkingForRefinement //     (parallel)
+  merge-with-user-defined-mapping: Refinement
+  //merge-with-user-defined-mapping: SolutionUpdate
+  //merge-with-user-defined-mapping: MarkingForAugmentation //   (parallel)
+  //merge-with-user-defined-mapping: Augmentation             
+  //merge-with-user-defined-mapping: VolumeUnknownsProjection // (parallel)
+  //merge-with-user-defined-mapping: Erasing                  // (parallel)
+  
+adapter:
+  name: PlotAugmentedAMRGrid
+  merge-with-predefined-mapping: VTK2dTreeVisualiser(tree,getLevel)
+  
+  // tracks vertex creation events here; sets domain boundary and processor boundary indices
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex)
 
 adapter:
   name: PatchInitialisation

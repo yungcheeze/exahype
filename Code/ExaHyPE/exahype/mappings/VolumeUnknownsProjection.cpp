@@ -1,4 +1,4 @@
-#include "exahype/mappings/FaceUnknownsProjection.h"
+#include "exahype/mappings/VolumeUnknownsProjection.h"
 
 #include "peano/utils/Globals.h"
 
@@ -17,7 +17,7 @@
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::CommunicationSpecification
-exahype::mappings::FaceUnknownsProjection::communicationSpecification() {
+exahype::mappings::VolumeUnknownsProjection::communicationSpecification() {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
@@ -25,65 +25,65 @@ exahype::mappings::FaceUnknownsProjection::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::FaceUnknownsProjection::touchVertexLastTimeSpecification() {
+exahype::mappings::VolumeUnknownsProjection::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 peano::MappingSpecification
-exahype::mappings::FaceUnknownsProjection::touchVertexFirstTimeSpecification() {
+exahype::mappings::VolumeUnknownsProjection::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 peano::MappingSpecification
-exahype::mappings::FaceUnknownsProjection::enterCellSpecification() {
+exahype::mappings::VolumeUnknownsProjection::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::Serial);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 peano::MappingSpecification
-exahype::mappings::FaceUnknownsProjection::leaveCellSpecification() {
+exahype::mappings::VolumeUnknownsProjection::leaveCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidFineGridRaces);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 peano::MappingSpecification
-exahype::mappings::FaceUnknownsProjection::ascendSpecification() {
+exahype::mappings::VolumeUnknownsProjection::ascendSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
+      peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 peano::MappingSpecification
-exahype::mappings::FaceUnknownsProjection::descendSpecification() {
+exahype::mappings::VolumeUnknownsProjection::descendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
-tarch::logging::Log exahype::mappings::FaceUnknownsProjection::_log(
-    "exahype::mappings::FaceUnknownsProjection");
+tarch::logging::Log exahype::mappings::VolumeUnknownsProjection::_log(
+    "exahype::mappings::VolumeUnknownsProjection");
 
-exahype::mappings::FaceUnknownsProjection::FaceUnknownsProjection() {
+exahype::mappings::VolumeUnknownsProjection::VolumeUnknownsProjection() {
   // do nothing
 }
 
-exahype::mappings::FaceUnknownsProjection::~FaceUnknownsProjection() {
+exahype::mappings::VolumeUnknownsProjection::~VolumeUnknownsProjection() {
   // do nothing
 }
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::FaceUnknownsProjection::FaceUnknownsProjection(const FaceUnknownsProjection& masterThread) {
+exahype::mappings::VolumeUnknownsProjection::VolumeUnknownsProjection(const VolumeUnknownsProjection& masterThread) {
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::mergeWithWorkerThread(
-    const FaceUnknownsProjection& workerThread) {
+void exahype::mappings::VolumeUnknownsProjection::mergeWithWorkerThread(
+    const VolumeUnknownsProjection& workerThread) {
   // do nothing
 }
 #endif
 
-void exahype::mappings::FaceUnknownsProjection::createHangingVertex(
+void exahype::mappings::VolumeUnknownsProjection::createHangingVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -94,7 +94,7 @@ void exahype::mappings::FaceUnknownsProjection::createHangingVertex(
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::destroyHangingVertex(
+void exahype::mappings::VolumeUnknownsProjection::destroyHangingVertex(
     const exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -105,7 +105,7 @@ void exahype::mappings::FaceUnknownsProjection::destroyHangingVertex(
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::createInnerVertex(
+void exahype::mappings::VolumeUnknownsProjection::createInnerVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -116,7 +116,7 @@ void exahype::mappings::FaceUnknownsProjection::createInnerVertex(
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::createBoundaryVertex(
+void exahype::mappings::VolumeUnknownsProjection::createBoundaryVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -127,7 +127,7 @@ void exahype::mappings::FaceUnknownsProjection::createBoundaryVertex(
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::destroyVertex(
+void exahype::mappings::VolumeUnknownsProjection::destroyVertex(
     const exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -138,7 +138,7 @@ void exahype::mappings::FaceUnknownsProjection::destroyVertex(
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::createCell(
+void exahype::mappings::VolumeUnknownsProjection::createCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -148,7 +148,7 @@ void exahype::mappings::FaceUnknownsProjection::createCell(
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::destroyCell(
+void exahype::mappings::VolumeUnknownsProjection::destroyCell(
     const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -159,49 +159,49 @@ void exahype::mappings::FaceUnknownsProjection::destroyCell(
 }
 
 #ifdef Parallel
-void exahype::mappings::FaceUnknownsProjection::mergeWithNeighbour(
+void exahype::mappings::VolumeUnknownsProjection::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::prepareSendToNeighbour(
+void exahype::mappings::VolumeUnknownsProjection::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::prepareCopyToRemoteNode(
+void exahype::mappings::VolumeUnknownsProjection::prepareCopyToRemoteNode(
     exahype::Vertex& localVertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::prepareCopyToRemoteNode(
+void exahype::mappings::VolumeUnknownsProjection::prepareCopyToRemoteNode(
     exahype::Cell& localCell, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::VolumeUnknownsProjection::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::VolumeUnknownsProjection::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-bool exahype::mappings::FaceUnknownsProjection::prepareSendToWorker(
+bool exahype::mappings::VolumeUnknownsProjection::prepareSendToWorker(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -213,7 +213,7 @@ bool exahype::mappings::FaceUnknownsProjection::prepareSendToWorker(
   return true;
 }
 
-void exahype::mappings::FaceUnknownsProjection::prepareSendToMaster(
+void exahype::mappings::VolumeUnknownsProjection::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
     const exahype::Vertex* const coarseGridVertices,
@@ -223,7 +223,7 @@ void exahype::mappings::FaceUnknownsProjection::prepareSendToMaster(
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::mergeWithMaster(
+void exahype::mappings::VolumeUnknownsProjection::mergeWithMaster(
     const exahype::Cell& workerGridCell,
     exahype::Vertex* const workerGridVertices,
     const peano::grid::VertexEnumerator& workerEnumerator,
@@ -238,7 +238,7 @@ void exahype::mappings::FaceUnknownsProjection::mergeWithMaster(
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::receiveDataFromMaster(
+void exahype::mappings::VolumeUnknownsProjection::receiveDataFromMaster(
     exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
     const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
     exahype::Vertex* const receivedCoarseGridVertices,
@@ -251,14 +251,14 @@ void exahype::mappings::FaceUnknownsProjection::receiveDataFromMaster(
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::mergeWithWorker(
+void exahype::mappings::VolumeUnknownsProjection::mergeWithWorker(
     exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::mergeWithWorker(
+void exahype::mappings::VolumeUnknownsProjection::mergeWithWorker(
     exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
@@ -266,7 +266,7 @@ void exahype::mappings::FaceUnknownsProjection::mergeWithWorker(
 }
 #endif
 
-void exahype::mappings::FaceUnknownsProjection::touchVertexFirstTime(
+void exahype::mappings::VolumeUnknownsProjection::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -277,7 +277,7 @@ void exahype::mappings::FaceUnknownsProjection::touchVertexFirstTime(
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::touchVertexLastTime(
+void exahype::mappings::VolumeUnknownsProjection::touchVertexLastTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -288,7 +288,7 @@ void exahype::mappings::FaceUnknownsProjection::touchVertexLastTime(
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::enterCell(
+void exahype::mappings::VolumeUnknownsProjection::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -296,223 +296,144 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-                           fineGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfCell);
+      fineGridVerticesEnumerator.toString(),
+      coarseGridCell, fineGridPositionOfCell);
+
   if (ADERDGCellDescriptionHeap::getInstance().
       isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
 
+    // please use a different UserDefined per mapping/event
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
     .getData(fineGridCell.getADERDGCellDescriptionsIndex())
     .size());
-    // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
         peano::datatraversal::autotuning::UserDefined1;
     const int grainSize =
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      records::ADERDGCellDescription& p =
-          fineGridCell.getADERDGCellDescription(i);
+    records::ADERDGCellDescription& p =
+        fineGridCell.getADERDGCellDescription(i);
 
-      // if we have at least one parent
-      if (ADERDGCellDescriptionHeap::getInstance().
-          isValidIndex(p.getParentIndex())) {
-        for (std::vector<exahype::records::ADERDGCellDescription>::
-            iterator pParent = ADERDGCellDescriptionHeap::getInstance().
-            getData(p.getParentIndex()).begin();
-            pParent != ADERDGCellDescriptionHeap::getInstance().
-                getData(p.getParentIndex()).end();
-            ++pParent) {
-          if (p.getSolverNumber()==pParent->getSolverNumber()) {
-            exahype::Cell::SubcellPosition subcellPosition =
-                fineGridCell.computeSubcellPositionOfCellOrAncestor(p);
+    // if we have at least one parent
+    if (ADERDGCellDescriptionHeap::getInstance().
+        isValidIndex(p.getParentIndex())) {
+      switch (p.getType()) {
+      case exahype::records::ADERDGCellDescription::Cell:
+        assertion1(p.getParentIndex()
+            ==coarseGridCell.getADERDGCellDescriptionsIndex(),toString(fineGridVerticesEnumerator.getCellFlags()));
 
-            switch (p.getType()) {
-              case exahype::records::ADERDGCellDescription::Descendant:
-                prolongateFaceData(
-                    p,
-                    subcellPosition.parentIndex,
-                    subcellPosition.subcellIndex);
-                break;
-              case exahype::records::ADERDGCellDescription::Cell:
-              case exahype::records::ADERDGCellDescription::Ancestor:
-                restrictFaceData(
-                    p,
-                    subcellPosition.parentIndex,
-                    subcellPosition.subcellIndex);
-                break;
-              default:
-                break;
+        switch (p.getRefinementEvent()) {
+        case exahype::records::ADERDGCellDescription::Prolongating:
+          for (std::vector<exahype::records::ADERDGCellDescription>::
+              iterator pParent = ADERDGCellDescriptionHeap::getInstance().getData(
+                  p.getParentIndex()).begin();
+              pParent != ADERDGCellDescriptionHeap::getInstance().getData(
+                  p.getParentIndex()).end();
+              ++pParent) {
+            if (p.getSolverNumber()==pParent->getSolverNumber()) {
+              assertion1(
+                  pParent->getType()==exahype::records::ADERDGCellDescription::Ancestor
+                  ||
+                  pParent->getType()==exahype::records::ADERDGCellDescription::EmptyAncestor
+                  ,
+                  toString(fineGridVerticesEnumerator.getCellFlags()));
+              assertion1(pParent->getRefinementEvent()
+                  ==exahype::records::ADERDGCellDescription::Refining,
+                  toString(fineGridVerticesEnumerator.getCellFlags()));
+
+              prolongateVolumeData(
+                  p,
+                  *pParent,
+                  fineGridPositionOfCell);
             }
           }
+          break;
+        case exahype::records::ADERDGCellDescription::Restricting:
+          for (std::vector<exahype::records::ADERDGCellDescription>::
+              iterator pParent = ADERDGCellDescriptionHeap::getInstance().getData(
+                  p.getParentIndex()).begin();
+              pParent != ADERDGCellDescriptionHeap::getInstance().getData(
+                  p.getParentIndex()).end();
+              ++pParent) {
+            if (p.getSolverNumber()==pParent->getSolverNumber()) {
+              assertion1(pParent->getType()
+                  ==exahype::records::ADERDGCellDescription::Cell,toString(fineGridVerticesEnumerator.getCellFlags()));
+              assertion1(pParent->getRefinementEvent()
+                  ==exahype::records::ADERDGCellDescription::ErasingChildren,toString(fineGridVerticesEnumerator.getCellFlags()));
+
+              restrictVolumeData(
+                  p,
+                  *pParent,
+                  fineGridPositionOfCell);
+              p.setRefinementEvent(exahype::records::ADERDGCellDescription::Erasing);
+            }
+          }
+          break;
+        default:
+          break;
         }
+        break;
+        default:
+          break;
       }
+    }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
     .parallelSectionHasTerminated(methodTrace);
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
-
-void exahype::mappings::FaceUnknownsProjection::prolongateFaceData(
-                const exahype::records::ADERDGCellDescription& cellDescription,
-                const int parentIndex,
-                const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) const {
-  exahype::records::ADERDGCellDescription& cellDescriptionParent =
-      ADERDGCellDescriptionHeap::getInstance().
-        getData(parentIndex)[cellDescription.getSolverNumber()];
-
-  assertion(cellDescriptionParent.getSolverNumber()==
-          cellDescription.getSolverNumber());
-  assertion(cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::Cell
-            ||
-            cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::Descendant);
-
-  const int levelFine   = cellDescription.getLevel();
-  const int levelCoarse = cellDescriptionParent.getLevel();
-  assertion(levelCoarse < levelFine);
-  const int levelDelta  = levelFine - levelCoarse;
-
-  for (int d=0; d < DIMENSIONS; d++) {
-    // Check if cell is at "left" or "right" d face of parent
-    if (subcellIndex[d]==0) {
-      const int faceIndex = 2*d;
-
-      double* lQhbndFine = &DataHeap::getInstance().
-          getData(cellDescription.getExtrapolatedPredictor()).
-          data()[faceIndex];
-      double* lQhbndCoarse = &DataHeap::getInstance().
-          getData(cellDescriptionParent.getExtrapolatedPredictor()).
-          data()[faceIndex];
-      double* lFhbndFine = &DataHeap::getInstance().
-          getData(cellDescription.getFluctuation()).
-          data()[faceIndex];
-      double* lFhbndCoarse = &DataHeap::getInstance().
-          getData(cellDescriptionParent.getFluctuation()).
-          data()[faceIndex];
-
-      exahype::solvers::Solver* solver = exahype::solvers::
-          RegisteredSolvers[cellDescription.getSolverNumber()];
-      solver->faceUnknownsProlongation(
-          lQhbndFine,lFhbndFine,
-          lQhbndCoarse,lFhbndCoarse,
-          levelCoarse,levelFine,
-          getSubfaceIndex(subcellIndex,d));
-
-    } else if (subcellIndex[d]==tarch::la::aPowI(levelDelta,3)-1) {
-      const int faceIndex = 2*d+1;
-
-      double* lQhbndFine = &DataHeap::getInstance().
-          getData(cellDescription.getExtrapolatedPredictor()).
-          data()[faceIndex];
-      double* lQhbndCoarse = &DataHeap::getInstance().
-          getData(cellDescriptionParent.getExtrapolatedPredictor()).
-          data()[faceIndex];
-      double* lFhbndFine = &DataHeap::getInstance().
-          getData(cellDescription.getFluctuation()).
-          data()[faceIndex];
-      double* lFhbndCoarse = &DataHeap::getInstance().
-          getData(cellDescriptionParent.getFluctuation()).
-          data()[faceIndex];
-
-      exahype::solvers::Solver* solver = exahype::solvers::
-          RegisteredSolvers[cellDescription.getSolverNumber()];
-      solver->faceUnknownsProlongation(
-          lQhbndFine,lFhbndFine,
-          lQhbndCoarse,lFhbndCoarse,
-          levelCoarse,levelFine,
-          getSubfaceIndex(subcellIndex,d));
-    }
-  }
-}
-
-void exahype::mappings::FaceUnknownsProjection::restrictFaceData(
-                const exahype::records::ADERDGCellDescription& cellDescription,
-                const int parentIndex,
-                const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) const {
-  exahype::records::ADERDGCellDescription& cellDescriptionParent =
-      ADERDGCellDescriptionHeap::getInstance().
-        getData(parentIndex)[cellDescription.getSolverNumber()];
-
-  assertion(cellDescriptionParent.getSolverNumber()==
-          cellDescription.getSolverNumber());
-  assertion(cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::Ancestor);
-
-  const int levelFine   = cellDescription.getLevel();
-  const int levelCoarse = cellDescriptionParent.getLevel();
+void exahype::mappings::VolumeUnknownsProjection::prolongateVolumeData(
+    const exahype::records::ADERDGCellDescription& p,
+    const exahype::records::ADERDGCellDescription& pParent,
+    const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) const {
+  const int levelFine   = p.getLevel();
+  const int levelCoarse = pParent.getLevel();
   assertion(levelCoarse < levelFine);
 
-  for (int d=0; d < DIMENSIONS; d++) {
-    // Check if cell is at "left" or "right" d face of parent
-    if (subcellIndex[d]==0) {
-      const int faceIndex = 2*d;
+  double* luhFine = DataHeap::getInstance().
+      getData(p.getSolution()).
+      data();
+  double* luhCoarse = DataHeap::getInstance().
+      getData(pParent.getSolution()).
+      data();
 
-      double* lQhbndFine = &DataHeap::getInstance().
-          getData(cellDescription.getExtrapolatedPredictor()).
-          data()[faceIndex];
-      double* lQhbndCoarse = &DataHeap::getInstance().
-          getData(cellDescriptionParent.getExtrapolatedPredictor()).
-          data()[faceIndex];
-      double* lFhbndFine = &DataHeap::getInstance().
-          getData(cellDescription.getFluctuation()).
-          data()[faceIndex];
-      double* lFhbndCoarse = &DataHeap::getInstance().
-          getData(cellDescriptionParent.getFluctuation()).
-          data()[faceIndex];
-
-      exahype::solvers::Solver* solver = exahype::solvers::
-          RegisteredSolvers[cellDescription.getSolverNumber()];
-      solver->faceUnknownsRestriction(
-          lQhbndCoarse,lFhbndCoarse,
-          lQhbndFine,lFhbndFine,
-          levelCoarse,levelFine,
-          getSubfaceIndex(subcellIndex,d));
-
-    } else if (subcellIndex[d]==2) {
-      const int faceIndex = 2*d+1;
-
-      double* lQhbndFine = &DataHeap::getInstance().
-          getData(cellDescription.getExtrapolatedPredictor()).
-          data()[faceIndex];
-      double* lQhbndCoarse = &DataHeap::getInstance().
-          getData(cellDescriptionParent.getExtrapolatedPredictor()).
-          data()[faceIndex];
-      double* lFhbndFine = &DataHeap::getInstance().
-          getData(cellDescription.getFluctuation()).
-          data()[faceIndex];
-      double* lFhbndCoarse = &DataHeap::getInstance().
-          getData(cellDescriptionParent.getFluctuation()).
-          data()[faceIndex];
-
-      exahype::solvers::Solver* solver = exahype::solvers::
-          RegisteredSolvers[cellDescription.getSolverNumber()];
-      solver->faceUnknownsRestriction(
-          lQhbndCoarse,lFhbndCoarse,
-          lQhbndFine,lFhbndFine,
-          levelCoarse,levelFine,
-          getSubfaceIndex(subcellIndex,d));
-    }
-  }
+  exahype::solvers::Solver* solver = exahype::solvers::
+      RegisteredSolvers[p.getSolverNumber()];
+  solver->volumeUnknownsProlongation(
+      luhFine,
+      luhCoarse,
+      levelCoarse,levelFine,
+      subcellIndex);
 }
 
-tarch::la::Vector<DIMENSIONS-1,int> exahype::mappings::FaceUnknownsProjection::getSubfaceIndex(
-    const tarch::la::Vector<DIMENSIONS,int>& subcellIndex,
-    const int d) const {
-  tarch::la::Vector<DIMENSIONS-1,int> subfaceIndex;
+void exahype::mappings::VolumeUnknownsProjection::restrictVolumeData(
+    const exahype::records::ADERDGCellDescription& p,
+    const exahype::records::ADERDGCellDescription& pParent,
+    const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) const {
+  const int levelFine   = p.getLevel();
+  const int levelCoarse = pParent.getLevel();
+  assertion(levelCoarse < levelFine);
 
-  int i=0;
-  for (int j=0; j<DIMENSIONS; j++) {
-    if (j!=d) {
-      subfaceIndex[i] = subcellIndex[j];
-      i++;
-    }
-  }
+  double* luhFine = DataHeap::getInstance().
+      getData(p.getSolution()).
+      data();
+  double* luhCoarse = DataHeap::getInstance().
+      getData(pParent.getSolution()).
+      data();
 
-  return subfaceIndex;
+  exahype::solvers::Solver* solver = exahype::solvers::
+      RegisteredSolvers[p.getSolverNumber()];
+  solver->volumeUnknownsRestriction(
+      luhCoarse,
+      luhFine,
+      levelCoarse,levelFine,
+      subcellIndex);
 }
 
-void exahype::mappings::FaceUnknownsProjection::leaveCell(
+void exahype::mappings::VolumeUnknownsProjection::leaveCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -522,16 +443,16 @@ void exahype::mappings::FaceUnknownsProjection::leaveCell(
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::beginIteration(
+void exahype::mappings::VolumeUnknownsProjection::beginIteration(
     exahype::State& solverState) {
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::endIteration(exahype::State& solverState) {
+void exahype::mappings::VolumeUnknownsProjection::endIteration(exahype::State& solverState) {
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::descend(
+void exahype::mappings::VolumeUnknownsProjection::descend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -540,11 +461,60 @@ void exahype::mappings::FaceUnknownsProjection::descend(
   // do nothing
 }
 
-void exahype::mappings::FaceUnknownsProjection::ascend(
+void exahype::mappings::VolumeUnknownsProjection::ascend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell) {
-  // do nothing
+
+  logTraceInWith2Arguments( "ascend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
+
+  if (ADERDGCellDescriptionHeap::getInstance().
+      isValidIndex(coarseGridCell.getADERDGCellDescriptionsIndex())) {
+    for (std::vector<exahype::records::ADERDGCellDescription>::
+        iterator pCoarse = ADERDGCellDescriptionHeap::getInstance().getData(
+            coarseGridCell.getADERDGCellDescriptionsIndex()).begin();
+        pCoarse != ADERDGCellDescriptionHeap::getInstance().getData(
+            coarseGridCell.getADERDGCellDescriptionsIndex()).end();
+        ++pCoarse) {
+      bool refiningDone = true;
+
+      switch (pCoarse->getType()) {
+      case exahype::records::ADERDGCellDescription::Cell:
+        switch (pCoarse->getRefinementEvent()) {
+        case exahype::records::ADERDGCellDescription::Refining:
+          refiningDone = true;
+
+          dfor3(k)
+          for (std::vector<exahype::records::ADERDGCellDescription>::
+              iterator pFine = ADERDGCellDescriptionHeap::getInstance().
+              getData(fineGridCells[kScalar].
+                  getADERDGCellDescriptionsIndex()).begin();
+              pFine != ADERDGCellDescriptionHeap::getInstance().
+                  getData(fineGridCells[kScalar].
+                      getADERDGCellDescriptionsIndex()).end();
+              ++pFine) {
+            if (pCoarse->getSolverNumber()==pFine->getSolverNumber()) {
+              refiningDone = refiningDone && pFine->getRefinementEvent()==
+                  exahype::records::ADERDGCellDescription::None;
+            }
+          }
+          enddforx
+
+          if (refiningDone) {
+            pCoarse->setType(exahype::records::ADERDGCellDescription::Ancestor);
+            pCoarse->setRefinementEvent(exahype::records::ADERDGCellDescription::None);
+          }
+          break;
+        default:
+          break;
+        }
+        break;
+        default:
+          break;
+      }
+    }
+  }
+  logTraceOut( "ascend(...)" );
 }
