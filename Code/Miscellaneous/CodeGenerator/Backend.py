@@ -84,10 +84,10 @@ def prepareOutputDirectory(i_outputDirectory):
         if exception.errno != errno.EEXIST:
             raise
 
-    # remove all .cpp and .h files (we are in append mode!) 
+    # remove all .cpp, .cpph and .h files (we are in append mode!)
     for l_fileName in os.listdir(i_outputDirectory):
         _ , l_ext = os.path.splitext(l_fileName)
-        if(l_ext in ['.cpp', '.h']):
+        if(l_ext in ['.cpp', '.cpph', '.h']):
             os.remove(i_outputDirectory + "/" + l_fileName)
 
 
@@ -188,10 +188,11 @@ def generateComputeKernels():
     solutionUpdateGenerator = SolutionUpdateGenerator(m_config)
     solutionUpdateGenerator.generateCode()
     stableTimeStepSizeGenerator = StableTimeStepSizeGenerator(m_config)
+    stableTimeStepSizeGenerator.generateCode()
 
 
 def moveGeneratedFiles(i_pathToSrc,i_pathToDest):
-    l_fileTypes = ('*.h', '*.cpp', '*.c')
+    l_fileTypes = ('*.h', '*.cpp', '*.c', '*.cpph')
     l_fileList = []
     for l_file in l_fileTypes:
         l_fileList.extend(iglob(i_pathToSrc+"/"+l_file))

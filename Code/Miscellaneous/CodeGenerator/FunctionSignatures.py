@@ -241,7 +241,7 @@ def getInitialConditionSignature():
 def getStableTimeStepSizeSignature():
     # function signature prototype:
     l_functionSignature = "template <void PDEEigenvalues(const DATATYPE* const Q, const int normalNonZero, DATATYPE* lambda)>\n" \
-                          "DATATYPE stableTimeStepSize(\n"                                                                         \
+                          "DATATYPE kernels::aderdg::optimised::stableTimeStepSize(\n"                                                                         \
                           "  const DATATYPE* restrict const luh,\n"                                                              \
                           "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx\n"                                                 \
                           ")"
