@@ -397,54 +397,61 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
       records::ADERDGCellDescription& p =
           fineGridCell.getADERDGCellDescription(i);
+      switch(p.getType()) {
+        case exahype::records::ADERDGCellDescription::Cell:
+          switch(p.getRefinementEvent()) {
+            case exahype::records::ADERDGCellDescription::None:
+              exahype::solvers::Solver* solver =
+                  exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-      if (p.getType()==exahype::records::ADERDGCellDescription::RealCell) {
-        exahype::solvers::Solver* solver =
-            exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+              // space-time DoF (basisSize**(DIMENSIONS+1))
+              double* lQi =
+                  DataHeap::getInstance().
+                  getData(p.getSpaceTimePredictor()).
+                  data();
+              double* lFi =
+                  DataHeap::getInstance().
+                  getData(p.getSpaceTimeVolumeFlux()).
+                  data();
 
-        // space-time DoF (basisSize**(DIMENSIONS+1))
-        double* lQi =
-            DataHeap::getInstance().
-            getData(p.getSpaceTimePredictor()).
-            data();
-        double* lFi =
-            DataHeap::getInstance().
-            getData(p.getSpaceTimeVolumeFlux()).
-            data();
+              // volume DoF (basisSize**(DIMENSIONS))
+              double* luh = DataHeap::getInstance().
+                  getData(p.getSolution()).
+                  data();
+              double* lQhi = DataHeap::getInstance().
+                  getData(p.getPredictor()).
+                  data();
+              double* lFhi = DataHeap::getInstance().
+                  getData(p.getVolumeFlux()).
+                  data();
 
-        // volume DoF (basisSize**(DIMENSIONS))
-        double* luh = DataHeap::getInstance().
-            getData(p.getSolution()).
-            data();
-        double* lQhi = DataHeap::getInstance().
-            getData(p.getPredictor()).
-            data();
-        double* lFhi = DataHeap::getInstance().
-            getData(p.getVolumeFlux()).
-            data();
+              // face DoF (basisSize**(DIMENSIONS-1))
+              double* lQhbnd = DataHeap::getInstance().
+                  getData(p.getExtrapolatedPredictor()).
+                  data();
+              double* lFhbnd = DataHeap::getInstance().
+                  getData(p.getFluctuation()).
+                  data();
 
-        // face DoF (basisSize**(DIMENSIONS-1))
-        double* lQhbnd = DataHeap::getInstance().
-            getData(p.getExtrapolatedPredictor()).
-            data();
-        double* lFhbnd = DataHeap::getInstance().
-            getData(p.getFluctuation()).
-            data();
+              solver->spaceTimePredictor(
+                  lQi, lFi, lQhi, lFhi,
+                  lQhbnd,  // da kommt was drauf todo what does this mean?
+                  lFhbnd,  // da kommt was drauf todo what does this mean?
+                  luh, fineGridVerticesEnumerator.getCellSize(),
+                  p.getPredictorTimeStepSize());
 
-        solver->spaceTimePredictor(
-            lQi, lFi, lQhi, lFhi,
-            lQhbnd,  // da kommt was drauf todo what does this mean?
-            lFhbnd,  // da kommt was drauf todo what does this mean?
-            luh, fineGridVerticesEnumerator.getCellSize(),
-            p.getPredictorTimeStepSize());
-
-        logDebug("enterCell(...)", "debug::after::luh[0]" << luh[0]);
-        logDebug("enterCell(...)", "debug::after::lQi[0]" << lQi[0]);
-        logDebug("enterCell(...)", "debug::after::lFi[0]" << lFi[0]);
-        logDebug("enterCell(...)", "debug::after::lQhi[0]" << lQhi[0]);
-        logDebug("enterCell(...)", "debug::after::lFhi[0]" << lFhi[0]);
-        logDebug("enterCell(...)", "debug::after::lQhbnd[0]" << lQhbnd[0]);
-        logDebug("enterCell(...)", "debug::after::lFhbnd[0]" << lFhbnd[0]);
+              assertionEquals(luh[0]   ,luh[0]   ); // check if nan
+              assertionEquals(lQi[0]   ,lQi[0]   ); // check if nan
+              assertionEquals(lFi[0]   ,lFi[0]   ); // check if nan
+              assertionEquals(lQhi[0]  ,lQhi[0]  ); // check if nan
+              assertionEquals(luh[0]   ,luh[0]   ); // check if nan
+              assertionEquals(lFhi[0]  ,lFhi[0]  ); // check if nan
+              assertionEquals(luh[0]   ,luh[0]   ); // check if nan
+              assertionEquals(lQhbnd[0],lQhbnd[0]); // check if nan
+              assertionEquals(lFhbnd[0],lFhbnd[0]); // check if nan
+              break;
+          }
+          break;
       }
     endpfor
 

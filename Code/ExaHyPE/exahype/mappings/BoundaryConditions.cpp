@@ -392,66 +392,69 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
           peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
               numberOfADERDGCellDescriptions, methodTrace);
       pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-
         records::ADERDGCellDescription& p =
             ADERDGCellDescriptionHeap::getInstance().getData(
                 adjacentADERDGCellDescriptionsIndices[cellIndex])[i];
+        switch(p.getType()) {
+          case exahype::records::ADERDGCellDescription::Cell:
+            switch(p.getRefinementEvent()) {
+              case exahype::records::ADERDGCellDescription::None:
+                exahype::solvers::Solver* solver =
+                    exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-        if (p.getType()==exahype::records::ADERDGCellDescription::RealCell) {
-          exahype::solvers::Solver* solver =
-              exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+                // Lock the critical multithreading area.
+                // Note that two boundary vertices can operate on the same face at the same
+                // time.
+                bool riemannSolveNotPerformed = false;
+                riemannSolveNotPerformed = !p.getRiemannSolvePerformed(faceIndex);
+                if (riemannSolveNotPerformed) {
+                  p.setRiemannSolvePerformed(faceIndex, true);
+                }
 
-          // Lock the critical multithreading area.
-          // Note that two boundary vertices can operate on the same face at the same
-          // time.
-          bool riemannSolveNotPerformed = false;
-          riemannSolveNotPerformed = !p.getRiemannSolvePerformed(faceIndex);
-          if (riemannSolveNotPerformed) {
-            p.setRiemannSolvePerformed(faceIndex, true);
-          }
+                // Apply the boundary conditions.
+                // todo Copy and periodic boundary conditions should be configured by
+                // additional mappings after
+                // the initial grid refinement and the initialisation of the cell
+                // descriptions.
+                // The configuration should only involve an edit of the index maps generated
+                // by the multiscalelinkedcell toolbox. In case of consequent mesh-refinement,
+                // these indices should be propagated down to the finer cells.
+                // The resulting Riemann problems are then simply solved
+                // by exahype::mappings::RiemannSolver.
+                if (riemannSolveNotPerformed) {
+                  // @todo 03/02/16:Dominic Etienne Charrier
+                  // Change to solver->getUnknownsPerFace()
+                  const int numberOfFaceDof =
+                      solver->getUnknownsPerFace();
 
-          // Apply the boundary conditions.
-          // todo Copy and periodic boundary conditions should be configured by
-          // additional mappings after
-          // the initial grid refinement and the initialisation of the cell
-          // descriptions.
-          // The configuration should only involve an edit of the index maps generated
-          // by the multiscalelinkedcell toolbox. In case of consequent mesh-refinement,
-          // these indices should be propagated down to the finer cells.
-          // The resulting Riemann problems are then simply solved
-          // by exahype::mappings::RiemannSolver.
-          if (riemannSolveNotPerformed) {
-            // @todo 03/02/16:Dominic Etienne Charrier
-            // Change to solver->getUnknownsPerFace()
-            const int numberOfFaceDof =
-                solver->getUnknownsPerFace();
+                  double* lQhbnd =
+                      DataHeap::getInstance().getData(
+                          p.getExtrapolatedPredictor()).data() +
+                          (faceIndex * numberOfFaceDof);
+                  double* lFhbnd =
+                      DataHeap::getInstance().getData(
+                          p.getFluctuation()).data() +
+                          (faceIndex * numberOfFaceDof);
 
-            double* Qhbnd =
-                DataHeap::getInstance().getData(
-                p.getExtrapolatedPredictor()).data() +
-                (faceIndex * numberOfFaceDof);
-            double* Fhbnd =
-                DataHeap::getInstance().getData(
-                p.getFluctuation()).data() +
-                (faceIndex * numberOfFaceDof);
+                  // @todo
+                  // timestepping::synchroniseTimeStepping(solve,*p);
+                  assertionEquals(lQhbnd[0],lQhbnd[0]); // assert no nan
+                  assertionEquals(lFhbnd[0],lFhbnd[0]); // assert no nan
 
-            // @todo
-            // timestepping::synchroniseTimeStepping(solve,*p);
-            logDebug("touchVertexLastTime(...)::debug::before::Qhbnd[0]*", Qhbnd[0]);
-            logDebug("touchVertexLastTime(...)::debug::before::Fhbnd[0]", Fhbnd[0]);
+                  // todo Dominic Charrier2503
+                  // Do not solve a Riemann problem here:
+                  // Invoke user defined boundary condition function
+                  // At the moment, we simply copy the cell solution to the boundary.
+                  solver->riemannSolver(
+                      lFhbnd, lFhbnd, lQhbnd, lQhbnd,
+                      p.getCorrectorTimeStepSize(),  // solve.getCorrectorTimeStepSize(),//_localState.getPreviousMinTimeStepSize(),
+                      normalNonZero);
 
-            // todo Dominic Charrier2503
-            // Do not solve a Riemann problem here:
-            // Invoke user defined boundary condition function
-            // At the moment, we simply copy the cell solution to the boundary.
-            solver->riemannSolver(
-                Fhbnd, Fhbnd, Qhbnd, Qhbnd,
-                p.getCorrectorTimeStepSize(),  // solve.getCorrectorTimeStepSize(),//_localState.getPreviousMinTimeStepSize(),
-                normalNonZero);
-
-            logDebug("touchVertexLastTime(...)::debug::after::Qhbnd[0]*", Qhbnd[0]);
-            logDebug("touchVertexLastTime(...)::debug::after::Fhbnd[0]", Fhbnd[0]);
-          }
+                  assertionEquals(lFhbnd[0],lFhbnd[0]); // assert no nan
+                }
+                break;
+            }
+            break;
         }
       endpfor peano::datatraversal::autotuning::Oracle::getInstance()
       .parallelSectionHasTerminated(methodTrace);

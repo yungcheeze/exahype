@@ -1,4 +1,4 @@
-#include "exahype/mappings/AdaptiveRefinement.h"
+#include "exahype/mappings/Erasing.h"
 
 #include "peano/utils/Globals.h"
 
@@ -11,7 +11,7 @@
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::CommunicationSpecification
-exahype::mappings::AdaptiveRefinement::communicationSpecification() {
+exahype::mappings::Erasing::communicationSpecification() {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
@@ -19,65 +19,65 @@ exahype::mappings::AdaptiveRefinement::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::AdaptiveRefinement::touchVertexLastTimeSpecification() {
+exahype::mappings::Erasing::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 peano::MappingSpecification
-exahype::mappings::AdaptiveRefinement::touchVertexFirstTimeSpecification() {
+exahype::mappings::Erasing::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 peano::MappingSpecification
-exahype::mappings::AdaptiveRefinement::enterCellSpecification() {
+exahype::mappings::Erasing::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::Serial);
 }
 peano::MappingSpecification
-exahype::mappings::AdaptiveRefinement::leaveCellSpecification() {
+exahype::mappings::Erasing::leaveCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces);
 }
 peano::MappingSpecification
-exahype::mappings::AdaptiveRefinement::ascendSpecification() {
+exahype::mappings::Erasing::ascendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 peano::MappingSpecification
-exahype::mappings::AdaptiveRefinement::descendSpecification() {
+exahype::mappings::Erasing::descendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
-tarch::logging::Log exahype::mappings::AdaptiveRefinement::_log(
-    "exahype::mappings::AdaptiveRefinement");
+tarch::logging::Log exahype::mappings::Erasing::_log(
+    "exahype::mappings::Erasing");
 
-exahype::mappings::AdaptiveRefinement::AdaptiveRefinement() {
+exahype::mappings::Erasing::Erasing() {
   // do nothing
 }
 
-exahype::mappings::AdaptiveRefinement::~AdaptiveRefinement() {
+exahype::mappings::Erasing::~Erasing() {
   // do nothing
 }
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::AdaptiveRefinement::AdaptiveRefinement(const AdaptiveRefinement& masterThread) {
+exahype::mappings::Erasing::Erasing(const Erasing& masterThread) {
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::mergeWithWorkerThread(
-    const AdaptiveRefinement& workerThread) {
+void exahype::mappings::Erasing::mergeWithWorkerThread(
+    const Erasing& workerThread) {
   // do nothing
 }
 #endif
 
-void exahype::mappings::AdaptiveRefinement::createHangingVertex(
+void exahype::mappings::Erasing::createHangingVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -88,7 +88,7 @@ void exahype::mappings::AdaptiveRefinement::createHangingVertex(
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::destroyHangingVertex(
+void exahype::mappings::Erasing::destroyHangingVertex(
     const exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -99,7 +99,7 @@ void exahype::mappings::AdaptiveRefinement::destroyHangingVertex(
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::createInnerVertex(
+void exahype::mappings::Erasing::createInnerVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -110,7 +110,7 @@ void exahype::mappings::AdaptiveRefinement::createInnerVertex(
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::createBoundaryVertex(
+void exahype::mappings::Erasing::createBoundaryVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -121,7 +121,7 @@ void exahype::mappings::AdaptiveRefinement::createBoundaryVertex(
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::destroyVertex(
+void exahype::mappings::Erasing::destroyVertex(
     const exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -132,7 +132,7 @@ void exahype::mappings::AdaptiveRefinement::destroyVertex(
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::createCell(
+void exahype::mappings::Erasing::createCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -142,7 +142,7 @@ void exahype::mappings::AdaptiveRefinement::createCell(
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::destroyCell(
+void exahype::mappings::Erasing::destroyCell(
     const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -153,49 +153,49 @@ void exahype::mappings::AdaptiveRefinement::destroyCell(
 }
 
 #ifdef Parallel
-void exahype::mappings::AdaptiveRefinement::mergeWithNeighbour(
+void exahype::mappings::Erasing::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::prepareSendToNeighbour(
+void exahype::mappings::Erasing::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::prepareCopyToRemoteNode(
+void exahype::mappings::Erasing::prepareCopyToRemoteNode(
     exahype::Vertex& localVertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::prepareCopyToRemoteNode(
+void exahype::mappings::Erasing::prepareCopyToRemoteNode(
     exahype::Cell& localCell, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::Erasing::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::Erasing::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-bool exahype::mappings::AdaptiveRefinement::prepareSendToWorker(
+bool exahype::mappings::Erasing::prepareSendToWorker(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -207,7 +207,7 @@ bool exahype::mappings::AdaptiveRefinement::prepareSendToWorker(
   return true;
 }
 
-void exahype::mappings::AdaptiveRefinement::prepareSendToMaster(
+void exahype::mappings::Erasing::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
     const exahype::Vertex* const coarseGridVertices,
@@ -217,7 +217,7 @@ void exahype::mappings::AdaptiveRefinement::prepareSendToMaster(
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::mergeWithMaster(
+void exahype::mappings::Erasing::mergeWithMaster(
     const exahype::Cell& workerGridCell,
     exahype::Vertex* const workerGridVertices,
     const peano::grid::VertexEnumerator& workerEnumerator,
@@ -232,7 +232,7 @@ void exahype::mappings::AdaptiveRefinement::mergeWithMaster(
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::receiveDataFromMaster(
+void exahype::mappings::Erasing::receiveDataFromMaster(
     exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
     const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
     exahype::Vertex* const receivedCoarseGridVertices,
@@ -245,14 +245,14 @@ void exahype::mappings::AdaptiveRefinement::receiveDataFromMaster(
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::mergeWithWorker(
+void exahype::mappings::Erasing::mergeWithWorker(
     exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::mergeWithWorker(
+void exahype::mappings::Erasing::mergeWithWorker(
     exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
@@ -260,7 +260,7 @@ void exahype::mappings::AdaptiveRefinement::mergeWithWorker(
 }
 #endif
 
-void exahype::mappings::AdaptiveRefinement::touchVertexFirstTime(
+void exahype::mappings::Erasing::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -271,7 +271,7 @@ void exahype::mappings::AdaptiveRefinement::touchVertexFirstTime(
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::touchVertexLastTime(
+void exahype::mappings::Erasing::touchVertexLastTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -282,7 +282,7 @@ void exahype::mappings::AdaptiveRefinement::touchVertexLastTime(
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::enterCell(
+void exahype::mappings::Erasing::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -290,98 +290,40 @@ void exahype::mappings::AdaptiveRefinement::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-                             fineGridVerticesEnumerator.toString(),
-                             coarseGridCell, fineGridPositionOfCell);
-  // If fine grid cell description does not exist, i.e. cell is new
-  if (!ADERDGCellDescriptionHeap::getInstance().
+      fineGridVerticesEnumerator.toString(),
+      coarseGridCell, fineGridPositionOfCell);
+  if (ADERDGCellDescriptionHeap::getInstance().
       isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
-    assertion(ADERDGCellDescriptionHeap::getInstance().
-              isValidIndex(coarseGridCell.getADERDGCellDescriptionsIndex()));
-    int  solverNumber=0;
-    for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-        exahype::solvers::RegisteredSolvers.begin();
-        p != exahype::solvers::RegisteredSolvers.end(); p++) { // @todo replace by parloops?
-      if (fineGridVerticesEnumerator.getLevel()>=(*p)->getMinimumTreeDepth()+1) {
-        exahype::records::ADERDGCellDescription& cellDescriptionParent =
-            coarseGridCell.getADERDGCellDescription(solverNumber);
-        if (cellDescriptionParent.getRefinementNecessary()) {
-          assertion(cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::RealShell);
-          assertion(cellDescriptionParent.getParent());
 
-          fineGridCell.addNewCellDescription(
-              solverNumber,
-              exahype::records::ADERDGCellDescription::RealCell,
-              fineGridVerticesEnumerator.getLevel(),
-              coarseGridCell.getADERDGCellDescriptionsIndex(),
-              fineGridPositionOfCell,
-              fineGridVerticesEnumerator.getCellSize(),
-              fineGridVerticesEnumerator.getCellCenter());
-
-          cellDescriptionParent.setRefinementNecessary(false);
-        }
+    bool eraseFineGridCell=true;
+    for (std::vector<exahype::records::ADERDGCellDescription>::
+        iterator pFine = ADERDGCellDescriptionHeap::getInstance().getData(
+            fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+        pFine != ADERDGCellDescriptionHeap::getInstance().getData(
+            fineGridCell.getADERDGCellDescriptionsIndex()).end();
+        pFine++) {
+      switch (pFine->getRefinementEvent()) {
+        case exahype::records::ADERDGCellDescription::Erasing:
+          assertion1(pFine->getType()==exahype::records::ADERDGCellDescription::Cell
+                     || pFine->getType()==exahype::records::ADERDGCellDescription::Descendant);
+          fineGridCell.cleanCellDescription(pFine->getSolverNumber());
+          break;
+        default:
+          eraseFineGridCell=false;
+          break;
       }
-      solverNumber++;
+      break;
     }
-  } else {
-    assertion(ADERDGCellDescriptionHeap::getInstance().
-              isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex()));
-
-    bool refineFineGridCell=false;
-
-    int  solverNumber=0;
-    for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-        exahype::solvers::RegisteredSolvers.begin(); // @todo replace by parloops?
-        p != exahype::solvers::RegisteredSolvers.end(); p++) {
-      assertion(static_cast<unsigned int>(solverNumber) <
-                ADERDGCellDescriptionHeap::getInstance().
-                getData(fineGridCell.getADERDGCellDescriptionsIndex()).size());
-
-      exahype::records::ADERDGCellDescription& cellDescription =
-          fineGridCell.getADERDGCellDescription(solverNumber);
-
-      // only refine real cells
-      if (cellDescription.getType()==exahype::records::ADERDGCellDescription::RealCell) {
-        double* solution = DataHeap::getInstance().getData(
-            cellDescription.getSolution()).data();
-
-        if ((*p)->refinementCriterion(solution,
-                                      fineGridVerticesEnumerator.getCellCenter(),
-                                      fineGridVerticesEnumerator.getCellSize(),
-                                      cellDescription.getCorrectorTimeStamp(), // todo careful with the time stamps
-                                      cellDescription.getLevel())) {
-          cellDescription.setRefinementNecessary(true);
-          cellDescription.setType(exahype::records::ADERDGCellDescription::RealShell);
-          cellDescription.setParent(true);
-
-          refineFineGridCell = true;
+    // Loop over the 2^d adjacent vertices and set the Erasing flag.
+    // Note that fineGridVertices->refine() refines all adjacent cells
+    // not only the targeted fineGridCell.
+    if (eraseFineGridCell) {
+      dfor2(k)
+        switch (fineGridVertices[kScalar].getRefinementControl()) {
+          case Vertex::Records::Unrefined: // todo not sure if this is the default state
+            fineGridVertices->erase();
+            break;
         }
-      } else if (cellDescription.getType()==exahype::records::ADERDGCellDescription::VirtualShell) {
-        // Change virtual shell to real cell if parent
-        // requested (real) refinement
-        if (fineGridVerticesEnumerator.getLevel()>=(*p)->getMinimumTreeDepth()+1) {
-             exahype::records::ADERDGCellDescription& cellDescriptionParent =
-                 coarseGridCell.getADERDGCellDescription(solverNumber);
-             if (cellDescriptionParent.getRefinementNecessary()) {
-               assertion(cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::RealShell);
-               assertion(cellDescriptionParent.getParent());
-
-               cellDescription.setType(exahype::records::ADERDGCellDescription::RealCell);
-               cellDescriptionParent.setRefinementNecessary(false);
-             }
-        }
-      }
-
-      solverNumber++;
-    }
-
-    // Note that fineGridVertices->refine() refines all adjacent cell
-    // not only the targeted fineGridCell (Peano Cookbook)
-    if (refineFineGridCell) {
-      dfor2(k) // loop over 2^d vertices and set the refinement flag
-            if (fineGridVertices[kScalar].getRefinementControl()==
-                Vertex::Records::Unrefined) {
-              fineGridVertices->refine();
-            }
       enddforx
     }
   }
@@ -389,7 +331,7 @@ void exahype::mappings::AdaptiveRefinement::enterCell(
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
-void exahype::mappings::AdaptiveRefinement::leaveCell(
+void exahype::mappings::Erasing::leaveCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -399,16 +341,16 @@ void exahype::mappings::AdaptiveRefinement::leaveCell(
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::beginIteration(
+void exahype::mappings::Erasing::beginIteration(
     exahype::State& solverState) {
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::endIteration(exahype::State& solverState) {
+void exahype::mappings::Erasing::endIteration(exahype::State& solverState) {
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::descend(
+void exahype::mappings::Erasing::descend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -417,7 +359,7 @@ void exahype::mappings::AdaptiveRefinement::descend(
   // do nothing
 }
 
-void exahype::mappings::AdaptiveRefinement::ascend(
+void exahype::mappings::Erasing::ascend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,

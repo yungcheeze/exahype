@@ -5,8 +5,8 @@
 // this file and your project to your needs as long as the license is in
 // agreement with the original Peano user constraints. A reference to/citation
 // of  Peano and its author is highly appreciated.
-#ifndef EXAHYPE_MAPPINGS_VirtualRefinement_H_
-#define EXAHYPE_MAPPINGS_VirtualRefinement_H_
+#ifndef EXAHYPE_MAPPINGS_Augmentation_H_
+#define EXAHYPE_MAPPINGS_Augmentation_H_
 
 #include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
@@ -27,7 +27,7 @@
 
 namespace exahype {
 namespace mappings {
-class VirtualRefinement;
+class Augmentation;
 }
 }
 
@@ -39,7 +39,7 @@ class VirtualRefinement;
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::mappings::VirtualRefinement {
+class exahype::mappings::Augmentation {
  private:
   /**
    * Logging device for the trace macros.
@@ -104,7 +104,7 @@ class exahype::mappings::VirtualRefinement {
    * that your code works on a parallel machine and for any mapping/algorithm
    * modification.
    */
-  VirtualRefinement();
+  Augmentation();
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -117,13 +117,13 @@ class exahype::mappings::VirtualRefinement {
    *
    * @see mergeWithWorkerThread()
    */
-  VirtualRefinement(const VirtualRefinement& masterThread);
+  Augmentation(const Augmentation& masterThread);
 #endif
 
   /**
    * Destructor. Typically does not implement any operation.
    */
-  virtual ~VirtualRefinement();
+  virtual ~Augmentation();
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -154,7 +154,7 @@ class exahype::mappings::VirtualRefinement {
    * on the heap. However, you should protect this object by a BooleanSemaphore
    * and a lock to serialise all accesses to the plotter.
    */
-  void mergeWithWorkerThread(const VirtualRefinement& workerThread);
+  void mergeWithWorkerThread(const Augmentation& workerThread);
 #endif
 
   /**
@@ -1084,7 +1084,7 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
    * beginIteration() might not be called prior to any other event. See the
    * documentation of CommunicationSpecification for details.
    *
-   * @see VirtualRefinement()
+   * @see Augmentation()
    */
   void beginIteration(exahype::State& solverState);
 
@@ -1114,7 +1114,7 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
    * might not be called after all other events. See the documentation
    * of CommunicationSpecification for details.
    *
-   * @see VirtualRefinement()
+   * @see Augmentation()
    */
   void endIteration(exahype::State& solverState);
 

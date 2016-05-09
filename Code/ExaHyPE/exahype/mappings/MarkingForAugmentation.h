@@ -5,8 +5,8 @@
 // this file and your project to your needs as long as the license is in
 // agreement with the original Peano user constraints. A reference to/citation
 // of  Peano and its author is highly appreciated.
-#ifndef EXAHYPE_MAPPINGS_CellDescriptionInitialisation_H_
-#define EXAHYPE_MAPPINGS_CellDescriptionInitialisation_H_
+#ifndef EXAHYPE_MAPPINGS_MarkingForAugmentation_H_
+#define EXAHYPE_MAPPINGS_MarkingForAugmentation_H_
 
 #include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
@@ -17,19 +17,17 @@
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "exahype/records/ADERDGCellDescription.h"
-
 #include "exahype/Vertex.h"
 #include "exahype/Cell.h"
 #include "exahype/State.h"
 
-// ! Begin of code for multiscalelinkedcell toolbox
-#include "peano/heap/Heap.h"
-// ! End of code for multiscalelinkedcell toolbox
+// ! Begin of code for DG method
+#include "peano/utils/Globals.h"
+// ! End of code for DG method
 
 namespace exahype {
 namespace mappings {
-class CellDescriptionInit;
+class MarkingForAugmentation;
 }
 }
 
@@ -41,17 +39,19 @@ class CellDescriptionInit;
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::mappings::CellDescriptionInit {
+class exahype::mappings::MarkingForAugmentation {
  private:
   /**
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
 
-  /**
-   * Local copy of the state.
-   */
-  exahype::State _localState;
+  exahype::solvers::Solver::RefinementControl
+  virtualRefinementCriterion(
+      const int solverNumber,
+      const tarch::la::Vector<THREE_POWER_D, int>&
+      neighbourCellDescriptionIndices) const;
+
 
  public:
   /**
@@ -102,7 +102,7 @@ class exahype::mappings::CellDescriptionInit {
    * that your code works on a parallel machine and for any mapping/algorithm
    * modification.
    */
-  CellDescriptionInit();
+  MarkingForAugmentation();
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -115,13 +115,13 @@ class exahype::mappings::CellDescriptionInit {
    *
    * @see mergeWithWorkerThread()
    */
-  CellDescriptionInit(const CellDescriptionInit& masterThread);
+  MarkingForAugmentation(const MarkingForAugmentation& masterThread);
 #endif
 
   /**
    * Destructor. Typically does not implement any operation.
    */
-  virtual ~CellDescriptionInit();
+  virtual ~MarkingForAugmentation();
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -152,7 +152,7 @@ class exahype::mappings::CellDescriptionInit {
    * on the heap. However, you should protect this object by a BooleanSemaphore
    * and a lock to serialise all accesses to the plotter.
    */
-  void mergeWithWorkerThread(const CellDescriptionInit& workerThread);
+  void mergeWithWorkerThread(const MarkingForAugmentation& workerThread);
 #endif
 
   /**
@@ -522,7 +522,7 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
    * distinguish between inner and boundary cells, i.e. if you want to react
    * differently, you have to implement this manually.
    *
-   * Remarks:
+   * ReMarkingForAugmentations:
    * - If you need the position of the vertices of the cell or its size, use the
    *   enumerator.
    * - If the destory is invoked due to load balancing, it is called after the
@@ -1001,12 +1001,38 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
 
   /**
-   * Enter a cell and initialise the patches
+   * Enter a cell
    *
-   * We do this for all the cells in the tree as (potentially) all cells
-   * might become compute cells one day.
+   * In the Peano world, an algorithm tells the grid that the grid should be
+   * traversed. The grid then decides how to do this and runs over all cells
+   * (and vertices). For each cell, it calls handleCell(), i.e. if you want
+   * your algorithm to do somethin on a cell, you should implement this
+   * operation.
    *
-   * @see Cell::initCellInComputeTree()
+   * @image html peano/grid/geometry-cell-inside-outside.png
+   *
+   * The operation is called for each inner and boundary element and, again,
+   * you may not access the cell's adjacent vertices directly. Instead, you
+   * have to use the enumerator. For all adjacent vertices of this cell,
+   * touchVertexFirstTime() already has been called. touchVertexLastTime() has
+   * not been called yet.
+   * More information on the interplay with ascend() and
+   * descend() can be found in peano::grid::nodes::Refined.
+   *
+   * If you need the position of the vertices of the cell or its size, use the
+   * enumerator.
+   *
+   * !!! Optimisation
+   *
+   * This operation is invoked if and only if the corresponding specification
+   * flag does not hold NOP. Due to this specification flag you also can define
+   * whether this operation works on the leaves only, whether it may be
+   * called in parallel by multiple threads, and whether it is fail-safe or
+   * can at least be called multiple times if a thread crashes.
+   *
+   * @see createCell() for a description of the arguments.
+   *
+   * @see peano::MappingSpecification for information on thread safety.
    */
   void enterCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -1017,7 +1043,8 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
-   * Nop
+   * This is the counterpart of enterCell(). See this operation for a
+   * description of the arguments.
    */
   void leaveCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -1028,12 +1055,64 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
-   * Set the names etc. for the heaps of the cell descriptions.
+   * Begin an iteration
+   *
+   * This operation is called whenever the algorithm tells Peano that the grid
+   * is to be traversed, i.e. this operation is called before any creational
+   * mapping operation or touchVertexFirstTime() or handleCell() is called.
+   * The operation receives a solver state that has to
+   * encode the solver's state. Take this attribute to set the mapping's
+   * attributes. This class' attributes will remain valid until endIteration()
+   * is called. Afterwards they might contain garbage.
+   *
+   * !!! Parallelisation
+   *
+   * If you run your code in parallel, beginIteration() and endIteration()
+   * realise the following lifecycle together with the state object:
+   *
+   * - Receive the state from the master if there is a master.
+   * - beginIteration()
+   * - Distribute the state among the workers if there are workers.
+   * - Merge the states from the workers (if they exist) into the own state.
+   * - endIteration()
+   * - Send the state to the master if there is a master.
+   *
+   * Please note that the beginIteration() time constraint is weakened in the
+   * parallel case if you choose to receive data on the worker late. Then,
+   * beginIteration() might not be called prior to any other event. See the
+   * documentation of CommunicationSpecification for details.
+   *
+   * @see MarkingForAugmentation()
    */
   void beginIteration(exahype::State& solverState);
 
   /**
-   * Nop
+   * Iteration is done
+   *
+   * This operation is called at the very end, i.e. after all the handleCell()
+   * and touchVertexLastTime() operations have been invoked. In this
+   * operation, you have to write all the data you will need later on back to
+   * the state object passed. Afterwards, the attributes of your mapping
+   * object (as well as global static fields) might be overwritten.
+   *
+   * !!! Parallelisation
+   *
+   * If you run your code in parallel, beginIteration() and endIteration()
+   * realise the following lifecycle together with the state object:
+   *
+   * - Receive the state from the master if there is a master.
+   * - beginIteration()
+   * - Distribute the state among the workers if there are workers.
+   * - Merge the states from the workers (if they exist) into the own state.
+   * - endIteration()
+   * - Send the state to the master if there is a master.
+   *
+   * Please note that the endIteration() time constraint is weakened in the
+   * parallel case if you choose to send back data eagerly. Then, endIteration()
+   * might not be called after all other events. See the documentation
+   * of CommunicationSpecification for details.
+   *
+   * @see MarkingForAugmentation()
    */
   void endIteration(exahype::State& solverState);
 

@@ -26,7 +26,7 @@ exahype::mappings::GlobalTimeStepComputation::communicationSpecification() {
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification exahype::mappings::GlobalTimeStepComputation::
-    touchVertexLastTimeSpecification() {
+touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
@@ -36,7 +36,7 @@ peano::MappingSpecification exahype::mappings::GlobalTimeStepComputation::
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::MappingSpecification exahype::mappings::GlobalTimeStepComputation::
-    touchVertexFirstTimeSpecification() {
+touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
@@ -106,14 +106,14 @@ void exahype::mappings::GlobalTimeStepComputation::prepareEmptyLocalTimeStepData
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(
-  const GlobalTimeStepComputation& masterThread
+    const GlobalTimeStepComputation& masterThread
 ) {
   prepareEmptyLocalTimeStepData();
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(
-  const GlobalTimeStepComputation& workerThread
+    const GlobalTimeStepComputation& workerThread
 ) {
   for (int i=0; i<static_cast<int>( exahype::solvers::RegisteredSolvers.size() ); i++) {
     _minTimeStepSizes[i] = std::min( _minTimeStepSizes[i], workerThread._minTimeStepSizes[i] );
@@ -227,19 +227,19 @@ void exahype::mappings::GlobalTimeStepComputation::prepareCopyToRemoteNode(
 }
 
 void exahype::mappings::GlobalTimeStepComputation::
-    mergeWithRemoteDataDueToForkOrJoin(
-        exahype::Vertex& localVertex,
-        const exahype::Vertex& masterOrWorkerVertex, int fromRank,
-        const tarch::la::Vector<DIMENSIONS, double>& x,
-        const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+mergeWithRemoteDataDueToForkOrJoin(
+    exahype::Vertex& localVertex,
+    const exahype::Vertex& masterOrWorkerVertex, int fromRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
 void exahype::mappings::GlobalTimeStepComputation::
-    mergeWithRemoteDataDueToForkOrJoin(
-        exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
-        int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-        const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
+mergeWithRemoteDataDueToForkOrJoin(
+    exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
+    int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
@@ -265,40 +265,40 @@ void exahype::mappings::GlobalTimeStepComputation::prepareSendToMaster(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell
 ) {
   MPI_Send(
-    _minTimeStepSizes.data(),
-    _minTimeStepSizes.size(),
-    MPI_DOUBLE,
-    tarch::parallel::NodePool::getInstance().getMasterRank(),
-    _mpiTag,
-    tarch::parallel::Node::getInstance().getCommunicator()
+      _minTimeStepSizes.data(),
+      _minTimeStepSizes.size(),
+      MPI_DOUBLE,
+      tarch::parallel::NodePool::getInstance().getMasterRank(),
+      _mpiTag,
+      tarch::parallel::Node::getInstance().getCommunicator()
   );
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithMaster(
-  const exahype::Cell& workerGridCell,
-  exahype::Vertex* const workerGridVertices,
-  const peano::grid::VertexEnumerator& workerEnumerator,
-  exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-  const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-  exahype::Vertex* const coarseGridVertices,
-  const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-  exahype::Cell& coarseGridCell,
-  const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-  int worker,
-  const exahype::State& workerState,
-  exahype::State& masterState
+    const exahype::Cell& workerGridCell,
+    exahype::Vertex* const workerGridVertices,
+    const peano::grid::VertexEnumerator& workerEnumerator,
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker,
+    const exahype::State& workerState,
+    exahype::State& masterState
 ) {
   std::vector<double>  receivedMinTimeStepSizes(_minTimeStepSizes.size());
 
   MPI_Recv(
-    receivedMinTimeStepSizes.data(),
-    receivedMinTimeStepSizes.size(),
-    MPI_DOUBLE,
-    worker,
-    _mpiTag,
-    tarch::parallel::Node::getInstance().getCommunicator(),
-    MPI_STATUS_IGNORE
+      receivedMinTimeStepSizes.data(),
+      receivedMinTimeStepSizes.size(),
+      MPI_DOUBLE,
+      worker,
+      _mpiTag,
+      tarch::parallel::Node::getInstance().getCommunicator(),
+      MPI_STATUS_IGNORE
   );
 
   for( int i=0; i<static_cast<int>(_minTimeStepSizes.size()); i++ ) {
@@ -358,71 +358,75 @@ void exahype::mappings::GlobalTimeStepComputation::touchVertexLastTime(
 }
 
 void exahype::mappings::GlobalTimeStepComputation::enterCell(
-  exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-  const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-  exahype::Vertex* const coarseGridVertices,
-  const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-  exahype::Cell& coarseGridCell,
-  const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
-      const int numberOfADERDGCellDescriptions = static_cast<int>(
-          ADERDGCellDescriptionHeap::getInstance()
-      .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-      .size());
-
-      // please use a different UserDefined per mapping/event
-      const peano::datatraversal::autotuning::MethodTrace methodTrace =
-          peano::datatraversal::autotuning::UserDefined2;
-      const int grainSize =
-          peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-              numberOfADERDGCellDescriptions, methodTrace);
-      pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
+    const int numberOfADERDGCellDescriptions = static_cast<int>(
+        ADERDGCellDescriptionHeap::getInstance()
+    .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+    .size());
+    // please use a different UserDefined per mapping/event
+    const peano::datatraversal::autotuning::MethodTrace methodTrace =
+        peano::datatraversal::autotuning::UserDefined2;
+    const int grainSize =
+        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+            numberOfADERDGCellDescriptions, methodTrace);
+    pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
       records::ADERDGCellDescription& p =
           ADERDGCellDescriptionHeap::getInstance().getData(
               fineGridCell.getADERDGCellDescriptionsIndex())[i];
+      switch(p.getType()) {
+        case exahype::records::ADERDGCellDescription::Cell:
+          switch(p.getRefinementEvent()) {
+            case exahype::records::ADERDGCellDescription::None:
+              exahype::solvers::Solver* solver =
+                  exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-      if (p.getType()==exahype::records::ADERDGCellDescription::RealCell) {
-        exahype::solvers::Solver* solver =
-            exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+              double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
 
-        double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
+              double admissibleTimeStepSize = solver->
+                  stableTimeStepSize(luh, fineGridVerticesEnumerator.getCellSize());
 
-        double admissibleTimeStepSize = solver->
-            stableTimeStepSize(luh, fineGridVerticesEnumerator.getCellSize());
+              assertionEquals(admissibleTimeStepSize,admissibleTimeStepSize); // assert no nan
 
-        logDebug("enterCell(...)::dt_adm", admissibleTimeStepSize);  // Delta tp+1
+              // direct update of the cell description time steps
+              p.setCorrectorTimeStamp(p.getPredictorTimeStamp());
+              p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
+              p.setPredictorTimeStamp(p.getPredictorTimeStamp() + admissibleTimeStepSize);
+              p.setPredictorTimeStepSize(admissibleTimeStepSize);
+              //p.setNextPredictorTimeStepSize(admissibleTimeStepSize);
 
-        // direct update of the cell description time steps
-        p.setCorrectorTimeStamp(p.getPredictorTimeStamp());
-        p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
-        p.setPredictorTimeStamp(p.getPredictorTimeStamp() + admissibleTimeStepSize);
-        p.setPredictorTimeStepSize(admissibleTimeStepSize);
-        //p.setNextPredictorTimeStepSize(admissibleTimeStepSize);
+              // todo 16/02/27:Dominic Etienne Charrier
+              // in case we use optimistic time stepping:
+              // if last predictor time step size is larger
+              // as admissibleTimeStepSize + tolerance:
+              // make sure that corrector time step size
+              // will equal predictor time step size in next
+              // sweep.
+              // Extra attention must be paid to time stamps.
+              // All this should be done by the solver.
 
-        // todo 16/02/27:Dominic Etienne Charrier
-        // in case we use optimistic time stepping:
-        // if last predictor time step size is larger
-        // as admissibleTimeStepSize + tolerance:
-        // make sure that corrector time step size
-        // will equal predictor time step size in next
-        // sweep.
-        // Extra attention must be paid to time stamps.
-        // All this should be done by the solver.
+              // indirect update of the solver time step sizes
+              //  tarch::multicore::Lock lock(_semaphore);
 
-        // indirect update of the solver time step sizes
-        //  tarch::multicore::Lock lock(_semaphore);
-
-        _minTimeStepSizes[ p.getSolverNumber() ] = std::min( admissibleTimeStepSize, _minTimeStepSizes[ p.getSolverNumber() ] );
-        //logInfo( "enterCell()", "update local entry " << p->getSolverNumber() << " with " << admissibleTimeStepSize << ", set " << _minTimeStepSizes[ p->getSolverNumber() ] );
-        //  lock.free();
+              _minTimeStepSizes[ p.getSolverNumber() ] = std::min( admissibleTimeStepSize, _minTimeStepSizes[ p.getSolverNumber() ] );
+              //logInfo( "enterCell()", "update local entry " << p->getSolverNumber() << " with " << admissibleTimeStepSize << ", set " << _minTimeStepSizes[ p->getSolverNumber() ] );
+              //  lock.free();
+              break;
+          }
+          break;
       }
-      endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-      .parallelSectionHasTerminated(methodTrace);
+    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
+    .parallelSectionHasTerminated(methodTrace);
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
@@ -439,18 +443,18 @@ void exahype::mappings::GlobalTimeStepComputation::leaveCell(
 
 
 void exahype::mappings::GlobalTimeStepComputation::beginIteration(
-  exahype::State& solverState
+    exahype::State& solverState
 ) {
   prepareEmptyLocalTimeStepData();
 }
 
 
 void exahype::mappings::GlobalTimeStepComputation::endIteration(
-  exahype::State& solverState
+    exahype::State& solverState
 ) {
   for (int i=0; i<static_cast<int>( exahype::solvers::RegisteredSolvers.size() ); i++) {
     exahype::solvers::Solver* solver =
-      exahype::solvers::RegisteredSolvers[i];
+        exahype::solvers::RegisteredSolvers[i];
 
     logDebug( "mergeLocalTimeStepDataIntoSolvers()", "solver " << i << " is updated with time step size " << _minTimeStepSizes[i] );
     solver->updateMinNextPredictorTimeStepSize( _minTimeStepSizes[i] );
