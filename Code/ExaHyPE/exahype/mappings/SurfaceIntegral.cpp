@@ -334,22 +334,24 @@ void exahype::mappings::SurfaceIntegral::enterCell(
       records::ADERDGCellDescription& p =
           ADERDGCellDescriptionHeap::getInstance().getData(
               fineGridCell.getADERDGCellDescriptionsIndex())[i];
+    exahype::solvers::Solver* solver =
+        exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+    double* lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
+    double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
       switch(p.getType()) {
         case exahype::records::ADERDGCellDescription::Cell:
           switch(p.getRefinementEvent()) {
             case exahype::records::ADERDGCellDescription::None:
-              exahype::solvers::Solver* solver =
-                  exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
-
-              double* lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
-              double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
-
               solver->surfaceIntegral(lduh, lFhbnd,
                                       fineGridVerticesEnumerator.getCellSize());
               break;
+            default:
+              break;
           }
           break;
+          default:
+            break;
       }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
     .parallelSectionHasTerminated(methodTrace);

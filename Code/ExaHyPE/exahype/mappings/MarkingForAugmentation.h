@@ -21,6 +21,8 @@
 #include "exahype/Cell.h"
 #include "exahype/State.h"
 
+#include "exahype/solvers/Solver.h"
+
 // ! Begin of code for DG method
 #include "peano/utils/Globals.h"
 // ! End of code for DG method
@@ -51,7 +53,6 @@ class exahype::mappings::MarkingForAugmentation {
       const int solverNumber,
       const tarch::la::Vector<THREE_POWER_D, int>&
       neighbourCellDescriptionIndices) const;
-
 
  public:
   /**

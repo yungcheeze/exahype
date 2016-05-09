@@ -304,9 +304,9 @@ void exahype::mappings::Erasing::enterCell(
         pFine++) {
       switch (pFine->getRefinementEvent()) {
         case exahype::records::ADERDGCellDescription::Erasing:
-          assertion1(pFine->getType()==exahype::records::ADERDGCellDescription::Cell
+          assertion(pFine->getType()==exahype::records::ADERDGCellDescription::Cell
                      || pFine->getType()==exahype::records::ADERDGCellDescription::Descendant);
-          fineGridCell.cleanCellDescription(pFine->getSolverNumber());
+          fineGridCell.cleanCellDescription(pFine);
           break;
         default:
           eraseFineGridCell=false;
@@ -322,6 +322,8 @@ void exahype::mappings::Erasing::enterCell(
         switch (fineGridVertices[kScalar].getRefinementControl()) {
           case Vertex::Records::Unrefined: // todo not sure if this is the default state
             fineGridVertices->erase();
+            break;
+          default:
             break;
         }
       enddforx

@@ -6,7 +6,10 @@
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::CommunicationSpecification   exahype::mappings::Marking::communicationSpecification() {
-  return peano::CommunicationSpecification(peano::CommunicationSpecification::SendDataAndStateBeforeFirstTouchVertexFirstTime,peano::CommunicationSpecification::SendDataAndStateAfterLastTouchVertexLastTime,false);
+  return peano::CommunicationSpecification(
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+      true);
 }
 
 

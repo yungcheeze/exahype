@@ -325,11 +325,11 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
                 getData(p.getParentIndex()).end();
             ++pParent) {
           if (p.getSolverNumber()==pParent->getSolverNumber()) {
+            exahype::Cell::SubcellPosition subcellPosition =
+                fineGridCell.computeSubcellPositionOfCellOrAncestor(p);
+
             switch (p.getType()) {
               case exahype::records::ADERDGCellDescription::Descendant:
-                exahype::Cell::SubcellPosition subcellPosition =
-                    fineGridCell.computeSubcellPositionOfDescendant(p);
-
                 prolongateFaceData(
                     p,
                     subcellPosition.parentIndex,
@@ -337,13 +337,12 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
                 break;
               case exahype::records::ADERDGCellDescription::Cell:
               case exahype::records::ADERDGCellDescription::Ancestor:
-                exahype::Cell::SubcellPosition subcellPosition =
-                    fineGridCell.computeSubcellPositionOfCellOrAncestor(p);
-
                 restrictFaceData(
                     p,
                     subcellPosition.parentIndex,
                     subcellPosition.subcellIndex);
+                break;
+              default:
                 break;
             }
           }
@@ -366,15 +365,9 @@ void exahype::mappings::FaceUnknownsProjection::prolongateFaceData(
 
   assertion(cellDescriptionParent.getSolverNumber()==
           cellDescription.getSolverNumber());
-  assertion(cellDescriptionParent.getParent());
   assertion(cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::Cell
             ||
-            cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::VirtualShell);
-#if defined(Debug) || defined(Asserts)
-              if (cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::VirtualShell) {
-                assertion(cellDescriptionParent.getHasNeighboursOfTypeCell());
-              }
-#endif
+            cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::Descendant);
 
   const int levelFine   = cellDescription.getLevel();
   const int levelCoarse = cellDescriptionParent.getLevel();
@@ -444,8 +437,7 @@ void exahype::mappings::FaceUnknownsProjection::restrictFaceData(
 
   assertion(cellDescriptionParent.getSolverNumber()==
           cellDescription.getSolverNumber());
-  assertion(cellDescriptionParent.getParent());
-  assertion(cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::Shell);
+  assertion(cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::Ancestor);
 
   const int levelFine   = cellDescription.getLevel();
   const int levelCoarse = cellDescriptionParent.getLevel();

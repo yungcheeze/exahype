@@ -366,8 +366,8 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell
 ) {
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-                           fineGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfCell);
+      fineGridVerticesEnumerator.toString(),
+      coarseGridCell, fineGridPositionOfCell);
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
@@ -381,50 +381,55 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      records::ADERDGCellDescription& p =
-          ADERDGCellDescriptionHeap::getInstance().getData(
-              fineGridCell.getADERDGCellDescriptionsIndex())[i];
-      switch(p.getType()) {
-        case exahype::records::ADERDGCellDescription::Cell:
-          switch(p.getRefinementEvent()) {
-            case exahype::records::ADERDGCellDescription::None:
-              exahype::solvers::Solver* solver =
-                  exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+    records::ADERDGCellDescription& p =
+        ADERDGCellDescriptionHeap::getInstance().getData(
+            fineGridCell.getADERDGCellDescriptionsIndex())[i];
+    exahype::solvers::Solver* solver =
+        exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-              double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
+    double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
 
-              double admissibleTimeStepSize = solver->
-                  stableTimeStepSize(luh, fineGridVerticesEnumerator.getCellSize());
+    double admissibleTimeStepSize = solver->
+        stableTimeStepSize(luh, fineGridVerticesEnumerator.getCellSize());
 
-              assertionEquals(admissibleTimeStepSize,admissibleTimeStepSize); // assert no nan
+    switch(p.getType()) {
+    case exahype::records::ADERDGCellDescription::Cell:
+      switch(p.getRefinementEvent()) {
+      case exahype::records::ADERDGCellDescription::None:
 
-              // direct update of the cell description time steps
-              p.setCorrectorTimeStamp(p.getPredictorTimeStamp());
-              p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
-              p.setPredictorTimeStamp(p.getPredictorTimeStamp() + admissibleTimeStepSize);
-              p.setPredictorTimeStepSize(admissibleTimeStepSize);
-              //p.setNextPredictorTimeStepSize(admissibleTimeStepSize);
+        assertionEquals(admissibleTimeStepSize,admissibleTimeStepSize); // assert no nan
 
-              // todo 16/02/27:Dominic Etienne Charrier
-              // in case we use optimistic time stepping:
-              // if last predictor time step size is larger
-              // as admissibleTimeStepSize + tolerance:
-              // make sure that corrector time step size
-              // will equal predictor time step size in next
-              // sweep.
-              // Extra attention must be paid to time stamps.
-              // All this should be done by the solver.
+        // direct update of the cell description time steps
+        p.setCorrectorTimeStamp(p.getPredictorTimeStamp());
+        p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
+        p.setPredictorTimeStamp(p.getPredictorTimeStamp() + admissibleTimeStepSize);
+        p.setPredictorTimeStepSize(admissibleTimeStepSize);
+        //p.setNextPredictorTimeStepSize(admissibleTimeStepSize);
 
-              // indirect update of the solver time step sizes
-              //  tarch::multicore::Lock lock(_semaphore);
+        // todo 16/02/27:Dominic Etienne Charrier
+        // in case we use optimistic time stepping:
+        // if last predictor time step size is larger
+        // as admissibleTimeStepSize + tolerance:
+        // make sure that corrector time step size
+        // will equal predictor time step size in next
+        // sweep.
+        // Extra attention must be paid to time stamps.
+        // All this should be done by the solver.
 
-              _minTimeStepSizes[ p.getSolverNumber() ] = std::min( admissibleTimeStepSize, _minTimeStepSizes[ p.getSolverNumber() ] );
-              //logInfo( "enterCell()", "update local entry " << p->getSolverNumber() << " with " << admissibleTimeStepSize << ", set " << _minTimeStepSizes[ p->getSolverNumber() ] );
-              //  lock.free();
-              break;
-          }
-          break;
+        // indirect update of the solver time step sizes
+        //  tarch::multicore::Lock lock(_semaphore);
+
+        _minTimeStepSizes[ p.getSolverNumber() ] = std::min( admissibleTimeStepSize, _minTimeStepSizes[ p.getSolverNumber() ] );
+        //logInfo( "enterCell()", "update local entry " << p->getSolverNumber() << " with " << admissibleTimeStepSize << ", set " << _minTimeStepSizes[ p->getSolverNumber() ] );
+        //  lock.free();
+        break;
+      default:
+        break;
       }
+      break;
+      default:
+        break;
+    }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
     .parallelSectionHasTerminated(methodTrace);
   }

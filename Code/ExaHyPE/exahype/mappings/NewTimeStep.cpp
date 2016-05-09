@@ -90,7 +90,7 @@ exahype::mappings::NewTimeStep::~NewTimeStep() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::NewTimeStep::NewTimeStep(const NewTimeStep& masterThread)
-    : _localState(masterThread._localState) {}
+: _localState(masterThread._localState) {}
 
 void exahype::mappings::NewTimeStep::mergeWithWorkerThread(
     const NewTimeStep& workerThread) {
@@ -218,18 +218,18 @@ void exahype::mappings::NewTimeStep::mergeWithRemoteDataDueToForkOrJoin(
 
 
 bool exahype::mappings::NewTimeStep::prepareSendToWorker(
-  exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-  const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-  exahype::Vertex* const coarseGridVertices,
-  const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-  exahype::Cell& coarseGridCell,
-  const tarch::la::Vector<DIMENSIONS, int>&  fineGridPositionOfCell,
-  int                                        worker
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>&  fineGridPositionOfCell,
+    int                                        worker
 ) {
   for (
-    std::vector<exahype::solvers::Solver*>::iterator p = exahype::solvers::RegisteredSolvers.begin();
-    p != exahype::solvers::RegisteredSolvers.end();
-    p++
+      std::vector<exahype::solvers::Solver*>::iterator p = exahype::solvers::RegisteredSolvers.begin();
+      p != exahype::solvers::RegisteredSolvers.end();
+      p++
   ) {
     (*p)->sendToRank(worker, _mpiTag);
   }
@@ -275,9 +275,9 @@ void exahype::mappings::NewTimeStep::receiveDataFromMaster(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell
 ) {
   for (
-    std::vector<exahype::solvers::Solver*>::iterator p = exahype::solvers::RegisteredSolvers.begin();
-    p != exahype::solvers::RegisteredSolvers.end();
-    p++
+      std::vector<exahype::solvers::Solver*>::iterator p = exahype::solvers::RegisteredSolvers.begin();
+      p != exahype::solvers::RegisteredSolvers.end();
+      p++
   ) {
     (*p)->receiveFromRank(tarch::parallel::NodePool::getInstance().getMasterRank(),_mpiTag);
   }
@@ -328,8 +328,8 @@ void exahype::mappings::NewTimeStep::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-                           fineGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfCell);
+      fineGridVerticesEnumerator.toString(),
+      coarseGridCell, fineGridPositionOfCell);
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
@@ -344,21 +344,25 @@ void exahype::mappings::NewTimeStep::enterCell(
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      records::ADERDGCellDescription& p =
-          ADERDGCellDescriptionHeap::getInstance().getData(
-              fineGridCell.getADERDGCellDescriptionsIndex())[i];
+    records::ADERDGCellDescription& p =
+        ADERDGCellDescriptionHeap::getInstance().getData(
+            fineGridCell.getADERDGCellDescriptionsIndex())[i];
 
+      exahype::solvers::Solver* solver =
+          exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
       switch(p.getType()) {
-        case exahype::records::ADERDGCellDescription::Cell:
-          switch(p.getRefinementEvent()) {
-            case exahype::records::ADERDGCellDescription::None: {
-              exahype::solvers::Solver* solver =
-                  exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
-              solver->synchroniseTimeStepping(p);
-              break;
-            }
-            break;
-          }
+      case exahype::records::ADERDGCellDescription::Cell:
+        switch(p.getRefinementEvent()) {
+        case exahype::records::ADERDGCellDescription::None:
+          solver->synchroniseTimeStepping(p);
+          break;
+        default:
+          break;
+        }
+        break;
+        default:
+          break;
+      }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
     .parallelSectionHasTerminated(methodTrace);
   }
