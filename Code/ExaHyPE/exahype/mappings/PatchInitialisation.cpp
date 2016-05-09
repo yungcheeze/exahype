@@ -295,6 +295,7 @@ void exahype::mappings::PatchInitialisation::enterCell(
 
   // Hasn't been initialised yet
   assertion( !ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex()) );
+  fineGridCell.setupMetaData();
 
   // @todo 16/04/05:Dominic Etienne Charrier: this mapping functionality will be replaced
   // by a regular mesh and cell a cell description init
