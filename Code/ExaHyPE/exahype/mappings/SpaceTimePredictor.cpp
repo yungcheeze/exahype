@@ -183,23 +183,6 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
   tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
       vertex.getADERDGCellDescriptionsIndex();
 
-  /* Right cell-left cell   pair indices: 0,1; 2,3;   4,5; 6;7
-   * Front cell-back cell   pair indices: 0,2; 1,3;   4,6; 5;7
-   * Top   cell-bottom cell pair indices: 0,4; 1,5;   2,6; 3;7
-   *
-   * Note that from the viewpoint of a cell, the face
-   * has always the "opposite" index, i.e., we solve a Riemann
-   * problem on the left face of the right cell (which
-   * is the right face of the left cell).
-   */
-  constexpr int cellIndicesLeft  [4] = {0, 2, 4, 6};
-  constexpr int cellIndicesRight [4] = {1, 3, 5, 7};
-  constexpr int cellIndicesFront [4] = {0, 1, 4, 5};
-  constexpr int cellIndicesBack  [4] = {2, 3, 6, 7};
-#if DIMENSIONS == 3
-  constexpr int cellIndicesBottom[4] = {0, 1, 2, 3};
-  constexpr int cellIndicesTop   [4] = {4, 5, 6, 7};
-#endif
   dfor2(dest)
   dfor2(src)
     if (
@@ -244,6 +227,7 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
             #endif
           }
           else {
+            logInfo( "prepareSendToNeighbour(...)", "send two arrays to rank " << toRank << " for vertex " << vertex.toString()  << ", dest type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(destScalar))  );
             DataHeap::getInstance().sendData( lQhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
             DataHeap::getInstance().sendData( lFhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
           }

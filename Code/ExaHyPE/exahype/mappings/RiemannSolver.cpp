@@ -1,12 +1,15 @@
 #include "exahype/mappings/RiemannSolver.h"
 
 #include "peano/utils/Globals.h"
+#include "peano/datatraversal/autotuning/Oracle.h"
 
 #include "tarch/multicore/Lock.h"
 #include "tarch/multicore/Loop.h"
-#include "peano/datatraversal/autotuning/Oracle.h"
 
 #include "exahype/solvers/Solver.h"
+
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -179,10 +182,71 @@ void exahype::mappings::RiemannSolver::destroyCell(
 
 #ifdef Parallel
 void exahype::mappings::RiemannSolver::mergeWithNeighbour(
-    exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
-  // do nothing
+  exahype::Vertex&                              vertex,
+  const exahype::Vertex&                        neighbour,
+  int                                           fromRank,
+  const tarch::la::Vector<DIMENSIONS, double>&  fineGridX,
+  const tarch::la::Vector<DIMENSIONS, double>&  fineGridH,
+  int                                           level
+) {
+  tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
+      vertex.getADERDGCellDescriptionsIndex();
+
+  dfor2(dest)
+  dfor2(src)
+    if (
+      vertex.getAdjacentRanks()(destScalar)==tarch::parallel::Node::getInstance().getRank()
+      &&
+      vertex.getAdjacentRanks()(srcScalar)==fromRank
+      &&
+      tarch::la::countEqualEntries(dest,src)==1    // we are solely exchanging faces
+      &&
+      adjacentADERDGCellDescriptionsIndices(destScalar)!=multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex
+    ) {
+      const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
+      assertion5(
+        ADERDGCellDescriptionHeap::getInstance().isValidIndex(srcCellDescriptionIndex),
+        src, dest,
+        multiscalelinkedcell::indicesToString( adjacentADERDGCellDescriptionsIndices ),
+        vertex.toString(),
+        tarch::parallel::Node::getInstance().getRank()
+      );
+      std::vector<records::ADERDGCellDescription>& cellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(srcCellDescriptionIndex);
+
+      for (int currentSolver=0; currentSolver<static_cast<int>(cellDescriptions.size()); currentSolver++) {
+        if (cellDescriptions[currentSolver].getType()==exahype::records::ADERDGCellDescription::Cell) {
+          exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[cellDescriptions[currentSolver].getSolverNumber()];
+
+          const int numberOfFaceDof       = solver->getUnknownsPerFace();
+          const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src,dest);
+          assertion(normalOfExchangedFace>=0 && normalOfExchangedFace<DIMENSIONS);
+          const int offsetInFaceArray     = 2*normalOfExchangedFace + src(normalOfExchangedFace)<dest(normalOfExchangedFace) ? 0 : 1;
+
+          assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getExtrapolatedPredictor()) );
+          assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getFluctuation()) );
+
+          const double* lQhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getExtrapolatedPredictor()).data() + (offsetInFaceArray * numberOfFaceDof);
+          const double* lFhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getFluctuation()).data()           + (offsetInFaceArray * numberOfFaceDof);
+
+          if ( adjacentADERDGCellDescriptionsIndices(destScalar)==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex ) {
+            #ifdef PeriodicBC
+            assertionMsg( false, "Vasco, we have to implement this" );
+            #endif
+          }
+          else {
+            logInfo( "mergeWithNeighbour(...)", "receive two arrays from rank " << fromRank << " for vertex " << vertex.toString() << ", src type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(srcScalar)) );
+
+            DataHeap::HeapEntries lQhbnd = DataHeap::getInstance().receiveData( fromRank, fineGridX, level, peano::heap::MessageType::NeighbourCommunication );
+            DataHeap::HeapEntries lFhbnd = DataHeap::getInstance().receiveData( fromRank, fineGridX, level, peano::heap::MessageType::NeighbourCommunication );
+          }
+        }
+        else {
+          assertionMsg( false, "Dominic, please implement" );
+        }
+      }
+    }
+  enddforx
+  enddforx
 }
 
 
