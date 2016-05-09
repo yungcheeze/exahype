@@ -1,11 +1,14 @@
 #include "exahype/mappings/SpaceTimePredictor.h"
+#include "exahype/solvers/Solver.h"
 
 #include "peano/utils/Globals.h"
-
-#include "tarch/multicore/Loop.h"
 #include "peano/datatraversal/autotuning/Oracle.h"
 
-#include "exahype/solvers/Solver.h"
+#include "tarch/multicore/Loop.h"
+
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
+
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -199,34 +202,57 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
 #endif
   dfor2(dest)
   dfor2(src)
-  if (
+    if (
       vertex.getAdjacentRanks()(destScalar)==toRank
       &&
       vertex.getAdjacentRanks()(srcScalar)==tarch::parallel::Node::getInstance().getRank()
       &&
       tarch::la::countEqualEntries(dest,src)==1    // we are solely exchanging faces
-  ) {
-    std::vector<records::ADERDGCellDescription>& cellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(srcScalar);
-    for (int currentSolver=0; currentSolver<static_cast<int>(cellDescriptions.size()); currentSolver++) {
-      if (cellDescriptions[currentSolver].getType()==exahype::records::ADERDGCellDescription::RealCell) {
-        exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[cellDescriptions[currentSolver].getSolverNumber()];
+      &&
+      adjacentADERDGCellDescriptionsIndices(srcScalar)!=multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex
+    ) {
+      const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
+      assertion5(
+        ADERDGCellDescriptionHeap::getInstance().isValidIndex(srcCellDescriptionIndex),
+        src, dest,
+        multiscalelinkedcell::indicesToString( adjacentADERDGCellDescriptionsIndices ),
+        vertex.toString(),
+        tarch::parallel::Node::getInstance().getRank()
+      );
+      std::vector<records::ADERDGCellDescription>& cellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(srcCellDescriptionIndex);
 
-        const int numberOfFaceDof       = solver->getUnknownsPerFace();
-        const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src,dest);
-        assertion(normalOfExchangedFace>=0 && normalOfExchangedFace<DIMENSIONS);
-        const int offsetInFaceArray     = 2*normalOfExchangedFace + src(normalOfExchangedFace)<dest(normalOfExchangedFace) ? 1 : 0;
+      for (int currentSolver=0; currentSolver<static_cast<int>(cellDescriptions.size()); currentSolver++) {
+        if (cellDescriptions[currentSolver].getType()==exahype::records::ADERDGCellDescription::Cell) {
+          exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[cellDescriptions[currentSolver].getSolverNumber()];
 
-        const double* lQhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getExtrapolatedPredictor()).data() + (offsetInFaceArray * numberOfFaceDof);
-        const double* lFhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getFluctuation()).data()           + (offsetInFaceArray * numberOfFaceDof);
+          const int numberOfFaceDof       = solver->getUnknownsPerFace();
+          const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src,dest);
+          assertion(normalOfExchangedFace>=0 && normalOfExchangedFace<DIMENSIONS);
+          const int offsetInFaceArray     = 2*normalOfExchangedFace + src(normalOfExchangedFace)<dest(normalOfExchangedFace) ? 1 : 0;
 
-        DataHeap::getInstance().sendData( lQhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
-        DataHeap::getInstance().sendData( lFhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
-      }
-      else {
-        assertionMsg( false, "Dominic, please implement" );
+          assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getExtrapolatedPredictor()) );
+          assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getFluctuation()) );
+
+          const double* lQhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getExtrapolatedPredictor()).data() + (offsetInFaceArray * numberOfFaceDof);
+          const double* lFhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getFluctuation()).data()           + (offsetInFaceArray * numberOfFaceDof);
+
+          if ( adjacentADERDGCellDescriptionsIndices(destScalar)==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex ) {
+            #ifdef PeriodicBC
+            assertionMsg( false, "Vasco, we have to implement this" );
+            DataHeap::getInstance().sendData( lQhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
+            DataHeap::getInstance().sendData( lFhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
+            #endif
+          }
+          else {
+            DataHeap::getInstance().sendData( lQhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
+            DataHeap::getInstance().sendData( lFhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
+          }
+        }
+        else {
+          assertionMsg( false, "Dominic, please implement" );
+        }
       }
     }
-  }
   enddforx
   enddforx
 }
