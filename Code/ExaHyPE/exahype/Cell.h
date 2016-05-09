@@ -67,8 +67,9 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   Cell(const Base::PersistentCell& argument);
 
   /**
-   * Returns the heap index of the first ADERDGCellDescription associated
-   * with this cell.
+   * Returns meta data describing the surrounding cell descriptions. The
+   * routine is notably used by the automated adapters to derive adjacency
+   * information on the cell level.
    */
   int getADERDGCellDescriptionsIndex() const;
 
@@ -83,7 +84,26 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   }
 
   /**
+   * Each cell points to a series of cell descriptions. The array holding the
+   * series has to be stored on the heap and, consequently, initialised
+   * properly. This is done by create() while destroy() cleans up. Please note
+   * that you have to invoke create() once before you do anything with the cell
+   * at all. You should destroy() in return in the very end.
+   *
+   * The operation shows that each cell in the tree can theoretically hold a
+   * solver though only few do.
+   */
+  void setupMetaData();
+
+  /**
+   * @see setupMetaData()
+   */
+  void shutdownMetaData();
+
+  /**
    * todo docu
+   *
+   * @pre setupMetaData() has to be called before.
    */
   void addNewCellDescription(
       const int solverNumber,

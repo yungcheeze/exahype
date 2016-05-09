@@ -32,21 +32,35 @@ int exahype::Cell::getADERDGCellDescriptionsIndex() const {
   return _cellData.getADERDGCellDescriptionsIndex();
 }
 
+
+void exahype::Cell::setupMetaData() {
+  assertion1( !ADERDGCellDescriptionHeap::getInstance().isValidIndex( _cellData.getADERDGCellDescriptionsIndex()), toString() );
+
+  const int ADERDGCellDescriptionIndex =
+    ADERDGCellDescriptionHeap::getInstance().createData(0, 0);
+  _cellData.setADERDGCellDescriptionsIndex(ADERDGCellDescriptionIndex);
+}
+
+
+void exahype::Cell::shutdownMetaData() {
+  assertion1( ADERDGCellDescriptionHeap::getInstance().isValidIndex( _cellData.getADERDGCellDescriptionsIndex() ), toString() );
+
+  ADERDGCellDescriptionHeap::getInstance().deleteData( _cellData.getADERDGCellDescriptionsIndex() );
+}
+
+
 void exahype::Cell::addNewCellDescription(
     const int solverNumber,
     const exahype::records::ADERDGCellDescription::Type cellType,
     const exahype::records::ADERDGCellDescription::RefinementEvent
         refinementEvent,
-    const int level, const int parentIndex,
+    const int level,
+    const int parentIndex,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     const tarch::la::Vector<DIMENSIONS, double>& size,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre) {
-  if (!ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          _cellData.getADERDGCellDescriptionsIndex())) {
-    const int ADERDGCellDescriptionIndex =
-        ADERDGCellDescriptionHeap::getInstance().createData(0, 0);
-    _cellData.setADERDGCellDescriptionsIndex(ADERDGCellDescriptionIndex);
-  }
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre
+) {
+  assertion1( ADERDGCellDescriptionHeap::getInstance().isValidIndex( _cellData.getADERDGCellDescriptionsIndex()), toString() );
 
   const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
   switch (solver->getType()) {
