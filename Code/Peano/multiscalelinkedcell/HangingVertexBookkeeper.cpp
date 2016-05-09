@@ -11,6 +11,60 @@ const int multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacency
 tarch::logging::Log  multiscalelinkedcell::HangingVertexBookkeeper::_log( "multiscalelinkedcell::HangingVertexBookkeeper" );
 
 
+std::string multiscalelinkedcell::indicesToString( const tarch::la::Vector<THREE_POWER_D,int>& indices ) {
+  std::ostringstream msg;
+
+  msg << "(";
+  for (int i=0; i<THREE_POWER_D; i++) {
+    if (i!=0) msg << ",";
+    switch (indices(i)) {
+      case multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex:
+        msg << "invalid";
+        break;
+      case multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex:
+        msg << "remote";
+        break;
+      case multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex:
+        msg << "boundary";
+        break;
+      default:
+        msg << indices(i);
+        break;
+    }
+  }
+  msg << ")";
+
+  return msg.str();
+}
+
+
+std::string multiscalelinkedcell::indicesToString( const tarch::la::Vector<TWO_POWER_D,int>& indices ) {
+  std::ostringstream msg;
+
+  msg << "(";
+  for (int i=0; i<TWO_POWER_D; i++) {
+    if (i!=0) msg << ",";
+    switch (indices(i)) {
+      case multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex:
+        msg << "invalid";
+        break;
+      case multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex:
+        msg << "remote";
+        break;
+      case multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex:
+        msg << "boundary";
+        break;
+      default:
+        msg << indices(i);
+        break;
+    }
+  }
+  msg << ")";
+
+  return msg.str();
+}
+
+
 tarch::la::Vector<THREE_POWER_D,int> multiscalelinkedcell::getIndicesAroundCell(
   const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&  indices
 ) {

@@ -43,6 +43,9 @@ namespace multiscalelinkedcell {
   tarch::la::Vector<THREE_POWER_D,int> getIndicesAroundCell(
     const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&  indices
   );
+
+  std::string indicesToString( const tarch::la::Vector<THREE_POWER_D,int>& indices );
+  std::string indicesToString( const tarch::la::Vector<TWO_POWER_D,int>&   indices );
 }
 
 
