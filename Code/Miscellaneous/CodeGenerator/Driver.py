@@ -19,14 +19,12 @@
 
 import argparse
 import CodeGenArgumentParser
-from SpaceTimePredictorGenerator import SpaceTimePredictorGenerator
-from RiemannGenerator import RiemannGenerator
-from SolutionUpdateGenerator import SolutionUpdateGenerator
 from Backend import prepareOutputDirectory
 from Backend import moveGeneratedFiles
 import Backend
 import os
 #from WeightsGenerator import WeightsGenerator
+#from DGMatrixGenerator import DGMatrixGenerator
 
 
 # --------------------------------------------------------
@@ -72,7 +70,7 @@ architecture           = l_commandLineArguments.architecture
 pathToLibxsmmGenerator = l_commandLineArguments.pathToLibxsmm
 precision              = l_commandLineArguments.precision
 
-       
+
 config = { 
            "nVar"              : numberOfVariables,
            "nDof"              : order+1,
@@ -83,6 +81,7 @@ config = {
 Backend.setArchitecture(architecture)
 Backend.setPrecision(precision)
 Backend.setConfig(config)
+Backend.setNumerics(numerics)
 Backend.setPathToLibxsmmGenerator(pathToLibxsmmGenerator)
 
 # clean up output directory
@@ -97,12 +96,8 @@ prepareOutputDirectory(pathToOutputDirectory)
 # --------------------------------------------------------
 
 Backend.generateCommonHeader()
-spaceTimePredictorGenerator = SpaceTimePredictorGenerator(config)
-spaceTimePredictorGenerator.generateCode()
-riemannGenerator = RiemannGenerator(config, numerics, precision)
-riemannGenerator.generateCode()
-solutionUpdateGenerator = SolutionUpdateGenerator(config)
-solutionUpdateGenerator.generateCode()
+Backend.generateComputeKernels()
+
 # for testing
 #weightsGenerator = WeightsGenerator(config, precision)
 #weightsGenerator.generateCode()

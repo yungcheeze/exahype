@@ -9,7 +9,7 @@
 #
 #
 #
-from Backend import generateAssemblerCode
+import Backend
 from MatmulConfig import MatmulConfig
 import FunctionSignatures
 
@@ -112,6 +112,11 @@ class SpaceTimePredictorGenerator:
 
     def __generatePicardLoop(self):
         l_filename = "picard.cpp"
+        # lqh(iVar,:,i,j,k) = luh(iVar,i,j,k)
+        # lQi
+        # lFi
+        # luh (read only)
+        #
 
 
 
@@ -219,7 +224,7 @@ class SpaceTimePredictorGenerator:
 
 
         # all matmuls have been collected, now launch code generator backend
-        generateAssemblerCode("asm_"+l_filename, l_matmulList)
+        Backend.generateAssemblerCode("asm_"+l_filename, l_matmulList)
 
         # write missing closing bracket
         l_file.write('}')
@@ -463,9 +468,8 @@ class SpaceTimePredictorGenerator:
             print("SpaceTimePredictorGenerator.generateExtrapolator(): nDim not supported")        
 
 
-        generateAssemblerCode("asm_"+l_filename, l_matmulList)
+        Backend.generateAssemblerCode("asm_"+l_filename, l_matmulList)
 
         # write missing closing bracket
         l_file.write('}')
-        l_file.close()        
-        
+        l_file.close()

@@ -8,6 +8,10 @@ import errno
 from glob import iglob
 from shutil import move
 import FunctionSignatures
+from SpaceTimePredictorGenerator import SpaceTimePredictorGenerator
+from RiemannGenerator import RiemannGenerator
+from SolutionUpdateGenerator import SolutionUpdateGenerator
+from StableTimeStepSizeGenerator import StableTimeStepSizeGenerator
 import string
 import re
 
@@ -15,6 +19,7 @@ import re
 m_architecture           = ''
 m_precision              = ''
 m_config                 = {}
+m_numerics               = ''
 m_pathToLibxsmmGenerator = ''
 m_simdWidth              =  {'SP':  {'noarch' : 1,
                                      'wsm'    : 4,
@@ -175,6 +180,16 @@ def generateCommonHeader():
     l_sourceFile.close()
 
 
+def generateComputeKernels():
+    spaceTimePredictorGenerator = SpaceTimePredictorGenerator(m_config, m_numerics)
+    spaceTimePredictorGenerator.generateCode()
+    riemannGenerator = RiemannGenerator(m_config, m_numerics, m_precision)
+    riemannGenerator.generateCode()
+    solutionUpdateGenerator = SolutionUpdateGenerator(m_config)
+    solutionUpdateGenerator.generateCode()
+    stableTimeStepSizeGenerator = StableTimeStepSizeGenerator(m_config)
+
+
 def moveGeneratedFiles(i_pathToSrc,i_pathToDest):
     l_fileTypes = ('*.h', '*.cpp', '*.c')
     l_fileList = []
@@ -203,6 +218,9 @@ def setConfig(i_config):
     global m_config
     m_config = i_config
 
+def setNumerics(i_numerics):
+    global m_numerics
+    m_numerics = i_numerics
 
 def setPathToLibxsmmGenerator(i_pathToLibxsmmGenerator):
     global m_pathToLibxsmmGenerator
