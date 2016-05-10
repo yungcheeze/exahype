@@ -1,64 +1,46 @@
 #include "exahype/mappings/DropIncomingMPIMessages.h"
 
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
+#include "exahype/solvers/Solver.h"
 
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::CommunicationSpecification   exahype::mappings::DropIncomingMPIMessages::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
-      false
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
+      true
   );
 }
 
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::DropIncomingMPIMessages::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::DropIncomingMPIMessages::touchVertexFirstTimeSpecification() { 
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::DropIncomingMPIMessages::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::DropIncomingMPIMessages::leaveCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::DropIncomingMPIMessages::ascendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::DropIncomingMPIMessages::descendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
@@ -66,31 +48,19 @@ tarch::logging::Log                exahype::mappings::DropIncomingMPIMessages::_
 
 
 exahype::mappings::DropIncomingMPIMessages::DropIncomingMPIMessages() {
-  logTraceIn( "DropIncomingMPIMessages()" );
-  // @todo Insert your code here
-  logTraceOut( "DropIncomingMPIMessages()" );
 }
 
 
 exahype::mappings::DropIncomingMPIMessages::~DropIncomingMPIMessages() {
-  logTraceIn( "~DropIncomingMPIMessages()" );
-  // @todo Insert your code here
-  logTraceOut( "~DropIncomingMPIMessages()" );
 }
 
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::DropIncomingMPIMessages::DropIncomingMPIMessages(const DropIncomingMPIMessages&  masterThread) {
-  logTraceIn( "DropIncomingMPIMessages(DropIncomingMPIMessages)" );
-  // @todo Insert your code here
-  logTraceOut( "DropIncomingMPIMessages(DropIncomingMPIMessages)" );
 }
 
 
 void exahype::mappings::DropIncomingMPIMessages::mergeWithWorkerThread(const DropIncomingMPIMessages& workerThread) {
-  logTraceIn( "mergeWithWorkerThread(DropIncomingMPIMessages)" );
-  // @todo Insert your code here
-  logTraceOut( "mergeWithWorkerThread(DropIncomingMPIMessages)" );
 }
 #endif
 
@@ -104,9 +74,6 @@ void exahype::mappings::DropIncomingMPIMessages::createHangingVertex(
       exahype::Cell&       coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "createHangingVertex(...)", fineGridVertex );
 }
 
 
@@ -119,9 +86,6 @@ void exahype::mappings::DropIncomingMPIMessages::destroyHangingVertex(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyHangingVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "destroyHangingVertex(...)", fineGridVertex );
 }
 
 
@@ -134,9 +98,6 @@ void exahype::mappings::DropIncomingMPIMessages::createInnerVertex(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createInnerVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "createInnerVertex(...)", fineGridVertex );
 }
 
 
@@ -149,9 +110,6 @@ void exahype::mappings::DropIncomingMPIMessages::createBoundaryVertex(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "createBoundaryVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "createBoundaryVertex(...)", fineGridVertex );
 }
 
 
@@ -164,9 +122,6 @@ void exahype::mappings::DropIncomingMPIMessages::destroyVertex(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "destroyVertex(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "destroyVertex(...)", fineGridVertex );
 }
 
 
@@ -179,9 +134,6 @@ void exahype::mappings::DropIncomingMPIMessages::createCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "createCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "createCell(...)", fineGridCell );
 }
 
 
@@ -194,9 +146,6 @@ void exahype::mappings::DropIncomingMPIMessages::destroyCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "destroyCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "destroyCell(...)", fineGridCell );
 }
 
 #ifdef Parallel
@@ -209,7 +158,70 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
   int                                           level
 ) {
   logTraceInWith6Arguments( "mergeWithNeighbour(...)", vertex, neighbour, fromRank, fineGridX, fineGridH, level );
-  // @todo Insert your code here
+
+  #if !defined(PeriodicBC)
+  if (vertex.isBoundary()) return;
+  #endif
+
+  tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
+      vertex.getADERDGCellDescriptionsIndex();
+
+  dfor2(dest)
+  dfor2(src)
+    if (
+      vertex.getAdjacentRanks()(destScalar)==tarch::parallel::Node::getInstance().getRank()
+      &&
+      vertex.getAdjacentRanks()(srcScalar)==fromRank
+      &&
+      tarch::la::countEqualEntries(dest,src)==1    // we are solely exchanging faces
+    ) {
+      const int destCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(destScalar);
+      assertion5(
+        ADERDGCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex),
+        src, dest,
+        multiscalelinkedcell::indicesToString( adjacentADERDGCellDescriptionsIndices ),
+        vertex.toString(),
+        tarch::parallel::Node::getInstance().getRank()
+      );
+      std::vector<records::ADERDGCellDescription>& cellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(destCellDescriptionIndex);
+
+      for (int currentSolver=0; currentSolver<static_cast<int>(cellDescriptions.size()); currentSolver++) {
+        if (cellDescriptions[currentSolver].getType()==exahype::records::ADERDGCellDescription::Cell) {
+          exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[cellDescriptions[currentSolver].getSolverNumber()];
+
+          const int numberOfFaceDof       = solver->getUnknownsPerFace();
+          const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src,dest);
+          assertion(normalOfExchangedFace>=0 && normalOfExchangedFace<DIMENSIONS);
+          const int offsetInFaceArray     = 2*normalOfExchangedFace + src(normalOfExchangedFace)<dest(normalOfExchangedFace) ? 0 : 1;
+
+          assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getExtrapolatedPredictor()) );
+          assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getFluctuation()) );
+
+          const double* lQhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getExtrapolatedPredictor()).data() + (offsetInFaceArray * numberOfFaceDof);
+          const double* lFhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getFluctuation()).data()           + (offsetInFaceArray * numberOfFaceDof);
+
+          if ( adjacentADERDGCellDescriptionsIndices(destScalar)==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex ) {
+            #if defined(PeriodicBC)
+            assertionMsg( false, "Vasco, we have to implement this" );
+            #else
+            assertionMsg( false, "should never been entered");
+            #endif
+          }
+          else {
+            logDebug( "mergeWithNeighbour(...)", "receive two arrays from rank " << fromRank << " for vertex " << vertex.toString() << ", src type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(srcScalar)) );
+
+            DataHeap::HeapEntries lQhbnd = DataHeap::getInstance().receiveData( fromRank, fineGridX, level, peano::heap::MessageType::NeighbourCommunication );
+            DataHeap::HeapEntries lFhbnd = DataHeap::getInstance().receiveData( fromRank, fineGridX, level, peano::heap::MessageType::NeighbourCommunication );
+          }
+        }
+        else {
+          assertionMsg( false, "Dominic, please implement" );
+        }
+      }
+    }
+  enddforx
+  enddforx
+
   logTraceOut( "mergeWithNeighbour(...)" );
 }
 
@@ -220,9 +232,6 @@ void exahype::mappings::DropIncomingMPIMessages::prepareSendToNeighbour(
       const tarch::la::Vector<DIMENSIONS,double>&   h,
       int                                           level
 ) {
-  logTraceInWith3Arguments( "prepareSendToNeighbour(...)", vertex, toRank, level );
-  // @todo Insert your code here
-  logTraceOut( "prepareSendToNeighbour(...)" );
 }
 
 void exahype::mappings::DropIncomingMPIMessages::prepareCopyToRemoteNode(
@@ -232,9 +241,6 @@ void exahype::mappings::DropIncomingMPIMessages::prepareCopyToRemoteNode(
       const tarch::la::Vector<DIMENSIONS,double>&   h,
       int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localVertex, toRank, x, h, level );
-  // @todo Insert your code here
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
 void exahype::mappings::DropIncomingMPIMessages::prepareCopyToRemoteNode(
@@ -244,9 +250,6 @@ void exahype::mappings::DropIncomingMPIMessages::prepareCopyToRemoteNode(
       const tarch::la::Vector<DIMENSIONS,double>&   cellSize,
       int                                           level
 ) {
-  logTraceInWith5Arguments( "prepareCopyToRemoteNode(...)", localCell, toRank, cellCentre, cellSize, level );
-  // @todo Insert your code here
-  logTraceOut( "prepareCopyToRemoteNode(...)" );
 }
 
 void exahype::mappings::DropIncomingMPIMessages::mergeWithRemoteDataDueToForkOrJoin(
@@ -257,9 +260,6 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithRemoteDataDueToForkOrJ
   const tarch::la::Vector<DIMENSIONS,double>&  h,
   int                                       level
 ) {
-  logTraceInWith6Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localVertex, masterOrWorkerVertex, fromRank, x, h, level );
-  // @todo Insert your code here
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
 void exahype::mappings::DropIncomingMPIMessages::mergeWithRemoteDataDueToForkOrJoin(
@@ -270,9 +270,6 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithRemoteDataDueToForkOrJ
   const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
   int                                       level
 ) {
-  logTraceInWith3Arguments( "mergeWithRemoteDataDueToForkOrJoin(...)", localCell, masterOrWorkerCell, fromRank );
-  // @todo Insert your code here
-  logTraceOut( "mergeWithRemoteDataDueToForkOrJoin(...)" );
 }
 
 bool exahype::mappings::DropIncomingMPIMessages::prepareSendToWorker(
@@ -285,10 +282,7 @@ bool exahype::mappings::DropIncomingMPIMessages::prepareSendToWorker(
   const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
   int                                                                  worker
 ) {
-  logTraceIn( "prepareSendToWorker(...)" );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "prepareSendToWorker(...)", true );
-  return true;
+  return false;
 }
 
 void exahype::mappings::DropIncomingMPIMessages::prepareSendToMaster(
@@ -300,9 +294,6 @@ void exahype::mappings::DropIncomingMPIMessages::prepareSendToMaster(
   const exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
-  logTraceInWith2Arguments( "prepareSendToMaster(...)", localCell, verticesEnumerator.toString() );
-  // @todo Insert your code here
-  logTraceOut( "prepareSendToMaster(...)" );
 }
 
 
@@ -321,9 +312,6 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithMaster(
   const exahype::State&          workerState,
   exahype::State&                masterState
 ) {
-  logTraceIn( "mergeWithMaster(...)" );
-  // @todo Insert your code here
-  logTraceOut( "mergeWithMaster(...)" );
 }
 
 
@@ -339,9 +327,6 @@ void exahype::mappings::DropIncomingMPIMessages::receiveDataFromMaster(
       exahype::Cell&                        workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
-  logTraceIn( "receiveDataFromMaster(...)" );
-  // @todo Insert your code here
-  logTraceOut( "receiveDataFromMaster(...)" );
 }
 
 
@@ -352,9 +337,6 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithWorker(
   const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
   int                                          level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localCell.toString(), receivedMasterCell.toString() );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localCell.toString() );
 }
 
 
@@ -365,9 +347,6 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithWorker(
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
-  logTraceInWith2Arguments( "mergeWithWorker(...)", localVertex.toString(), receivedMasterVertex.toString() );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "mergeWithWorker(...)", localVertex.toString() );
 }
 #endif
 
@@ -380,9 +359,6 @@ void exahype::mappings::DropIncomingMPIMessages::touchVertexFirstTime(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexFirstTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "touchVertexFirstTime(...)", fineGridVertex );
 }
 
 
@@ -395,9 +371,6 @@ void exahype::mappings::DropIncomingMPIMessages::touchVertexLastTime(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
-  logTraceInWith6Arguments( "touchVertexLastTime(...)", fineGridVertex, fineGridX, fineGridH, coarseGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfVertex );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "touchVertexLastTime(...)", fineGridVertex );
 }
 
 
@@ -410,9 +383,6 @@ void exahype::mappings::DropIncomingMPIMessages::enterCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
 }
 
 
@@ -425,27 +395,18 @@ void exahype::mappings::DropIncomingMPIMessages::leaveCell(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
-  logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
 }
 
 
 void exahype::mappings::DropIncomingMPIMessages::beginIteration(
   exahype::State&  solverState
 ) {
-  logTraceInWith1Argument( "beginIteration(State)", solverState );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "beginIteration(State)", solverState);
 }
 
 
 void exahype::mappings::DropIncomingMPIMessages::endIteration(
   exahype::State&  solverState
 ) {
-  logTraceInWith1Argument( "endIteration(State)", solverState );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "endIteration(State)", solverState);
 }
 
 
@@ -458,9 +419,6 @@ void exahype::mappings::DropIncomingMPIMessages::descend(
   const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
   exahype::Cell&                 coarseGridCell
 ) {
-  logTraceInWith2Arguments( "descend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
-  // @todo Insert your code here
-  logTraceOut( "descend(...)" );
 }
 
 
@@ -472,7 +430,4 @@ void exahype::mappings::DropIncomingMPIMessages::ascend(
   const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
   exahype::Cell&           coarseGridCell
 ) {
-  logTraceInWith2Arguments( "ascend(...)", coarseGridCell.toString(), coarseGridVerticesEnumerator.toString() );
-  // @todo Insert your code here
-  logTraceOut( "ascend(...)" );
 }
