@@ -244,18 +244,14 @@ int exahype::runners::Runner::runAsMaster(
 
   while ((solvers::Solver::getMinSolverTimeStamp() < simulationEndTime) &&
          tarch::la::greater(solvers::Solver::getMinSolverTimeStepSize(), 0.0)) {
-    if (exahype::plotters::isAPlotterActive(
-            solvers::Solver::getMinSolverTimeStamp())) {
-      repository.switchToPlot();
-      repository.iterate();
-      logDebug("runAsMaster(...)", "all snapshots written");
-    }
+    bool plot = exahype::plotters::isAPlotterActive(solvers::Solver::getMinSolverTimeStamp());
 
     if (_parser.fuseAlgorithmicSteps()) {
-      runOneTimeStampWithFusedAlgorithmicSteps(repository);
-      startNewTimeStepAndRecomputePredictorIfNecessary(repository, n);
+      runOneTimeStampWithFusedAlgorithmicSteps(repository, plot);
+      recomputePredictorIfNecessary(repository);
+      startNewTimeStep(n);
     } else {
-      runOneTimeStampWithFourSeparateAlgorithmicSteps(repository);
+      runOneTimeStampWithFourSeparateAlgorithmicSteps(repository, plot);
       startNewTimeStep(n);
     }
 
@@ -317,7 +313,9 @@ void exahype::runners::Runner::startNewTimeStep(int n) {
 }
 
 void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
-    exahype::repositories::Repository& repository) {
+    exahype::repositories::Repository& repository,
+    bool                               plot
+) {
   /*
    * The adapter below performs the following steps:
    *
@@ -332,7 +330,14 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
    *predictor time step size.
    * 4. Compute the cell-local time step sizes
    */
-  repository.switchToADERDGTimeStep();
+
+  if (plot) {
+    repository.switchToADERDGTimeStepAndPlot();
+  }
+  else {
+    repository.switchToADERDGTimeStep();
+  }
+
   repository.iterate();
 }
 
@@ -374,14 +379,15 @@ bool exahype::runners::Runner::
   return cflConditionWasViolated;  // | tooDiffusive;
 }
 
-void exahype::runners::Runner::startNewTimeStepAndRecomputePredictorIfNecessary(
-    exahype::repositories::Repository& repository, int n) {
+void exahype::runners::Runner::recomputePredictorIfNecessary(
+  exahype::repositories::Repository& repository
+) {
   // Must be evaluated before we start a new time step
   bool stabilityConditionWasHarmed =
       setAccurateTimeStepSizesIfStabilityConditionWasHarmed();
   // Note that it is important to switch the time step sizes, i.e,
   // start a new time step, before we recompute the predictor.
-  startNewTimeStep(n);
+
   if (stabilityConditionWasHarmed) {
     logInfo("startNewTimeStep(...)",
             "\t\t Space-time predictor must be recomputed.");
@@ -392,14 +398,23 @@ void exahype::runners::Runner::startNewTimeStepAndRecomputePredictorIfNecessary(
 }
 
 void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(
-    exahype::repositories::Repository& repository) {
+    exahype::repositories::Repository&  repository,
+    bool                                plot
+) {
   // Only one time step (predictor vs. corrector) is used in this case.
   repository.switchToFaceDataExchange();  // Riemann -> face2face
   repository.iterate();
   repository.switchToCorrector();  // Face to cell
   repository.iterate();
-  repository.switchToGlobalTimeStepComputation();  // Inside cell
+
+  if (plot) {
+    repository.switchToGlobalTimeStepComputationAndPlot();  // Inside cell
+  }
+  else {
+    repository.switchToGlobalTimeStepComputation();  // Inside cell
+  }
   repository.iterate();
+
   repository.switchToPredictor();  // Cell onto faces
   repository.iterate();
 }

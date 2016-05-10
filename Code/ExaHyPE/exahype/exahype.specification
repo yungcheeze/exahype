@@ -107,10 +107,6 @@ adapter:
   // tracks cell traversal events here; updates neighbour information in vertices
   merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex)
 
-adapter:
-  name: Plot
-  merge-with-user-defined-mapping: Plot
-
 // Adapters for initialisation of time stepping
 adapter:
   name: SolutionUpdateAndGlobalTimeStepComputation
@@ -141,10 +137,32 @@ adapter:
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: GlobalTimeStepComputation
  
+ 
+adapter: 
+  name: ADERDGTimeStepAndPlot
+  // needs corrector time step size
+  merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
+  merge-with-user-defined-mapping: BoundaryConditions 
+  merge-with-user-defined-mapping: RiemannSolverReset
+  merge-with-user-defined-mapping: SurfaceIntegral
+  merge-with-user-defined-mapping: SolutionUpdate
+  // needs predictor time step size
+  merge-with-user-defined-mapping: SpaceTimePredictor  // DEC: after predictor we can start the face data exchange 
+  merge-with-user-defined-mapping: VolumeIntegral
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
+  merge-with-user-defined-mapping: Plot
+ 
 // Additional adapters for 4 phase time stepping
 adapter:
   name: GlobalTimeStepComputation
   merge-with-user-defined-mapping: GlobalTimeStepComputation
+  
+  
+adapter:
+  name: GlobalTimeStepComputationAndPlot
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
+  merge-with-user-defined-mapping: Plot
+  
 
 adapter: 
   name: FaceDataExchange
