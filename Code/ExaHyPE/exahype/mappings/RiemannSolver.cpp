@@ -189,6 +189,10 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
   const tarch::la::Vector<DIMENSIONS, double>&  fineGridH,
   int                                           level
 ) {
+  #if !defined(PeriodicBC)
+  if (vertex.isBoundary()) return;
+  #endif
+
   tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
       vertex.getADERDGCellDescriptionsIndex();
 
@@ -200,18 +204,16 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
       vertex.getAdjacentRanks()(srcScalar)==fromRank
       &&
       tarch::la::countEqualEntries(dest,src)==1    // we are solely exchanging faces
-      &&
-      adjacentADERDGCellDescriptionsIndices(destScalar)!=multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex
     ) {
-      const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
+      const int destCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(destScalar);
       assertion5(
-        ADERDGCellDescriptionHeap::getInstance().isValidIndex(srcCellDescriptionIndex),
+        ADERDGCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex),
         src, dest,
         multiscalelinkedcell::indicesToString( adjacentADERDGCellDescriptionsIndices ),
         vertex.toString(),
         tarch::parallel::Node::getInstance().getRank()
       );
-      std::vector<records::ADERDGCellDescription>& cellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(srcCellDescriptionIndex);
+      std::vector<records::ADERDGCellDescription>& cellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(destCellDescriptionIndex);
 
       for (int currentSolver=0; currentSolver<static_cast<int>(cellDescriptions.size()); currentSolver++) {
         if (cellDescriptions[currentSolver].getType()==exahype::records::ADERDGCellDescription::Cell) {
@@ -229,12 +231,14 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
           const double* lFhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getFluctuation()).data()           + (offsetInFaceArray * numberOfFaceDof);
 
           if ( adjacentADERDGCellDescriptionsIndices(destScalar)==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex ) {
-            #ifdef PeriodicBC
+            #if defined(PeriodicBC)
             assertionMsg( false, "Vasco, we have to implement this" );
+            #else
+            assertionMsg( false, "should never been entered");
             #endif
           }
           else {
-            logInfo( "mergeWithNeighbour(...)", "receive two arrays from rank " << fromRank << " for vertex " << vertex.toString() << ", src type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(srcScalar)) );
+            logDebug( "mergeWithNeighbour(...)", "receive two arrays from rank " << fromRank << " for vertex " << vertex.toString() << ", src type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(srcScalar)) );
 
             DataHeap::HeapEntries lQhbnd = DataHeap::getInstance().receiveData( fromRank, fineGridX, level, peano::heap::MessageType::NeighbourCommunication );
             DataHeap::HeapEntries lFhbnd = DataHeap::getInstance().receiveData( fromRank, fineGridX, level, peano::heap::MessageType::NeighbourCommunication );

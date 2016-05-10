@@ -180,6 +180,10 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>&  h,
     int                                           level
 ) {
+  #if !defined(PeriodicBC)
+  if (vertex.isBoundary()) return;
+  #endif
+
   tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
       vertex.getADERDGCellDescriptionsIndex();
 
@@ -191,8 +195,6 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
       vertex.getAdjacentRanks()(srcScalar)==tarch::parallel::Node::getInstance().getRank()
       &&
       tarch::la::countEqualEntries(dest,src)==1    // we are solely exchanging faces
-      &&
-      adjacentADERDGCellDescriptionsIndices(srcScalar)!=multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex
     ) {
       const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
       assertion5(
@@ -224,10 +226,12 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
             assertionMsg( false, "Vasco, we have to implement this" );
             DataHeap::getInstance().sendData( lQhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
             DataHeap::getInstance().sendData( lFhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
+            #else
+            assertionMsg( false, "should never been entered");
             #endif
           }
           else {
-            logInfo( "prepareSendToNeighbour(...)", "send two arrays to rank " << toRank << " for vertex " << vertex.toString()  << ", dest type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(destScalar))  );
+            logDebug( "prepareSendToNeighbour(...)", "send two arrays to rank " << toRank << " for vertex " << vertex.toString()  << ", dest type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(destScalar))  );
             DataHeap::getInstance().sendData( lQhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
             DataHeap::getInstance().sendData( lFhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
           }
