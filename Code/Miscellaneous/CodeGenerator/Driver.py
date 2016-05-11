@@ -9,10 +9,10 @@
 # Note: requires python3
 #
 # For a quick test, type
-# python Driver.py MyEulerSolver 5 3 2 nonlinear hsw path/to/libxsmmRepository
+# python Driver.py Euler 5 3 2 nonlinear hsw path/to/libxsmmRepository
 #
 # for Jenkins this is
-# python Driver.py MyEulerSolver 5 3 2 nonlinear hsw ../../../libxsmm --precision=DP
+# python Driver.py Euler 5 3 2 nonlinear hsw ../../../libxsmm --precision=DP
 #
 # 
 
@@ -23,8 +23,7 @@ from Backend import prepareOutputDirectory
 from Backend import moveGeneratedFiles
 import Backend
 import os
-#from WeightsGenerator import WeightsGenerator
-#from DGMatrixGenerator import DGMatrixGenerator
+
 
 
 # --------------------------------------------------------
@@ -32,9 +31,9 @@ import os
 # --------------------------------------------------------
 l_parser = argparse.ArgumentParser(description='This is the front end of the ExaHyPE code generator.')
 
-l_parser.add_argument('solverName', 
-                      type=str,
-                      help='the namespace')
+l_parser.add_argument('PDE',
+                      type=lambda pdeArg: CodeGenArgumentParser.validatePDE(l_parser, pdeArg),
+                      help='what example you want to solve')
 l_parser.add_argument('numberOfVariables', 
                       type=int, 
                       help='the number of quantities')
@@ -61,7 +60,7 @@ l_parser.add_argument('--precision',
 
 l_commandLineArguments = l_parser.parse_args()
 
-solverName             = l_commandLineArguments.solverName
+pde                    = l_commandLineArguments.PDE
 numberOfVariables      = l_commandLineArguments.numberOfVariables
 order                  = l_commandLineArguments.order
 dimensions             = l_commandLineArguments.dimension
@@ -98,14 +97,11 @@ prepareOutputDirectory(pathToOutputDirectory)
 Backend.generateCommonHeader()
 Backend.generateComputeKernels()
 
-# for testing
-#weightsGenerator = WeightsGenerator(config, precision)
-#weightsGenerator.generateCode()
-# TODO move Weights.h to output directory
-# extend the moveGeneratedCppFiles() to also work for .h files
+# --------------------------------------------------------
+# Move generated code
+# --------------------------------------------------------
 
-
-# move assembler code
+# move assembly code
 moveGeneratedFiles(pathToLibxsmmGenerator, pathToOutputDirectory)
 # move C++ wrapper
 moveGeneratedFiles(os.getcwd(), pathToOutputDirectory)

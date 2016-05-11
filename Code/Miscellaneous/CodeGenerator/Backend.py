@@ -12,6 +12,8 @@ from SpaceTimePredictorGenerator import SpaceTimePredictorGenerator
 from RiemannGenerator import RiemannGenerator
 from SolutionUpdateGenerator import SolutionUpdateGenerator
 from StableTimeStepSizeGenerator import StableTimeStepSizeGenerator
+#from WeightsGenerator import WeightsGenerator
+#from DGMatrixGenerator import DGMatrixGenerator
 import string
 import re
 
@@ -189,6 +191,9 @@ def generateComputeKernels():
     solutionUpdateGenerator.generateCode()
     stableTimeStepSizeGenerator = StableTimeStepSizeGenerator(m_config)
     stableTimeStepSizeGenerator.generateCode()
+    # for testing
+    #weightsGenerator = WeightsGenerator(config, precision)
+    #weightsGenerator.generateCode()
 
 
 def moveGeneratedFiles(i_pathToSrc,i_pathToDest):

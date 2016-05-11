@@ -43,3 +43,12 @@ def validateNumerics(i_parser, i_arg):
         i_parser.error("Numerics not supported. Available options are " + str(AvailableConfigs.numerics).format(i_arg))
 
     return l_numericsType
+
+
+def validatePDE(i_parser, i_arg):
+    l_pdeType = i_arg
+
+    if(l_pdeType not in AvailableConfigs.supportedPDEs):
+        i_parser.error("Driver: Unkown PDE requested. Available options are " + str(AvailableConfigs.supportedPDEs).format(i_arg))
+
+    return l_pdeType
