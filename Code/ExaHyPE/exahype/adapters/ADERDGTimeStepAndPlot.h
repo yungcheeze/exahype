@@ -19,7 +19,6 @@
 
 
  #include "exahype/mappings/RiemannSolver.h"
- #include "exahype/mappings/BoundaryConditions.h"
  #include "exahype/mappings/RiemannSolverReset.h"
  #include "exahype/mappings/SurfaceIntegral.h"
  #include "exahype/mappings/SolutionUpdate.h"
@@ -47,24 +46,22 @@ namespace exahype {
 class exahype::adapters::ADERDGTimeStepAndPlot {
   private:
     typedef mappings::RiemannSolver Mapping0;
-    typedef mappings::BoundaryConditions Mapping1;
-    typedef mappings::RiemannSolverReset Mapping2;
-    typedef mappings::SurfaceIntegral Mapping3;
-    typedef mappings::SolutionUpdate Mapping4;
-    typedef mappings::SpaceTimePredictor Mapping5;
-    typedef mappings::VolumeIntegral Mapping6;
-    typedef mappings::GlobalTimeStepComputation Mapping7;
-    typedef mappings::Plot Mapping8;
+    typedef mappings::RiemannSolverReset Mapping1;
+    typedef mappings::SurfaceIntegral Mapping2;
+    typedef mappings::SolutionUpdate Mapping3;
+    typedef mappings::SpaceTimePredictor Mapping4;
+    typedef mappings::VolumeIntegral Mapping5;
+    typedef mappings::GlobalTimeStepComputation Mapping6;
+    typedef mappings::Plot Mapping7;
 
      Mapping0  _map2RiemannSolver;
-     Mapping1  _map2BoundaryConditions;
-     Mapping2  _map2RiemannSolverReset;
-     Mapping3  _map2SurfaceIntegral;
-     Mapping4  _map2SolutionUpdate;
-     Mapping5  _map2SpaceTimePredictor;
-     Mapping6  _map2VolumeIntegral;
-     Mapping7  _map2GlobalTimeStepComputation;
-     Mapping8  _map2Plot;
+     Mapping1  _map2RiemannSolverReset;
+     Mapping2  _map2SurfaceIntegral;
+     Mapping3  _map2SolutionUpdate;
+     Mapping4  _map2SpaceTimePredictor;
+     Mapping5  _map2VolumeIntegral;
+     Mapping6  _map2GlobalTimeStepComputation;
+     Mapping7  _map2Plot;
 
 
   public:

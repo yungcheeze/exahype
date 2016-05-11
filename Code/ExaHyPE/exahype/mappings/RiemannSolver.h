@@ -75,6 +75,8 @@ class exahype::mappings::RiemannSolver {
    * thus need these counters as a Riemann problem on a face either could be
    * triggered by the left cell or by the right cell.
    *
+   * \note Not thread-safe.
+   *
    * @param[in] cellDescriptionIndexOfLeftCell
    * @param[in] cellDescriptionIndexOfRightCell
    * @param[in] faceIndexForLeftCell    The index of the interface
@@ -101,6 +103,8 @@ class exahype::mappings::RiemannSolver {
    * accordingly no matter of what they did hold before, i.e. different to
    * the standard solveRiemannProblemAtInterface() operation, we do not
    * check whether we shall run a Riemann solver or not.
+   *
+   * \note Not thread-safe.
    */
   void solveRiemannProblemAtInterface(
       records::ADERDGCellDescription& cellDescription,
@@ -108,6 +112,24 @@ class exahype::mappings::RiemannSolver {
       const int normalNonZero,  // @todo is redundant. We should be able to derive this from faceIndexForCell
       const int indexOfQValues,
       const int indexOfFValues);
+
+  /**
+   * Apply the boundary conditions at the face with index \p faceIndex
+   *
+   * \note Not thread-safe.
+   *
+   * @param[in] cellDescription         The cell description
+   * @param[in] faceIndex               The index of the interface
+   *                                    from the perspective of the cell/cell description. One out of
+   *                                    (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
+   * @param[in] normalNonZero           Non zero component of the
+   *                                    normal vector orthogonal to the interface.
+   * \note Not thread-safe.
+   */
+  void applyBoundaryConditions(
+      records::ADERDGCellDescription& cellDescription,
+      const int faceIndex,
+      const int normalNonZero);
 
  public:
   /**

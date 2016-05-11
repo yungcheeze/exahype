@@ -34,9 +34,6 @@ event-mapping:
   name: VolumeIntegral
 
 event-mapping:
-  name: BoundaryConditions
-  
-event-mapping:
   name: RiemannSolverReset
 
 event-mapping:
@@ -131,7 +128,6 @@ adapter:
   name: ADERDGTimeStep
   // needs corrector time step size
   merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
-  merge-with-user-defined-mapping: BoundaryConditions 
   merge-with-user-defined-mapping: RiemannSolverReset
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
@@ -145,7 +141,6 @@ adapter:
   name: ADERDGTimeStepAndPlot
   // needs corrector time step size
   merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
-  merge-with-user-defined-mapping: BoundaryConditions 
   merge-with-user-defined-mapping: RiemannSolverReset
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
@@ -170,7 +165,6 @@ adapter:
 adapter: 
   name: FaceDataExchange
   merge-with-user-defined-mapping: RiemannSolver
-  merge-with-user-defined-mapping: BoundaryConditions
 
 adapter:
   name: Predictor
