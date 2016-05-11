@@ -8,24 +8,24 @@
 #ifndef EXAHYPE_MAPPINGS_RiemannSolver_H_
 #define EXAHYPE_MAPPINGS_RiemannSolver_H_
 
-#include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
+#include "tarch/logging/Log.h"
 
-#include "peano/grid/VertexEnumerator.h"
-#include "peano/MappingSpecification.h"
 #include "peano/CommunicationSpecification.h"
+#include "peano/MappingSpecification.h"
+#include "peano/grid/VertexEnumerator.h"
 
-#include "tarch/multicore/MulticoreDefinitions.h"
 #include "tarch/multicore/BooleanSemaphore.h"
+#include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "exahype/Vertex.h"
 #include "exahype/Cell.h"
 #include "exahype/State.h"
+#include "exahype/Vertex.h"
 
 namespace exahype {
- namespace mappings {
-  class RiemannSolver;
- }
+namespace mappings {
+class RiemannSolver;
+}
 }
 
 /**
@@ -48,30 +48,38 @@ class exahype::mappings::RiemannSolver {
    */
   exahype::State _localState;
 
+  // clang-format off
   /**
    * Solve the Riemann problem at the interface between two cells ("left" and
-   *"right").
+   *"right"). This method only performs a Riemann solve if at least one of the
+   *cell descriptions (per solver) associated with the two cells is of type
+   *::Cell and none of the two cells belongs to the boundary.
+   * In case a Riemann problem is solved,
+   * the method further sets the ::riemannSolvePerformed
+   * flags for the particular faces on both cell descriptions (per solver).
    *
-   * @param[in] adjacentADERDGCellDescriptionsIndices Map holding the cell
+   * @param[in] adjacentADERDGCellDescriptionsIndices An index set holding the
+   *cell
    *description indices around a vertex.
-   * @param[in] cellIndexL                            Index for
-   *adjacentADERDGCellDescriptionsIndices referring to the "left" cell.
-   * @param[in] cellIndexR                            Index for
-   *adjacentADERDGCellDescriptionsIndices referring to the "right" cell.
-   * @param[in] faceL                                 Index for the face
-   *belonging to the "left" cell.
-   *                                                  One out of
-   *(EXAHYPE_FACE_LEFT,EXAHYPE_FACE_RIGHT,...,EXAHYPE_FACE_TOP).
-   * @param[in] faceR                                 Index for the face
-   *belonging to the "right" cell. See also the
-   *                                                  description of faceL.
-   * @param[in] normal                                Normal vector.
+   * @param[in] indexOfLeftCell                       The index of the
+   * "left" cell with respect to \p adjacentCelllDescriptionsIndices.
+   * @param[in] indexOfRightCell                      The index of the
+   * "right" cell with respect to \p adjacentCellDescriptionsIndices.
+   * @param[in] faceIndexForLeftCell                  The index of the interface
+   *                                                  from the perspective of the "left" cell. One out of
+   *                                                  (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
+   * @param[in] faceIndexForRightCell                 The index of the interface
+   *                                                  from the perspective of the "right" cell. One out of
+   *                                                  (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
+   * @param[in] normalNonZero                         Non zero component of the
+   *                                                  normal vector orthogonal to the interface.
    */
-  void solveRiemannProblem(tarch::la::Vector<TWO_POWER_D, int>&
-                               adjacentADERDGCellDescriptionsIndices,
-                           const int cellIndexL, const int cellIndexR,
-                           const int faceL, const int faceR,
-                           const int normalNonZero);
+  // clang-format on
+  void solveRiemannProblemAtInterface(
+      tarch::la::Vector<TWO_POWER_D, int>& adjacentCellDescriptionsIndices,
+      const int indexOfLeftCell, const int indexOfRightCell,
+      const int faceIndexForLeftCell, const int faceIndexForRightCell,
+      const int normalNonZero);
 
  public:
   /**
@@ -816,8 +824,6 @@ class exahype::mappings::RiemannSolver {
       const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
       exahype::Cell& workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-
 
   /**
    * Counterpart of mergeWithMaster()
