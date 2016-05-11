@@ -51,34 +51,46 @@ class exahype::mappings::RiemannSolver {
   // clang-format off
   /**
    * Solve the Riemann problem at the interface between two cells ("left" and
-   *"right"). This method only performs a Riemann solve if at least one of the
-   *cell descriptions (per solver) associated with the two cells is of type
-   *::Cell and none of the two cells belongs to the boundary.
+   * "right"). This method only performs a Riemann solve if at least one of the
+   * cell descriptions (per solver) associated with the two cells is of type
+   * ::Cell and none of the two cells belongs to the boundary.
    * In case a Riemann problem is solved,
    * the method further sets the ::riemannSolvePerformed
    * flags for the particular faces on both cell descriptions (per solver).
    *
-   * @param[in] adjacentADERDGCellDescriptionsIndices An index set holding the
-   *cell
-   *description indices around a vertex.
-   * @param[in] indexOfLeftCell                       The index of the
-   * "left" cell with respect to \p adjacentCelllDescriptionsIndices.
-   * @param[in] indexOfRightCell                      The index of the
-   * "right" cell with respect to \p adjacentCellDescriptionsIndices.
-   * @param[in] faceIndexForLeftCell                  The index of the interface
-   *                                                  from the perspective of the "left" cell. One out of
-   *                                                  (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
-   * @param[in] faceIndexForRightCell                 The index of the interface
-   *                                                  from the perspective of the "right" cell. One out of
-   *                                                  (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
-   * @param[in] normalNonZero                         Non zero component of the
-   *                                                  normal vector orthogonal to the interface.
+   * @todo Dominic: Bitte Boundaries hier reinziehen.
+   * @todo Dominic: Kurze Erklaerung zur Nebenlaeufigkeit.
+   *
+   * <h2>Rationale</h2>
+   *
+   * We did originally split up the boundary condition handling and the Riemann
+   * updates into two mappings. This offers a functional decomposition. However,
+   * both mappings then need a significiant number of technical administrative
+   * code (cmp all the loops in touchVertexFirstTime and the redundant code to
+   * manage the semaphores). We thus decided to merge both aspects. This also
+   * should make sense from a performance point of view.
+   *
+   * We could potentially remove the face indices here if we had normals that
+   * point outwards. However, we don't evaluate the direction of the normal and
+   * thus need these counters as a Riemann problem on a face either could be
+   * triggered by the left cell or by the right cell.
+   *
+   * @param[in] cellDescriptionIndexOfLeftCell
+   * @param[in] cellDescriptionIndexOfRightCell
+   * @param[in] faceIndexForLeftCell    The index of the interface
+   *                                    from the perspective of the "left" cell. One out of
+   *                                    (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
+   * @param[in] faceIndexForRightCell   The index of the interface from the
+   *                                    perspective of the "right" cell.
+   * @param[in] normalNonZero           Non zero component of the
+   *                                    normal vector orthogonal to the interface.
    */
   // clang-format on
   void solveRiemannProblemAtInterface(
-      tarch::la::Vector<TWO_POWER_D, int>& adjacentCellDescriptionsIndices,
-      const int indexOfLeftCell, const int indexOfRightCell,
-      const int faceIndexForLeftCell, const int faceIndexForRightCell,
+      const int cellDescriptionIndexOfLeftCell,
+      const int cellDescriptionIndexOfRightCell,
+      const int faceIndexForLeftCell,
+      const int faceIndexForRightCell,
       const int normalNonZero);
 
  public:
@@ -595,23 +607,13 @@ class exahype::mappings::RiemannSolver {
    * Merge vertex with the incoming vertex from a neighbouring computation node.
    *
    * When Peano is running in parallel the data exchange is done vertex-wise
-   * between two grid iterations. Thus, before the touchVertexFirstTime-event
-   * the vertex, sent by the computation node, which shares this vertex, is
-   * merged with the local copy of this vertex.
+   * between two grid iterations, i.e. the predictor sends out data in one step
+   * and in the following step we receive this data and merge it into the local
+   * Riemann integrals. The routine is thus very similar to touchVertexFirstTime():
    *
-   * !!! Heap data
-   *
-   * If you are working with a heap data structure, your vertices or cells,
-   * respectively, hold pointers to the heap. The received records hold
-   * pointer indices as well. However, these pointers are copies from the
-   * remote ranks, i.e. the pointers are invalid though seem to be set.
-   * Receive heap data instead separately without taking the pointers in
-   * the arguments into account.
-   *
-   * @param vertex    Local copy of the vertex.
-   * @param neighbour Remote copy of the vertex.
-   * @param fromRank  See prepareSendToNeighbour()
-   * @param isForkOrJoin See preareSendToNeighbour()
+   * - We identify incoming faces.
+   * - We create (temporary) indices on the heap.
+   * - We receive the data into these indices.
    */
   void mergeWithNeighbour(exahype::Vertex& vertex,
                           const exahype::Vertex& neighbour, int fromRank,
