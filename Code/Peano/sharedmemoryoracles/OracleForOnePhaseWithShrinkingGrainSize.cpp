@@ -161,7 +161,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::makeAttribute
         "fall back to previous grain size, reduce search step size and increase sensitivity. grain size=" << _currentGrainSize
         << ", biggest-problem-size=" << _biggestProblemSize
         << ", currentSearchDelta=" << _currentSearchDelta
-        << ", accuracy=" << _currentMeasurement.toString()
+//        << ", accuracy=" << _currentMeasurement.toString()
         << ", method-trace=" << toString(_methodTrace) << ", " << _adapterNumber-peano::datatraversal::autotuning::NumberOfPredefinedAdapters+1 << "th adapter"
       );
     }
@@ -223,7 +223,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::plotStatistic
         << ",currentGrainSize="     << _currentGrainSize
         << ",previousMeasuredTime=" << _previousMeasuredTime
         << ",lastProblemSize="      << _lastProblemSize
-        << ",accuracy="             << _currentMeasurement.getAccuracy()
+   //     << ",accuracy="             << _currentMeasurement._accuracy()
         << ",currentMeasurement="   << _currentMeasurement.toString();
 
     if (_biggestProblemSize < _currentGrainSize && _currentSearchDelta>0) {
