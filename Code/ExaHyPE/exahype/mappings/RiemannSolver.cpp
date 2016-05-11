@@ -229,19 +229,9 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
         const int numberOfFaceDof = solver->getUnknownsPerFace();
         const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
         assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-        const int offsetInFaceArray =
-            2 * normalOfExchangedFace + src(normalOfExchangedFace) < dest(normalOfExchangedFace) ?
-            0 : 1;
 
         assertion(DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getExtrapolatedPredictor()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getFluctuation()));
-
-        const double* lQhbnd =
-            DataHeap::getInstance().getData(cellDescriptions[currentSolver].getExtrapolatedPredictor()).data() +
-            (offsetInFaceArray * numberOfFaceDof);
-        const double* lFhbnd =
-            DataHeap::getInstance().getData(cellDescriptions[currentSolver].getFluctuation()).data() +
-            (offsetInFaceArray * numberOfFaceDof);
 
         if (adjacentADERDGCellDescriptionsIndices(destScalar) == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
           #if defined(PeriodicBC)
@@ -271,35 +261,44 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
               fromRank, fineGridX, level,
               peano::heap::MessageType::NeighbourCommunication);
 
-          switch (normalOfExchangedFace) {
-            case 0:
-              break;
-            case 1:
-              break;
-            case 2:
-              break;
-            default:
-              assertionMsg(false, "we do not support 4d");
-              break;
+          int faceIndexForCell = -1;
+               if ((normalOfExchangedFace==0) & (src(normalOfExchangedFace)<dest(normalOfExchangedFace))) {
+            faceIndexForCell = 0;
           }
-/*
-          solveRiemannProblemAtInterface(
-            adjacentCellDescriptionsIndices[cellIndicesLeft[i]],
-            adjacentCellDescriptionsIndices[cellIndicesRight[i]],
-            EXAHYPE_FACE_RIGHT, EXAHYPE_FACE_LEFT, 0);
+          else if ((normalOfExchangedFace==0) & (src(normalOfExchangedFace)>dest(normalOfExchangedFace))) {
+            faceIndexForCell = 1;
+          }
+          else if ((normalOfExchangedFace==1) & (src(normalOfExchangedFace)<dest(normalOfExchangedFace))) {
+            faceIndexForCell = 2;
+          }
+          else if ((normalOfExchangedFace==1) & (src(normalOfExchangedFace)>dest(normalOfExchangedFace))) {
+            faceIndexForCell = 3;
+          }
+          else if ((normalOfExchangedFace==2) & (src(normalOfExchangedFace)<dest(normalOfExchangedFace))) {
+            faceIndexForCell = 4;
+          }
+          else if ((normalOfExchangedFace==2) & (src(normalOfExchangedFace)>dest(normalOfExchangedFace))) {
+            faceIndexForCell = 5;
+          }
+          else {
+            assertionMsg( false, "should not be entered" );
+          }
+
+          logDebug(
+            "mergeWithNeighbour(...)",
+            "solve Riemann problem with received data." <<
+            " cellDescription=" << cellDescriptions[currentSolver].toString() <<
+            ",faceIndexForCell=" << faceIndexForCell <<
+            ",normalOfExchangedFac=" << normalOfExchangedFace <<
+            ",vertex=" << vertex.toString()
+          );
 
           solveRiemannProblemAtInterface(
-            adjacentCellDescriptionsIndices[cellIndicesFront[i]],
-            adjacentCellDescriptionsIndices[cellIndicesBack[i]],
-            EXAHYPE_FACE_BACK, EXAHYPE_FACE_FRONT, 0);
-
-          #if DIMENSIONS == 3
-          solveRiemannProblemAtInterface(
-            adjacentCellDescriptionsIndices[cellIndicesBottom[i]],
-            adjacentCellDescriptionsIndices[cellIndicesTop[i]],
-            EXAHYPE_FACE_TOP, EXAHYPE_FACE_BOTTOM, 0);
-          #endif
-*/
+              cellDescriptions[currentSolver],
+              faceIndexForCell,
+              normalOfExchangedFace,
+              receivedlQhbndIndex,
+              receivedlFhbndIndex);
 
           DataHeap::getInstance().deleteData(receivedlQhbndIndex);
           DataHeap::getInstance().deleteData(receivedlFhbndIndex);
@@ -590,6 +589,46 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
     // clang-format on
   }
 }
+
+
+
+void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
+    records::ADERDGCellDescription& cellDescription,
+    const int faceIndexForCell,
+    const int normalNonZero,
+    const int indexOfQValues,
+    const int indexOfFValues
+) {
+  exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
+
+  cellDescription.setRiemannSolvePerformed( faceIndexForCell, true);
+
+  const int numberOfFaceDof = solver->getUnknownsPerFace();
+
+  double* QL = DataHeap::getInstance().getData(indexOfQValues).data();
+  double* QR = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data()
+             + (faceIndexForCell * numberOfFaceDof);
+  double* FL = DataHeap::getInstance().getData(indexOfFValues).data();
+  double* FR = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data()
+             + (faceIndexForCell * numberOfFaceDof);
+
+  solver->synchroniseTimeStepping(cellDescription);
+  logDebug( "solveRiemannProblemAtInterface(...)", "cell-description=" << cellDescription.toString() );
+
+  solver->riemannSolver(
+    FL, FR, QL, QR,
+    cellDescription.getCorrectorTimeStepSize(),
+    normalNonZero
+    );
+
+  for (int i=0; i<numberOfFaceDof; i++) {
+    assertion( QR[i]==QR[i] );
+    assertion( QL[i]==QL[i] );
+    assertion( FR[i]==FR[i] );
+    assertion( FL[i]==FL[i] );
+  }
+}
+
 
 void exahype::mappings::RiemannSolver::touchVertexLastTime(
     exahype::Vertex& fineGridVertex,

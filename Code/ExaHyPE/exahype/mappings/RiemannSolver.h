@@ -93,6 +93,22 @@ class exahype::mappings::RiemannSolver {
       const int faceIndexForRightCell,
       const int normalNonZero);
 
+  /**
+   * Single-sided version of the other solveRiemannProblemAtInterface(). It
+   * works only on one cell and one solver within this cell and in return
+   * hands in the F and Q values explicitly through  indexOfQValues and
+   * indexOfFValues. The Riemann solver is invoked and the bits are set
+   * accordingly no matter of what they did hold before, i.e. different to
+   * the standard solveRiemannProblemAtInterface() operation, we do not
+   * check whether we shall run a Riemann solver or not.
+   */
+  void solveRiemannProblemAtInterface(
+      records::ADERDGCellDescription& cellDescription,
+      const int faceIndexForCell,
+      const int normalNonZero,  // @todo is redundant. We should be able to derive this from faceIndexForCell
+      const int indexOfQValues,
+      const int indexOfFValues);
+
  public:
   /**
    * These flags are used to inform Peano about your operation. It tells the
