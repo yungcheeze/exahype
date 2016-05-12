@@ -15,6 +15,8 @@
 // using std::endl;
 // using std::cout;
 
+#if DIMENSIONS == 2
+
 template <void PDEFlux2d(const double* const Q, double* f, double* g)>
 void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
     double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
@@ -47,16 +49,18 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
   //
   //  lQhbnd[EXAHYPE_FACE_BACK*numberOfFaceDof] = 14;
   //  lFhbnd[EXAHYPE_FACE_BACK*numberOfFaceDof] = 24;
-//  constexpr int DIMENSIONS = DIMENSIONS;                // 2
-//  constexpr int DIMENSIONSTimesTwo = (2 * DIMENSIONS);  // 4
-//  constexpr int basisSize = (3 + 1);             // basisSize=order+1
-//  constexpr int numberOfVariables = 5;                        // numberOfVariables
+  //  constexpr int DIMENSIONS = DIMENSIONS;                // 2
+  //  constexpr int DIMENSIONSTimesTwo = (2 * DIMENSIONS);  // 4
+  //  constexpr int basisSize = (3 + 1);             // basisSize=order+1
+  //  constexpr int numberOfVariables = 5;                        //
+  //  numberOfVariables
 
   // helper variables
   const int numberOfSpaceTimeDof =
-      numberOfVariables * basisSize * basisSize * basisSize; /*tarch::la::aPowI(DIMENSIONS+1,basisSize); */
-  const int numberOfDof =
-      numberOfVariables * basisSize * basisSize; /*tarch::la::aPowI(DIMENSIONS,basisSize);*/
+      numberOfVariables * basisSize * basisSize *
+      basisSize; /*tarch::la::aPowI(DIMENSIONS+1,basisSize); */
+  const int numberOfDof = numberOfVariables * basisSize *
+                          basisSize; /*tarch::la::aPowI(DIMENSIONS,basisSize);*/
 
   double* rhs0 = new double[numberOfSpaceTimeDof];
   double* rhs = new double[numberOfSpaceTimeDof];
@@ -71,7 +75,8 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
             ii + basisSize * jj + basisSize * basisSize * ll;
 
         const int dofStartIndex = nodeIndex * numberOfVariables;
-        const int spaceTimeDofStartIndex = spaceTimeNodeIndex * numberOfVariables;
+        const int spaceTimeDofStartIndex =
+            spaceTimeNodeIndex * numberOfVariables;
 
         for (int ivar = 0; ivar < numberOfVariables; ivar++) {
           // Trivial initial guess (can be significantly improved)
@@ -96,7 +101,8 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
   double* f;
   double* g;
 
-  // double* dqdt = (double*) std::malloc(numberOfVariables * basisSize * sizeof(double)); //
+  // double* dqdt = (double*) std::malloc(numberOfVariables * basisSize *
+  // sizeof(double)); //
   // todo this is just for debugging; in general, do not use mallocs
 
   // Discrete Picard iterations. This set of nested loops should (theoretically)
@@ -110,8 +116,10 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
           const int nodeIndex = ii + basisSize * jj;
           const int spaceTimeNodeIndex = nodeIndex + basisSize * basisSize * ll;
 
-          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * numberOfVariables;
-          const int spaceTimeFluxDofStartIndex = spaceTimeDofStartIndex * DIMENSIONS;
+          const int spaceTimeDofStartIndex =
+              spaceTimeNodeIndex * numberOfVariables;
+          const int spaceTimeFluxDofStartIndex =
+              spaceTimeDofStartIndex * DIMENSIONS;
 
           Q = &lQi[spaceTimeDofStartIndex];
           f = &lFi[spaceTimeFluxDofStartIndex];
@@ -134,7 +142,8 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
         for (int jj = 0; jj < basisSize; jj++) {
           const int nodeIndex = ii + basisSize * jj;
           const int spaceTimeNodeIndex = nodeIndex + basisSize * basisSize * ll;
-          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * numberOfVariables;
+          const int spaceTimeDofStartIndex =
+              spaceTimeNodeIndex * numberOfVariables;
 
           double weight = kernels::gaussLegendreWeights[basisSize - 1][ll] *
                           kernels::gaussLegendreWeights[basisSize - 1][jj];
@@ -169,7 +178,8 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
             const int mmNodeIndex = mm + basisSize * jj;
             const int mmSpaceTimeNodeIndex =
                 mmNodeIndex + basisSize * basisSize * ll;
-            const int mmSpaceTimeDofStartIndex = mmSpaceTimeNodeIndex * numberOfVariables;
+            const int mmSpaceTimeDofStartIndex =
+                mmSpaceTimeNodeIndex * numberOfVariables;
             const int mmSpaceTimeFluxDofStartIndex =
                 mmSpaceTimeDofStartIndex * DIMENSIONS;
 
@@ -191,7 +201,8 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
         for (int jj = 0; jj < basisSize; jj++) {
           const int nodeIndex = ii + basisSize * jj;
           const int spaceTimeNodeIndex = nodeIndex + basisSize * basisSize * ll;
-          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * numberOfVariables;
+          const int spaceTimeDofStartIndex =
+              spaceTimeNodeIndex * numberOfVariables;
 
           double weight = kernels::gaussLegendreWeights[basisSize - 1][ll] *
                           kernels::gaussLegendreWeights[basisSize - 1][ii];
@@ -200,7 +211,8 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
             const int mmNodeIndex = ii + basisSize * mm;
             const int mmSpaceTimeNodeIndex =
                 mmNodeIndex + basisSize * basisSize * ll;
-            const int mmSpaceTimeDofStartIndex = mmSpaceTimeNodeIndex * numberOfVariables;
+            const int mmSpaceTimeDofStartIndex =
+                mmSpaceTimeNodeIndex * numberOfVariables;
             const int mmSpaceTimeFluxDofStartIndex =
                 mmSpaceTimeDofStartIndex * DIMENSIONS;
 
@@ -237,22 +249,25 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
           for (int nn = 0; nn < basisSize; nn++) {
             const int nnSpaceTimeNodeIndex =
                 nodeIndex + basisSize * basisSize * nn;
-            const int nnSpaceTimeDofStartIndex = nnSpaceTimeNodeIndex * numberOfVariables;
+            const int nnSpaceTimeDofStartIndex =
+                nnSpaceTimeNodeIndex * numberOfVariables;
 
             for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-              tmp[ivar + numberOfVariables * ll] += iWeight *
-                                       kernels::iK1[basisSize - 1][ll][nn] *
-                                       rhs[nnSpaceTimeDofStartIndex + ivar];
+              tmp[ivar + numberOfVariables * ll] +=
+                  iWeight * kernels::iK1[basisSize - 1][ll][nn] *
+                  rhs[nnSpaceTimeDofStartIndex + ivar];
             }
           }
         }
 
         for (int ll = 0; ll < basisSize; ll++) {  // loop over dof
           const int spaceTimeNodeIndex = nodeIndex + basisSize * basisSize * ll;
-          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * numberOfVariables;
+          const int spaceTimeDofStartIndex =
+              spaceTimeNodeIndex * numberOfVariables;
 
           for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-            lQi[spaceTimeDofStartIndex + ivar] = tmp[ivar + numberOfVariables * ll];
+            lQi[spaceTimeDofStartIndex + ivar] =
+                tmp[ivar + numberOfVariables * ll];
           }
         }
 
@@ -274,7 +289,8 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
         //              const int nnSpaceTimeDofStartIndex     =
         //              nnSpaceTimeNodeIndex * numberOfVariables;
         //
-        //              dqdt[ivar + numberOfVariables*ll] += 1./dt * dg::dudx[ll][nn] *
+        //              dqdt[ivar + numberOfVariables*ll] += 1./dt *
+        //              dg::dudx[ll][nn] *
         //                  lQi[nnSpaceTimeDofStartIndex+ivar];
         //            }
         //          }
@@ -316,8 +332,10 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
 
       for (int ll = 0; ll < basisSize; ll++) {  // loop over dof
         const int spaceTimeNodeIndex = nodeIndex + basisSize * basisSize * ll;
-        const int spaceTimeDofStartIndex = spaceTimeNodeIndex * numberOfVariables;
-        const int spaceTimeFluxDofStartIndex = spaceTimeDofStartIndex * DIMENSIONS;
+        const int spaceTimeDofStartIndex =
+            spaceTimeNodeIndex * numberOfVariables;
+        const int spaceTimeFluxDofStartIndex =
+            spaceTimeDofStartIndex * DIMENSIONS;
 
         Q = &lQi[spaceTimeDofStartIndex];
 
@@ -342,7 +360,8 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
   // Compute the bounday-extrapolated values for Q and F*n
   /////////////////////////////////////////////////
   const int numberOfFaceDof =
-      numberOfVariables * basisSize;  // tarch::la::aPowI(DIMENSIONS-1,basisSize);
+      numberOfVariables *
+      basisSize;  // tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
   memset((double*)&lQhbnd[0], 0,
          sizeof(double) * numberOfFaceDof * DIMENSIONS_TIMES_TWO);
@@ -411,10 +430,12 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
         // lFhi_y[mmDofStartIndex+ivar]; // lFhi_y * FRCoeff
         lFhbnd[dofStartIndexL + ivar] +=
             kernels::FLCoeff[basisSize - 1][mm] *
-            lFhi_y[(mm + basisSize * ii) * numberOfVariables + ivar];  // lFhi_y * FLCoeff
+            lFhi_y[(mm + basisSize * ii) * numberOfVariables +
+                   ivar];  // lFhi_y * FLCoeff
         lFhbnd[dofStartIndexR + ivar] +=
             kernels::FRCoeff[basisSize - 1][mm] *
-            lFhi_y[(mm + basisSize * ii) * numberOfVariables + ivar];  // lFhi_y * FRCoeff
+            lFhi_y[(mm + basisSize * ii) * numberOfVariables +
+                   ivar];  // lFhi_y * FRCoeff
       }  // mmDOfStartIndex = (mm  + basisSize * ii) * numberOfVariables
     }
     continue;
@@ -463,17 +484,18 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
   //
   //  lQhbnd[EXAHYPE_FACE_BACK*numberOfFaceDof] = 14;
   //  lFhbnd[EXAHYPE_FACE_BACK*numberOfFaceDof] = 24;
-//  const int DIMENSIONS = 2;  // 2
+  //  const int DIMENSIONS = 2;  // 2
   // constexpr int DIMENSIONSTimesTwo = (2*2);     // 4
-//  constexpr int basisSize = (3 + 1);  // basisSize=order+1
-//  constexpr int numberOfVariables = 5;             // numberOfVariables
+  //  constexpr int basisSize = (3 + 1);  // basisSize=order+1
+  //  constexpr int numberOfVariables = 5;             // numberOfVariables
 
   // helper variables
   const int numberOfSpaceTimeDof =
       numberOfVariables * basisSize * basisSize *
       basisSize; /*tarch::la::aPowI(DIMENSIONS+1,basisSize); */
-//  constexpr int numberOfDof =
-//      numberOfVariables * basisSize * basisSize; /*tarch::la::aPowI(DIMENSIONS,basisSize);*/
+                 //  constexpr int numberOfDof =
+                 //      numberOfVariables * basisSize * basisSize;
+                 //      /*tarch::la::aPowI(DIMENSIONS,basisSize);*/
 
   double* rhs0 = new double[numberOfSpaceTimeDof];
   double* rhs = new double[numberOfSpaceTimeDof];
@@ -488,7 +510,8 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
             ii + basisSize * jj + basisSize * basisSize * ll;
 
         const int dofStartIndex = nodeIndex * numberOfVariables;
-        const int spaceTimeDofStartIndex = spaceTimeNodeIndex * numberOfVariables;
+        const int spaceTimeDofStartIndex =
+            spaceTimeNodeIndex * numberOfVariables;
 
         for (int ivar = 0; ivar < numberOfVariables; ivar++) {
           // Trivial initial guess (can be significantly improved)
@@ -513,7 +536,8 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
   double* f;
   double* g;
 
-  // double* dqdt = (double*) std::malloc(numberOfVariables * basisSize * sizeof(double)); //
+  // double* dqdt = (double*) std::malloc(numberOfVariables * basisSize *
+  // sizeof(double)); //
   // todo this is just for debugging; in general, do not use mallocs
 
   // Discrete Picard iterations. This set of nested loops should (theoretically)
@@ -527,8 +551,10 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
           const int nodeIndex = ii + basisSize * jj;
           const int spaceTimeNodeIndex = nodeIndex + basisSize * basisSize * ll;
 
-          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * numberOfVariables;
-          const int spaceTimeFluxDofStartIndex = spaceTimeDofStartIndex * DIMENSIONS;
+          const int spaceTimeDofStartIndex =
+              spaceTimeNodeIndex * numberOfVariables;
+          const int spaceTimeFluxDofStartIndex =
+              spaceTimeDofStartIndex * DIMENSIONS;
 
           Q = &lQi[spaceTimeDofStartIndex];
           f = &lFi[spaceTimeFluxDofStartIndex];
@@ -551,7 +577,8 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
         for (int jj = 0; jj < basisSize; jj++) {
           const int nodeIndex = ii + basisSize * jj;
           const int spaceTimeNodeIndex = nodeIndex + basisSize * basisSize * ll;
-          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * numberOfVariables;
+          const int spaceTimeDofStartIndex =
+              spaceTimeNodeIndex * numberOfVariables;
 
           double weight = kernels::gaussLegendreWeights[basisSize - 1][ll] *
                           kernels::gaussLegendreWeights[basisSize - 1][jj];
@@ -586,7 +613,8 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
             const int mmNodeIndex = mm + basisSize * jj;
             const int mmSpaceTimeNodeIndex =
                 mmNodeIndex + basisSize * basisSize * ll;
-            const int mmSpaceTimeDofStartIndex = mmSpaceTimeNodeIndex * numberOfVariables;
+            const int mmSpaceTimeDofStartIndex =
+                mmSpaceTimeNodeIndex * numberOfVariables;
             const int mmSpaceTimeFluxDofStartIndex =
                 mmSpaceTimeDofStartIndex * DIMENSIONS;
 
@@ -608,7 +636,8 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
         for (int jj = 0; jj < basisSize; jj++) {
           const int nodeIndex = ii + basisSize * jj;
           const int spaceTimeNodeIndex = nodeIndex + basisSize * basisSize * ll;
-          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * numberOfVariables;
+          const int spaceTimeDofStartIndex =
+              spaceTimeNodeIndex * numberOfVariables;
 
           double weight = kernels::gaussLegendreWeights[basisSize - 1][ll] *
                           kernels::gaussLegendreWeights[basisSize - 1][ii];
@@ -617,7 +646,8 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
             const int mmNodeIndex = ii + basisSize * mm;
             const int mmSpaceTimeNodeIndex =
                 mmNodeIndex + basisSize * basisSize * ll;
-            const int mmSpaceTimeDofStartIndex = mmSpaceTimeNodeIndex * numberOfVariables;
+            const int mmSpaceTimeDofStartIndex =
+                mmSpaceTimeNodeIndex * numberOfVariables;
             const int mmSpaceTimeFluxDofStartIndex =
                 mmSpaceTimeDofStartIndex * DIMENSIONS;
 
@@ -654,28 +684,33 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
           for (int nn = 0; nn < basisSize; nn++) {
             const int nnSpaceTimeNodeIndex =
                 nodeIndex + basisSize * basisSize * nn;
-            const int nnSpaceTimeDofStartIndex = nnSpaceTimeNodeIndex * numberOfVariables;
+            const int nnSpaceTimeDofStartIndex =
+                nnSpaceTimeNodeIndex * numberOfVariables;
 
             for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-              tmp[ivar + numberOfVariables * ll] += iWeight *
-                                       kernels::iK1[basisSize - 1][ll][nn] *
-                                       rhs[nnSpaceTimeDofStartIndex + ivar];
+              tmp[ivar + numberOfVariables * ll] +=
+                  iWeight * kernels::iK1[basisSize - 1][ll][nn] *
+                  rhs[nnSpaceTimeDofStartIndex + ivar];
             }
           }
         }
 
         for (int ll = 0; ll < basisSize; ll++) {  // loop over dof
           const int spaceTimeNodeIndex = nodeIndex + basisSize * basisSize * ll;
-          const int spaceTimeDofStartIndex = spaceTimeNodeIndex * numberOfVariables;
+          const int spaceTimeDofStartIndex =
+              spaceTimeNodeIndex * numberOfVariables;
 
           for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-            lQi[spaceTimeDofStartIndex + ivar] = tmp[ivar + numberOfVariables * ll];
+            lQi[spaceTimeDofStartIndex + ivar] =
+                tmp[ivar + numberOfVariables * ll];
           }
         }
       }
     }
   }  // end of Picard iteration
 }
+
+#endif  // DIMENSIONS == 2
 
 /******************************************************************************************************
 *******************************************************************************************************
