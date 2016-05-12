@@ -8,6 +8,12 @@ namespace generic_euler {
 
 #ifdef Dim3
 
+namespace testPDEFluxes {
+extern const double f[5];
+extern const double g[5];
+extern const double h[5];
+}  // namespace testPDEFluxes
+
 namespace testVolumeIntegral {
 extern const double lduh[320];
 }  // namespace testVolumeIntegral

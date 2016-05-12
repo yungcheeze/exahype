@@ -18,7 +18,8 @@ void GenericEulerKernelTest::testFlux(const double *const Q, double *f,
 
   const double irho = 1.0 / Q[0];
   const double p =
-      (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2]) * irho);
+      (GAMMA - 1) *
+      (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2] + Q[3] * Q[3]) * irho);
 
   f[0] = Q[1];
   f[1] = irho * Q[1] * Q[1] + p;
@@ -47,22 +48,23 @@ void GenericEulerKernelTest::testPDEFluxes() {
 
   testFlux(Q, f, g, h);
 
-  validateNumericalEquals(0.1, f[0]);
-  validateNumericalEquals(1.4, f[1]);
-  validateNumericalEqualsWithParams1(0.02, f[2], g[1]);
-  validateNumericalEquals(0.03, f[3]);
-  validateNumericalEquals(0.489, f[4]);
+  for (int i = 0; i < 5; i++) {
+    validateNumericalEqualsWithParams1(
+        f[i], ::exahype::tests::testdata::generic_euler::testPDEFluxes::f[i],
+        i);
+  }
 
-  validateNumericalEquals(0.2, g[0]);
-  validateNumericalEquals(1.43, g[2]);
-  validateNumericalEquals(0.06, g[3]);
-  validateNumericalEquals(0.978, g[4]);
+  for (int i = 0; i < 5; i++) {
+    validateNumericalEqualsWithParams1(
+        g[i], ::exahype::tests::testdata::generic_euler::testPDEFluxes::g[i],
+        i);
+  }
 
-  validateNumericalEquals(0.3, h[0]);
-  validateNumericalEquals(0.03, h[1]);
-  validateNumericalEquals(0.06, h[2]);
-  validateNumericalEquals(1.48, h[3]);
-  validateNumericalEquals(1.4670, h[4]);
+  for (int i = 0; i < 5; i++) {
+    validateNumericalEqualsWithParams1(
+        h[i], ::exahype::tests::testdata::generic_euler::testPDEFluxes::h[i],
+        i);
+  }
 }  // testPDEFluxes
 
 void GenericEulerKernelTest::testVolumeIntegral() {
