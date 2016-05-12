@@ -12,8 +12,8 @@ from SpaceTimePredictorGenerator import SpaceTimePredictorGenerator
 from RiemannGenerator import RiemannGenerator
 from SolutionUpdateGenerator import SolutionUpdateGenerator
 from StableTimeStepSizeGenerator import StableTimeStepSizeGenerator
-#from WeightsGenerator import WeightsGenerator
-#from DGMatrixGenerator import DGMatrixGenerator
+from WeightsGenerator import WeightsGenerator
+from DGMatrixGenerator import DGMatrixGenerator
 import string
 import re
 
@@ -126,14 +126,6 @@ def generateCommonHeader():
                        '#include "peano/utils/Globals.h"\n\n'
                        )
 
-
-    # TODO temporary solution
-    # necessary till all generic kernels have been replaced with generated ones
-    l_sourceFile.write('// temporary solution')
-    l_sourceFile.write('#define BASISSIZE '+str(m_config['nDof'])+'\n'    \
-                       '#define NVAR '+str(m_config['nVar'])+'\n\n')
-
-
     # nested namespaces
     l_sourceFile.write('namespace kernels {\n'        )
     l_sourceFile.write('  namespace aderdg {\n'       )
@@ -191,9 +183,11 @@ def generateComputeKernels():
     solutionUpdateGenerator.generateCode()
     stableTimeStepSizeGenerator = StableTimeStepSizeGenerator(m_config)
     stableTimeStepSizeGenerator.generateCode()
-    # for testing
-    #weightsGenerator = WeightsGenerator(config, precision)
-    #weightsGenerator.generateCode()
+    weightsGenerator = WeightsGenerator(config, precision)
+    weightsGenerator.generateCode()
+    dgMatrixGenerator = DGMatrixGenerator(config, m_numerics)
+    dgMatrixGenerator.generateCode()
+
 
 
 def moveGeneratedFiles(i_pathToSrc,i_pathToDest):
