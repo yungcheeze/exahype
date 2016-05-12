@@ -14,11 +14,9 @@
 peano::CommunicationSpecification
 exahype::mappings::Plot::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::
-          SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::
-          SendDataAndStateAfterLastTouchVertexLastTime,
-      false);
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+      true);
 }
 
 peano::MappingSpecification
@@ -299,7 +297,7 @@ void exahype::mappings::Plot::enterCell(
           .end();
           pPatch++) {
 
-        if (pPatch->getType()==exahype::records::ADERDGCellDescription::RealCell) {;
+        if (pPatch->getType()==exahype::records::ADERDGCellDescription::Cell) {;
           if ((*pPlotter)->plotDataFromSolver(pPatch->getSolverNumber())) {
             double* u =
                 DataHeap::getInstance().getData(pPatch->getSolution()).data();

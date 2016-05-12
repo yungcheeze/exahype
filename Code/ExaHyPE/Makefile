@@ -177,11 +177,10 @@ cfiles.mk:
 ifdef USE_OPTIMISED_KERNELS
 	find -H $(EXAHYPE_PATH) -name '*.cpp' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/*' | tr '\n' ' ' >> cfiles.mk
 else
-ifneq (,$(findstring Dim3, $(PROJECT_CFLAGS) )) 
-	find -H $(EXAHYPE_PATH) -name '*.cpp' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/2D/*'  | tr '\n' ' ' >> cfiles.mk
-else
-	find -H $(EXAHYPE_PATH) -name '*.cpp' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/3D/*'  | tr '\n' ' ' >> cfiles.mk
+	find -H $(EXAHYPE_PATH) -name '*.cpp' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran/*'  | tr '\n' ' ' >> cfiles.mk
 endif
+ifneq (,$(findstring Yes, $(MIXEDLANG) )) 
+	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.cpp'  | tr '\n' ' ' >> cfiles.mk
 endif
 	find -H $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 
@@ -195,7 +194,7 @@ ifneq (,$(findstring Yes, $(MIXEDLANG) ))
 	touch ffiles.mk
 	echo -n FSOURCES= > ffiles.mk
 	find -H . -name '*.f90'  -not -path './typesDef.f90' | tr '\n' ' ' >> ffiles.mk
-	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic' -name '*.f90' | tr '\n' ' ' >> ffiles.mk
+	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.f90' | tr '\n' ' ' >> ffiles.mk
 endif
 
 header:

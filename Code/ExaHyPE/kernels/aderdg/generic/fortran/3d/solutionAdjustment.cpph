@@ -1,0 +1,53 @@
+// #include "../Kernels.h"
+
+// #include "string.h"
+
+// #include "tarch/la/Scalar.h"
+// #include "tarch/la/ScalarOperations.h"
+
+// #include "kernels/GaussLegendreQuadrature.h"
+// #include "kernels/DGMatrices.h"
+
+// #define EXAHYPE_CFL_FACTOR 0.9
+
+// #include <fstream>
+
+// using std::endl;
+// using std::cout;
+
+template <void PDESolutionAdjustment(const double* const x, const double J_w,
+                                     const double t, const double dt,
+                                     double* Q)>
+void kernels::aderdg::generic::fortran::solutionAdjustment(
+    double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
+    const tarch::la::Vector<DIMENSIONS, double>& dx, const double t,
+    const double dt, const int numberOfVariables, const int basisSize) {
+  double x[3];
+
+  for (int ii = 0; ii < basisSize; ii++) {  // loop over dof
+    const double qr = kernels::gaussLegendreNodes[basisSize - 1][ii];
+
+    for (int jj = 0; jj < basisSize; jj++) {
+      const double qs = kernels::gaussLegendreNodes[basisSize - 1][jj];
+
+      for (int kk = 0; kk < basisSize; kk++) {  // loop over dof
+        const double qt = kernels::gaussLegendreNodes[basisSize - 1][kk];
+
+        // location and index of nodal degrees of freedom
+        const int nodeIndex = ii + basisSize * jj + basisSize * basisSize * kk;
+        x[0] = center[0] + dx[0] * (qr - 0.5);
+        x[1] = center[1] + dx[1] * (qs - 0.5);
+        x[2] = center[2] + dx[2] * (qt - 0.5);
+
+        const double weight =  // Gauss weight
+            kernels::gaussLegendreWeights[basisSize - 1][ii] *
+            kernels::gaussLegendreWeights[basisSize - 1][jj] *
+            kernels::gaussLegendreWeights[basisSize - 1][kk];
+
+        // read initial condition
+        const int dofStartIndex = nodeIndex * numberOfVariables;
+        PDESolutionAdjustment(x, weight, t, dt, &luh[dofStartIndex]);
+      }
+    }
+  }
+}

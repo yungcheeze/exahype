@@ -19,11 +19,9 @@
 peano::CommunicationSpecification
 exahype::mappings::FaceUnknownsProjection::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::
-      SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::
-      SendDataAndStateAfterLastTouchVertexLastTime,
-      false);
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+      true);
 }
 
 peano::MappingSpecification
@@ -300,15 +298,13 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
-  if (!ADERDGCellDescriptionHeap::getInstance().
+  if (ADERDGCellDescriptionHeap::getInstance().
       isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
-    assertion(ADERDGCellDescriptionHeap::getInstance().
-              isValidIndex(coarseGridCell.getADERDGCellDescriptionsIndex()));
 
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
-        .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-        .size());
+    .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+    .size());
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
         peano::datatraversal::autotuning::UserDefined1;
@@ -316,38 +312,42 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      assertion(static_cast<unsigned int>(i) <
-                ADERDGCellDescriptionHeap::getInstance().
-                getData(fineGridCell.getADERDGCellDescriptionsIndex()).size());
-      records::ADERDGCellDescription& cellDescription =
-        fineGridCell.getADERDGCellDescription(i);
+      records::ADERDGCellDescription& p =
+          fineGridCell.getADERDGCellDescription(i);
 
       // if we have at least one parent
       if (ADERDGCellDescriptionHeap::getInstance().
-          isValidIndex(cellDescription.getParentIndex())) {
-        if (cellDescription.getType() == exahype::records::ADERDGCellDescription::VirtualShell
-            &&
-            cellDescription.getHasNeighboursOfTypeCell()) {
-          exahype::Cell::SubcellPosition subcellPosition =
-              fineGridCell.getSubcellPositionOfVirtualShell(
-                  i,coarseGridCell.getADERDGCellDescriptionsIndex(),
-                  cellDescription.getFineGridPositionOfCell());
+          isValidIndex(p.getParentIndex())) {
+        for (std::vector<exahype::records::ADERDGCellDescription>::
+            iterator pParent = ADERDGCellDescriptionHeap::getInstance().
+            getData(p.getParentIndex()).begin();
+            pParent != ADERDGCellDescriptionHeap::getInstance().
+                getData(p.getParentIndex()).end();
+            ++pParent) {
+          if (p.getSolverNumber()==pParent->getSolverNumber()) {
+            exahype::Cell::SubcellPosition subcellPosition =
+                fineGridCell.computeSubcellPositionOfCellOrAncestor(p);
 
-          prolongateFaceData(
-              cellDescription,
-              subcellPosition.parentIndex,
-              subcellPosition.subcellIndex);
-        } else if (cellDescription.getType() == exahype::records::ADERDGCellDescription::RealCell
-            ||
-            cellDescription.getType() == exahype::records::ADERDGCellDescription::RealShell
-        ) {
-          restrictFaceData(
-              cellDescription,
-              cellDescription.getParentIndex(),
-              cellDescription.getFineGridPositionOfCell());
+            switch (p.getType()) {
+              case exahype::records::ADERDGCellDescription::Descendant:
+                prolongateFaceData(
+                    p,
+                    subcellPosition.parentIndex,
+                    subcellPosition.subcellIndex);
+                break;
+              case exahype::records::ADERDGCellDescription::Cell:
+              case exahype::records::ADERDGCellDescription::Ancestor:
+                restrictFaceData(
+                    p,
+                    subcellPosition.parentIndex,
+                    subcellPosition.subcellIndex);
+                break;
+              default:
+                break;
+            }
+          }
         }
       }
-
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
     .parallelSectionHasTerminated(methodTrace);
   }
@@ -365,15 +365,9 @@ void exahype::mappings::FaceUnknownsProjection::prolongateFaceData(
 
   assertion(cellDescriptionParent.getSolverNumber()==
           cellDescription.getSolverNumber());
-  assertion(cellDescriptionParent.getParent());
-  assertion(cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::RealCell
+  assertion(cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::Cell
             ||
-            cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::VirtualShell);
-#if defined(Debug) || defined(Asserts)
-              if (cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::VirtualShell) {
-                assertion(cellDescriptionParent.getHasNeighboursOfTypeCell());
-              }
-#endif
+            cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::Descendant);
 
   const int levelFine   = cellDescription.getLevel();
   const int levelCoarse = cellDescriptionParent.getLevel();
@@ -443,8 +437,7 @@ void exahype::mappings::FaceUnknownsProjection::restrictFaceData(
 
   assertion(cellDescriptionParent.getSolverNumber()==
           cellDescription.getSolverNumber());
-  assertion(cellDescriptionParent.getParent());
-  assertion(cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::RealShell);
+  assertion(cellDescriptionParent.getType()==exahype::records::ADERDGCellDescription::Ancestor);
 
   const int levelFine   = cellDescription.getLevel();
   const int levelCoarse = cellDescriptionParent.getLevel();

@@ -1,0 +1,78 @@
+// #include "kernels/aderdg/generic/Kernels.h"
+
+// #include "string.h"
+
+// #include "tarch/la/Scalar.h"
+// #include "tarch/la/ScalarOperations.h"
+
+// #include "kernels/GaussLegendreQuadrature.h"
+// #include "kernels/DGMatrices.h"
+
+// #define EXAHYPE_CFL_FACTOR 0.9
+
+// #include <fstream>
+
+// using std::endl;
+// using std::cout;
+
+extern "C" {
+void aderpicardloopnonlinear_(double *luhTemp, double *dtTemp, double *dxTemp,
+                     double *lQi, double *lFi);
+// void aderpredictor_(double *lQi, double *lFi, double *lQhi, double *lFhi);
+void aderpredictornonlinear_(double *lQi, double *lFi_x, double *lFhi_y, double *lFhi_z,
+                    double *lQhi, double *lFhi);
+// void aderextrapolator_(double *lQhi, double *lFhi, double *lQbnd, double
+// *lFbnd);
+void aderextrapolatornonlinear_(double *lQhi, double *lFhi_x, double *lFhi_y,
+                       double *lFhi_z, double *lQbnd, double *lFbnd);
+}
+
+template <void PDEFlux3d(const double *const Q, double *f, double *g,
+                         double *h)>
+void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
+    double *lQi, double *lFi, double *lQhi, double *lFhi, double *lQbnd,
+    double *lFbnd, const double *const luh,
+    const tarch::la::Vector<DIMENSIONS, double> &dx, const double dt,
+    const int numberOfVariables, const int basisSize) {
+  // circumvent 'const double'
+  double *luhTemp =
+      new double[numberOfVariables * basisSize * basisSize * basisSize];
+  memcpy(luhTemp, luh, numberOfVariables * basisSize * basisSize * basisSize *
+                           sizeof(double));
+
+  double *dtTemp = new double[1];
+  dtTemp[0] = dt;
+
+  double *dxTemp = new double[3];
+  dxTemp[0] = dx[0];
+  dxTemp[1] = dx[1];
+  dxTemp[2] = dx[2];
+
+  // space-time predictor:
+  aderpicardloopnonlinear_(luhTemp, dtTemp, dxTemp, lQi, lFi);
+  const int numSpaceDof = numberOfVariables * basisSize * basisSize * basisSize;
+  // lFhi = [ lFhi_x | lFhi_y | lFhi_z ]
+  // aderpredictor_(lQi,lFi,lQhi,lFhi);
+  aderpredictornonlinear_(lQi, lFi, lQhi, &lFhi[0 * numSpaceDof], &lFhi[1 * numSpaceDof],
+                 &lFhi[2 * numSpaceDof]);
+  // aderextrapolator_(lQhi,lFhi,lQbnd,lFbnd);
+  aderextrapolatornonlinear_(lQhi, &lFhi[0 * numSpaceDof], &lFhi[1 * numSpaceDof],
+                    &lFhi[2 * numSpaceDof], lQbnd, lFbnd);
+
+  delete[] luhTemp;
+  delete[] dxTemp;
+  delete dtTemp;
+
+  // std::ofstream ofs;
+  // ofs.open ("aoutput_lQbnd.txt", std::ofstream::out);
+  // for (int ii=0; ii<numberOfVariables*6*basisSize*basisSize; ii++) {
+  // ofs << lQbnd[ii] << "\n";
+  // }
+  // ofs.close();
+
+  // ofs.open ("aoutput_lQbndFortran.txt", std::ofstream::out);
+  // for (int ii=0; ii<numberOfVariables*6*basisSize*basisSize; ii++) {
+  // ofs << lQbndFortran[ii] << "\n";
+  // }
+  // ofs.close();
+}

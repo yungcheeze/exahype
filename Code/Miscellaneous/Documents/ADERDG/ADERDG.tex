@@ -146,6 +146,7 @@
 \newcommand{\refVec}[1]{\hat{\vec{#1}}}
 \newcommand{\refCell}{\hat{\cell}}
 \newcommand{\refFace}{\hat{\face}}
+\newcommand{\refds}{\textup{d}\hat{s}}
 \newcommand{\mapping}{\boldsymbol{\mathcal{F}}_{\cell}}
 \newcommand{\mappingT}[1]{\mathcal{F}_{\cell,#1}}
 \newcommand{\imapping}{\boldsymbol{\mathcal{F}}^{-1}_{\cell}}
@@ -2908,24 +2909,28 @@ with
 \end{align}
 where $j\in\{0,1,2\}$.
 Remark: This can be done with a lookup table similar to the one for \texttt{Kxi}.
-\item \textbf{Face data restriction} is performed level by level: We thus
-need to implement an one-level face data restriction operator such that:
+\item \textbf{Face data restriction} is performed over multiple levels. 
+We want to do that in a recursive fashion; cf.
+\eqref{eq:amr:subinterval_recursion}.
+We thus
+need to implement a face data restriction operator such that:
 \begin{align}
 g_k &=
-\sum_{i^{0,1}=0}^{3^{(d-1)}-1}
+\sum_{i^{0,l}=0}^{3^{l\,(d-1)}-1}
 \left(
 \sum_{k'=0}^{(N+1)^{d-1}-1}
-\frac{1}{3^{(d-1)}}\,
+\frac{1}{3^{l\,(d-1)}}\,
 \prod_{\zeta=1}^{d-1}\,
 \frac{w_{k'_\zeta}}{w_{k_\zeta}}\,
-\hat{\Pi}^{0,1;i^{0,1}_\zeta}_{k_\zeta k'_\zeta}
+\hat{\Pi}^{0,l;i^{0,l}_\zeta}_{k_\zeta k'_\zeta}
 \,
-g^{l;i^{0,1}}_{k'}
-\right),
+g^{l;i^{0,l}}_{k'}
+\right)
+,
 \end{align}
 where $k=1,\ldots,(N+1)^{d-1}-1$.
 The values $g_{k}$, $k=0,\ldots,(N+1)^{d-1}-1$, denote coefficients
-associated with $(d-1)$-dimensional quadrature nodes on the boundary
+associated with $(d-1)$-dimensional quadrature nodes on the face
 of the coarse grid cell.
 
 The values $g^{l;i^{0,1}}_{k'}$, $k'=0,\ldots,(N+1)^{d-1}-1$, denote
@@ -2941,31 +2946,6 @@ the spacetree code, only the part in
 the brackets has to be implemented on the solver side.
 
 The spacetree code supplies the restriction
-routine with the subinterval indices
-$i^{0,1}_\zeta\in\{0,1,\ldots,2\}$, $\zeta\in\{1,2,\ldots,d-1\}$.
-\item \textbf{Face data prolongation} is performed over multiple levels.
-We want to do to that in a recursive fashion; cf.
-\eqref{eq:amr:subinterval_recursion}.
-We thus need to implement a face data prolongation operator such that:
-$\hat{\Pi}^{0,l;i^{0;l}_\zeta}$, $\zeta\in\{0,1,\ldots,d-1\}$:
-\begin{align}
-g^{l;i^{0,l}}_k = \sum_{k'=0}^{(N+1)^{d-1}-1} g_{k'}\,\prod_{\zeta=1}^{d-1}
-\hat{\Pi}^{0,l;i^{0,l}_\zeta}_{k'_\zeta,k_\zeta},\qquad k = 0,1,\ldots,(N+1)^{d-1}-1,
-\end{align}
-where the values $g_{k'}$, $k'=0,\ldots,(N+1)^{d-1}-1$, denote coefficients
-located at $(d-1)$-dimensional quadrature nodes on the boundary
-of the coarse grid cell.
-\\ 
-${k=1,\ldots,(N+1)^{d-1}-1}$.
-
-The values $g^{l;i^{0,1}}_{k}$, $k=0,\ldots,(N+1)^{d-1}-1$, denote
-coefficients associated with $(d-1)$-dimensional quadrature nodes on the boundary
-of the fine grid cell.
-Note that in the above notation level 0 refers
-denotes the coarse grid level $l_\textup{coarse}$ and level $l$ refers to
-the fine grid level $l_\textup{fine}$.
-
-The spacetree code supplies the prolongation
 routine with the subinterval indices
 $i^{0,l}_\zeta\in\{0,1,\ldots,3^l-1\}$, $\zeta\in\{1,2,\ldots,d-1\}$. 
 These indices are encoded 
@@ -2994,15 +2974,83 @@ We need to perform a chain of $l_\textup{fine}-l_\textup{coarse}-1$ MatVecs.
 2. The solver code loops from 1 to up to the level
 difference $l_\textup{fine}-l_\textup{coarse}$.
 In each iteration, it has then to determine the 
-indices $j_{\beta,}$ (how many $3^{l-\beta}$?), prolongate the fine grid data by
+indices $j_{\beta,}$ (how many $3^{l-\beta}$?), restrict the fine grid data by
 one level and write the result to
 the temporary vector or the fine grid values
 in an alternating manner.
+\item \textbf{Face data prolongation} is performed over multiple levels.
+We want to do that in a recursive fashion; cf.
+\eqref{eq:amr:subinterval_recursion}.
+We thus need to implement a face data prolongation operator such that:
+\begin{align}
+g^{l;i^{0,l}}_k = \sum_{k'=0}^{(N+1)^{d-1}-1} g_{k'}\,\prod_{\zeta=1}^{d-1}
+\hat{\Pi}^{0,l;i^{0,l}_\zeta}_{k'_\zeta,k_\zeta},\qquad k =
+0,1,\ldots,(N+1)^{d-1}-1.
+\end{align}
+See above for a definition of the symbols.
 
-\item \textbf{Volume data restriction:} 
-Ignore for the time being.
-\item \textbf{Volume data prolongation:} 
-Ignore for the time being.
+\item \textbf{Volume data restriction} is performed over multiple levels. 
+We want to do that in a recursive fashion; cf.
+\eqref{eq:amr:subinterval_recursion}.
+We thus need to implement a volume  data restriction operator such that:
+\begin{align}
+u_n &=
+\sum_{i^{0,l}=0}^{3^{l\,d}-1}
+\left(
+\sum_{n'=0}^{(N+1)^{d}-1}
+\frac{1}{3^{l\,d}}\,
+\prod_{\zeta=1}^{d}\,
+\frac{w_{n'_\zeta}}{w_{n_\zeta}}\,
+\hat{\Pi}^{0,l;i^{0,l}_\zeta}_{n_\zeta n'_\zeta}
+\,
+u^{l;i^{0,l}}_{n'}
+\right)
+,
+\end{align}
+where $n=1,\ldots,(N+1)^{d}-1$.
+The values $u_{n}$, $k=0,\ldots,(N+1)^{d}-1$, denote coefficients
+associated with $d$-dimensional quadrature nodes belonging to the coarse grid
+cell.
+
+The values $u^{l;i^{0,1}}_{n'}$, $n'=0,\ldots,(N+1)^{d}-1$, denote
+coefficients associated with $d$-dimensional quadrature nodes belonging 
+to the fine grid cell. 
+
+Note that in the above notation level 0 refers
+denotes the coarse grid level $l_\textup{coarse}$ and level $l$ refers to
+the fine grid level $l_\textup{fine}$.
+
+Since we loop over all subcells/subfaces in
+the spacetree code, only the part in
+the brackets has to be implemented on the solver side.
+
+The spacetree code supplies the restriction
+routine with the subcell indices
+$i^{0,l}_\zeta\in\{0,1,\ldots,3^l-1\}$, $\zeta\in\{1,2,\ldots,d\}$. 
+These indices are encoded 
+in terms of a tertiary basis:
+\begin{align}
+\label{eq:ader_impl:amr:subinterval_index}
+i^{0,l}_\zeta = \sum_{\beta=1}^{l}\,3^{l-\beta}\,j_{\beta,\zeta},\qquad
+j_{\beta,\zeta} \in \{ 0, 1, 2 \}.
+\end{align}
+The ``basis vector'' of the first projection level ($\beta=1$) is $3^{l-1}$,
+the ``basis vector'' of the second projection level is
+$3^{l-2}$, and so on.
+This can be used to
+reconstruct the sequence of subintervals
+$\{j_1,j_2,j_3,j_4,\ldots,j_l\}$.
+\item \textbf{Volume data prolongation} is performed over multiple levels.
+We want to do that in a recursive fashion; cf.
+\eqref{eq:amr:subinterval_recursion}.
+We thus need to implement a volume data prolongation operator
+such that:
+\begin{align}
+u^{l;i^{0,l}}_n = \sum_{n'=0}^{(N+1)^{d}-1} u_{n'}\,\prod_{\zeta=1}^{d}
+\hat{\Pi}^{0,l;i^{0,l}_\zeta}_{n'_\zeta,n_\zeta},\qquad n =
+0,1,\ldots,(N+1)^{d}-1.
+\end{align}
+See above for a definition of the symbols.
 \end{enumerate}
 
 \end{document}

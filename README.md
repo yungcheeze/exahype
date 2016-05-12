@@ -1,11 +1,16 @@
 # This is the ExaHyPE project #
 
+## General remarks ##
+
+* Run tests before you commit
+* Document your code with doxygen
+* Disable auto-formatting of your IDE or follow the google code-style => Code/Miscellaneous/.clang-format. For Eclipse users, there is also https://github.com/wangzw/CppStyle.
+* Do not run autoformatters on the DaStGen definition files (*.def). This will screw up the "Packed-type: .." and "Constant: .." lines.
+
+
 ## Commit guidelines ##
 
-Please
-* Run tests before you commit
-
-*    Don't commit the following:
+Please, don't commit the following:
     
      * Binary files (\*\.o, executables, \.\.\. ) excluding those necessary for the documentation 
     

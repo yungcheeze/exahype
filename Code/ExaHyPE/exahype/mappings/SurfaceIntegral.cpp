@@ -16,11 +16,9 @@
 peano::CommunicationSpecification
 exahype::mappings::SurfaceIntegral::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::
-          SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::
-          SendDataAndStateAfterLastTouchVertexLastTime,
-      false);
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+      true);
 }
 
 /**
@@ -336,16 +334,24 @@ void exahype::mappings::SurfaceIntegral::enterCell(
       records::ADERDGCellDescription& p =
           ADERDGCellDescriptionHeap::getInstance().getData(
               fineGridCell.getADERDGCellDescriptionsIndex())[i];
+    exahype::solvers::Solver* solver =
+        exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+    double* lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
+    double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
-      if (p.getType()==exahype::records::ADERDGCellDescription::RealCell) {
-        exahype::solvers::Solver* solver =
-            exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
-
-        double* lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
-        double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
-
-        solver->surfaceIntegral(lduh, lFhbnd,
-                                fineGridVerticesEnumerator.getCellSize());
+      switch(p.getType()) {
+        case exahype::records::ADERDGCellDescription::Cell:
+          switch(p.getRefinementEvent()) {
+            case exahype::records::ADERDGCellDescription::None:
+              solver->surfaceIntegral(lduh, lFhbnd,
+                                      fineGridVerticesEnumerator.getCellSize());
+              break;
+            default:
+              break;
+          }
+          break;
+          default:
+            break;
       }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
     .parallelSectionHasTerminated(methodTrace);

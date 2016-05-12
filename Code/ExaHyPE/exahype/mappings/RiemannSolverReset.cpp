@@ -10,11 +10,9 @@
 peano::CommunicationSpecification
 exahype::mappings::RiemannSolverReset::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::
-          SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::
-          SendDataAndStateAfterLastTouchVertexLastTime,
-      false);
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+      true);
 }
 
 /**
@@ -333,36 +331,27 @@ void exahype::mappings::RiemannSolverReset::enterCell(
           ADERDGCellDescriptionHeap::getInstance().getData(
               fineGridCell.getADERDGCellDescriptionsIndex())[i];
 
-      if (p.getType()==exahype::records::ADERDGCellDescription::RealCell
-          ||
-          p.getType()==exahype::records::ADERDGCellDescription::RealShell
-          ||
-          (p.getType()==exahype::records::ADERDGCellDescription::VirtualShell
-          && p.getHasNeighboursOfTypeCell())) {
-        // all bits are initialised to 'off'
-        std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed;
-        p.setRiemannSolvePerformed(riemannSolvePerformed);
+      // all bits are initialised to 'off'
+      std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed;
+      p.setRiemannSolvePerformed(riemannSolvePerformed);
 
-        assertion1(p.getRiemannSolvePerformed().none(), p.toString());
+      exahype::solvers::Solver* solver =
+          exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+
+      double* lQhbnd = DataHeap::getInstance().
+          getData(p.getExtrapolatedPredictor()).data();
+      double* lFhbnd = DataHeap::getInstance().
+          getData(p.getFluctuation()).data();
+
+      switch(p.getType()) {
+        case exahype::records::ADERDGCellDescription::Ancestor:
+        case exahype::records::ADERDGCellDescription::Descendant:
+          memset(lQhbnd, 0.0, sizeof(double) * solver->getUnknownsPerCellBoundary());
+          memset(lFhbnd, 0.0, sizeof(double) * solver->getUnknownsPerCellBoundary());
+          break;
+        default:
+          break;
       }
-
-      if (p.getType()==exahype::records::ADERDGCellDescription::RealShell
-          ||
-          (p.getType()==exahype::records::ADERDGCellDescription::VirtualShell
-          &&
-          p.getHasNeighboursOfTypeCell())) {
-        exahype::solvers::Solver* solver =
-                    exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
-
-        double* lQhbnd = DataHeap::getInstance().
-            getData(p.getExtrapolatedPredictor()).data();
-        memset(lQhbnd, 0, sizeof(double) * solver->getUnknownsPerCellBoundary());
-
-        double* lFhbnd = DataHeap::getInstance().
-            getData(p.getFluctuation()).data();
-        memset(lFhbnd, 0, sizeof(double) * solver->getUnknownsPerCellBoundary());
-      }
-
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
     .parallelSectionHasTerminated(methodTrace);
   }

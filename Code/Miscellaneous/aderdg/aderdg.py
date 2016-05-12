@@ -10,7 +10,7 @@ from numpy import linalg
 :synopsis: Provides routines to compute ADER-DG basis functions and operators on the unit cube.
 """
 
-def BaseFunc1D(xi, xin, N):
+def BaseFunc1d(xi, xin, N):
     """
     Computes the ADER-DG basis functions and their first derivative.
     
@@ -69,7 +69,7 @@ def assembleStiffnessMatrix(xGPN, wGPN, N):
     Kxi = [[0 for _ in range(N+1)] for _ in range(N+1)]
      
     for i in range(0,N+1):
-        phi, phi_xi = BaseFunc1D(xGPN[i], xGPN, N)
+        phi, phi_xi = BaseFunc1d(xGPN[i], xGPN, N)
         for k in range(0,N+1):
             for l in range(0,N+1):
                 Kxi[k][l] += wGPN[i]*phi_xi[k]*phi[l] 
@@ -96,7 +96,7 @@ def assembleStiffnessMatrixShorter(xGPN, wGPN, N):
     Kxi = [[0 for _ in range(N+1)] for _ in range(N+1)]
      
     for i in range(0,N+1):
-        phi, phi_xi = BaseFunc1D(xGPN[i], xGPN, N)
+        phi, phi_xi = BaseFunc1d(xGPN[i], xGPN, N)
         for k in range(0,N+1):
             Kxi[k][i] = wGPN[i]*phi_xi[k]*phi[i] 
         
@@ -123,7 +123,7 @@ def assembleMassMatrix(xGPN, wGPN, N):
     MM = [[0 for _ in range(N+1)] for _ in range(N+1)]
     
     for i in range(0,N+1):
-        phi, _ = BaseFunc1D(xGPN[i], xGPN, N)
+        phi, _ = BaseFunc1d(xGPN[i], xGPN, N)
         for k in range(0,N+1):
             for l in range(0,N+1):
                 MM[k][l] += wGPN[i]*phi[k]*phi[l]
@@ -147,7 +147,7 @@ def assembleK1(Kxi, xGPN, N):
        K1:
           <unknown>
     """
-    phi1, _ = BaseFunc1D(1.0, xGPN, N)
+    phi1, _ = BaseFunc1d(1.0, xGPN, N)
     FRm = [[0 for _ in range(N+1)] for _ in range(N+1)]
     
     for k in range(0, N+1):
@@ -170,7 +170,7 @@ def assembleTimeFluxMatrixF0(xGPN, N):
        phi:
           The reference basis functions evaluated at point xi=0.0.
     """
-    phi, _ = BaseFunc1D(0.0, xGPN, N)
+    phi, _ = BaseFunc1d(0.0, xGPN, N)
     return phi         
         
 def assembleDiscreteDerivativeOperator(MM,Kxi):
@@ -191,18 +191,52 @@ def assembleDiscreteDerivativeOperator(MM,Kxi):
     """
     dudx = np.dot(linalg.inv(MM),np.transpose(Kxi))
     return dudx
+
+
+def assembleFineGridProjector1d(xGPN, j, N, dim):
+    """
+    Transforms the degrees of freedom located on a coarse grid edge
+    nodes to degrees of freedoms located on nodes of a fine grid edge.
+    The difference in levels is 1.
     
-def assembleSubOutputMatrix(xGPN, N, dim):
+    Let us denote by P the 1d fine grid projector (=1d equidistantGridProjector). The fine grid DoF 
+    are computed according to:
+    
+    u^{fine;j}_i =  sum_{m} P^{j}_im u^{coarse}_m
+    
+    Args:
+       xGPN:
+          Gauss-Legendre nodes (N nodes).
+       j:
+          Index of one the three subintervals: 0,1, or 2.
+       N:
+          Order of approximation corresponding to N+1 nodal basis functions.
+       dim:
+          Space dimension.
+    Returns:
+       equidistantGridProjector:
+          The corresponding degrees of freedom located at nodes of an equidistant grid over (0,1).
+    """
+    fineGridProjector1d = [[0 for _ in range((N+1))] for _ in range((N+1))] # 4 x 4 for N=3
+    
+    for i in range(0, N+1): # Eq. basis
+        phi_i, _ = BaseFunc1d((xGPN[i]+j)/3.0, xGPN, N) # comma after phi_i is important
+        for m in range(0, N+1): # DG basis
+            fineGridProjector1d[m][i] = phi_i[m]
+    return fineGridProjector1d
+
+
+def assembleEquidistantGridProjector(xGPN, N, dim):
     """
     Transforms the degrees of freedom located at the non-equidistant Gauss-Legendre 
     to degrees of freedoms hold at nodes of an uniform grid over (0,1)^dim.
     
-    Let us denote by P the 1D projection operator (1DsubOutputMatrix). The uniform DoF 
+    Let us denote by P the 1d projection operator (1dequidistantGridProjector). The uniform DoF 
     are computed according to:
     
-    2D:
+    2d:
        u^eq_ij =  sum_{ij;mn} P_im P_jn u^DG_mn
-    3D:
+    3d:
        u^eq_ijk =  sum_{ijk;mnp} P_im P_jn P_kp u^DG_mnp
     
     Args:
@@ -213,10 +247,10 @@ def assembleSubOutputMatrix(xGPN, N, dim):
        dim:
           Space dimension.
     Returns:
-       subOutputMatrix:
+       equidistantGridProjector:
           The correspondng degrees of freedom located at an uniform grid over (0,1)^dim.
     """
-    subOutputMatrix = [[0 for _ in range((N+1)**dim)] for _ in range((N+1)**dim)] # 16 x 16
+    equidistantGridProjector = [[0 for _ in range((N+1)**dim)] for _ in range((N+1)**dim)] # 16 x 16
     subxi = np.linspace(0.0, 1.0, num=(N+1))
     cnt = 0 
     
@@ -224,16 +258,16 @@ def assembleSubOutputMatrix(xGPN, N, dim):
         for k in range(0, N+1):
             for j in range(0, N+1):
                 for i in range(0, N+1):
-                    phi_i, _ = BaseFunc1D(subxi[i], xGPN, N)
-                    phi_j, _ = BaseFunc1D(subxi[j], xGPN, N)
-                    phi_k, _ = BaseFunc1D(subxi[k], xGPN, N)
+                    phi_i, _ = BaseFunc1d(subxi[i], xGPN, N)
+                    phi_j, _ = BaseFunc1d(subxi[j], xGPN, N)
+                    phi_k, _ = BaseFunc1d(subxi[k], xGPN, N)
                     count = 0
                     for kk in range(0, N+1):
                         for jj in range(0, N+1):
                             for ii in range(0, N+1):
                                 aux = [phi_i[ii],phi_j[jj],phi_k[kk]]
                                 val = reduce(lambda x, y: x*y, aux)
-                                subOutputMatrix[count][cnt] = val
+                                equidistantGridProjector[count][cnt] = val
     
                                 
                                 count +=1
@@ -241,27 +275,27 @@ def assembleSubOutputMatrix(xGPN, N, dim):
     elif dim == 2:
         for j in range(0, N+1): # eq basis
             for i in range(0, N+1):
-                phi_i, _ = BaseFunc1D(subxi[i], xGPN, N)
-                phi_j, _ = BaseFunc1D(subxi[j], xGPN, N)
+                phi_i, _ = BaseFunc1d(subxi[i], xGPN, N)
+                phi_j, _ = BaseFunc1d(subxi[j], xGPN, N)
                 count = 0
                 for jj in range(0, N+1): # DG basis
                     for ii in range(0, N+1):
                         aux = [phi_i[ii],phi_j[jj]]
                         val = reduce(lambda x, y: x*y, aux)
-                        subOutputMatrix[count][cnt] = val # count belongs to dg basis
+                        equidistantGridProjector[count][cnt] = val # count belongs to dg basis
                         
                         count +=1
                 cnt+=1  
     else:
-        sys.stderr.write("Dimension not supported. Suboutputmatrix not generated.")          
-    return subOutputMatrix
+        sys.stderr.write("Dimension not supported. equidistantGridProjector not generated.")          
+    return equidistantGridProjector
 
-def assembleEquidistantGridProjector1D(xGPN, N, dim):
+def assembleEquidistantGridProjector1d(xGPN, N, dim):
     """
     Transforms the degrees of freedom located at the non-equidistant Gauss-Legendre
     nodes to degrees of freedoms located at nodes of an equidistant grid over (0,1).
     
-    Let us denote by P the 1D projection operator (=1D subOutputMatrix). The equidistant DoF 
+    Let us denote by P the 1d projection operator (=1d equidistantGridProjector). The equidistant DoF 
     are computed according to:
     
     u^eq_i =  sum_{m} P_im u^DG_m
@@ -274,24 +308,24 @@ def assembleEquidistantGridProjector1D(xGPN, N, dim):
        dim:
           Space dimension.
     Returns:
-       subOutputMatrix:
+       equidistantGridProjector:
           The corresponding degrees of freedom located at nodes of an equidistant grid over (0,1).
     """
-    subOutputMatrix = [[0 for _ in range((N+1))] for _ in range((N+1))] # 4 x 4 for N=3
+    equidistantGridProjector = [[0 for _ in range((N+1))] for _ in range((N+1))] # 4 x 4 for N=3
     subxi = np.linspace(0.0, 1.0, num=(N+1))
     
     for i in range(0, N+1): # Eq. basis
-        phi_i, _ = BaseFunc1D(subxi[i], xGPN, N) # comma is important here
+        phi_i, _ = BaseFunc1d(subxi[i], xGPN, N) # comma after phi_i is important
         for m in range(0, N+1): # DG basis
-            subOutputMatrix[m][i] = phi_i[m]
-    return subOutputMatrix
+            equidistantGridProjector[m][i] = phi_i[m]
+    return equidistantGridProjector
 
-def assembleEquidistantGridProjector2D(xGPN, N, dim):
+def assembleEquidistantGridProjector2d(xGPN, N, dim):
     """
     Transforms the degrees of freedom located at the non-equidistant Gauss-Legendre
     nodes to degrees of freedoms located at nodes of an equidistant grid over (0,1).
     
-    Let us denote by P the 1D projection operator (=1D subOutputMatrix). The equidistant DoF 
+    Let us denote by P the 1d projection operator (=1d equidistantGridProjector). The equidistant DoF 
     are computed according to:
     
     u^eq_ij =  sum_{ij;mn} P_im P_jn u^DG_mn
@@ -304,12 +338,12 @@ def assembleEquidistantGridProjector2D(xGPN, N, dim):
        dim:
           Space dimension.
     Returns:
-       subOutputMatrix:
-          The corresponding degrees of freedom located at nodes of an equidistant grid over (0,1).
+       equidistantGridProjector:
+          The corresponding degrees of freedom located at nodes of an equidistant grid over (0,1)^2.
     """
-    subOutputMatrix = [[0 for _ in range((N+1)**2)] for _ in range((N+1)**2)] # 16 x 16 for N=3
+    equidistantGridProjector = [[0 for _ in range((N+1)**2)] for _ in range((N+1)**2)] # 16 x 16 for N=3
     
-    projector1D = assembleEquidistantGridProjector1D(xGPN, N, dim)
+    projector1d = assembleEquidistantGridProjector1d(xGPN, N, dim)
     
     for n in range(0, N+1): # dg basis
         for m in range(0, N+1):
@@ -317,15 +351,15 @@ def assembleEquidistantGridProjector2D(xGPN, N, dim):
             for j in range(0, N+1): # eq basis
                 for i in range(0, N+1):
                     dofIndexEq = i + j*(N+1)
-                    subOutputMatrix[dofIndexDG][dofIndexEq] = projector1D[n][j] * projector1D[m][i]
-    return subOutputMatrix
+                    equidistantGridProjector[dofIndexDG][dofIndexEq] = projector1d[n][j] * projector1d[m][i]
+    return equidistantGridProjector
 
-def assembleEquidistantGridProjector3D(xGPN, N, dim):
+def assembleEquidistantGridProjector3d(xGPN, N, dim):
     """
     Transforms the degrees of freedom located at the non-equidistant Gauss-Legendre
     nodes to degrees of freedoms located at nodes of an equidistant grid over (0,1).
     
-    Let us denote by P the 1D projection operator (=1D subOutputMatrix). The equidistant DoF 
+    Let us denote by P the 1d projection operator (=1d equidistantGridProjector). The equidistant DoF 
     are computed according to:
     
     u^eq_ijk =  sum_{ijk;mnp} P_im P_jn P_kp u^DG_mnp
@@ -338,12 +372,12 @@ def assembleEquidistantGridProjector3D(xGPN, N, dim):
        dim:
           Space dimension.
     Returns:
-       subOutputMatrix:
-          The corresponding degrees of freedom located at nodes of an equidistant grid over (0,1).
+       equidistantGridProjector:
+          The corresponding degrees of freedom located at nodes of an equidistant grid over (0,1)^3.
     """
-    subOutputMatrix = [[0 for _ in range((N+1)**3)] for _ in range((N+1)**3)]
+    equidistantGridProjector = [[0 for _ in range((N+1)**3)] for _ in range((N+1)**3)]
     
-    projector1D = assembleEquidistantGridProjector1D(xGPN, N, dim)
+    projector1d = assembleEquidistantGridProjector1d(xGPN, N, dim)
     
     for p in range(0, N+1):
         for n in range(0, N+1):
@@ -353,5 +387,5 @@ def assembleEquidistantGridProjector3D(xGPN, N, dim):
                     for j in range(0, N+1):
                         for i in range(0, N+1):
                             dofIndexEq = i +j*(N+1)+k*(N+1)**2
-                            subOutputMatrix[dofIndexDG][dofIndexEq] = projector1D[p][k] * projector1D[n][j] * projector1D[m][i]
-    return subOutputMatrix
+                            equidistantGridProjector[dofIndexDG][dofIndexEq] = projector1d[p][k] * projector1d[n][j] * projector1d[m][i]
+    return equidistantGridProjector

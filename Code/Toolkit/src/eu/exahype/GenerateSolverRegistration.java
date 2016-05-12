@@ -43,7 +43,9 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _writer.write("#include \"kernels/KernelCalls.h\"\n");
       _writer.write("#include \"exahype/plotters/Plotter.h\"\n");
-      _writer.write("#include \"exahype/solvers/Solver.h\"\n\n\n");
+      _writer.write("#include \"exahype/solvers/Solver.h\"\n\n");
+      _writer.write("#include \"kernels/GaussLegendreQuadrature.h\"\n");
+      _writer.write("#include \"kernels/DGMatrices.h\"\n\n\n");
 
       _methodBodyWriter.write("void kernels::initSolvers(const exahype::Parser& parser) {\n");
       if (node.getSolver().size() == 0) {
@@ -80,7 +82,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     try {
       _methodBodyWriter.write(
           "  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter("
-          + (_kernelNumber - 1) + "," + _plotterNumber + ",parser)); \n");
+              + (_kernelNumber - 1) + "," + _plotterNumber + ",parser)); \n");
       _plotterNumber++;
       System.out.println("added plotter ... ok");
     } catch (Exception exc) {
@@ -92,8 +94,26 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   @Override
   public void outAProject(AProject node) {
     try {
+      _methodBodyWriter.write("\n");
+      _methodBodyWriter.write(
+          "  std::set<int> orders;\n"+
+          "  for (std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin(); p != exahype::solvers::RegisteredSolvers.end(); p++) {\n" +          
+          "    orders.insert((*p)->getNodesPerCoordinateAxis()-1);\n" +
+          "  }\n" +
+          "  kernels::initGaussLegendreNodesAndWeights(orders);\n"+
+          "  kernels::initDGMatrices(orders);\n");
+      _methodBodyWriter.write("}\n"); // close initSolvers(...)
+      _methodBodyWriter.write("\n");
+      _methodBodyWriter.write("\n");
+      _methodBodyWriter.write("void kernels::finalise() {\n");
+      _methodBodyWriter.write(
+          "  std::set<int> orders;\n"+
+          "  for (std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin(); p != exahype::solvers::RegisteredSolvers.end(); p++) {\n" +          
+          "    orders.insert((*p)->getNodesPerCoordinateAxis()-1);\n" +
+          "  }\n" +
+          "  kernels::freeGaussLegendreNodesAndWeights(orders);\n"+
+          "  kernels::freeDGMatrices(orders);\n");
       _methodBodyWriter.write("}\n");
-
       _writer.write("\n");
       _writer.write("\n");
       _writer.write("\n");

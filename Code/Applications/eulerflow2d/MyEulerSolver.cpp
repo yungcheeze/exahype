@@ -9,7 +9,7 @@ Euler2d::MyEulerSolver::MyEulerSolver(int kernelNumber)
 
 int Euler2d::MyEulerSolver::getMinimumTreeDepth() const {
   #if defined(Asserts)
-  return 3;
+  return 2;
   #else
   return 4;
   #endif
@@ -82,15 +82,15 @@ void Euler2d::MyEulerSolver::adjustedSolutionValues(const double *const x,
   }
 }
 
-bool Euler2d::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
+exahype::solvers::Solver::RefinementControl Euler2d::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
   assertion(level>=getMinimumTreeDepth()+1);
 
   if (level<getMinimumTreeDepth()+4) {
     if (center[0]<0.5 && center[0]>0.25) {
       if (center[1]<0.5 && center[1]>0.25) {
-        return true;
+        return exahype::solvers::Solver::Refine;
       }
     }
   }
-  return false;
+  return exahype::solvers::Solver::Keep;
 }

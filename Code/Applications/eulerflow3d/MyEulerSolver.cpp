@@ -46,9 +46,9 @@ void Euler3d::MyEulerSolver::adjustedSolutionValues(const double* const x,
 
 
 
-bool Euler3d::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
+exahype::solvers::Solver::RefinementControl Euler3d::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
   // @todo Please implement
-  return false;
+  return exahype::solvers::Solver::Keep;
 }
 
 

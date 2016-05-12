@@ -11,11 +11,9 @@
 peano::CommunicationSpecification
 exahype::mappings::InitialGrid::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::
-          SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::
-          SendDataAndStateAfterLastTouchVertexLastTime,
-      false);
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+      true);
 }
 
 peano::MappingSpecification

@@ -10,11 +10,9 @@
 peano::CommunicationSpecification
 exahype::mappings::PatchInitialisation::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::
-          SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::
-          SendDataAndStateAfterLastTouchVertexLastTime,
-      false);
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+      true);
 }
 
 peano::MappingSpecification
@@ -295,30 +293,38 @@ void exahype::mappings::PatchInitialisation::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
+  // Hasn't been initialised yet
+  assertion( !ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex()) );
+  fineGridCell.setupMetaData();
+
   // @todo 16/04/05:Dominic Etienne Charrier: this mapping functionality will be replaced
   // by a regular mesh and cell a cell description init
   // mapping
-  if (!ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-      fineGridCell.getADERDGCellDescriptionsIndex())) {
-    int solverNumber=0;
-    for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-        exahype::solvers::RegisteredSolvers.begin();
-        p != exahype::solvers::RegisteredSolvers.end(); p++) {
-      if (fineGridVerticesEnumerator.getLevel()==(*p)->getMinimumTreeDepth()+1) {
-        fineGridCell.addNewCellDescription(
-            solverNumber,
-            exahype::records::ADERDGCellDescription::RealCell,
-            fineGridVerticesEnumerator.getLevel(),
-            multiscalelinkedcell::HangingVertexBookkeeper::
-            InvalidAdjacencyIndex,
-            fineGridPositionOfCell,
-            fineGridVerticesEnumerator.getCellSize(),
-            fineGridVerticesEnumerator.getCellCenter());
-        fineGridCell.initialiseCellDescription(solverNumber);
-      }
-      solverNumber++;
+
+  int solverNumber=0;
+  for (
+    std::vector<exahype::solvers::Solver*>::const_iterator p =
+     exahype::solvers::RegisteredSolvers.begin();
+    p != exahype::solvers::RegisteredSolvers.end();
+    p++
+  ) {
+    if (fineGridVerticesEnumerator.getLevel()==(*p)->getMinimumTreeDepth()+1) {
+      fineGridCell.addNewCellDescription(
+        solverNumber,
+        exahype::records::ADERDGCellDescription::Cell,
+        exahype::records::ADERDGCellDescription::None,
+        fineGridVerticesEnumerator.getLevel(),
+        multiscalelinkedcell::HangingVertexBookkeeper::
+        InvalidAdjacencyIndex,
+        fineGridPositionOfCell,
+        fineGridVerticesEnumerator.getCellSize(),
+        fineGridVerticesEnumerator.getCellCenter()
+      );
+      fineGridCell.initialiseCellDescription(solverNumber);
     }
+    solverNumber++;
   }
+
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 

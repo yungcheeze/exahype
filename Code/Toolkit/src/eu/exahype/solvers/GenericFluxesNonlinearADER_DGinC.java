@@ -45,7 +45,7 @@ public class GenericFluxesNonlinearADER_DGinC implements Solver {
     writer.write("void " + projectName + "::" + solverName
         + "::spaceTimePredictor( double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {\n");
     writer.write(
-        "   kernels::aderdg::generic::c::spaceTimePredictor<flux>( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        "   kernels::aderdg::generic::c::spaceTimePredictorNonlinear<flux>( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
@@ -57,19 +57,19 @@ public class GenericFluxesNonlinearADER_DGinC implements Solver {
     writer.write("void " + projectName + "::" + solverName
         + "::volumeIntegral(double* lduh, const double* const lFhi, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
     writer.write(
-        "   kernels::aderdg::generic::c::volumeIntegral( lduh, lFhi, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        "   kernels::aderdg::generic::c::volumeIntegralNonlinear( lduh, lFhi, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
         + "::surfaceIntegral(double* lduh, const double* const lFhbnd, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
     writer.write(
-        "   kernels::aderdg::generic::c::surfaceIntegral( lduh, lFhbnd, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        "   kernels::aderdg::generic::c::surfaceIntegralNonlinear( lduh, lFhbnd, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
         + "::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex) {\n");
     writer.write(
-        "   kernels::aderdg::generic::c::riemannSolver<eigenvalues>( FL, FR, QL, QR, dt, normalNonZeroIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        "   kernels::aderdg::generic::c::riemannSolverNonlinear<eigenvalues>( FL, FR, QL, QR, dt, normalNonZeroIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("double " + projectName + "::" + solverName
@@ -168,10 +168,10 @@ public class GenericFluxesNonlinearADER_DGinC implements Solver {
     }
     writer.write("}\n");
     writer.write("\n\n\n");
-    writer.write("bool " + projectName + "::" + solverName
+    writer.write("exahype::solvers::Solver::RefinementControl " + projectName + "::" + solverName
             + "::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {\n");
     writer.write("  // @todo Please implement\n");
-    writer.write("  return false;\n");
+    writer.write("  return exahype::solvers::Solver::Keep;\n");
     writer.write("}\n");
     writer.write("\n\n\n");
   }

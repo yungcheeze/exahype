@@ -27,35 +27,41 @@ constexpr int power(int basis, int exp) {
 }
 
 namespace exahype {
-  namespace solvers {
-    class Solver;
+namespace solvers {
+class Solver;
 
-    /**
-     * All the registered solvers. Has to be declared extern in C++ standard as
-     * it is instantiated in the corresponding cpp file.
-     */
-    extern std::vector<Solver*> RegisteredSolvers;
-  }
+/**
+ * All the registered solvers. Has to be declared extern in C++ standard as
+ * it is instantiated in the corresponding cpp file.
+ */
+extern std::vector<Solver*> RegisteredSolvers;
+}
 }
 
 /**
  * Describes one solver.
  */
 class exahype::solvers::Solver {
- public:
+public:
   enum Type { ADER_DG };
 
   /*
     enum Type {
       SOLVE, SUBSOLVE
     };
-  */
+   */
 
   enum TimeStepping {
     GlobalTimeStepping,  // Local, Anarchic
   };
 
- protected:
+  enum RefinementControl {
+    Keep,
+    Refine,
+    Erase
+  };
+
+protected:
   /**
    * Each solver has an identifier/name. It is used for debug purposes only.
    */
@@ -69,8 +75,15 @@ class exahype::solvers::Solver {
    */
   const int _kernelNumber;
 
+  /**
+   * Each solver has a kernel number that says which kernel is to be
+   * executed. Typically this is an ascending index starting from 0.
+   */
   const int _numberOfVariables;
 
+  /**
+   * The numbe
+   */
   const int _nodesPerCoordinateAxis;
 
   const int _unknownsPerFace;
@@ -119,10 +132,10 @@ class exahype::solvers::Solver {
    */
   double _minNextPredictorTimeStepSize;
 
- public:
+public:
   Solver(const std::string& identifier, Type type, int kernelNumber,
-         int numberOfVariables, int nodesPerCoordinateAxis,
-         TimeStepping timeStepping);
+      int numberOfVariables, int nodesPerCoordinateAxis,
+      TimeStepping timeStepping);
 
   virtual ~Solver() {}
 
@@ -199,7 +212,7 @@ class exahype::solvers::Solver {
    * @param[dt]    dt   Time step size.
    */
   virtual void solutionUpdate(double* luh, const double* const lduh,
-                              const double dt) = 0;
+      const double dt) = 0;
 
   /**
    * @brief Computes the volume flux contribution to the cell update.
@@ -238,8 +251,8 @@ class exahype::solvers::Solver {
    *i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
    */
   virtual void riemannSolver(double* FL, double* FR, const double* const QL,
-                             const double* const QR, const double dt,
-                             const int normalNonZero) = 0;
+      const double* const QR, const double dt,
+      const int normalNonZero) = 0;
 
   /**
    * @brief Computes cell-local predictor space-time, volume, and face DoF.
@@ -255,7 +268,7 @@ class exahype::solvers::Solver {
    * @param[inout] lFhi   Volume flux DoF.
    * @param[inout] lQhbnd Boundary extrapolated predictor DoF.
    * @param[inout] lFhbnd Boundary extrapolated normal fluxes (or fluctuations).
-   * @param[ino]   luh    Solution DoF.
+   * @param[out]   luh    Solution DoF.
    * @param[in]    dx     Extent of the cell in each coordinate direction.
    * @param[in]    dt     Time step size.
    */
@@ -299,7 +312,7 @@ class exahype::solvers::Solver {
    */
   // @todo: 16/04/06:Dominic Etienne Charrier Consider to correct the level in the invoking code, i.e., level-> level-1
   // since this is was the user expects.
-  virtual bool refinementCriterion(
+  virtual exahype::solvers::Solver::RefinementControl refinementCriterion(
       const double* luh,
       const tarch::la::Vector<DIMENSIONS, double>& center,
       const tarch::la::Vector<DIMENSIONS, double>& dx,
@@ -330,9 +343,10 @@ class exahype::solvers::Solver {
    * Restricts fine grid face unknowns on level \p fineGridLevel
    * up to level \p coarseGridLevel and adds them to the coarse grid unknowns.
    *
-   * \note For the considered AMR concept, the difference in levels is always
-   * equal to one. The vector \p subfaceIndex does contain values in the range
-   * \f$0,1,2\f$.
+   * \note For the considered AMR concept, the difference in levels can
+   * be larger than one. Let \f$l\f$ be the level difference. The
+   * vector \p subfaceIndex does contain values in the range
+   * \f$0,1,\ldots,3^l-1\f$.
    */
   virtual void faceUnknownsRestriction(
       double* lQhbndCoarse,
@@ -345,39 +359,37 @@ class exahype::solvers::Solver {
   ) = 0;
 
   /**
-     * Project coarse grid face unknowns
-     * on level \p coarseGridLevel down to level \p fineGridLevel
-     * and writes them to the fine grid unknowns
-     *
-     * \note For the considered AMR concept, the difference in levels can
-     * be larger than one. Let \f$l\f$ be the level difference. The
-     * vector \p subcellIndex does contain values in the range
-     * \f$0,1,\ldots,3^l-1\f$.
-     */
-    virtual void volumeUnknownsProlongation(
-        double* luhFine,
-        const double* luhCoarse,
-        const int coarseGridLevel,
-        const int fineGridLevel,
-        const tarch::la::Vector<DIMENSIONS, int>& subcellIndex
-    ) = 0;
+   * Project coarse grid face unknowns
+   * on level \p coarseGridLevel down to level \p fineGridLevel
+   * and writes them to the fine grid unknowns
+   *
+   * \note For the considered AMR concept, the difference in levels is always
+   * equal to one. The vector \p subcellIndex does contain values in the range
+   * \f$0,1,2\f$.
+   */
+  virtual void volumeUnknownsProlongation(
+      double* luhFine,
+      const double* luhCoarse,
+      const int coarseGridLevel,
+      const int fineGridLevel,
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex
+  ) = 0;
 
-    /**
-     * Restricts fine grid volume unknowns on level \p fineGridLevel
-     * up to level \p coarseGridLevel and adds them to the coarse grid unknowns.
-     *
-     * \note For the considered AMR concept, the difference in levels is always
-     * equal to one. The vector \p subcellIndex does contain values in the range
-     * \f$0,1,2\f$.
-     */
-    virtual void volumeUnknownsRestriction(
-        double* luhCoarse,
-        const double* luhFine,
-        const int coarseGridLevel,
-        const int fineGridLevel,
-        const tarch::la::Vector<DIMENSIONS, int>& subcellIndex
-    ) = 0;
-    ///@}
+  /**
+   * Restricts fine grid volume unknowns on level \p fineGridLevel
+   * up to level \p coarseGridLevel and adds them to the coarse grid unknowns.
+   *
+   * \note For the considered AMR concept, the difference in levels is always
+   * equal to one. The vector \p subcellIndex does contain values in the range
+   * \f$0,1,2\f$.
+   */
+  virtual void volumeUnknownsRestriction(
+      double* luhCoarse,
+      const double* luhFine,
+      const int coarseGridLevel,
+      const int fineGridLevel,
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex
+  ) = 0;
   ///@}
 
   /**
