@@ -28,3 +28,7 @@
 *.out
 *.app
 
+# Output
+*.vtk
+*.log-file
+
