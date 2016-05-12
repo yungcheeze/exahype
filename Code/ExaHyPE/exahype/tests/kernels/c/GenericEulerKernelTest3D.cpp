@@ -43,7 +43,7 @@ void GenericEulerKernelTest::testFlux(const double *const Q, double *f,
 void GenericEulerKernelTest::testPDEFluxes() {
   cout << "Test PDE-related functions, DIM=3" << endl;
 
-  double Q[5] = {1., 0.1, 0.2, 0.3, 3.5};  // pressure = 1.39
+  double Q[5] = {1., 0.1, 0.2, 0.3, 3.5};  // pressure = 1.372
   double f[5], g[5], h[5];
 
   testFlux(Q, f, g, h);
@@ -191,13 +191,11 @@ void GenericEulerKernelTest::testSpaceTimePredictor() {
   cout << "Test space time predictor, ORDER=3, DIM=3" << endl;
 
   // inputs:
-  double *luh = new double[320]();  // nVar * nDOFx * nDOFy * nDOFz
-  for (int i = 0; i < 320; i += 5) {
-    luh[i] = 1.0;
-    luh[i + 4] = 2.5;
-  }
+  // exahype::tests::testdata::generic_euler::testSpaceTimePredictor::luh[320 =
+  // nVar * nDOFx * nDOFy * nDOFz]
 
   const double dx[3] = {0.5, 0.5, 0.5};
+  const tarch::la::Vector<DIMENSIONS, double> dx_vector(0.5, 0.5, 0.5);
   const double timeStepSize = 1.267423918681417E-002;
 
   // local:
@@ -205,336 +203,62 @@ void GenericEulerKernelTest::testSpaceTimePredictor() {
   double *lFi = new double[3840];  // nVar * nDOFx * nDOFy * nDOFz * nDOFt * dim
 
   // outputs:
-  double *lQhi = new double[320];  // intentionally left uninitialised
-  double *lFhi = new double[960];  // nVar * nDOFx * nDOFy * nDOFz * dim
-  double *lQhbnd = new double[480];
-  double *lFhbnd = new double[480];
+  double *lQhi = new double[320];    // nVar * nDOFx * nDOFy * nDOFz
+                                     // intentionally left uninitialised
+  double *lFhi = new double[960];    // nVar * nDOFx * nDOFy * nDOFz * dim
+  double *lQhbnd = new double[480];  // nVar * nDOFy * nDOF_z * 6
+  double *lFhbnd = new double[480];  // nVar * nDOFy * nDOF_z * 6
 
-  kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear<testFlux>(
-      lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx[0], timeStepSize, 5, 4);
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<testFlux>(
+      lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd,
+      exahype::tests::testdata::generic_euler::testSpaceTimePredictor::luh,
+      dx_vector, timeStepSize,
+      5,  // numberOfVariables
+      4   // basisSize
+      );
 
-  validateNumericalEqualsWithEps(lQhi[0], 9.9999999999978384E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[1], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[2], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[3], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[4], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[5], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[6], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[7], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[8], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[9], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[10], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[11], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[12], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[13], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[14], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[15], 9.9999999999978384E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[16], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[17], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[18], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[19], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[20], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[21], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[22], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[23], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[24], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[25], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[26], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[27], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[28], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[29], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[30], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[31], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[32], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[33], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[34], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[35], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[36], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[37], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[38], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[39], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[40], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[41], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[42], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[43], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[44], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[45], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[46], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[47], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[48], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[49], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[50], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[51], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[52], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[53], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[54], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[55], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[56], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[57], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[58], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[59], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[60], 9.9999999999978384E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[61], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[62], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[63], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[64], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[65], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[66], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[67], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[68], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[69], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[70], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[71], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[72], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[73], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[74], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[75], 9.9999999999978384E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[76], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[77], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[78], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[79], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[80], 9.9999999999978351E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[81], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[82], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[83], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[84], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[85], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[86], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[87], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[88], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[89], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[90], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[91], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[92], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[93], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[94], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[95], 9.9999999999978351E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[96], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[97], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[98], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[99], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[100], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[101], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[102], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[103], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[104], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[105], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[106], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[107], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[108], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[109], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[110], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[111], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[112], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[113], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[114], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[115], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[116], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[117], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[118], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[119], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[120], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[121], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[122], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[123], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[124], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[125], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[126], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[127], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[128], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[129], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[130], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[131], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[132], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[133], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[134], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[135], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[136], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[137], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[138], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[139], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[140], 9.9999999999978351E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[141], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[142], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[143], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[144], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[145], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[146], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[147], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[148], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[149], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[150], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[151], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[152], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[153], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[154], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[155], 9.9999999999978351E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[156], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[157], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[158], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[159], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[160], 9.9999999999978351E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[161], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[162], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[163], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[164], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[165], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[166], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[167], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[168], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[169], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[170], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[171], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[172], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[173], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[174], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[175], 9.9999999999978351E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[176], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[177], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[178], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[179], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[180], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[181], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[182], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[183], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[184], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[185], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[186], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[187], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[188], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[189], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[190], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[191], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[192], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[193], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[194], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[195], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[196], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[197], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[198], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[199], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[200], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[201], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[202], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[203], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[204], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[205], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[206], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[207], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[208], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[209], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[210], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[211], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[212], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[213], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[214], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[215], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[216], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[217], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[218], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[219], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[220], 9.9999999999978351E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[221], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[222], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[223], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[224], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[225], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[226], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[227], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[228], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[229], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[230], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[231], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[232], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[233], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[234], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[235], 9.9999999999978351E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[236], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[237], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[238], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[239], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[240], 9.9999999999978384E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[241], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[242], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[243], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[244], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[245], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[246], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[247], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[248], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[249], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[250], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[251], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[252], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[253], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[254], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[255], 9.9999999999978384E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[256], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[257], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[258], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[259], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[260], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[261], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[262], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[263], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[264], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[265], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[266], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[267], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[268], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[269], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[270], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[271], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[272], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[273], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[274], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[275], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[276], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[277], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[278], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[279], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[280], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[281], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[282], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[283], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[284], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[285], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[286], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[287], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[288], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[289], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[290], 9.9999999999978373E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[291], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[292], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[293], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[294], 2.4999999999994591E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[295], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[296], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[297], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[298], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[299], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[300], 9.9999999999978384E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[301], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[302], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[303], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[304], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[305], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[306], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[307], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[308], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[309], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[310], 9.9999999999978362E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[311], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[312], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[313], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[314], 2.4999999999994595E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[315], 9.9999999999978384E-001, eps);
-  validateNumericalEqualsWithEps(lQhi[316], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[317], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[318], 0.0000000000000000E+000, eps);
-  validateNumericalEqualsWithEps(lQhi[319], 2.4999999999994595E+000, eps);
+  for (int i = 0; i < 1280; i++) {
+    validateNumericalEqualsWithEpsWithParams1(
+        lQi[i], ::exahype::tests::testdata::generic_euler::
+                    testSpaceTimePredictor::lQi[i],
+        5e-7, i);
+  }
 
-  delete[] luh;
+  for (int i = 0; i < 3840; i++) {
+    validateNumericalEqualsWithEpsWithParams1(
+        lFi[i], ::exahype::tests::testdata::generic_euler::
+                    testSpaceTimePredictor::lFi[i],
+        2.1e-5, i);
+  }
+
+  for (int i = 0; i < 320; i++) {
+    validateNumericalEqualsWithEpsWithParams1(
+        lQhi[i], ::exahype::tests::testdata::generic_euler::
+                     testSpaceTimePredictor::lQhi[i],
+        8e-8, i);
+  }
+
+  for (int i = 0; i < 960; i++) {
+    validateNumericalEqualsWithEpsWithParams1(
+        lFhi[i], ::exahype::tests::testdata::generic_euler::
+                     testSpaceTimePredictor::lFhi[i],
+        3.4e-6, i);
+  }
+
+  for (int i = 0; i < 480; i++) {
+    validateNumericalEqualsWithEpsWithParams1(
+        lQhbnd[i], ::exahype::tests::testdata::generic_euler::
+                       testSpaceTimePredictor::lQhbnd[i],
+        1.1e-7, i);
+  }
+
+  for (int i = 0; i < 480; i++) {
+    validateNumericalEqualsWithEpsWithParams1(
+        lFhbnd[i], ::exahype::tests::testdata::generic_euler::
+                       testSpaceTimePredictor::lFhbnd[i],
+        4.2e-6, i);
+  }
+
   delete[] lQi;
   delete[] lFi;
   delete[] lFhi;
