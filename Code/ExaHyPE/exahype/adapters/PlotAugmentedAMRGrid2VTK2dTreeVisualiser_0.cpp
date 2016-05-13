@@ -89,6 +89,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::plotVertex(
   const tarch::la::Vector<DIMENSIONS,double>&  x,
   int                                          level
 ) {
+#if DIMENSIONS==2
   tarch::la::Vector<DIMENSIONS+1,double> y;
   for( int i=0; i<DIMENSIONS; i++) y(i) = x(i);
   y(DIMENSIONS)=level;
@@ -99,6 +100,10 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::plotVertex(
   if ( _vertex2IndexMap.find(y) == _vertex2IndexMap.end() ) {  
     _vertex2IndexMap[y] = _vertexWriter->plotVertex(plotY);
   }
+#else 
+  std::cerr << "Dimensions != 2 are not supported!" << std::endl;
+  exit(1);
+#endif
 }
 
 
@@ -366,6 +371,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::enterCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
+#if DIMENSIONS==2
   int vertexIndex[TWO_POWER_D];
   tarch::la::Vector<DIMENSIONS+1,double> currentVertexPosition;
   currentVertexPosition(DIMENSIONS) = fineGridVerticesEnumerator.getLevel();
@@ -406,6 +412,11 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::enterCell(
     const int treeLinkIndex = _cellWriter->plotLine(indices);
     _cellNumberWriter->plotCell(treeLinkIndex,TreeConnectionsValue);
   }
+#else 
+  std::cerr << "Dimensions != 2 are not supported!" << std::endl;
+  exit(1);
+#endif
+
 }
 
 
