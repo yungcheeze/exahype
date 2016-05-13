@@ -1,5 +1,5 @@
 import numpy as np
-#import Backend
+import Backend
 import re
 import sys
 sys.path.insert(0, '../aderdg')
@@ -24,7 +24,7 @@ class DGMatrixGenerator:
     # linear/nonlinear
     m_numerics  = ''
 
-    # name of generated output file
+    # name of generated output files
     m_sourceName = "DGMatrices.cpp"
     m_headerName = "DGMatrices.h"
 
@@ -90,8 +90,9 @@ class DGMatrixGenerator:
     def __generateHeaderFile(self):
         l_sourceFile = open(self.m_headerName, 'a')
         # copied from Dominic's DGMatrices.h; matrices are linearised
-        l_sourceFile.write('#ifndef _EXAHYPE_KERNELS_ADERDG_OPTIMISED_DGMATRICES_H_\n'   \
-                           '#define _EXAHYPE_KERNELS_ADERDG_OPTIMISED_DGMATRICES_H_\n\n')
+        l_includeGuard = '#ifndef _EXAHYPE_KERNELS_ADERDG_OPTIMISED_DGMATRICES_H_\n'   \
+                         '#define _EXAHYPE_KERNELS_ADERDG_OPTIMISED_DGMATRICES_H_\n\n')
+        l_sourceFile.write(l_includeGuard)
         l_sourceFile.write('#include <set>\n\n')
         l_sourceFile.write('namespace kernels { \n\n'     \
                            'void initDGMatrices(const std::set<int>& orders);\n' \
@@ -104,6 +105,7 @@ class DGMatrixGenerator:
                            'extern double *FRCoeff;\n'  \
                            'extern double ***equidistantGridProjector1d;\n' \
                            'extern double **** fineGridProjector1d;\n\n}\n')
+        # close include guard
         l_sourceFile.write('#endif /* _EXAHYPE_KERNELS_ADERDG_OPTIMISED_DGMATRICES_H_ */')
         l_sourceFile.close()
 
