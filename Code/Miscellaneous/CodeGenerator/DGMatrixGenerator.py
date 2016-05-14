@@ -72,16 +72,28 @@ class DGMatrixGenerator:
             l_lineariseddudx  = np.concatenate((dudx,l_padMatrix),axis=0).flatten('F')
             l_matrices['dudx'] = l_lineariseddudx
 
+        # tmp memory for *s*caled *m*atrices
+        s_m = np.zeros(np.concatenate((Kxi,l_padMatrix),axis=0).shape)
+        l_matrices['s_m'] = s_m.flatten('F')
+
+        # tmp memory for *s*caled *v*ector
+        s_v = np.zeros((1,Backend.getSizeWithPadding(self.m_config['nVar'])))
+        l_matrices['s_v'] = s_v.flatten('F')
+
+
         # [FLCoeff 0...0]; [FRCoeff 0...0];
-        FLCoeff, _ = np.array(aderdg.BaseFunc1D(0.0, self.m_xGPN, self.m_order))
-        FRCoeff, _ = np.array(aderdg.BaseFunc1D(1.0, self.m_xGPN, self.m_order))
-        l_paddedFLCoeff = np.pad(FLCoeff, [0, self.getPadWidth(self.m_config['nDof'])], mode='constant')
-        l_paddedFRCoeff = np.pad(FRCoeff, [0, self.getPadWidth(self.m_config['nDof'])], mode='constant')
-        l_matrices['FLCoeff'] = l_paddedFLCoeff
-        l_matrices['FRCoeff'] = l_paddedFRCoeff
+        # right now FLCoeff, FRCoeff no pad (gives no benefit w.r.t libxsmm)
+        FLCoeff, _ = np.array(aderdg.BaseFunc1d(0.0, self.m_xGPN, self.m_order))
+        FRCoeff, _ = np.array(aderdg.BaseFunc1d(1.0, self.m_xGPN, self.m_order))
+        #l_paddedFLCoeff = np.pad(FLCoeff, [0, Backend.getPadWidth(self.m_config['nDof'])], mode='constant')
+        #l_paddedFRCoeff = np.pad(FRCoeff, [0, Backend.getPadWidth(self.m_config['nDof'])], mode='constant')
+        #l_matrices['FLCoeff'] = l_paddedFLCoeff
+        #l_matrices['FRCoeff'] = l_paddedFRCoeff
+        l_matrices['FLCoeff'] = FLCoeff
+        l_matrices['FRCoeff'] = FRCoeff
 
         # F0 no padding
-        F0, _ = np.array(aderdg.BaseFunc1D(0.0, self.m_xGPN, self.m_order))
+        F0, _ = np.array(aderdg.BaseFunc1d(0.0, self.m_xGPN, self.m_order))
         l_matrices['F0'] = F0
 
         self.__generateHeaderFile()
@@ -91,7 +103,7 @@ class DGMatrixGenerator:
         l_sourceFile = open(self.m_headerName, 'a')
         # copied from Dominic's DGMatrices.h; matrices are linearised
         l_includeGuard = '#ifndef _EXAHYPE_KERNELS_ADERDG_OPTIMISED_DGMATRICES_H_\n'   \
-                         '#define _EXAHYPE_KERNELS_ADERDG_OPTIMISED_DGMATRICES_H_\n\n')
+                         '#define _EXAHYPE_KERNELS_ADERDG_OPTIMISED_DGMATRICES_H_\n\n'
         l_sourceFile.write(l_includeGuard)
         l_sourceFile.write('#include <set>\n\n')
         l_sourceFile.write('namespace kernels { \n\n'     \
@@ -100,6 +112,8 @@ class DGMatrixGenerator:
                            'extern double *Kxi;\n'      \
                            'extern double *iK1;\n'      \
                            'extern double *dudx;\n'     \
+                           'extern double *s_m;\n'      \
+                           'extern double *s_v;\n'      \
                            'extern double *F0; \n'      \
                            'extern double *FLCoeff;\n'  \
                            'extern double *FRCoeff;\n'  \
@@ -117,6 +131,8 @@ class DGMatrixGenerator:
         l_sourceFile.write('double* kernels::Kxi;\n'     \
                            'double* kernels::iK1;\n'     \
                            'double* kernels::dudx;\n'    \
+                           'double* kernels::s_m;\n'     \
+                           'double* kernels::s_v;\n'     \
                            'double* kernels::F0;\n'      \
                            'double* kernels::FLCoeff;\n' \
                            'double* kernels::FRCoeff;\n' \
