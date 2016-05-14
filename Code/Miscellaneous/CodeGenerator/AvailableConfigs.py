@@ -34,3 +34,7 @@ numerics   =  [
                 "linear",
                 "nonlinear"
               ]
+
+supportedPDEs =  [
+                    "Euler"                 # compressible Euler equations
+                 ]

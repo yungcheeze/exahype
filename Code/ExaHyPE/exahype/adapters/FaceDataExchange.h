@@ -19,7 +19,6 @@
 
 
  #include "exahype/mappings/RiemannSolver.h"
- #include "exahype/mappings/BoundaryConditions.h"
 
 
 
@@ -40,10 +39,8 @@ namespace exahype {
 class exahype::adapters::FaceDataExchange {
   private:
     typedef mappings::RiemannSolver Mapping0;
-    typedef mappings::BoundaryConditions Mapping1;
 
      Mapping0  _map2RiemannSolver;
-     Mapping1  _map2BoundaryConditions;
 
 
   public:

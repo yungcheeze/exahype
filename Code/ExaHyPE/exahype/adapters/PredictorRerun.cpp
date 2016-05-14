@@ -5,6 +5,7 @@ peano::CommunicationSpecification   exahype::adapters::PredictorRerun::communica
   return peano::CommunicationSpecification::getMinimalSpecification()
    & exahype::mappings::SpaceTimePredictor::communicationSpecification()
    & exahype::mappings::VolumeIntegral::communicationSpecification()
+   & exahype::mappings::DropIncomingMPIMessages::communicationSpecification()
 
   ;
 }
@@ -14,6 +15,7 @@ peano::MappingSpecification   exahype::adapters::PredictorRerun::touchVertexLast
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::SpaceTimePredictor::touchVertexLastTimeSpecification()
    & exahype::mappings::VolumeIntegral::touchVertexLastTimeSpecification()
+   & exahype::mappings::DropIncomingMPIMessages::touchVertexLastTimeSpecification()
 
   ;
 }
@@ -23,6 +25,7 @@ peano::MappingSpecification   exahype::adapters::PredictorRerun::touchVertexFirs
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::SpaceTimePredictor::touchVertexFirstTimeSpecification()
    & exahype::mappings::VolumeIntegral::touchVertexFirstTimeSpecification()
+   & exahype::mappings::DropIncomingMPIMessages::touchVertexFirstTimeSpecification()
 
   ;
 }
@@ -32,6 +35,7 @@ peano::MappingSpecification   exahype::adapters::PredictorRerun::enterCellSpecif
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::SpaceTimePredictor::enterCellSpecification()
    & exahype::mappings::VolumeIntegral::enterCellSpecification()
+   & exahype::mappings::DropIncomingMPIMessages::enterCellSpecification()
 
   ;
 }
@@ -41,6 +45,7 @@ peano::MappingSpecification   exahype::adapters::PredictorRerun::leaveCellSpecif
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::SpaceTimePredictor::leaveCellSpecification()
    & exahype::mappings::VolumeIntegral::leaveCellSpecification()
+   & exahype::mappings::DropIncomingMPIMessages::leaveCellSpecification()
 
   ;
 }
@@ -50,6 +55,7 @@ peano::MappingSpecification   exahype::adapters::PredictorRerun::ascendSpecifica
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::SpaceTimePredictor::ascendSpecification()
    & exahype::mappings::VolumeIntegral::ascendSpecification()
+   & exahype::mappings::DropIncomingMPIMessages::ascendSpecification()
 
   ;
 }
@@ -59,6 +65,7 @@ peano::MappingSpecification   exahype::adapters::PredictorRerun::descendSpecific
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::SpaceTimePredictor::descendSpecification()
    & exahype::mappings::VolumeIntegral::descendSpecification()
+   & exahype::mappings::DropIncomingMPIMessages::descendSpecification()
 
   ;
 }
@@ -75,7 +82,8 @@ exahype::adapters::PredictorRerun::~PredictorRerun() {
 #if defined(SharedMemoryParallelisation)
 exahype::adapters::PredictorRerun::PredictorRerun(const PredictorRerun&  masterThread):
   _map2SpaceTimePredictor(masterThread._map2SpaceTimePredictor) , 
-  _map2VolumeIntegral(masterThread._map2VolumeIntegral) 
+  _map2VolumeIntegral(masterThread._map2VolumeIntegral) , 
+  _map2DropIncomingMPIMessages(masterThread._map2DropIncomingMPIMessages) 
 
 {
 }
@@ -84,6 +92,7 @@ exahype::adapters::PredictorRerun::PredictorRerun(const PredictorRerun&  masterT
 void exahype::adapters::PredictorRerun::mergeWithWorkerThread(const PredictorRerun& workerThread) {
   _map2SpaceTimePredictor.mergeWithWorkerThread(workerThread._map2SpaceTimePredictor);
   _map2VolumeIntegral.mergeWithWorkerThread(workerThread._map2VolumeIntegral);
+  _map2DropIncomingMPIMessages.mergeWithWorkerThread(workerThread._map2DropIncomingMPIMessages);
 
 }
 #endif
@@ -100,6 +109,7 @@ void exahype::adapters::PredictorRerun::createHangingVertex(
 ) {
   _map2SpaceTimePredictor.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2VolumeIntegral.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2DropIncomingMPIMessages.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 
 }
@@ -116,6 +126,7 @@ void exahype::adapters::PredictorRerun::destroyHangingVertex(
 ) {
   _map2SpaceTimePredictor.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2VolumeIntegral.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2DropIncomingMPIMessages.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -131,6 +142,7 @@ void exahype::adapters::PredictorRerun::createInnerVertex(
 ) {
   _map2SpaceTimePredictor.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2VolumeIntegral.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2DropIncomingMPIMessages.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -146,6 +158,7 @@ void exahype::adapters::PredictorRerun::createBoundaryVertex(
 ) {
   _map2SpaceTimePredictor.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2VolumeIntegral.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2DropIncomingMPIMessages.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -161,6 +174,7 @@ void exahype::adapters::PredictorRerun::destroyVertex(
 ) {
   _map2SpaceTimePredictor.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2VolumeIntegral.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2DropIncomingMPIMessages.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -176,6 +190,7 @@ void exahype::adapters::PredictorRerun::createCell(
 ) {
   _map2SpaceTimePredictor.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2VolumeIntegral.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2DropIncomingMPIMessages.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -191,6 +206,7 @@ void exahype::adapters::PredictorRerun::destroyCell(
 ) {
   _map2SpaceTimePredictor.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2VolumeIntegral.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2DropIncomingMPIMessages.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -206,6 +222,7 @@ void exahype::adapters::PredictorRerun::mergeWithNeighbour(
 ) {
    _map2SpaceTimePredictor.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2VolumeIntegral.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
+   _map2DropIncomingMPIMessages.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
 
 }
 
@@ -219,6 +236,7 @@ void exahype::adapters::PredictorRerun::prepareSendToNeighbour(
 ) {
    _map2SpaceTimePredictor.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2VolumeIntegral.prepareSendToNeighbour( vertex, toRank, x, h, level );
+   _map2DropIncomingMPIMessages.prepareSendToNeighbour( vertex, toRank, x, h, level );
 
 }
 
@@ -232,6 +250,7 @@ void exahype::adapters::PredictorRerun::prepareCopyToRemoteNode(
 ) {
    _map2SpaceTimePredictor.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2VolumeIntegral.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
+   _map2DropIncomingMPIMessages.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
 
 }
 
@@ -245,6 +264,7 @@ void exahype::adapters::PredictorRerun::prepareCopyToRemoteNode(
 ) {
    _map2SpaceTimePredictor.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2VolumeIntegral.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
+   _map2DropIncomingMPIMessages.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
 
 }
 
@@ -259,6 +279,7 @@ void exahype::adapters::PredictorRerun::mergeWithRemoteDataDueToForkOrJoin(
 ) {
    _map2SpaceTimePredictor.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2VolumeIntegral.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
+   _map2DropIncomingMPIMessages.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
 
 }
 
@@ -273,6 +294,7 @@ void exahype::adapters::PredictorRerun::mergeWithRemoteDataDueToForkOrJoin(
 ) {
    _map2SpaceTimePredictor.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2VolumeIntegral.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
+   _map2DropIncomingMPIMessages.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
 
 }
 
@@ -290,6 +312,7 @@ bool exahype::adapters::PredictorRerun::prepareSendToWorker(
   bool result = false;
    result |= _map2SpaceTimePredictor.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2VolumeIntegral.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
+   result |= _map2DropIncomingMPIMessages.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
 
   return result;
 }
@@ -306,6 +329,7 @@ void exahype::adapters::PredictorRerun::prepareSendToMaster(
 ) {
    _map2SpaceTimePredictor.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2VolumeIntegral.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+   _map2DropIncomingMPIMessages.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -327,6 +351,7 @@ void exahype::adapters::PredictorRerun::mergeWithMaster(
 ) {
    _map2SpaceTimePredictor.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2VolumeIntegral.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
+   _map2DropIncomingMPIMessages.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
 
 }
 
@@ -345,6 +370,7 @@ void exahype::adapters::PredictorRerun::receiveDataFromMaster(
 ) {
    _map2SpaceTimePredictor.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2VolumeIntegral.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
+   _map2DropIncomingMPIMessages.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -358,6 +384,7 @@ void exahype::adapters::PredictorRerun::mergeWithWorker(
 ) {
    _map2SpaceTimePredictor.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2VolumeIntegral.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
+   _map2DropIncomingMPIMessages.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
 
 }
 
@@ -371,6 +398,7 @@ void exahype::adapters::PredictorRerun::mergeWithWorker(
 ) {
    _map2SpaceTimePredictor.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2VolumeIntegral.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
+   _map2DropIncomingMPIMessages.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
 
 }
 #endif
@@ -387,6 +415,7 @@ void exahype::adapters::PredictorRerun::touchVertexFirstTime(
 ) {
   _map2SpaceTimePredictor.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2VolumeIntegral.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2DropIncomingMPIMessages.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -402,6 +431,7 @@ void exahype::adapters::PredictorRerun::touchVertexLastTime(
 ) {
   _map2SpaceTimePredictor.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2VolumeIntegral.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2DropIncomingMPIMessages.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -417,6 +447,7 @@ void exahype::adapters::PredictorRerun::enterCell(
 ) {
   _map2SpaceTimePredictor.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2VolumeIntegral.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2DropIncomingMPIMessages.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -432,6 +463,7 @@ void exahype::adapters::PredictorRerun::leaveCell(
 ) {
   _map2SpaceTimePredictor.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2VolumeIntegral.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2DropIncomingMPIMessages.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -441,6 +473,7 @@ void exahype::adapters::PredictorRerun::beginIteration(
 ) {
   _map2SpaceTimePredictor.beginIteration( solverState );
   _map2VolumeIntegral.beginIteration( solverState );
+  _map2DropIncomingMPIMessages.beginIteration( solverState );
 
 }
 
@@ -450,6 +483,7 @@ void exahype::adapters::PredictorRerun::endIteration(
 ) {
   _map2SpaceTimePredictor.endIteration( solverState );
   _map2VolumeIntegral.endIteration( solverState );
+  _map2DropIncomingMPIMessages.endIteration( solverState );
 
 }
 
@@ -466,6 +500,7 @@ void exahype::adapters::PredictorRerun::descend(
 ) {
   _map2SpaceTimePredictor.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2VolumeIntegral.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2DropIncomingMPIMessages.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
 }
 
@@ -480,5 +515,6 @@ void exahype::adapters::PredictorRerun::ascend(
 ) {
   _map2SpaceTimePredictor.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2VolumeIntegral.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2DropIncomingMPIMessages.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
 }

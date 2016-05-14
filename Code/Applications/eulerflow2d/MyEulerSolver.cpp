@@ -9,7 +9,7 @@ Euler2d::MyEulerSolver::MyEulerSolver(int kernelNumber)
 
 int Euler2d::MyEulerSolver::getMinimumTreeDepth() const {
   #if defined(Asserts)
-  return 3;
+  return 2;
   #else
   return 4;
   #endif

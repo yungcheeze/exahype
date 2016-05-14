@@ -33,8 +33,8 @@ exahype::mappings::RegularMesh::touchVertexFirstTimeSpecification() {
 peano::MappingSpecification
 exahype::mappings::RegularMesh::enterCellSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::OnlyLeaves,
-      peano::MappingSpecification::AvoidFineGridRaces);
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::Serial);
 }
 peano::MappingSpecification
 exahype::mappings::RegularMesh::leaveCellSpecification() {
@@ -115,6 +115,8 @@ void exahype::mappings::RegularMesh::createInnerVertex(
       exahype::solvers::RegisteredSolvers.begin();
       p != exahype::solvers::RegisteredSolvers.end(); p++) {
     if (
+        fineGridVertex.getRefinementControl()==Vertex::Records::Unrefined
+        &&
         coarseGridVerticesEnumerator.getLevel() < (*p)->getMinimumTreeDepth()
     ) {
       fineGridVertex.refine();
@@ -140,14 +142,14 @@ void exahype::mappings::RegularMesh::createBoundaryVertex(
   for (std::vector<exahype::solvers::Solver*>::const_iterator p =
         exahype::solvers::RegisteredSolvers.begin();
         p != exahype::solvers::RegisteredSolvers.end(); p++) {
-      if (
-          coarseGridVerticesEnumerator.getLevel() < (*p)->getMinimumTreeDepth()
-      ) {
-        fineGridVertex.refine();
-      } else {
-
-      }
+    if (
+        fineGridVertex.getRefinementControl()==Vertex::Records::Unrefined
+        &&
+        coarseGridVerticesEnumerator.getLevel() < (*p)->getMinimumTreeDepth()
+    ) {
+      fineGridVertex.refine();
     }
+  }
 
   logTraceOutWith1Argument("createBoundaryVertex(...)", fineGridVertex);
 }
@@ -333,13 +335,15 @@ void exahype::mappings::RegularMesh::enterCell(
       if (fineGridVerticesEnumerator.getLevel()==(*p)->getMinimumTreeDepth()+1) {
         fineGridCell.addNewCellDescription(
             solverNumber,
-            exahype::records::ADERDGCellDescription::RealCell,
+            exahype::records::ADERDGCellDescription::Cell,
+            exahype::records::ADERDGCellDescription::None,
             fineGridVerticesEnumerator.getLevel(),
             multiscalelinkedcell::HangingVertexBookkeeper::
             InvalidAdjacencyIndex,
             fineGridPositionOfCell,
             fineGridVerticesEnumerator.getCellSize(),
             fineGridVerticesEnumerator.getCellCenter());
+        fineGridCell.initialiseCellDescription(solverNumber);
       }
     }
     solverNumber++;

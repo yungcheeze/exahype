@@ -76,13 +76,33 @@ class exahype::runners::Runner {
 
   void initSolvers();
   void startNewTimeStep(int n);
+
+  /**
+   * Do one time step where all phases are actually fused into one traversal
+   *
+   * @param plot      Do plot the way along
+   */
   void runOneTimeStampWithFusedAlgorithmicSteps(
-      exahype::repositories::Repository& repository);
+    exahype::repositories::Repository&   repository,
+    bool                                 plot
+  );
+
   bool setAccurateTimeStepSizesIfStabilityConditionWasHarmed();
-  void startNewTimeStepAndRecomputePredictorIfNecessary(
-      exahype::repositories::Repository& repository, int n);
+
+  void recomputePredictorIfNecessary(
+    exahype::repositories::Repository& repository
+  );
+
+  /**
+   * Do one time step but actually use a couple of iterations to do so.
+   *
+   *
+   * @param plot      Do plot in the after the corrector has been applied
+   */
   void runOneTimeStampWithFourSeparateAlgorithmicSteps(
-      exahype::repositories::Repository& repository);
+    exahype::repositories::Repository&  repository,
+    bool                                plot
+  );
 
  public:
   Runner(const Parser& parser);
