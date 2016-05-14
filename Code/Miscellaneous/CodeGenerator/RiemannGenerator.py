@@ -21,7 +21,7 @@ class RiemannGenerator:
     m_type   = ""
 
     # name of generated output file
-    m_filename = "riemannSolver.cpp"
+    m_filename = "riemannSolver.cpph"
 
     # SP, DP
     m_precision = ''
@@ -47,7 +47,7 @@ class RiemannGenerator:
 
         l_includeStatement = '#include "string.h"\n'                             \
                              '#include "kernels/aderdg/optimised/Kernels.h"\n'   \
-                             '#include "kernels/aderdg/optimised/Weights.h"\n\n'
+                             '#include "kernels/GaussLegendreQuadrature.h"\n\n'
 
         l_functionSignature = FunctionSignatures.getRiemannSolverSignature()+" {\n"
 
@@ -98,13 +98,13 @@ class RiemannGenerator:
         l_file.write('#pragma simd\n')
         l_file.write('  for(int i=0;i<'+str(self.m_chunkSize)+';i++) {\n')
         for iVar in range(0, self.m_config['nVar']):
-            l_file.write('    QavL['+str(iVar)+'] += kernels::optimised::weights2[i] * lQbndL['+str(iVar*self.m_chunkSize)+'+i];\n')
+            l_file.write('    QavL['+str(iVar)+'] += kernels::weights2[i] * lQbndL['+str(iVar*self.m_chunkSize)+'+i];\n')
         l_file.write('  }\n\n')
 
         l_file.write('#pragma simd\n')
         l_file.write('  for(int i=0;i<'+str(self.m_chunkSize)+';i++) {\n')
         for iVar in range(0, self.m_config['nVar']):
-            l_file.write('    QavR['+str(iVar)+'] += kernels::optimised::weights2[i] * lQbndR['+str(iVar*self.m_chunkSize)+'+i];\n')
+            l_file.write('    QavR['+str(iVar)+'] += kernels::weights2[i] * lQbndR['+str(iVar*self.m_chunkSize)+'+i];\n')
         l_file.write('  }\n\n')
 
         l_file.close()
