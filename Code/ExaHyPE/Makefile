@@ -162,7 +162,7 @@ else
 	LINK_FORTRAN=
 endif 
 
-all: header build
+all: header depend build
 
 buildinfo:
 	$(EXAHYPE_PATH)/generate-buildinfo.sh $(PROJECT_PATH)
@@ -234,3 +234,7 @@ $(COBJECTS): %.o : %.cpp
 
 $(FOBJECTS): %.o : %.f90
 	$(FC) $(FCOMPILER_CFLAGS) -c $< -o $@
+
+depend:
+	@makedepend -- $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_PATH)/.. -I$(TARCH_PATH)/.. -I$(MULTISCALELINKEDCELL_PATH)/.. -I$(SHAREDMEMORYORACLES_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH) -- $(CSOURCES) &> /dev/null
+

@@ -18,7 +18,8 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
 
  private:
   void testPDEFluxes();
-  void testSpaceTimePredictor();
+  void testSpaceTimePredictorLinear();
+  void testSpaceTimePredictorNonlinear();
   void testVolumeIntegral();
   void testRiemannSolver();
   void testSurfaceIntegral();
@@ -26,8 +27,10 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
 #if DIMENSIONS == 2
   static void testFlux(const double* const Q, double* f, double* g);
 #elif DIMENSIONS == 3
-  static void testFlux(const double *const Q, double *f, double *g, double *h);
+  static void testFlux(const double* const Q, double* f, double* g, double* h);
 #endif
+  static void testNCP(const double* const Q, const double* const gradQ,
+                      double* BgradQ);
 
   static void testEigenvalues(const double* const Q,
                               const int normalNonZeroIndex, double* lambda);

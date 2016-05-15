@@ -782,7 +782,11 @@ void GenericEulerKernelTest::testVolumeIntegral() {
 
 }  // testVolumeIntegral
 
-void GenericEulerKernelTest::testSpaceTimePredictor() {
+void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
+  // TODO: Implement
+}  // testSpaceTimePredictorLinear
+
+void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   double *luh = new double[80]();  // space DOF
   for (int i = 0; i < 16; i++) {
     luh[5 * i + 0] = 1.00000000000000000000e+00;
@@ -1249,7 +1253,7 @@ void GenericEulerKernelTest::testSpaceTimePredictor() {
   delete[] lFhi;
   delete[] lQhbnd;
   delete[] lFhbnd;
-}  // testSpaceTimePredictor
+}  // testSpaceTimePredictorNonlinear
 
 }  // namespace c
 }  // namespace tests

@@ -42,6 +42,12 @@ void freeDGMatrices(const std::set<int>& orders);
 extern double*** Kxi;
 
 /**
+ * \brief Discrete derivative operator which projects the derivatives onto the
+ * basis
+ */
+extern double*** dudx;
+
+/**
  * \brief Time flux matrix (left)
  */
 // todo Dominic Etienne Charrier
@@ -93,21 +99,24 @@ extern double** FRCoeff;
 extern double*** FCoeff;
 
 /**
- * Transforms the degrees of freedom located at the non-equidistant Gauss-Legendre
- * nodes to degrees of freedoms located at nodes of an equidistant grid over (0,1).
+ * Transforms the degrees of freedom located at the non-equidistant
+ * Gauss-Legendre nodes to degrees of freedoms located at nodes of an
+ * equidistant grid over (0,1).
  * Let us denote by \f$P\f$ the 1-$d$ projection operator. The equidistant DoF
  * are computed according to:
  *
- * The matrix is indexed the following way: [order][DG DoF][equidistant grid DoF].
+ * The matrix is indexed the following way: [order][DG DoF][equidistant grid
+ * DoF].
  */
 extern double*** equidistantGridProjector1d;
 
 /**
- * This operator is used to transforms the degrees of freedom (DoF) located on a coarse grid edge
- * nodes to degrees of freedoms located on nodes of a fine grid edge and vice versa.
- * The difference in levels is always equal to 1.
+ * This operator is used to transforms the degrees of freedom (DoF) located on a
+ * coarse grid edge nodes to degrees of freedoms located on nodes of a fine grid
+ * edge and vice versa. The difference in levels is always equal to 1.
  *
- * The matrix is indexed the following way: [order][subinterval][coarse grid DoF][fine grid DoF].
+ * The matrix is indexed the following way: [order][subinterval][coarse grid
+ * DoF][fine grid DoF].
  */
 extern double**** fineGridProjector1d;
 }
