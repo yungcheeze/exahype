@@ -23,20 +23,19 @@ void surfaceIntegralNonlinear(double *lduh, const double *const lFbnd,
                             kernels::gaussLegendreWeights[order][j];
       const double updateSize = weight / dx[0];
 
-      // TODO(gyro): Benchmark l,k vs. k,l vs. blocking
-      for (int k = 0; k < numberOfVariables; k++) {
+      for (int k = 0; k < basisSize; k++) {
         // left flux minus right flux
-        for (int l = 0; l < basisSize; l++) {
+        for (int l = 0; l < numberOfVariables; l++) {
           lduh[i * basisSize2 * numberOfVariables +
-               j * basisSize * numberOfVariables + l * numberOfVariables + k] -=
+               j * basisSize * numberOfVariables + k * numberOfVariables + l] -=
               (lFbnd[1 * basisSize2 * numberOfVariables +
                      i * basisSize * numberOfVariables + j * numberOfVariables +
-                     k] *
-                   kernels::FRCoeff[order][l] -
+                     l] *
+                   kernels::FRCoeff[order][k] -
                lFbnd[0 * basisSize2 * numberOfVariables +
                      i * basisSize * numberOfVariables + j * numberOfVariables +
-                     k] *
-                   kernels::FLCoeff[order][l]) *
+                     l] *
+                   kernels::FLCoeff[order][k]) *
               updateSize;
         }
       }
@@ -46,23 +45,23 @@ void surfaceIntegralNonlinear(double *lduh, const double *const lFbnd,
   // y faces
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {
-      const double weight = kernels::gaussLegendreWeights[order][i] *
-                            kernels::gaussLegendreWeights[order][j];
-      const double updateSize = weight / dx[1];
+      for (int k = 0; k < basisSize; k++) {
+        const double weight = kernels::gaussLegendreWeights[order][i] *
+                              kernels::gaussLegendreWeights[order][k];
+        const double updateSize = weight / dx[1];
 
-      for (int k = 0; k < numberOfVariables; k++) {
         // back flux minus front flux
-        for (int l = 0; l < basisSize; l++) {
+        for (int l = 0; l < numberOfVariables; l++) {
           lduh[i * basisSize2 * numberOfVariables +
-               l * basisSize * numberOfVariables + j * numberOfVariables + k] -=
+               j * basisSize * numberOfVariables + k * numberOfVariables + l] -=
               (lFbnd[3 * basisSize2 * numberOfVariables +
-                     i * basisSize * numberOfVariables + j * numberOfVariables +
-                     k] *
-                   kernels::FRCoeff[order][l] -
+                     i * basisSize * numberOfVariables + k * numberOfVariables +
+                     l] *
+                   kernels::FRCoeff[order][j] -
                lFbnd[2 * basisSize2 * numberOfVariables +
-                     i * basisSize * numberOfVariables + j * numberOfVariables +
-                     k] *
-                   kernels::FLCoeff[order][l]) *
+                     i * basisSize * numberOfVariables + k * numberOfVariables +
+                     l] *
+                   kernels::FLCoeff[order][j]) *
               updateSize;
         }
       }
@@ -72,23 +71,23 @@ void surfaceIntegralNonlinear(double *lduh, const double *const lFbnd,
   // z faces
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {
-      const double weight = kernels::gaussLegendreWeights[order][i] *
-                            kernels::gaussLegendreWeights[order][j];
-      const double updateSize = weight / dx[2];
+      for (int k = 0; k < basisSize; k++) {
+        const double weight = kernels::gaussLegendreWeights[order][j] *
+                              kernels::gaussLegendreWeights[order][k];
+        const double updateSize = weight / dx[2];
 
-      for (int k = 0; k < numberOfVariables; k++) {
         // bottom flux minus top flux
-        for (int l = 0; l < basisSize; l++) {
-          lduh[l * basisSize2 * numberOfVariables +
-               i * basisSize * numberOfVariables + j * numberOfVariables + k] -=
+        for (int l = 0; l < numberOfVariables; l++) {
+          lduh[i * basisSize2 * numberOfVariables +
+               j * basisSize * numberOfVariables + k * numberOfVariables + l] -=
               (lFbnd[5 * basisSize2 * numberOfVariables +
-                     i * basisSize * numberOfVariables + j * numberOfVariables +
-                     k] *
-                   kernels::FRCoeff[order][l] -
+                     j * basisSize * numberOfVariables + k * numberOfVariables +
+                     l] *
+                   kernels::FRCoeff[order][i] -
                lFbnd[4 * basisSize2 * numberOfVariables +
-                     i * basisSize * numberOfVariables + j * numberOfVariables +
-                     k] *
-                   kernels::FLCoeff[order][l]) *
+                     j * basisSize * numberOfVariables + k * numberOfVariables +
+                     l] *
+                   kernels::FLCoeff[order][i]) *
               updateSize;
         }
       }
