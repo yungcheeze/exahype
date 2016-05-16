@@ -213,7 +213,7 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
           const int numberOfFaceDof       = solver->getUnknownsPerFace();
           const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src,dest);
           assertion(normalOfExchangedFace>=0 && normalOfExchangedFace<DIMENSIONS);
-          const int offsetInFaceArray     = 2*normalOfExchangedFace + src(normalOfExchangedFace)<dest(normalOfExchangedFace) ? 1 : 0;
+          const int offsetInFaceArray     = 2*normalOfExchangedFace + (src(normalOfExchangedFace)<dest(normalOfExchangedFace) ? 1 : 0);
 
           assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getExtrapolatedPredictor()) );
           assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getFluctuation()) );
@@ -231,7 +231,12 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
             #endif
           }
           else {
-            logDebug( "prepareSendToNeighbour(...)", "send two arrays to rank " << toRank << " for vertex " << vertex.toString()  << ", dest type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(destScalar))  );
+            logDebug(
+              "prepareSendToNeighbour(...)",
+              "send two arrays to rank " << toRank << " for vertex " << vertex.toString()  <<
+              ", dest type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(destScalar)) <<
+              ", src=" << src << ", dest=" << dest
+            );
             DataHeap::getInstance().sendData( lQhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
             DataHeap::getInstance().sendData( lFhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
           }
@@ -385,12 +390,14 @@ void exahype::mappings::SpaceTimePredictor::touchVertexLastTime(
 }
 
 void exahype::mappings::SpaceTimePredictor::enterCell(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  exahype::Cell&                        fineGridCell,
+  exahype::Vertex* const                fineGridVertices,
+  const peano::grid::VertexEnumerator&  fineGridVerticesEnumerator,
+  exahype::Vertex* const coarseGridVertices,
+  const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+  exahype::Cell& coarseGridCell,
+  const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell
+) {
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
       fineGridVerticesEnumerator.toString(),
       coarseGridCell, fineGridPositionOfCell);
@@ -455,15 +462,15 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
             luh, fineGridVerticesEnumerator.getCellSize(),
             p.getPredictorTimeStepSize());
 
-        assertionEquals(luh[0]   ,luh[0]   ); // check if nan
-        assertionEquals(lQi[0]   ,lQi[0]   ); // check if nan
-        assertionEquals(lFi[0]   ,lFi[0]   ); // check if nan
-        assertionEquals(lQhi[0]  ,lQhi[0]  ); // check if nan
-        assertionEquals(luh[0]   ,luh[0]   ); // check if nan
-        assertionEquals(lFhi[0]  ,lFhi[0]  ); // check if nan
-        assertionEquals(luh[0]   ,luh[0]   ); // check if nan
-        assertionEquals(lQhbnd[0],lQhbnd[0]); // check if nan
-        assertionEquals(lFhbnd[0],lFhbnd[0]); // check if nan
+        assertionEquals2(luh[0]   ,luh[0],    fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(lQi[0]   ,lQi[0],    fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(lFi[0]   ,lFi[0],    fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(lQhi[0]  ,lQhi[0],   fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(luh[0]   ,luh[0],    fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(lFhi[0]  ,lFhi[0],   fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(luh[0]   ,luh[0],    fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(lQhbnd[0],lQhbnd[0], fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(lFhbnd[0],lFhbnd[0], fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
         break;
       default:
         break;

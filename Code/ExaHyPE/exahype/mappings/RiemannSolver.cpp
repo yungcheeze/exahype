@@ -195,8 +195,17 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
   tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
       vertex.getADERDGCellDescriptionsIndex();
 
-  dfor2(dest)
-    dfor2(src)
+  dfor2(myDest)
+    dfor2(mySrc)
+/*
+ * doku
+ */
+      tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
+      tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
+
+      int destScalar = TWO_POWER_D-myDestScalar-1;
+      int srcScalar  = TWO_POWER_D-mySrcScalar-1;
+
       if (
         vertex.getAdjacentRanks()(destScalar) ==
         tarch::parallel::Node::getInstance().getRank() &&
@@ -243,7 +252,8 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
           logDebug(
             "mergeWithNeighbour(...)",
             "receive two arrays from rank " << fromRank << " for vertex " << vertex.toString()
-            << ", src type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(srcScalar))
+            << ", src type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(srcScalar)) <<
+            ", src=" << src << ", dest=" << dest
           );
 
           int receivedlQhbndIndex = DataHeap::getInstance().createData(0,numberOfFaceDof);
@@ -252,12 +262,13 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
           assertion( DataHeap::getInstance().getData(receivedlQhbndIndex).empty() );
           assertion( DataHeap::getInstance().getData(receivedlFhbndIndex).empty() );
 
+          // @todo Reihenfolge dokumentieren! Auch umgedreht hier
           DataHeap::getInstance().receiveData(
-              receivedlQhbndIndex,
+              receivedlFhbndIndex,
               fromRank, fineGridX, level,
               peano::heap::MessageType::NeighbourCommunication);
           DataHeap::getInstance().receiveData(
-              receivedlFhbndIndex,
+              receivedlQhbndIndex,
               fromRank, fineGridX, level,
               peano::heap::MessageType::NeighbourCommunication);
 
@@ -284,21 +295,24 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
             assertionMsg( false, "should not be entered" );
           }
 
-          logDebug(
-            "mergeWithNeighbour(...)",
-            "solve Riemann problem with received data." <<
-            " cellDescription=" << cellDescriptions[currentSolver].toString() <<
-            ",faceIndexForCell=" << faceIndexForCell <<
-            ",normalOfExchangedFac=" << normalOfExchangedFace <<
-            ",vertex=" << vertex.toString()
-          );
 
-          solveRiemannProblemAtInterface(
+          if (!cellDescriptions[currentSolver].getRiemannSolvePerformed(faceIndexForCell)) {
+              logDebug(
+                "mergeWithNeighbour(...)",
+                "solve Riemann problem with received data." <<
+                " cellDescription=" << cellDescriptions[currentSolver].toString() <<
+                ",faceIndexForCell=" << faceIndexForCell <<
+                ",normalOfExchangedFac=" << normalOfExchangedFace <<
+                ",vertex=" << vertex.toString()
+              );
+
+            solveRiemannProblemAtInterface(
               cellDescriptions[currentSolver],
               faceIndexForCell,
               normalOfExchangedFace,
               receivedlQhbndIndex,
               receivedlFhbndIndex);
+          }
 
           DataHeap::getInstance().deleteData(receivedlQhbndIndex);
           DataHeap::getInstance().deleteData(receivedlFhbndIndex);
@@ -637,15 +651,34 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
 
   const int numberOfFaceDof = solver->getUnknownsPerFace();
 
-  double* QL = DataHeap::getInstance().getData(indexOfQValues).data();
-  double* QR = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data()
-             + (faceIndexForCell * numberOfFaceDof);
-  double* FL = DataHeap::getInstance().getData(indexOfFValues).data();
-  double* FR = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data()
-             + (faceIndexForCell * numberOfFaceDof);
-
   solver->synchroniseTimeStepping(cellDescription);
   logDebug( "solveRiemannProblemAtInterface(...)", "cell-description=" << cellDescription.toString() );
+
+  double* QL = 0;
+  double* QR = 0;
+  double* FL = 0;
+  double* FR = 0;
+
+  assertionEquals(DataHeap::getInstance().getData(indexOfQValues).size(),numberOfFaceDof);
+  assertionEquals(DataHeap::getInstance().getData(indexOfFValues).size(),numberOfFaceDof);
+
+  // @todo Doku im Header warum wir das hier brauchen,
+  if (faceIndexForCell%2==0) {
+    QL = DataHeap::getInstance().getData(indexOfQValues).data();
+    QR = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data()
+                 + (faceIndexForCell * numberOfFaceDof);
+    FL = DataHeap::getInstance().getData(indexOfFValues).data();
+    FR = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data()
+                 + (faceIndexForCell * numberOfFaceDof);
+  }
+  else {
+    QR = DataHeap::getInstance().getData(indexOfQValues).data();
+    QL = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data()
+                  + (faceIndexForCell * numberOfFaceDof);
+    FR = DataHeap::getInstance().getData(indexOfFValues).data();
+    FL = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data()
+                   + (faceIndexForCell * numberOfFaceDof);
+  }
 
   solver->riemannSolver(
     FL, FR, QL, QR,
@@ -653,11 +686,13 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
     normalNonZero
     );
 
+
   for (int i=0; i<numberOfFaceDof; i++) {
-    assertion( QR[i]==QR[i] );
-    assertion( QL[i]==QL[i] );
-    assertion( FR[i]==FR[i] );
-    assertion( FL[i]==FL[i] );
+      // @todo Groessen raus nehmen vermutlich
+    assertion8( QR[i]==QR[i] && QR[i]<1e10, cellDescription.toString(), faceIndexForCell, normalNonZero, indexOfQValues, indexOfFValues, i, QR[i], QL[i] );
+    assertion8( QL[i]==QL[i] && QL[i]<1e10, cellDescription.toString(), faceIndexForCell, normalNonZero, indexOfQValues, indexOfFValues, i, QR[i], QL[i] );
+    assertion8( FR[i]==FR[i] && FR[i]<1e10, cellDescription.toString(), faceIndexForCell, normalNonZero, indexOfQValues, indexOfFValues, i, QR[i], QL[i] );
+    assertion8( FL[i]==FL[i] && FL[i]<1e10, cellDescription.toString(), faceIndexForCell, normalNonZero, indexOfQValues, indexOfFValues, i, QR[i], QL[i] );
   }
 }
 
