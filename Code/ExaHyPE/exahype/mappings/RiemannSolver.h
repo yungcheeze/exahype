@@ -30,7 +30,7 @@ class RiemannSolver;
 
 /**
  * This is a mapping from the spacetree traversal events to your user-defined
- *activities.
+ * activities.
  * The latter are realised within the mappings.
  *
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
@@ -48,7 +48,6 @@ class exahype::mappings::RiemannSolver {
    */
   exahype::State _localState;
 
-  // clang-format off
   /**
    * Solve the Riemann problem at the interface between two cells ("left" and
    * "right"). This method only performs a Riemann solve if at least one of the
@@ -57,9 +56,6 @@ class exahype::mappings::RiemannSolver {
    * In case a Riemann problem is solved,
    * the method further sets the ::riemannSolvePerformed
    * flags for the particular faces on both cell descriptions (per solver).
-   *
-   * @todo Dominic: Bitte Boundaries hier reinziehen.
-   * @todo Dominic: Kurze Erklaerung zur Nebenlaeufigkeit.
    *
    * <h2>Rationale</h2>
    *
@@ -87,7 +83,6 @@ class exahype::mappings::RiemannSolver {
    * @param[in] normalNonZero           Non zero component of the
    *                                    normal vector orthogonal to the interface.
    */
-  // clang-format on
   void solveRiemannProblemAtInterface(
       const int cellDescriptionIndexOfLeftCell,
       const int cellDescriptionIndexOfRightCell,
@@ -891,51 +886,24 @@ class exahype::mappings::RiemannSolver {
 #endif
 
   /**
-   * Read vertex the first time throughout one iteration
+   * Solve Riemann problems on all interior faces that are adjacent
+   * to this vertex and impose boundary conditions on faces that
+   * belong to the boundary. This is done for all cell descriptions
+   * belonging to the cells thatg an interior face.
    *
-   * In the Peano world, an algorithm tells the grid that the grid should be
-   * traversed. The grid then decides how to do this and runs over all cells
-   * and vertices. Whenever the grid traversal reads a vertex the very first
-   * time throughout an iteration, it invokes touchVertexFirstTime() for this
-   * vertex. Then, it calls handleCell up to @f$ 2^d @f$ times for the
-   * adjacent cells and passes this vertex to these calls. Finally, the grid
-   * traversal invokes touchVertexLastTime(), i.e. the counterpart of this
-   * operation.
+   * The function ensures implicitly that interior faces
+   * do not align with MPI boundaries. In this case, no operation
+   * is performed.
    *
-   * @image html peano/grid/geometry-vertex-inside-outside.png
+   * This method sets the riemannSolvePerformed flag on a cell description
+   * if boundary conditions have been imposed for this cell description.
+   * This method sets the riemannSolvePerformed flag on both cell descriptions
+   * (per solver) for interior faces if a Riemann solve has been performed for
+   * both cell descriptions.
    *
-   * The operation is called for both each inner and boundary vertices.
-   * These vertices have an attribute position, too. However, this
-   * attribute is available in Debug mode only and it should be used solely
-   * to implement assertions. To work with the vertex's position, use the
-   * attribute fineGridX instead. The latter is availble all the time (the
-   * vertex's attribute is a redundant information that is just to be used
-   * for correctness and consistency checks).
-   *
-   * Vertices may have persistent and non-persistent attributes (see the
-   * documentation of the DaStGen tool). Attributes that are not persistent
-   * are not stored in-between two iterations, i.e. whenever
-   * touchVertexFirstTime() is called, these attributes contain garbage. So,
-   * this operation is the right place to initialise the non-persistent
-   * attributes of a vertex.
-   *
-   * !!! Optimisation
-   *
-   * This operation is invoked if and only if the corresponding specification
-   * flag does not hold NOP. Due to this specification flag you also can define
-   * whether this operation works on the leaves only, whether it may be
-   * called in parallel by multiple threads, and whether it is fail-safe or
-   * can at least be called multiple times if a thread crashes.
-   *
-   * If this operation works only on leaves, the operation is sometimes not
-   * called if Peano can be sure that all adjacent cells are refined. The
-   * sometimes implies that this specification induces and optimisation - it
-   * does not enforce that the operation is not called under certain
-   * circumstances.
-   *
-   *
-   * @see peano::MappingSpecification for information on thread safety.
-   * @see createInnerVertex() for a description of the arguments.
+   * \note The function itself is not thread-safe.
+   * Thread-safety of this function is ensured by setting RiemannSolver::touchVertexFirstTimeSpecification()
+   * to peano::MappingSpecification::AvoidFineGridRaces.
    */
   void touchVertexFirstTime(
       exahype::Vertex& fineGridVertex,
