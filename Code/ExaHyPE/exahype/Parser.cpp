@@ -204,8 +204,8 @@ double exahype::Parser::getFirstSnapshotTimeForPlotter(
   assertion(isValid());
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
-  std::string token = getTokenAfter("solver", 0 * 2 + 1, "plot", // todo hack
-                                    0 * 2 + 1, 2);
+  std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
+                                    plotterNumber * 2 + 1, 2);
   logDebug("fuseAlgorithmicSteps()", "found token " << token);
   assertion3(token.compare("notoken") != 0, token, solverNumber, plotterNumber);
   return atof(token.c_str());
@@ -216,8 +216,8 @@ double exahype::Parser::getRepeatTimeForPlotter(int solverNumber,
   assertion(isValid());
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
-  std::string token = getTokenAfter("solver", 0 * 2 + 1, "plot", // todo hack
-                                    0 * 2 + 1, 4);
+  std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
+                                    plotterNumber * 2 + 1, 4);
   logDebug("fuseAlgorithmicSteps()", "found token " << token);
   assertion3(token.compare("notoken") != 0, token, solverNumber, plotterNumber);
   return atof(token.c_str());
@@ -228,8 +228,8 @@ std::string exahype::Parser::getIdentifierForPlotter(int solverNumber,
   assertion(isValid());
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
-  std::string token = getTokenAfter("solver", 0 * 2 + 1, "plot", // todo hack
-                                    0 * 2 + 1);
+  std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
+                                    plotterNumber * 2 + 1);
   logDebug("fuseAlgorithmicSteps()", "found token " << token);
   assertion3(token.compare("notoken") != 0, token, solverNumber, plotterNumber);
   return token;
@@ -240,8 +240,8 @@ std::string exahype::Parser::getFilenameForPlotter(int solverNumber,
   assertion(isValid());
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
-  std::string token = getTokenAfter("solver", 0 * 2 + 1, "plot", // todo hack
-                                    0 * 2 + 1, 6);
+  std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
+                                    plotterNumber * 2 + 1, 6);
   logDebug("fuseAlgorithmicSteps()", "found token " << token);
   assertion3(token.compare("notoken") != 0, token, solverNumber, plotterNumber);
   return token;
