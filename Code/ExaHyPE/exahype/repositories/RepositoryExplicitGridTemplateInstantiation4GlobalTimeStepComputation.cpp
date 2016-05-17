@@ -13,7 +13,6 @@
 #include "peano/stacks/VertexArrayStack.h"
 #include "peano/stacks/VertexSTDStack.h"
 
- #include "exahype/adapters/InitialGrid.h" 
  #include "exahype/adapters/AugmentedAMRGrid.h" 
  #include "exahype/adapters/PlotAugmentedAMRGrid.h" 
  #include "exahype/adapters/SolutionUpdateAndGlobalTimeStepComputation.h" 

@@ -62,7 +62,6 @@ class exahype::repositories::Repository {
     /**
      * Switch to another event handle.
      */
-    virtual void switchToInitialGrid() = 0;    
     virtual void switchToAugmentedAMRGrid() = 0;    
     virtual void switchToPlotAugmentedAMRGrid() = 0;    
     virtual void switchToSolutionUpdateAndGlobalTimeStepComputation() = 0;    
@@ -76,7 +75,6 @@ class exahype::repositories::Repository {
     virtual void switchToPredictorRerun() = 0;    
     virtual void switchToCorrector() = 0;    
 
-    virtual bool isActiveAdapterInitialGrid() const = 0;
     virtual bool isActiveAdapterAugmentedAMRGrid() const = 0;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const = 0;
     virtual bool isActiveAdapterSolutionUpdateAndGlobalTimeStepComputation() const = 0;
