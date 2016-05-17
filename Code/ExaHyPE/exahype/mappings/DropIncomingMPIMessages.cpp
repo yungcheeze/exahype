@@ -197,9 +197,6 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
           assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getExtrapolatedPredictor()) );
           assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getFluctuation()) );
 
-          const double* lQhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getExtrapolatedPredictor()).data() + (offsetInFaceArray * numberOfFaceDof);
-          const double* lFhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getFluctuation()).data()           + (offsetInFaceArray * numberOfFaceDof);
-
           if ( adjacentADERDGCellDescriptionsIndices(destScalar)==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex ) {
             #if defined(PeriodicBC)
             assertionMsg( false, "Vasco, we have to implement this" );
@@ -210,6 +207,8 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
           else {
             logDebug( "mergeWithNeighbour(...)", "receive two arrays from rank " << fromRank << " for vertex " << vertex.toString() << ", src type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(srcScalar)) );
 
+            // If the predictor is recomputed, we still have to receive all previously sent MPI messages in
+            // order to clear the MPI buffer.
             DataHeap::HeapEntries lQhbnd = DataHeap::getInstance().receiveData( fromRank, fineGridX, level, peano::heap::MessageType::NeighbourCommunication );
             DataHeap::HeapEntries lFhbnd = DataHeap::getInstance().receiveData( fromRank, fineGridX, level, peano::heap::MessageType::NeighbourCommunication );
           }
