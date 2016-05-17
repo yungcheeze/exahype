@@ -12,11 +12,9 @@
  */
 peano::CommunicationSpecification
 exahype::mappings::MarkingForRefinement::communicationSpecification() {
-  return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::
-          SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::
-          SendDataAndStateAfterLastTouchVertexLastTime,
+    return peano::CommunicationSpecification(
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
       true);
 }
 

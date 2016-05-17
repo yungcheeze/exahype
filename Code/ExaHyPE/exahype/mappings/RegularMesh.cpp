@@ -12,11 +12,9 @@
  */
 peano::CommunicationSpecification
 exahype::mappings::RegularMesh::communicationSpecification() {
-  return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::
-          SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::
-          SendDataAndStateAfterLastTouchVertexLastTime,
+    return peano::CommunicationSpecification(
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
       true);
 }
 
@@ -329,6 +327,7 @@ void exahype::mappings::RegularMesh::enterCell(
 
   int solverNumber = 0;
   if (fineGridCell.getADERDGCellDescriptionsIndex() ==
+//      multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
       exahype::Cell::InvalidCellDescriptionsIndex) {
     for (std::vector<exahype::solvers::Solver*>::const_iterator p =
              exahype::solvers::RegisteredSolvers.begin();

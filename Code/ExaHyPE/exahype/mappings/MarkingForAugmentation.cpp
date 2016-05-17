@@ -15,7 +15,7 @@
  */
 peano::CommunicationSpecification
 exahype::mappings::MarkingForAugmentation::communicationSpecification() {
-  return peano::CommunicationSpecification(
+    return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
       true);

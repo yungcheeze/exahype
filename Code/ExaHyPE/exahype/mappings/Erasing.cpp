@@ -12,7 +12,7 @@
  */
 peano::CommunicationSpecification
 exahype::mappings::Erasing::communicationSpecification() {
-  return peano::CommunicationSpecification(
+    return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
       true);
