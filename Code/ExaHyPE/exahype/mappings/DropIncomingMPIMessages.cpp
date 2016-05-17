@@ -176,45 +176,37 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
       tarch::la::countEqualEntries(dest,src)==1    // we are solely exchanging faces
     ) {
       const int destCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(destScalar);
-      assertion5(
-        ADERDGCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex),
-        src, dest,
-        multiscalelinkedcell::indicesToString( adjacentADERDGCellDescriptionsIndices ),
-        vertex.toString(),
-        tarch::parallel::Node::getInstance().getRank()
-      );
-      std::vector<records::ADERDGCellDescription>& cellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(destCellDescriptionIndex);
 
-      for (int currentSolver=0; currentSolver<static_cast<int>(cellDescriptions.size()); currentSolver++) {
-        if (cellDescriptions[currentSolver].getType()==exahype::records::ADERDGCellDescription::Cell) {
-          exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[cellDescriptions[currentSolver].getSolverNumber()];
+      if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex)) {
+        std::vector<records::ADERDGCellDescription>& cellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(destCellDescriptionIndex);
 
-          const int numberOfFaceDof       = solver->getUnknownsPerFace();
-          const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src,dest);
-          assertion(normalOfExchangedFace>=0 && normalOfExchangedFace<DIMENSIONS);
-          const int offsetInFaceArray     = 2*normalOfExchangedFace + src(normalOfExchangedFace)<dest(normalOfExchangedFace) ? 0 : 1;
+        for (int currentSolver=0; currentSolver<static_cast<int>(cellDescriptions.size()); currentSolver++) {
+          if (cellDescriptions[currentSolver].getType()==exahype::records::ADERDGCellDescription::Cell) {
+            const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src,dest);
+            assertion(normalOfExchangedFace>=0 && normalOfExchangedFace<DIMENSIONS);
 
-          assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getExtrapolatedPredictor()) );
-          assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getFluctuation()) );
+            assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getExtrapolatedPredictor()) );
+            assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getFluctuation()) );
 
-          if ( adjacentADERDGCellDescriptionsIndices(destScalar)==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex ) {
-            #if defined(PeriodicBC)
-            assertionMsg( false, "Vasco, we have to implement this" );
-            #else
-            assertionMsg( false, "should never been entered");
-            #endif
+            if ( adjacentADERDGCellDescriptionsIndices(destScalar)==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex ) {
+              #if defined(PeriodicBC)
+              assertionMsg( false, "Vasco, we have to implement this" );
+              #else
+              assertionMsg( false, "should never been entered");
+              #endif
+            }
+            else {
+              logDebug( "mergeWithNeighbour(...)", "receive two arrays from rank " << fromRank << " for vertex " << vertex.toString() << ", src type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(srcScalar)) );
+
+              // If the predictor is recomputed, we still have to receive all previously sent MPI messages in
+              // order to clear the MPI buffer.
+              DataHeap::HeapEntries lQhbnd = DataHeap::getInstance().receiveData( fromRank, fineGridX, level, peano::heap::MessageType::NeighbourCommunication );
+              DataHeap::HeapEntries lFhbnd = DataHeap::getInstance().receiveData( fromRank, fineGridX, level, peano::heap::MessageType::NeighbourCommunication );
+            }
           }
           else {
-            logDebug( "mergeWithNeighbour(...)", "receive two arrays from rank " << fromRank << " for vertex " << vertex.toString() << ", src type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(srcScalar)) );
-
-            // If the predictor is recomputed, we still have to receive all previously sent MPI messages in
-            // order to clear the MPI buffer.
-            DataHeap::HeapEntries lQhbnd = DataHeap::getInstance().receiveData( fromRank, fineGridX, level, peano::heap::MessageType::NeighbourCommunication );
-            DataHeap::HeapEntries lFhbnd = DataHeap::getInstance().receiveData( fromRank, fineGridX, level, peano::heap::MessageType::NeighbourCommunication );
+            assertionMsg( false, "Dominic, please implement" );
           }
-        }
-        else {
-          assertionMsg( false, "Dominic, please implement" );
         }
       }
     }

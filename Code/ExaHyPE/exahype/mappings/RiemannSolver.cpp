@@ -215,113 +215,107 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
         const int destCellDescriptionIndex =
           adjacentADERDGCellDescriptionsIndices(destScalar);
 
-        assertion5(
-          ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          destCellDescriptionIndex),
-          src, dest, multiscalelinkedcell::indicesToString(adjacentADERDGCellDescriptionsIndices),
-          vertex.toString(),
-          tarch::parallel::Node::getInstance().getRank()
-        );
+        if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex)) {
+          std::vector<records::ADERDGCellDescription>& cellDescriptions =
+              ADERDGCellDescriptionHeap::getInstance().getData(
+                  destCellDescriptionIndex);
 
-    std::vector<records::ADERDGCellDescription>& cellDescriptions =
-        ADERDGCellDescriptionHeap::getInstance().getData(
-            destCellDescriptionIndex);
+          for (
+            int currentSolver = 0;
+            currentSolver < static_cast<int>(cellDescriptions.size());
+            currentSolver++
+          ) {
+            if (cellDescriptions[currentSolver].getType() == exahype::records::ADERDGCellDescription::Cell) {
+              exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[cellDescriptions[currentSolver].getSolverNumber()];
 
-    for (
-      int currentSolver = 0;
-      currentSolver < static_cast<int>(cellDescriptions.size());
-      currentSolver++
-    ) {
-      if (cellDescriptions[currentSolver].getType() == exahype::records::ADERDGCellDescription::Cell) {
-        exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[cellDescriptions[currentSolver].getSolverNumber()];
+              const int numberOfFaceDof = solver->getUnknownsPerFace();
+              const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
+              assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
 
-        const int numberOfFaceDof = solver->getUnknownsPerFace();
-        const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
-        assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
+              assertion(DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getExtrapolatedPredictor()));
+              assertion(DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getFluctuation()));
 
-        assertion(DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getExtrapolatedPredictor()));
-        assertion(DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getFluctuation()));
+              if (adjacentADERDGCellDescriptionsIndices(destScalar) == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
+                #if defined(PeriodicBC)
+                assertionMsg(false, "Vasco, we have to implement this");
+                #else
+                assertionMsg(false, "should never been entered");
+                #endif
+              } else {
+                logDebug(
+                  "mergeWithNeighbour(...)",
+                  "receive two arrays from rank " << fromRank << " for vertex " << vertex.toString()
+                  << ", src type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(srcScalar)) <<
+                  ", src=" << src << ", dest=" << dest
+                );
 
-        if (adjacentADERDGCellDescriptionsIndices(destScalar) == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
-          #if defined(PeriodicBC)
-          assertionMsg(false, "Vasco, we have to implement this");
-          #else
-          assertionMsg(false, "should never been entered");
-          #endif
-        } else {
-          logDebug(
-            "mergeWithNeighbour(...)",
-            "receive two arrays from rank " << fromRank << " for vertex " << vertex.toString()
-            << ", src type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(srcScalar)) <<
-            ", src=" << src << ", dest=" << dest
-          );
+                int receivedlQhbndIndex = DataHeap::getInstance().createData(0,numberOfFaceDof);
+                int receivedlFhbndIndex = DataHeap::getInstance().createData(0,numberOfFaceDof);
 
-          int receivedlQhbndIndex = DataHeap::getInstance().createData(0,numberOfFaceDof);
-          int receivedlFhbndIndex = DataHeap::getInstance().createData(0,numberOfFaceDof);
+                assertion( DataHeap::getInstance().getData(receivedlQhbndIndex).empty() );
+                assertion( DataHeap::getInstance().getData(receivedlFhbndIndex).empty() );
 
-          assertion( DataHeap::getInstance().getData(receivedlQhbndIndex).empty() );
-          assertion( DataHeap::getInstance().getData(receivedlFhbndIndex).empty() );
+                // @todo Reihenfolge dokumentieren! Auch umgedreht hier
+                DataHeap::getInstance().receiveData(
+                    receivedlFhbndIndex,
+                    fromRank, fineGridX, level,
+                    peano::heap::MessageType::NeighbourCommunication);
+                DataHeap::getInstance().receiveData(
+                    receivedlQhbndIndex,
+                    fromRank, fineGridX, level,
+                    peano::heap::MessageType::NeighbourCommunication);
 
-          // @todo Reihenfolge dokumentieren! Auch umgedreht hier
-          DataHeap::getInstance().receiveData(
-              receivedlFhbndIndex,
-              fromRank, fineGridX, level,
-              peano::heap::MessageType::NeighbourCommunication);
-          DataHeap::getInstance().receiveData(
-              receivedlQhbndIndex,
-              fromRank, fineGridX, level,
-              peano::heap::MessageType::NeighbourCommunication);
+                int faceIndexForCell = -1;
+                     if ((normalOfExchangedFace==0) & (src(normalOfExchangedFace)<dest(normalOfExchangedFace))) {
+                  faceIndexForCell = 0;
+                }
+                else if ((normalOfExchangedFace==0) & (src(normalOfExchangedFace)>dest(normalOfExchangedFace))) {
+                  faceIndexForCell = 1;
+                }
+                else if ((normalOfExchangedFace==1) & (src(normalOfExchangedFace)<dest(normalOfExchangedFace))) {
+                  faceIndexForCell = 2;
+                }
+                else if ((normalOfExchangedFace==1) & (src(normalOfExchangedFace)>dest(normalOfExchangedFace))) {
+                  faceIndexForCell = 3;
+                }
+                else if ((normalOfExchangedFace==2) & (src(normalOfExchangedFace)<dest(normalOfExchangedFace))) {
+                  faceIndexForCell = 4;
+                }
+                else if ((normalOfExchangedFace==2) & (src(normalOfExchangedFace)>dest(normalOfExchangedFace))) {
+                  faceIndexForCell = 5;
+                }
+                else {
+                  assertionMsg( false, "should not be entered" );
+                }
 
-          int faceIndexForCell = -1;
-               if ((normalOfExchangedFace==0) & (src(normalOfExchangedFace)<dest(normalOfExchangedFace))) {
-            faceIndexForCell = 0;
+
+                if (!cellDescriptions[currentSolver].getRiemannSolvePerformed(faceIndexForCell)) {
+                    logDebug(
+                      "mergeWithNeighbour(...)",
+                      "solve Riemann problem with received data." <<
+                      " cellDescription=" << cellDescriptions[currentSolver].toString() <<
+                      ",faceIndexForCell=" << faceIndexForCell <<
+                      ",normalOfExchangedFac=" << normalOfExchangedFace <<
+                      ",vertex=" << vertex.toString()
+                    );
+
+                  solveRiemannProblemAtInterface(
+                    cellDescriptions[currentSolver],
+                    faceIndexForCell,
+                    normalOfExchangedFace,
+                    receivedlQhbndIndex,
+                    receivedlFhbndIndex);
+                }
+
+                DataHeap::getInstance().deleteData(receivedlQhbndIndex);
+                DataHeap::getInstance().deleteData(receivedlFhbndIndex);
+              }
+            } else {
+              assertionMsg(false, "Dominic, please implement");
+            }
           }
-          else if ((normalOfExchangedFace==0) & (src(normalOfExchangedFace)>dest(normalOfExchangedFace))) {
-            faceIndexForCell = 1;
-          }
-          else if ((normalOfExchangedFace==1) & (src(normalOfExchangedFace)<dest(normalOfExchangedFace))) {
-            faceIndexForCell = 2;
-          }
-          else if ((normalOfExchangedFace==1) & (src(normalOfExchangedFace)>dest(normalOfExchangedFace))) {
-            faceIndexForCell = 3;
-          }
-          else if ((normalOfExchangedFace==2) & (src(normalOfExchangedFace)<dest(normalOfExchangedFace))) {
-            faceIndexForCell = 4;
-          }
-          else if ((normalOfExchangedFace==2) & (src(normalOfExchangedFace)>dest(normalOfExchangedFace))) {
-            faceIndexForCell = 5;
-          }
-          else {
-            assertionMsg( false, "should not be entered" );
-          }
-
-
-          if (!cellDescriptions[currentSolver].getRiemannSolvePerformed(faceIndexForCell)) {
-              logDebug(
-                "mergeWithNeighbour(...)",
-                "solve Riemann problem with received data." <<
-                " cellDescription=" << cellDescriptions[currentSolver].toString() <<
-                ",faceIndexForCell=" << faceIndexForCell <<
-                ",normalOfExchangedFac=" << normalOfExchangedFace <<
-                ",vertex=" << vertex.toString()
-              );
-
-            solveRiemannProblemAtInterface(
-              cellDescriptions[currentSolver],
-              faceIndexForCell,
-              normalOfExchangedFace,
-              receivedlQhbndIndex,
-              receivedlFhbndIndex);
-          }
-
-          DataHeap::getInstance().deleteData(receivedlQhbndIndex);
-          DataHeap::getInstance().deleteData(receivedlFhbndIndex);
         }
-      } else {
-        assertionMsg(false, "Dominic, please implement");
       }
-    }
-  }
   enddforx enddforx
 }
 
