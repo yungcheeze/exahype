@@ -86,7 +86,10 @@ exahype::mappings::AugmentedAMRTreePlot2d::
     : _vtkWriter(masterThread._vtkWriter),
       _vertexWriter(masterThread._vertexWriter),
       _cellWriter(masterThread._cellWriter),
-      _cellNumberWriter(masterThread._cellNumberWriter) {}
+      _cellNumberWriter(masterThread._cellNumberWriter),
+      _cellTypeWriter(masterThread._cellTypeWriter),
+      _cellDescriptionIndexWriter(masterThread._cellDescriptionIndexWriter),
+      _cellRefinementEventWriter(masterThread._cellRefinementEventWriter) {}
 
 void exahype::mappings::AugmentedAMRTreePlot2d::
     mergeWithWorkerThread(
