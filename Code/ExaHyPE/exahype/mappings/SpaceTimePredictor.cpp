@@ -423,38 +423,47 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
         exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
     // space-time DoF (basisSize**(DIMENSIONS+1))
-    double* lQi =
-        DataHeap::getInstance().
-        getData(p.getSpaceTimePredictor()).
-        data();
-    double* lFi =
-        DataHeap::getInstance().
-        getData(p.getSpaceTimeVolumeFlux()).
-        data();
+    double* lQi;
+    double* lFi;
 
     // volume DoF (basisSize**(DIMENSIONS))
-    double* luh = DataHeap::getInstance().
-        getData(p.getSolution()).
-        data();
-    double* lQhi = DataHeap::getInstance().
-        getData(p.getPredictor()).
-        data();
-    double* lFhi = DataHeap::getInstance().
-        getData(p.getVolumeFlux()).
-        data();
+    double* luh;
+    double* lQhi;
+    double* lFhi;
 
     // face DoF (basisSize**(DIMENSIONS-1))
-    double* lQhbnd = DataHeap::getInstance().
-        getData(p.getExtrapolatedPredictor()).
-        data();
-    double* lFhbnd = DataHeap::getInstance().
-        getData(p.getFluctuation()).
-        data();
+    double* lQhbnd;
+    double* lFhbnd;
 
     switch(p.getType()) {
     case exahype::records::ADERDGCellDescription::Cell:
       switch(p.getRefinementEvent()) {
       case exahype::records::ADERDGCellDescription::None:
+      case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
+        lQi = DataHeap::getInstance().
+        getData(p.getSpaceTimePredictor()).
+        data();
+        lFi = DataHeap::getInstance().
+            getData(p.getSpaceTimeVolumeFlux()).
+            data();
+
+        luh = DataHeap::getInstance().
+            getData(p.getSolution()).
+            data();
+        lQhi = DataHeap::getInstance().
+            getData(p.getPredictor()).
+            data();
+        lFhi = DataHeap::getInstance().
+            getData(p.getVolumeFlux()).
+            data();
+
+        lQhbnd = DataHeap::getInstance().
+            getData(p.getExtrapolatedPredictor()).
+            data();
+        lFhbnd = DataHeap::getInstance().
+            getData(p.getFluctuation()).
+            data();
+
         solver->spaceTimePredictor(
             lQi, lFi, lQhi, lFhi,
             lQhbnd,  // da kommt was drauf todo what does this mean?

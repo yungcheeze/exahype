@@ -18,9 +18,16 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/RegularMesh.h"
  #include "exahype/mappings/MarkingForRefinement.h"
+ #include "exahype/mappings/MarkingForAugmentation.h"
+ #include "exahype/mappings/RegularMesh.h"
  #include "exahype/mappings/Refinement.h"
+ #include "exahype/mappings/Augmentation.h"
+ #include "exahype/mappings/InitialisationAndCleaning.h"
+ #include "exahype/mappings/VolumeUnknownsProjection.h"
+ #include "exahype/mappings/SolutionUpdate.h"
+ #include "exahype/mappings/Erasing.h"
+ #include "exahype/adapters/AugmentedAMRGrid2MultiscaleLinkedCell_9.h"
 
 
 
@@ -40,13 +47,27 @@ namespace exahype {
  */
 class exahype::adapters::AugmentedAMRGrid {
   private:
-    typedef mappings::RegularMesh Mapping0;
-    typedef mappings::MarkingForRefinement Mapping1;
-    typedef mappings::Refinement Mapping2;
+    typedef mappings::MarkingForRefinement Mapping0;
+    typedef mappings::MarkingForAugmentation Mapping1;
+    typedef mappings::RegularMesh Mapping2;
+    typedef mappings::Refinement Mapping3;
+    typedef mappings::Augmentation Mapping4;
+    typedef mappings::InitialisationAndCleaning Mapping5;
+    typedef mappings::VolumeUnknownsProjection Mapping6;
+    typedef mappings::SolutionUpdate Mapping7;
+    typedef mappings::Erasing Mapping8;
+    typedef adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9 Mapping9;
 
-     Mapping0  _map2RegularMesh;
-     Mapping1  _map2MarkingForRefinement;
-     Mapping2  _map2Refinement;
+     Mapping0  _map2MarkingForRefinement;
+     Mapping1  _map2MarkingForAugmentation;
+     Mapping2  _map2RegularMesh;
+     Mapping3  _map2Refinement;
+     Mapping4  _map2Augmentation;
+     Mapping5  _map2InitialisationAndCleaning;
+     Mapping6  _map2VolumeUnknownsProjection;
+     Mapping7  _map2SolutionUpdate;
+     Mapping8  _map2Erasing;
+     Mapping9  _map2AugmentedAMRGrid2MultiscaleLinkedCell_9;
 
 
   public:

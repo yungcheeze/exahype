@@ -335,13 +335,17 @@ void exahype::mappings::VolumeIntegral::enterCell(
     exahype::solvers::Solver* solver =
         exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-    double* lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
-    double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
+    double* lduh;
+    double* lFhi;
 
     switch(p.getType()) {
     case exahype::records::ADERDGCellDescription::Cell:
       switch(p.getRefinementEvent()) {
       case exahype::records::ADERDGCellDescription::None:
+      case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
+        lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
+        lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
+
         assertionEquals(lduh[0],lduh[0]); // assert no nan
         assertionEquals(lFhi[0],lFhi[0]); // assert no nan
 

@@ -1,7 +1,7 @@
 /////////////////////////////////////////////////
-/// ExaHyPE 
+/// ExaHyPE
 /// ... text ...
-/// Version: 13/11/15 
+/// Version: 13/11/15
 /////////////////////////////////////////////////
 #include "peano/utils/Globals.h"
 
@@ -11,148 +11,153 @@ Constant: DIMENSIONS;
 Constant: DIMENSIONS_TIMES_TWO;
 
 class exahype::records::ADERDGCellDescription {
-  /** 
+  /**
    * @defgroup SolverInfo Meta information on and for the solver
    */
   ///@{
   /**
    * Points to a solver in the solver registry.
    */
-  parallelise persistent int  solverNumber;
-  
-  /** 
-   * These flags indicate on which face a Riemann solve has already been performed.
+  parallelise persistent int solverNumber;
+
+  /**
+   * These flags indicate on which face a Riemann solve has already been
+   * performed.
    */
   parallelise persistent bool riemannSolvePerformed[DIMENSIONS_TIMES_TWO];
   ///@}
-  
+
   /**
    * @defgroup TimeInfo Time Stamps and Step Sizes
-   * 
+   *
    * Time stamps and step sizes that are used for different
    * phases of the algorithm.
    */
-   ///@{
-   /**  
-   * The time step size correction phase is working with.
-   */
+  ///@{
+  /**
+  * The time step size correction phase is working with.
+  */
   parallelise persistent double correctorTimeStepSize;
- 
-  /**  
+
+  /**
    * The time stamp the correction phase is working with.
    */
   parallelise persistent double correctorTimeStamp;
-  
-  /** 
+
+  /**
    * The time step size the prediction phase is working with.
    */
   parallelise persistent double predictorTimeStepSize;
- 
-  /** 
+
+  /**
    * The time stamp the prediction phase is working with.
    */
   parallelise persistent double predictorTimeStamp;
-  
-  /** 
+
+  /**
    * The prediction phase time step size for the next sweep.
    */
   parallelise persistent double nextPredictorTimeStepSize;
-   ///@}
-  
-  
-  /** 
+  ///@}
+
+  /**
    * @defgroup SpaceTimeDataIndices Space Time Data Indices
-   * 
-   * Index pointing to an array of size \f$ N_\mathrm{var}\,(N+1)^{d+1} \f$.  
-   * 
+   *
+   * Index pointing to an array of size \f$ N_\mathrm{var}\,(N+1)^{d+1} \f$.
+   *
    * \note Only for local time stepping we really need to keep the entire
    *       space-time degrees of freedom of the ADER approach.
    */
-  ///@{ 
+  ///@{
   /**
    * Index pointing to the space-time predictor DoF belonging to this cell.
    * Symbol: \f$ q \f$.
    */
   parallelise persistent int spaceTimePredictor;
   ///@}
-  
-  /** 
+
+  /**
    * @defgroup SpaceTimeDataIndices Space Time Data Indices
    *
    * Index pointing to an array of size \f$ d\,N_\mathrm{var}\,(N+1)^{d+1} \f$
-   *  
-   * \note Only for local time stepping we really need to keep the entire space-time degrees of freedom of the ADER approach.
-   * */ 
-  ///@{ 
+   *
+   * \note Only for local time stepping we really need to keep the entire
+   * space-time degrees of freedom of the ADER approach.
+   * */
+  ///@{
   /**
    * Index pointing to the space-time volume fluxes DoF belonging to this cell.
    * Symbol: \f$ \textbf{F} \f$.
    */
-  parallelise persistent int spaceTimeVolumeFlux; 
+  parallelise persistent int spaceTimeVolumeFlux;
   ///@}
 
-  /** 
+  /**
    * @defgroup VolumeDataIndices Volume Data Indices
-   * 
-   * Index pointing to an array of size \f$ N_\mathrm{var}\,(N+1)^{d} \f$.  
+   *
+   * Index pointing to an array of size \f$ N_\mathrm{var}\,(N+1)^{d} \f$.
    */
   ///@{
   /**
-   *  Index pointing to the solution DoF belonging to this cell. 
-   *  Resembles also the state of the previous time step during update calculations.
+   *  Index pointing to the solution DoF belonging to this cell.
+   *  Resembles also the state of the previous time step during update
+   * calculations.
    *  Symbol: \f$ u_h \f$.
    */
-  parallelise persistent int solution; 
-  
+  parallelise persistent int solution;
+
   /**
    * Index pointing to the update DoF belonging to this cell. All volume updates
-   * and face fluctuations contribute to this Symbol. Symbol: 
+   * and face fluctuations contribute to this Symbol. Symbol:
    * \f$ \Delta u_h \f$.
    */
-  parallelise persistent int update;   
-  
+  parallelise persistent int update;
+
   /**
-   * Index pointing to the predictor DoF belonging to this cell, i.e., the time 
+   * Index pointing to the predictor DoF belonging to this cell, i.e., the time
    * integrated space-time DoF. Symbol: \f$q_h\f$.
-  */ 
-  parallelise persistent int predictor;  
+  */
+  parallelise persistent int predictor;
   ///@}
 
   /**
    * @defgroup VolumeFluxDataIndices Volume Flux Data Indices
    *
-   * Index pointing to an array of size \f$ d\,N_\mathrm{var}\,(N+1)^{d} \f$. 
+   * Index pointing to an array of size \f$ d\,N_\mathrm{var}\,(N+1)^{d} \f$.
    */
   ///@{
   /**
-   * Index pointing to the volume flux DoF belonging to this cell, i.e., the time
+   * Index pointing to the volume flux DoF belonging to this cell, i.e., the
+   * time
    * integrated space-time DoF. Symbol: \f$ \textbf{F}_h \f$.
    */
-  parallelise persistent int volumeFlux; 
+  parallelise persistent int volumeFlux;
   ///@}
 
-  /** 
+  /**
    * @name FaceDataIndices Face Data Indices
    *
-   * Index pointing to an array of size \f$ 2\,d\,N_\mathrm{var}\,(N+1)^{d-1} \f$.
-   */ 
+   * Index pointing to an array of size \f$ 2\,d\,N_\mathrm{var}\,(N+1)^{d-1}
+   * \f$.
+   */
   ///@{
   /**
-   * Index pointing to the predictor DoF extrapolated to the bounding faces of the
-   * cell. 
+   * Index pointing to the predictor DoF extrapolated to the bounding faces of
+   * the
+   * cell.
    */
-  parallelise persistent int extrapolatedPredictor; 
-  
+  parallelise persistent int extrapolatedPredictor;
+
   /**
    * Index pointing to the normal fluxes computed at the bounding faces of the
    * cell.
    */
-  parallelise persistent int fluctuation;            
+  parallelise persistent int fluctuation;
   ///@}
-  
-  /** 
-   * @name CellInfo Cell Info 
-   * 
+
+  /**
+   * @name CellInfo Cell Info
+   *
    * Information on the grid cell this ADERDGCellDescription is associated
    * with.
    */
@@ -161,19 +166,19 @@ class exahype::records::ADERDGCellDescription {
    * Space-tree level of the cell this ADERDGCellDescription is associated
    * with.
    */
-  parallelise persistent int    level;                            
+  parallelise persistent int level;
   /**
    * Offset of the "lower left" node of the lower left ghost cell from the
    * lower left node of the cell.
    */
-  parallelise persistent double offset                [DIMENSIONS]; 
+  parallelise persistent double offset[DIMENSIONS];
   /**
    * Dimension of the cell associated with this ADERDGCellDescription in the
    * respective dimension.
    */
-  parallelise persistent double size                  [DIMENSIONS];
+  parallelise persistent double size[DIMENSIONS];
   ///@}
-  
+
   /**
    * Type of a cell description.
    * Cell descriptions of type \p Cell hold cell and face data,
@@ -184,47 +189,51 @@ class exahype::records::ADERDGCellDescription {
    * the virtual part of the augmented spacetree that
    * is created to store prolongated face data.
    */
-  
+
   enum Type {
-  	Erased,
+    Erased,
     Ancestor,
     EmptyAncestor,
     Cell,
     Descendant,
     EmptyDescendant
   };
-  
-  /** 
+
+  /**
    * @defgroup AMRInfo AMR information
    *
-   * Additional information that is necessary to realise adaptive mesh 
+   * Additional information that is necessary to realise adaptive mesh
    * refinement (AMR).
    */
   ///@{
-  /** 
-   * The type of this ADERDGCellDescription. See the documentation of Cell for more details.
+  /**
+   * The type of this ADERDGCellDescription. See the documentation of Cell for
+   * more details.
    */
-  parallelise persistent Type type;	
-  
+  parallelise persistent Type type;
+
   /**
    * The index of the ADERDGCellDescription that is the parent of
    * this ADERDGCellDescription or "-1" if no parent is specified.
    */
   parallelise persistent int parentIndex;
-  
+
   enum RefinementEvent {
-     None,
-     ErasingRequested, // post
-     Restricting, // pre
-     Erasing,  // pre
-     ErasingChildren, // pre
-     Refining,     // pre
-     Prolongating, // pre   
-     DeaugmentingRequested, // post 
-     Augmenting   // pre
+    None,
+    ErasingRequested,       // post
+    Restricting,            // pre
+    Erasing,                // pre
+    AllocatingMemory,       // pre
+    ErasingChildren,        // pre
+    RefiningRequested,      // pre
+    Refining,               // pre
+    Prolongating,           // pre
+    DeaugmentingRequested,  // post
+    AugmentingRequested,    // pre
+    Augmenting              // pre
   };
-  
-  /** 
+
+  /**
    * Returns the refinement event.
    */
   parallelise persistent RefinementEvent refinementEvent;

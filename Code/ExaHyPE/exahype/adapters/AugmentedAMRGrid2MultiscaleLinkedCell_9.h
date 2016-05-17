@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_PatchInitialisation2MultiscaleLinkedCell_1_H_
-#define EXAHYPE_ADAPTERS_PatchInitialisation2MultiscaleLinkedCell_1_H_
+#ifndef EXAHYPE_ADAPTERS_AugmentedAMRGrid2MultiscaleLinkedCell_9_H_
+#define EXAHYPE_ADAPTERS_AugmentedAMRGrid2MultiscaleLinkedCell_9_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,7 +18,7 @@
 
 namespace exahype {
       namespace adapters {
-        class PatchInitialisation2MultiscaleLinkedCell_1;
+        class AugmentedAMRGrid2MultiscaleLinkedCell_9;
       } 
 }
 
@@ -32,7 +32,7 @@ namespace exahype {
  * @author Tobias Weinzierl
  * @version $Revision: 1.1 $
  */
-class exahype::adapters::PatchInitialisation2MultiscaleLinkedCell_1 {
+class exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9 {
   public:
     static peano::MappingSpecification   touchVertexLastTimeSpecification();
     static peano::MappingSpecification   touchVertexFirstTimeSpecification();
@@ -42,16 +42,16 @@ class exahype::adapters::PatchInitialisation2MultiscaleLinkedCell_1 {
     static peano::MappingSpecification   descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    PatchInitialisation2MultiscaleLinkedCell_1();
+    AugmentedAMRGrid2MultiscaleLinkedCell_9();
 
     #if defined(SharedMemoryParallelisation)
-    PatchInitialisation2MultiscaleLinkedCell_1(const PatchInitialisation2MultiscaleLinkedCell_1& masterThread);
+    AugmentedAMRGrid2MultiscaleLinkedCell_9(const AugmentedAMRGrid2MultiscaleLinkedCell_9& masterThread);
     #endif
 
-    virtual ~PatchInitialisation2MultiscaleLinkedCell_1();
+    virtual ~AugmentedAMRGrid2MultiscaleLinkedCell_9();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const PatchInitialisation2MultiscaleLinkedCell_1& workerThread);
+    void mergeWithWorkerThread(const AugmentedAMRGrid2MultiscaleLinkedCell_9& workerThread);
     #endif
 
     void createInnerVertex(

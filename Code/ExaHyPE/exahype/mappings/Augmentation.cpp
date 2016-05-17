@@ -4,8 +4,8 @@
 
 #include "peano/utils/Loop.h"
 
-#include "kernels/KernelCalls.h"
 #include "exahype/solvers/Solver.h"
+#include "kernels/KernelCalls.h"
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
@@ -17,22 +17,24 @@
 peano::CommunicationSpecification
 exahype::mappings::Augmentation::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::
+          SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::
+          SendDataAndStateAfterLastTouchVertexLastTime,
       true);
 }
 
 peano::MappingSpecification
 exahype::mappings::Augmentation::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::Serial);
 }
 peano::MappingSpecification
 exahype::mappings::Augmentation::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+      peano::MappingSpecification::Serial);
 }
 peano::MappingSpecification
 exahype::mappings::Augmentation::enterCellSpecification() {
@@ -44,19 +46,19 @@ peano::MappingSpecification
 exahype::mappings::Augmentation::leaveCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidFineGridRaces);
+      peano::MappingSpecification::Serial);
 }
 peano::MappingSpecification
 exahype::mappings::Augmentation::ascendSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidCoarseGridRaces);
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::Serial);
 }
 peano::MappingSpecification
 exahype::mappings::Augmentation::descendSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidCoarseGridRaces);
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::Serial);
 }
 
 tarch::logging::Log exahype::mappings::Augmentation::_log(
@@ -71,7 +73,8 @@ exahype::mappings::Augmentation::~Augmentation() {
 }
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::Augmentation::Augmentation(const Augmentation& masterThread) {
+exahype::mappings::Augmentation::Augmentation(
+    const Augmentation& masterThread) {
   // do nothing
 }
 
@@ -294,83 +297,75 @@ void exahype::mappings::Augmentation::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-      fineGridVerticesEnumerator.toString(),
-      coarseGridCell, fineGridPositionOfCell);
+                             fineGridVerticesEnumerator.toString(),
+                             coarseGridCell, fineGridPositionOfCell);
 
-  if (ADERDGCellDescriptionHeap::getInstance().
-      isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+      coarseGridCell.getADERDGCellDescriptionsIndex())) {
+    for (std::vector<exahype::records::ADERDGCellDescription>::iterator
+        pCoarse =
+            ADERDGCellDescriptionHeap::getInstance()
+        .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
+        .begin();
+        pCoarse !=
+            ADERDGCellDescriptionHeap::getInstance()
+        .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
+        .end();
+        ++pCoarse) {
+      bool solverNumberFound = false;
 
-    bool refineFineGridCell=false;
-    for (std::vector<exahype::records::ADERDGCellDescription>::
-        iterator pFine = ADERDGCellDescriptionHeap::getInstance().getData(
-            fineGridCell.getADERDGCellDescriptionsIndex()).begin();
-        pFine != ADERDGCellDescriptionHeap::getInstance().getData(
-            fineGridCell.getADERDGCellDescriptionsIndex()).end();
-        pFine++) {
-      switch (pFine->getType()) {
-      case exahype::records::ADERDGCellDescription::Cell:
-      case exahype::records::ADERDGCellDescription::Descendant:
-      case exahype::records::ADERDGCellDescription::EmptyDescendant:
-        switch (pFine->getRefinementEvent()) {
-        case exahype::records::ADERDGCellDescription::Augmenting:
-          refineFineGridCell=true;
-          break;
-        default:
-          break;
+      switch (pCoarse->getRefinementEvent()) {
+      case exahype::records::ADERDGCellDescription::Augmenting:
+        if (fineGridCell.getADERDGCellDescriptionsIndex() !=
+            exahype::Cell::InvalidCellDescriptionsIndex) {
+          for (std::vector<exahype::records::ADERDGCellDescription>::iterator
+              pFine = ADERDGCellDescriptionHeap::getInstance()
+              .getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+              pFine != ADERDGCellDescriptionHeap::getInstance()
+              .getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
+              ++pFine) {
+            assertion(pCoarse->getType() ==
+                exahype::records::ADERDGCellDescription::Cell ||
+                exahype::records::ADERDGCellDescription::Descendant ||
+                exahype::records::ADERDGCellDescription::EmptyDescendant
+            );
+
+            if (pFine->getSolverNumber() == pCoarse->getSolverNumber()) {
+              assertion(
+                  exahype::records::ADERDGCellDescription::Descendant ||
+                  exahype::records::ADERDGCellDescription::EmptyDescendant);
+              solverNumberFound = true;
+            }
+          }
         }
-        break;
-        default:
-          break;
-      }
-    }
-    // Loop over the 2^d adjacent vertices and set the refinement flag.
-    // Note that fineGridVertices->refine() refines all adjacent cells
-    // not only the targeted fineGridCell.
-    if (refineFineGridCell) {
-      dfor2(k)
-        if (fineGridVertices[kScalar].getRefinementControl()==
-            Vertex::Records::Unrefined) {
-          fineGridVertices->refine();
-        }
-      enddforx
-    }
-  }
 
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(coarseGridCell.getADERDGCellDescriptionsIndex())) {
-    for (std::vector<exahype::records::ADERDGCellDescription>::
-        iterator pCoarse = ADERDGCellDescriptionHeap::getInstance().getData(
-            coarseGridCell.getADERDGCellDescriptionsIndex()).begin();
-        pCoarse != ADERDGCellDescriptionHeap::getInstance().getData(
-            coarseGridCell.getADERDGCellDescriptionsIndex()).end();
-        ++pCoarse) { // Loop over coarse grid cell descriptions.
-      switch (pCoarse->getType()) {
-      case exahype::records::ADERDGCellDescription::Cell:
-      case exahype::records::ADERDGCellDescription::Descendant:
-      case exahype::records::ADERDGCellDescription::EmptyDescendant:
-        switch (pCoarse->getRefinementEvent()) {
-        case exahype::records::ADERDGCellDescription::Augmenting:
+        // We set the default type of the new cell description
+        // to EmptyDescendant.
+        //
+        // !!! Rationale
+        //
+        // It's more likely that a descendant does not need to hold data.
+        // The multiscalelinkedcell is furthermore a little slower at
+        // subgrid boundaries. Therefore, we would need one extra
+        // iteration.
+        if (!solverNumberFound) {
           fineGridCell.addNewCellDescription(
               pCoarse->getSolverNumber(),
               exahype::records::ADERDGCellDescription::EmptyDescendant,
               exahype::records::ADERDGCellDescription::None,
               fineGridVerticesEnumerator.getLevel(),
               coarseGridCell.getADERDGCellDescriptionsIndex(),
-              fineGridPositionOfCell,
               fineGridVerticesEnumerator.getCellSize(),
               fineGridVerticesEnumerator.getCellCenter());
-          fineGridCell.initialiseCellDescription(pCoarse->getSolverNumber());
-          break;
-        default:
-          break;
         }
         break;
-        default:
-          break;
+      default:
+        break;
       }
     }
   }
 
-  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
+  logTraceOut("enterCell(...)");
 }
 
 void exahype::mappings::Augmentation::leaveCell(
@@ -388,7 +383,8 @@ void exahype::mappings::Augmentation::beginIteration(
   // do nothing
 }
 
-void exahype::mappings::Augmentation::endIteration(exahype::State& solverState) {
+void exahype::mappings::Augmentation::endIteration(
+    exahype::State& solverState) {
   // do nothing
 }
 
@@ -398,7 +394,31 @@ void exahype::mappings::Augmentation::descend(
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell) {
-  // do nothing
+  logTraceInWith2Arguments("descend(...)", coarseGridCell.toString(),
+      coarseGridVerticesEnumerator.toString());
+
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+      coarseGridCell.getADERDGCellDescriptionsIndex())) {
+    for (std::vector<exahype::records::ADERDGCellDescription>::iterator
+        pCoarse = ADERDGCellDescriptionHeap::getInstance()
+        .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
+        .begin();
+        pCoarse != ADERDGCellDescriptionHeap::getInstance()
+        .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
+        .end();
+        ++pCoarse) {
+      switch (pCoarse->getRefinementEvent()) {
+      case exahype::records::ADERDGCellDescription::AugmentingRequested:
+        pCoarse->setRefinementEvent(
+            exahype::records::ADERDGCellDescription::Augmenting);
+        break;
+      default:
+        break;
+      }
+    }
+  }
+
+  logTraceOut("descend(...)");
 }
 
 void exahype::mappings::Augmentation::ascend(
@@ -407,5 +427,76 @@ void exahype::mappings::Augmentation::ascend(
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell) {
-  // do nothing
+  logTraceInWith2Arguments("ascend(...)", coarseGridCell.toString(),
+      coarseGridVerticesEnumerator.toString());
+
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+      coarseGridCell.getADERDGCellDescriptionsIndex())) {
+    for (std::vector<exahype::records::ADERDGCellDescription>::iterator
+        pCoarse =
+            ADERDGCellDescriptionHeap::getInstance()
+        .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
+        .begin();
+        pCoarse !=
+            ADERDGCellDescriptionHeap::getInstance()
+        .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
+        .end();
+        ++pCoarse) {
+      bool augmentingDone = true;
+
+      switch (pCoarse->getType()) {
+      case exahype::records::ADERDGCellDescription::Cell:
+      case exahype::records::ADERDGCellDescription::Descendant:
+      case exahype::records::ADERDGCellDescription::EmptyDescendant:
+        switch (pCoarse->getRefinementEvent()) {
+        case exahype::records::ADERDGCellDescription::Augmenting:
+          augmentingDone = true;
+          // clang-format off
+          dfor3(k)
+          if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+              fineGridCells[kScalar].getADERDGCellDescriptionsIndex())) {
+            for (std::vector<exahype::records::ADERDGCellDescription>::
+                iterator pFine =
+                    ADERDGCellDescriptionHeap::getInstance()
+                .getData(
+                    fineGridCells[kScalar]
+                                  .getADERDGCellDescriptionsIndex())
+                                  .begin();
+                pFine !=
+                    ADERDGCellDescriptionHeap::getInstance()
+                .getData(fineGridCells[kScalar]
+                                       .getADERDGCellDescriptionsIndex())
+                                       .end();
+                ++pFine) {
+              if (pCoarse->getSolverNumber() == pFine->getSolverNumber()) {
+                augmentingDone =
+                    augmentingDone &&
+                    (pFine->getRefinementEvent() ==
+                        exahype::records::ADERDGCellDescription::None
+                                            ||
+                    pFine->getRefinementEvent() ==
+                        exahype::records::ADERDGCellDescription::DeaugmentingRequested);
+              }
+            }
+          } else {
+            augmentingDone = false;
+          }
+          enddforx
+
+          if (augmentingDone) {
+            pCoarse->setRefinementEvent(
+                exahype::records::ADERDGCellDescription::None);
+          }
+          break;
+        default:
+          break;
+        }
+        break;
+        default:
+          break;
+      }
+    }
+  }
+
+  logTraceOut("ascend(...)");
 }

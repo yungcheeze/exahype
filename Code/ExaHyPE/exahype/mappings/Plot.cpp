@@ -14,8 +14,10 @@
 peano::CommunicationSpecification
 exahype::mappings::Plot::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::
+          SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::
+          SendDataAndStateAfterLastTouchVertexLastTime,
       true);
 }
 
@@ -283,34 +285,49 @@ void exahype::mappings::Plot::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   for (std::vector<exahype::plotters::Plotter*>::iterator pPlotter =
-      exahype::plotters::RegisteredPlotters.begin();
-      pPlotter != exahype::plotters::RegisteredPlotters.end(); pPlotter++) {
-    if (ADERDGCellDescriptionHeap::getInstance().
-        isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
+           exahype::plotters::RegisteredPlotters.begin();
+       pPlotter != exahype::plotters::RegisteredPlotters.end(); pPlotter++) {
+    if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+            fineGridCell.getADERDGCellDescriptionsIndex())) {
       for (ADERDGCellDescriptionHeap::HeapEntries::const_iterator pPatch =
-          ADERDGCellDescriptionHeap::getInstance()
-          .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-          .begin();
-          pPatch !=
-              ADERDGCellDescriptionHeap::getInstance()
-          .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-          .end();
-          pPatch++) {
+               ADERDGCellDescriptionHeap::getInstance()
+                   .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+                   .begin();
+           pPatch !=
+           ADERDGCellDescriptionHeap::getInstance()
+               .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+               .end();
+           pPatch++) {
+        double* u;
 
-        if (pPatch->getType()==exahype::records::ADERDGCellDescription::Cell) {;
-          if ((*pPlotter)->plotDataFromSolver(pPatch->getSolverNumber())) {
-            double* u =
-                DataHeap::getInstance().getData(pPatch->getSolution()).data();
-            (*pPlotter)->plotPatch(fineGridVerticesEnumerator.getVertexPosition(),
-                                   fineGridVerticesEnumerator.getCellSize(), u,
-                                   pPatch->getCorrectorTimeStamp());
-          }
+        switch (pPatch->getType()) {
+          case exahype::records::ADERDGCellDescription::Cell:
+            switch (pPatch->getRefinementEvent()) {
+              case exahype::records::ADERDGCellDescription::None:
+              case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
+                u = DataHeap::getInstance()
+                        .getData(pPatch->getSolution())
+                        .data();
+
+                if ((*pPlotter)->plotDataFromSolver(
+                        pPatch->getSolverNumber())) {
+                  (*pPlotter)->plotPatch(
+                      fineGridVerticesEnumerator.getVertexPosition(),
+                      fineGridVerticesEnumerator.getCellSize(), u,
+                      pPatch->getCorrectorTimeStamp());
+                }
+                break;
+              default:
+                break;
+            }
+            break;
+          default:
+            break;
         }
       }
     }
   }
 }
-
 
 void exahype::mappings::Plot::leaveCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -322,10 +339,10 @@ void exahype::mappings::Plot::leaveCell(
   // do nothing at all
 }
 
-
 void exahype::mappings::Plot::beginIteration(exahype::State& solverState) {
   if (exahype::plotters::RegisteredPlotters.empty()) {
-    logError( "beginIteration(State)", "plot mapping invoked though no plotters are registered at all" );
+    logError("beginIteration(State)",
+             "plot mapping invoked though no plotters are registered at all");
   }
 
   // @todo This does not work if we use dynamic lb. In this case, ranks will
@@ -333,18 +350,20 @@ void exahype::mappings::Plot::beginIteration(exahype::State& solverState) {
   //       its plotters will be out of sync. Therefore, we have to broadcast
   //       the plotter states per plot run to all non-idle ranks which easily
   //       should be possible exactly here.
-  if ( !tarch::parallel::Node::getInstance().isGlobalMaster() ) {
-    if ( !exahype::plotters::isAPlotterActive(solvers::Solver::getMinSolverTimeStamp()) ) {
-      logWarning( "beginIteration(State)", "plot invoked though no plotter is active at all at min solver time stamp " << solvers::Solver::getMinSolverTimeStamp() );
+  if (!tarch::parallel::Node::getInstance().isGlobalMaster()) {
+    if (!exahype::plotters::isAPlotterActive(
+            solvers::Solver::getMinSolverTimeStamp())) {
+      logWarning("beginIteration(State)",
+                 "plot invoked though no plotter is active at all at min "
+                 "solver time stamp "
+                     << solvers::Solver::getMinSolverTimeStamp());
     }
   }
 }
 
-
 void exahype::mappings::Plot::endIteration(exahype::State& solverState) {
   exahype::plotters::finishedPlotting();
 }
-
 
 void exahype::mappings::Plot::descend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,

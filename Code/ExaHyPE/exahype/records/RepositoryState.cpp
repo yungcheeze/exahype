@@ -40,7 +40,6 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case UseAdapterInitialGrid: return "UseAdapterInitialGrid";
       case UseAdapterAugmentedAMRGrid: return "UseAdapterAugmentedAMRGrid";
       case UseAdapterPlotAugmentedAMRGrid: return "UseAdapterPlotAugmentedAMRGrid";
-      case UseAdapterPatchInitialisation: return "UseAdapterPatchInitialisation";
       case UseAdapterSolutionUpdateAndGlobalTimeStepComputation: return "UseAdapterSolutionUpdateAndGlobalTimeStepComputation";
       case UseAdapterPredictorAndGlobalTimeStepComputation: return "UseAdapterPredictorAndGlobalTimeStepComputation";
       case UseAdapterADERDGTimeStep: return "UseAdapterADERDGTimeStep";
@@ -57,7 +56,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterInitialGrid=4,UseAdapterAugmentedAMRGrid=5,UseAdapterPlotAugmentedAMRGrid=6,UseAdapterPatchInitialisation=7,UseAdapterSolutionUpdateAndGlobalTimeStepComputation=8,UseAdapterPredictorAndGlobalTimeStepComputation=9,UseAdapterADERDGTimeStep=10,UseAdapterADERDGTimeStepAndPlot=11,UseAdapterGlobalTimeStepComputation=12,UseAdapterGlobalTimeStepComputationAndPlot=13,UseAdapterFaceDataExchange=14,UseAdapterPredictor=15,UseAdapterPredictorRerun=16,UseAdapterCorrector=17,NumberOfAdapters=18)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterInitialGrid=4,UseAdapterAugmentedAMRGrid=5,UseAdapterPlotAugmentedAMRGrid=6,UseAdapterSolutionUpdateAndGlobalTimeStepComputation=7,UseAdapterPredictorAndGlobalTimeStepComputation=8,UseAdapterADERDGTimeStep=9,UseAdapterADERDGTimeStepAndPlot=10,UseAdapterGlobalTimeStepComputation=11,UseAdapterGlobalTimeStepComputationAndPlot=12,UseAdapterFaceDataExchange=13,UseAdapterPredictor=14,UseAdapterPredictorRerun=15,UseAdapterCorrector=16,NumberOfAdapters=17)";
 }
 
 

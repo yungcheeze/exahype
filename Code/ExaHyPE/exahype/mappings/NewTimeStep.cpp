@@ -354,6 +354,7 @@ void exahype::mappings::NewTimeStep::enterCell(
       case exahype::records::ADERDGCellDescription::Cell:
         switch(p.getRefinementEvent()) {
         case exahype::records::ADERDGCellDescription::None:
+        case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
           solver->synchroniseTimeStepping(p);
           break;
         default:

@@ -18,8 +18,8 @@
 #include "exahype/State.h"
 
 
- #include "exahype/adapters/PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0.h"
- #include "exahype/adapters/PlotAugmentedAMRGrid2MultiscaleLinkedCell_1.h"
+ #include "exahype/mappings/AugmentedAMRTreePlot2d.h"
+ #include "exahype/adapters/PlotAugmentedAMRGrid2VTKGridVisualiser_1.h"
 
 
 
@@ -39,11 +39,11 @@ namespace exahype {
  */
 class exahype::adapters::PlotAugmentedAMRGrid {
   private:
-    typedef adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0 Mapping0;
-    typedef adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1 Mapping1;
+    typedef mappings::AugmentedAMRTreePlot2d Mapping0;
+    typedef adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1 Mapping1;
 
-     Mapping0  _map2PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0;
-     Mapping1  _map2PlotAugmentedAMRGrid2MultiscaleLinkedCell_1;
+     Mapping0  _map2AugmentedAMRTreePlot2d;
+     Mapping1  _map2PlotAugmentedAMRGrid2VTKGridVisualiser_1;
 
 
   public:

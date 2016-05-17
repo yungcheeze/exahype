@@ -23,9 +23,7 @@
 
 #include "exahype/solvers/Solver.h"
 
-// ! Begin of code for DG method
 #include "peano/utils/Globals.h"
-// ! End of code for DG method
 
 namespace exahype {
 namespace mappings {
@@ -48,9 +46,19 @@ class exahype::mappings::MarkingForAugmentation {
    */
   static tarch::logging::Log _log;
 
+  /**
+   * Returns exahype::solvers::Solver::Keep if the cell has a neighbour of
+   * type exahype::records::ADERDGCellDescription:Cell,
+   * exahype::solvers::Solver::Refine if the cell has a neighbour of
+   * type exahype::records::ADERDGCellDescription:Ancestor or
+   * exahype::records::ADERDGCellDescription::EmptyAncestor, or
+   * exahype::records::ADERDGCellDescription:Erase otherwise.
+   */
   exahype::solvers::Solver::RefinementControl
   virtualRefinementCriterion(
       const int solverNumber,
+      const exahype::records::ADERDGCellDescription::Type type,
+      const int level,
       const tarch::la::Vector<THREE_POWER_D, int>&
       neighbourCellDescriptionIndices) const;
 

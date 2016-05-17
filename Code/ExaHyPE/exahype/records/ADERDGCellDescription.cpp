@@ -55,17 +55,20 @@ std::string exahype::records::ADERDGCellDescription::toString(const RefinementEv
       case ErasingRequested: return "ErasingRequested";
       case Restricting: return "Restricting";
       case Erasing: return "Erasing";
+      case AllocatingMemory: return "AllocatingMemory";
       case ErasingChildren: return "ErasingChildren";
+      case RefiningRequested: return "RefiningRequested";
       case Refining: return "Refining";
       case Prolongating: return "Prolongating";
       case DeaugmentingRequested: return "DeaugmentingRequested";
+      case AugmentingRequested: return "AugmentingRequested";
       case Augmenting: return "Augmenting";
    }
    return "undefined";
 }
 
 std::string exahype::records::ADERDGCellDescription::getRefinementEventMapping() {
-   return "RefinementEvent(None=0,ErasingRequested=1,Restricting=2,Erasing=3,ErasingChildren=4,Refining=5,Prolongating=6,DeaugmentingRequested=7,Augmenting=8)";
+   return "RefinementEvent(None=0,ErasingRequested=1,Restricting=2,Erasing=3,AllocatingMemory=4,ErasingChildren=5,RefiningRequested=6,Refining=7,Prolongating=8,DeaugmentingRequested=9,AugmentingRequested=10,Augmenting=11)";
 }
 std::string exahype::records::ADERDGCellDescription::toString(const Type& param) {
    switch (param) {

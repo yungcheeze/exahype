@@ -197,17 +197,21 @@ int exahype::runners::Runner::runAsMaster(
   /*
    * Build up the initial space tree.
    */
-  repository.switchToInitialGrid();
-  //  repository.switchToAugmentedAMRGrid();
-
+  repository.switchToAugmentedAMRGrid();
   int gridSetupIterations = 0;
   do {
     repository.iterate();
     gridSetupIterations++;
   } while (!repository.getState().isGridBalanced());
+  repository.iterate(); // We need one extra iteration.
+  gridSetupIterations++;
 
-  //  repository.switchToPlotAugmentedAMRGrid();
-  //  repository.iterate();
+//  repository.switchToPlotAugmentedAMRGrid();
+//  repository.iterate();
+
+  logInfo("runAsMaster()",
+        "solution update " << gridSetupIterations << ", max-level="
+        << repository.getState().getMaxLevel());
 
   logInfo("runAsMaster()",
           "grid setup iterations=" << gridSetupIterations << ", max-level="
@@ -221,11 +225,6 @@ int exahype::runners::Runner::runAsMaster(
       "number of idle ranks="
           << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes());
 #endif
-
-  // Initialise the cell descriptions;
-  repository.switchToPatchInitialisation();
-  repository.iterate();
-
   repository.switchToSolutionUpdateAndGlobalTimeStepComputation();
   repository.iterate();
   startNewTimeStep(-1);

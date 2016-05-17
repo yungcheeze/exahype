@@ -71,11 +71,17 @@ event-mapping:
   name: VolumeUnknownsProjection  
 
 event-mapping:
+  name: InitialisationAndCleaning  
+
+event-mapping:
   name: DropIncomingMPIMessages  
 
 event-mapping:
   name: Erasing    
 // 
+
+event-mapping:
+  name: AugmentedAMRTreePlot2d
     
 adapter:
   name: InitialGrid
@@ -85,27 +91,21 @@ adapter:
 
 adapter:
   name: AugmentedAMRGrid
-  merge-with-user-defined-mapping: RegularMesh           
-  merge-with-user-defined-mapping: MarkingForRefinement //     (parallel)
-  merge-with-user-defined-mapping: Refinement
-  //merge-with-user-defined-mapping: SolutionUpdate
-  //merge-with-user-defined-mapping: MarkingForAugmentation //   (parallel)
-  //merge-with-user-defined-mapping: Augmentation             
-  //merge-with-user-defined-mapping: VolumeUnknownsProjection // (parallel)
-  //merge-with-user-defined-mapping: Erasing                  // (parallel)
+  merge-with-user-defined-mapping: MarkingForRefinement      // (enterCell,runconcurrently)
+  merge-with-user-defined-mapping: MarkingForAugmentation    // (enterCell,runconcurrently)    
+  merge-with-user-defined-mapping: RegularMesh               // (createInner/BoundaryVertex,enterCell,serial)
+  merge-with-user-defined-mapping: Refinement                // (touchVertexLastTime,enterCell,serial)
+  merge-with-user-defined-mapping: Augmentation              // (touchVertexLastTime,enterCell,serial)
+  merge-with-user-defined-mapping: InitialisationAndCleaning // (touchVertexLastTime,enterCell,serial)
+  merge-with-user-defined-mapping: VolumeUnknownsProjection  // (enterCell,runconcurrently)
+  merge-with-user-defined-mapping: SolutionUpdate            // (enterCell,runconcurrently)
+  merge-with-user-defined-mapping: Erasing                   // (touchVertexLastTime,enterCell,serial)
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)       
   
 adapter:
   name: PlotAugmentedAMRGrid
-  merge-with-predefined-mapping: VTK2dTreeVisualiser(tree,getLevel)
-  
-  // tracks vertex creation events here; sets domain boundary and processor boundary indices
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex)
-
-adapter:
-  name: PatchInitialisation
-  merge-with-user-defined-mapping: PatchInitialisation
-  // tracks cell traversal events here; updates neighbour information in vertices
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex)
+  merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
+  merge-with-predefined-mapping: VTKGridVisualiser(grid)
 
 // Adapters for initialisation of time stepping
 adapter:
