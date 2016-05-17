@@ -20,7 +20,8 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
   void testPDEFluxes();
   void testSpaceTimePredictorLinear();
   void testSpaceTimePredictorNonlinear();
-  void testVolumeIntegral();
+  void testVolumeIntegralLinear();
+  void testVolumeIntegralNonlinear();
   void testRiemannSolver();
   void testSurfaceIntegral();
   void testSolutionUpdate();

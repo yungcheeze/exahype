@@ -14,9 +14,13 @@ extern const double g[5];
 extern const double h[5];
 }  // namespace testPDEFluxes
 
-namespace testVolumeIntegral {
+namespace testVolumeIntegralLinear {
 extern const double lduh[320];
-}  // namespace testVolumeIntegral
+}  // namespace testVolumeIntegralLinear
+
+namespace testVolumeIntegralNonlinear {
+extern const double lduh[320];
+}  // namespace testVolumeIntegralNonlinear
 
 namespace testSurfaceIntegral {
 extern const double lduh[320];

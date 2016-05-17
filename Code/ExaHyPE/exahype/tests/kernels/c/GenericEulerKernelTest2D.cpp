@@ -412,8 +412,12 @@ void GenericEulerKernelTest::testRiemannSolver() {
   delete[] FR;
 }  // testRiemannSolver
 
-void GenericEulerKernelTest::testVolumeIntegral() {
-  cout << "Test volume integral, ORDER=3, DIM=2" << endl;
+void GenericEulerKernelTest::testVolumeIntegralLinear() {
+  // TODO: Implement
+}  // testVolumeIntegralLinear
+
+void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
+  cout << "Test volume integral nonlinear, ORDER=3, DIM=2" << endl;
 
   {  // first test
 
@@ -780,7 +784,7 @@ void GenericEulerKernelTest::testVolumeIntegral() {
     delete[] lduh;
   }  // scope limiter second test
 
-}  // testVolumeIntegral
+}  // testVolumeIntegralNonlinear
 
 void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   // TODO: Implement

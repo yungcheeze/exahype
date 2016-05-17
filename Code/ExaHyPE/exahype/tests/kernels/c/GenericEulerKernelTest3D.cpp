@@ -73,15 +73,53 @@ void GenericEulerKernelTest::testPDEFluxes() {
   }
 }  // testPDEFluxes
 
-void GenericEulerKernelTest::testVolumeIntegral() {
-  cout << "Test volume integral, ORDER=3, DIM=3" << endl;
+void GenericEulerKernelTest::testVolumeIntegralLinear() {
+  cout << "Test volume integral linear, ORDER=3, DIM=3" << endl;
+
+  // output:
+  double *lduh = new double[320];  // intentionally left uninitialised
+
+  // input:
+  const tarch::la::Vector<DIMENSIONS, double> dx(0.5, 0.5,
+                                                 0.5);  // mesh spacing
+  double *lFhi = new double[960]();  // nVar * nDOFx * nDOFy * nDOFz * dim
+  // lFhi = [ lFhi_x  | lFhi_y | lFhi_z ], 320 entries each
+  double *lFhi_x = &lFhi[0];
+  double *lFhi_y = &lFhi[320];
+  double *lFhi_z = &lFhi[640];
+
+  // seed direction
+  for (int i = 0; i < 320; i += 5) {
+    lFhi_x[i + 1] = 1.;
+    lFhi_y[i + 2] = 2.;
+    lFhi_z[i + 3] = 3.;
+  }
+
+  kernels::aderdg::generic::c::volumeIntegralLinear(lduh, lFhi, dx,
+                                                    5,  // numberOfVariables
+                                                    4   // basisSize
+                                                    );
+
+  for (int i = 0; i < 320; i++) {
+    validateNumericalEqualsWithEpsWithParams1(
+        lduh[i], ::exahype::tests::testdata::generic_euler::
+                     testVolumeIntegralLinear::lduh[i],
+        eps, i);
+  }
+
+  delete[] lduh;
+  delete[] lFhi;
+}  // testVolumeIntegralLinear
+
+void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
+  cout << "Test volume integral nonlinear, ORDER=3, DIM=3" << endl;
 
   // output:
   double *lduh = new double[320];  // intentionally left uninitialised
 
   // input:
   const double dx[3] = {0.05, 0.05, 0.05};  // mesh spacing
-  double *lFhi = new double[960]();  // nVar * dim * nDOFx * nDOFy * nDOFz
+  double *lFhi = new double[960]();  // nVar * nDOFx * nDOFy * nDOFz * dim
   // lFhi = [ lFhi_x  | lFhi_y | lFhi_z ], 320 entries each
   double *lFhi_x = &lFhi[0];
   double *lFhi_y = &lFhi[320];
@@ -101,14 +139,14 @@ void GenericEulerKernelTest::testVolumeIntegral() {
 
   for (int i = 0; i < 320; i++) {
     validateNumericalEqualsWithEpsWithParams1(
-        lduh[i],
-        ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lduh[i],
+        lduh[i], ::exahype::tests::testdata::generic_euler::
+                     testVolumeIntegralNonlinear::lduh[i],
         eps, i);
   }
 
   delete[] lduh;
   delete[] lFhi;
-}  // testVolumeIntegral
+}  // testVolumeIntegralNonlinear
 
 void GenericEulerKernelTest::testSurfaceIntegral() {
   cout << "Test surface integral, ORDER=3, DIM=3" << endl;
