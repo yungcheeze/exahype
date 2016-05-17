@@ -17,10 +17,6 @@ cell:
 state:
   dastgen-file: State.def
   
-  
-event-mapping:
-  name: InitialGrid
-
 event-mapping:
   name: GlobalTimeStepComputation
   
@@ -82,13 +78,6 @@ event-mapping:
 
 event-mapping:
   name: AugmentedAMRTreePlot2d
-    
-adapter:
-  name: InitialGrid
-  //merge-with-user-defined-mapping: InitialGrid
-  merge-with-user-defined-mapping: RegularMesh               // (createInner/BoundaryVertex,enterCell,serial)
-  // tracks vertex creation events here; sets domain boundary and processor boundary indices
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex) 
 
 adapter:
   name: AugmentedAMRGrid
