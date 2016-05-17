@@ -659,8 +659,8 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
   double* FL = 0;
   double* FR = 0;
 
-  assertionEquals(DataHeap::getInstance().getData(indexOfQValues).size(),numberOfFaceDof);
-  assertionEquals(DataHeap::getInstance().getData(indexOfFValues).size(),numberOfFaceDof);
+  assertionEquals(DataHeap::getInstance().getData(indexOfQValues).size(),static_cast<unsigned int>(numberOfFaceDof));
+  assertionEquals(DataHeap::getInstance().getData(indexOfFValues).size(),static_cast<unsigned int>(numberOfFaceDof));
 
   // @todo Doku im Header warum wir das hier brauchen,
   if (faceIndexForCell%2==0) {
