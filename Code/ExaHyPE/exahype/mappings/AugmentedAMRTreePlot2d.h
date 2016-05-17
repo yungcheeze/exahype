@@ -38,6 +38,11 @@ class AugmentedAMRTreePlot2d;
 class exahype::mappings::AugmentedAMRTreePlot2d {
  private:
   /**
+   * Logging device for the trace macros.
+   */
+  static tarch::logging::Log _log;
+
+  /**
    * One big map mapping vertices to indices. The procedure using this map is
    * straightforward. Whenever we encounter a vertex, the object does a
    * lookup whether this vertex already has been plotted. If not, it plots it

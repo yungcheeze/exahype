@@ -11,6 +11,9 @@
 #include "tarch/parallel/Node.h"
 #endif
 
+tarch::logging::Log exahype::mappings::AugmentedAMRTreePlot2d::_log(
+    "exahype::mappings::AugmentedAMRTreePlot2d");
+
 int exahype::mappings::AugmentedAMRTreePlot2d::_snapshotCounter =
     0;
 double exahype::mappings::AugmentedAMRTreePlot2d::SqueezeZAxis =
@@ -106,9 +109,13 @@ void exahype::mappings::AugmentedAMRTreePlot2d::plotVertex(
   tarch::la::Vector<DIMENSIONS + 1, double> plotY = y;
   plotY(DIMENSIONS) = level / SqueezeZAxis;
 
+#if DIMENSIONS==2
   if (_vertex2IndexMap.find(y) == _vertex2IndexMap.end()) {
     _vertex2IndexMap[y] = _vertexWriter->plotVertex(plotY);
   }
+#else
+  logError("plotVertex","This mapping can only be used for two-dimensional problems (DIMENSIONS==2).")
+#endif
 }
 
 void exahype::mappings::AugmentedAMRTreePlot2d::
@@ -128,10 +135,14 @@ void exahype::mappings::AugmentedAMRTreePlot2d::
     minLevel = std::min(minLevel,(*p)->getMinimumTreeDepth()+1);
   }
 
+#if DIMENSIONS==2
   if (coarseGridVerticesEnumerator.getLevel() + 1 >= minLevel) {
     plotVertex(fineGridVertex, fineGridX,
         coarseGridVerticesEnumerator.getLevel() + 1 - minLevel + 1);
   }
+#else
+  logError("createHangingVertex","This mapping can only be used for two-dimensional problems (DIMENSIONS==2).")
+#endif
 }
 
 void exahype::mappings::AugmentedAMRTreePlot2d::
@@ -302,10 +313,15 @@ void exahype::mappings::AugmentedAMRTreePlot2d::
       ++p) {  // @todo replace by parloops?
     minLevel = std::min(minLevel,(*p)->getMinimumTreeDepth()+1);
   }
+
+#if DIMENSIONS==2
   if (coarseGridVerticesEnumerator.getLevel() + 1 >= minLevel) {
     plotVertex(fineGridVertex, fineGridX,
                coarseGridVerticesEnumerator.getLevel() + 1 - minLevel + 1);
   }
+#else
+  logError("touchVertexFirstTime","This mapping can only be used for two-dimensional problems (DIMENSIONS==2).")
+#endif
 }
 
 void exahype::mappings::AugmentedAMRTreePlot2d::
