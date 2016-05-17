@@ -16,8 +16,8 @@
 // using std::cout;
 
 extern "C" {
-void aderriemannsolverlinear_(double* lQbndL, double* lFbndL, double* lQbndR,
-                        double* lFbndR, double* nv);
+void aderriemannsolverlinear_(const double* lQbndL, double* lFbndL,
+                              const double* lQbndR, double* lFbndR, double* nv);
 }
 
 // todo Dominic Etienne Charrier
@@ -40,33 +40,10 @@ void kernels::aderdg::generic::fortran::riemannSolverLinear(
     double* FL, double* FR, const double* const QL, const double* const QR,
     const double dt, const int normalNonZero, const int numberOfVariables,
     const int basisSize) {
-  double* QlFortran = new double[numberOfVariables * basisSize * basisSize];
-  for (int i = 0; i < numberOfVariables * basisSize * basisSize; i++) {
-    QlFortran[i] = QL[i];
-  }
-
-  double* QrFortran = new double[numberOfVariables * basisSize * basisSize];
-  for (int i = 0; i < numberOfVariables * basisSize * basisSize; i++) {
-    QrFortran[i] = QR[i];
-  }
-
-  double* FlFortran = new double[numberOfVariables * basisSize * basisSize];
-  for (int i = 0; i < numberOfVariables * basisSize * basisSize; i++) {
-    FlFortran[i] = FL[i];
-  }
-
-  double* FrFortran = new double[numberOfVariables * basisSize * basisSize];
-  for (int i = 0; i < numberOfVariables * basisSize * basisSize; i++) {
-    FrFortran[i] = FR[i];
-  }
-
-  double* nv = new double[3];
-  nv[0] = 0.0;
-  nv[1] = 0.0;
-  nv[2] = 0.0;
+  double nv[3] = {0.0, 0.0, 0.0};
   nv[normalNonZero] = 1.0;
 
-  aderriemannsolverlinear_(QlFortran, FlFortran, QrFortran, FrFortran, nv);
+  aderriemannsolverlinear_(QL, FL, QR, FR, nv);
 
   // // Permutation of lQbnd
 
@@ -96,10 +73,4 @@ void kernels::aderdg::generic::fortran::riemannSolverLinear(
   // ofs << lQbndFortran[ii] << "\n";
   // }
   // ofs.close();
-
-  delete[] QlFortran;
-  delete[] QrFortran;
-  delete[] FlFortran;
-  delete[] FrFortran;
-  delete[] nv;
 }

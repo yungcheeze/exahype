@@ -382,9 +382,13 @@ void GenericEulerKernelTest::testSurfaceIntegral() {
   validateNumericalEqualsWithEps(lduh[79], 1.54714411761e-16, eps);
 }  // testSurfaceIntegral
 
-void GenericEulerKernelTest::testRiemannSolver() {
+void GenericEulerKernelTest::testRiemannSolverLinear() {
+  // TODO: Implement
+}  // testRiemannSolverLinear
+
+void GenericEulerKernelTest::testRiemannSolverNonlinear() {
   // Rusanov
-  cout << "Test Riemann Solver (Rusanov), ORDER=3, DIM=2" << endl;
+  cout << "Test Riemann Solver nonlinear (Rusanov), ORDER=3, DIM=2" << endl;
   // input:
   double QL[20] = {1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5,
                    1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5};
@@ -410,10 +414,14 @@ void GenericEulerKernelTest::testRiemannSolver() {
 
   delete[] FL;
   delete[] FR;
-}  // testRiemannSolver
+}  // testRiemannSolverNonlinear
 
-void GenericEulerKernelTest::testVolumeIntegral() {
-  cout << "Test volume integral, ORDER=3, DIM=2" << endl;
+void GenericEulerKernelTest::testVolumeIntegralLinear() {
+  // TODO: Implement
+}  // testVolumeIntegralLinear
+
+void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
+  cout << "Test volume integral nonlinear, ORDER=3, DIM=2" << endl;
 
   {  // first test
 
@@ -780,7 +788,7 @@ void GenericEulerKernelTest::testVolumeIntegral() {
     delete[] lduh;
   }  // scope limiter second test
 
-}  // testVolumeIntegral
+}  // testVolumeIntegralNonlinear
 
 void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   // TODO: Implement

@@ -31,8 +31,10 @@ void GenericEulerKernelTest::run() {
 
   testMethod(testSpaceTimePredictorLinear);
   testMethod(testSpaceTimePredictorNonlinear);
-  testMethod(testVolumeIntegral);
-  testMethod(testRiemannSolver);
+  testMethod(testVolumeIntegralLinear);
+  testMethod(testVolumeIntegralNonlinear);
+  testMethod(testRiemannSolverLinear);
+  testMethod(testRiemannSolverNonlinear);
   testMethod(testSurfaceIntegral);
 
   testMethod(testSolutionUpdate);

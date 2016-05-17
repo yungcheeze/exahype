@@ -141,6 +141,10 @@ void extrapolatedPredictorYDirection(
 void solutionUpdate(double* luh, const double* const lduh, const double dt,
                     const int numberOfVariables, const int basisSize);
 
+void volumeIntegralLinear(double* lduh, const double* const lFhi,
+                          const tarch::la::Vector<DIMENSIONS, double>& dx,
+                          const int numberOfVariables, const int basisSize);
+
 void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
                              const int numberOfVariables, const int basisSize);
@@ -249,7 +253,7 @@ void volumeUnknownsRestriction(
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorLinear.cpph"
 // #include "kernels/aderdg/generic/c/3d/riemannSolverNonlinear.cpph"
-// #include "kernels/aderdg/generic/c/3d/riemannSolverLinear.cpph"
+#include "kernels/aderdg/generic/c/3d/riemannSolverLinear.cpph"
 #endif
 
 namespace kernels {

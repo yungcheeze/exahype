@@ -14,13 +14,27 @@ extern const double g[5];
 extern const double h[5];
 }  // namespace testPDEFluxes
 
-namespace testVolumeIntegral {
+namespace testVolumeIntegralLinear {
 extern const double lduh[320];
-}  // namespace testVolumeIntegral
+}  // namespace testVolumeIntegralLinear
+
+namespace testVolumeIntegralNonlinear {
+extern const double lduh[320];
+}  // namespace testVolumeIntegralNonlinear
 
 namespace testSurfaceIntegral {
 extern const double lduh[320];
 }  // namesapce testSurfaceIntegral
+
+namespace testRiemannSolver {
+extern const double QL[80];
+extern const double QR[80];
+}  // testRiemannSolver
+
+namespace testRiemannSolverLinear {
+extern const double FL[80];
+extern const double FR[80];
+}  // namespace testRiemannSolverLinear
 
 namespace testSolutionUpdate {
 extern const double luh[320];
