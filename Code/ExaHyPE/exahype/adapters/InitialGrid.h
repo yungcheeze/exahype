@@ -18,7 +18,7 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/InitialGrid.h"
+ #include "exahype/mappings/RegularMesh.h"
  #include "exahype/adapters/InitialGrid2MultiscaleLinkedCell_1.h"
 
 
@@ -39,10 +39,10 @@ namespace exahype {
  */
 class exahype::adapters::InitialGrid {
   private:
-    typedef mappings::InitialGrid Mapping0;
+    typedef mappings::RegularMesh Mapping0;
     typedef adapters::InitialGrid2MultiscaleLinkedCell_1 Mapping1;
 
-     Mapping0  _map2InitialGrid;
+     Mapping0  _map2RegularMesh;
      Mapping1  _map2InitialGrid2MultiscaleLinkedCell_1;
 
 

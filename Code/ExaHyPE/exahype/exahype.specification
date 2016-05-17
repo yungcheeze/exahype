@@ -85,7 +85,8 @@ event-mapping:
     
 adapter:
   name: InitialGrid
-  merge-with-user-defined-mapping: InitialGrid
+  //merge-with-user-defined-mapping: InitialGrid
+  merge-with-user-defined-mapping: RegularMesh               // (createInner/BoundaryVertex,enterCell,serial)
   // tracks vertex creation events here; sets domain boundary and processor boundary indices
   merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex) 
 
