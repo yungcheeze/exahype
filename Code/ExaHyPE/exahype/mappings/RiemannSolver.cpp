@@ -343,16 +343,16 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
   constexpr int cellIndicesTop   [4] = {4, 5, 6, 7};
 #endif
   for (int i = 0; i < TWO_POWER_D_DIVIDED_BY_TWO; i++) {
-    solveRiemannProblem(adjacentADERDGCellDescriptionsIndices,
+    solveRiemannProblemAtInterface(adjacentADERDGCellDescriptionsIndices,
                         cellIndicesLeft[i], cellIndicesRight[i],
                         EXAHYPE_FACE_RIGHT, EXAHYPE_FACE_LEFT, 0);
 
-    solveRiemannProblem(adjacentADERDGCellDescriptionsIndices,
+    solveRiemannProblemAtInterface(adjacentADERDGCellDescriptionsIndices,
                         cellIndicesFront[i], cellIndicesBack[i],
                         EXAHYPE_FACE_BACK, EXAHYPE_FACE_FRONT, 1);
 
 #if DIMENSIONS == 3
-    solveRiemannProblem(adjacentADERDGCellDescriptionsIndices,
+    solveRiemannProblemAtInterface(adjacentADERDGCellDescriptionsIndices,
                         cellIndicesBottom[i], cellIndicesTop[i],
                         EXAHYPE_FACE_TOP, EXAHYPE_FACE_BOTTOM, 2);
 #endif
@@ -360,7 +360,7 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
   logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
 }
 
-void exahype::mappings::RiemannSolver::solveRiemannProblem(
+void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
     tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices,
     const int cellIndexL, const int cellIndexR, const int faceL,
     const int faceR, const int normalNonZero) {

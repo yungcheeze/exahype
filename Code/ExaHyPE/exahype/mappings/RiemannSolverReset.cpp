@@ -338,14 +338,18 @@ void exahype::mappings::RiemannSolverReset::enterCell(
       exahype::solvers::Solver* solver =
           exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-      double* lQhbnd = DataHeap::getInstance().
-          getData(p.getExtrapolatedPredictor()).data();
-      double* lFhbnd = DataHeap::getInstance().
-          getData(p.getFluctuation()).data();
+      double* lQhbnd;
+      double* lFhbnd;
 
+      // todo allocate memory for ancestor and descendant
       switch(p.getType()) {
         case exahype::records::ADERDGCellDescription::Ancestor:
         case exahype::records::ADERDGCellDescription::Descendant:
+          lQhbnd = DataHeap::getInstance().
+                 getData(p.getExtrapolatedPredictor()).data();
+          lFhbnd = DataHeap::getInstance().
+                    getData(p.getFluctuation()).data();
+
           memset(lQhbnd, 0.0, sizeof(double) * solver->getUnknownsPerCellBoundary());
           memset(lFhbnd, 0.0, sizeof(double) * solver->getUnknownsPerCellBoundary());
           break;

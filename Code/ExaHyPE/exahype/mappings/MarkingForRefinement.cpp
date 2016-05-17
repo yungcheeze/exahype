@@ -53,7 +53,7 @@ exahype::mappings::MarkingForRefinement::ascendSpecification() {
 peano::MappingSpecification
 exahype::mappings::MarkingForRefinement::descendSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
@@ -298,6 +298,7 @@ void exahype::mappings::MarkingForRefinement::enterCell(
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
+
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
           fineGridCell.getADERDGCellDescriptionsIndex())) {
     for (std::vector<exahype::records::ADERDGCellDescription>::iterator pFine =
@@ -309,40 +310,33 @@ void exahype::mappings::MarkingForRefinement::enterCell(
              .getData(fineGridCell.getADERDGCellDescriptionsIndex())
              .end();
          ++pFine) {
-      double* solution =
-          DataHeap::getInstance().getData(pFine->getSolution()).data();
-
       exahype::solvers::Solver* solver =
           exahype::solvers::RegisteredSolvers[pFine->getSolverNumber()];
-      exahype::solvers::Solver::RefinementControl refinementControl =
-          solver->refinementCriterion(
-              solution, fineGridVerticesEnumerator.getCellCenter(),
-              fineGridVerticesEnumerator.getCellSize(),
-              pFine->getCorrectorTimeStamp(),  // todo careful with the time
-              // stamps
-              pFine->getLevel());
+      double* solution;
+      exahype::solvers::Solver::RefinementControl refinementControl;
 
       switch (pFine->getRefinementEvent()) {
         case exahype::records::ADERDGCellDescription::None:
           switch (pFine->getType()) {
             case exahype::records::ADERDGCellDescription::Cell:
+              solution =
+                  DataHeap::getInstance().getData(pFine->getSolution()).data();
+
+              refinementControl = solver->refinementCriterion(
+                  solution, fineGridVerticesEnumerator.getCellCenter(),
+                  fineGridVerticesEnumerator.getCellSize(),
+                  pFine->getCorrectorTimeStamp(),  // todo careful with the time
+                  // stamps
+                  pFine->getLevel());
+
               switch (refinementControl) {
                 case exahype::solvers::Solver::Refine:
-                  std::cout << "Refinement triggered at level "
-                            << fineGridVerticesEnumerator.getLevel()
-                            << std::endl;
-                  std::cout << "center: "
-                            << fineGridVerticesEnumerator.getCellCenter()[0]
-                            << ","
-                            << fineGridVerticesEnumerator.getCellCenter()[1]
-                            << std::endl;
                   pFine->setRefinementEvent(
-                      exahype::records::ADERDGCellDescription::Refining);
+                      exahype::records::ADERDGCellDescription::RefiningRequested);
                   break;
                 case exahype::solvers::Solver::Erase:
                   pFine->setRefinementEvent(
-                      exahype::records::ADERDGCellDescription::
-                          ErasingRequested);
+                      exahype::records::ADERDGCellDescription::ErasingRequested);
                   break;
                 default:
                   break;
@@ -357,6 +351,7 @@ void exahype::mappings::MarkingForRefinement::enterCell(
       }
     }
   }
+
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
@@ -408,10 +403,15 @@ void exahype::mappings::MarkingForRefinement::descend(
         case exahype::records::ADERDGCellDescription::Ancestor:
           switch (pCoarse->getRefinementEvent()) {
             case exahype::records::ADERDGCellDescription::None:
+            // Overwrite augmentation events if necessary.
+            case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
+            case exahype::records::ADERDGCellDescription::AugmentingRequested:
               eraseChildren = true;
 
               // clang-format off
               dfor3(k)  //
+              assertion(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+                  fineGridCells[kScalar].getADERDGCellDescriptionsIndex()));
               for (std::vector<exahype::records::ADERDGCellDescription>::
                   iterator pFine =
                       ADERDGCellDescriptionHeap::getInstance()
@@ -435,13 +435,12 @@ void exahype::mappings::MarkingForRefinement::descend(
               enddforx
 
               if (eraseChildren) {
-                pCoarse->setRefinementEvent(
-                    exahype::records::ADERDGCellDescription::ErasingChildren);
-                // @todo: 16/04/27:Dominic Etienne Charier:
+                assertion1(pCoarse->getType()==exahype::records::ADERDGCellDescription::EmptyAncestor ||
+                    pCoarse->getType()==exahype::records::ADERDGCellDescription::Ancestor,pCoarse->getType());
+
                 pCoarse->setType(exahype::records::ADERDGCellDescription::Cell);
-                // Clean the solution field of the newly initialised cell.
-                coarseGridCell.initialiseCellDescription(
-                    pCoarse->getSolverNumber());
+                pCoarse->setRefinementEvent(
+                    exahype::records::ADERDGCellDescription::AllocatingMemory);
 
                 // clang-format off
                 dfor3(k)  //

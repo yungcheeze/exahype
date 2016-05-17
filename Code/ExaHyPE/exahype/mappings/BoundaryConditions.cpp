@@ -344,7 +344,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
     const int cellIndexL, const int cellIndexR, const int faceIndexL,
     const int faceIndexR, const int normalNonZero) {
   int cellIndex =
-      multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex;
+      multiscalelinkedcell::HangingVertexBookkeeper::InvalidCellDescriptionIndex;
   int faceIndex = -1;
 
   bool noBoundaryFace = true;
@@ -404,6 +404,7 @@ void exahype::mappings::BoundaryConditions::applyBoundaryConditions(
       case exahype::records::ADERDGCellDescription::Cell:
         switch(p.getRefinementEvent()) {
         case exahype::records::ADERDGCellDescription::None:
+        case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
           // Lock the critical multithreading area.
           // Note that two boundary vertices can operate on the same face at the same
           // time.

@@ -342,7 +342,8 @@ void exahype::mappings::SurfaceIntegral::enterCell(
       switch(p.getType()) {
         case exahype::records::ADERDGCellDescription::Cell:
           switch(p.getRefinementEvent()) {
-            case exahype::records::ADERDGCellDescription::None:
+          case exahype::records::ADERDGCellDescription::None:
+          case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
               solver->surfaceIntegral(lduh, lFhbnd,
                                       fineGridVerticesEnumerator.getCellSize());
               break;

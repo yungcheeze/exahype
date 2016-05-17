@@ -33,7 +33,7 @@ exahype::mappings::Erasing::touchVertexFirstTimeSpecification() {
 peano::MappingSpecification
 exahype::mappings::Erasing::enterCellSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::Nop,
       peano::MappingSpecification::Serial);
 }
 peano::MappingSpecification
@@ -296,19 +296,23 @@ void exahype::mappings::Erasing::enterCell(
       isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
 
     bool eraseFineGridCell=true;
-    for (std::vector<exahype::records::ADERDGCellDescription>::
-        iterator pFine = ADERDGCellDescriptionHeap::getInstance().getData(
+    std::vector<exahype::records::ADERDGCellDescription>::
+            iterator pFine;
+
+    for (pFine = ADERDGCellDescriptionHeap::getInstance().getData(
             fineGridCell.getADERDGCellDescriptionsIndex()).begin();
         pFine != ADERDGCellDescriptionHeap::getInstance().getData(
             fineGridCell.getADERDGCellDescriptionsIndex()).end();
         pFine++) {
-      switch (pFine->getRefinementEvent()) {
-        case exahype::records::ADERDGCellDescription::Erasing:
-          assertion(pFine->getType()==exahype::records::ADERDGCellDescription::Cell
-                     || pFine->getType()==exahype::records::ADERDGCellDescription::Descendant);
-          fineGridCell.cleanCellDescription(pFine);
+      switch (pFine->getType()) {
+        case exahype::records::ADERDGCellDescription::Erased:
+          assertion(pFine->getRefinementEvent()==exahype::records::ADERDGCellDescription::Erasing);
+          fineGridCell.ensureNoUnnecessaryMemoryIsAllocated(pFine->getSolverNumber());
+          pFine = ADERDGCellDescriptionHeap::getInstance().getData(
+              fineGridCell.getADERDGCellDescriptionsIndex()).erase(pFine);
           break;
-        default:
+        default: // This means that more cell descriptions belong to the cell.
+                 // We thus must not erase the cell.
           eraseFineGridCell=false;
           break;
       }

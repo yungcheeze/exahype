@@ -1,4 +1,4 @@
-#include "exahype/adapters/PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0.h"
+#include "exahype/adapters/PlotAugmentedAMRGrid2VTKGridVisualiser_1.h"
 
 #include <sstream>
 
@@ -10,73 +10,77 @@
 #endif
 
 
-int exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::_snapshotCounter      = 0;
-double exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::SqueezeZAxis = 4.0;
-double exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::TreeConnectionsValue = -100.0;
+int exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::_snapshotCounter = 0;
 
 
-peano::CommunicationSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::communicationSpecification() {
+
+peano::CommunicationSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::communicationSpecification() {
   return peano::CommunicationSpecification::getPessimisticSpecification();
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::touchVertexFirstTimeSpecification() { 
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::Serial);
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::Serial);
-}
-
-
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::enterCellSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::leaveCellSpecification() {
+  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::Serial);
+}
+
+
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::ascendSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::descendSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 
-std::map<tarch::la::Vector<DIMENSIONS+1,double> , int, tarch::la::VectorCompare<DIMENSIONS+1> >  exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::_vertex2IndexMap;
-std::map<tarch::la::Vector<DIMENSIONS+1,double> , int, tarch::la::VectorCompare<DIMENSIONS+1> >  exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::_cellCenter2IndexMap;
+std::map<tarch::la::Vector<DIMENSIONS,double> , int, tarch::la::VectorCompare<DIMENSIONS> >  exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::_vertex2IndexMap;
 
 
-
-exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0():
+exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::PlotAugmentedAMRGrid2VTKGridVisualiser_1():
   _vtkWriter(0),
   _vertexWriter(0),
   _cellWriter(0),
-  _cellNumberWriter(0) {
+  _vertexTypeWriter(0),
+  _vertexRefinementControlWriter(0),
+  _vertexAdjacentCellsHeight(0),
+  _cellStateWriter(0) {
 }
 
 
-exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::~PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0() {
+exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::~PlotAugmentedAMRGrid2VTKGridVisualiser_1() {
 }
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0(const PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0&  masterThread):
+exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::PlotAugmentedAMRGrid2VTKGridVisualiser_1(const PlotAugmentedAMRGrid2VTKGridVisualiser_1&  masterThread):
   _vtkWriter(masterThread._vtkWriter),
   _vertexWriter(masterThread._vertexWriter),
   _cellWriter(masterThread._cellWriter),
-  _cellNumberWriter(masterThread._cellNumberWriter) {
+  _vertexTypeWriter(masterThread._vertexTypeWriter),
+  _vertexRefinementControlWriter(masterThread._vertexRefinementControlWriter),
+  _vertexAdjacentCellsHeight(masterThread._vertexAdjacentCellsHeight),
+  _cellStateWriter(masterThread._cellStateWriter)
+{
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::mergeWithWorkerThread(const PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0& workerThread) {
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::mergeWithWorkerThread(const PlotAugmentedAMRGrid2VTKGridVisualiser_1& workerThread) {
 }
 #endif
 
@@ -84,25 +88,30 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::mergeWithWor
 
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::plotVertex(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::plotVertex(
   const exahype::Vertex&                 fineGridVertex,
-  const tarch::la::Vector<DIMENSIONS,double>&  x,
-  int                                          level
+  const tarch::la::Vector<DIMENSIONS,double>&  fineGridX
 ) {
-  tarch::la::Vector<DIMENSIONS+1,double> y;
-  for( int i=0; i<DIMENSIONS; i++) y(i) = x(i);
-  y(DIMENSIONS)=level;
-
-  tarch::la::Vector<DIMENSIONS+1,double> plotY = y;
-  plotY(DIMENSIONS)=level / SqueezeZAxis;
-  
-  if ( _vertex2IndexMap.find(y) == _vertex2IndexMap.end() ) {  
-    _vertex2IndexMap[y] = _vertexWriter->plotVertex(plotY);
+  if ( _vertex2IndexMap.find(fineGridX) == _vertex2IndexMap.end() ) {
+    assertion( _vertexWriter                  != nullptr );
+    assertion( _vertexTypeWriter              != nullptr );
+    assertion( _vertexRefinementControlWriter != nullptr );
+    assertion( _vertexAdjacentCellsHeight     != nullptr );
+    
+    #if defined(Dim2) || defined(Dim3)
+    _vertex2IndexMap[fineGridX] = _vertexWriter->plotVertex(fineGridX);
+    #else
+    _vertex2IndexMap[fineGridX] = _vertexWriter->plotVertex(tarch::la::Vector<3,double>(fineGridX.data()));
+    #endif
+    const int boundaryFlag = fineGridVertex.isHangingNode() ? -1 : fineGridVertex.isBoundary() ? 1 : 0;
+    _vertexTypeWriter->plotVertex             (_vertex2IndexMap[fineGridX], boundaryFlag);
+    _vertexRefinementControlWriter->plotVertex(_vertex2IndexMap[fineGridX],fineGridVertex.getRefinementControl() );
+    _vertexAdjacentCellsHeight->plotVertex    (_vertex2IndexMap[fineGridX],fineGridVertex.getAdjacentCellsHeightOfPreviousIteration() );
   }
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::createHangingVertex(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::createHangingVertex(
       exahype::Vertex&     fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                fineGridH,
@@ -111,12 +120,12 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::createHangin
       exahype::Cell&       coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
-  plotVertex( fineGridVertex, fineGridX, coarseGridVerticesEnumerator.getLevel()+1 ); 
+  plotVertex( fineGridVertex, fineGridX ); 
 }
 
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::destroyHangingVertex(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::destroyHangingVertex(
       const exahype::Vertex&   fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -128,7 +137,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::destroyHangi
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::createInnerVertex(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::createInnerVertex(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -140,7 +149,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::createInnerV
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::createBoundaryVertex(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::createBoundaryVertex(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -152,7 +161,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::createBounda
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::destroyVertex(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::destroyVertex(
       const exahype::Vertex&   fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -164,7 +173,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::destroyVerte
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::createCell(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::createCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -176,7 +185,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::createCell(
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::destroyCell(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::destroyCell(
       const exahype::Cell&           fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -189,7 +198,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::destroyCell(
 
 
 #ifdef Parallel
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::mergeWithNeighbour(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::mergeWithNeighbour(
   exahype::Vertex&  vertex,
   const exahype::Vertex&  neighbour,
   int                                           fromRank,
@@ -200,7 +209,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::mergeWithNei
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::prepareSendToNeighbour(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::prepareSendToNeighbour(
       exahype::Vertex&  vertex,
       int                                           toRank,
       const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -210,7 +219,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::prepareSendT
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::prepareCopyToRemoteNode(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::prepareCopyToRemoteNode(
       exahype::Vertex&  localVertex,
       int                                           toRank,
       const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -220,7 +229,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::prepareCopyT
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::prepareCopyToRemoteNode(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::prepareCopyToRemoteNode(
       exahype::Cell&  localCell,
       int                                           toRank,
       const tarch::la::Vector<DIMENSIONS,double>&   cellCentre,
@@ -230,7 +239,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::prepareCopyT
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::mergeWithRemoteDataDueToForkOrJoin(
   exahype::Vertex&  localVertex,
   const exahype::Vertex&  masterOrWorkerVertex,
   int                                       fromRank,
@@ -241,7 +250,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::mergeWithRem
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::mergeWithRemoteDataDueToForkOrJoin(
   exahype::Cell&  localCell,
   const exahype::Cell&  masterOrWorkerCell,
   int                                       fromRank,
@@ -252,7 +261,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::mergeWithRem
 }
 
 
-bool exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::prepareSendToWorker(
+bool exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::prepareSendToWorker(
   exahype::Cell&                 fineGridCell,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -266,7 +275,7 @@ bool exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::prepareSendT
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::prepareSendToMaster(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::prepareSendToMaster(
       exahype::Cell&                       localCell,
       exahype::Vertex *                    vertices,
       const peano::grid::VertexEnumerator&       verticesEnumerator, 
@@ -278,7 +287,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::prepareSendT
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::mergeWithMaster(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::mergeWithMaster(
   const exahype::Cell&           workerGridCell,
   exahype::Vertex * const        workerGridVertices,
   const peano::grid::VertexEnumerator& workerEnumerator,
@@ -296,7 +305,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::mergeWithMas
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::receiveDataFromMaster(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::receiveDataFromMaster(
       exahype::Cell&                        receivedCell, 
       exahype::Vertex *                     receivedVertices,
       const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
@@ -311,7 +320,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::receiveDataF
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::mergeWithWorker(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::mergeWithWorker(
       exahype::Cell&           localCell, 
       const exahype::Cell&     receivedMasterCell,
       const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
@@ -321,7 +330,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::mergeWithWor
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::mergeWithWorker(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::mergeWithWorker(
       exahype::Vertex&        localVertex,
       const exahype::Vertex&  receivedMasterVertex,
       const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -332,7 +341,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::mergeWithWor
 #endif
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::touchVertexFirstTime(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::touchVertexFirstTime(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -341,11 +350,17 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::touchVertexF
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
-  plotVertex( fineGridVertex, fineGridX, coarseGridVerticesEnumerator.getLevel()+1 ); 
+  if (
+    fineGridVertex.getRefinementControl()==exahype::Vertex::Records::Unrefined ||
+    fineGridVertex.getRefinementControl()==exahype::Vertex::Records::RefinementTriggered ||
+    fineGridVertex.getRefinementControl()==exahype::Vertex::Records::Erasing
+  ) {
+    plotVertex( fineGridVertex, fineGridX ); 
+  }
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::touchVertexLastTime(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::touchVertexLastTime(
       exahype::Vertex&         fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -357,7 +372,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::touchVertexL
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::enterCell(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::enterCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -366,50 +381,10 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::enterCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
-  int vertexIndex[TWO_POWER_D];
-  tarch::la::Vector<DIMENSIONS+1,double> currentVertexPosition;
-  currentVertexPosition(DIMENSIONS) = fineGridVerticesEnumerator.getLevel();
-  
-   dfor2(i)
-    for (int d=0; d<DIMENSIONS; d++) {
-      currentVertexPosition(d) = fineGridVerticesEnumerator.getVertexPosition(i)(d);
-    }
-    assertion2 ( _vertex2IndexMap.find(currentVertexPosition) != _vertex2IndexMap.end(), currentVertexPosition, fineGridVertices[ fineGridVerticesEnumerator(i) ].toString() );
-    vertexIndex[iScalar] = _vertex2IndexMap[currentVertexPosition];
-  enddforx
-  
-  _cellWriter->plotQuadrangle(vertexIndex);
-  
-  const int cellIndex = _cellWriter->plotQuadrangle(vertexIndex);
-    
-  _cellNumberWriter->plotCell(cellIndex,_cellCounter);
-  _cellCounter++;
-
-  tarch::la::Vector<DIMENSIONS+1,double> fineCellCenter;
-  tarch::la::Vector<DIMENSIONS+1,double> coarseCellCenter;
-  for( int i=0; i<DIMENSIONS; i++) fineCellCenter(i)   = fineGridVerticesEnumerator.getCellCenter()(i);
-  for( int i=0; i<DIMENSIONS; i++) coarseCellCenter(i) = coarseGridVerticesEnumerator.getCellCenter()(i);
-  fineCellCenter(DIMENSIONS)=fineGridVerticesEnumerator.getLevel();
-  coarseCellCenter(DIMENSIONS)=fineGridVerticesEnumerator.getLevel()-1;
-
-  tarch::la::Vector<DIMENSIONS+1,double> plotY = fineCellCenter;
-  plotY(DIMENSIONS)=(fineCellCenter(DIMENSIONS)-fineGridVerticesEnumerator.getCellSize()(0)/2.0) / SqueezeZAxis;
-
-  _cellCenter2IndexMap[fineCellCenter] = _vertexWriter->plotVertex(plotY);
-  const int cellCenterIndex = _cellWriter->plotPoint(_cellCenter2IndexMap[fineCellCenter]);
-  _cellNumberWriter->plotCell(cellCenterIndex,TreeConnectionsValue);
-  
-  if ( _cellCenter2IndexMap.count(coarseCellCenter)>0 ) {
-    int indices[2];
-    indices[0] = _cellCenter2IndexMap[fineCellCenter];
-    indices[1] = _cellCenter2IndexMap[coarseCellCenter];
-    const int treeLinkIndex = _cellWriter->plotLine(indices);
-    _cellNumberWriter->plotCell(treeLinkIndex,TreeConnectionsValue);
-  }
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::leaveCell(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::leaveCell(
       exahype::Cell&           fineGridCell,
       exahype::Vertex * const  fineGridVertices,
       const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
@@ -418,45 +393,77 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::leaveCell(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
+  #ifdef Parallel
+  if (fineGridCell.isLeaf() && !fineGridCell.isAssignedToRemoteRank()) {
+  #else
+  if (fineGridCell.isLeaf()) {
+  #endif
+    assertion( DIMENSIONS==2 || DIMENSIONS==3 );
+    int vertexIndex[TWO_POWER_D];
+     dfor2(i)
+      tarch::la::Vector<DIMENSIONS,double> currentVertexPosition = fineGridVerticesEnumerator.getVertexPosition(i);
+      assertion2 ( _vertex2IndexMap.find(currentVertexPosition) != _vertex2IndexMap.end(), currentVertexPosition, fineGridVertices[ fineGridVerticesEnumerator(i) ].toString() );
+      vertexIndex[iScalar] = _vertex2IndexMap[currentVertexPosition];
+    enddforx
+  
+    int cellIndex;
+    if (DIMENSIONS==2) {
+      cellIndex = _cellWriter->plotQuadrangle(vertexIndex);
+    }
+    if (DIMENSIONS==3) {
+      cellIndex = _cellWriter->plotHexahedron(vertexIndex);
+    }
+    
+    _cellStateWriter->plotCell(cellIndex,fineGridVerticesEnumerator.getCellFlags());
+  }
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::beginIteration(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::beginIteration(
   exahype::State&  solverState
 ) {
   assertion( _vtkWriter==0 );
-  
-  _cellCounter = 0;
   
   _vtkWriter = new UsedWriter();
   
   _vertexWriter     = _vtkWriter->createVertexWriter();
   _cellWriter       = _vtkWriter->createCellWriter();
   
-  _cellNumberWriter = _vtkWriter->createCellDataWriter( "cell-number" ,1);
+  _vertexTypeWriter               = _vtkWriter->createVertexDataWriter(exahype::Vertex::Records::getInsideOutsideDomainMapping()+"/Hanging=-1" ,1);
+  _vertexRefinementControlWriter  = _vtkWriter->createVertexDataWriter(exahype::Vertex::Records::getRefinementControlMapping() ,1);
+  _vertexAdjacentCellsHeight      = _vtkWriter->createVertexDataWriter( peano::grid::getCellFlagsLegend(),1);
+
+  _cellStateWriter                = _vtkWriter->createCellDataWriter( "cell-flag(>=-1=stationary,-1=parallel-boundary,<=-2=not-stationary" ,1);
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::endIteration(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::endIteration(
   exahype::State&  solverState
 ) {
   _vertexWriter->close();
   _cellWriter->close();
   
-  _cellNumberWriter->close();
+  _vertexTypeWriter->close();
+  _vertexRefinementControlWriter->close();
+  _vertexAdjacentCellsHeight->close();
+  _cellStateWriter->close();
   
   delete _vertexWriter;
   delete _cellWriter;
-
-  delete _cellNumberWriter;
+  delete _vertexTypeWriter;
+  delete _vertexRefinementControlWriter;
+  delete _vertexAdjacentCellsHeight;
+  delete _cellStateWriter;
   
-  _vertexWriter                  = 0;
-  _cellWriter                    = 0;
-
-  _cellNumberWriter              = 0;
+  _vertexWriter                  = nullptr;
+  _cellWriter                    = nullptr;
+  _vertexTypeWriter              = nullptr;
+  _vertexRefinementControlWriter = nullptr;
+  _vertexAdjacentCellsHeight     = nullptr;
+  _cellStateWriter               = nullptr;
   
   std::ostringstream snapshotFileName;
-  snapshotFileName << "tree"
+  snapshotFileName << "grid"
                    #ifdef Parallel
                    << "-rank-" << tarch::parallel::Node::getInstance().getRank()
                    #endif
@@ -469,13 +476,13 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::endIteration
   _vertex2IndexMap.clear();
   
   delete _vtkWriter;
-  _vtkWriter = 0;
+  _vtkWriter = nullptr;
 }
 
 
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::descend(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::descend(
   exahype::Cell * const          fineGridCells,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -486,7 +493,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::descend(
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2VTK2dTreeVisualiser_0::ascend(
+void exahype::adapters::PlotAugmentedAMRGrid2VTKGridVisualiser_1::ascend(
   exahype::Cell * const    fineGridCells,
   exahype::Vertex * const  fineGridVertices,
   const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,

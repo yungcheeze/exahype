@@ -8,24 +8,24 @@
 #ifndef EXAHYPE_MAPPINGS_RiemannSolver_H_
 #define EXAHYPE_MAPPINGS_RiemannSolver_H_
 
-#include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
+#include "tarch/logging/Log.h"
 
-#include "peano/grid/VertexEnumerator.h"
-#include "peano/MappingSpecification.h"
 #include "peano/CommunicationSpecification.h"
+#include "peano/MappingSpecification.h"
+#include "peano/grid/VertexEnumerator.h"
 
-#include "tarch/multicore/MulticoreDefinitions.h"
 #include "tarch/multicore/BooleanSemaphore.h"
+#include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "exahype/Vertex.h"
 #include "exahype/Cell.h"
 #include "exahype/State.h"
+#include "exahype/Vertex.h"
 
 namespace exahype {
- namespace mappings {
-  class RiemannSolver;
- }
+namespace mappings {
+class RiemannSolver;
+}
 }
 
 /**
@@ -50,7 +50,12 @@ class exahype::mappings::RiemannSolver {
 
   /**
    * Solve the Riemann problem at the interface between two cells ("left" and
-   *"right").
+   *"right"). This method only performs a Riemann solve if at least one of the
+   *cell descriptions (per solver) associated with the two cells is of type
+   *::Cell and none of the two cells belongs to the boundary.
+   * In case a Riemann problem is solved,
+   * the method further sets the ::riemannSolvePerformed
+   * flags for the particular faces on both cell descriptions.
    *
    * @param[in] adjacentADERDGCellDescriptionsIndices Map holding the cell
    *description indices around a vertex.
@@ -65,9 +70,10 @@ class exahype::mappings::RiemannSolver {
    * @param[in] faceR                                 Index for the face
    *belonging to the "right" cell. See also the
    *                                                  description of faceL.
-   * @param[in] normal                                Normal vector.
+   * @param[in] normalNonZero                         Non zero component of the
+   *normal vector orthogonal to the interface.
    */
-  void solveRiemannProblem(tarch::la::Vector<TWO_POWER_D, int>&
+  void solveRiemannProblemAtInterface(tarch::la::Vector<TWO_POWER_D, int>&
                                adjacentADERDGCellDescriptionsIndices,
                            const int cellIndexL, const int cellIndexR,
                            const int faceL, const int faceR,
@@ -816,8 +822,6 @@ class exahype::mappings::RiemannSolver {
       const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
       exahype::Cell& workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-
 
   /**
    * Counterpart of mergeWithMaster()

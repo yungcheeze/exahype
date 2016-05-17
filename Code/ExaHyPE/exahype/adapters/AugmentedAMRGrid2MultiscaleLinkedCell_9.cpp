@@ -1,4 +1,4 @@
-#include "exahype/adapters/PlotAugmentedAMRGrid2MultiscaleLinkedCell_1.h"
+#include "exahype/adapters/AugmentedAMRGrid2MultiscaleLinkedCell_9.h"
 
 #include <sstream>
 
@@ -10,60 +10,60 @@
 #include "exahype/VertexOperations.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::communicationSpecification() {
   return peano::CommunicationSpecification::getMinimalSpecification();
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::touchVertexFirstTimeSpecification() { 
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::enterCellSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::leaveCellSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::ascendSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
-peano::MappingSpecification   exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::descendSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 
-exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1() {
+exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::AugmentedAMRGrid2MultiscaleLinkedCell_9() {
 }
 
 
-exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::~PlotAugmentedAMRGrid2MultiscaleLinkedCell_1() {
+exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::~AugmentedAMRGrid2MultiscaleLinkedCell_9() {
 }
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1(const PlotAugmentedAMRGrid2MultiscaleLinkedCell_1&  masterThread) {
+exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::AugmentedAMRGrid2MultiscaleLinkedCell_9(const AugmentedAMRGrid2MultiscaleLinkedCell_9&  masterThread) {
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::mergeWithWorkerThread(const PlotAugmentedAMRGrid2MultiscaleLinkedCell_1& workerThread) {
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::mergeWithWorkerThread(const AugmentedAMRGrid2MultiscaleLinkedCell_9& workerThread) {
 }
 #endif
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::createHangingVertex(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::createHangingVertex(
   exahype::Vertex&     fineGridVertex,
   const tarch::la::Vector<DIMENSIONS,double>&                fineGridX,
   const tarch::la::Vector<DIMENSIONS,double>&                fineGridH,
@@ -84,7 +84,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::createHangi
 
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::destroyHangingVertex(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::destroyHangingVertex(
   const exahype::Vertex&   fineGridVertex,
   const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
   const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -96,7 +96,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::destroyHang
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::createInnerVertex(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::createInnerVertex(
   exahype::Vertex&               fineGridVertex,
   const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
   const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -109,7 +109,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::createInner
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::createBoundaryVertex(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::createBoundaryVertex(
   exahype::Vertex&               fineGridVertex,
   const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
   const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -122,7 +122,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::createBound
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::destroyVertex(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::destroyVertex(
       const exahype::Vertex&   fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -134,7 +134,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::destroyVert
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::createCell(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::createCell(
   exahype::Cell&                 fineGridCell,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -146,7 +146,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::createCell(
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::destroyCell(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::destroyCell(
   const exahype::Cell&           fineGridCell,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -160,7 +160,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::destroyCell
 
 
 #ifdef Parallel
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::mergeWithNeighbour(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::mergeWithNeighbour(
   exahype::Vertex&  vertex,
   const exahype::Vertex&  neighbour,
   int                                           fromRank,
@@ -178,7 +178,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::mergeWithNe
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::prepareSendToNeighbour(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::prepareSendToNeighbour(
       exahype::Vertex&  vertex,
       int                                           toRank,
       const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -188,7 +188,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::prepareSend
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::prepareCopyToRemoteNode(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::prepareCopyToRemoteNode(
       exahype::Vertex&  localVertex,
       int                                           toRank,
       const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -198,7 +198,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::prepareCopy
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::prepareCopyToRemoteNode(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::prepareCopyToRemoteNode(
       exahype::Cell&  localCell,
       int                                           toRank,
       const tarch::la::Vector<DIMENSIONS,double>&   cellCentre,
@@ -208,7 +208,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::prepareCopy
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::mergeWithRemoteDataDueToForkOrJoin(
   exahype::Vertex&  localVertex,
   const exahype::Vertex&  masterOrWorkerVertex,
   int                                       fromRank,
@@ -219,7 +219,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::mergeWithRe
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::mergeWithRemoteDataDueToForkOrJoin(
   exahype::Cell&  localCell,
   const exahype::Cell&  masterOrWorkerCell,
   int                                       fromRank,
@@ -230,7 +230,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::mergeWithRe
 }
 
 
-bool exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::prepareSendToWorker(
+bool exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::prepareSendToWorker(
   exahype::Cell&                 fineGridCell,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -244,7 +244,7 @@ bool exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::prepareSend
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::prepareSendToMaster(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::prepareSendToMaster(
       exahype::Cell&                       localCell,
       exahype::Vertex *                    vertices,
       const peano::grid::VertexEnumerator&       verticesEnumerator, 
@@ -256,7 +256,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::prepareSend
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::mergeWithMaster(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::mergeWithMaster(
   const exahype::Cell&           workerGridCell,
   exahype::Vertex * const        workerGridVertices,
   const peano::grid::VertexEnumerator& workerEnumerator,
@@ -274,7 +274,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::mergeWithMa
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::receiveDataFromMaster(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::receiveDataFromMaster(
       exahype::Cell&                        receivedCell, 
       exahype::Vertex *                     receivedVertices,
       const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
@@ -289,7 +289,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::receiveData
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::mergeWithWorker(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::mergeWithWorker(
       exahype::Cell&           localCell, 
       const exahype::Cell&     receivedMasterCell,
       const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
@@ -299,7 +299,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::mergeWithWo
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::mergeWithWorker(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::mergeWithWorker(
       exahype::Vertex&        localVertex,
       const exahype::Vertex&  receivedMasterVertex,
       const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -310,7 +310,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::mergeWithWo
 #endif
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::touchVertexFirstTime(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::touchVertexFirstTime(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -322,7 +322,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::touchVertex
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::touchVertexLastTime(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::touchVertexLastTime(
       exahype::Vertex&         fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -334,7 +334,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::touchVertex
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::enterCell(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::enterCell(
   exahype::Cell&                 fineGridCell,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -357,7 +357,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::enterCell(
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::leaveCell(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::leaveCell(
       exahype::Cell&           fineGridCell,
       exahype::Vertex * const  fineGridVertices,
       const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
@@ -369,21 +369,21 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::leaveCell(
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::beginIteration(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::beginIteration(
   exahype::State&  solverState
 ) {
   multiscalelinkedcell::HangingVertexBookkeeper::getInstance().beginIteration();
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::endIteration(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::endIteration(
   exahype::State&  solverState
 ) {
   multiscalelinkedcell::HangingVertexBookkeeper::getInstance().endIteration();
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::descend(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::descend(
   exahype::Cell * const          fineGridCells,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -394,7 +394,7 @@ void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::descend(
 }
 
 
-void exahype::adapters::PlotAugmentedAMRGrid2MultiscaleLinkedCell_1::ascend(
+void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::ascend(
   exahype::Cell * const    fineGridCells,
   exahype::Vertex * const  fineGridVertices,
   const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,

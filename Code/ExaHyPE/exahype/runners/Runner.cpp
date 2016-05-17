@@ -197,17 +197,18 @@ int exahype::runners::Runner::runAsMaster(
   /*
    * Build up the initial space tree.
    */
-  repository.switchToInitialGrid();
-  //  repository.switchToAugmentedAMRGrid();
-
+  repository.switchToAugmentedAMRGrid();
+  //  repository.switchToInitialGrid();
   int gridSetupIterations = 0;
   do {
     repository.iterate();
     gridSetupIterations++;
   } while (!repository.getState().isGridBalanced());
+  repository.iterate(); // We need one extra iterations.
+  repository.iterate(); // We need one extra iterations.
 
-  //  repository.switchToPlotAugmentedAMRGrid();
-  //  repository.iterate();
+  repository.switchToPlotAugmentedAMRGrid();
+  repository.iterate();
 
   logInfo("runAsMaster()",
           "grid setup iterations=" << gridSetupIterations << ", max-level="
@@ -222,46 +223,63 @@ int exahype::runners::Runner::runAsMaster(
           << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes());
 #endif
 
-  // Initialise the cell descriptions;
-  repository.switchToPatchInitialisation();
-  repository.iterate();
+  std::cout << "AfterGrid" << std::endl;
 
-  repository.switchToSolutionUpdateAndGlobalTimeStepComputation();
-  repository.iterate();
-  startNewTimeStep(-1);
+  //  // Initialise the cell descriptions;
+  //  repository.switchToPatchInitialisation();
+  //  repository.iterate();
+  //
+//  repository.switchToSolutionUpdateAndGlobalTimeStepComputation();
+//  repository.iterate();
+//  startNewTimeStep(-1);
+//
+//  repository.switchToPredictorAndGlobalTimeStepComputation();
+//  repository.iterate();
+//  startNewTimeStep(0);
 
-  /*
-   * Compute current first predictor based on current time step size.
-   * Set current time step size as old time step size of next iteration.
-   * Compute the current time step size of the next iteration.
-   */
-  repository.switchToPredictorAndGlobalTimeStepComputation();
-  repository.iterate();
-  startNewTimeStep(0);
+  std::cout << "AfterSolution" << std::endl;
 
-  const double simulationEndTime = _parser.getSimulationEndTime();
-  int n = 1;
-
-  while ((solvers::Solver::getMinSolverTimeStamp() < simulationEndTime) &&
-         tarch::la::greater(solvers::Solver::getMinSolverTimeStepSize(), 0.0)) {
-    if (exahype::plotters::isAPlotterActive(
-            solvers::Solver::getMinSolverTimeStamp())) {
-      repository.switchToPlot();
-      repository.iterate();
-      logDebug("runAsMaster(...)", "all snapshots written");
-    }
-
-    if (_parser.fuseAlgorithmicSteps()) {
-      runOneTimeStampWithFusedAlgorithmicSteps(repository);
-      startNewTimeStepAndRecomputePredictorIfNecessary(repository, n);
-    } else {
-      runOneTimeStampWithFourSeparateAlgorithmicSteps(repository);
-      startNewTimeStep(n);
-    }
-
-    n++;
-    logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
+  if (exahype::plotters::isAPlotterActive(
+          solvers::Solver::getMinSolverTimeStamp())) {
+    repository.switchToPlot();
+    repository.iterate();
+    logDebug("runAsMaster(...)", "all snapshots written");
   }
+  //
+  //  /*
+  //   * Compute current first predictor based on current time step size.
+  //   * Set current time step size as old time step size of next iteration.
+  //   * Compute the current time step size of the next iteration.
+  //   */
+  //  repository.switchToPredictorAndGlobalTimeStepComputation();
+  //  repository.iterate();
+  //  startNewTimeStep(0);
+  //
+  //  const double simulationEndTime = _parser.getSimulationEndTime();
+  //  int n = 1;
+  //
+  //  while ((solvers::Solver::getMinSolverTimeStamp() < simulationEndTime) &&
+  //         tarch::la::greater(solvers::Solver::getMinSolverTimeStepSize(),
+  //         0.0)) {
+  //    if (exahype::plotters::isAPlotterActive(
+  //            solvers::Solver::getMinSolverTimeStamp())) {
+  //      repository.switchToPlot();
+  //      repository.iterate();
+  //      logDebug("runAsMaster(...)", "all snapshots written");
+  //    }
+  //
+  //    if (_parser.fuseAlgorithmicSteps()) {
+  //      runOneTimeStampWithFusedAlgorithmicSteps(repository);
+  //      startNewTimeStepAndRecomputePredictorIfNecessary(repository, n);
+  //    } else {
+  //      runOneTimeStampWithFourSeparateAlgorithmicSteps(repository);
+  //      startNewTimeStep(n);
+  //    }
+  //
+  //    n++;
+  //    logDebug("runAsMaster(...)", "state=" <<
+  //    repository.getState().toString());
+  //  }
 
   repository.logIterationStatistics(true);
   repository.terminate();

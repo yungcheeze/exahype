@@ -21,9 +21,7 @@
 #include "exahype/Cell.h"
 #include "exahype/State.h"
 
-// ! Begin of code for DG method
 #include "peano/utils/Globals.h"
-// ! End of code for DG method
 
 namespace exahype {
 namespace mappings {

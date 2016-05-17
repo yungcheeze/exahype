@@ -2,8 +2,8 @@
 
 #include "peano/utils/Globals.h"
 
-#include "kernels/KernelCalls.h"
 #include "exahype/solvers/Solver.h"
+#include "kernels/KernelCalls.h"
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
@@ -13,8 +13,10 @@
 peano::CommunicationSpecification
 exahype::mappings::RegularMesh::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::
+          SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::
+          SendDataAndStateAfterLastTouchVertexLastTime,
       true);
 }
 
@@ -32,9 +34,8 @@ exahype::mappings::RegularMesh::touchVertexFirstTimeSpecification() {
 }
 peano::MappingSpecification
 exahype::mappings::RegularMesh::enterCellSpecification() {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::Serial);
+  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,
+                                     peano::MappingSpecification::Serial);
 }
 peano::MappingSpecification
 exahype::mappings::RegularMesh::leaveCellSpecification() {
@@ -112,13 +113,10 @@ void exahype::mappings::RegularMesh::createInnerVertex(
                            coarseGridCell, fineGridPositionOfVertex);
 
   for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-      exahype::solvers::RegisteredSolvers.begin();
-      p != exahype::solvers::RegisteredSolvers.end(); p++) {
-    if (
-        fineGridVertex.getRefinementControl()==Vertex::Records::Unrefined
-        &&
-        coarseGridVerticesEnumerator.getLevel() < (*p)->getMinimumTreeDepth()
-    ) {
+           exahype::solvers::RegisteredSolvers.begin();
+       p != exahype::solvers::RegisteredSolvers.end(); p++) {
+    if (fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined &&
+        coarseGridVerticesEnumerator.getLevel() < (*p)->getMinimumTreeDepth()) {
       fineGridVertex.refine();
     }
   }
@@ -140,13 +138,10 @@ void exahype::mappings::RegularMesh::createBoundaryVertex(
                            coarseGridCell, fineGridPositionOfVertex);
 
   for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-        exahype::solvers::RegisteredSolvers.begin();
-        p != exahype::solvers::RegisteredSolvers.end(); p++) {
-    if (
-        fineGridVertex.getRefinementControl()==Vertex::Records::Unrefined
-        &&
-        coarseGridVerticesEnumerator.getLevel() < (*p)->getMinimumTreeDepth()
-    ) {
+           exahype::solvers::RegisteredSolvers.begin();
+       p != exahype::solvers::RegisteredSolvers.end(); p++) {
+    if (fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined &&
+        coarseGridVerticesEnumerator.getLevel() < (*p)->getMinimumTreeDepth()) {
       fineGridVertex.refine();
     }
   }
@@ -172,7 +167,13 @@ void exahype::mappings::RegularMesh::createCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
+  logTraceInWith4Arguments("createCell(...)", fineGridCell,
+                           fineGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfCell);
+  fineGridCell.getCellData().setADERDGCellDescriptionsIndex(
+      multiscalelinkedcell::HangingVertexBookkeeper::InvalidCellDescriptionIndex);
+
+  logTraceOutWith1Argument("createCell(...)", fineGridCell);
 }
 
 void exahype::mappings::RegularMesh::destroyCell(
@@ -326,27 +327,25 @@ void exahype::mappings::RegularMesh::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  int solverNumber=0;
-  if (!DataHeap::getInstance().isValidIndex(
-      fineGridCell.getADERDGCellDescriptionsIndex())) {
+  int solverNumber = 0;
+  if (fineGridCell.getADERDGCellDescriptionsIndex() ==
+      multiscalelinkedcell::HangingVertexBookkeeper::InvalidCellDescriptionIndex) {
     for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-        exahype::solvers::RegisteredSolvers.begin();
-        p != exahype::solvers::RegisteredSolvers.end(); p++) { // @todo replace by parloops?
-      if (fineGridVerticesEnumerator.getLevel()==(*p)->getMinimumTreeDepth()+1) {
+             exahype::solvers::RegisteredSolvers.begin();
+         p != exahype::solvers::RegisteredSolvers.end();
+         ++p) {  // @todo replace by parloops?
+      if (fineGridVerticesEnumerator.getLevel() ==
+          (*p)->getMinimumTreeDepth() + 1) {
         fineGridCell.addNewCellDescription(
-            solverNumber,
-            exahype::records::ADERDGCellDescription::Cell,
+            solverNumber, exahype::records::ADERDGCellDescription::Cell,
             exahype::records::ADERDGCellDescription::None,
             fineGridVerticesEnumerator.getLevel(),
-            multiscalelinkedcell::HangingVertexBookkeeper::
-            InvalidAdjacencyIndex,
-            fineGridPositionOfCell,
+            multiscalelinkedcell::HangingVertexBookkeeper::InvalidCellDescriptionIndex,
             fineGridVerticesEnumerator.getCellSize(),
             fineGridVerticesEnumerator.getCellCenter());
-        fineGridCell.initialiseCellDescription(solverNumber);
       }
+      solverNumber++;
     }
-    solverNumber++;
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
@@ -363,7 +362,8 @@ void exahype::mappings::RegularMesh::leaveCell(
 
 void exahype::mappings::RegularMesh::beginIteration(
     exahype::State& solverState) {
-  // do nothing
+  ADERDGCellDescriptionHeap::getInstance().setName("ADERDGCellDescriptionHeap");
+  DataHeap::getInstance().setName("DataHeap");
 }
 
 void exahype::mappings::RegularMesh::endIteration(exahype::State& solverState) {

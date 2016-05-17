@@ -67,6 +67,11 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   Cell(const Base::PersistentCell& argument);
 
   /**
+   * Allocates a vector for the
+   */
+  void initialiseStorageOnHeap();
+
+  /**
    * Returns the heap index of the first ADERDGCellDescription associated
    * with this cell.
    */
@@ -91,37 +96,23 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
       const exahype::records::ADERDGCellDescription::RefinementEvent
           refinementEvent,
       const int level, const int parentIndex,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const tarch::la::Vector<DIMENSIONS, double>& size,
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
 
   /**
-   * Deletes a cell description.
+   * Checks if no unnecessary  memory is allocated for the cell
+   * description the solverNumber is referring to.
+   * If this is the case, it deallocates the unnecessarily allocated memory.
    */
-  std::vector<exahype::records::ADERDGCellDescription>::iterator
-  deleteCellDescription(
-      std::vector<exahype::records::ADERDGCellDescription>::iterator p);
+  void ensureNoUnnecessaryMemoryIsAllocated(const int solverNumber);
 
   /**
-   * Removes unnecessarily allocated memory from a cell description.
+   * Checks if all the necessary memory is allocated for the cell
+   * description the solverNumber is referring to.
+   * If this is not the case, it allocates the necessary
+   * memory for the cell description.
    */
-  void cleanCellDescription(
-      std::vector<exahype::records::ADERDGCellDescription>::iterator p);
-
-  /**
-   * todo docu
-   */
-  void initialiseCellDescription(const int solverNumber);
-
-  //  /**
-  //   * Per existing cell, the initialisation has to run over all solvers that
-  //   * shall be realised. For a given solver/PDE a patch is to be created if
-  //   * the cell's level equals getMinimumTreeDepth() of if the tree is
-  //   * unrefined.
-  //   */
-  //  void init(const int level, const tarch::la::Vector<DIMENSIONS, double>&
-  //  size,
-  //            const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
+  void ensureNecessaryMemoryIsAllocated(const int solverNumber);
 
   /**
    * Determine the position of a Cell or Ancestor with respect
