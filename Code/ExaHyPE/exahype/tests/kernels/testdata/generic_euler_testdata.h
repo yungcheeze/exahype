@@ -26,6 +26,16 @@ namespace testSurfaceIntegral {
 extern const double lduh[320];
 }  // namesapce testSurfaceIntegral
 
+namespace testRiemannSolver {
+extern const double QL[80];
+extern const double QR[80];
+}  // testRiemannSolver
+
+namespace testRiemannSolverLinear {
+extern const double FL[80];
+extern const double FR[80];
+}  // namespace testRiemannSolverLinear
+
 namespace testSolutionUpdate {
 extern const double luh[320];
 }  // namespace testSolutionUpdate

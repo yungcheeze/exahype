@@ -253,7 +253,7 @@ void volumeUnknownsRestriction(
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorLinear.cpph"
 // #include "kernels/aderdg/generic/c/3d/riemannSolverNonlinear.cpph"
-// #include "kernels/aderdg/generic/c/3d/riemannSolverLinear.cpph"
+#include "kernels/aderdg/generic/c/3d/riemannSolverLinear.cpph"
 #endif
 
 namespace kernels {

@@ -40,11 +40,53 @@ void GenericEulerKernelTest::testFlux(const double *const Q, double *f,
   h[4] = irho * Q[3] * (Q[4] + p);
 }
 
+void GenericEulerKernelTest::testEigenvalues(const double *const Q,
+                                             const int normalNonZeroIndex,
+                                             double *lambda) {
+  const double GAMMA = 1.4;
+
+  double irho = 1.0 / Q[0];
+  double p = (GAMMA - 1) *
+             (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2] + Q[3] * Q[3]) * irho);
+
+  double u_n = Q[normalNonZeroIndex + 1] * irho;
+  double c = std::sqrt(GAMMA * p * irho);
+
+  lambda[0] = u_n - c;
+  lambda[1] = u_n;
+  lambda[2] = u_n;
+  lambda[3] = u_n;
+  lambda[4] = u_n + c;
+}
+
 void GenericEulerKernelTest::testNCP(const double *const Q,
                                      const double *const gradQ,
                                      double *BgradQ) {
+  // 3D compressible Euler equations
   std::memset(BgradQ, 0, 3 * 5 * sizeof(double));
-}
+}  // testNCP
+
+void GenericEulerKernelTest::testMatrixB(const double *const Q,
+                                         const int normalNonZero, double *Bn) {
+  // 3D compressible Euler equations
+  double *B1 = new double[5 * 5];
+  double *B2 = new double[5 * 5];
+  double *B3 = new double[5 * 5];
+
+  std::memset(B1, 0, 5 * 5 * sizeof(double));
+  std::memset(B2, 0, 5 * 5 * sizeof(double));
+  std::memset(B3, 0, 5 * 5 * sizeof(double));
+
+  // Bn = B1 if normalNonZero == 0
+  //      B2 if normalNonZero == 1
+  //      B3 if normalNonZero == 2
+  std::memcpy(Bn, (normalNonZero == 0) ? B1 : (normalNonZero == 1) ? B2 : B3,
+              5 * 5 * sizeof(double));
+
+  delete[] B1;
+  delete[] B2;
+  delete[] B3;
+}  // testMatrixB
 
 void GenericEulerKernelTest::testPDEFluxes() {
   cout << "Test PDE-related functions, DIM=3" << endl;
@@ -196,7 +238,52 @@ void GenericEulerKernelTest::testSurfaceIntegral() {
   delete[] lduh;
 }  // testSurfaceIntegral
 
-void GenericEulerKernelTest::testRiemannSolver() {}
+void GenericEulerKernelTest::testRiemannSolverLinear() {
+  cout << "Test Riemann solver linear, ORDER=3, DIM=3" << endl;
+
+  // output (intentionally left uninitialised):
+  double *FL = new double[4 * 4 * 5];  // nDOF(3) * nDOF(2) * nVar
+  double *FR = new double[4 * 4 * 5];  // nDOF(3) * nDOF(2) * nVar
+
+  // inputs:
+  // exahype::tests::testdata::generic_euler::testRiemannSolver::QL[80 =
+  // nVar * nVar * nDOF]
+  // exahype::tests::testdata::generic_euler::testRiemannSolver::QR[80 =
+  // nVar * nVar * nDOF]
+  const double dt = 1.40831757919882352703e-03;
+
+  kernels::aderdg::generic::c::riemannSolverLinear<testEigenvalues,
+                                                   testMatrixB>(
+      FL, FR, exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
+      exahype::tests::testdata::generic_euler::testRiemannSolver::QR, dt,
+      1,  // normalNonZero (only changes result of testEigenvalues, testMatrixB)
+      5,  // numberOfVariables
+      4   // basisSize
+      );
+
+  for (int i = 0; i < 80; i++) {
+    validateNumericalEqualsWithEpsWithParams1(
+        FL[i], ::exahype::tests::testdata::generic_euler::
+                   testRiemannSolverLinear::FL[i],
+        eps, i);
+  }
+
+  for (int i = 0; i < 80; i++) {
+    validateNumericalEqualsWithEpsWithParams1(
+        FR[i], ::exahype::tests::testdata::generic_euler::
+                   testRiemannSolverLinear::FR[i],
+        eps, i);
+  }
+
+  delete[] FL;
+  delete[] FR;
+}  // testRiemannSolverLinear
+
+void GenericEulerKernelTest::testRiemannSolverNonlinear() {
+  // cout << "Test Riemann solver nonlinear, ORDER=3, DIM=3" << endl;
+
+  // TODO: Implement
+}  // testRiemannSolverNonlinear
 
 void GenericEulerKernelTest::testSolutionUpdate() {
   cout << "Test solution update, ORDER=3, DIM=3" << endl;
