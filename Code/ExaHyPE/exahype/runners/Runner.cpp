@@ -206,8 +206,12 @@ int exahype::runners::Runner::runAsMaster(
   repository.iterate(); // We need one extra iteration.
   gridSetupIterations++;
 
-  repository.switchToPlotAugmentedAMRGrid();
-  repository.iterate();
+//  repository.switchToPlotAugmentedAMRGrid();
+//  repository.iterate();
+
+  logInfo("runAsMaster()",
+        "solution update " << gridSetupIterations << ", max-level="
+        << repository.getState().getMaxLevel());
 
   logInfo("runAsMaster()",
           "grid setup iterations=" << gridSetupIterations << ", max-level="
