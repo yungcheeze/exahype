@@ -203,12 +203,20 @@ class exahype::mappings::SpaceTimePredictor {
    * RiemannSolver::touchVertexFirstTime():
    *
    * - Run through all the $2^d$ adjacent cells. Only those that belong to
-   *   toRank are of interest. Skip the others.
+   *   toRank are of interest. Skip the others. See below for remarks on
+   *   interest.
    * - For any cell assigned to toRank, there are d faces that are adjacent to
    *   vertex.
    * - Get the heap indices of all the surrounding cells. Not that some of
    *   them, by definition, are remote.
    *
+   * When we run through all the cells adjacent to a vertex, we may communicate
+   * only local cells to other ranks. This defines the first two entries in the
+   * corresponding if statement. Furthermore, only those cell pairs sharing a
+   * face do exchange data. This is done in the third line. The Manhattan
+   * distance of the two entries has to be exactly one. Finally (notably on rank
+   * 0), we may only send out data if the corresponding cell is inside the
+   * domain.
    *
    * <h2>Enumeration</h2>
    *

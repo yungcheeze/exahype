@@ -317,8 +317,7 @@ void exahype::mappings::Augmentation::enterCell(
       switch (pCoarse->getRefinementEvent()) {
       case exahype::records::ADERDGCellDescription::Augmenting:
         if (fineGridCell.getADERDGCellDescriptionsIndex() !=
-            multiscalelinkedcell::HangingVertexBookkeeper::
-            InvalidCellDescriptionIndex) {
+            exahype::Cell::InvalidCellDescriptionsIndex) {
           for (std::vector<exahype::records::ADERDGCellDescription>::iterator
               pFine = ADERDGCellDescriptionHeap::getInstance()
               .getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();

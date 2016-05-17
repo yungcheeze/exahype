@@ -30,7 +30,7 @@ class RiemannSolver;
 
 /**
  * This is a mapping from the spacetree traversal events to your user-defined
- *activities.
+ * activities.
  * The latter are realised within the mappings.
  *
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
@@ -50,34 +50,81 @@ class exahype::mappings::RiemannSolver {
 
   /**
    * Solve the Riemann problem at the interface between two cells ("left" and
-   *"right"). This method only performs a Riemann solve if at least one of the
-   *cell descriptions (per solver) associated with the two cells is of type
-   *::Cell and none of the two cells belongs to the boundary.
+   * "right"). This method only performs a Riemann solve if at least one of the
+   * cell descriptions (per solver) associated with the two cells is of type
+   * ::Cell and none of the two cells belongs to the boundary.
    * In case a Riemann problem is solved,
    * the method further sets the ::riemannSolvePerformed
-   * flags for the particular faces on both cell descriptions.
+   * flags for the particular faces on both cell descriptions (per solver).
    *
-   * @param[in] adjacentADERDGCellDescriptionsIndices Map holding the cell
-   *description indices around a vertex.
-   * @param[in] cellIndexL                            Index for
-   *adjacentADERDGCellDescriptionsIndices referring to the "left" cell.
-   * @param[in] cellIndexR                            Index for
-   *adjacentADERDGCellDescriptionsIndices referring to the "right" cell.
-   * @param[in] faceL                                 Index for the face
-   *belonging to the "left" cell.
-   *                                                  One out of
-   *(EXAHYPE_FACE_LEFT,EXAHYPE_FACE_RIGHT,...,EXAHYPE_FACE_TOP).
-   * @param[in] faceR                                 Index for the face
-   *belonging to the "right" cell. See also the
-   *                                                  description of faceL.
-   * @param[in] normalNonZero                         Non zero component of the
-   *normal vector orthogonal to the interface.
+   * <h2>Rationale</h2>
+   *
+   * We did originally split up the boundary condition handling and the Riemann
+   * updates into two mappings. This offers a functional decomposition. However,
+   * both mappings then need a significiant number of technical administrative
+   * code (cmp all the loops in touchVertexFirstTime and the redundant code to
+   * manage the semaphores). We thus decided to merge both aspects. This also
+   * should make sense from a performance point of view.
+   *
+   * We could potentially remove the face indices here if we had normals that
+   * point outwards. However, we don't evaluate the direction of the normal and
+   * thus need these counters as a Riemann problem on a face either could be
+   * triggered by the left cell or by the right cell.
+   *
+   * \note Not thread-safe.
+   *
+   * @param[in] cellDescriptionIndexOfLeftCell
+   * @param[in] cellDescriptionIndexOfRightCell
+   * @param[in] faceIndexForLeftCell    The index of the interface
+   *                                    from the perspective of the "left" cell. One out of
+   *                                    (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
+   * @param[in] faceIndexForRightCell   The index of the interface from the
+   *                                    perspective of the "right" cell.
+   * @param[in] normalNonZero           Non zero component of the
+   *                                    normal vector orthogonal to the interface.
    */
-  void solveRiemannProblemAtInterface(tarch::la::Vector<TWO_POWER_D, int>&
-                               adjacentADERDGCellDescriptionsIndices,
-                           const int cellIndexL, const int cellIndexR,
-                           const int faceL, const int faceR,
-                           const int normalNonZero);
+  void solveRiemannProblemAtInterface(
+      const int cellDescriptionIndexOfLeftCell,
+      const int cellDescriptionIndexOfRightCell,
+      const int faceIndexForLeftCell,
+      const int faceIndexForRightCell,
+      const int normalNonZero);
+
+  /**
+   * Single-sided version of the other solveRiemannProblemAtInterface(). It
+   * works only on one cell and one solver within this cell and in return
+   * hands in the F and Q values explicitly through  indexOfQValues and
+   * indexOfFValues. The Riemann solver is invoked and the bits are set
+   * accordingly no matter of what they did hold before, i.e. different to
+   * the standard solveRiemannProblemAtInterface() operation, we do not
+   * check whether we shall run a Riemann solver or not.
+   *
+   * \note Not thread-safe.
+   */
+  void solveRiemannProblemAtInterface(
+      records::ADERDGCellDescription& cellDescription,
+      const int faceIndexForCell,
+      const int normalNonZero,  // @todo is redundant. We should be able to derive this from faceIndexForCell
+      const int indexOfQValues,
+      const int indexOfFValues);
+
+  /**
+   * Apply the boundary conditions at the face with index \p faceIndex
+   *
+   * \note Not thread-safe.
+   *
+   * @param[in] cellDescription         The cell description
+   * @param[in] faceIndex               The index of the interface
+   *                                    from the perspective of the cell/cell description. One out of
+   *                                    (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
+   * @param[in] normalNonZero           Non zero component of the
+   *                                    normal vector orthogonal to the interface.
+   * \note Not thread-safe.
+   */
+  void applyBoundaryConditions(
+      records::ADERDGCellDescription& cellDescription,
+      const int faceIndex,
+      const int normalNonZero);
 
  public:
   /**
@@ -593,23 +640,13 @@ class exahype::mappings::RiemannSolver {
    * Merge vertex with the incoming vertex from a neighbouring computation node.
    *
    * When Peano is running in parallel the data exchange is done vertex-wise
-   * between two grid iterations. Thus, before the touchVertexFirstTime-event
-   * the vertex, sent by the computation node, which shares this vertex, is
-   * merged with the local copy of this vertex.
+   * between two grid iterations, i.e. the predictor sends out data in one step
+   * and in the following step we receive this data and merge it into the local
+   * Riemann integrals. The routine is thus very similar to touchVertexFirstTime():
    *
-   * !!! Heap data
-   *
-   * If you are working with a heap data structure, your vertices or cells,
-   * respectively, hold pointers to the heap. The received records hold
-   * pointer indices as well. However, these pointers are copies from the
-   * remote ranks, i.e. the pointers are invalid though seem to be set.
-   * Receive heap data instead separately without taking the pointers in
-   * the arguments into account.
-   *
-   * @param vertex    Local copy of the vertex.
-   * @param neighbour Remote copy of the vertex.
-   * @param fromRank  See prepareSendToNeighbour()
-   * @param isForkOrJoin See preareSendToNeighbour()
+   * - We identify incoming faces.
+   * - We create (temporary) indices on the heap.
+   * - We receive the data into these indices.
    */
   void mergeWithNeighbour(exahype::Vertex& vertex,
                           const exahype::Vertex& neighbour, int fromRank,
@@ -849,51 +886,24 @@ class exahype::mappings::RiemannSolver {
 #endif
 
   /**
-   * Read vertex the first time throughout one iteration
+   * Solve Riemann problems on all interior faces that are adjacent
+   * to this vertex and impose boundary conditions on faces that
+   * belong to the boundary. This is done for all cell descriptions
+   * belonging to the cells thatg an interior face.
    *
-   * In the Peano world, an algorithm tells the grid that the grid should be
-   * traversed. The grid then decides how to do this and runs over all cells
-   * and vertices. Whenever the grid traversal reads a vertex the very first
-   * time throughout an iteration, it invokes touchVertexFirstTime() for this
-   * vertex. Then, it calls handleCell up to @f$ 2^d @f$ times for the
-   * adjacent cells and passes this vertex to these calls. Finally, the grid
-   * traversal invokes touchVertexLastTime(), i.e. the counterpart of this
-   * operation.
+   * The function ensures implicitly that interior faces
+   * do not align with MPI boundaries. In this case, no operation
+   * is performed.
    *
-   * @image html peano/grid/geometry-vertex-inside-outside.png
+   * This method sets the riemannSolvePerformed flag on a cell description
+   * if boundary conditions have been imposed for this cell description.
+   * This method sets the riemannSolvePerformed flag on both cell descriptions
+   * (per solver) for interior faces if a Riemann solve has been performed for
+   * both cell descriptions.
    *
-   * The operation is called for both each inner and boundary vertices.
-   * These vertices have an attribute position, too. However, this
-   * attribute is available in Debug mode only and it should be used solely
-   * to implement assertions. To work with the vertex's position, use the
-   * attribute fineGridX instead. The latter is availble all the time (the
-   * vertex's attribute is a redundant information that is just to be used
-   * for correctness and consistency checks).
-   *
-   * Vertices may have persistent and non-persistent attributes (see the
-   * documentation of the DaStGen tool). Attributes that are not persistent
-   * are not stored in-between two iterations, i.e. whenever
-   * touchVertexFirstTime() is called, these attributes contain garbage. So,
-   * this operation is the right place to initialise the non-persistent
-   * attributes of a vertex.
-   *
-   * !!! Optimisation
-   *
-   * This operation is invoked if and only if the corresponding specification
-   * flag does not hold NOP. Due to this specification flag you also can define
-   * whether this operation works on the leaves only, whether it may be
-   * called in parallel by multiple threads, and whether it is fail-safe or
-   * can at least be called multiple times if a thread crashes.
-   *
-   * If this operation works only on leaves, the operation is sometimes not
-   * called if Peano can be sure that all adjacent cells are refined. The
-   * sometimes implies that this specification induces and optimisation - it
-   * does not enforce that the operation is not called under certain
-   * circumstances.
-   *
-   *
-   * @see peano::MappingSpecification for information on thread safety.
-   * @see createInnerVertex() for a description of the arguments.
+   * \note The function itself is not thread-safe.
+   * Thread-safety of this function is ensured by setting RiemannSolver::touchVertexFirstTimeSpecification()
+   * to peano::MappingSpecification::AvoidFineGridRaces.
    */
   void touchVertexFirstTime(
       exahype::Vertex& fineGridVertex,

@@ -1,11 +1,14 @@
 #include "exahype/mappings/SpaceTimePredictor.h"
+#include "exahype/solvers/Solver.h"
 
 #include "peano/utils/Globals.h"
-
-#include "tarch/multicore/Loop.h"
 #include "peano/datatraversal/autotuning/Oracle.h"
 
-#include "exahype/solvers/Solver.h"
+#include "tarch/multicore/Loop.h"
+
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
+
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -177,56 +180,72 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>&  h,
     int                                           level
 ) {
+  #if !defined(PeriodicBC)
+  if (vertex.isBoundary()) return;
+  #endif
+
   tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
       vertex.getADERDGCellDescriptionsIndex();
 
-  /* Right cell-left cell   pair indices: 0,1; 2,3;   4,5; 6;7
-   * Front cell-back cell   pair indices: 0,2; 1,3;   4,6; 5;7
-   * Top   cell-bottom cell pair indices: 0,4; 1,5;   2,6; 3;7
-   *
-   * Note that from the viewpoint of a cell, the face
-   * has always the "opposite" index, i.e., we solve a Riemann
-   * problem on the left face of the right cell (which
-   * is the right face of the left cell).
-   */
-  constexpr int cellIndicesLeft  [4] = {0, 2, 4, 6};
-  constexpr int cellIndicesRight [4] = {1, 3, 5, 7};
-  constexpr int cellIndicesFront [4] = {0, 1, 4, 5};
-  constexpr int cellIndicesBack  [4] = {2, 3, 6, 7};
-#if DIMENSIONS == 3
-  constexpr int cellIndicesBottom[4] = {0, 1, 2, 3};
-  constexpr int cellIndicesTop   [4] = {4, 5, 6, 7};
-#endif
   dfor2(dest)
   dfor2(src)
-  if (
+    if (
       vertex.getAdjacentRanks()(destScalar)==toRank
       &&
       vertex.getAdjacentRanks()(srcScalar)==tarch::parallel::Node::getInstance().getRank()
       &&
       tarch::la::countEqualEntries(dest,src)==1    // we are solely exchanging faces
-  ) {
-    std::vector<records::ADERDGCellDescription>& cellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(srcScalar);
-    for (int currentSolver=0; currentSolver<static_cast<int>(cellDescriptions.size()); currentSolver++) {
-      if (cellDescriptions[currentSolver].getType()==exahype::records::ADERDGCellDescription::RealCell) {
-        exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[cellDescriptions[currentSolver].getSolverNumber()];
+    ) {
+      const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
+      assertion5(
+        ADERDGCellDescriptionHeap::getInstance().isValidIndex(srcCellDescriptionIndex),
+        src, dest,
+        multiscalelinkedcell::indicesToString( adjacentADERDGCellDescriptionsIndices ),
+        vertex.toString(),
+        tarch::parallel::Node::getInstance().getRank()
+      );
+      std::vector<records::ADERDGCellDescription>& cellDescriptions = ADERDGCellDescriptionHeap::getInstance().getData(srcCellDescriptionIndex);
 
-        const int numberOfFaceDof       = solver->getUnknownsPerFace();
-        const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src,dest);
-        assertion(normalOfExchangedFace>=0 && normalOfExchangedFace<DIMENSIONS);
-        const int offsetInFaceArray     = 2*normalOfExchangedFace + src(normalOfExchangedFace)<dest(normalOfExchangedFace) ? 1 : 0;
+      for (int currentSolver=0; currentSolver<static_cast<int>(cellDescriptions.size()); currentSolver++) {
+        if (cellDescriptions[currentSolver].getType()==exahype::records::ADERDGCellDescription::Cell) {
+          exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[cellDescriptions[currentSolver].getSolverNumber()];
 
-        const double* lQhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getExtrapolatedPredictor()).data() + (offsetInFaceArray * numberOfFaceDof);
-        const double* lFhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getFluctuation()).data()           + (offsetInFaceArray * numberOfFaceDof);
+          const int numberOfFaceDof       = solver->getUnknownsPerFace();
+          const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src,dest);
+          assertion(normalOfExchangedFace>=0 && normalOfExchangedFace<DIMENSIONS);
+          const int offsetInFaceArray     = 2*normalOfExchangedFace + (src(normalOfExchangedFace)<dest(normalOfExchangedFace) ? 1 : 0);
 
-        DataHeap::getInstance().sendData( lQhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
-        DataHeap::getInstance().sendData( lFhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
-      }
-      else {
-        assertionMsg( false, "Dominic, please implement" );
+          assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getExtrapolatedPredictor()) );
+          assertion( DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getFluctuation()) );
+
+          const double* lQhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getExtrapolatedPredictor()).data() + (offsetInFaceArray * numberOfFaceDof);
+          const double* lFhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver].getFluctuation()).data()           + (offsetInFaceArray * numberOfFaceDof);
+
+          if ( adjacentADERDGCellDescriptionsIndices(destScalar)==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex ) {
+            #ifdef PeriodicBC
+            assertionMsg( false, "Vasco, we have to implement this" );
+            DataHeap::getInstance().sendData( lQhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
+            DataHeap::getInstance().sendData( lFhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
+            #else
+            assertionMsg( false, "should never been entered");
+            #endif
+          }
+          else {
+            logDebug(
+              "prepareSendToNeighbour(...)",
+              "send two arrays to rank " << toRank << " for vertex " << vertex.toString()  <<
+              ", dest type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(destScalar)) <<
+              ", src=" << src << ", dest=" << dest
+            );
+            DataHeap::getInstance().sendData( lQhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
+            DataHeap::getInstance().sendData( lFhbnd, numberOfFaceDof, toRank, x, level, peano::heap::MessageType::NeighbourCommunication );
+          }
+        }
+        else {
+          assertionMsg( false, "Dominic, please implement" );
+        }
       }
     }
-  }
   enddforx
   enddforx
 }
@@ -371,12 +390,14 @@ void exahype::mappings::SpaceTimePredictor::touchVertexLastTime(
 }
 
 void exahype::mappings::SpaceTimePredictor::enterCell(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  exahype::Cell&                        fineGridCell,
+  exahype::Vertex* const                fineGridVertices,
+  const peano::grid::VertexEnumerator&  fineGridVerticesEnumerator,
+  exahype::Vertex* const coarseGridVertices,
+  const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+  exahype::Cell& coarseGridCell,
+  const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell
+) {
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
       fineGridVerticesEnumerator.toString(),
       coarseGridCell, fineGridPositionOfCell);
@@ -450,15 +471,15 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
             luh, fineGridVerticesEnumerator.getCellSize(),
             p.getPredictorTimeStepSize());
 
-        assertionEquals(luh[0]   ,luh[0]   ); // check if nan
-        assertionEquals(lQi[0]   ,lQi[0]   ); // check if nan
-        assertionEquals(lFi[0]   ,lFi[0]   ); // check if nan
-        assertionEquals(lQhi[0]  ,lQhi[0]  ); // check if nan
-        assertionEquals(luh[0]   ,luh[0]   ); // check if nan
-        assertionEquals(lFhi[0]  ,lFhi[0]  ); // check if nan
-        assertionEquals(luh[0]   ,luh[0]   ); // check if nan
-        assertionEquals(lQhbnd[0],lQhbnd[0]); // check if nan
-        assertionEquals(lFhbnd[0],lFhbnd[0]); // check if nan
+        assertionEquals2(luh[0]   ,luh[0],    fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(lQi[0]   ,lQi[0],    fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(lFi[0]   ,lFi[0],    fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(lQhi[0]  ,lQhi[0],   fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(luh[0]   ,luh[0],    fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(lFhi[0]  ,lFhi[0],   fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(luh[0]   ,luh[0],    fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(lQhbnd[0],lQhbnd[0], fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
+        assertionEquals2(lFhbnd[0],lFhbnd[0], fineGridVerticesEnumerator.toString(), fineGridVerticesEnumerator.getVertexPosition() ); // check if nan
         break;
       default:
         break;

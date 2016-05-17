@@ -13,15 +13,17 @@
 
 tarch::logging::Log exahype::Cell::_log("exahype::Cell");
 
+const int exahype::Cell::InvalidCellDescriptionsIndex = -4;
+
 exahype::Cell::Cell() : Base() {
   _cellData.setADERDGCellDescriptionsIndex(
-      multiscalelinkedcell::HangingVertexBookkeeper::InvalidCellDescriptionIndex);
+      exahype::Cell::InvalidCellDescriptionsIndex);
 }
 
 exahype::Cell::Cell(const Base::DoNotCallStandardConstructor& value)
 : Base(value) {
   _cellData.setADERDGCellDescriptionsIndex(
-      multiscalelinkedcell::HangingVertexBookkeeper::InvalidCellDescriptionIndex);
+      exahype::Cell::InvalidCellDescriptionsIndex);
 }
 
 exahype::Cell::Cell(const Base::PersistentCell& argument) : Base(argument) {
@@ -33,30 +35,45 @@ int exahype::Cell::getADERDGCellDescriptionsIndex() const {
 }
 
 void exahype::Cell::initialiseStorageOnHeap() {
+  assertion1( !ADERDGCellDescriptionHeap::getInstance().isValidIndex( _cellData.getADERDGCellDescriptionsIndex()), toString() );
+
   const int ADERDGCellDescriptionIndex =
       ADERDGCellDescriptionHeap::getInstance().createData(0, 0);
   _cellData.setADERDGCellDescriptionsIndex(ADERDGCellDescriptionIndex);
 }
 
+void exahype::Cell::setupMetaData() {
+  assertion1( !ADERDGCellDescriptionHeap::getInstance().isValidIndex( _cellData.getADERDGCellDescriptionsIndex()), toString() );
+
+  const int ADERDGCellDescriptionIndex =
+    ADERDGCellDescriptionHeap::getInstance().createData(0, 0);
+  _cellData.setADERDGCellDescriptionsIndex(ADERDGCellDescriptionIndex);
+}
+
+
+void exahype::Cell::shutdownMetaData() {
+  assertion1( ADERDGCellDescriptionHeap::getInstance().isValidIndex( _cellData.getADERDGCellDescriptionsIndex() ), toString() );
+
+  ADERDGCellDescriptionHeap::getInstance().deleteData( _cellData.getADERDGCellDescriptionsIndex() );
+}
+
 void exahype::Cell::addNewCellDescription(
     const int solverNumber,
     const exahype::records::ADERDGCellDescription::Type cellType,
-    const exahype::records::ADERDGCellDescription::RefinementEvent
-    refinementEvent,
+    const exahype::records::ADERDGCellDescription::RefinementEvent refinementEvent,
     const int level, const int parentIndex,
     const tarch::la::Vector<DIMENSIONS, double>& size,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre) {
   if (_cellData.getADERDGCellDescriptionsIndex() ==
-      multiscalelinkedcell::HangingVertexBookkeeper::InvalidCellDescriptionIndex) {
+      exahype::Cell::InvalidCellDescriptionsIndex) {
     initialiseStorageOnHeap();
   }
+
+  assertion1( ADERDGCellDescriptionHeap::getInstance().isValidIndex( _cellData.getADERDGCellDescriptionsIndex()), toString() );
 
   assertion2(parentIndex == -1 ||
       parentIndex != _cellData.getADERDGCellDescriptionsIndex(),
       parentIndex, _cellData.getADERDGCellDescriptionsIndex());
-
-  assertion(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-      _cellData.getADERDGCellDescriptionsIndex()));
 
   assertion2(parentIndex != _cellData.getADERDGCellDescriptionsIndex(),
       parentIndex, _cellData.getADERDGCellDescriptionsIndex());
@@ -109,10 +126,6 @@ void exahype::Cell::addNewCellDescription(
   }
 }
 
-// todo this method is deprecated about to change.
-// Will be replaced by
-// allocateCellDescriptionFields(std::vector<...>::iterator)
-// similar to cleanCellDescriptionFields(std::vector<...>::iterator)
 void exahype::Cell::ensureNecessaryMemoryIsAllocated(const int solverNumber) {
   // Ensure that -1 value is invalid index (cf. addNewCellDescription)
   assertion(!DataHeap::getInstance().isValidIndex(-1));

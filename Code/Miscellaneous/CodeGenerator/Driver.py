@@ -6,30 +6,34 @@
 # Starting point of the code generator
 #--------------------------------------------------------------
 #
+# Note: requires python3
+#
 # For a quick test, type
-# python Driver.py MyEulerSolver 5 3 2 hsw nonlinear path/to/libxsmmRepository
+# python Driver.py Euler 5 3 2 nonlinear hsw path/to/libxsmmRepository
+#
+# for Jenkins this is
+# python Driver.py Euler 5 3 2 nonlinear hsw ../../../libxsmm --precision=DP
 #
 # 
 
 
 import argparse
 import CodeGenArgumentParser
-from SpaceTimePredictorGenerator import SpaceTimePredictorGenerator
 from Backend import prepareOutputDirectory
-from Backend import moveGeneratedCppFiles
+from Backend import moveGeneratedFiles
 import Backend
 import os
-from WeightsGenerator import WeightsGenerator
-       
+
+
 
 # --------------------------------------------------------
 # Process the command line arguments
 # --------------------------------------------------------
 l_parser = argparse.ArgumentParser(description='This is the front end of the ExaHyPE code generator.')
 
-l_parser.add_argument('solverName', 
-                      type=str,
-                      help='the namespace')
+l_parser.add_argument('PDE',
+                      type=lambda pdeArg: CodeGenArgumentParser.validatePDE(l_parser, pdeArg),
+                      help='what example you want to solve')
 l_parser.add_argument('numberOfVariables', 
                       type=int, 
                       help='the number of quantities')
@@ -56,7 +60,7 @@ l_parser.add_argument('--precision',
 
 l_commandLineArguments = l_parser.parse_args()
 
-solverName             = l_commandLineArguments.solverName
+pde                    = l_commandLineArguments.PDE
 numberOfVariables      = l_commandLineArguments.numberOfVariables
 order                  = l_commandLineArguments.order
 dimensions             = l_commandLineArguments.dimension
@@ -65,7 +69,7 @@ architecture           = l_commandLineArguments.architecture
 pathToLibxsmmGenerator = l_commandLineArguments.pathToLibxsmm
 precision              = l_commandLineArguments.precision
 
-       
+
 config = { 
            "nVar"              : numberOfVariables,
            "nDof"              : order+1,
@@ -76,6 +80,7 @@ config = {
 Backend.setArchitecture(architecture)
 Backend.setPrecision(precision)
 Backend.setConfig(config)
+Backend.setNumerics(numerics)
 Backend.setPathToLibxsmmGenerator(pathToLibxsmmGenerator)
 
 # clean up output directory
@@ -89,17 +94,15 @@ prepareOutputDirectory(pathToOutputDirectory)
 # Now let's generate the compute kernels.
 # --------------------------------------------------------
 
-Backend.writeCommonHeader(pathToOutputDirectory+"/Kernels.h")
+Backend.generateCommonHeader()
+Backend.generateComputeKernels()
 
-spaceTimePredictorGenerator = SpaceTimePredictorGenerator(config)
-spaceTimePredictorGenerator.generateCode()
+# --------------------------------------------------------
+# Move generated code
+# --------------------------------------------------------
 
-# move assembler code
-moveGeneratedCppFiles(pathToLibxsmmGenerator, pathToOutputDirectory)
+# move assembly code
+moveGeneratedFiles(pathToLibxsmmGenerator, pathToOutputDirectory)
 # move C++ wrapper
-moveGeneratedCppFiles(os.getcwd(), pathToOutputDirectory)
-
-# for testing
-weightsGenerator = WeightsGenerator(config, precision)
-weightsGenerator.writeWeightsCombinations(pathToOutputDirectory+"/Weights.h")
+moveGeneratedFiles(os.getcwd(), pathToOutputDirectory)
 

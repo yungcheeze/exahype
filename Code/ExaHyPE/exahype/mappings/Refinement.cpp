@@ -142,7 +142,7 @@ void exahype::mappings::Refinement::createCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   fineGridCell.getCellData().setADERDGCellDescriptionsIndex(
-      multiscalelinkedcell::HangingVertexBookkeeper::InvalidCellDescriptionIndex);
+      exahype::Cell::InvalidCellDescriptionsIndex);
 
   logTraceOutWith1Argument("createCell(...)", fineGridCell);
 }

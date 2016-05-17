@@ -34,9 +34,6 @@ event-mapping:
   name: VolumeIntegral
 
 event-mapping:
-  name: BoundaryConditions
-  
-event-mapping:
   name: RiemannSolverReset
 
 event-mapping:
@@ -77,6 +74,9 @@ event-mapping:
   name: InitialisationAndCleaning  
 
 event-mapping:
+  name: DropIncomingMPIMessages  
+
+event-mapping:
   name: Erasing    
 // 
 
@@ -107,16 +107,6 @@ adapter:
   merge-with-user-defined-mapping: AugmentedAMRTreePlot2d 
   merge-with-predefined-mapping: VTKGridVisualiser(grid)
 
-adapter:
-  name: PatchInitialisation
-  merge-with-user-defined-mapping: PatchInitialisation
-  // tracks cell traversal events here; updates neighbour information in vertices
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex)
-
-adapter:
-  name: Plot
-  merge-with-user-defined-mapping: Plot
-
 // Adapters for initialisation of time stepping
 adapter:
   name: SolutionUpdateAndGlobalTimeStepComputation
@@ -138,7 +128,6 @@ adapter:
   name: ADERDGTimeStep
   // needs corrector time step size
   merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
-  merge-with-user-defined-mapping: BoundaryConditions 
   merge-with-user-defined-mapping: RiemannSolverReset
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
@@ -147,15 +136,35 @@ adapter:
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: GlobalTimeStepComputation
  
+ 
+adapter: 
+  name: ADERDGTimeStepAndPlot
+  // needs corrector time step size
+  merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
+  merge-with-user-defined-mapping: RiemannSolverReset
+  merge-with-user-defined-mapping: SurfaceIntegral
+  merge-with-user-defined-mapping: SolutionUpdate
+  // needs predictor time step size
+  merge-with-user-defined-mapping: SpaceTimePredictor  // DEC: after predictor we can start the face data exchange 
+  merge-with-user-defined-mapping: VolumeIntegral
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
+  merge-with-user-defined-mapping: Plot
+ 
 // Additional adapters for 4 phase time stepping
 adapter:
   name: GlobalTimeStepComputation
   merge-with-user-defined-mapping: GlobalTimeStepComputation
+  
+  
+adapter:
+  name: GlobalTimeStepComputationAndPlot
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
+  merge-with-user-defined-mapping: Plot
+  
 
 adapter: 
   name: FaceDataExchange
   merge-with-user-defined-mapping: RiemannSolver
-  merge-with-user-defined-mapping: BoundaryConditions
 
 adapter:
   name: Predictor
@@ -164,14 +173,15 @@ adapter:
 
 /**
  * In a serial version, running the predictor is the same for optimistic time 
- * steppingn and the non-fused algorithm. In the MPI case however a rerun in 
+ * stepping and the non-fused algorithm. In the MPI case however a rerun in 
  * optimistic time stepping has to remove all old MPI messages from the queues
- * and resend the updated boundary values, so it is slightly different
+ * and re-send the updated boundary values, so it is slightly different
  */
 adapter:
   name: PredictorRerun
   merge-with-user-defined-mapping: SpaceTimePredictor 
   merge-with-user-defined-mapping: VolumeIntegral
+  merge-with-user-defined-mapping: DropIncomingMPIMessages
 
 adapter:
   name: Corrector

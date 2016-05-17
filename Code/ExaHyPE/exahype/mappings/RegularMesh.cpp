@@ -171,7 +171,7 @@ void exahype::mappings::RegularMesh::createCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
   fineGridCell.getCellData().setADERDGCellDescriptionsIndex(
-      multiscalelinkedcell::HangingVertexBookkeeper::InvalidCellDescriptionIndex);
+      exahype::Cell::InvalidCellDescriptionsIndex);
 
   logTraceOutWith1Argument("createCell(...)", fineGridCell);
 }
@@ -329,7 +329,7 @@ void exahype::mappings::RegularMesh::enterCell(
 
   int solverNumber = 0;
   if (fineGridCell.getADERDGCellDescriptionsIndex() ==
-      multiscalelinkedcell::HangingVertexBookkeeper::InvalidCellDescriptionIndex) {
+      exahype::Cell::InvalidCellDescriptionsIndex) {
     for (std::vector<exahype::solvers::Solver*>::const_iterator p =
              exahype::solvers::RegisteredSolvers.begin();
          p != exahype::solvers::RegisteredSolvers.end();
@@ -340,7 +340,7 @@ void exahype::mappings::RegularMesh::enterCell(
             solverNumber, exahype::records::ADERDGCellDescription::Cell,
             exahype::records::ADERDGCellDescription::None,
             fineGridVerticesEnumerator.getLevel(),
-            multiscalelinkedcell::HangingVertexBookkeeper::InvalidCellDescriptionIndex,
+            exahype::Cell::InvalidCellDescriptionsIndex,
             fineGridVerticesEnumerator.getCellSize(),
             fineGridVerticesEnumerator.getCellCenter());
       }

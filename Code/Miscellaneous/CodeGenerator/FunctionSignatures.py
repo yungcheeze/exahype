@@ -8,23 +8,23 @@ import re
 
 # set via Backend
 m_precision = ''
-   
+
 
 def setPrecision(i_precision):
     global m_precision
     m_precision = i_precision
-    
-    
+
+
 #
 # signatures of the space-time predictor
 #
 def getPicardLoopSignature(i_nDim):
     # choose function signature prototype
-    if(i_nDim==2):                        
+    if(i_nDim==2):
         l_functionSignature = "template<void PDEFlux2d(const DATATYPE* const Q, DATATYPE* f, DATATYPE* g)>\n"              \
                               "void kernels::aderdg::optimised::picardLoop( \n"                                            \
-                              "  DATATYPE* restrict lQi, \n"                                                               \
-                              "  DATATYPE* restrict lFi, \n"                                                               \
+                              "  DATATYPE* restrict lqh, \n"                                                               \
+                              "  DATATYPE* restrict lFh, \n"                                                               \
                               "  const DATATYPE* restrict const luh, \n"                                                   \
                               "  const tarch::la::Vector<DIMENSIONS,DATATYPE> &dx,\n"                                      \
                               "  const DATATYPE dt \n"                                                                     \
@@ -32,8 +32,8 @@ def getPicardLoopSignature(i_nDim):
     elif(i_nDim==3):
         l_functionSignature = "template<void PDEFlux3d(const DATATYPE* const Q, DATATYPE* f, DATATYPE* g, DATATYPE* h)>\n" \
                               "void kernels::aderdg::optimised::picardLoop( \n"                                            \
-                              "  DATATYPE* restrict lQi, \n"                                                               \
-                              "  DATATYPE* restrict lFi, \n"                                                               \
+                              "  DATATYPE* restrict lqi, \n"                                                               \
+                              "  DATATYPE* restrict lFh, \n"                                                               \
                               "  const DATATYPE* restrict const luh, \n"                                                   \
                               "  const tarch::la::Vector<DIMENSIONS,DATATYPE> &dx,\n"                                      \
                               "  const DATATYPE dt \n"                                                                     \
@@ -41,9 +41,9 @@ def getPicardLoopSignature(i_nDim):
     else:
         l_functionSignature = ""
         print("FunctionSignatures.getPicardLoopSignature(): nDim not supported")
-    
-    
-    # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                         
+
+
+    # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively
     if(m_precision=='SP'):
         l_functionSignature = re.sub(r'\bDATATYPE\b', 'float', l_functionSignature)
     elif(m_precision=='DP'):
@@ -57,21 +57,21 @@ def getPicardLoopSignature(i_nDim):
 
 def getPredictorSignature():
     # function signature prototype
-    l_functionSignature = "void kernels::aderdg::optimised::predictor( \n"      \
-                          "  DATATYPE* restrict lQhi, \n"                       \
-                          "  DATATYPE* restrict lFhi, \n"                       \
-                          "  const DATATYPE* restrict const lqh, \n"            \
-                          "  const DATATYPE* restrict const lFh \n"             \
+    l_functionSignature = "void kernels::aderdg::optimised::predictor( \n"       \
+                          "  DATATYPE* restrict lqhi, \n"                        \
+                          "  DATATYPE* restrict lFhi, \n"                        \
+                          "  const DATATYPE* restrict const lqh \n"              \
+                          "  const DATATYPE* restrict const lFh \n"              \
                           ")"
-                          
-    # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                         
+
+    # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively
     if(m_precision=='SP'):
         l_functionSignature = re.sub(r'\bDATATYPE\b', 'float', l_functionSignature)
     elif(m_precision=='DP'):
         l_functionSignature = re.sub(r'\bDATATYPE\b', 'double', l_functionSignature)
     else:
         print("FunctionSignatures.getPredictorSignature(): precision not supported")
-            
+
     return l_functionSignature
 
 
@@ -80,18 +80,18 @@ def getExtrapolatorSignature():
     l_functionSignature = "void kernels::aderdg::optimised::extrapolator( \n"   \
                           "  DATATYPE* restrict lQbnd, \n"                      \
                           "  DATATYPE* restrict lFbnd, \n"                      \
-                          "  const DATATYPE* restrict const lQhi, \n"           \
+                          "  const DATATYPE* restrict const lqhi, \n"           \
                           "  const DATATYPE* restrict const lFhi \n"            \
                           ")"
-        
-    # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                         
+
+    # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively
     if(m_precision=='SP'):
         l_functionSignature = re.sub(r'\bDATATYPE\b', 'float', l_functionSignature)
     elif(m_precision=='DP'):
         l_functionSignature = re.sub(r'\bDATATYPE\b', 'double', l_functionSignature)
     else:
         print("FunctionSignatures.getExtrapolatorSignature(): precision not supported")
-                
+
     return l_functionSignature
 
 
@@ -193,10 +193,10 @@ def getRiemannSolverSignature():
     # function signature prototype
     l_functionSignature = "template <void PDEEigenvalues(const DATATYPE* const Q, const int normalNonZero, DATATYPE* lambda)>\n" \
                           "void kernels::aderdg::optimised::riemannSolver( \n"                                                   \
-                          "  DATATYPE* restrict FL,\n"                                                                          \
-                          "  DATATYPE* restrict FR,\n"                                                                          \
-                          "  const DATATYPE* restrict const QL,\n"                                                              \
-                          "  const DATATYPE* restrict const QR,\n"                                                              \
+                          "  DATATYPE* restrict lFbndL,\n"                                                                          \
+                          "  DATATYPE* restrict lFbndR,\n"                                                                          \
+                          "  const DATATYPE* restrict const lQbndL,\n"                                                              \
+                          "  const DATATYPE* restrict const lQbndR,\n"                                                              \
                           "  const DATATYPE dt,\n"                                                                               \
                           "  const int normalNonZero\n"                                                                          \
                           ")" 
@@ -221,7 +221,7 @@ def getInitialConditionSignature():
                           "void initialCondition(\n"                                                \
                           "  DATATYPE* restrict luh,\n"                                             \
                           "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& center,\n"               \
-                          "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx\n"                   \
+                          "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx\n"                    \
                           ")"
     
     # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                         
@@ -230,7 +230,7 @@ def getInitialConditionSignature():
     elif(m_precision=='DP'):
         l_functionSignature = re.sub(r'\bDATATYPE\b', 'double', l_functionSignature)
     else:
-        print("FunctionSignatures.getRiemannSolverSignature(): precision not supported")
+        print("FunctionSignatures.getInitialConditionSignature(): precision not supported")
                                  
     return l_functionSignature
 
@@ -241,9 +241,9 @@ def getInitialConditionSignature():
 def getStableTimeStepSizeSignature():
     # function signature prototype:
     l_functionSignature = "template <void PDEEigenvalues(const DATATYPE* const Q, const int normalNonZero, DATATYPE* lambda)>\n" \
-                          "double stableTimeStepSize(\n"                                                                       \
+                          "DATATYPE kernels::aderdg::optimised::stableTimeStepSize(\n"                                                                         \
                           "  const DATATYPE* restrict const luh,\n"                                                              \
-                          "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx\n"                                                \
+                          "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx\n"                                                 \
                           ")"
     
     # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                     
@@ -252,7 +252,7 @@ def getStableTimeStepSizeSignature():
     elif(m_precision=='DP'):
         l_functionSignature = re.sub(r'\bDATATYPE\b', 'double', l_functionSignature)
     else:
-        print("FunctionSignatures.getRiemannSolverSignature(): precision not supported")
+        print("FunctionSignatures.getStableTimeStepSizeSignature(): precision not supported")
                                  
     return l_functionSignature    
 

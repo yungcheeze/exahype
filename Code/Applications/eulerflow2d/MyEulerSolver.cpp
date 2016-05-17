@@ -9,7 +9,7 @@ Euler2d::MyEulerSolver::MyEulerSolver(int kernelNumber)
 
 int Euler2d::MyEulerSolver::getMinimumTreeDepth() const {
   #if defined(Asserts)
-  return 3;
+  return 2;
   #else
   return 4;
   #endif
@@ -85,12 +85,39 @@ void Euler2d::MyEulerSolver::adjustedSolutionValues(const double *const x,
 exahype::solvers::Solver::RefinementControl Euler2d::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
   assertion(level>=getMinimumTreeDepth()+1);
 
-  if (level<getMinimumTreeDepth()+4) {
-    if (center[0]<0.5 && center[0]>0.25) {
-      if (center[1]<0.5 && center[1]>0.25) {
-        return exahype::solvers::Solver::Refine;
-      }
-    }
-  }
+//  if (level < getMinimumTreeDepth() + 2) {
+//    if (center[0] > 0 && center[0] < 0.3333) {
+//      if (center[1] > 0 && center[1] < 0.3333) {
+//        //        if (center[0] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
+//        //            center[0] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
+//        //          if (center[1] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
+//        //              center[1] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
+//        return exahype::solvers::Solver::Refine;
+//      }
+//    }
+//  }
+//  if (level < getMinimumTreeDepth() + 3) {
+//    if (center[0] > 0.33333 && center[0] < 0.66667) {
+//      if (center[1] > 0.33333 && center[1] < 0.66667) {
+//        //        if (center[0] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
+//        //            center[0] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
+//        //          if (center[1] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
+//        //              center[1] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
+//        return exahype::solvers::Solver::Refine;
+//      }
+//    }
+//  }
+//
+//  if (level < getMinimumTreeDepth() + 4) {
+//    if (center[0] > 0.66667 && center[0] < 1) {
+//      if (center[1] > 0.33333 && center[1] < 1) {
+//        //        if (center[0] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
+//        //            center[0] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
+//        //          if (center[1] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
+//        //              center[1] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
+//        return exahype::solvers::Solver::Refine;
+//      }
+//    }
+//  }
   return exahype::solvers::Solver::Keep;
 }

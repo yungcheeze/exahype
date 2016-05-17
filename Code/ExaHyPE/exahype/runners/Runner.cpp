@@ -198,14 +198,13 @@ int exahype::runners::Runner::runAsMaster(
    * Build up the initial space tree.
    */
   repository.switchToAugmentedAMRGrid();
-  //  repository.switchToInitialGrid();
   int gridSetupIterations = 0;
   do {
     repository.iterate();
     gridSetupIterations++;
   } while (!repository.getState().isGridBalanced());
-  repository.iterate(); // We need one extra iterations.
-  repository.iterate(); // We need one extra iterations.
+  repository.iterate(); // We need one extra iteration.
+  gridSetupIterations++;
 
   repository.switchToPlotAugmentedAMRGrid();
   repository.iterate();
@@ -222,64 +221,38 @@ int exahype::runners::Runner::runAsMaster(
       "number of idle ranks="
           << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes());
 #endif
+  repository.switchToSolutionUpdateAndGlobalTimeStepComputation();
+  repository.iterate();
+  startNewTimeStep(-1);
 
-  std::cout << "AfterGrid" << std::endl;
+  /*
+   * Compute current first predictor based on current time step size.
+   * Set current time step size as old time step size of next iteration.
+   * Compute the current time step size of the next iteration.
+   */
+  repository.switchToPredictorAndGlobalTimeStepComputation();
+  repository.iterate();
+  startNewTimeStep(0);
 
-  //  // Initialise the cell descriptions;
-  //  repository.switchToPatchInitialisation();
-  //  repository.iterate();
-  //
-//  repository.switchToSolutionUpdateAndGlobalTimeStepComputation();
-//  repository.iterate();
-//  startNewTimeStep(-1);
-//
-//  repository.switchToPredictorAndGlobalTimeStepComputation();
-//  repository.iterate();
-//  startNewTimeStep(0);
+  const double simulationEndTime = _parser.getSimulationEndTime();
+  int n = 1;
 
-  std::cout << "AfterSolution" << std::endl;
+  while ((solvers::Solver::getMinSolverTimeStamp() < simulationEndTime) &&
+         tarch::la::greater(solvers::Solver::getMinSolverTimeStepSize(), 0.0)) {
+    bool plot = exahype::plotters::isAPlotterActive(solvers::Solver::getMinSolverTimeStamp());
 
-  if (exahype::plotters::isAPlotterActive(
-          solvers::Solver::getMinSolverTimeStamp())) {
-    repository.switchToPlot();
-    repository.iterate();
-    logDebug("runAsMaster(...)", "all snapshots written");
+    if (_parser.fuseAlgorithmicSteps()) {
+      runOneTimeStampWithFusedAlgorithmicSteps(repository, plot);
+      recomputePredictorIfNecessary(repository);
+      startNewTimeStep(n);
+    } else {
+      runOneTimeStampWithFourSeparateAlgorithmicSteps(repository, plot);
+      startNewTimeStep(n);
+    }
+
+    n++;
+    logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
   }
-  //
-  //  /*
-  //   * Compute current first predictor based on current time step size.
-  //   * Set current time step size as old time step size of next iteration.
-  //   * Compute the current time step size of the next iteration.
-  //   */
-  //  repository.switchToPredictorAndGlobalTimeStepComputation();
-  //  repository.iterate();
-  //  startNewTimeStep(0);
-  //
-  //  const double simulationEndTime = _parser.getSimulationEndTime();
-  //  int n = 1;
-  //
-  //  while ((solvers::Solver::getMinSolverTimeStamp() < simulationEndTime) &&
-  //         tarch::la::greater(solvers::Solver::getMinSolverTimeStepSize(),
-  //         0.0)) {
-  //    if (exahype::plotters::isAPlotterActive(
-  //            solvers::Solver::getMinSolverTimeStamp())) {
-  //      repository.switchToPlot();
-  //      repository.iterate();
-  //      logDebug("runAsMaster(...)", "all snapshots written");
-  //    }
-  //
-  //    if (_parser.fuseAlgorithmicSteps()) {
-  //      runOneTimeStampWithFusedAlgorithmicSteps(repository);
-  //      startNewTimeStepAndRecomputePredictorIfNecessary(repository, n);
-  //    } else {
-  //      runOneTimeStampWithFourSeparateAlgorithmicSteps(repository);
-  //      startNewTimeStep(n);
-  //    }
-  //
-  //    n++;
-  //    logDebug("runAsMaster(...)", "state=" <<
-  //    repository.getState().toString());
-  //  }
 
   repository.logIterationStatistics(true);
   repository.terminate();
@@ -335,7 +308,9 @@ void exahype::runners::Runner::startNewTimeStep(int n) {
 }
 
 void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
-    exahype::repositories::Repository& repository) {
+    exahype::repositories::Repository& repository,
+    bool                               plot
+) {
   /*
    * The adapter below performs the following steps:
    *
@@ -350,7 +325,14 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
    *predictor time step size.
    * 4. Compute the cell-local time step sizes
    */
-  repository.switchToADERDGTimeStep();
+
+  if (plot) {
+    repository.switchToADERDGTimeStepAndPlot();
+  }
+  else {
+    repository.switchToADERDGTimeStep();
+  }
+
   repository.iterate();
 }
 
@@ -392,14 +374,15 @@ bool exahype::runners::Runner::
   return cflConditionWasViolated;  // | tooDiffusive;
 }
 
-void exahype::runners::Runner::startNewTimeStepAndRecomputePredictorIfNecessary(
-    exahype::repositories::Repository& repository, int n) {
+void exahype::runners::Runner::recomputePredictorIfNecessary(
+  exahype::repositories::Repository& repository
+) {
   // Must be evaluated before we start a new time step
   bool stabilityConditionWasHarmed =
       setAccurateTimeStepSizesIfStabilityConditionWasHarmed();
   // Note that it is important to switch the time step sizes, i.e,
   // start a new time step, before we recompute the predictor.
-  startNewTimeStep(n);
+
   if (stabilityConditionWasHarmed) {
     logInfo("startNewTimeStep(...)",
             "\t\t Space-time predictor must be recomputed.");
@@ -410,14 +393,23 @@ void exahype::runners::Runner::startNewTimeStepAndRecomputePredictorIfNecessary(
 }
 
 void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(
-    exahype::repositories::Repository& repository) {
+    exahype::repositories::Repository&  repository,
+    bool                                plot
+) {
   // Only one time step (predictor vs. corrector) is used in this case.
   repository.switchToFaceDataExchange();  // Riemann -> face2face
   repository.iterate();
   repository.switchToCorrector();  // Face to cell
   repository.iterate();
-  repository.switchToGlobalTimeStepComputation();  // Inside cell
+
+  if (plot) {
+    repository.switchToGlobalTimeStepComputationAndPlot();  // Inside cell
+  }
+  else {
+    repository.switchToGlobalTimeStepComputation();  // Inside cell
+  }
   repository.iterate();
+
   repository.switchToPredictor();  // Cell onto faces
   repository.iterate();
 }

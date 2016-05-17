@@ -1,0 +1,383 @@
+#include <cstring>
+
+#if DIMENSIONS == 3
+
+namespace kernels {
+namespace aderdg {
+namespace generic {
+namespace c {
+
+template <void PDENCP(const double* const Q, const double* const gradQ,
+                      double* BgradQ)>
+void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
+                              double* lFhi, double* lQbnd, double* lFbnd,
+                              const double* const luh,
+                              const tarch::la::Vector<DIMENSIONS, double>& dx,
+                              const double dt, const int numberOfVariables,
+                              const int basisSize) {
+  const int basisSize2 = basisSize * basisSize;
+  const int basisSize3 = basisSize2 * basisSize;
+  const int basisSize4 = basisSize2 * basisSize2;
+  const int order = basisSize - 1;
+
+  double* lQh = new double[basisSize4 *
+                           numberOfVariables];  // space-time degrees of freedom
+  std::memset(lQh, 0, basisSize4 * numberOfVariables * sizeof(double));
+
+  // The zeroth time derivative (time dof number 1) is the initial condition
+  // lqh(iVar,1,i,j,k) = lqh(iVar,1,i,j,k) + luh(iVar,i,j,k)
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < numberOfVariables; l++) {
+          lQh[i * basisSize3 * numberOfVariables +
+              j * basisSize2 * numberOfVariables +
+              k * basisSize * numberOfVariables + 0 * numberOfVariables + l] +=
+              luh[i * basisSize2 * numberOfVariables +
+                  j * basisSize * numberOfVariables + k * numberOfVariables +
+                  l];
+        }
+      }
+    }
+  }
+
+  // spatial gradient of q
+  double* gradQ = new double[basisSize4 * 3 * numberOfVariables];
+  std::memset(gradQ, 0, basisSize4 * 3 * numberOfVariables * sizeof(double));
+
+  double* lFh = new double[basisSize4 * 3 * numberOfVariables];
+
+  // For linear PDE, the fastest space-time predictor is the good old
+  // Cauchy-Kovalewski procedure
+  for (int i = 0; i < basisSize; i++) {  // time DOFs
+    // Compute the derivatives in x direction (independent from the y and z
+    // derivatives)
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        // Fortran: gradQ(:,1,:,k,j,i) = 1.0/dx(1) * lqh(:,i,:,k,j) *
+        // dudx(:,:)^T
+        for (int l = 0; l < basisSize; l++) {
+          for (int m = 0; m < numberOfVariables; m++) {
+            for (int n = 0; n < basisSize; n++) {
+              gradQ[i * basisSize3 * 3 * numberOfVariables +
+                    j * basisSize2 * 3 * numberOfVariables +
+                    k * basisSize * 3 * numberOfVariables +
+                    l * 3 * numberOfVariables + 0 * numberOfVariables + m] +=
+                  1.0 / dx[0] * lQh[j * basisSize3 * numberOfVariables +
+                                    k * basisSize2 * numberOfVariables +
+                                    n * basisSize * numberOfVariables +
+                                    i * numberOfVariables + m] *
+                  kernels::dudx[order][n][l];
+            }
+          }
+        }
+      }
+    }
+
+    // y direction (independent from the x and z derivatives)
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        // Fortran: gradQ(:,2,k,:,j,i) = 1.0/dx(2) * lqh(:,i,k,:,j) *
+        // dudx(:,:)^T
+        for (int l = 0; l < basisSize; l++) {
+          for (int m = 0; m < numberOfVariables; m++) {
+            for (int n = 0; n < basisSize; n++) {
+              gradQ[i * basisSize3 * 3 * numberOfVariables +
+                    j * basisSize2 * 3 * numberOfVariables +
+                    l * basisSize * 3 * numberOfVariables +
+                    k * 3 * numberOfVariables + 1 * numberOfVariables + m] +=
+                  1.0 / dx[1] * lQh[j * basisSize3 * numberOfVariables +
+                                    n * basisSize2 * numberOfVariables +
+                                    k * basisSize * numberOfVariables +
+                                    i * numberOfVariables + m] *
+                  kernels::dudx[order][n][l];
+            }
+          }
+        }
+      }
+    }
+
+    // z direction (independent from the x and y derivatives)
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        // Fortran: gradQ(:,3,k,j,:,i) = 1.0/dx(3) * lqh(:,i,k,j,:) *
+        // dudx(:,:)^T
+        for (int l = 0; l < basisSize; l++) {
+          for (int m = 0; m < numberOfVariables; m++) {
+            for (int n = 0; n < basisSize; n++) {
+              gradQ[i * basisSize3 * 3 * numberOfVariables +
+                    l * basisSize2 * 3 * numberOfVariables +
+                    j * basisSize * 3 * numberOfVariables +
+                    k * 3 * numberOfVariables + 2 * numberOfVariables + m] +=
+                  1.0 / dx[2] * lQh[n * basisSize3 * numberOfVariables +
+                                    j * basisSize2 * numberOfVariables +
+                                    k * basisSize * numberOfVariables +
+                                    i * numberOfVariables + m] *
+                  kernels::dudx[order][n][l];
+            }
+          }
+        }
+      }
+    }
+
+    // Compute the fluxes
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < basisSize; l++) {
+          PDENCP(
+              &lQh[j * basisSize3 * numberOfVariables +
+                   k * basisSize2 * numberOfVariables +
+                   l * basisSize * numberOfVariables + i * numberOfVariables],
+              &gradQ[i * basisSize3 * 3 * numberOfVariables +
+                     j * basisSize2 * 3 * numberOfVariables +
+                     k * basisSize * 3 * numberOfVariables +
+                     l * 3 * numberOfVariables],
+              &lFh[i * basisSize3 * 3 * numberOfVariables +
+                   j * basisSize2 * 3 * numberOfVariables +
+                   k * basisSize * 3 * numberOfVariables +
+                   l * 3 * numberOfVariables]);
+        }
+      }
+    }
+  }
+
+  // Immediately compute the time-averaged space-time polynomials
+  // Fortran: lQhi(:,:,:,:) = lQh(:,1,:,:,:)
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < numberOfVariables; l++) {
+          lQhi[i * basisSize2 * numberOfVariables +
+               j * basisSize * numberOfVariables + k * numberOfVariables + l] =
+              lQh[i * basisSize3 * numberOfVariables +
+                  j * basisSize2 * numberOfVariables +
+                  k * basisSize * numberOfVariables + 0 * numberOfVariables +
+                  l];
+        }
+      }
+    }
+  }
+
+  double dtavFac = 0.5 * dt;
+  for (int i = 1; i < basisSize; i++) {
+    // Fortran: lQhi(:,:,:,:) += dtavFac * lQh(:,i,:,:,:)
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < basisSize; l++) {
+          for (int m = 0; m < numberOfVariables; m++) {
+            lQhi[j * basisSize2 * numberOfVariables +
+                 k * basisSize * numberOfVariables + l * numberOfVariables +
+                 m] += lQh[j * basisSize3 * numberOfVariables +
+                           k * basisSize2 * numberOfVariables +
+                           l * basisSize * numberOfVariables +
+                           i * numberOfVariables + m];
+          }
+        }
+      }
+    }
+    dtavFac *= dt / (i + 2);
+  }
+
+  // lFhi = lFh(:,:,:,:,:,1)
+  for (int i = 0; i < 3; i++) {
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < basisSize; l++) {
+          for (int m = 0; m < numberOfVariables; m++) {
+            lFhi[i * basisSize3 * numberOfVariables +
+                 j * basisSize2 * numberOfVariables +
+                 k * basisSize * numberOfVariables + l * numberOfVariables +
+                 m] =
+                lFh[0 * basisSize3 * 3 * numberOfVariables +
+                    j * basisSize2 * 3 * numberOfVariables +
+                    k * basisSize * 3 * numberOfVariables +
+                    l * 3 * numberOfVariables + i * numberOfVariables + m];
+          }
+        }
+      }
+    }
+  }
+
+  dtavFac = 0.5 * dt;
+  for (int i = 1; i < basisSize; i++) {
+    // Fortran: lFhi(:,:,:,:,:) += dtavFac*lFh(:,:,:,:,:,i)
+    for (int j = 0; j < 3; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < basisSize; l++) {
+          for (int m = 0; m < basisSize; m++) {
+            for (int n = 0; n < numberOfVariables; n++) {
+              lFhi[j * basisSize3 * numberOfVariables +
+                   k * basisSize2 * numberOfVariables +
+                   l * basisSize * numberOfVariables + m * basisSize + n] +=
+                  lFh[i * basisSize3 * 3 * numberOfVariables +
+                      j * basisSize2 * 3 * numberOfVariables +
+                      k * basisSize * 3 * numberOfVariables +
+                      l * 3 * numberOfVariables + m * numberOfVariables + n];
+            }
+          }
+        }
+      }
+    }
+    dtavFac *= dt / (i + 2);
+  }
+
+  // Compute the bounday-extrapolated values for Q and F*n
+  std::memset(lQbnd, 0, 6 * basisSize2 * numberOfVariables * sizeof(double));
+  std::memset(lFbnd, 0, 6 * basisSize2 * numberOfVariables * sizeof(double));
+
+  // x-direction: face 1 (left) and face 2 (right)
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < basisSize; j++) {
+      // Fortran:
+      // lQbnd(:,j,i,1) = lQhi(:,:,j,i) * FLCoeff(:)
+      // lQbnd(:,j,i,2) = lQhi(:,:,j,i) * FRCoeff(:)
+      // lFbnd(:,j,i,1) = lFhi(:,:,j,i,1) * FLCoeff(:)
+      // lFbnd(:,j,i,2) = lFhi(:,:,j,i,1) * FRCoeff(:)
+      for (int k = 0; k < numberOfVariables; k++) {
+        for (int l = 0; l < basisSize; l++) {
+          // left
+          lQbnd[0 * basisSize2 * numberOfVariables +
+                i * basisSize * numberOfVariables + j * numberOfVariables +
+                k] += lQhi[i * basisSize2 * numberOfVariables +
+                           j * basisSize * numberOfVariables +
+                           l * numberOfVariables + k] *
+                      kernels::FLCoeff[order][l];
+
+          // right
+          lQbnd[1 * basisSize2 * numberOfVariables +
+                i * basisSize * numberOfVariables + j * numberOfVariables +
+                k] += lQhi[i * basisSize2 * numberOfVariables +
+                           j * basisSize * numberOfVariables +
+                           l * numberOfVariables + k] *
+                      kernels::FRCoeff[order][l];
+
+          // left
+          lFbnd[0 * basisSize2 * numberOfVariables +
+                i * basisSize * numberOfVariables + j * numberOfVariables +
+                k] += lFhi[0 * basisSize3 * numberOfVariables +
+                           i * basisSize2 * numberOfVariables +
+                           j * basisSize * numberOfVariables +
+                           l * numberOfVariables + k] *
+                      kernels::FLCoeff[order][l];
+
+          // right
+          lFbnd[1 * basisSize2 * numberOfVariables +
+                i * basisSize * numberOfVariables + j * numberOfVariables +
+                k] += lFhi[0 * basisSize3 * numberOfVariables +
+                           i * basisSize2 * numberOfVariables +
+                           j * basisSize * numberOfVariables +
+                           l * numberOfVariables + k] *
+                      kernels::FRCoeff[order][l];
+        }
+      }
+    }
+  }
+
+  // y-direction: face 3 (left) and face 4 (right)
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < basisSize; j++) {
+      // Fortran:
+      // lQbnd(:,j,i,3) = lQhi(:,j,:,i) * FLCoeff(:)
+      // lQbnd(:,j,i,4) = lQhi(:,j,:,i) * FRCoeff(:)
+      // lFbnd(:,j,i,3) = lFhi(:,j,:,i,2) * FLCoeff(:)
+      // lFbnd(:,j,i,4) = lFhi(:,j,:,i,2) * FRCoeff(:)
+      for (int k = 0; k < numberOfVariables; k++) {
+        for (int l = 0; l < basisSize; l++) {
+          // left
+          lQbnd[2 * basisSize2 * numberOfVariables +
+                i * basisSize * numberOfVariables + j * numberOfVariables +
+                k] += lQhi[i * basisSize2 * numberOfVariables +
+                           l * basisSize * numberOfVariables +
+                           j * numberOfVariables + k] *
+                      kernels::FLCoeff[order][l];
+
+          // right
+          lQbnd[3 * basisSize2 * numberOfVariables +
+                i * basisSize * numberOfVariables + j * numberOfVariables +
+                k] += lQhi[i * basisSize2 * numberOfVariables +
+                           l * basisSize * numberOfVariables +
+                           j * numberOfVariables + k] *
+                      kernels::FRCoeff[order][l];
+
+          // left
+          lFbnd[2 * basisSize2 * numberOfVariables +
+                i * basisSize * numberOfVariables + j * numberOfVariables +
+                k] += lFhi[1 * basisSize3 * numberOfVariables +
+                           i * basisSize2 * numberOfVariables +
+                           l * basisSize * numberOfVariables +
+                           j * numberOfVariables + k] *
+                      kernels::FLCoeff[order][l];
+
+          // right
+          lFbnd[3 * basisSize2 * numberOfVariables +
+                i * basisSize * numberOfVariables + j * numberOfVariables +
+                k] += lFhi[1 * basisSize3 * numberOfVariables +
+                           i * basisSize2 * numberOfVariables +
+                           l * basisSize * numberOfVariables +
+                           j * numberOfVariables + k] *
+                      kernels::FRCoeff[order][l];
+        }
+      }
+    }
+  }
+
+  // z-direction: face 5 (left) and face 6 (right)
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < basisSize; j++) {
+      // Fortran:
+      // lQbnd(:,j,i,5) = lQhi(:,j,i,:) * FLCoeff(:)
+      // lQbnd(:,j,i,6) = lQhi(:,j,i,:) * FRCoeff(:)
+      // lFbnd(:,j,i,5) = lFhi(:,j,i,:,3) * FLCoeff(:)
+      // lFbnd(:,j,i,6) = lFhi(:,j,i,:,3) * FRCoeff(:)
+      for (int k = 0; k < numberOfVariables; k++) {
+        for (int l = 0; l < basisSize; l++) {
+          // left
+          lQbnd[4 * basisSize2 * numberOfVariables +
+                i * basisSize * numberOfVariables + j * numberOfVariables +
+                k] += lQhi[l * basisSize2 * numberOfVariables +
+                           i * basisSize * numberOfVariables +
+                           j * numberOfVariables + k] *
+                      kernels::FLCoeff[order][l];
+
+          // right
+          lQbnd[5 * basisSize2 * numberOfVariables +
+                i * basisSize * numberOfVariables + j * numberOfVariables +
+                k] += lQhi[l * basisSize2 * numberOfVariables +
+                           i * basisSize * numberOfVariables +
+                           j * numberOfVariables + k] *
+                      kernels::FRCoeff[order][l];
+
+          // left
+          lFbnd[4 * basisSize2 * numberOfVariables +
+                i * basisSize * numberOfVariables + j * numberOfVariables +
+                k] += lFhi[2 * basisSize3 * numberOfVariables +
+                           l * basisSize2 * numberOfVariables +
+                           i * basisSize * numberOfVariables +
+                           j * numberOfVariables + k] *
+                      kernels::FLCoeff[order][l];
+
+          // right
+          lFbnd[5 * basisSize2 * numberOfVariables +
+                i * basisSize * numberOfVariables + j * numberOfVariables +
+                k] += lFhi[2 * basisSize3 * numberOfVariables +
+                           l * basisSize2 * numberOfVariables +
+                           i * basisSize * numberOfVariables +
+                           j * numberOfVariables + k] *
+                      kernels::FRCoeff[order][l];
+        }
+      }
+    }
+  }
+
+  // delete heap allocated arrays
+  delete[] lQh;
+  delete[] gradQ;
+  delete[] lFh;
+}
+
+}  // namespace c
+}  // namespace generic
+}  // namespace aderdg
+}  // namespace kernels
+
+#endif  // DIMENSINS == 3
