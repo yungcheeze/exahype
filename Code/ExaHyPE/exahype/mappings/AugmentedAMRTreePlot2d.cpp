@@ -77,7 +77,8 @@ std::map<tarch::la::Vector<DIMENSIONS + 1, double>, int,
 exahype::mappings::AugmentedAMRTreePlot2d::
     AugmentedAMRTreePlot2d()
     : _vtkWriter(0), _vertexWriter(0), _cellWriter(0), _cellNumberWriter(0),
-      _cellTypeWriter(0), _cellDescriptionIndexWriter(0), _cellRefinementEventWriter(0), _cellCounter(0){}
+      _cellTypeWriter(0), _cellDescriptionIndexWriter(0), _cellRefinementEventWriter(0),
+      _cellDataWriter(0),_cellCounter(0){}
 
 exahype::mappings::AugmentedAMRTreePlot2d::
     ~AugmentedAMRTreePlot2d() {}
@@ -92,7 +93,8 @@ exahype::mappings::AugmentedAMRTreePlot2d::
       _cellNumberWriter(masterThread._cellNumberWriter),
       _cellTypeWriter(masterThread._cellTypeWriter),
       _cellDescriptionIndexWriter(masterThread._cellDescriptionIndexWriter),
-      _cellRefinementEventWriter(masterThread._cellRefinementEventWriter) {}
+      _cellRefinementEventWriter(masterThread._cellRefinementEventWriter),
+      _cellDataWriter(masterThread._cellDataWriter) {}
 
 void exahype::mappings::AugmentedAMRTreePlot2d::
     mergeWithWorkerThread(
@@ -374,7 +376,6 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
 
     _cellDescriptionIndexWriter->plotCell(cellIndex, static_cast<int>(fineGridCell.getADERDGCellDescriptionsIndex()));
 
-
     if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
         fineGridCell.getADERDGCellDescriptionsIndex()) &&
         ADERDGCellDescriptionHeap::getInstance()
@@ -394,6 +395,8 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
         if (pFine->getSolverNumber()==solverNumber) {
           _cellTypeWriter->plotCell(cellIndex, static_cast<int>(pFine->getType()));
           _cellRefinementEventWriter->plotCell(cellIndex, static_cast<int>(pFine->getRefinementEvent()));
+          _cellDataWriter->plotCell(cellIndex,2*static_cast<int>(pFine->getSolution() > -1) +
+              static_cast<int>(pFine->getExtrapolatedPredictor() > -1));
           solverFound = true;
         }
       }
@@ -401,11 +404,13 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
       if (!solverFound) {
         _cellTypeWriter->plotCell(cellIndex, -1);
         _cellRefinementEventWriter->plotCell(cellIndex, -1);
+        _cellDataWriter->plotCell(cellIndex,0);
       }
 
     } else {
       _cellTypeWriter->plotCell(cellIndex, static_cast<int>(fineGridCell.getADERDGCellDescriptionsIndex()));
       _cellRefinementEventWriter->plotCell(cellIndex, -1);
+      _cellDataWriter->plotCell(cellIndex,0);
     }
 
     _cellCounter++;
@@ -431,10 +436,11 @@ void exahype::mappings::AugmentedAMRTreePlot2d::beginIteration(
   _vertexWriter = _vtkWriter->createVertexWriter();
   _cellWriter = _vtkWriter->createCellWriter();
 
+  _cellNumberWriter = _vtkWriter->createCellDataWriter("cell-number", 1);
   _cellTypeWriter  = _vtkWriter->createCellDataWriter("cell-type(NoPatch=-1,Erased=0,Ancestor=1,EmptyAncestor=2,Cell=3,Descendant=4,EmptyDescendant=5)", 1);
   _cellDescriptionIndexWriter = _vtkWriter->createCellDataWriter("NoPatch=-1,ValidPatch>=0", 1);
   _cellRefinementEventWriter = _vtkWriter->createCellDataWriter("None=0,ErasingRequested=1,Restricting=2,Erasing=3,AllocatingMemory=4,ErasingChildren=5,RefiningRequested=6,Refining=7,Prolongating=8,DeaugmentingRequested=9,AugmentingRequested=10,Augmenting=11)", 1);
-  _cellNumberWriter = _vtkWriter->createCellDataWriter("cell-number", 1);
+  _cellDataWriter = _vtkWriter->createCellDataWriter("None=0,OnlyFaceData=1,VolumeAndFaceData=3)", 1);
 }
 
 void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
@@ -445,6 +451,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
   _cellTypeWriter->close();
   _cellDescriptionIndexWriter->close();
   _cellRefinementEventWriter->close();
+  _cellDataWriter->close();
   _cellNumberWriter->close();
 
   delete _vertexWriter;
@@ -454,14 +461,16 @@ void exahype::mappings::AugmentedAMRTreePlot2d::endIteration(
   delete _cellDescriptionIndexWriter;
   delete _cellRefinementEventWriter;
   delete _cellNumberWriter;
+  delete _cellDataWriter;
 
   _vertexWriter = 0;
   _cellWriter = 0;
 
+  _cellNumberWriter = 0;
   _cellTypeWriter = 0;
   _cellDescriptionIndexWriter = 0;
   _cellRefinementEventWriter = 0;
-  _cellNumberWriter = 0;
+  _cellDataWriter = 0;
 
   std::ostringstream snapshotFileName;
   snapshotFileName << "tree"
