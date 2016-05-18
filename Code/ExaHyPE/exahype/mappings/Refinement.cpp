@@ -361,16 +361,9 @@ void exahype::mappings::Refinement::enterCell(
       switch (pCoarse->getRefinementEvent()) {
         case exahype::records::ADERDGCellDescription::Refining:
             if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
-              for (std::vector<exahype::records::ADERDGCellDescription>::iterator
-                       pFine = ADERDGCellDescriptionHeap::getInstance()
-                                   .getData(fineGridCell
-                                                .getADERDGCellDescriptionsIndex())
-                                   .begin();
-                   pFine !=
-                   ADERDGCellDescriptionHeap::getInstance()
-                       .getData(fineGridCell
-                                    .getADERDGCellDescriptionsIndex())
-                       .end();
+              for (std::vector<exahype::records::ADERDGCellDescription>::iterator pFine = ADERDGCellDescriptionHeap::getInstance().
+                  getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+                   pFine != ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
                    ++pFine) {
                 assertion(pCoarse->getType() ==
                           exahype::records::ADERDGCellDescription::Cell);
@@ -397,7 +390,8 @@ void exahype::mappings::Refinement::enterCell(
                   fineGridVerticesEnumerator.getLevel(),
                   coarseGridCell.getADERDGCellDescriptionsIndex(),
                   fineGridVerticesEnumerator.getCellSize(),
-                  fineGridVerticesEnumerator.getCellCenter());
+                  // We pass the lower left corner of the cell as offset.
+                  fineGridVerticesEnumerator.getVertexPosition());
             }
           break;
         default:

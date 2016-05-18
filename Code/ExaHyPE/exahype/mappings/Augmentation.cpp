@@ -356,7 +356,8 @@ void exahype::mappings::Augmentation::enterCell(
               fineGridVerticesEnumerator.getLevel(),
               coarseGridCell.getADERDGCellDescriptionsIndex(),
               fineGridVerticesEnumerator.getCellSize(),
-              fineGridVerticesEnumerator.getCellCenter());
+              // We pass the lower left corner of the cell as offset.
+              fineGridVerticesEnumerator.getVertexPosition());
         }
         break;
       default:
