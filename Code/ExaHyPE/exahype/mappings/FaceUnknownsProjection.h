@@ -47,6 +47,13 @@ class exahype::mappings::FaceUnknownsProjection {
   static tarch::logging::Log _log;
 
   /**
+   * Some counters for debuggin purposes.
+   */
+  static int _parentOfCellOrAncestorNotFound;
+  static int _parentOfCellOrAncestorFound;
+  static int _parentOfDescendantFound;
+
+  /**
    * Prolongates face data from a parent cell description to
    * \p cellDescription if the fine grid cell associated with
    * \p cellDescription is adjacent to a boundary of the
