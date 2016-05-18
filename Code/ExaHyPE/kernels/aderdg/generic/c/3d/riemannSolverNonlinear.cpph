@@ -1,0 +1,91 @@
+// included in ../../Kernels.h
+
+#include <algorithm>
+#include <cmath>
+#include <cstring>
+
+namespace kernels {
+namespace aderdg {
+namespace generic {
+namespace c {
+
+template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
+                              double* lambda)>
+void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
+                            const double* const QR, const double dt,
+                            const int normalNonZero,
+                            const int numberOfVariables, const int basisSize) {
+  const int basisSize2 = basisSize * basisSize;
+  const int order = basisSize - 1;
+
+  // Compute the average states from the left and the right, which we need to
+  // compute the numerical dissipation
+  double* QavL = new double[numberOfVariables];
+  double* QavR = new double[numberOfVariables];
+  std::memset(QavL, 0, numberOfVariables * sizeof(double));
+  std::memset(QavR, 0, numberOfVariables * sizeof(double));
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < basisSize; j++) {
+      const double weight = kernels::gaussLegendreWeights[order][i] *
+                            kernels::gaussLegendreWeights[order][j];
+
+      for (int k = 0; k < numberOfVariables; k++) {
+        QavL[k] +=
+            weight *
+            QL[i * basisSize * numberOfVariables + j * numberOfVariables + k];
+        QavR[k] +=
+            weight *
+            QR[i * basisSize * numberOfVariables + j * numberOfVariables + k];
+      }
+    }
+  }
+
+  double* LL = new double[numberOfVariables];
+  double* LR = new double[numberOfVariables];
+  PDEEigenvalues(QavL, normalNonZero, LL);
+  PDEEigenvalues(QavR, normalNonZero, LR);
+
+  // Here, we implement a very simple Rusanov scheme with scalar dissipation
+  // (smax*Id).
+  // We can change this into a more sophisticated Osher or HLLEM Riemann solver
+  // whenever needed!
+  std::transform(LL, LL + numberOfVariables, LL,
+                 [](double d) { return std::abs(d); });
+  std::transform(LR, LR + numberOfVariables, LR,
+                 [](double d) { return std::abs(d); });
+  const double* smax_L = std::max_element(LL, LL + numberOfVariables);
+  const double* smax_R = std::max_element(LR, LR + numberOfVariables);
+  const double smax = std::max(*smax_L, *smax_R);
+
+  // We now compute the numerical flux. Note that the scheme is at the moment
+  // written in CONSERVATION FORM => no fluctuations, but real fluxes. Later,
+  // this will be converted into the left and right fluctuations.
+
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < numberOfVariables; k++) {
+        FL[i * basisSize * numberOfVariables + j * numberOfVariables + k] =
+            0.5 * (FR[i * basisSize * numberOfVariables +
+                      j * numberOfVariables + k] +
+                   FL[i * basisSize * numberOfVariables +
+                      j * numberOfVariables + k]) -
+            0.5 * smax * (QR[i * basisSize * numberOfVariables +
+                             j * numberOfVariables + k] -
+                          QL[i * basisSize * numberOfVariables +
+                             j * numberOfVariables + k]);
+        FR[i * basisSize * numberOfVariables + j * numberOfVariables + k] =
+            FL[i * basisSize * numberOfVariables + j * numberOfVariables + k];
+      }
+    }
+  }
+
+  delete[] QavL;
+  delete[] QavR;
+  delete[] LL;
+  delete[] LR;
+}
+
+}  // namespace c
+}  // namespace generic
+}  // namespace aderdg
+}  // namespace kernels
