@@ -300,29 +300,18 @@ void exahype::Cell::ensureNoUnnecessaryMemoryIsAllocated(const int solverNumber)
 exahype::Cell::SubcellPosition
 exahype::Cell::computeSubcellPositionOfCellOrAncestor(
     const exahype::records::ADERDGCellDescription& pChild) const {
-  assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-      _cellData.getADERDGCellDescriptionsIndex()),
-      toString());
-  assertion1(solvers::RegisteredSolvers[pChild.getSolverNumber()]->getType() ==
-      exahype::solvers::Solver::ADER_DG,
-      toString());
-  assertion1(pChild.getType() == exahype::records::ADERDGCellDescription::Cell,
-      toString());
+  assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(_cellData.getADERDGCellDescriptionsIndex()),toString());
+  assertion1(solvers::RegisteredSolvers[pChild.getSolverNumber()]->getType() == exahype::solvers::Solver::ADER_DG,toString());
+  assertion1(pChild.getType() == exahype::records::ADERDGCellDescription::Cell,toString());
 
   exahype::Cell::SubcellPosition subcellPosition;
-  // initialisation
+  // Initialisation.
   subcellPosition.parentIndex = pChild.getParentIndex();
   exahype::records::ADERDGCellDescription* pParent = 0;
   for (std::vector<exahype::records::ADERDGCellDescription>::iterator p =
-      ADERDGCellDescriptionHeap::getInstance()
-      .getData(subcellPosition.parentIndex)
-      .begin();
-      p !=
-          ADERDGCellDescriptionHeap::getInstance()
-      .getData(subcellPosition.parentIndex)
-      .end();
+      ADERDGCellDescriptionHeap::getInstance().getData(subcellPosition.parentIndex).begin();
+      p != ADERDGCellDescriptionHeap::getInstance().getData(subcellPosition.parentIndex).end();
       p++) {  // Loop over cell descriptions
-
     if (p->getSolverNumber() == pChild.getSolverNumber()) {
       pParent = &(*p);
       assertion(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
@@ -331,35 +320,31 @@ exahype::Cell::computeSubcellPositionOfCellOrAncestor(
   }
 
   if (pParent != 0) {
-    // recursion
-    while (pParent->getType() ==
-        exahype::records::ADERDGCellDescription::EmptyAncestor) {
+    // Iterative determining of the top most parent that might hold data.
+    while (pParent->getType() == exahype::records::ADERDGCellDescription::EmptyAncestor &&
+           ADERDGCellDescriptionHeap::getInstance().isValidIndex(pParent->getParentIndex())) {
       for (std::vector<exahype::records::ADERDGCellDescription>::iterator p =
-          ADERDGCellDescriptionHeap::getInstance()
-          .getData(subcellPosition.parentIndex)
-          .begin();
-          p !=
-              ADERDGCellDescriptionHeap::getInstance()
-          .getData(subcellPosition.parentIndex)
-          .end();
+          ADERDGCellDescriptionHeap::getInstance().
+          getData(pParent->getParentIndex()).begin();
+          p != ADERDGCellDescriptionHeap::getInstance().
+              getData(pParent->getParentIndex()).end();
           p++) {  // Loop over cell descriptions
         if (p->getSolverNumber() == pChild.getSolverNumber()) {
+          subcellPosition.parentIndex = pParent->getParentIndex();
           pParent = &(*p);
-          subcellPosition.parentIndex = p->getParentIndex();
-          assertion(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-              subcellPosition.parentIndex));
         }
       }
     }
     assertion(pParent->getType() ==
-        exahype::records::ADERDGCellDescription::Ancestor);
+        exahype::records::ADERDGCellDescription::Ancestor ||
+        exahype::records::ADERDGCellDescription::EmptyAncestor);
 
     // compute subcell index
-    const int levelDelta = pChild.getLevel() - pParent->getLevel();
-    double scaling = tarch::la::aPowI(levelDelta, 3);
+    double scaling = tarch::la::aPowI(pChild.getLevel()-1, 3);
     for (int xi = 0; xi < DIMENSIONS; xi++) {
-      subcellPosition.subcellIndex[xi] = tarch::la::round(
-          scaling * pChild.getOffset(xi) - pParent->getOffset(xi));
+      assertion((pChild.getOffset(xi) - pParent->getOffset(xi)) >= 0);
+      subcellPosition.subcellIndex[xi] =
+          tarch::la::round(scaling * (pChild.getOffset(xi) - pParent->getOffset(xi)));
     }
   }
 
@@ -369,72 +354,51 @@ exahype::Cell::computeSubcellPositionOfCellOrAncestor(
 exahype::Cell::SubcellPosition
 exahype::Cell::computeSubcellPositionOfDescendant(
     const exahype::records::ADERDGCellDescription& pChild) const {
-  assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-      _cellData.getADERDGCellDescriptionsIndex()),
-      toString());
-  assertion1(solvers::RegisteredSolvers[pChild.getSolverNumber()]->getType() ==
-      exahype::solvers::Solver::ADER_DG,
-      toString());
-  assertion1(
-      pChild.getType() == exahype::records::ADERDGCellDescription::Descendant,
-      toString());
+  assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(_cellData.getADERDGCellDescriptionsIndex()), toString());
+  assertion1(solvers::RegisteredSolvers[pChild.getSolverNumber()]->getType() == exahype::solvers::Solver::ADER_DG, toString());
+  assertion1(pChild.getType() == exahype::records::ADERDGCellDescription::Descendant, toString());
 
   exahype::Cell::SubcellPosition subcellPosition;
-  // initialisation
+
+  // Initialisation.
   subcellPosition.parentIndex = pChild.getParentIndex();
   exahype::records::ADERDGCellDescription* pParent = 0;
+
   assertion(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
       subcellPosition.parentIndex));
-  for (std::vector<exahype::records::ADERDGCellDescription>::iterator p =
-      ADERDGCellDescriptionHeap::getInstance()
-      .getData(subcellPosition.parentIndex)
-      .begin();
-      p !=
-          ADERDGCellDescriptionHeap::getInstance()
-      .getData(subcellPosition.parentIndex)
-      .end();
-      p++) {  // Loop over cell descriptions
 
+  for (std::vector<exahype::records::ADERDGCellDescription>::iterator p =
+      ADERDGCellDescriptionHeap::getInstance().getData(subcellPosition.parentIndex).begin();
+      p != ADERDGCellDescriptionHeap::getInstance().getData(subcellPosition.parentIndex).end();
+      p++) {
     if (p->getSolverNumber() == pChild.getSolverNumber()) {
       pParent = &(*p);
-      subcellPosition.parentIndex = p->getParentIndex();
-      assertion(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          subcellPosition.parentIndex));
     }
   }
 
   if (pParent != 0) {
     // recursion
-    while (pParent->getType() ==
-        exahype::records::ADERDGCellDescription::EmptyDescendant) {
-      for (std::vector<exahype::records::ADERDGCellDescription>::iterator p =
-          ADERDGCellDescriptionHeap::getInstance()
-          .getData(subcellPosition.parentIndex)
-          .begin();
-          p !=
-              ADERDGCellDescriptionHeap::getInstance()
-          .getData(subcellPosition.parentIndex)
-          .end();
+    while (pParent->getType() == exahype::records::ADERDGCellDescription::EmptyDescendant) {
+      for (std::vector<exahype::records::ADERDGCellDescription>::iterator p = ADERDGCellDescriptionHeap::getInstance()
+          .getData(pParent->getParentIndex()).begin();
+          p != ADERDGCellDescriptionHeap::getInstance().getData(pParent->getParentIndex()).end();
           p++) {  // Loop over cell descriptions
         if (p->getSolverNumber() == pChild.getSolverNumber()) {
+          subcellPosition.parentIndex = pParent->getParentIndex();
           pParent = &(*p);
-          subcellPosition.parentIndex = p->getParentIndex();
-          assertion(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-              subcellPosition.parentIndex));
         }
       }
     }
-    assertion(pParent->getType() ==
-        exahype::records::ADERDGCellDescription::Descendant ||
-        pParent->getType() ==
-            exahype::records::ADERDGCellDescription::Cell);
+    assertion(pParent->getType() == exahype::records::ADERDGCellDescription::Descendant ||
+        pParent->getType() == exahype::records::ADERDGCellDescription::Cell);
 
     // compute subcell index
-    const int levelDelta = pChild.getLevel() - pParent->getLevel();
-    double scaling = tarch::la::aPowI(levelDelta, 3);
+    double scaling = tarch::la::aPowI(pChild.getLevel()-1, 3);
+
     for (int xi = 0; xi < DIMENSIONS; xi++) {
-      subcellPosition.subcellIndex[xi] = tarch::la::round(
-          scaling * pChild.getOffset(xi) - pParent->getOffset(xi));
+      assertion((pChild.getOffset(xi) - pParent->getOffset(xi)) >= 0);
+      subcellPosition.subcellIndex[xi] =
+          tarch::la::round(scaling * (pChild.getOffset(xi) - pParent->getOffset(xi)));
     }
   } else {
     std::cerr << "exahype::Cell::computeSubcellPositionOfDescendant: parent of "
