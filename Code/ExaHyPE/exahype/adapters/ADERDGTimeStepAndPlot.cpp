@@ -11,6 +11,7 @@ peano::CommunicationSpecification   exahype::adapters::ADERDGTimeStepAndPlot::co
    & exahype::mappings::VolumeIntegral::communicationSpecification()
    & exahype::mappings::GlobalTimeStepComputation::communicationSpecification()
    & exahype::mappings::Plot::communicationSpecification()
+   & exahype::mappings::FaceUnknownsProjection::communicationSpecification()
 
   ;
 }
@@ -26,6 +27,7 @@ peano::MappingSpecification   exahype::adapters::ADERDGTimeStepAndPlot::touchVer
    & exahype::mappings::VolumeIntegral::touchVertexLastTimeSpecification()
    & exahype::mappings::GlobalTimeStepComputation::touchVertexLastTimeSpecification()
    & exahype::mappings::Plot::touchVertexLastTimeSpecification()
+   & exahype::mappings::FaceUnknownsProjection::touchVertexLastTimeSpecification()
 
   ;
 }
@@ -41,6 +43,7 @@ peano::MappingSpecification   exahype::adapters::ADERDGTimeStepAndPlot::touchVer
    & exahype::mappings::VolumeIntegral::touchVertexFirstTimeSpecification()
    & exahype::mappings::GlobalTimeStepComputation::touchVertexFirstTimeSpecification()
    & exahype::mappings::Plot::touchVertexFirstTimeSpecification()
+   & exahype::mappings::FaceUnknownsProjection::touchVertexFirstTimeSpecification()
 
   ;
 }
@@ -56,6 +59,7 @@ peano::MappingSpecification   exahype::adapters::ADERDGTimeStepAndPlot::enterCel
    & exahype::mappings::VolumeIntegral::enterCellSpecification()
    & exahype::mappings::GlobalTimeStepComputation::enterCellSpecification()
    & exahype::mappings::Plot::enterCellSpecification()
+   & exahype::mappings::FaceUnknownsProjection::enterCellSpecification()
 
   ;
 }
@@ -71,6 +75,7 @@ peano::MappingSpecification   exahype::adapters::ADERDGTimeStepAndPlot::leaveCel
    & exahype::mappings::VolumeIntegral::leaveCellSpecification()
    & exahype::mappings::GlobalTimeStepComputation::leaveCellSpecification()
    & exahype::mappings::Plot::leaveCellSpecification()
+   & exahype::mappings::FaceUnknownsProjection::leaveCellSpecification()
 
   ;
 }
@@ -86,6 +91,7 @@ peano::MappingSpecification   exahype::adapters::ADERDGTimeStepAndPlot::ascendSp
    & exahype::mappings::VolumeIntegral::ascendSpecification()
    & exahype::mappings::GlobalTimeStepComputation::ascendSpecification()
    & exahype::mappings::Plot::ascendSpecification()
+   & exahype::mappings::FaceUnknownsProjection::ascendSpecification()
 
   ;
 }
@@ -101,6 +107,7 @@ peano::MappingSpecification   exahype::adapters::ADERDGTimeStepAndPlot::descendS
    & exahype::mappings::VolumeIntegral::descendSpecification()
    & exahype::mappings::GlobalTimeStepComputation::descendSpecification()
    & exahype::mappings::Plot::descendSpecification()
+   & exahype::mappings::FaceUnknownsProjection::descendSpecification()
 
   ;
 }
@@ -123,7 +130,8 @@ exahype::adapters::ADERDGTimeStepAndPlot::ADERDGTimeStepAndPlot(const ADERDGTime
   _map2SpaceTimePredictor(masterThread._map2SpaceTimePredictor) , 
   _map2VolumeIntegral(masterThread._map2VolumeIntegral) , 
   _map2GlobalTimeStepComputation(masterThread._map2GlobalTimeStepComputation) , 
-  _map2Plot(masterThread._map2Plot) 
+  _map2Plot(masterThread._map2Plot) , 
+  _map2FaceUnknownsProjection(masterThread._map2FaceUnknownsProjection) 
 
 {
 }
@@ -138,6 +146,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::mergeWithWorkerThread(const ADERD
   _map2VolumeIntegral.mergeWithWorkerThread(workerThread._map2VolumeIntegral);
   _map2GlobalTimeStepComputation.mergeWithWorkerThread(workerThread._map2GlobalTimeStepComputation);
   _map2Plot.mergeWithWorkerThread(workerThread._map2Plot);
+  _map2FaceUnknownsProjection.mergeWithWorkerThread(workerThread._map2FaceUnknownsProjection);
 
 }
 #endif
@@ -160,6 +169,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::createHangingVertex(
   _map2VolumeIntegral.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2FaceUnknownsProjection.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 
 }
@@ -182,6 +192,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::destroyHangingVertex(
   _map2VolumeIntegral.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2FaceUnknownsProjection.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -203,6 +214,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::createInnerVertex(
   _map2VolumeIntegral.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2FaceUnknownsProjection.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -224,6 +236,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::createBoundaryVertex(
   _map2VolumeIntegral.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2FaceUnknownsProjection.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -245,6 +258,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::destroyVertex(
   _map2VolumeIntegral.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2FaceUnknownsProjection.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -266,6 +280,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::createCell(
   _map2VolumeIntegral.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GlobalTimeStepComputation.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Plot.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2FaceUnknownsProjection.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -287,6 +302,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::destroyCell(
   _map2VolumeIntegral.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GlobalTimeStepComputation.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Plot.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2FaceUnknownsProjection.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -308,6 +324,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::mergeWithNeighbour(
    _map2VolumeIntegral.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2GlobalTimeStepComputation.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2Plot.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
+   _map2FaceUnknownsProjection.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
 
 }
 
@@ -327,6 +344,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::prepareSendToNeighbour(
    _map2VolumeIntegral.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2GlobalTimeStepComputation.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2Plot.prepareSendToNeighbour( vertex, toRank, x, h, level );
+   _map2FaceUnknownsProjection.prepareSendToNeighbour( vertex, toRank, x, h, level );
 
 }
 
@@ -346,6 +364,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::prepareCopyToRemoteNode(
    _map2VolumeIntegral.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2GlobalTimeStepComputation.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2Plot.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
+   _map2FaceUnknownsProjection.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
 
 }
 
@@ -365,6 +384,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::prepareCopyToRemoteNode(
    _map2VolumeIntegral.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2GlobalTimeStepComputation.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2Plot.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
+   _map2FaceUnknownsProjection.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
 
 }
 
@@ -385,6 +405,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::mergeWithRemoteDataDueToForkOrJoi
    _map2VolumeIntegral.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2GlobalTimeStepComputation.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2Plot.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
+   _map2FaceUnknownsProjection.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
 
 }
 
@@ -405,6 +426,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::mergeWithRemoteDataDueToForkOrJoi
    _map2VolumeIntegral.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2GlobalTimeStepComputation.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2Plot.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
+   _map2FaceUnknownsProjection.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
 
 }
 
@@ -428,6 +450,7 @@ bool exahype::adapters::ADERDGTimeStepAndPlot::prepareSendToWorker(
    result |= _map2VolumeIntegral.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2GlobalTimeStepComputation.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2Plot.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
+   result |= _map2FaceUnknownsProjection.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
 
   return result;
 }
@@ -450,6 +473,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::prepareSendToMaster(
    _map2VolumeIntegral.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2GlobalTimeStepComputation.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2Plot.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+   _map2FaceUnknownsProjection.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -477,6 +501,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::mergeWithMaster(
    _map2VolumeIntegral.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2GlobalTimeStepComputation.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2Plot.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
+   _map2FaceUnknownsProjection.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
 
 }
 
@@ -501,6 +526,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::receiveDataFromMaster(
    _map2VolumeIntegral.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2GlobalTimeStepComputation.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2Plot.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
+   _map2FaceUnknownsProjection.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -520,6 +546,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::mergeWithWorker(
    _map2VolumeIntegral.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2GlobalTimeStepComputation.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2Plot.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
+   _map2FaceUnknownsProjection.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
 
 }
 
@@ -539,6 +566,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::mergeWithWorker(
    _map2VolumeIntegral.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2GlobalTimeStepComputation.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2Plot.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
+   _map2FaceUnknownsProjection.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
 
 }
 #endif
@@ -561,6 +589,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::touchVertexFirstTime(
   _map2VolumeIntegral.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2FaceUnknownsProjection.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -582,6 +611,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::touchVertexLastTime(
   _map2VolumeIntegral.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Plot.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2FaceUnknownsProjection.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -603,6 +633,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::enterCell(
   _map2VolumeIntegral.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GlobalTimeStepComputation.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Plot.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2FaceUnknownsProjection.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -624,6 +655,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::leaveCell(
   _map2VolumeIntegral.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GlobalTimeStepComputation.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Plot.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2FaceUnknownsProjection.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -639,6 +671,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::beginIteration(
   _map2VolumeIntegral.beginIteration( solverState );
   _map2GlobalTimeStepComputation.beginIteration( solverState );
   _map2Plot.beginIteration( solverState );
+  _map2FaceUnknownsProjection.beginIteration( solverState );
 
 }
 
@@ -654,6 +687,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::endIteration(
   _map2VolumeIntegral.endIteration( solverState );
   _map2GlobalTimeStepComputation.endIteration( solverState );
   _map2Plot.endIteration( solverState );
+  _map2FaceUnknownsProjection.endIteration( solverState );
 
 }
 
@@ -676,6 +710,7 @@ void exahype::adapters::ADERDGTimeStepAndPlot::descend(
   _map2VolumeIntegral.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2GlobalTimeStepComputation.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Plot.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2FaceUnknownsProjection.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
 }
 
@@ -696,5 +731,6 @@ void exahype::adapters::ADERDGTimeStepAndPlot::ascend(
   _map2VolumeIntegral.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2GlobalTimeStepComputation.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Plot.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2FaceUnknownsProjection.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
 }

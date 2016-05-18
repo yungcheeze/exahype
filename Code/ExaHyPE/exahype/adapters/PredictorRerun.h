@@ -20,6 +20,7 @@
 
  #include "exahype/mappings/SpaceTimePredictor.h"
  #include "exahype/mappings/VolumeIntegral.h"
+ #include "exahype/mappings/FaceUnknownsProjection.h"
  #include "exahype/mappings/DropIncomingMPIMessages.h"
 
 
@@ -42,11 +43,13 @@ class exahype::adapters::PredictorRerun {
   private:
     typedef mappings::SpaceTimePredictor Mapping0;
     typedef mappings::VolumeIntegral Mapping1;
-    typedef mappings::DropIncomingMPIMessages Mapping2;
+    typedef mappings::FaceUnknownsProjection Mapping2;
+    typedef mappings::DropIncomingMPIMessages Mapping3;
 
      Mapping0  _map2SpaceTimePredictor;
      Mapping1  _map2VolumeIntegral;
-     Mapping2  _map2DropIncomingMPIMessages;
+     Mapping2  _map2FaceUnknownsProjection;
+     Mapping3  _map2DropIncomingMPIMessages;
 
 
   public:

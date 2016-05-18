@@ -20,6 +20,7 @@
 
  #include "exahype/mappings/SpaceTimePredictor.h"
  #include "exahype/mappings/VolumeIntegral.h"
+ #include "exahype/mappings/FaceUnknownsProjection.h"
 
 
 
@@ -41,9 +42,11 @@ class exahype::adapters::Predictor {
   private:
     typedef mappings::SpaceTimePredictor Mapping0;
     typedef mappings::VolumeIntegral Mapping1;
+    typedef mappings::FaceUnknownsProjection Mapping2;
 
      Mapping0  _map2SpaceTimePredictor;
      Mapping1  _map2VolumeIntegral;
+     Mapping2  _map2FaceUnknownsProjection;
 
 
   public:
