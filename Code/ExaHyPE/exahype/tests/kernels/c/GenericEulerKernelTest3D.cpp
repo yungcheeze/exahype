@@ -1,7 +1,7 @@
 #include "exahype/tests/kernels/c/GenericEulerKernelTest.h"
 
-#include "kernels/aderdg/generic/Kernels.h"
 #include "../testdata/generic_euler_testdata.h"
+#include "kernels/aderdg/generic/Kernels.h"
 
 using std::cout;
 using std::endl;
@@ -280,9 +280,48 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
 }  // testRiemannSolverLinear
 
 void GenericEulerKernelTest::testRiemannSolverNonlinear() {
-  // cout << "Test Riemann solver nonlinear, ORDER=3, DIM=3" << endl;
+  cout << "Test Riemann solver nonlinear, ORDER=3, DIM=3" << endl;
 
-  // TODO: Implement
+  // inout:
+  double *FL = new double[4 * 4 * 5];  // nDOF(3) * nDOF(2) * nVar
+  double *FR = new double[4 * 4 * 5];  // nDOF(3) * nDOF(2) * nVar
+  for (int i = 0; i < 80; i++) {
+    // arbitrary values
+    FL[i] = static_cast<double>(i + 1);
+    FR[i] = static_cast<double>(i - 1);
+  }
+
+  // inputs:
+  // exahype::tests::testdata::generic_euler::testRiemannSolver::QL[80 =
+  // nVar * nVar * nDOF]
+  // exahype::tests::testdata::generic_euler::testRiemannSolver::QR[80 =
+  // nVar * nVar * nDOF]
+  const double dt = 1.40831757919882352703e-03;
+
+  kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
+      FL, FR, ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
+      ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR, dt,
+      1,  // normalNonZero
+      5,  // numberOfVariables
+      4   // basisSize
+      );
+
+  for (int i = 0; i < 80; i++) {
+    validateNumericalEqualsWithEpsWithParams1(
+        FL[i], ::exahype::tests::testdata::generic_euler::
+                   testRiemannSolverNonlinear::FL[i],
+        eps, i);
+  }
+
+  for (int i = 0; i < 80; i++) {
+    validateNumericalEqualsWithEpsWithParams1(
+        FR[i], ::exahype::tests::testdata::generic_euler::
+                   testRiemannSolverNonlinear::FR[i],
+        eps, i);
+  }
+
+  delete[] FL;
+  delete[] FR;
 }  // testRiemannSolverNonlinear
 
 void GenericEulerKernelTest::testSolutionUpdate() {
