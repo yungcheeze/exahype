@@ -112,6 +112,7 @@ adapter:
   merge-with-user-defined-mapping: SpaceTimePredictor // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: GlobalTimeStepComputation
+  merge-with-user-defined-mapping: FaceUnknownsProjection
 
 // Adapter for 1 phase time stepping
 adapter: 
@@ -122,9 +123,10 @@ adapter:
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
   // needs predictor time step size
-  merge-with-user-defined-mapping: SpaceTimePredictor  // DEC: after predictor we can start the face data exchange 
+  merge-with-user-defined-mapping: SpaceTimePredictor  // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: GlobalTimeStepComputation
+  merge-with-user-defined-mapping: FaceUnknownsProjection 
  
  
 adapter: 
@@ -139,6 +141,7 @@ adapter:
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: GlobalTimeStepComputation
   merge-with-user-defined-mapping: Plot
+  merge-with-user-defined-mapping: FaceUnknownsProjection
  
 // Additional adapters for 4 phase time stepping
 adapter:
@@ -160,6 +163,7 @@ adapter:
   name: Predictor
   merge-with-user-defined-mapping: SpaceTimePredictor 
   merge-with-user-defined-mapping: VolumeIntegral
+  merge-with-user-defined-mapping: FaceUnknownsProjection
 
 /**
  * In a serial version, running the predictor is the same for optimistic time 
@@ -169,9 +173,10 @@ adapter:
  */
 adapter:
   name: PredictorRerun
+  merge-with-user-defined-mapping: DropIncomingMPIMessages
   merge-with-user-defined-mapping: SpaceTimePredictor 
   merge-with-user-defined-mapping: VolumeIntegral
-  merge-with-user-defined-mapping: DropIncomingMPIMessages
+  merge-with-user-defined-mapping: FaceUnknownsProjection
 
 adapter:
   name: Corrector
