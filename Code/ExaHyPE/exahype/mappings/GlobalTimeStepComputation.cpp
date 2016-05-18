@@ -374,7 +374,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
     exahype::solvers::Solver* solver =
         exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-    double* luh;
+    double* luh = 0;
     double  admissibleTimeStepSize;
 
     switch (p.getType()) {

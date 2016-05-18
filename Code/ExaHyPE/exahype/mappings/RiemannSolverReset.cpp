@@ -323,9 +323,8 @@ void exahype::mappings::RiemannSolverReset::enterCell(
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
         peano::datatraversal::autotuning::UserDefined5;
-    const int grainSize =
-        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-            numberOfADERDGCellDescriptions, methodTrace);
+    const int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
+        parallelise(numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
       records::ADERDGCellDescription& p =
           ADERDGCellDescriptionHeap::getInstance().getData(
@@ -334,31 +333,10 @@ void exahype::mappings::RiemannSolverReset::enterCell(
       // all bits are initialised to 'off'
       std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed;
       p.setRiemannSolvePerformed(riemannSolvePerformed);
-
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
-
-      double* lQhbnd;
-      double* lFhbnd;
-
-      // todo allocate memory for ancestor and descendant
-      switch(p.getType()) {
-        case exahype::records::ADERDGCellDescription::Ancestor:
-        case exahype::records::ADERDGCellDescription::Descendant:
-          lQhbnd = DataHeap::getInstance().
-                 getData(p.getExtrapolatedPredictor()).data();
-          lFhbnd = DataHeap::getInstance().
-                    getData(p.getFluctuation()).data();
-
-          memset(lQhbnd, 0.0, sizeof(double) * solver->getUnknownsPerCellBoundary());
-          memset(lFhbnd, 0.0, sizeof(double) * solver->getUnknownsPerCellBoundary());
-          break;
-        default:
-          break;
-      }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
     .parallelSectionHasTerminated(methodTrace);
   }
+
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
