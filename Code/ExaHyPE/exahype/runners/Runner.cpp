@@ -226,23 +226,24 @@ int exahype::runners::Runner::runAsMaster(
   repository.iterate();
   startNewTimeStep(-1);
 
+  bool plot = exahype::plotters::isAPlotterActive(solvers::Solver::getMinSolverTimeStamp());
   repository.switchToGlobalTimeStepComputationAndPlot();  // Inside cell
   repository.iterate();
 
-  /*
-   * Compute current first predictor based on current time step size.
-   * Set current time step size as old time step size of next iteration.
-   * Compute the current time step size of the next iteration.
-   */
-  repository.switchToPredictorAndGlobalTimeStepComputation();
-  repository.iterate();
-  startNewTimeStep(0);
-
   /* COMMENT OUT EITHER (1) OR (2): */
   // Begin of (1)
-  // repository.switchToPlotAugmentedAMRGrid();
-  // repository.iterate();
+//   repository.switchToPlotAugmentedAMRGrid();
+//   repository.iterate();
   // End of (1)
+
+   /*
+    * Compute current first predictor based on current time step size.
+    * Set current time step size as old time step size of next iteration.
+    * Compute the current time step size of the next iteration.
+    */
+   repository.switchToPredictorAndGlobalTimeStepComputation();
+   repository.iterate();
+   startNewTimeStep(0);
 
   // Begin of (2)
   const double simulationEndTime = _parser.getSimulationEndTime();
