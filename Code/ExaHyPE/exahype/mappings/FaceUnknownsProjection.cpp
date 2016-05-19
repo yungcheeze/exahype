@@ -481,6 +481,7 @@ void exahype::mappings::FaceUnknownsProjection::restrictFaceData(
     const int levelFine   = cellDescription.getLevel();
     const int levelCoarse = cellDescriptionParent.getLevel();
     assertion(levelCoarse < levelFine);
+    const int levelDelta  = levelFine - levelCoarse;
 
     for (int d=0; d < DIMENSIONS; d++) {
       // Check if cell is at "left" or "right" d face of parent
@@ -511,7 +512,7 @@ void exahype::mappings::FaceUnknownsProjection::restrictFaceData(
             levelCoarse,levelFine,
             getSubfaceIndex(subcellIndex,d));
 
-      } else if (subcellIndex[d]==2) {
+      } else if (subcellIndex[d]==tarch::la::aPowI(levelDelta,3)-1)  {
         const int faceIndex = 2*d+1;
 
         exahype::solvers::Solver* solver = exahype::solvers::
