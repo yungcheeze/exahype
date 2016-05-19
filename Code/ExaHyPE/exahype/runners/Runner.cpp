@@ -230,10 +230,10 @@ int exahype::runners::Runner::runAsMaster(
   repository.switchToGlobalTimeStepComputationAndPlot();  // Inside cell
   repository.iterate();
 
-#if DIMENSIONS==2
-  repository.switchToPlotAugmentedAMRGrid();
-  repository.iterate();
-#endif
+// #if DIMENSIONS==2
+//  repository.switchToPlotAugmentedAMRGrid();
+//  repository.iterate();
+// #endif
 
   /*
    * Compute current first predictor based on current time step size.
