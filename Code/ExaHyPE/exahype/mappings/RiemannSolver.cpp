@@ -551,34 +551,6 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
           double* FR = DataHeap::getInstance().getData(cellDescriptionsOfRightCell[i].getFluctuation()).data() +
               (faceIndexForRightCell * numberOfFaceDof);
 
-          switch(cellDescriptionsOfLeftCell[i].getType()) {
-          case exahype::records::ADERDGCellDescription::Cell:
-          case exahype::records::ADERDGCellDescription::Ancestor:
-          case exahype::records::ADERDGCellDescription::Descendant:
-            assertionNumericalEquals1(QL[3],0,cellDescriptionsOfLeftCell[i].toString());
-//            assertionNumericalEquals1(FL[0],1,cellDescriptionsOfLeftCell[i].toString());
-            break;
-//          case exahype::records::ADERDGCellDescription::Ancestor:
-            break;
-          default:
-            std::cerr << "This shouldn't happen!" << std::endl;
-            exit(EXIT_FAILURE);
-            break;
-          }
-
-          switch(cellDescriptionsOfRightCell[i].getType()) {
-          case exahype::records::ADERDGCellDescription::Cell:
-          case exahype::records::ADERDGCellDescription::Ancestor:
-          case exahype::records::ADERDGCellDescription::Descendant:
-            assertionNumericalEquals1(QR[3],0,cellDescriptionsOfRightCell[i].toString());
-//            assertionNumericalEquals1(FR[0],1,cellDescriptionsOfRightCell[i].toString());
-            break;
-          default:
-            std::cerr << "This shouldn't happen!" << std::endl;
-            exit(EXIT_FAILURE);
-            break;
-          }
-
           solver->synchroniseTimeStepping(cellDescriptionsOfLeftCell[i]);
           solver->synchroniseTimeStepping(cellDescriptionsOfRightCell[i]);
 
