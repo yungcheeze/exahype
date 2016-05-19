@@ -16,14 +16,14 @@ void singleLevelFaceUnknownsProlongation(
     const double* lFhbndCoarse,
     const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex,
     const int numberOfVariables, const int basisSize) {
-  for (int ii = 0; ii < basisSize; ii++) {
-    const int iiNodeIndex = ii;
-    const int iiDofStartIndex = iiNodeIndex * numberOfVariables;
+  for (int mm = 0; mm < basisSize; mm++) {
+    for (int ivar = 0; ivar < numberOfVariables; ivar++) {
+      const int mmNodeIndex     = mm;
+      const int mmDofStartIndex = mmNodeIndex * numberOfVariables;
 
-    for (int mm = 0; mm < basisSize; mm++) {
-      for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-        const int mmNodeIndex     = mm;
-        const int mmDofStartIndex = mmNodeIndex * numberOfVariables;
+      for (int ii = 0; ii < basisSize; ii++) {
+        const int iiNodeIndex = ii;
+        const int iiDofStartIndex = iiNodeIndex * numberOfVariables;
 
         lQhbndFine[mmDofStartIndex+ivar]
                           += lQhbndCoarse[iiDofStartIndex + ivar] *
@@ -138,15 +138,14 @@ void singleLevelFaceUnknownsRestriction(
     const double* lFhbndFine,
     const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex,
     const int numberOfVariables, const int basisSize) {
-  for (int ii = 0; ii < basisSize; ii++) {
-    const int iiNodeIndex = ii;
-    const int iiDofStartIndex = iiNodeIndex * numberOfVariables;
+  for (int mm = 0; mm < basisSize; mm++) {
+    for (int ivar = 0; ivar < numberOfVariables; ivar++) {
+      const int mmNodeIndex     = mm;
+      const int mmDofStartIndex = mmNodeIndex * numberOfVariables;
 
-    for (int mm = 0; mm < basisSize; mm++) {
-      for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-        const int mmNodeIndex     = mm;
-        const int mmDofStartIndex = mmNodeIndex * numberOfVariables;
-
+      for (int ii = 0; ii < basisSize; ii++) {
+        const int iiNodeIndex = ii;
+        const int iiDofStartIndex = iiNodeIndex * numberOfVariables;
         lQhbndCoarse[mmDofStartIndex+ivar]
                           += kernels::gaussLegendreWeights[basisSize-1][ii] *
                              kernels::fineGridProjector1d[basisSize-1][subfaceIndex[0]][mm][ii] *
@@ -197,8 +196,7 @@ void kernels::aderdg::generic::c::faceUnknownsRestriction(double* lQhbndCoarse,
   workPointerQhbnd1 = lQhbndCoarseTemp1;
   workPointerFhbnd1 = lFhbndCoarseTemp1;
 
-  tarch::la::Vector<DIMENSIONS-1,int> subfaceIndexPrevious (subfaceIndex);
-  tarch::la::Vector<DIMENSIONS-1,int> subfaceIndexCurrent;
+  tarch::la::Vector<DIMENSIONS-1,int> subfaceIndexCurrent(subfaceIndex);
 
   tarch::la::Vector<DIMENSIONS-1,int> subintervalIndex;
   // This loop step by step decodes subfaceIndex[0] into a tertiary basis
