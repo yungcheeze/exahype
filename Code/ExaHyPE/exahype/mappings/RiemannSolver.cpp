@@ -526,6 +526,14 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
     pfor(i, 0, numberOfADERDGCellDescriptions,grainSize)
       if (cellDescriptionsOfLeftCell[i].getType() == exahype::records::ADERDGCellDescription::Cell ||
           cellDescriptionsOfRightCell[i].getType() == exahype::records::ADERDGCellDescription::Cell) {
+        assertion1(cellDescriptionsOfLeftCell[i].getType() == exahype::records::ADERDGCellDescription::Cell ||
+            cellDescriptionsOfLeftCell[i].getType() == exahype::records::ADERDGCellDescription::Ancestor ||
+            cellDescriptionsOfLeftCell[i].getType() == exahype::records::ADERDGCellDescription::Descendant,
+            cellDescriptionsOfLeftCell[i].toString());
+        assertion1(cellDescriptionsOfRightCell[i].getType() == exahype::records::ADERDGCellDescription::Cell ||
+            cellDescriptionsOfRightCell[i].getType() == exahype::records::ADERDGCellDescription::Ancestor ||
+            cellDescriptionsOfRightCell[i].getType() == exahype::records::ADERDGCellDescription::Descendant,
+            cellDescriptionsOfRightCell[i].toString());
 
         exahype::solvers::Solver* solver =
             exahype::solvers::RegisteredSolvers[cellDescriptionsOfLeftCell[i]
