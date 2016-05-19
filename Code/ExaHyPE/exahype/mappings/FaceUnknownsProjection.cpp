@@ -304,7 +304,6 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
-
   if (ADERDGCellDescriptionHeap::getInstance().
       isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
 
@@ -335,7 +334,6 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
           break;
         }
 
-
       // if we have at least one parent
       if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(pFine.getParentIndex())) {
         for (std::vector<exahype::records::ADERDGCellDescription>::
@@ -349,12 +347,12 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
           if (pFine.getSolverNumber()==pParent->getSolverNumber()) {
             switch (pFine.getType()) {
               case exahype::records::ADERDGCellDescription::Descendant:
-                subcellPosition = fineGridCell.computeSubcellPositionOfDescendant(pFine);
+              subcellPosition = fineGridCell.computeSubcellPositionOfDescendant(pFine);
 
-                prolongateFaceData(
-                    pFine,
-                    subcellPosition.parentIndex,
-                    subcellPosition.subcellIndex);
+              prolongateFaceData(
+                  pFine,
+                  subcellPosition.parentIndex,
+                  subcellPosition.subcellIndex);
 
                 break;
               case exahype::records::ADERDGCellDescription::Cell:
@@ -376,7 +374,6 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
     .parallelSectionHasTerminated(methodTrace);
   }
-
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
@@ -386,6 +383,9 @@ void exahype::mappings::FaceUnknownsProjection::prolongateFaceData(
                 const int parentIndex,
                 const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) const {
   // todo not dynamic with respect to the solver registry
+  assertion1(ADERDGCellDescriptionHeap::getInstance().
+      isValidIndex(parentIndex),cellDescription.toString());
+
   exahype::records::ADERDGCellDescription& cellDescriptionParent =
       ADERDGCellDescriptionHeap::getInstance().
         getData(parentIndex)[cellDescription.getSolverNumber()];
@@ -465,6 +465,9 @@ void exahype::mappings::FaceUnknownsProjection::restrictFaceData(
                 const int parentIndex,
                 const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) const {
   // todo not dynamic with respect to the solver registry
+  assertion1(ADERDGCellDescriptionHeap::getInstance().
+      isValidIndex(parentIndex),cellDescription.toString());
+
   exahype::records::ADERDGCellDescription& cellDescriptionParent =
       ADERDGCellDescriptionHeap::getInstance().
         getData(parentIndex)[cellDescription.getSolverNumber()];
@@ -575,9 +578,9 @@ void exahype::mappings::FaceUnknownsProjection::beginIteration(
 }
 
 void exahype::mappings::FaceUnknownsProjection::endIteration(exahype::State& solverState) {
-  std::cout << "_parentOfCellOrAncestorNotFound: " << _parentOfCellOrAncestorNotFound << std::endl;
-  std::cout << "_parentOfCellOrAncestorFound: " << _parentOfCellOrAncestorFound    << std::endl;
-  std::cout << "_parentOfDescendantFound: " << _parentOfDescendantFound        << std::endl;
+  logDebug("endIteration(...)","_parentOfCellOrAncestorNotFound: " << _parentOfCellOrAncestorNotFound);
+  logDebug("endIteration(...)","_parentOfCellOrAncestorFound: " << _parentOfCellOrAncestorFound);
+  logDebug("endIteration(...)","_parentOfDescendantFound: " << _parentOfDescendantFound);
 }
 
 void exahype::mappings::FaceUnknownsProjection::descend(
