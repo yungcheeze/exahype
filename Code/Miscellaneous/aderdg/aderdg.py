@@ -51,7 +51,7 @@ def BaseFunc1d(xi, xin, N):
 
 def assembleStiffnessMatrix(xGPN, wGPN, N):
     """
-    Computes the (reference) element stiffness matrix times a Gauss-Legendre weight for an approximation of
+    Computes the (reference) element stiffness matrix for an approximation of
     order N.
 
     Args:
@@ -78,7 +78,7 @@ def assembleStiffnessMatrix(xGPN, wGPN, N):
 
 def assembleStiffnessMatrixShorter(xGPN, wGPN, N):
     """
-    Computes the (reference) element stiffness matrix times a Gauss-Legendre weight for an approximation of
+    Computes the (reference) element stiffness matrix for an approximation of
     order N.
 
     Args:
