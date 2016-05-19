@@ -1290,89 +1290,43 @@ void GenericEulerKernelTest::testFaceUnknownsProjection() {
   }
 
   // Test the prolongation operator.
-  const int levelCoarse = 0;
-  const int levelFine   = 1;
+  for (int levelCoarse=0; levelCoarse < 3; ++levelCoarse) {
+    for (int levelDelta=1; levelDelta < 4; ++levelDelta) {
+      // todo For a levelDelta >= 4, assertionNumericalEquals
+      // fails since the restriction result is not precise enough anymore.
+      const int numberOfSubIntervals = tarch::la::aPowI(levelDelta,3);
 
-  // interval 0
-  tarch::la::Vector<DIMENSIONS-1,int> subfaceIndex(0);
-  kernels::aderdg::generic::c::faceUnknownsProlongation(
-      lQhbndFineOut,lFhbndFineOut,
-      lQhbndCoarseIn,lFhbndCoarseIn,
-      levelCoarse,levelFine,
-      subfaceIndex,numberOfVariables,basisSize);
+      // Test the restriction operator.
+      memset(lQhbndCoarseOut,0,sizeof(double)*numberOfVariables*basisSize);
+      memset(lFhbndCoarseOut,0,sizeof(double)*numberOfVariables*basisSize);
+      for (int i=0; i < numberOfSubIntervals; ++i) {
+        // Prolongate.
+        tarch::la::Vector<DIMENSIONS-1,int> subfaceIndex(i);
+        kernels::aderdg::generic::c::faceUnknownsProlongation(
+            lQhbndFineOut,lFhbndFineOut,
+            lQhbndCoarseIn,lFhbndCoarseIn,
+            levelCoarse,levelCoarse+levelDelta,
+            subfaceIndex,numberOfVariables,basisSize);
 
-  for (int i = 0; i < basisSize*numberOfVariables; ++i) {
-    assertionNumericalEquals(lQhbndFineOut[i],lQhbndFineIn[i]);
-    assertionNumericalEquals(lFhbndFineOut[i],lFhbndFineIn[i]);
-  }
+        // Test prolongated values.
+        for (int i = 0; i < basisSize*numberOfVariables; ++i) {
+          assertionNumericalEquals(lQhbndFineOut[i],lQhbndFineIn[i]);
+          assertionNumericalEquals(lFhbndFineOut[i],lFhbndFineIn[i]);
+        }
 
-  // interval 1
-  subfaceIndex[0] = 1;
-  kernels::aderdg::generic::c::faceUnknownsProlongation(
-      lQhbndFineOut,lFhbndFineOut,
-      lQhbndCoarseIn,lFhbndCoarseIn,
-      levelCoarse,levelFine,
-      subfaceIndex,numberOfVariables,basisSize);
-
-  for (int i = 0; i < basisSize*numberOfVariables; ++i) {
-    assertionNumericalEquals(lQhbndFineOut[i],lQhbndFineIn[i]);
-    assertionNumericalEquals(lFhbndFineOut[i],lFhbndFineIn[i]);
-  }
-
-  // interval 2
-  subfaceIndex[0] = 2;
-  kernels::aderdg::generic::c::faceUnknownsProlongation(
-      lQhbndFineOut,lFhbndFineOut,
-      lQhbndCoarseIn,lFhbndCoarseIn,
-      levelCoarse,levelFine,
-      subfaceIndex,numberOfVariables,basisSize);
-
-  for (int i = 0; i < basisSize*numberOfVariables; ++i) {
-    assertionNumericalEquals(lQhbndFineOut[i],lQhbndFineIn[i]);
-    assertionNumericalEquals(lFhbndFineOut[i],lFhbndFineIn[i]);
-  }
-
-  // Test the prolongation operator.
-  memset(lQhbndCoarseOut,0,sizeof(double)*numberOfVariables*basisSize);
-  memset(lFhbndCoarseOut,0,sizeof(double)*numberOfVariables*basisSize);
-
-  // interval 0
-  subfaceIndex[0] = 0;
-  kernels::aderdg::generic::c::faceUnknownsRestriction(
-      lQhbndCoarseOut,lFhbndCoarseOut,
-      lQhbndFineIn,lFhbndFineIn,
-      levelCoarse,levelFine,
-      subfaceIndex,numberOfVariables,basisSize);
-
-  for (int i = 0; i < basisSize*numberOfVariables; ++i) {
-//    assertionNumericalEquals(lQhbndCoarseOut[i],lQhbndCoarseIn[i]/3);
-//    assertionNumericalEquals(lFhbndCoarseOut[i],lFhbndCoarseIn[i]/3);
-  }
-
-  // interval 1
-  subfaceIndex[0] = 1;
-  kernels::aderdg::generic::c::faceUnknownsRestriction(
-      lQhbndCoarseOut,lFhbndCoarseOut,
-      lQhbndFineIn,lFhbndFineIn,
-      levelCoarse,levelFine,
-      subfaceIndex,numberOfVariables,basisSize);
-
-  for (int i = 0; i < basisSize*numberOfVariables; ++i) {
-//    assertionNumericalEquals(lQhbndCoarseOut[i],lQhbndCoarseIn[i]/3);
-//    assertionNumericalEquals(lFhbndCoarseOut[i],lFhbndCoarseIn[i]/3);
-  }
-
-  // interval 2
-  subfaceIndex[0] = 2;
-  kernels::aderdg::generic::c::faceUnknownsRestriction(
-      lQhbndCoarseOut,lFhbndCoarseOut,
-      lQhbndFineIn,lFhbndFineIn,
-      levelCoarse,levelFine,
-      subfaceIndex,numberOfVariables,basisSize);
-
-  for (int i = 0; i < basisSize*numberOfVariables; ++i) {
-    assertionNumericalEquals(lQhbndCoarseOut[i],lQhbndCoarseIn[i]);
-    assertionNumericalEquals(lFhbndCoarseOut[i],lFhbndCoarseIn[i]);
+        // Restrict.
+        kernels::aderdg::generic::c::faceUnknownsRestriction(
+            lQhbndCoarseOut,lFhbndCoarseOut,
+            lQhbndFineIn,lFhbndFineIn,
+            levelCoarse,levelCoarse+levelDelta,
+            subfaceIndex,numberOfVariables,basisSize);
+      }
+      // Test restricted values.
+      for (int i = 0; i < basisSize*numberOfVariables; ++i) {
+        assertionNumericalEquals(lQhbndCoarseOut[i],lQhbndCoarseIn[i]);
+        assertionNumericalEquals(lFhbndCoarseOut[i],lFhbndCoarseIn[i]);
+      }
+    }
   }
 
   delete [] lQhbndCoarseOut;
