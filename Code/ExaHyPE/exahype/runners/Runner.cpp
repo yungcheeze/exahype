@@ -244,7 +244,6 @@ int exahype::runners::Runner::runAsMaster(
   repository.iterate();
   startNewTimeStep(0);
 
-  // Begin of (2)
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n = 1;
 
@@ -264,7 +263,6 @@ int exahype::runners::Runner::runAsMaster(
     n++;
     logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
   }
-  // End of (2)
 
   repository.logIterationStatistics(true);
   repository.terminate();
