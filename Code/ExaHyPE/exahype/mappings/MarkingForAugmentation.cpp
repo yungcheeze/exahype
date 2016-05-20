@@ -314,8 +314,8 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
         pFine != ADERDGCellDescriptionHeap::getInstance().getData(
             fineGridCell.getADERDGCellDescriptionsIndex()).end();
         ++pFine) {
-      const exahype::solvers::Solver::RefinementControl refinementControl =
-          virtualRefinementCriterion(
+      const exahype::solvers::Solver::AugmentationControl augmentationControl =
+          augmentationCriterion(
               pFine->getSolverNumber(),
               pFine->getType(),
               pFine->getLevel(),
@@ -326,7 +326,7 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
       switch (pFine->getType()) {
       case exahype::records::ADERDGCellDescription::Ancestor:
       case exahype::records::ADERDGCellDescription::EmptyAncestor:
-        switch (refinementControl) {
+        switch (augmentationControl) {
         case exahype::solvers::Solver::NextToCell:
         case exahype::solvers::Solver::NextToCellAndAncestor:
           pFine->setType(exahype::records::ADERDGCellDescription::Ancestor);
@@ -338,7 +338,7 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
         break;
       case exahype::records::ADERDGCellDescription::Descendant:
       case exahype::records::ADERDGCellDescription::EmptyDescendant:
-        switch (refinementControl) {
+        switch (augmentationControl) {
         case exahype::solvers::Solver::NextToCell:
         case exahype::solvers::Solver::NextToCellAndAncestor:
           pFine->setType(exahype::records::ADERDGCellDescription::Descendant);
@@ -363,12 +363,12 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
         case exahype::records::ADERDGCellDescription::Cell:
         case exahype::records::ADERDGCellDescription::Descendant:
         case exahype::records::ADERDGCellDescription::EmptyDescendant:
-          switch (refinementControl) {
+          switch (augmentationControl) {
           case exahype::solvers::Solver::NextToAncestor:
           case exahype::solvers::Solver::NextToCellAndAncestor:
             pFine->setRefinementEvent(exahype::records::ADERDGCellDescription::AugmentingRequested);
             break;
-          case exahype::solvers::Solver::Erase:
+          case exahype::solvers::Solver::Unncessary:
             pFine->setRefinementEvent(exahype::records::ADERDGCellDescription::DeaugmentingRequested);
             break;
           default:
@@ -388,8 +388,8 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
-exahype::solvers::Solver::RefinementControl
-exahype::mappings::MarkingForAugmentation::virtualRefinementCriterion(
+exahype::solvers::Solver::AugmentationControl
+exahype::mappings::MarkingForAugmentation::augmentationCriterion(
     const int solverNumber,
     const exahype::records::ADERDGCellDescription::Type type,
     const int level,
@@ -461,7 +461,7 @@ exahype::mappings::MarkingForAugmentation::virtualRefinementCriterion(
     return exahype::solvers::Solver::NextToCell;
   }
   // Erase otherwise.
-  return exahype::solvers::Solver::Erase;
+  return exahype::solvers::Solver::Unncessary;
 }
 
 void exahype::mappings::MarkingForAugmentation::leaveCell(
