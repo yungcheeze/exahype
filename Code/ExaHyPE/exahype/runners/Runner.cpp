@@ -205,6 +205,8 @@ int exahype::runners::Runner::runAsMaster(
   } while (!repository.getState().isGridBalanced());
   repository.iterate(); // We need one extra iteration.
   gridSetupIterations++;
+  repository.iterate(); // We need one extra iteration.
+  gridSetupIterations++;
 
   logInfo("runAsMaster()",
           "grid setup iterations=" << gridSetupIterations << ", max-level="
