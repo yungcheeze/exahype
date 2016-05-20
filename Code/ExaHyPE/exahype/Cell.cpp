@@ -302,7 +302,8 @@ exahype::Cell::computeSubcellPositionOfCellOrAncestor(
     const exahype::records::ADERDGCellDescription& pChild) const {
   assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(_cellData.getADERDGCellDescriptionsIndex()),toString());
   assertion1(solvers::RegisteredSolvers[pChild.getSolverNumber()]->getType() == exahype::solvers::Solver::ADER_DG,toString());
-  assertion1(pChild.getType() == exahype::records::ADERDGCellDescription::Cell,toString());
+  assertion1(pChild.getType() == exahype::records::ADERDGCellDescription::Cell ||
+             pChild.getType() == exahype::records::ADERDGCellDescription::Ancestor,toString());
 
   exahype::Cell::SubcellPosition subcellPosition;
   // Initialisation.
