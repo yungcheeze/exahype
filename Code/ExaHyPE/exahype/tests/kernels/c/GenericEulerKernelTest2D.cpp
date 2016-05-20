@@ -1263,6 +1263,84 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   delete[] lFhbnd;
 }  // testSpaceTimePredictorNonlinear
 
+void GenericEulerKernelTest::testFaceUnknownsProjection() {
+  cout << "Test face unknowns projection, ORDER=3, DIM=2" << endl;
+
+  const int numberOfVariables = 1;
+  const int basisSize = 3;
+
+  // in/out
+  double *lQhbndCoarseOut = new double[basisSize*numberOfVariables];
+  double *lFhbndCoarseOut = new double[basisSize*numberOfVariables];
+  double *lQhbndFineOut   = new double[basisSize*numberOfVariables];
+  double *lFhbndFineOut   = new double[basisSize*numberOfVariables];
+
+  // in:
+  double *lQhbndCoarseIn = new double[basisSize*numberOfVariables];
+  double *lFhbndCoarseIn = new double[basisSize*numberOfVariables];
+  double *lQhbndFineIn   = new double[basisSize*numberOfVariables];
+  double *lFhbndFineIn   = new double[basisSize*numberOfVariables];
+
+  // Initialise to constant value.
+  for (int i = 0; i < basisSize*numberOfVariables; ++i) {
+    lQhbndCoarseIn[i] = 1.0;
+    lFhbndCoarseIn[i] = 1.0;
+    lQhbndFineIn[i]   = 1.0;
+    lFhbndFineIn[i]   = 1.0;
+  }
+
+  // Test the prolongation operator.
+  for (int levelCoarse=0; levelCoarse < 3; ++levelCoarse) {
+    for (int levelDelta=1; levelDelta < 4; ++levelDelta) {
+      // todo For a levelDelta >= 4, assertionNumericalEquals
+      // fails since the restriction result is not precise enough anymore.
+      const int numberOfSubIntervals = tarch::la::aPowI(levelDelta,3);
+
+      // Test the restriction operator.
+      memset(lQhbndCoarseOut,0,sizeof(double)*numberOfVariables*basisSize);
+      memset(lFhbndCoarseOut,0,sizeof(double)*numberOfVariables*basisSize);
+      for (int i=0; i < numberOfSubIntervals; ++i) {
+        // Prolongate.
+        tarch::la::Vector<DIMENSIONS-1,int> subfaceIndex(i);
+        kernels::aderdg::generic::c::faceUnknownsProlongation(
+            lQhbndFineOut,lFhbndFineOut,
+            lQhbndCoarseIn,lFhbndCoarseIn,
+            levelCoarse,levelCoarse+levelDelta,
+            subfaceIndex,numberOfVariables,basisSize);
+
+        // Test prolongated values.
+        for (int i = 0; i < basisSize*numberOfVariables; ++i) {
+          assertionNumericalEquals(lQhbndFineOut[i],lQhbndFineIn[i]);
+          assertionNumericalEquals(lFhbndFineOut[i],lFhbndFineIn[i]);
+        }
+
+        // Restrict.
+        kernels::aderdg::generic::c::faceUnknownsRestriction(
+            lQhbndCoarseOut,lFhbndCoarseOut,
+            lQhbndFineIn,lFhbndFineIn,
+            levelCoarse,levelCoarse+levelDelta,
+            subfaceIndex,numberOfVariables,basisSize);
+      }
+      // Test restricted values.
+      for (int i = 0; i < basisSize*numberOfVariables; ++i) {
+        assertionNumericalEquals(lQhbndCoarseOut[i],lQhbndCoarseIn[i]);
+        assertionNumericalEquals(lFhbndCoarseOut[i],lFhbndCoarseIn[i]);
+      }
+    }
+  }
+
+  delete [] lQhbndCoarseOut;
+  delete [] lFhbndCoarseOut;
+  delete [] lQhbndFineOut;
+  delete [] lFhbndFineOut;
+
+  delete [] lQhbndCoarseIn;
+  delete [] lFhbndCoarseIn;
+  delete [] lQhbndFineIn;
+  delete [] lFhbndFineIn;
+}
+
+
 }  // namespace c
 }  // namespace tests
 }  // namespace exahype

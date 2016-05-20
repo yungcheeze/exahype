@@ -207,10 +207,6 @@ int exahype::runners::Runner::runAsMaster(
   gridSetupIterations++;
 
   logInfo("runAsMaster()",
-        "solution update " << gridSetupIterations << ", max-level="
-        << repository.getState().getMaxLevel());
-
-  logInfo("runAsMaster()",
           "grid setup iterations=" << gridSetupIterations << ", max-level="
                                    << repository.getState().getMaxLevel());
 #ifdef Parallel
@@ -226,8 +222,14 @@ int exahype::runners::Runner::runAsMaster(
   repository.iterate();
   startNewTimeStep(-1);
 
+  bool plot = exahype::plotters::isAPlotterActive(solvers::Solver::getMinSolverTimeStamp());
   repository.switchToGlobalTimeStepComputationAndPlot();  // Inside cell
   repository.iterate();
+
+// #if DIMENSIONS==2
+//  repository.switchToPlotAugmentedAMRGrid();
+//  repository.iterate();
+// #endif
 
   /*
    * Compute current first predictor based on current time step size.
@@ -238,13 +240,6 @@ int exahype::runners::Runner::runAsMaster(
   repository.iterate();
   startNewTimeStep(0);
 
-  /* COMMENT OUT EITHER (1) OR (2): */
-  // Begin of (1)
-  // repository.switchToPlotAugmentedAMRGrid();
-  // repository.iterate();
-  // End of (1)
-
-  // Begin of (2)
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n = 1;
 
@@ -264,7 +259,6 @@ int exahype::runners::Runner::runAsMaster(
     n++;
     logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
   }
-  // End of (2)
 
   repository.logIterationStatistics(true);
   repository.terminate();

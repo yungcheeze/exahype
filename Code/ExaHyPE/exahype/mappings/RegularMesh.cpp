@@ -341,7 +341,8 @@ void exahype::mappings::RegularMesh::enterCell(
             fineGridVerticesEnumerator.getLevel(),
             exahype::Cell::InvalidCellDescriptionsIndex,
             fineGridVerticesEnumerator.getCellSize(),
-            fineGridVerticesEnumerator.getCellCenter());
+            // We pass the lower left corner of the cell as offset.
+            fineGridVerticesEnumerator.getVertexPosition());
       }
       solverNumber++;
     }

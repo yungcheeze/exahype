@@ -36,6 +36,11 @@ extern const double FL[80];
 extern const double FR[80];
 }  // namespace testRiemannSolverLinear
 
+namespace testRiemannSolverNonlinear {
+extern const double FL[80];
+extern const double FR[80];
+}  // namespace testRiemannNonlinear
+
 namespace testSolutionUpdate {
 extern const double luh[320];
 }  // namespace testSolutionUpdate

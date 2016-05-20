@@ -28,6 +28,8 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
   void testSolutionUpdate();
 #if DIMENSIONS == 2
   static void testFlux(const double* const Q, double* f, double* g);
+  void testFaceUnknownsProjection();
+  // todo move testFace(...) out of here as soon as similar code for 3D case exists
 #elif DIMENSIONS == 3
   static void testFlux(const double* const Q, double* f, double* g, double* h);
 #endif

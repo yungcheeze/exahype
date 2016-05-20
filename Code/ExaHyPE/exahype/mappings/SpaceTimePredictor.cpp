@@ -418,17 +418,17 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
         exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
     // space-time DoF (basisSize**(DIMENSIONS+1))
-    double* lQi;
-    double* lFi;
+    double* lQi = 0;
+    double* lFi = 0;
 
     // volume DoF (basisSize**(DIMENSIONS))
-    double* luh;
-    double* lQhi;
-    double* lFhi;
+    double* luh  = 0;
+    double* lQhi = 0;
+    double* lFhi = 0;
 
     // face DoF (basisSize**(DIMENSIONS-1))
-    double* lQhbnd;
-    double* lFhbnd;
+    double* lQhbnd = 0;
+    double* lFhbnd = 0;
 
     switch(p.getType()) {
     case exahype::records::ADERDGCellDescription::Cell:
@@ -436,8 +436,8 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
       case exahype::records::ADERDGCellDescription::None:
       case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
         lQi = DataHeap::getInstance().
-        getData(p.getSpaceTimePredictor()).
-        data();
+            getData(p.getSpaceTimePredictor()).
+            data();
         lFi = DataHeap::getInstance().
             getData(p.getSpaceTimeVolumeFlux()).
             data();

@@ -335,8 +335,8 @@ void exahype::mappings::VolumeIntegral::enterCell(
     exahype::solvers::Solver* solver =
         exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-    double* lduh;
-    double* lFhi;
+    double* lduh = 0;
+    double* lFhi = 0;
 
     switch(p.getType()) {
     case exahype::records::ADERDGCellDescription::Cell:

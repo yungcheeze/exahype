@@ -37,6 +37,12 @@ void GenericEulerKernelTest::run() {
   testMethod(testRiemannSolverNonlinear);
   testMethod(testSurfaceIntegral);
 
+  testMethod(testFaceUnknownsProjection);
+
+#if DIMENSIONS == 2
+
+#endif
+
   testMethod(testSolutionUpdate);
 }
 

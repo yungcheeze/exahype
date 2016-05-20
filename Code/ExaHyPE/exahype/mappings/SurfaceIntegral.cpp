@@ -336,14 +336,17 @@ void exahype::mappings::SurfaceIntegral::enterCell(
               fineGridCell.getADERDGCellDescriptionsIndex())[i];
     exahype::solvers::Solver* solver =
         exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
-    double* lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
-    double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
+    double* lduh   = 0;
+    double* lFhbnd = 0;
 
       switch(p.getType()) {
         case exahype::records::ADERDGCellDescription::Cell:
           switch(p.getRefinementEvent()) {
           case exahype::records::ADERDGCellDescription::None:
           case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
+              lduh   = DataHeap::getInstance().getData(p.getUpdate()).data();
+              lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
+
               solver->surfaceIntegral(lduh, lFhbnd,
                                       fineGridVerticesEnumerator.getCellSize());
               break;

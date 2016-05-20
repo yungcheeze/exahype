@@ -356,7 +356,8 @@ void exahype::mappings::Augmentation::enterCell(
               fineGridVerticesEnumerator.getLevel(),
               coarseGridCell.getADERDGCellDescriptionsIndex(),
               fineGridVerticesEnumerator.getCellSize(),
-              fineGridVerticesEnumerator.getCellCenter());
+              // We pass the lower left corner of the cell as offset.
+              fineGridVerticesEnumerator.getVertexPosition());
         }
         break;
       default:
@@ -455,27 +456,15 @@ void exahype::mappings::Augmentation::ascend(
           dfor3(k)
           if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
               fineGridCells[kScalar].getADERDGCellDescriptionsIndex())) {
-            for (std::vector<exahype::records::ADERDGCellDescription>::
-                iterator pFine =
-                    ADERDGCellDescriptionHeap::getInstance()
-                .getData(
-                    fineGridCells[kScalar]
-                                  .getADERDGCellDescriptionsIndex())
-                                  .begin();
-                pFine !=
-                    ADERDGCellDescriptionHeap::getInstance()
-                .getData(fineGridCells[kScalar]
-                                       .getADERDGCellDescriptionsIndex())
-                                       .end();
+            for (std::vector<exahype::records::ADERDGCellDescription>::iterator pFine = ADERDGCellDescriptionHeap::getInstance()
+                .getData(fineGridCells[kScalar].getADERDGCellDescriptionsIndex()).begin();
+                pFine != ADERDGCellDescriptionHeap::getInstance()
+                .getData(fineGridCells[kScalar].getADERDGCellDescriptionsIndex()).end();
                 ++pFine) {
               if (pCoarse->getSolverNumber() == pFine->getSolverNumber()) {
-                augmentingDone =
-                    augmentingDone &&
-                    (pFine->getRefinementEvent() ==
-                        exahype::records::ADERDGCellDescription::None
-                                            ||
-                    pFine->getRefinementEvent() ==
-                        exahype::records::ADERDGCellDescription::DeaugmentingRequested);
+                augmentingDone = augmentingDone &&
+                    (pFine->getRefinementEvent() == exahype::records::ADERDGCellDescription::None ||
+                        pFine->getRefinementEvent() == exahype::records::ADERDGCellDescription::DeaugmentingRequested);
               }
             }
           } else {
