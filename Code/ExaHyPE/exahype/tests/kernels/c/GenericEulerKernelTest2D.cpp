@@ -1264,22 +1264,22 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
 }  // testSpaceTimePredictorNonlinear
 
 void GenericEulerKernelTest::testFaceUnknownsProjection() {
-  cout << "Test face unknowns projection, ORDER=3, DIM=2" << endl;
+  cout << "Test face unknowns projection operators, ORDER=3, DIM=2" << endl;
 
   const int numberOfVariables = 1;
-  const int basisSize = 3;
+  const int basisSize = 4;
 
   // in/out
-  double *lQhbndCoarseOut = new double[basisSize*numberOfVariables];
-  double *lFhbndCoarseOut = new double[basisSize*numberOfVariables];
-  double *lQhbndFineOut   = new double[basisSize*numberOfVariables];
-  double *lFhbndFineOut   = new double[basisSize*numberOfVariables];
+  double * lQhbndCoarseOut = new double[basisSize*numberOfVariables];
+  double * lFhbndCoarseOut = new double[basisSize*numberOfVariables];
+  double * lQhbndFineOut   = new double[basisSize*numberOfVariables];
+  double * lFhbndFineOut   = new double[basisSize*numberOfVariables];
 
   // in:
-  double *lQhbndCoarseIn = new double[basisSize*numberOfVariables];
-  double *lFhbndCoarseIn = new double[basisSize*numberOfVariables];
-  double *lQhbndFineIn   = new double[basisSize*numberOfVariables];
-  double *lFhbndFineIn   = new double[basisSize*numberOfVariables];
+  double * lQhbndCoarseIn = new double[basisSize*numberOfVariables];
+  double * lFhbndCoarseIn = new double[basisSize*numberOfVariables];
+  double * lQhbndFineIn   = new double[basisSize*numberOfVariables];
+  double * lFhbndFineIn   = new double[basisSize*numberOfVariables];
 
   // Initialise to constant value.
   for (int i = 0; i < basisSize*numberOfVariables; ++i) {
@@ -1291,7 +1291,7 @@ void GenericEulerKernelTest::testFaceUnknownsProjection() {
 
   // Test the prolongation operator.
   for (int levelCoarse=0; levelCoarse < 3; ++levelCoarse) {
-    for (int levelDelta=1; levelDelta < 4; ++levelDelta) {
+    for (int levelDelta=1; levelDelta < 3; ++levelDelta) {
       // todo For a levelDelta >= 4, assertionNumericalEquals
       // fails since the restriction result is not precise enough anymore.
       const int numberOfSubIntervals = tarch::la::aPowI(levelDelta,3);
@@ -1299,9 +1299,9 @@ void GenericEulerKernelTest::testFaceUnknownsProjection() {
       // Test the restriction operator.
       memset(lQhbndCoarseOut,0,sizeof(double)*numberOfVariables*basisSize);
       memset(lFhbndCoarseOut,0,sizeof(double)*numberOfVariables*basisSize);
-      for (int i=0; i < numberOfSubIntervals; ++i) {
+      for (int i1=0; i1 < numberOfSubIntervals; ++i1) {
         // Prolongate.
-        tarch::la::Vector<DIMENSIONS-1,int> subfaceIndex(i);
+        tarch::la::Vector<DIMENSIONS-1,int> subfaceIndex(i1);
         kernels::aderdg::generic::c::faceUnknownsProlongation(
             lQhbndFineOut,lFhbndFineOut,
             lQhbndCoarseIn,lFhbndCoarseIn,
@@ -1309,9 +1309,9 @@ void GenericEulerKernelTest::testFaceUnknownsProjection() {
             subfaceIndex,numberOfVariables,basisSize);
 
         // Test prolongated values.
-        for (int i = 0; i < basisSize*numberOfVariables; ++i) {
-          assertionNumericalEquals(lQhbndFineOut[i],lQhbndFineIn[i]);
-          assertionNumericalEquals(lFhbndFineOut[i],lFhbndFineIn[i]);
+        for (int m = 0; m < basisSize*numberOfVariables; ++m) {
+          assertionNumericalEquals(lQhbndFineOut[m],lQhbndFineIn[m]);
+          assertionNumericalEquals(lFhbndFineOut[m],lFhbndFineIn[m]);
         }
 
         // Restrict.
@@ -1322,9 +1322,9 @@ void GenericEulerKernelTest::testFaceUnknownsProjection() {
             subfaceIndex,numberOfVariables,basisSize);
       }
       // Test restricted values.
-      for (int i = 0; i < basisSize*numberOfVariables; ++i) {
-        assertionNumericalEquals(lQhbndCoarseOut[i],lQhbndCoarseIn[i]);
-        assertionNumericalEquals(lFhbndCoarseOut[i],lFhbndCoarseIn[i]);
+      for (int m = 0; m < basisSize*numberOfVariables; ++m) {
+        assertionNumericalEquals(lQhbndCoarseOut[m],lQhbndCoarseIn[m]);
+        assertionNumericalEquals(lFhbndCoarseOut[m],lFhbndCoarseIn[m]);
       }
     }
   }
@@ -1338,6 +1338,76 @@ void GenericEulerKernelTest::testFaceUnknownsProjection() {
   delete [] lFhbndCoarseIn;
   delete [] lQhbndFineIn;
   delete [] lFhbndFineIn;
+}
+
+void GenericEulerKernelTest::testVolumeUnknownsProjection() {
+  cout << "Test volume unknowns projection operators, ORDER=3, DIM=2" << endl;
+
+  const int numberOfVariables = 1;
+  const int basisSize = 4;
+
+  // in/out
+  double * luhCoarseOut = new double[basisSize*basisSize*numberOfVariables];
+  double * luhFineOut   = new double[basisSize*basisSize*numberOfVariables];
+
+  // in:
+  double * luhCoarseIn = new double[basisSize*basisSize*numberOfVariables];
+  double * luhFineIn   = new double[basisSize*basisSize*numberOfVariables];
+
+  // Initialise to constant value.
+  for (int i = 0; i < basisSize*basisSize*numberOfVariables; ++i) {
+    luhCoarseIn[i] = 1.0;
+    luhFineIn[i]   = 1.0;
+  }
+
+  // Test the prolongation operator.
+  for (int levelCoarse=0; levelCoarse < 3; ++levelCoarse) {
+    for (int levelDelta=1; levelDelta < 2; ++levelDelta) {
+      // todo For a levelDelta >= 2, assertionNumericalEquals
+      // fails since the prolongation result is not precise enough anymore.
+      const int numberOfSubIntervals = tarch::la::aPowI(levelDelta,3);
+
+      // Test the restriction operator.
+      tarch::la::Vector<DIMENSIONS,int> subcellIndex(0);
+      memset(luhCoarseOut,0,basisSize*basisSize*numberOfVariables*sizeof(double));
+
+      for (int i2=0; i2 < numberOfSubIntervals; ++i2) {
+        for (int i1=0; i1 < numberOfSubIntervals; ++i1) {
+          subcellIndex[0] = i1;
+          subcellIndex[1] = i2;
+
+          // Prolongate.
+          kernels::aderdg::generic::c::volumeUnknownsProlongation(
+              luhFineOut,
+              luhCoarseIn,
+              levelCoarse,levelCoarse+levelDelta,
+              subcellIndex,numberOfVariables,basisSize);
+
+          // Test prolongated values.
+          for (int m = 0; m < basisSize*basisSize*numberOfVariables; ++m) {
+            assertionNumericalEquals5(luhFineOut[m],luhFineIn[m],m,levelCoarse,levelDelta,i1,i2);
+          }
+
+          // Restrict.
+          kernels::aderdg::generic::c::volumeUnknownsRestriction(
+              luhCoarseOut,
+              luhFineIn,
+              levelCoarse,levelCoarse+levelDelta,
+              subcellIndex,numberOfVariables,basisSize);
+        }
+      }
+      // Test restricted values.
+      for (int m = 0; m < basisSize*basisSize*numberOfVariables; ++m) {
+        assertionNumericalEquals3(luhCoarseOut[m],luhCoarseIn[m],m,levelCoarse,levelDelta);
+      }
+    }
+  }
+
+  delete [] luhCoarseOut;
+  delete [] luhFineOut;
+
+  delete [] luhCoarseIn;
+  delete [] luhFineIn;
 }
 
 
