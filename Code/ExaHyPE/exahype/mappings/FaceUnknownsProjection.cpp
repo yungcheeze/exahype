@@ -46,13 +46,13 @@ peano::MappingSpecification
 exahype::mappings::FaceUnknownsProjection::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::Serial);
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 peano::MappingSpecification
 exahype::mappings::FaceUnknownsProjection::leaveCellSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
-      peano::MappingSpecification::AvoidFineGridRaces);
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::Serial);
 }
 peano::MappingSpecification
 exahype::mappings::FaceUnknownsProjection::ascendSpecification() {
@@ -304,6 +304,9 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
+
+  // todo docu: Assumes top-down processing of the grid.
+
   if (ADERDGCellDescriptionHeap::getInstance().
       isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
 
@@ -322,7 +325,6 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
           fineGridCell.getADERDGCellDescription(i);
       exahype::solvers::Solver* solver = exahype::solvers::
           RegisteredSolvers[pFine.getSolverNumber()];
-      // Assumes top-down processing of the grid.
       switch (pFine.getType()) {
         case exahype::records::ADERDGCellDescription::Ancestor:
           memset(DataHeap::getInstance().getData(pFine.getExtrapolatedPredictor()).data(), 0,
@@ -354,16 +356,6 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
                   subcellPosition.parentIndex,
                   subcellPosition.subcellIndex);
 
-                break;
-              case exahype::records::ADERDGCellDescription::Cell:
-              case exahype::records::ADERDGCellDescription::Ancestor:
-                subcellPosition = fineGridCell.computeSubcellPositionOfCellOrAncestor(pFine);
-
-                // We check in this function if parent is an ancestor that holds data.
-                restrictFaceData(
-                    pFine,
-                    subcellPosition.parentIndex,
-                    subcellPosition.subcellIndex);
                 break;
               default:
                 break;
@@ -460,6 +452,86 @@ void exahype::mappings::FaceUnknownsProjection::prolongateFaceData(
   }
 }
 
+tarch::la::Vector<DIMENSIONS-1,int> exahype::mappings::FaceUnknownsProjection::getSubfaceIndex(
+    const tarch::la::Vector<DIMENSIONS,int>& subcellIndex,
+    const int d) const {
+  tarch::la::Vector<DIMENSIONS-1,int> subfaceIndex;
+
+  int i=0;
+  for (int j=0; j<DIMENSIONS; j++) {
+    if (j!=d) {
+      subfaceIndex[i] = subcellIndex[j];
+      i++;
+    }
+  }
+
+  return subfaceIndex;
+}
+
+void exahype::mappings::FaceUnknownsProjection::leaveCell(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  logTraceInWith4Arguments("leaveCell(...)", fineGridCell,
+                           fineGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfCell);
+
+  // todo docu: Assumes bottom-up processing of the grid.
+
+  if (ADERDGCellDescriptionHeap::getInstance().
+      isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
+
+    const int numberOfADERDGCellDescriptions = static_cast<int>(
+        ADERDGCellDescriptionHeap::getInstance()
+    .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+    .size());
+    // please use a different UserDefined per mapping/event
+    const peano::datatraversal::autotuning::MethodTrace methodTrace =
+        peano::datatraversal::autotuning::UserDefined1;
+    const int grainSize =
+        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+            numberOfADERDGCellDescriptions, methodTrace);
+    pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
+      records::ADERDGCellDescription& pFine =
+          fineGridCell.getADERDGCellDescription(i);
+
+      // if we have at least one parent
+      if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(pFine.getParentIndex())) {
+        for (std::vector<exahype::records::ADERDGCellDescription>::
+            iterator pParent = ADERDGCellDescriptionHeap::getInstance().
+            getData(pFine.getParentIndex()).begin();
+            pParent != ADERDGCellDescriptionHeap::getInstance().
+                getData(pFine.getParentIndex()).end();
+            ++pParent) {
+          exahype::Cell::SubcellPosition subcellPosition;
+
+          if (pFine.getSolverNumber()==pParent->getSolverNumber()) {
+            switch (pFine.getType()) {
+              case exahype::records::ADERDGCellDescription::Cell:
+              case exahype::records::ADERDGCellDescription::Ancestor:
+                subcellPosition = fineGridCell.computeSubcellPositionOfCellOrAncestor(pFine);
+
+                restrictFaceData(
+                    pFine,
+                    subcellPosition.parentIndex,
+                    subcellPosition.subcellIndex);
+                break;
+              default:
+                break;
+            }
+          }
+        }
+      }
+    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
+    .parallelSectionHasTerminated(methodTrace);
+  }
+
+  logTraceOutWith1Argument("leaveCell(...)", fineGridCell);
+}
+
 void exahype::mappings::FaceUnknownsProjection::restrictFaceData(
                 const exahype::records::ADERDGCellDescription& cellDescription,
                 const int parentIndex,
@@ -543,32 +615,6 @@ void exahype::mappings::FaceUnknownsProjection::restrictFaceData(
   } else {
     _parentOfCellOrAncestorNotFound += 1;
   }
-}
-
-tarch::la::Vector<DIMENSIONS-1,int> exahype::mappings::FaceUnknownsProjection::getSubfaceIndex(
-    const tarch::la::Vector<DIMENSIONS,int>& subcellIndex,
-    const int d) const {
-  tarch::la::Vector<DIMENSIONS-1,int> subfaceIndex;
-
-  int i=0;
-  for (int j=0; j<DIMENSIONS; j++) {
-    if (j!=d) {
-      subfaceIndex[i] = subcellIndex[j];
-      i++;
-    }
-  }
-
-  return subfaceIndex;
-}
-
-void exahype::mappings::FaceUnknownsProjection::leaveCell(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
 }
 
 void exahype::mappings::FaceUnknownsProjection::beginIteration(
