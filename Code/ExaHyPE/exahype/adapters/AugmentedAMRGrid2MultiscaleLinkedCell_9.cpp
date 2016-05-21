@@ -271,6 +271,15 @@ void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::mergeWithMaster
   const exahype::State&          workerState,
   exahype::State&                masterState
 ) {
+  dfor2(k)
+    VertexOperations::writeADERDGCellDescriptionsIndex(
+      fineGridVertices[ fineGridVerticesEnumerator(k) ],
+      multiscalelinkedcell::HangingVertexBookkeeper::getInstance().updateCellIndicesInMergeWithNeighbour(
+        fineGridVertices[ fineGridVerticesEnumerator(k) ].getAdjacentRanks(),
+        VertexOperations::readADERDGCellDescriptionsIndex(fineGridVertices[ fineGridVerticesEnumerator(k) ])
+      )
+    );
+  enddforx
 }
 
 
@@ -306,6 +315,13 @@ void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_9::mergeWithWorker
       const tarch::la::Vector<DIMENSIONS,double>&   h,
       int                                           level
 ) {
+  VertexOperations::writeADERDGCellDescriptionsIndex(
+    localVertex,
+    multiscalelinkedcell::HangingVertexBookkeeper::getInstance().updateCellIndicesInMergeWithNeighbour(
+      localVertex.getAdjacentRanks(),
+      VertexOperations::readADERDGCellDescriptionsIndex(localVertex)
+    )
+  );
 }
 #endif
 

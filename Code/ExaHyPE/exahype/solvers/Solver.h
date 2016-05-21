@@ -56,7 +56,11 @@ public:
   };
 
   enum RefinementControl {
-    Keep = 0, Refine = 1, Erase = 2, NextToCell = 3, NextToAncestor = 4, NextToCellAndAncestor = 5
+    Keep = 0, Refine = 1, Erase = 2
+  };
+
+  enum AugmentationControl {
+    NextToCell = 0, NextToAncestor = 1, NextToCellAndAncestor = 2, Unncessary = 3
   };
 
 protected:

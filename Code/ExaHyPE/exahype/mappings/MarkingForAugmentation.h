@@ -47,15 +47,17 @@ class exahype::mappings::MarkingForAugmentation {
   static tarch::logging::Log _log;
 
   /**
-   * Returns exahype::solvers::Solver::Keep if the cell has a neighbour of
+   * Returns exahype::solvers::Solver::NextToCell if the cell has a neighbour of
    * type exahype::records::ADERDGCellDescription:Cell,
-   * exahype::solvers::Solver::Refine if the cell has a neighbour of
+   * exahype::solvers::Solver::NextToAncestor if the cell has a neighbour of
    * type exahype::records::ADERDGCellDescription:Ancestor or
-   * exahype::records::ADERDGCellDescription::EmptyAncestor, or
-   * exahype::records::ADERDGCellDescription:Erase otherwise.
+   * exahype::records::ADERDGCellDescription::EmptyAncestor.
+   * Is both the case, this function returns
+   * exahype::solvers::Solver::NextToCellOrAncestor.
+   * If none of the previous is the case, this function returns
+   * exahype::records::ADERDGCellDescription:Erase.
    */
-  exahype::solvers::Solver::RefinementControl
-  virtualRefinementCriterion(
+  exahype::solvers::Solver::AugmentationControl augmentationCriterion(
       const int solverNumber,
       const exahype::records::ADERDGCellDescription::Type type,
       const int level,

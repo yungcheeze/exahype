@@ -271,6 +271,15 @@ void __THIS_QUALIFIED_TYPENAME__::mergeWithMaster(
   const __NAMESPACE__::State&          workerState,
   __NAMESPACE__::State&                masterState
 ) {
+  dfor2(k)
+    VertexOperations::writePARAM0(
+      fineGridVertices[ fineGridVerticesEnumerator(k) ],
+      multiscalelinkedcell::HangingVertexBookkeeper::getInstance().updateCellIndicesInMergeWithNeighbour(
+        fineGridVertices[ fineGridVerticesEnumerator(k) ].getAdjacentRanks(),
+        VertexOperations::readPARAM0(fineGridVertices[ fineGridVerticesEnumerator(k) ])
+      )
+    );
+  enddforx
 }
 
 
@@ -306,6 +315,13 @@ void __THIS_QUALIFIED_TYPENAME__::mergeWithWorker(
       const tarch::la::Vector<DIMENSIONS,double>&   h,
       int                                           level
 ) {
+  VertexOperations::writePARAM0(
+    localVertex,
+    multiscalelinkedcell::HangingVertexBookkeeper::getInstance().updateCellIndicesInMergeWithNeighbour(
+      localVertex.getAdjacentRanks(),
+      VertexOperations::readPARAM0(localVertex)
+    )
+  );
 }
 #endif
 
