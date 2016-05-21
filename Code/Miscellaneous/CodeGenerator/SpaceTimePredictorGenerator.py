@@ -12,6 +12,7 @@
 import Backend
 from MatmulConfig import MatmulConfig
 import FunctionSignatures
+import Utils
 
 
 class SpaceTimePredictorGenerator:
@@ -23,10 +24,25 @@ class SpaceTimePredictorGenerator:
     # for accessing the quadrature weights and so forth
     m_order  = ""
 
+    # total length
+    m_luhLength = -1
+
+
     def __init__(self, i_config, i_numerics):
         self.m_config = i_config
         self.m_type   = i_numerics
         self.m_order  = str(self.m_config['nDof']-1)
+
+        # without padding of lduh, luh
+        self.m_luhLength = self.m_config['nVar'] * (self.m_config['nDof']**self.m_config['nDim'])
+
+        # with padding of lduh, luh
+        #self.m_luhChunkSize    = Backend.getSizeWithPadding(self.m_config['nDof']**(self.m_config['nDim']-1))
+        #self.m_luhLength       = self.m_config['nVar'] * self.m_luhChunkSize
+        #
+        # alternatively
+        #self.m_luhChunkSize    = self.m_config['nDof']**self.m_config['nDim']
+        #self.m_luhLength       = Backend.getSizeWithPadding(self.m_luhChunkSize)
 
 
     def __writeHeaderForPicardLoop(self, i_pathToFile):
@@ -36,14 +52,14 @@ class SpaceTimePredictorGenerator:
                         '// \\hat{q}^{n+1} = K_{1}^{-1}[F_0 \\cdot \\hat{u} - K_{\\xi} \\cdot \\hat{F}^{n}] \n'
 
         l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h" \n'   \
-                             '#include "kernels/aderdg/optimised/DGMatrices.h"\n' \
-                             '#include "kernels/aderdg/optimised/Weights.h"\n'    \
+                             '#include "kernels/DGMatrices.h"\n' \
+                             '#include "kernels/GaussLegendreQuadrature.h"\n'    \
                              '#include "kernels/aderdg/optimised/asm_picard.cpp"\n\n'
 
         l_functionSignature = FunctionSignatures.getPicardLoopSignature(self.m_config['nDim']) + " {\n"
 
         l_sourceFile = open(i_pathToFile, 'a')
-        l_sourceFile.write(l_description)
+        #l_sourceFile.write(l_description)
         l_sourceFile.write(l_includeStatement)
         l_sourceFile.write(l_functionSignature)
         l_sourceFile.close()
@@ -53,7 +69,7 @@ class SpaceTimePredictorGenerator:
         l_description = '// Compute the time-averaged space-time polynomials (integration in time) \n\n'
 
         l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n'              \
-                             '#include "kernels/aderdg/optimised/Weights.h"\n'              \
+                             '#include "kernels/GaussLegendreQuadrature.h"\n'              \
                              '#include "kernels/aderdg/optimised/asm_predictor.cpp"\n\n'
 
         l_functionSignature = FunctionSignatures.getPredictorSignature()+" {\n"
@@ -67,7 +83,7 @@ class SpaceTimePredictorGenerator:
                                    '//       lFhi[nVar][nDOFz][nDOFy][nDOFx][3]\n\n'
 
         l_sourceFile = open(i_pathToFile, 'a')
-        l_sourceFile.write(l_description)
+        #l_sourceFile.write(l_description)
         l_sourceFile.write(l_includeStatement)
         l_sourceFile.write(l_parameterDocumentation)
         l_sourceFile.write(l_functionSignature)
@@ -78,7 +94,7 @@ class SpaceTimePredictorGenerator:
         l_description = '// Compute the boundary-extrapolated values for Q and F*n \n\n'
 
         l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n'      \
-                             '#include "kernels/aderdg/optimised/DGMatrices.h"\n'                    \
+                             '#include "kernels/DGMatrices.h"\n'                    \
                              '#include "kernels/aderdg/optimised/asm_extrapolatedPredictor.cpp"\n\n'
 
         l_functionSignature = FunctionSignatures.getExtrapolatorSignature()+" {\n"
@@ -92,9 +108,24 @@ class SpaceTimePredictorGenerator:
                                    '//       lFhi[nVar][nDOFz][nDOFy][nDOFx][3]\n\n'
 
         l_sourceFile = open(i_pathToFile, 'a')
-        l_sourceFile.write(l_description)
+        #l_sourceFile.write(l_description)
         l_sourceFile.write(l_includeStatement)
         l_sourceFile.write(l_parameterDocumentation)
+        l_sourceFile.write(l_functionSignature)
+        l_sourceFile.close()
+
+
+    def __writeHeaderForCauchyKovalewski(self, i_pathToFile):
+        l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h" \n'   \
+                             '#include "kernels/DGMatrices.h"\n' \
+                             '#include "string.h"\n'                              \
+                             '#include "kernels/aderdg/optimised/asm_cauchyKovalewski.cpp"\n\n'
+        # TODO
+        l_functionSignature = ""
+
+        l_sourceFile = open(i_pathToFile, 'a')
+        #l_sourceFile.write(l_description)
+        l_sourceFile.write(l_includeStatement)
         l_sourceFile.write(l_functionSignature)
         l_sourceFile.close()
 
@@ -106,18 +137,20 @@ class SpaceTimePredictorGenerator:
             self.__generateExtrapolator()
         else:
             # TODO
-            # Cauchy Kovalewski
+            self.__generateCauchyKovalewski()
             self.__generateExtrapolator()
 
 
     def __generatePicardLoop(self):
         l_filename = "picard.cpp"
-        # lqh(iVar,:,i,j,k) = luh(iVar,i,j,k)
-        # lQi
-        # lFi
-        # luh (read only)
-        #
 
+        # write #include's and function signature
+        self.__writeHeaderForPicardLoop(l_filename)
+
+
+
+    def __generateCauchyKovalewski(self):
+        pass
 
 
     def __generatePredictor(self):
@@ -132,92 +165,61 @@ class SpaceTimePredictorGenerator:
         # let's open the file to which we write our function calls to the assembler code
         l_file = open(l_filename, 'a')
 
+        # (1) lqhi(:,i,j,k) = MATMUL(lqh(:,:,i,j,k), wGPN)
+        l_matmul = MatmulConfig(    # M
+                                    self.m_config['nVar'],                             \
+                                    # N
+                                    1,                                                 \
+                                    # K
+                                    self.m_config['nDof'],                             \
+                                    # LDA
+                                    Backend.getSizeWithPadding(self.m_config['nVar']), \
+                                    # LDB
+                                    self.m_config['nDof'],                             \
+                                    # LDC
+                                    Backend.getSizeWithPadding(self.m_config['nVar']), \
+                                    # alpha
+                                    1,                                                 \
+                                    # beta
+                                    0,                                                 \
+                                    # alignment A
+                                    0,                                                 \
+                                    # alignment C
+                                    0,                                                 \
+                                    # name
+                                    "lqhi",                                            \
+                                    # prefetching
+                                    "nopf",                                            \
+                                    # type
+                                    "gemv")
+        l_matmulList.append(l_matmul)
+
+
+        # write the function call to the cpp file
+        l_iters = self.m_config['nDof'] ** self.m_config['nDim']
+        l_baseAddrC = 0
+        l_baseAddrA = 0
+        for it in range(0, l_iters):
+            l_file.write("  "+l_matmul.baseroutinename+'(&lqh['+str(l_baseAddrA)+'],'+  \
+                                                        '&kernels::gaussLegendreWeights['+self.m_order+'][0],'+\
+                                                        '&lQhi['+str(l_baseAddrC)+'])'
+            l_baseAddrC = l_baseAddrC + Backend.getSizeWithPadding(self.m_config['nVar'])
+            l_baseAddrA = l_baseAddrA + Backend.getSizeWithPadding(self.m_config['nVar']) * self.m_config['nDof']
+
+
+
+
+        # TODO
         if(self.m_config['nDim'] == 2):
-            # (1) lqhi(:,i,j,k) = MATMUL(lqh(:,i,j,k,:), wGPN)
-            l_matmul = MatmulConfig( # M
-                                     1,                     \
-                                     # N
-                                     self.m_config['nVar'] * self.m_config['nDof'] * self.m_config['nDof'], \
-                                     # K
-                                     self.m_config['nDof'], \
-                                     # LDA
-                                     1,                     \
-                                     # LDB
-                                     self.m_config['nDof'], \
-                                     # LDC
-                                     1,                     \
-                                     # alpha
-                                     1,                     \
-                                     # beta
-                                     0,                     \
-                                     # alignment A
-                                     0,                     \
-                                     # alignment C
-                                     0,                     \
-                                     # name
-                                     "lqhi",                \
-                                     # prefetching
-                                     "nopf",                \
-                                     # type
-                                     "gemv")
+            pass
+            # (2) lFhi_x(:,i,j,k) = MATMUL(lFh(:,1,i,j,k,:), wGPN)
+            #     lFhi_y(:,j,j,k) = MATMUL(lFh(:,2,i,j,k,:), wGPN)
 
-            l_matmulList.append(l_matmul)
-
-
-            # write the function call to the cpp file
-            l_file.write("  //TODO: reorder lqh\n")
-            l_file.write("  "+l_matmul.baseroutinename+"(&lQhi[0], "+\
-                                                       "&kernels::gaussLegendreWeights["+self.m_order+"][0],"\
-                                                       "&lqh[0]);\n")
-
-
-
+        elif(self.m_config['nDim'] == 3):
+            pass
             # (2) lFhi_x(:,i,j,k) = MATMUL(lFh(:,1,i,j,k,:), wGPN)
             #     lFhi_y(:,j,j,k) = MATMUL(lFh(:,2,i,j,k,:), wGPN)
             #     lFhi_z(:,k,j,i) = MATMUL(lFh(:,3,i,j,k,:), wGPN)
-            # TODO
-
-
-        elif(self.m_config['nDim'] == 3):
-            # (1) lqhi(:,i,j,k) = MATMUL(lqh(:,i,j,k,:), wGPN)
-            l_matmul = MatmulConfig( # M
-                                     1,                     \
-                                     # N
-                                     self.m_config['nVar'] * self.m_config['nDof'] * self.m_config['nDof'] * self.m_config['nDof'], \
-                                     # K
-                                     self.m_config['nDof'], \
-                                     # LDA
-                                     1,                     \
-                                     # LDB
-                                     self.m_config['nDof'], \
-                                     # LDC
-                                     1,                     \
-                                     # alpha
-                                     1,                     \
-                                     # beta
-                                     0,                     \
-                                     # alignment A
-                                     0,                     \
-                                     # alignment C
-                                     0,                     \
-                                     # name
-                                     "lqhi",                \
-                                     # prefetching
-                                     "nopf",                \
-                                     # type
-                                     "gemv")
-
-            l_matmulList.append(l_matmul)
-
-            # write the function call to the cpp file
-            l_file.write("  //TODO: reorder lqh\n")
-            l_file.write("  "+l_matmul.baseroutinename+"(&kernels::gaussLegendreWeights["+self.m_order+"][0]," \
-                                                       " &lqh[0],"                                             \
-                                                       " &lQhi[0]\n")
-
-
-            # (2) lFhi(:,iDim,i,j,k) = MATMUL(lFh(:,iDim,i,j,k,:), wGPN)
-            # TODO
 
         else:
             print("SpaceTimePredictorGenerator.generatePredictor(): nDim not supported")
