@@ -26,10 +26,10 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
   void testRiemannSolverNonlinear();
   void testSurfaceIntegral();
   void testSolutionUpdate();
-#if DIMENSIONS == 2
-  static void testFlux(const double* const Q, double* f, double* g);
   void testVolumeUnknownsProjection();
   void testFaceUnknownsProjection();
+#if DIMENSIONS == 2
+  static void testFlux(const double* const Q, double* f, double* g);
   // todo move testFace(...) out of here as soon as similar code for 3D case exists
 #elif DIMENSIONS == 3
   static void testFlux(const double* const Q, double* f, double* g, double* h);
