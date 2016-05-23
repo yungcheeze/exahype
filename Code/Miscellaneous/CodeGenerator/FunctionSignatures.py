@@ -50,8 +50,13 @@ def getPicardLoopSignature(i_nDim):
         l_functionSignature = re.sub(r'\bDATATYPE\b', 'double', l_functionSignature)
     else:
         print("FunctionSignatures.getPicardLoopSignature(): precision not supported")
-    
-    
+
+
+    return l_functionSignature
+
+
+def getCauchyKovalewskiSignature():
+    l_functionSignature = ""
     return l_functionSignature
 
 
@@ -200,16 +205,17 @@ def getRiemannSolverSignature():
                           "  const DATATYPE dt,\n"                                                                               \
                           "  const int normalNonZero\n"                                                                          \
                           ")" 
-                          
-    # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                         
+
+    # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively
     if(m_precision=='SP'):
         l_functionSignature = re.sub(r'\bDATATYPE\b', 'float', l_functionSignature)
+    else:
     elif(m_precision=='DP'):
         l_functionSignature = re.sub(r'\bDATATYPE\b', 'double', l_functionSignature)
     else:
         print("FunctionSignatures.getRiemannSolverSignature(): precision not supported")
-                                 
-    return l_functionSignature    
+
+    return l_functionSignature
 
 
 #
@@ -223,8 +229,8 @@ def getInitialConditionSignature():
                           "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& center,\n"               \
                           "  const tarch::la::Vector<DIMENSIONS,DATATYPE>& dx\n"                    \
                           ")"
-    
-    # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively                         
+
+    # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively
     if(m_precision=='SP'):
         l_functionSignature = re.sub(r'\bDATATYPE\b', 'float', l_functionSignature)
     elif(m_precision=='DP'):
