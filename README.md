@@ -1,20 +1,39 @@
 # This is the ExaHyPE project #
 
+## Mini installation guide ##
+
+Copy and paste these commands to start with a working ExaHyPE application:
+
+    git clone git@gitlab.lrz.de:gi26det/ExaHyPE.git
+    cd ExaHyPE/Code/Peano
+    tar xvfz peano.tar.gz
+    git checkout .gitignore
+    cd ..
+    ln -s Toolkit/Dist/ExaHyPE.jar
+
+Now you are ready to follow compile and run an ExaHyPE application [according to the guidebook](http://www5.in.tum.de/exahype/guidebook.pdf):
+
+    java -jar ExaHyPE.jar Applications/eulerflow2d.exahype
+    export CC=gcc
+    export TBB_INC=/usr/include/tbb
+    export TBB_LIB=/usr/lib/tbb
+    cd Application/eulerflow2d && make -j
+    ./ExaHyPE-Euler2d ../eulerflow2d.exahype
+
 ## General remarks ##
 
 * Run tests before you commit
 * Document your code with doxygen
-* Disable auto-formatting of your IDE or follow the google code-style => Code/Miscellaneous/.clang-format. For Eclipse users, there is also https://github.com/wangzw/CppStyle.
-* Do not run autoformatters on the DaStGen definition files (*.def). This will screw up the "Packed-type: .." and "Constant: .." lines.
+* Disable auto-formatting of your IDE or follow the google code-style => `Code/Miscellaneous/.clang-format`. For Eclipse users, there is also https://github.com/wangzw/CppStyle.
+* Do not run autoformatters on the DaStGen definition files (`*.def`). This will screw up the `Packed-type: ..` and `Constant: ..` lines.
 
 
 ## Commit guidelines ##
 
 Please, don't commit the following:
     
-     * Binary files (\*\.o, executables, \.\.\. ) excluding those necessary for the documentation 
-    
-     * Output files (\*\.vtk, logs, \.\.\. )
+* Binary files (`*.o, executables, ... `) excluding those necessary for the documentation 
+* Output files (`*.vtk, logs, ... `)
 
 ### Commit message template 
 We should try to write good commit messages that document
@@ -42,3 +61,4 @@ Template:
     - Typically a hyphen or asterisk is used for the bullet,
       preceded by a single space, with blank lines in
       between, but conventions vary here"
+
