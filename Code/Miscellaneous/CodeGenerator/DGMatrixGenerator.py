@@ -80,6 +80,14 @@ class DGMatrixGenerator:
         s_v = np.zeros((1,Backend.getSizeWithPadding(self.m_config['nVar'])))
         l_matrices['s_v'] = s_v.flatten('F')
 
+        # tmp memory for simd vectorisation on boundaries, sized as e.g. lQbndL
+        # 2D: nVar * getSizeWithPadding(nDOF)
+        # 3D: nVar * getSizeWithPadding(nDOF*nDOF)
+        l_nTotalDof = self.m_config['nDof']**(self.m_nDim-1)
+        l_nEntries  = self.m_config['nVar'] * Backend.getSizeWithPadding(l_nTotalDof)
+        tmp_bnd = np.zeros((1,l_nEntries))
+        l_matrices['tmp_bnd'] = tmp_bnd.flatten('F')
+
 
         # [FLCoeff 0...0]; [FRCoeff 0...0];
         # right now FLCoeff, FRCoeff no pad (gives no benefit w.r.t libxsmm)
@@ -114,6 +122,7 @@ class DGMatrixGenerator:
                            'extern double *dudx;\n'     \
                            'extern double *s_m;\n'      \
                            'extern double *s_v;\n'      \
+                           'extern double *tmp_bnd;\n'  \
                            'extern double *F0; \n'      \
                            'extern double *FLCoeff;\n'  \
                            'extern double *FRCoeff;\n'  \
@@ -133,6 +142,7 @@ class DGMatrixGenerator:
                            'double* kernels::dudx;\n'    \
                            'double* kernels::s_m;\n'     \
                            'double* kernels::s_v;\n'     \
+                           'double* kernels::tmp_bnd;\n' \
                            'double* kernels::F0;\n'      \
                            'double* kernels::FLCoeff;\n' \
                            'double* kernels::FRCoeff;\n' \

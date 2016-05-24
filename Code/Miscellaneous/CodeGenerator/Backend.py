@@ -8,12 +8,12 @@ import errno
 from glob import iglob
 from shutil import move
 import FunctionSignatures
-from SpaceTimePredictorGenerator import SpaceTimePredictorGenerator
-from RiemannGenerator import RiemannGenerator
-from SolutionUpdateGenerator import SolutionUpdateGenerator
-from StableTimeStepSizeGenerator import StableTimeStepSizeGenerator
-from WeightsGenerator import WeightsGenerator
-from DGMatrixGenerator import DGMatrixGenerator
+import SpaceTimePredictorGenerator
+import RiemannGenerator
+import SolutionUpdateGenerator
+import StableTimeStepSizeGenerator
+import WeightsGenerator
+import DGMatrixGenerator
 import string
 import re
 
@@ -175,17 +175,17 @@ def generateCommonHeader():
 
 
 def generateComputeKernels():
-    spaceTimePredictorGenerator = SpaceTimePredictorGenerator(m_config, m_numerics)
+    spaceTimePredictorGenerator = SpaceTimePredictorGenerator.SpaceTimePredictorGenerator(m_config, m_numerics)
     spaceTimePredictorGenerator.generateCode()
-    riemannGenerator = RiemannGenerator(m_config, m_numerics, m_precision)
+    riemannGenerator = RiemannGenerator.RiemannGenerator(m_config, m_numerics, m_precision)
     riemannGenerator.generateCode()
-    solutionUpdateGenerator = SolutionUpdateGenerator(m_config)
+    solutionUpdateGenerator = SolutionUpdateGenerator.SolutionUpdateGenerator(m_config)
     solutionUpdateGenerator.generateCode()
-    stableTimeStepSizeGenerator = StableTimeStepSizeGenerator(m_config)
+    stableTimeStepSizeGenerator = StableTimeStepSizeGenerator.StableTimeStepSizeGenerator(m_config)
     stableTimeStepSizeGenerator.generateCode()
-    weightsGenerator = WeightsGenerator(m_config)
+    weightsGenerator = WeightsGenerator.WeightsGenerator(m_config)
     weightsGenerator.generateCode()
-    dgMatrixGenerator = DGMatrixGenerator(m_config, m_numerics)
+    dgMatrixGenerator = DGMatrixGenerator.DGMatrixGenerator(m_config, m_numerics)
     dgMatrixGenerator.generateCode()
 
 
