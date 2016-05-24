@@ -34,6 +34,10 @@ extern const double lduh_1[80];
 extern const double lduh_2[80];
 }  // namespace testVolumeIntegralNonlinear
 
+namespace testSpaceTimePredictorLinear {
+extern const double luh[80];
+}  // namespace testSpaceTimePredictorLinear
+
 namespace testSpaceTimePredictorNonlinear {
 extern const double lQhi[80];
 extern const double lFhi[160];
