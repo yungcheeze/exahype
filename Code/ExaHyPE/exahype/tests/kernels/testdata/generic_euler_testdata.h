@@ -25,12 +25,14 @@ extern const double lduh_out[80];
 
 namespace testVolumeIntegralNonlinear {
 extern const double lFhi[160];
-extern const double lduh[80];
+extern const double lduh_1[80];
+extern const double lduh_2[80];
 }  // namespace testVolumeIntegralNonlinear
 
-namespace volumeIntegralNonlinear {
-extern const double lduh[80];
-}  // namespace volumeIntegralNonlinear
+namespace testVolumeIntegralNonlinear {
+extern const double lduh_1[80];
+extern const double lduh_2[80];
+}  // namespace testVolumeIntegralNonlinear
 
 namespace testSpaceTimePredictorNonlinear {
 extern const double lQhi[80];

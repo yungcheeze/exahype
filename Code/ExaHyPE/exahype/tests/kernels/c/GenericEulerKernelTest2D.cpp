@@ -76,7 +76,7 @@ void GenericEulerKernelTest::testPDEFluxes() {
 }  // testPDEFluxes
 
 void GenericEulerKernelTest::testSolutionUpdate() {
-  cout << "Test solution update, ORDER=3, DIM=2" << endl;
+  cout << "Test solution update, ORDER=2, DIM=2" << endl;
 
   // inputs:
   double *luh = new double[80]();
@@ -106,7 +106,7 @@ void GenericEulerKernelTest::testSolutionUpdate() {
 }  // testSolutionUpdate
 
 void GenericEulerKernelTest::testSurfaceIntegral() {
-  cout << "Test surface integral, ORDER=3, DIM=2" << endl;
+  cout << "Test surface integral, ORDER=2, DIM=2" << endl;
 
   // inputs:
   const double dx[2] = {0.1, 0.1};  // mesh spacing
@@ -157,7 +157,7 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
 
 void GenericEulerKernelTest::testRiemannSolverNonlinear() {
   // Rusanov
-  cout << "Test Riemann Solver nonlinear (Rusanov), ORDER=3, DIM=2" << endl;
+  cout << "Test Riemann Solver nonlinear (Rusanov), ORDER=2, DIM=2" << endl;
   // input:
   double QL[20] = {1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5,
                    1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5};
@@ -190,7 +190,7 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
 }  // testVolumeIntegralLinear
 
 void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
-  cout << "Test volume integral nonlinear, ORDER=3, DIM=2" << endl;
+  cout << "Test volume integral nonlinear, ORDER=2, DIM=2" << endl;
 
   {  // first test
 
@@ -213,7 +213,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
     for (int i = 0; i < 80; i++) {
       validateNumericalEqualsWithEpsWithParams1(
           lduh[i], ::exahype::tests::testdata::generic_euler::
-                       testVolumeIntegralNonlinear::lduh[i],
+                       testVolumeIntegralNonlinear::lduh_1[i],
           eps, i);
     }
 
@@ -244,7 +244,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
     for (int i = 0; i < 80; i++) {
       validateNumericalEqualsWithEpsWithParams1(
           lduh[i], ::exahype::tests::testdata::generic_euler::
-                       volumeIntegralNonlinear::lduh[i],
+                       testVolumeIntegralNonlinear::lduh_2[i],
           eps, i);
     }
 
@@ -358,7 +358,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
 }  // testSpaceTimePredictorNonlinear
 
 void GenericEulerKernelTest::testFaceUnknownsProjection() {
-  cout << "Test face unknowns projection operators, ORDER=3, DIM=2" << endl;
+  cout << "Test face unknowns projection operators, ORDER=2, DIM=2" << endl;
 
   const int numberOfVariables = 1;
   const int basisSize = 4;
@@ -435,7 +435,7 @@ void GenericEulerKernelTest::testFaceUnknownsProjection() {
 }
 
 void GenericEulerKernelTest::testVolumeUnknownsProjection() {
-  cout << "Test volume unknowns projection operators, ORDER=3, DIM=2" << endl;
+  cout << "Test volume unknowns projection operators, ORDER=2, DIM=2" << endl;
 
   const int numberOfVariables = 1;
   const int basisSize = 4;
