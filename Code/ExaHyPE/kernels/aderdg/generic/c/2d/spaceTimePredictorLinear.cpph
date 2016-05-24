@@ -1,0 +1,20 @@
+namespace kernels {
+namespace aderdg {
+namespace generic {
+namespace c {
+
+template <void PDEFlux(const double* const Q, double* f, double* g, double* h)>
+void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
+                              double* lFhi, double* lQhbnd, double* lFhbnd,
+                              const double* const luh,
+                              const tarch::la::Vector<DIMENSIONS, double>& dx,
+                              const double predictorTimeStepSize,
+                              const int numberOfVariables,
+                              const int basisSize) {
+  // TODO(guera): Implement
+}
+
+}  // namespace c
+}  // namespace generic
+}  // namespace aderdg
+}  // namespace kernels
