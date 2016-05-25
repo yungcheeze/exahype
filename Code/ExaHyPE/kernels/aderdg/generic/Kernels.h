@@ -3,8 +3,8 @@
 
 #include "string.h"
 
-#include "tarch/la/Vector.h"
 #include "peano/utils/Globals.h"
+#include "tarch/la/Vector.h"
 
 #include "kernels/GaussLegendreQuadrature.h"
 
@@ -155,6 +155,10 @@ void surfaceIntegralNonlinear(double* lduh, const double* const lFbnd,
                               const tarch::la::Vector<DIMENSIONS, double>& dx,
                               const int numberOfVariables, const int basisSize);
 
+void surfaceIntegralLinear(double* lduh, const double* const lFbnd,
+                           const tarch::la::Vector<DIMENSIONS, double>& dx,
+                           const int numberOfVariables, const int basisSize);
+
 /*void surfaceIntegral2(
     double* lduh,
     const double* const lFhbnd,
@@ -240,20 +244,20 @@ void volumeUnknownsRestriction(
 }  // namespace kernels
 
 #if DIMENSIONS == 2
-#include "kernels/aderdg/generic/c/2d/solutionAdjustment.cpph"
-#include "kernels/aderdg/generic/c/2d/stableTimeStepSize.cpph"
-#include "kernels/aderdg/generic/c/2d/spaceTimePredictorNonlinear.cpph"
-// #include "kernels/aderdg/generic/c/2d/spaceTimePredictorLinear.cpph"
+#include "kernels/aderdg/generic/c/2d/riemannSolverLinear.cpph"
 #include "kernels/aderdg/generic/c/2d/riemannSolverNonlinear.cpph"
-// #include "kernels/aderdg/generic/c/2d/riemannSolverLinear.cpph"
+#include "kernels/aderdg/generic/c/2d/solutionAdjustment.cpph"
+#include "kernels/aderdg/generic/c/2d/spaceTimePredictorLinear.cpph"
+#include "kernels/aderdg/generic/c/2d/spaceTimePredictorNonlinear.cpph"
+#include "kernels/aderdg/generic/c/2d/stableTimeStepSize.cpph"
 #elif DIMENSIONS == 3
 // // //@todo
 // #include "kernels/aderdg/generic/c/3d/solutionAdjustment.cpph"
 // #include "kernels/aderdg/generic/c/3d/stableTimeStepSize.cpph"
-#include "kernels/aderdg/generic/c/3d/spaceTimePredictorNonlinear.cpph"
-#include "kernels/aderdg/generic/c/3d/spaceTimePredictorLinear.cpph"
-#include "kernels/aderdg/generic/c/3d/riemannSolverNonlinear.cpph"
 #include "kernels/aderdg/generic/c/3d/riemannSolverLinear.cpph"
+#include "kernels/aderdg/generic/c/3d/riemannSolverNonlinear.cpph"
+#include "kernels/aderdg/generic/c/3d/spaceTimePredictorLinear.cpph"
+#include "kernels/aderdg/generic/c/3d/spaceTimePredictorNonlinear.cpph"
 #endif
 
 namespace kernels {
@@ -407,12 +411,12 @@ void volumeUnknownsRestriction(
 }  // namespace kernels
 
 #if DIMENSIONS == 3
-#include "kernels/aderdg/generic/fortran/3d/solutionAdjustment.cpph"
-#include "kernels/aderdg/generic/fortran/3d/stableTimeStepSize.cpph"
-#include "kernels/aderdg/generic/fortran/3d/spaceTimePredictorNonlinear.cpph"
-#include "kernels/aderdg/generic/fortran/3d/spaceTimePredictorLinear.cpph"
-#include "kernels/aderdg/generic/fortran/3d/riemannSolverNonlinear.cpph"
 #include "kernels/aderdg/generic/fortran/3d/riemannSolverLinear.cpph"
+#include "kernels/aderdg/generic/fortran/3d/riemannSolverNonlinear.cpph"
+#include "kernels/aderdg/generic/fortran/3d/solutionAdjustment.cpph"
+#include "kernels/aderdg/generic/fortran/3d/spaceTimePredictorLinear.cpph"
+#include "kernels/aderdg/generic/fortran/3d/spaceTimePredictorNonlinear.cpph"
+#include "kernels/aderdg/generic/fortran/3d/stableTimeStepSize.cpph"
 // #elif DIMENSIONS == 2
 // //@todo
 // #include "kernels/aderdg/generic/fortran/2d/solutionAdjustment.cpph"

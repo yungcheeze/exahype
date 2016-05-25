@@ -22,7 +22,7 @@ SUBROUTINE ADERSurfaceIntegralLinear(lduh,lFbnd,dx)
         DO j = 1, nDOF(2)
             aux = (/ 1., wGPN(j), wGPN(k) /)
             DO iVar = 1, nVar
-                lduh(iVar,:,j,k) = lduh(iVar,:,j,k) - PRODUCT(aux(1:nDim))/dx(1)*( lFbnd(iVar,j,k,2)*FRCoeff - lFbnd(iVar,j,k,1)*FLCoeff )      ! left flux minus right flux
+                lduh(iVar,:,j,k) = lduh(iVar,:,j,k) - PRODUCT(aux(1:nDim))/dx(1)*( lFbnd(iVar,j,k,2)*FRCoeff + lFbnd(iVar,j,k,1)*FLCoeff )      ! left flux minus right flux
             ENDDO
         ENDDO
     ENDDO
@@ -32,7 +32,7 @@ SUBROUTINE ADERSurfaceIntegralLinear(lduh,lFbnd,dx)
             DO i = 1, nDOF(1)
                 aux = (/ 1., wGPN(i), wGPN(k) /)
                 DO iVar = 1, nVar
-                    lduh(iVar,i,:,k) = lduh(iVar,i,:,k) - PRODUCT(aux(1:nDim))/dx(2)*( lFbnd(iVar,i,k,4)*FRCoeff - lFbnd(iVar,i,k,3)*FLCoeff )  ! left flux minus right flux
+                    lduh(iVar,i,:,k) = lduh(iVar,i,:,k) - PRODUCT(aux(1:nDim))/dx(2)*( lFbnd(iVar,i,k,4)*FRCoeff + lFbnd(iVar,i,k,3)*FLCoeff )  ! left flux minus right flux
                 ENDDO
             ENDDO
         ENDDO
@@ -43,7 +43,7 @@ SUBROUTINE ADERSurfaceIntegralLinear(lduh,lFbnd,dx)
             DO i = 1, nDOF(1)
                 aux = (/ 1., wGPN(i), wGPN(j) /)
                 DO iVar = 1, nVar
-                    lduh(iVar,i,j,:) = lduh(iVar,i,j,:) - PRODUCT(aux(1:nDim))/dx(3)*( lFbnd(iVar,i,j,6)*FRCoeff - lFbnd(iVar,i,j,5)*FLCoeff )  ! left flux minus right flux
+                    lduh(iVar,i,j,:) = lduh(iVar,i,j,:) - PRODUCT(aux(1:nDim))/dx(3)*( lFbnd(iVar,i,j,6)*FRCoeff + lFbnd(iVar,i,j,5)*FLCoeff )  ! left flux minus right flux
                 ENDDO
             ENDDO
         ENDDO

@@ -1,0 +1,18 @@
+namespace kernels {
+namespace aderdg {
+namespace generic {
+namespace c {
+
+template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
+                              double* lambda)>
+void riemannSolverLinear(double* FL, double* FR, const double* const QL,
+                         const double* const QR, const double dt,
+                         const int normalNonZero, const int numberOfVariables,
+                         const int basisSize) {
+  // TODO(guera): Implement
+}
+
+}  // namespace c
+}  // namespace generic
+}  // namespace aderdg
+}  // namespace kernels

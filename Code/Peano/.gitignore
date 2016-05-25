@@ -2,3 +2,6 @@ peano-ExplicitEulerForHeatEquation-asserts
 peano
 tarch
 files.mk
+.cvsignore
+peano.doxygen-configuration
+src.doxys

@@ -6,6 +6,47 @@ namespace tests {
 namespace testdata {
 namespace generic_euler {
 
+#ifdef Dim2
+
+namespace testPDEFluxes {
+extern const double f[5];
+extern const double g[5];
+}  // namespace testPDEFluxes
+
+namespace testSolutionUpdate {
+extern const double lduh[80];
+extern const double luh[80];
+}  // namespace testSolutionUpdate
+
+namespace testSurfaceIntegral {
+extern const double lduh_in[80];
+extern const double lduh_out[80];
+}  // namespace testSurfaceIntegral
+
+namespace testVolumeIntegralNonlinear {
+extern const double lFhi[160];
+extern const double lduh_1[80];
+extern const double lduh_2[80];
+}  // namespace testVolumeIntegralNonlinear
+
+namespace testVolumeIntegralNonlinear {
+extern const double lduh_1[80];
+extern const double lduh_2[80];
+}  // namespace testVolumeIntegralNonlinear
+
+namespace testSpaceTimePredictorLinear {
+extern const double luh[80];
+}  // namespace testSpaceTimePredictorLinear
+
+namespace testSpaceTimePredictorNonlinear {
+extern const double lQhi[80];
+extern const double lFhi[160];
+extern const double lQhbnd[80];
+extern const double lFhbnd[80];
+}  // namespace testSpaceTimePredictorNonlinear
+
+#endif  // Dim2
+
 #ifdef Dim3
 
 namespace testPDEFluxes {
