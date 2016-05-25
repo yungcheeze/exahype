@@ -7,10 +7,14 @@
 # for a specific configuration
 #--------------------------------------------------------------
 #
-#
+# Remarks:
+# * Intel compiler vectorises the nonlinear Riemann solver perfectly. Packed instructions,
+#   aligned, wherever possible.
+# * Gnu compiler uses suboptimal avx instructions and gives away half the performance. If
+#   we want to have a high-performance code with gcc we need an intrinsics generator which
+#   prescribes the instructions.
 #
 import Backend
-from MatmulConfig import MatmulConfig
 import FunctionSignatures
 
 
@@ -47,6 +51,7 @@ class RiemannGenerator:
 
         l_includeStatement = '#include "string.h"\n'                             \
                              '#include "kernels/aderdg/optimised/Kernels.h"\n'   \
+                             '#include "kernels/DGMatrices.h"\n'                 \
                              '#include "kernels/GaussLegendreQuadrature.h"\n\n'
 
         l_functionSignature = FunctionSignatures.getRiemannSolverSignature()+" {\n"
@@ -95,17 +100,17 @@ class RiemannGenerator:
         #                                                                           sized 0 in 2D
         # Each of the 5 chunks starts at an appropriately aligned address
 
-        l_file.write('#pragma simd\n')
-        l_file.write('  for(int i=0;i<'+str(self.m_chunkSize)+';i++) {\n')
         for iVar in range(0, self.m_config['nVar']):
+            l_file.write('#pragma simd\n')
+            l_file.write('  for(int i=0;i<'+str(self.m_chunkSize)+';i++) {\n')
             l_file.write('    QavL['+str(iVar)+'] += kernels::weights2[i] * lQbndL['+str(iVar*self.m_chunkSize)+'+i];\n')
-        l_file.write('  }\n\n')
+            l_file.write('  }\n\n')
 
-        l_file.write('#pragma simd\n')
-        l_file.write('  for(int i=0;i<'+str(self.m_chunkSize)+';i++) {\n')
         for iVar in range(0, self.m_config['nVar']):
+            l_file.write('#pragma simd\n')
+            l_file.write('  for(int i=0;i<'+str(self.m_chunkSize)+';i++) {\n')
             l_file.write('    QavR['+str(iVar)+'] += kernels::weights2[i] * lQbndR['+str(iVar*self.m_chunkSize)+'+i];\n')
-        l_file.write('  }\n\n')
+            l_file.write('  }\n\n')
 
         l_file.close()
 
@@ -120,10 +125,10 @@ class RiemannGenerator:
         # uniform length of LL, LR
         l_paddedVectorLength = Backend.getSizeWithPadding(self.m_config['nVar'])
 
-        l_file.write('  DATATYPE LL['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n')
-        l_file.write('  PDEEigenvalues(&QavL[0], normalNonZero, &LL[0]);\n')
-        l_file.write('  DATATYPE LR['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n')
-        l_file.write('  PDEEigenvalues(&QavR[0], normalNonZero, &LR[0]);\n\n')
+        l_file.write('  DATATYPE lambdaL['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n')
+        l_file.write('  PDEEigenvalues(&QavL[0], normalNonZero, &lambdaL[0]);\n')
+        l_file.write('  DATATYPE lambdaR['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n')
+        l_file.write('  PDEEigenvalues(&QavR[0], normalNonZero, &lambdaR[0]);\n\n')
 
         # abs with intrinsics?
         l_file.write('  DATATYPE smax = 0.;\n')
@@ -136,7 +141,7 @@ class RiemannGenerator:
         #               = 0.5 * [ ( lFbndR(k,j,:) + lFbndL(k,j,:) ) +     smax*( lQbndL(k,j,:) - lQbndR(k,j,:) ) ]
         l_file.write('#pragma simd\n')
         l_file.write('  for(int i=0; i<'+str(self.m_vectorLength)+'; i++) {\n')
-        l_file.write('    lQbndL[i] = smax * (lQbndL[i]-lQbndR[i]);\n')
+        l_file.write('    kernels::tmp_bnd[i] = smax * (lQbndL[i]-lQbndR[i]);\n')
         l_file.write('  }\n')
 
         l_file.write('#pragma simd\n')
@@ -146,7 +151,7 @@ class RiemannGenerator:
 
         l_file.write('#pragma simd\n')
         l_file.write('  for(int i=0; i<'+str(self.m_vectorLength)+'; i++) {\n')
-        l_file.write('    lFbndL[i] = 0.5 * (lFbndL[i] + lQbndL[]) ;\n')
+        l_file.write('    lFbndL[i] = 0.5 * (lFbndL[i] + kernels::tmp_bnd[i]) ;\n')
         l_file.write('  }\n')
         l_file.write('  memcpy(lFbndR,lFbndL,'+str(self.m_vectorLength)+' * sizeof(DATATYPE));\n')
 
