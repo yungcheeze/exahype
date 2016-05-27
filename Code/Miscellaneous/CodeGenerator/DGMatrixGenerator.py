@@ -100,9 +100,10 @@ class DGMatrixGenerator:
         l_matrices['FLCoeff'] = FLCoeff
         l_matrices['FRCoeff'] = FRCoeff
 
-        # F0 no padding
+        # F0 with padding for DSCAL
         F0, _ = np.array(aderdg.BaseFunc1d(0.0, self.m_xGPN, self.m_order))
-        l_matrices['F0'] = F0
+        l_paddedF0 = np.pad(F0, [0, Backend.getPadWidth(self.m_config['nDof'])], mode='constant')
+        l_matrices['F0'] = l_paddedF0
 
         self.__generateHeaderFile()
         self.__writeToFile(l_matrices)

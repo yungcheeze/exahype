@@ -32,7 +32,7 @@ def getPicardLoopSignature(i_nDim):
     elif(i_nDim==3):
         l_functionSignature = "template<void PDEFlux3d(const DATATYPE* const Q, DATATYPE* f, DATATYPE* g, DATATYPE* h)>\n" \
                               "void kernels::aderdg::optimised::picardLoop( \n"                                            \
-                              "  DATATYPE* restrict lqi, \n"                                                               \
+                              "  DATATYPE* restrict lqh, \n"                                                               \
                               "  DATATYPE* restrict lFh, \n"                                                               \
                               "  const DATATYPE* restrict const luh, \n"                                                   \
                               "  const tarch::la::Vector<DIMENSIONS,DATATYPE> &dx,\n"                                      \
@@ -209,7 +209,6 @@ def getRiemannSolverSignature():
     # replace all occurrences of 'DATATYPE' with 'float' and 'double', respectively
     if(m_precision=='SP'):
         l_functionSignature = re.sub(r'\bDATATYPE\b', 'float', l_functionSignature)
-    else:
     elif(m_precision=='DP'):
         l_functionSignature = re.sub(r'\bDATATYPE\b', 'double', l_functionSignature)
     else:

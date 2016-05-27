@@ -26,16 +26,24 @@ class SpaceTimePredictorGenerator:
 
     # total length
     m_luhLength = -1
+    m_rhsLength = -1
+
+    # soa size
+    m_luhChunkSize = -1
+
+    # padded aos size
+    m_structSize = -1
 
 
     def __init__(self, i_config, i_numerics):
-        self.m_config = i_config
-        self.m_type   = i_numerics
-        self.m_order  = str(self.m_config['nDof']-1)
+        self.m_config     = i_config
+        self.m_type       = i_numerics
+        self.m_order      = str(self.m_config['nDof']-1)
+        self.m_structSize = Backend.getSizeWithPadding(self.m_config['nVar'])
 
         # without padding of lduh, luh
-        self.m_luhLength = self.m_config['nVar'] * (self.m_config['nDof']**self.m_config['nDim'])
-
+        self.m_luhChunkSize = (self.m_config['nDof']**self.m_config['nDim'])
+        self.m_luhLength    = self.m_config['nVar'] * self.m_luhChunkSize
         # with padding of lduh, luh
         #self.m_luhChunkSize    = Backend.getSizeWithPadding(self.m_config['nDof']**(self.m_config['nDim']-1))
         #self.m_luhLength       = self.m_config['nVar'] * self.m_luhChunkSize
@@ -45,14 +53,16 @@ class SpaceTimePredictorGenerator:
         #self.m_luhLength       = Backend.getSizeWithPadding(self.m_luhChunkSize)
 
 
+
     def __writeHeaderForPicardLoop(self, i_pathToFile):
         l_description = '// Predictor \n'                                                                 \
                         '// K_{1} \\cdot \\hat{q}^{n+1} + K_{\\xi} \\cdot \\hat{F}^{n} = F_0 \\cdot \\hat{u} \n' \
                         '// computed as \n'                                                               \
                         '// \\hat{q}^{n+1} = K_{1}^{-1}[F_0 \\cdot \\hat{u} - K_{\\xi} \\cdot \\hat{F}^{n}] \n'
 
-        l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h" \n'   \
-                             '#include "kernels/DGMatrices.h"\n' \
+        l_includeStatement = '#include "string.h"\n'                             \
+                             '#include "kernels/aderdg/optimised/Kernels.h"\n'   \
+                             '#include "kernels/DGMatrices.h"\n'                 \
                              '#include "kernels/GaussLegendreQuadrature.h"\n'    \
                              '#include "kernels/aderdg/optimised/asm_picard.cpp"\n\n'
 
@@ -120,11 +130,9 @@ class SpaceTimePredictorGenerator:
                              '#include "kernels/DGMatrices.h"\n' \
                              '#include "string.h"\n'                              \
                              '#include "kernels/aderdg/optimised/asm_cauchyKovalewski.cpp"\n\n'
-        # TODO
-        l_functionSignature = ""
+        l_functionSignature = FunctionSignatures.getCauchyKovalewskiSignature()+" {\n"
 
         l_sourceFile = open(i_pathToFile, 'a')
-        #l_sourceFile.write(l_description)
         l_sourceFile.write(l_includeStatement)
         l_sourceFile.write(l_functionSignature)
         l_sourceFile.close()
@@ -136,7 +144,6 @@ class SpaceTimePredictorGenerator:
             self.__generatePredictor()
             self.__generateExtrapolator()
         else:
-            # TODO
             self.__generateCauchyKovalewski()
             self.__generateExtrapolator()
 
@@ -147,6 +154,67 @@ class SpaceTimePredictorGenerator:
         # write #include's and function signature
         self.__writeHeaderForPicardLoop(l_filename)
 
+        l_sourceFile = open(l_filename, 'a')
+
+        # initialisation of lqh and rhs0:
+        # (1) lqh(iVar,l,i,j,k) = luh(i,j,k,iVar)
+        # (2) rhs0(iVar,i,j,k,l) = weights3(i,j,k) * F0 * luh(iVar,i,j,k)
+
+        nDOF       = str(self.m_config['nDof'])
+        blockWidth = str(self.m_config['nDof'] * self.m_structSize)
+
+        # (1) lqh(iVar,l,i,j,k) = luh(i,j,k,iVar);
+        if(self.m_config['nDim'] == 2):
+            l_sourceFile.write( "  for(int i=0;i<"+nDOF+";i++) {\n"   \
+                                "    for(int j=0;j<"+nDOF+";j++) {\n" \
+                                "       const int lqh_base_addr = ("+str(self.m_config['nDof']**2)+"*j+"
+                                                                    +str(self.m_config['nDof'])   +"*i)*"
+                                                                    +str(self.m_structSize)+";\n" \
+                                "       const int luh_addr = i + j*"+str(self.m_config['nDof'])+";\n"
+                               )
+            for iVar in range(0, self.m_config['nVar']):
+                l_sourceFile.write("       lqh[lqh_base_addr+"+str(iVar)+"] = luh["+str(iVar*self.m_luhChunkSize)+"+luh_addr];\n")
+            l_sourceFile.write( "    }\n"
+                                "  }\n"
+                              )
+
+        if(self.m_config['nDim'] == 3):
+            l_sourceFile.write( "  for(int i=0;i<"+nDOF+";i++) {\n"     \
+                                "    for(int j=0;j<"+nDOF+";j++) {\n"   \
+                                "      for(int k=0;k<"+nDOF+";k++) {\n" \
+                                "         const int lqh_base_addr = ("+str(self.m_config['nDof']**3)+"*k+"
+                                                                      +str(self.m_config['nDof']**2)+"*j+"
+                                                                      +str(self.m_config['nDof'])   +"*i)*"
+                                                                      +str(self.m_structSize)+";\n" \
+                                "         const int luh_addr = i + j*"+str(self.m_config['nDof']) +
+                                                                "+ k*"+str(self.m_config['nDof']**2)+";\n"
+                               )
+            for iVar in range(0, self.m_config['nVar']):
+                l_sourceFile.write("         lqh[lqh_base_addr+"+str(iVar)+"] = luh["+str(iVar*self.m_luhChunkSize)+"+luh_addr];\n")
+            l_sourceFile.write( "      }\n"
+                                "    }\n"
+                                "  }\n"
+                              )
+
+
+
+        # 2D/3D
+        l_sourceFile.write("  //#pragma omp parallel for\n")
+        l_sourceFile.write("  for(int it=0;it<"+str(self.m_config['nDof']**self.m_config['nDim'])+";it++) {\n" \
+                           "    const int base_addr = it*"+blockWidth+";\n" \
+                           "    for(int l=1;l<"+nDOF+";l++) {\n" \
+                           "      memcpy(&lqh[base_addr+l*"+str(self.m_structSize)+"], &lqh[base_addr],"+str(self.m_structSize)+"*sizeof(double));\n"
+                           "    }\n" \
+                           "  }\n"
+                          )
+
+
+        # (2) rhs0(iVar,i,j,k,l) = weights3(i,j,k) * F0 * luh(iVar,i,j,k)
+        # TODO
+
+        l_sourceFile.close()
+        # write missing closing bracket
+        l_file.write('}')
 
 
     def __generateCauchyKovalewski(self):
@@ -202,7 +270,7 @@ class SpaceTimePredictorGenerator:
         for it in range(0, l_iters):
             l_file.write("  "+l_matmul.baseroutinename+'(&lqh['+str(l_baseAddrA)+'],'+  \
                                                         '&kernels::gaussLegendreWeights['+self.m_order+'][0],'+\
-                                                        '&lQhi['+str(l_baseAddrC)+'])'
+                                                        '&lQhi['+str(l_baseAddrC)+'])')
             l_baseAddrC = l_baseAddrC + Backend.getSizeWithPadding(self.m_config['nVar'])
             l_baseAddrA = l_baseAddrA + Backend.getSizeWithPadding(self.m_config['nVar']) * self.m_config['nDof']
 
