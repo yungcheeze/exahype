@@ -15,12 +15,12 @@ SUBROUTINE ADERPicardLoopNonlinear(luh,dt,dx,lqh,lFh)
     DOUBLE PRECISION    :: rhs0(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))               ! contribution of the initial condition to the known right hand side 
     DOUBLE PRECISION    :: rhs(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! known right hand side 
     DOUBLE PRECISION    :: aux(d)                                                   ! auxiliary variables 
-    DOUBLE PRECISION    :: lqhold(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3))             ! old space-time degrees of freedom  
+    !DOUBLE PRECISION    :: lqhold(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3))             ! old space-time degrees of freedom
     DOUBLE PRECISION    :: lqx(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qx of q 
     DOUBLE PRECISION    :: lqy(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qy of q 
     DOUBLE PRECISION    :: lqz(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! spatial derivative qz of q 
     DOUBLE PRECISION    :: lqt(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! time derivative qt of q 
-    DOUBLE PRECISION    :: res                                                      ! residual 
+    !DOUBLE PRECISION    :: res                                                      ! residual
     DOUBLE PRECISION, PARAMETER :: tol = 1e-7                                       ! tolerance 
     !
     DO k = 1, nDOF(3) 
@@ -47,7 +47,7 @@ SUBROUTINE ADERPicardLoopNonlinear(luh,dt,dx,lqh,lFh)
     ! Discrete Picard iterations. This set of nested loops should (theoretically) be a dream for vectorization, since they are rather independent... 
     DO iter = 1, N+1   
         ! save old space-time DOF 
-        lqhold = lqh         
+        !lqhold = lqh
         DO l = 1, nDOF(0) ! loop over DOF in time 
          ! Compute the fluxes (once these fluxes are available, the subsequent operations are independent from each other) 
          DO k = 1, nDOF(3) 
