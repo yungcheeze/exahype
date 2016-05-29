@@ -314,32 +314,25 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
                 VertexOperations::readADERDGCellDescriptionsIndex(
                     fineGridVerticesEnumerator, fineGridVertices));
 
-    for (std::vector<exahype::records::ADERDGCellDescription>::iterator pFine =
-             ADERDGCellDescriptionHeap::getInstance()
-                 .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-                 .begin();
-         pFine !=
-         ADERDGCellDescriptionHeap::getInstance()
-             .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-             .end();
-         ++pFine) {
+    for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(
+             fineGridCell.getADERDGCellDescriptionsIndex())) {
       const exahype::solvers::Solver::AugmentationControl augmentationControl =
-          augmentationCriterion(pFine->getSolverNumber(), pFine->getType(),
-                                pFine->getLevel(),
+          augmentationCriterion(pFine.getSolverNumber(), pFine.getType(),
+                                pFine.getLevel(),
                                 neighbourCellDescriptionIndices);
 
       // 1. Check if ancestors and descendants need to hold
       // data or not based on virtual refinement criterion.
-      switch (pFine->getType()) {
+      switch (pFine.getType()) {
         case exahype::records::ADERDGCellDescription::Ancestor:
         case exahype::records::ADERDGCellDescription::EmptyAncestor:
           switch (augmentationControl) {
             case exahype::solvers::Solver::NextToCell:
             case exahype::solvers::Solver::NextToCellAndAncestor:
-              pFine->setType(exahype::records::ADERDGCellDescription::Ancestor);
+              pFine.setType(exahype::records::ADERDGCellDescription::Ancestor);
               break;
             default:
-              pFine->setType(
+              pFine.setType(
                   exahype::records::ADERDGCellDescription::EmptyAncestor);
               break;
           }
@@ -349,11 +342,11 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
           switch (augmentationControl) {
             case exahype::solvers::Solver::NextToCell:
             case exahype::solvers::Solver::NextToCellAndAncestor:
-              pFine->setType(
+              pFine.setType(
                   exahype::records::ADERDGCellDescription::Descendant);
               break;
             default:
-              pFine->setType(
+              pFine.setType(
                   exahype::records::ADERDGCellDescription::EmptyDescendant);
               break;
           }
@@ -366,23 +359,23 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
       // or an
       // augmentation event has been
       // triggered.
-      switch (pFine->getRefinementEvent()) {
+      switch (pFine.getRefinementEvent()) {
         case exahype::records::ADERDGCellDescription::None:
         case exahype::records::ADERDGCellDescription::AugmentingRequested:
         case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
-          switch (pFine->getType()) {
+          switch (pFine.getType()) {
             case exahype::records::ADERDGCellDescription::Cell:
             case exahype::records::ADERDGCellDescription::Descendant:
             case exahype::records::ADERDGCellDescription::EmptyDescendant:
               switch (augmentationControl) {
                 case exahype::solvers::Solver::NextToAncestor:
                 case exahype::solvers::Solver::NextToCellAndAncestor:
-                  pFine->setRefinementEvent(
+                  pFine.setRefinementEvent(
                       exahype::records::ADERDGCellDescription::
                           AugmentingRequested);
                   break;
                 case exahype::solvers::Solver::Unncessary:
-                  pFine->setRefinementEvent(
+                  pFine.setRefinementEvent(
                       exahype::records::ADERDGCellDescription::
                           DeaugmentingRequested);
                   break;
@@ -424,18 +417,11 @@ exahype::mappings::MarkingForAugmentation::augmentationCriterion(
     if (DataHeap::getInstance().isValidIndex(neighbourCellDescriptionIndex)) {
       // NOTE: The order of the following two for loops is important.
       // First, check if we are next to a ancestor.
-      for (std::vector<exahype::records::ADERDGCellDescription>::iterator
-               pNeighbour = ADERDGCellDescriptionHeap::getInstance()
-                                .getData(neighbourCellDescriptionIndex)
-                                .begin();
-           pNeighbour !=
-           ADERDGCellDescriptionHeap::getInstance()
-               .getData(neighbourCellDescriptionIndex)
-               .end();
-           ++pNeighbour) {
-        if (pNeighbour->getSolverNumber() == solverNumber &&
-            pNeighbour->getLevel() == level) {
-          switch (pNeighbour->getType()) {  // What type has the neighbour?
+      for (auto& pNeighbour : ADERDGCellDescriptionHeap::getInstance().getData(
+               neighbourCellDescriptionIndex)) {
+        if (pNeighbour.getSolverNumber() == solverNumber &&
+            pNeighbour.getLevel() == level) {
+          switch (pNeighbour.getType()) {  // What type has the neighbour?
             case exahype::records::ADERDGCellDescription::Ancestor:
             case exahype::records::ADERDGCellDescription::EmptyAncestor:
               switch (type) {  // What type am I?

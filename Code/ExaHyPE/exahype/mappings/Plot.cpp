@@ -284,38 +284,29 @@ void exahype::mappings::Plot::enterCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  for (std::vector<exahype::plotters::Plotter*>::iterator pPlotter =
-           exahype::plotters::RegisteredPlotters.begin();
-       pPlotter != exahype::plotters::RegisteredPlotters.end(); pPlotter++) {
+  for (auto& pPlotter : exahype::plotters::RegisteredPlotters) {
     if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
             fineGridCell.getADERDGCellDescriptionsIndex())) {
-      for (ADERDGCellDescriptionHeap::HeapEntries::const_iterator pPatch =
-               ADERDGCellDescriptionHeap::getInstance()
-                   .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-                   .begin();
-           pPatch !=
-           ADERDGCellDescriptionHeap::getInstance()
-               .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-               .end();
-           pPatch++) {
+      for (const auto& pPatch :
+           ADERDGCellDescriptionHeap::getInstance().getData(
+               fineGridCell.getADERDGCellDescriptionsIndex())) {
         double* u;
 
-        switch (pPatch->getType()) {
+        switch (pPatch.getType()) {
           case exahype::records::ADERDGCellDescription::Cell:
-            switch (pPatch->getRefinementEvent()) {
+            switch (pPatch.getRefinementEvent()) {
               case exahype::records::ADERDGCellDescription::None:
               case exahype::records::ADERDGCellDescription::
                   DeaugmentingRequested:
                 u = DataHeap::getInstance()
-                        .getData(pPatch->getSolution())
+                        .getData(pPatch.getSolution())
                         .data();
 
-                if ((*pPlotter)->plotDataFromSolver(
-                        pPatch->getSolverNumber())) {
-                  (*pPlotter)->plotPatch(
+                if (pPlotter->plotDataFromSolver(pPatch.getSolverNumber())) {
+                  pPlotter->plotPatch(
                       fineGridVerticesEnumerator.getVertexPosition(),
                       fineGridVerticesEnumerator.getCellSize(), u,
-                      pPatch->getCorrectorTimeStamp());
+                      pPatch.getCorrectorTimeStamp());
                 }
                 break;
               default:

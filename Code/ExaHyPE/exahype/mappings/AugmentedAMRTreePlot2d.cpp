@@ -129,11 +129,9 @@ void exahype::mappings::AugmentedAMRTreePlot2d::createHangingVertex(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
   int minLevel = std::numeric_limits<int>::max();
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end();
-       ++p) {  // @todo replace by parloops?
-    minLevel = std::min(minLevel, (*p)->getMinimumTreeDepth() + 1);
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    // @todo replace by parloops?
+    minLevel = std::min(minLevel, p->getMinimumTreeDepth() + 1);
   }
 
 #if DIMENSIONS == 2
@@ -297,11 +295,9 @@ void exahype::mappings::AugmentedAMRTreePlot2d::touchVertexFirstTime(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
   int minLevel = std::numeric_limits<int>::max();
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end();
-       ++p) {  // @todo replace by parloops?
-    minLevel = std::min(minLevel, (*p)->getMinimumTreeDepth() + 1);
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    // @todo replace by parloops?
+    minLevel = std::min(minLevel, p->getMinimumTreeDepth() + 1);
   }
 
 #if DIMENSIONS == 2
@@ -333,11 +329,9 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   int minLevel = std::numeric_limits<int>::max();
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end();
-       ++p) {  // @todo replace by parloops?
-    minLevel = std::min(minLevel, (*p)->getMinimumTreeDepth() + 1);
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    // @todo replace by parloops?
+    minLevel = std::min(minLevel, p->getMinimumTreeDepth() + 1);
   }
 
   if (coarseGridVerticesEnumerator.getLevel() + 1 >= minLevel) {
@@ -375,25 +369,17 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
       int solverNumber = 0;
       bool solverFound = false;
 
-      for (std::vector<exahype::records::ADERDGCellDescription>::iterator
-               pFine =
-                   ADERDGCellDescriptionHeap::getInstance()
-                       .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-                       .begin();
-           pFine !=
-           ADERDGCellDescriptionHeap::getInstance()
-               .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-               .end();
-           ++pFine) {
-        if (pFine->getSolverNumber() == solverNumber) {
+      for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(
+               fineGridCell.getADERDGCellDescriptionsIndex())) {
+        if (pFine.getSolverNumber() == solverNumber) {
           _cellTypeWriter->plotCell(cellIndex,
-                                    static_cast<int>(pFine->getType()));
+                                    static_cast<int>(pFine.getType()));
           _cellRefinementEventWriter->plotCell(
-              cellIndex, static_cast<int>(pFine->getRefinementEvent()));
+              cellIndex, static_cast<int>(pFine.getRefinementEvent()));
           _cellDataWriter->plotCell(
               cellIndex,
-              2 * static_cast<int>(pFine->getSolution() > -1) +
-                  static_cast<int>(pFine->getExtrapolatedPredictor() > -1));
+              2 * static_cast<int>(pFine.getSolution() > -1) +
+                  static_cast<int>(pFine.getExtrapolatedPredictor() > -1));
           solverFound = true;
         }
       }

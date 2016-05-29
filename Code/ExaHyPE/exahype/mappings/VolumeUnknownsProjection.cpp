@@ -325,34 +325,30 @@ void exahype::mappings::VolumeUnknownsProjection::enterCell(
           records::ADERDGCellDescription& pFine =
               fineGridCell.getADERDGCellDescription(i);
 
-        for (std::vector<exahype::records::ADERDGCellDescription>::iterator
-                 pCoarse = ADERDGCellDescriptionHeap::getInstance()
-                               .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
-                               .begin();
-             pCoarse !=
-             ADERDGCellDescriptionHeap::getInstance()
-                 .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
-                 .end();
-             ++pCoarse) {
-          if (pFine.getSolverNumber() == pCoarse->getSolverNumber()) {
-            switch (pCoarse->getRefinementEvent()) {
+        for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance()
+                               .getData(coarseGridCell
+                                        .getADERDGCellDescriptionsIndex())) {
+          if (pFine.getSolverNumber() == pCoarse.getSolverNumber()) {
+            switch (pCoarse.getRefinementEvent()) {
               case exahype::records::ADERDGCellDescription::Refining:
                 switch (pFine.getRefinementEvent()) {
                   case exahype::records::ADERDGCellDescription::Prolongating:
                     assertion3(
-                        pFine.getParentIndex() == coarseGridCell.getADERDGCellDescriptionsIndex(),
-                        pFine.getParentIndex(), coarseGridCell.getADERDGCellDescriptionsIndex(),
+                        pFine.getParentIndex() ==
+                            coarseGridCell.getADERDGCellDescriptionsIndex(),
+                        pFine.getParentIndex(),
+                        coarseGridCell.getADERDGCellDescriptionsIndex(),
                         coarseGridCell.toString());
                     assertion(pFine.getType() ==
                               exahype::records::ADERDGCellDescription::Cell);
                     assertion1(
-                        pCoarse->getType() ==
+                        pCoarse.getType() ==
                             exahype::records::ADERDGCellDescription::Cell,
                         toString(fineGridVerticesEnumerator.getCellFlags()));
                     assertion3(
-                        pCoarse->getRefinementEvent() ==
+                        pCoarse.getRefinementEvent() ==
                             exahype::records::ADERDGCellDescription::Refining,
-                        pCoarse->getType(), pCoarse->getRefinementEvent(),
+                        pCoarse.getType(), pCoarse.getRefinementEvent(),
                         toString(fineGridVerticesEnumerator.getCellFlags()));
 
                     //              prolongateVolumeData(
@@ -369,21 +365,23 @@ void exahype::mappings::VolumeUnknownsProjection::enterCell(
               case exahype::records::ADERDGCellDescription::ErasingChildren:
                 switch (pFine.getRefinementEvent()) {
                   case exahype::records::ADERDGCellDescription::Restricting:
-                    if (pFine.getSolverNumber() == pCoarse->getSolverNumber()) {
+                    if (pFine.getSolverNumber() == pCoarse.getSolverNumber()) {
                       assertion1(
-                          pCoarse->getType() ==
+                          pCoarse.getType() ==
                               exahype::records::ADERDGCellDescription::Cell,
                           toString(fineGridVerticesEnumerator.getCellFlags()));
                       assertion1(
-                          pCoarse->getRefinementEvent() ==
+                          pCoarse.getRefinementEvent() ==
                               exahype::records::ADERDGCellDescription::
                                   ErasingChildren,
                           toString(fineGridVerticesEnumerator.getCellFlags()));
 
                       //                  restrictVolumeData(p, *pCoarse,
                       //                  fineGridPositionOfCell);
-                      pFine.setType(exahype::records::ADERDGCellDescription::Erased);
-                      pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::Erasing);
+                      pFine.setType(exahype::records::ADERDGCellDescription::
+                                    Erased);
+                      pFine.setRefinementEvent(exahype::records::
+                                               ADERDGCellDescription::Erasing);
                     }
                     break;
                   default:
@@ -480,44 +478,26 @@ void exahype::mappings::VolumeUnknownsProjection::ascend(
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
           coarseGridCell.getADERDGCellDescriptionsIndex())) {
-    for (std::vector<exahype::records::ADERDGCellDescription>::iterator
-             pCoarse =
-                 ADERDGCellDescriptionHeap::getInstance()
-                     .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
-                     .begin();
-         pCoarse !=
-         ADERDGCellDescriptionHeap::getInstance()
-             .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
-             .end();
-         ++pCoarse) {
+    for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(
+             coarseGridCell.getADERDGCellDescriptionsIndex())) {
       bool refiningDone = true;
 
-      switch (pCoarse->getType()) {
+      switch (pCoarse.getType()) {
         case exahype::records::ADERDGCellDescription::Cell:
-          switch (pCoarse->getRefinementEvent()) {
+          switch (pCoarse.getRefinementEvent()) {
             case exahype::records::ADERDGCellDescription::Refining:
               refiningDone = true;
               // clang-format off
           dfor3(k)
           if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
               fineGridCells[kScalar].getADERDGCellDescriptionsIndex())) {
-            for (std::vector<exahype::records::ADERDGCellDescription>::
-                iterator pFine =
-                    ADERDGCellDescriptionHeap::getInstance()
-                .getData(
-                    fineGridCells[kScalar]
-                                  .getADERDGCellDescriptionsIndex())
-                                  .begin();
-                pFine !=
-                    ADERDGCellDescriptionHeap::getInstance()
-                .getData(fineGridCells[kScalar]
-                                       .getADERDGCellDescriptionsIndex())
-                                       .end();
-                ++pFine) {
-              if (pCoarse->getSolverNumber() == pFine->getSolverNumber()) {
+            for (auto& pFine : ADERDGCellDescriptionHeap::getInstance()
+                               .getData(fineGridCells[kScalar]
+                               .getADERDGCellDescriptionsIndex())) {
+              if (pCoarse.getSolverNumber() == pFine.getSolverNumber()) {
                 refiningDone =
                     refiningDone &&
-                    pFine->getRefinementEvent() ==
+                    pFine.getRefinementEvent() ==
                         exahype::records::ADERDGCellDescription::None;
               }
             }
@@ -530,9 +510,9 @@ void exahype::mappings::VolumeUnknownsProjection::ascend(
             //                std::cout << "Refining done" << std::endl;
 
             // Rationale: It's more likely that a ancestor needs to hold data.
-            pCoarse->setType(
+            pCoarse.setType(
                 exahype::records::ADERDGCellDescription::EmptyAncestor);
-            pCoarse->setRefinementEvent(
+            pCoarse.setRefinementEvent(
                 exahype::records::ADERDGCellDescription::None);
           }
           break;

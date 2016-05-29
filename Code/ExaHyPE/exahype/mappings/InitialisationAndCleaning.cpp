@@ -316,33 +316,26 @@ void exahype::mappings::InitialisationAndCleaning::enterCell(
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
           fineGridCell.getADERDGCellDescriptionsIndex())) {
-    for (std::vector<exahype::records::ADERDGCellDescription>::iterator pFine =
-             ADERDGCellDescriptionHeap::getInstance()
-                 .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-                 .begin();
-         pFine !=
-         ADERDGCellDescriptionHeap::getInstance()
-             .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-             .end();
-         pFine++) {
-      fineGridCell.ensureNecessaryMemoryIsAllocated(pFine->getSolverNumber());
+    for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(
+             fineGridCell.getADERDGCellDescriptionsIndex())) {
+      fineGridCell.ensureNecessaryMemoryIsAllocated(pFine.getSolverNumber());
 
-      switch (pFine->getType()) {
+      switch (pFine.getType()) {
         case exahype::records::ADERDGCellDescription::Ancestor:
         case exahype::records::ADERDGCellDescription::Descendant:
           fineGridCell.ensureNoUnnecessaryMemoryIsAllocated(
-              pFine->getSolverNumber());
+              pFine.getSolverNumber());
           break;
         default:
           break;
       }
 
-      switch (pFine->getRefinementEvent()) {
+      switch (pFine.getRefinementEvent()) {
         case exahype::records::ADERDGCellDescription::AllocatingMemory:
           assertion1(
-              pFine->getType() == exahype::records::ADERDGCellDescription::Cell,
-              pFine->getType());
-          pFine->setRefinementEvent(
+              pFine.getType() == exahype::records::ADERDGCellDescription::Cell,
+              pFine.getType());
+          pFine.setRefinementEvent(
               exahype::records::ADERDGCellDescription::ErasingChildren);
           break;
         default:

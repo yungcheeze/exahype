@@ -346,18 +346,11 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
     // if we have at least one parent
     if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
             pFine.getParentIndex())) {
-      for (std::vector<exahype::records::ADERDGCellDescription>::iterator
-               pParent = ADERDGCellDescriptionHeap::getInstance()
-                             .getData(pFine.getParentIndex())
-                             .begin();
-           pParent !=
-           ADERDGCellDescriptionHeap::getInstance()
-               .getData(pFine.getParentIndex())
-               .end();
-           ++pParent) {
+      for (auto& pParent : ADERDGCellDescriptionHeap::getInstance().getData(
+               pFine.getParentIndex())) {
         exahype::Cell::SubcellPosition subcellPosition;
 
-        if (pFine.getSolverNumber() == pParent->getSolverNumber()) {
+        if (pFine.getSolverNumber() == pParent.getSolverNumber()) {
           switch (pFine.getType()) {
             case exahype::records::ADERDGCellDescription::Descendant:
               subcellPosition =
@@ -524,18 +517,11 @@ void exahype::mappings::FaceUnknownsProjection::leaveCell(
     // if we have at least one parent
     if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
             pFine.getParentIndex())) {
-      for (std::vector<exahype::records::ADERDGCellDescription>::iterator
-               pParent = ADERDGCellDescriptionHeap::getInstance()
-                             .getData(pFine.getParentIndex())
-                             .begin();
-           pParent !=
-           ADERDGCellDescriptionHeap::getInstance()
-               .getData(pFine.getParentIndex())
-               .end();
-           ++pParent) {
+      for (auto& pParent : ADERDGCellDescriptionHeap::getInstance().getData(
+               pFine.getParentIndex())) {
         exahype::Cell::SubcellPosition subcellPosition;
 
-        if (pFine.getSolverNumber() == pParent->getSolverNumber()) {
+        if (pFine.getSolverNumber() == pParent.getSolverNumber()) {
           switch (pFine.getType()) {
             case exahype::records::ADERDGCellDescription::Cell:
             case exahype::records::ADERDGCellDescription::Ancestor:

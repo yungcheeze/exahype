@@ -304,10 +304,8 @@ bool exahype::mappings::SpaceTimePredictor::prepareSendToWorker(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker) {
-  for (std::vector<exahype::solvers::Solver*>::iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end(); p++) {
-    (*p)->sendToRank(worker, _mpiTag);
+  for (auto& p : exahype::solvers::RegisteredSolvers) {
+    p->sendToRank(worker, _mpiTag);
   }
 
   return true;
@@ -348,11 +346,9 @@ void exahype::mappings::SpaceTimePredictor::receiveDataFromMaster(
     const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
     exahype::Cell& workersCoarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  for (std::vector<exahype::solvers::Solver*>::iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end(); p++) {
-    (*p)->receiveFromRank(
-        tarch::parallel::NodePool::getInstance().getMasterRank(), _mpiTag);
+  for (auto& p : exahype::solvers::RegisteredSolvers) {
+    p->receiveFromRank(tarch::parallel::NodePool::getInstance().getMasterRank(),
+                       _mpiTag);
   }
 }
 

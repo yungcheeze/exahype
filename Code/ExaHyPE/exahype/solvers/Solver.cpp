@@ -214,11 +214,9 @@ void exahype::solvers::Solver::receiveFromRank(int rank, int tag) {
 double exahype::solvers::Solver::getMinSolverTimeStamp() {
   double currentMinTimeStamp = std::numeric_limits<double>::max();
 
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end(); p++) {
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
     currentMinTimeStamp =
-        std::min(currentMinTimeStamp, (*p)->getMinCorrectorTimeStamp());
+        std::min(currentMinTimeStamp, p->getMinCorrectorTimeStamp());
   }
 
   return currentMinTimeStamp;
@@ -227,11 +225,9 @@ double exahype::solvers::Solver::getMinSolverTimeStamp() {
 double exahype::solvers::Solver::getMinSolverTimeStepSize() {
   double currentMinTimeStepSize = std::numeric_limits<double>::max();
 
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end(); p++) {
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
     currentMinTimeStepSize =
-        std::min(currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
+        std::min(currentMinTimeStepSize, p->getMinCorrectorTimeStepSize());
   }
 
   return currentMinTimeStepSize;

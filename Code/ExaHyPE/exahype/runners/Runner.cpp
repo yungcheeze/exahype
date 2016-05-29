@@ -273,13 +273,11 @@ int exahype::runners::Runner::runAsMaster(
 void exahype::runners::Runner::initSolvers() {
   // todo 16/02/26:Dominic Etienne Charrier: The initial time stamp
   // should be set by the user in his solver sub class.
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end(); p++) {
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
     // todo:16/03/04:Dominic Charrier
-    (*p)->setMinPredictorTimeStamp(
+    p->setMinPredictorTimeStamp(
         0.0);  // introduce reset method that sets both to t=zero
-    (*p)->setMinCorrectorTimeStamp(
+    p->setMinCorrectorTimeStamp(
         0.0);  // introduce reset method that sets both to t=zero
   }
 }
@@ -289,17 +287,15 @@ void exahype::runners::Runner::startNewTimeStep(int n) {
   double currentMinTimeStepSize = std::numeric_limits<double>::max();
   double nextMinTimeStepSize = std::numeric_limits<double>::max();
 
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end(); p++) {
-    (*p)->startNewTimeStep();
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    p->startNewTimeStep();
 
     currentMinTimeStamp =
-        std::min(currentMinTimeStamp, (*p)->getMinCorrectorTimeStamp());
+        std::min(currentMinTimeStamp, p->getMinCorrectorTimeStamp());
     currentMinTimeStepSize =
-        std::min(currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
+        std::min(currentMinTimeStepSize, p->getMinCorrectorTimeStepSize());
     nextMinTimeStepSize =
-        std::min(nextMinTimeStepSize, (*p)->getMinPredictorTimeStepSize());
+        std::min(nextMinTimeStepSize, p->getMinPredictorTimeStepSize());
   }
 
   logInfo("startNewTimeStep(...)",
@@ -350,28 +346,25 @@ bool exahype::runners::Runner::
     setAccurateTimeStepSizesIfStabilityConditionWasHarmed() {
   bool cflConditionWasViolated = false;
 
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end(); p++) {
-    bool solverTimeStepSizeIsInstable =
-        ((*p)->getMinPredictorTimeStepSize() >
-         (*p)->getMinNextPredictorTimeStepSize());
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    bool solverTimeStepSizeIsInstable = (p->getMinPredictorTimeStepSize() >
+                                         p->getMinNextPredictorTimeStepSize());
 
     // todo 16/02/26:Dominic Etienne Charrier: The initial time stamp
     // introduce reset method that sets both to t=0.99*... make alpha=0.99
     // solver variable
     if (solverTimeStepSizeIsInstable) {
-      (*p)->updateMinNextPredictorTimeStepSize(
-          0.99 * (*p)->getMinNextPredictorTimeStepSize());  // set next
-                                                            // predictor time
-                                                            // step size
-      (*p)->setMinPredictorTimeStepSize(
-          0.99 * (*p)->getMinPredictorTimeStepSize());  // set next corrector
-                                                        // time step size
+      p->updateMinNextPredictorTimeStepSize(
+          0.99 * p->getMinNextPredictorTimeStepSize());  // set next
+                                                         // predictor time
+                                                         // step size
+      p->setMinPredictorTimeStepSize(
+          0.99 * p->getMinPredictorTimeStepSize());  // set next corrector
+                                                     // time step size
     } else {
-      (*p)->updateMinNextPredictorTimeStepSize(
-          .5 * ((*p)->getMinPredictorTimeStepSize() +
-                (*p)->getMinNextPredictorTimeStepSize()));
+      p->updateMinNextPredictorTimeStepSize(
+          .5 * (p->getMinPredictorTimeStepSize() +
+                p->getMinNextPredictorTimeStepSize()));
     }
 
     cflConditionWasViolated =

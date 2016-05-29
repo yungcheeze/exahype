@@ -105,18 +105,16 @@ void exahype::plotters::Plotter::finishedPlotting() {
 
 bool exahype::plotters::isAPlotterActive(double currentTimeStep) {
   bool result = false;
-  for (std::vector<Plotter*>::const_iterator p = RegisteredPlotters.begin();
-       p != RegisteredPlotters.end(); p++) {
-    result |= (*p)->checkWetherSolverBecomesActive(currentTimeStep);
+  for (const auto& p : RegisteredPlotters) {
+    result |= p->checkWetherSolverBecomesActive(currentTimeStep);
   }
   return result;
 }
 
 void exahype::plotters::finishedPlotting() {
-  for (std::vector<Plotter*>::iterator p = RegisteredPlotters.begin();
-       p != RegisteredPlotters.end(); p++) {
-    if ((*p)->isActive()) {
-      (*p)->finishedPlotting();
+  for (auto& p : RegisteredPlotters) {
+    if (p->isActive()) {
+      p->finishedPlotting();
     }
   }
 }

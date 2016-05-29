@@ -296,40 +296,23 @@ void exahype::mappings::Augmentation::enterCell(
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
           coarseGridCell.getADERDGCellDescriptionsIndex())) {
-    for (std::vector<exahype::records::ADERDGCellDescription>::iterator
-             pCoarse =
-                 ADERDGCellDescriptionHeap::getInstance()
-                     .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
-                     .begin();
-         pCoarse !=
-         ADERDGCellDescriptionHeap::getInstance()
-             .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
-             .end();
-         ++pCoarse) {
+    for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(
+             coarseGridCell.getADERDGCellDescriptionsIndex())) {
       bool solverNumberFound = false;
 
-      switch (pCoarse->getRefinementEvent()) {
+      switch (pCoarse.getRefinementEvent()) {
         case exahype::records::ADERDGCellDescription::Augmenting:
           if (fineGridCell.getADERDGCellDescriptionsIndex() !=
               exahype::Cell::InvalidCellDescriptionsIndex) {
-            for (std::vector<exahype::records::ADERDGCellDescription>::iterator
-                     pFine =
-                         ADERDGCellDescriptionHeap::getInstance()
-                             .getData(
-                                 fineGridCell.getADERDGCellDescriptionsIndex())
-                             .begin();
-                 pFine !=
-                 ADERDGCellDescriptionHeap::getInstance()
-                     .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-                     .end();
-                 ++pFine) {
+            for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(
+                     fineGridCell.getADERDGCellDescriptionsIndex())) {
               assertion(
-                  pCoarse->getType() ==
+                  pCoarse.getType() ==
                       exahype::records::ADERDGCellDescription::Cell ||
                   exahype::records::ADERDGCellDescription::Descendant ||
                   exahype::records::ADERDGCellDescription::EmptyDescendant);
 
-              if (pFine->getSolverNumber() == pCoarse->getSolverNumber()) {
+              if (pFine.getSolverNumber() == pCoarse.getSolverNumber()) {
                 assertion(
                     exahype::records::ADERDGCellDescription::Descendant ||
                     exahype::records::ADERDGCellDescription::EmptyDescendant);
@@ -349,7 +332,7 @@ void exahype::mappings::Augmentation::enterCell(
           // iteration.
           if (!solverNumberFound) {
             fineGridCell.addNewCellDescription(
-                pCoarse->getSolverNumber(),
+                pCoarse.getSolverNumber(),
                 exahype::records::ADERDGCellDescription::EmptyDescendant,
                 exahype::records::ADERDGCellDescription::None,
                 fineGridVerticesEnumerator.getLevel(),
@@ -399,19 +382,11 @@ void exahype::mappings::Augmentation::descend(
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
           coarseGridCell.getADERDGCellDescriptionsIndex())) {
-    for (std::vector<exahype::records::ADERDGCellDescription>::iterator
-             pCoarse =
-                 ADERDGCellDescriptionHeap::getInstance()
-                     .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
-                     .begin();
-         pCoarse !=
-         ADERDGCellDescriptionHeap::getInstance()
-             .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
-             .end();
-         ++pCoarse) {
-      switch (pCoarse->getRefinementEvent()) {
+    for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(
+             coarseGridCell.getADERDGCellDescriptionsIndex())) {
+      switch (pCoarse.getRefinementEvent()) {
         case exahype::records::ADERDGCellDescription::AugmentingRequested:
-          pCoarse->setRefinementEvent(
+          pCoarse.setRefinementEvent(
               exahype::records::ADERDGCellDescription::Augmenting);
           break;
         default:
@@ -434,38 +409,31 @@ void exahype::mappings::Augmentation::ascend(
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
           coarseGridCell.getADERDGCellDescriptionsIndex())) {
-    for (std::vector<exahype::records::ADERDGCellDescription>::iterator
-             pCoarse =
-                 ADERDGCellDescriptionHeap::getInstance()
-                     .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
-                     .begin();
-         pCoarse !=
-         ADERDGCellDescriptionHeap::getInstance()
-             .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
-             .end();
-         ++pCoarse) {
+    for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(
+             coarseGridCell.getADERDGCellDescriptionsIndex())) {
       bool augmentingDone = true;
 
-      switch (pCoarse->getType()) {
+      switch (pCoarse.getType()) {
         case exahype::records::ADERDGCellDescription::Cell:
         case exahype::records::ADERDGCellDescription::Descendant:
         case exahype::records::ADERDGCellDescription::EmptyDescendant:
-          switch (pCoarse->getRefinementEvent()) {
+          switch (pCoarse.getRefinementEvent()) {
             case exahype::records::ADERDGCellDescription::Augmenting:
               augmentingDone = true;
               // clang-format off
           dfor3(k)
           if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
               fineGridCells[kScalar].getADERDGCellDescriptionsIndex())) {
-            for (std::vector<exahype::records::ADERDGCellDescription>::iterator pFine = ADERDGCellDescriptionHeap::getInstance()
-                .getData(fineGridCells[kScalar].getADERDGCellDescriptionsIndex()).begin();
-                pFine != ADERDGCellDescriptionHeap::getInstance()
-                .getData(fineGridCells[kScalar].getADERDGCellDescriptionsIndex()).end();
-                ++pFine) {
-              if (pCoarse->getSolverNumber() == pFine->getSolverNumber()) {
+            for (auto& pFine : ADERDGCellDescriptionHeap::getInstance()
+                .getData(fineGridCells[kScalar]
+                .getADERDGCellDescriptionsIndex())) {
+              if (pCoarse.getSolverNumber() == pFine.getSolverNumber()) {
                 augmentingDone = augmentingDone &&
-                    (pFine->getRefinementEvent() == exahype::records::ADERDGCellDescription::None ||
-                        pFine->getRefinementEvent() == exahype::records::ADERDGCellDescription::DeaugmentingRequested);
+                    (pFine.getRefinementEvent() ==
+                        exahype::records::ADERDGCellDescription::None ||
+                     pFine.getRefinementEvent() ==
+                         exahype::records::ADERDGCellDescription::
+                         DeaugmentingRequested);
               }
             }
           } else {
@@ -474,7 +442,7 @@ void exahype::mappings::Augmentation::ascend(
           enddforx
 
           if (augmentingDone) {
-            pCoarse->setRefinementEvent(
+            pCoarse.setRefinementEvent(
                 exahype::records::ADERDGCellDescription::None);
           }
           break;

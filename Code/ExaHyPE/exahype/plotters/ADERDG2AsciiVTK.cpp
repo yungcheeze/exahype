@@ -30,11 +30,8 @@ exahype::plotters::ADERDG2AsciiVTK::ADERDG2AsciiVTK(const std::string& filename,
 exahype::plotters::ADERDG2AsciiVTK::~ADERDG2AsciiVTK() {
   _gridWriter->close();
   _timeStampDataWriter->close();
-  for (std::vector<
-           tarch::plotter::griddata::Writer::VertexDataWriter*>::iterator p =
-           _vertexDataWriter.begin();
-       p != _vertexDataWriter.end(); p++) {
-    (*p)->close();
+  for (auto& p : _vertexDataWriter) {
+    p->close();
   }
 
   std::ostringstream snapshotFileName;
@@ -48,11 +45,8 @@ exahype::plotters::ADERDG2AsciiVTK::~ADERDG2AsciiVTK() {
 
   FileCounter++;
 
-  for (std::vector<
-           tarch::plotter::griddata::Writer::VertexDataWriter*>::iterator p =
-           _vertexDataWriter.begin();
-       p != _vertexDataWriter.end(); p++) {
-    delete *p;
+  for (auto& p : _vertexDataWriter) {
+    delete p;
   }
   delete _timeStampDataWriter;
   delete _gridWriter;
@@ -77,9 +71,7 @@ void exahype::plotters::ADERDG2AsciiVTK::plotPatch(
       _timeStampDataWriter->plotVertex(vertexIndex, timeStamp);
 
       int unknown = 0;
-      for (std::vector<tarch::plotter::griddata::Writer::VertexDataWriter*>::
-               iterator p = _vertexDataWriter.begin();
-           p != _vertexDataWriter.end(); p++) {
+      for (auto& p : _vertexDataWriter) {
         double value = 0;
         for (int jj = 0; jj < _order + 1;
              jj++) {  // Gauss-Legendre node indices
@@ -91,7 +83,7 @@ void exahype::plotters::ADERDG2AsciiVTK::plotPatch(
             assertion3(value == value, offsetOfPatch, sizeOfPatch, iGauss);
           }
         }
-        (*p)->plotVertex(vertexIndex, value);
+        p->plotVertex(vertexIndex, value);
         unknown++;
       }
       vertexIndex++;
@@ -109,9 +101,7 @@ void exahype::plotters::ADERDG2AsciiVTK::plotPatch(
         _timeStampDataWriter->plotVertex(vertexIndex, timeStamp);
 
         int unknown = 0;
-        for (std::vector<tarch::plotter::griddata::Writer::VertexDataWriter*>::
-                 iterator p = _vertexDataWriter.begin();
-             p != _vertexDataWriter.end(); p++) {
+        for (auto& p : _vertexDataWriter) {
           double value = 0;
           for (int kk = 0; kk < _order + 1;
                kk++) {  // Gauss-Legendre node indices
@@ -127,7 +117,7 @@ void exahype::plotters::ADERDG2AsciiVTK::plotPatch(
               }
             }
           }
-          (*p)->plotVertex(vertexIndex, value);
+          p->plotVertex(vertexIndex, value);
           unknown++;
         }
         vertexIndex++;

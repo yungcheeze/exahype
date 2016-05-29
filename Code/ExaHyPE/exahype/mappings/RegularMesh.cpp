@@ -112,11 +112,9 @@ void exahype::mappings::RegularMesh::createInnerVertex(
                            fineGridH, coarseGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfVertex);
 
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end(); p++) {
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
     if (fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined &&
-        coarseGridVerticesEnumerator.getLevel() < (*p)->getMinimumTreeDepth()) {
+        coarseGridVerticesEnumerator.getLevel() < p->getMinimumTreeDepth()) {
       fineGridVertex.refine();
     }
   }
@@ -137,11 +135,9 @@ void exahype::mappings::RegularMesh::createBoundaryVertex(
                            coarseGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfVertex);
 
-  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-           exahype::solvers::RegisteredSolvers.begin();
-       p != exahype::solvers::RegisteredSolvers.end(); p++) {
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
     if (fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined &&
-        coarseGridVerticesEnumerator.getLevel() < (*p)->getMinimumTreeDepth()) {
+        coarseGridVerticesEnumerator.getLevel() < p->getMinimumTreeDepth()) {
       fineGridVertex.refine();
     }
   }
@@ -332,12 +328,10 @@ void exahype::mappings::RegularMesh::enterCell(
       //      multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex)
       //      {
       exahype::Cell::InvalidCellDescriptionsIndex) {
-    for (std::vector<exahype::solvers::Solver*>::const_iterator p =
-             exahype::solvers::RegisteredSolvers.begin();
-         p != exahype::solvers::RegisteredSolvers.end();
-         ++p) {  // @todo replace by parloops?
+    for (const auto& p : exahype::solvers::RegisteredSolvers) {
+      // @todo replace by parloops?
       if (fineGridVerticesEnumerator.getLevel() ==
-          (*p)->getMinimumTreeDepth() + 1) {
+          p->getMinimumTreeDepth() + 1) {
         fineGridCell.addNewCellDescription(
             solverNumber, exahype::records::ADERDGCellDescription::Cell,
             exahype::records::ADERDGCellDescription::None,
