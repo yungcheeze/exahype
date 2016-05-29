@@ -8,18 +8,18 @@
 #ifndef EXAHYPE_MAPPINGS_MarkingForAugmentation_H_
 #define EXAHYPE_MAPPINGS_MarkingForAugmentation_H_
 
-#include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
+#include "tarch/logging/Log.h"
 
-#include "peano/grid/VertexEnumerator.h"
-#include "peano/MappingSpecification.h"
 #include "peano/CommunicationSpecification.h"
+#include "peano/MappingSpecification.h"
+#include "peano/grid/VertexEnumerator.h"
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "exahype/Vertex.h"
 #include "exahype/Cell.h"
 #include "exahype/State.h"
+#include "exahype/Vertex.h"
 
 #include "exahype/solvers/Solver.h"
 
@@ -59,10 +59,9 @@ class exahype::mappings::MarkingForAugmentation {
    */
   exahype::solvers::Solver::AugmentationControl augmentationCriterion(
       const int solverNumber,
-      const exahype::records::ADERDGCellDescription::Type type,
-      const int level,
+      const exahype::records::ADERDGCellDescription::Type type, const int level,
       const tarch::la::Vector<THREE_POWER_D, int>&
-      neighbourCellDescriptionIndices) const;
+          neighbourCellDescriptionIndices) const;
 
  public:
   /**

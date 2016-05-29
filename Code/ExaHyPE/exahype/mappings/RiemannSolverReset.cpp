@@ -1,8 +1,8 @@
 #include "exahype/mappings/RiemannSolverReset.h"
 #include "exahype/solvers/Solver.h"
 
-#include "tarch/multicore/Loop.h"
 #include "peano/datatraversal/autotuning/Oracle.h"
+#include "tarch/multicore/Loop.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -10,8 +10,10 @@
 peano::CommunicationSpecification
 exahype::mappings::RiemannSolverReset::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::
+          SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::
+          SendDataAndStateAfterLastTouchVertexLastTime,
       true);
 }
 
@@ -314,27 +316,29 @@ void exahype::mappings::RiemannSolverReset::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+          fineGridCell.getADERDGCellDescriptionsIndex())) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
-        .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-        .size());
+            .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+            .size());
 
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
         peano::datatraversal::autotuning::UserDefined5;
-    const int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
-        parallelise(numberOfADERDGCellDescriptions, methodTrace);
+    const int grainSize =
+        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+            numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      records::ADERDGCellDescription& p =
-          ADERDGCellDescriptionHeap::getInstance().getData(
-              fineGridCell.getADERDGCellDescriptionsIndex())[i];
+        records::ADERDGCellDescription& p =
+            ADERDGCellDescriptionHeap::getInstance().getData(
+                fineGridCell.getADERDGCellDescriptionsIndex())[i];
 
-      // all bits are initialised to 'off'
-      std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed;
-      p.setRiemannSolvePerformed(riemannSolvePerformed);
+    // all bits are initialised to 'off'
+    std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed;
+    p.setRiemannSolvePerformed(riemannSolvePerformed);
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-    .parallelSectionHasTerminated(methodTrace);
+        .parallelSectionHasTerminated(methodTrace);
   }
 
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);

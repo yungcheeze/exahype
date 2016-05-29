@@ -4,17 +4,19 @@
 
 #include "peano/utils/Loop.h"
 
-#include "kernels/KernelCalls.h"
 #include "exahype/solvers/Solver.h"
+#include "kernels/KernelCalls.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
 peano::CommunicationSpecification
 exahype::mappings::Erasing::communicationSpecification() {
-    return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+  return peano::CommunicationSpecification(
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::
+          SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::
+          SendDataAndStateAfterLastTouchVertexLastTime,
       true);
 }
 
@@ -32,9 +34,8 @@ exahype::mappings::Erasing::touchVertexFirstTimeSpecification() {
 }
 peano::MappingSpecification
 exahype::mappings::Erasing::enterCellSpecification() {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
-      peano::MappingSpecification::Serial);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,
+                                     peano::MappingSpecification::Serial);
 }
 peano::MappingSpecification
 exahype::mappings::Erasing::leaveCellSpecification() {
@@ -42,14 +43,12 @@ exahype::mappings::Erasing::leaveCellSpecification() {
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces);
 }
-peano::MappingSpecification
-exahype::mappings::Erasing::ascendSpecification() {
+peano::MappingSpecification exahype::mappings::Erasing::ascendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
-peano::MappingSpecification
-exahype::mappings::Erasing::descendSpecification() {
+peano::MappingSpecification exahype::mappings::Erasing::descendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces);
@@ -290,30 +289,34 @@ void exahype::mappings::Erasing::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-      fineGridVerticesEnumerator.toString(),
-      coarseGridCell, fineGridPositionOfCell);
-  if (ADERDGCellDescriptionHeap::getInstance().
-      isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
+                           fineGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfCell);
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+          fineGridCell.getADERDGCellDescriptionsIndex())) {
+    bool eraseFineGridCell = true;
+    std::vector<exahype::records::ADERDGCellDescription>::iterator pFine;
 
-    bool eraseFineGridCell=true;
-    std::vector<exahype::records::ADERDGCellDescription>::
-            iterator pFine;
-
-    for (pFine = ADERDGCellDescriptionHeap::getInstance().getData(
-            fineGridCell.getADERDGCellDescriptionsIndex()).begin();
-        pFine != ADERDGCellDescriptionHeap::getInstance().getData(
-            fineGridCell.getADERDGCellDescriptionsIndex()).end();
-        pFine++) {
+    for (pFine = ADERDGCellDescriptionHeap::getInstance()
+                     .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+                     .begin();
+         pFine !=
+         ADERDGCellDescriptionHeap::getInstance()
+             .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+             .end();
+         pFine++) {
       switch (pFine->getType()) {
         case exahype::records::ADERDGCellDescription::Erased:
-          assertion(pFine->getRefinementEvent()==exahype::records::ADERDGCellDescription::Erasing);
-          fineGridCell.ensureNoUnnecessaryMemoryIsAllocated(pFine->getSolverNumber());
-          pFine = ADERDGCellDescriptionHeap::getInstance().getData(
-              fineGridCell.getADERDGCellDescriptionsIndex()).erase(pFine);
+          assertion(pFine->getRefinementEvent() ==
+                    exahype::records::ADERDGCellDescription::Erasing);
+          fineGridCell.ensureNoUnnecessaryMemoryIsAllocated(
+              pFine->getSolverNumber());
+          pFine = ADERDGCellDescriptionHeap::getInstance()
+                      .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+                      .erase(pFine);
           break;
-        default: // This means that more cell descriptions belong to the cell.
-                 // We thus must not erase the cell.
-          eraseFineGridCell=false;
+        default:  // This means that more cell descriptions belong to the cell.
+                  // We thus must not erase the cell.
+          eraseFineGridCell = false;
           break;
       }
       break;
@@ -322,14 +325,14 @@ void exahype::mappings::Erasing::enterCell(
     // Note that fineGridVertices->refine() refines all adjacent cells
     // not only the targeted fineGridCell.
     if (eraseFineGridCell) {
-      dfor2(k)
-        switch (fineGridVertices[kScalar].getRefinementControl()) {
-          case Vertex::Records::Unrefined: // todo not sure if this is the default state
-            fineGridVertices->erase();
-            break;
-          default:
-            break;
-        }
+      dfor2(k) switch (fineGridVertices[kScalar].getRefinementControl()) {
+        case Vertex::Records::Unrefined:  // todo not sure if this is the
+                                          // default state
+          fineGridVertices->erase();
+          break;
+        default:
+          break;
+      }
       enddforx
     }
   }
@@ -347,8 +350,7 @@ void exahype::mappings::Erasing::leaveCell(
   // do nothing
 }
 
-void exahype::mappings::Erasing::beginIteration(
-    exahype::State& solverState) {
+void exahype::mappings::Erasing::beginIteration(exahype::State& solverState) {
   // do nothing
 }
 

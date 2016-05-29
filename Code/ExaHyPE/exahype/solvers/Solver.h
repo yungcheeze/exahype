@@ -42,7 +42,7 @@ extern std::vector<Solver*> RegisteredSolvers;
  * Describes one solver.
  */
 class exahype::solvers::Solver {
-public:
+ public:
   enum Type { ADER_DG };
 
   /*
@@ -55,15 +55,16 @@ public:
     GlobalTimeStepping,  // Local, Anarchic
   };
 
-  enum RefinementControl {
-    Keep = 0, Refine = 1, Erase = 2
-  };
+  enum RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
 
   enum AugmentationControl {
-    NextToCell = 0, NextToAncestor = 1, NextToCellAndAncestor = 2, Unncessary = 3
+    NextToCell = 0,
+    NextToAncestor = 1,
+    NextToCellAndAncestor = 2,
+    Unncessary = 3
   };
 
-protected:
+ protected:
   /**
    * Each solver has an identifier/name. It is used for debug purposes only.
    */
@@ -134,10 +135,10 @@ protected:
    */
   double _minNextPredictorTimeStepSize;
 
-public:
+ public:
   Solver(const std::string& identifier, Type type, int kernelNumber,
-      int numberOfVariables, int nodesPerCoordinateAxis,
-      TimeStepping timeStepping);
+         int numberOfVariables, int nodesPerCoordinateAxis,
+         TimeStepping timeStepping);
 
   virtual ~Solver() {}
 
@@ -214,7 +215,7 @@ public:
    * @param[dt]    dt   Time step size.
    */
   virtual void solutionUpdate(double* luh, const double* const lduh,
-      const double dt) = 0;
+                              const double dt) = 0;
 
   /**
    * @brief Computes the volume flux contribution to the cell update.
@@ -253,8 +254,8 @@ public:
    *i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
    */
   virtual void riemannSolver(double* FL, double* FR, const double* const QL,
-      const double* const QR, const double dt,
-      const int normalNonZero) = 0;
+                             const double* const QR, const double dt,
+                             const int normalNonZero) = 0;
 
   /**
    * @brief Computes cell-local predictor space-time, volume, and face DoF.
@@ -312,14 +313,13 @@ public:
    * The refinement criterion that must be defined by the user.
    *
    */
-  // @todo: 16/04/06:Dominic Etienne Charrier Consider to correct the level in the invoking code, i.e., level-> level-1
+  // @todo: 16/04/06:Dominic Etienne Charrier Consider to correct the level in
+  // the invoking code, i.e., level-> level-1
   // since this is was the user expects.
   virtual exahype::solvers::Solver::RefinementControl refinementCriterion(
-      const double* luh,
-      const tarch::la::Vector<DIMENSIONS, double>& center,
-      const tarch::la::Vector<DIMENSIONS, double>& dx,
-      double t,
-      const int level) = 0; // @todo make abstract
+      const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
+      const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
+      const int level) = 0;  // @todo make abstract
 
   /**
    * Project coarse grid face unknowns
@@ -332,14 +332,10 @@ public:
    * \f$0,1,\ldots,3^l-1\f$.
    */
   virtual void faceUnknownsProlongation(
-      double* lQhbndFine,
-      double* lFhbndFine,
-      const double* lQhbndCoarse,
-      const double* lFhbndCoarse,
-      const int coarseGridLevel,
+      double* lQhbndFine, double* lFhbndFine, const double* lQhbndCoarse,
+      const double* lFhbndCoarse, const int coarseGridLevel,
       const int fineGridLevel,
-      const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex
-  ) = 0;
+      const tarch::la::Vector<DIMENSIONS - 1, int>& subfaceIndex) = 0;
 
   /**
    * Restricts fine grid face unknowns on level \p fineGridLevel
@@ -351,14 +347,10 @@ public:
    * \f$0,1,\ldots,3^l-1\f$.
    */
   virtual void faceUnknownsRestriction(
-      double* lQhbndCoarse,
-      double* lFhbndCoarse,
-      const double* lQhbndFine,
-      const double* lFhbndFine,
-      const int coarseGridLevel,
+      double* lQhbndCoarse, double* lFhbndCoarse, const double* lQhbndFine,
+      const double* lFhbndFine, const int coarseGridLevel,
       const int fineGridLevel,
-      const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex
-  ) = 0;
+      const tarch::la::Vector<DIMENSIONS - 1, int>& subfaceIndex) = 0;
 
   /**
    * Project coarse grid face unknowns
@@ -370,12 +362,9 @@ public:
    * \f$0,1,2\f$.
    */
   virtual void volumeUnknownsProlongation(
-      double* luhFine,
-      const double* luhCoarse,
-      const int coarseGridLevel,
+      double* luhFine, const double* luhCoarse, const int coarseGridLevel,
       const int fineGridLevel,
-      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex
-  ) = 0;
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) = 0;
 
   /**
    * Restricts fine grid volume unknowns on level \p fineGridLevel
@@ -386,12 +375,9 @@ public:
    * \f$0,1,2\f$.
    */
   virtual void volumeUnknownsRestriction(
-      double* luhCoarse,
-      const double* luhFine,
-      const int coarseGridLevel,
+      double* luhCoarse, const double* luhFine, const int coarseGridLevel,
       const int fineGridLevel,
-      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex
-  ) = 0;
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) = 0;
   ///@}
 
   /**

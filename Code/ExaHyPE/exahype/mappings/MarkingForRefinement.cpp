@@ -12,9 +12,11 @@
  */
 peano::CommunicationSpecification
 exahype::mappings::MarkingForRefinement::communicationSpecification() {
-    return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+  return peano::CommunicationSpecification(
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::
+          SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::
+          SendDataAndStateAfterLastTouchVertexLastTime,
       true);
 }
 
@@ -330,11 +332,13 @@ void exahype::mappings::MarkingForRefinement::enterCell(
               switch (refinementControl) {
                 case exahype::solvers::Solver::Refine:
                   pFine->setRefinementEvent(
-                      exahype::records::ADERDGCellDescription::RefiningRequested);
+                      exahype::records::ADERDGCellDescription::
+                          RefiningRequested);
                   break;
                 case exahype::solvers::Solver::Erase:
                   pFine->setRefinementEvent(
-                      exahype::records::ADERDGCellDescription::ErasingRequested);
+                      exahype::records::ADERDGCellDescription::
+                          ErasingRequested);
                   break;
                 default:
                   break;

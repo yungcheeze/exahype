@@ -1,11 +1,11 @@
 #include "exahype/runners/Runner.h"
 
 #ifdef Parallel
+#include "exahype/repositories/Repository.h"
+#include "peano/parallel/messages/ForkMessage.h"
 #include "peano/utils/Globals.h"
 #include "tarch/compiler/CompilerSpecificSettings.h"
 #include "tarch/parallel/NodePool.h"
-#include "peano/parallel/messages/ForkMessage.h"
-#include "exahype/repositories/Repository.h"
 
 int exahype::runners::Runner::runAsWorker(
     exahype::repositories::Repository& repository) {

@@ -8,8 +8,8 @@
 #ifndef _EXAHYPE_RUNNERS_RUNNER_H_
 #define _EXAHYPE_RUNNERS_RUNNER_H_
 
-#include "tarch/logging/Log.h"
 #include "exahype/Parser.h"
+#include "tarch/logging/Log.h"
 
 #include "exahype/State.h"
 
@@ -83,15 +83,12 @@ class exahype::runners::Runner {
    * @param plot      Do plot the way along
    */
   void runOneTimeStampWithFusedAlgorithmicSteps(
-    exahype::repositories::Repository&   repository,
-    bool                                 plot
-  );
+      exahype::repositories::Repository& repository, bool plot);
 
   bool setAccurateTimeStepSizesIfStabilityConditionWasHarmed();
 
   void recomputePredictorIfNecessary(
-    exahype::repositories::Repository& repository
-  );
+      exahype::repositories::Repository& repository);
 
   /**
    * Do one time step but actually use a couple of iterations to do so.
@@ -100,9 +97,7 @@ class exahype::runners::Runner {
    * @param plot      Do plot in the after the corrector has been applied
    */
   void runOneTimeStampWithFourSeparateAlgorithmicSteps(
-    exahype::repositories::Repository&  repository,
-    bool                                plot
-  );
+      exahype::repositories::Repository& repository, bool plot);
 
  public:
   Runner(const Parser& parser);

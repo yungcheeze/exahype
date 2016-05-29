@@ -1,33 +1,31 @@
 #include "exahype/solvers/Solver.h"
 
-
 std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
-
 
 exahype::solvers::Solver::Solver(const std::string& identifier, Type type,
                                  int kernelNumber, int numberOfVariables,
                                  int nodesPerCoordinateAxis,
                                  TimeStepping timeStepping)
-: _identifier(identifier),
-  _type(type),
-  _kernelNumber(kernelNumber),
-  _numberOfVariables(numberOfVariables),
-  _nodesPerCoordinateAxis(nodesPerCoordinateAxis),
-  _unknownsPerFace(numberOfVariables *
-                   power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
-  _unknownsPerCellBoundary(DIMENSIONS_TIMES_TWO * _unknownsPerFace),
-  _unknownsPerCell(numberOfVariables *
-                         power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
-  _fluxUnknownsPerCell(_unknownsPerCell * DIMENSIONS),
-  _spaceTimeUnknownsPerCell(numberOfVariables *
-                            power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
-  _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell * DIMENSIONS),
-  _timeStepping(timeStepping),
-  _minCorrectorTimeStamp(std::numeric_limits<double>::max()),
-  _minPredictorTimeStamp(std::numeric_limits<double>::max()),
-  _minCorrectorTimeStepSize(std::numeric_limits<double>::max()),
-  _minPredictorTimeStepSize(std::numeric_limits<double>::max()),
-  _minNextPredictorTimeStepSize(std::numeric_limits<double>::max()) {
+    : _identifier(identifier),
+      _type(type),
+      _kernelNumber(kernelNumber),
+      _numberOfVariables(numberOfVariables),
+      _nodesPerCoordinateAxis(nodesPerCoordinateAxis),
+      _unknownsPerFace(numberOfVariables *
+                       power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
+      _unknownsPerCellBoundary(DIMENSIONS_TIMES_TWO * _unknownsPerFace),
+      _unknownsPerCell(numberOfVariables *
+                       power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
+      _fluxUnknownsPerCell(_unknownsPerCell * DIMENSIONS),
+      _spaceTimeUnknownsPerCell(numberOfVariables *
+                                power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
+      _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell * DIMENSIONS),
+      _timeStepping(timeStepping),
+      _minCorrectorTimeStamp(std::numeric_limits<double>::max()),
+      _minPredictorTimeStamp(std::numeric_limits<double>::max()),
+      _minCorrectorTimeStepSize(std::numeric_limits<double>::max()),
+      _minPredictorTimeStepSize(std::numeric_limits<double>::max()),
+      _minNextPredictorTimeStepSize(std::numeric_limits<double>::max()) {
   // do nothing
 }
 
@@ -100,29 +98,29 @@ void exahype::solvers::Solver::synchroniseTimeStepping(
         assertionNumericalEquals1(p.getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
      */
   }
-  /*  if (!solve.isCorrectorTimeLagging()) {*/
-  //    p.setCorrectorTimeStamp   (p.getPredictorTimeStamp   ());
-  //    p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
-  //  }
+/*  if (!solve.isCorrectorTimeLagging()) {*/
+//    p.setCorrectorTimeStamp   (p.getPredictorTimeStamp   ());
+//    p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
+//  }
 
 #if defined(Debug) || defined(Asserts)
-  // @ŧodo Wieder reinnehmen
-  /*
-  if (solver.getTimeStepping()==exahype::solvers::Solver::GLOBAL &&
-  !solver.isCorrectorTimeLagging()) {
-    // Note that the solve time stamps and time step sizes are not modified if
-  corrector time lagging
-    // is deactivated. Thus, solve.getPredictor... and solve.getCorrector... are
-  not the same in general
-    // for any value of solve.isCorrectorTimeLagging().
-    assertionNumericalEquals1(p.getPredictorTimeStamp()
-  ,solver.getPredictorTimeStamp(),   1e-12); // todo precision
-    assertionNumericalEquals1(p.getPredictorTimeStepSize(),solver.getPredictorTimeStepSize(),1e-12);
-    assertionNumericalEquals1(p.getCorrectorTimeStamp()
-  ,solver.getPredictorTimeStamp(),   1e-12);
-    assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solver.getPredictorTimeStepSize(),1e-12);
-  }
-   */
+// @ŧodo Wieder reinnehmen
+/*
+if (solver.getTimeStepping()==exahype::solvers::Solver::GLOBAL &&
+!solver.isCorrectorTimeLagging()) {
+  // Note that the solve time stamps and time step sizes are not modified if
+corrector time lagging
+  // is deactivated. Thus, solve.getPredictor... and solve.getCorrector... are
+not the same in general
+  // for any value of solve.isCorrectorTimeLagging().
+  assertionNumericalEquals1(p.getPredictorTimeStamp()
+,solver.getPredictorTimeStamp(),   1e-12); // todo precision
+  assertionNumericalEquals1(p.getPredictorTimeStepSize(),solver.getPredictorTimeStepSize(),1e-12);
+  assertionNumericalEquals1(p.getCorrectorTimeStamp()
+,solver.getPredictorTimeStamp(),   1e-12);
+  assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solver.getPredictorTimeStepSize(),1e-12);
+}
+ */
 #endif
 }
 
@@ -179,52 +177,61 @@ double exahype::solvers::Solver::getMinPredictorTimeStepSize() const {
 }
 
 void exahype::solvers::Solver::sendToRank(int rank, int tag) {
-  #ifdef Parallel
-  MPI_Send( &_minCorrectorTimeStamp,        1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator() );
-  MPI_Send( &_minCorrectorTimeStepSize,     1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator() );
-  MPI_Send( &_minPredictorTimeStepSize,     1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator() );
-  MPI_Send( &_minPredictorTimeStamp,        1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator() );
-  MPI_Send( &_minNextPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator() );
-  #endif
+#ifdef Parallel
+  MPI_Send(&_minCorrectorTimeStamp, 1, MPI_DOUBLE, rank, tag,
+           tarch::parallel::Node::getInstance().getCommunicator());
+  MPI_Send(&_minCorrectorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
+           tarch::parallel::Node::getInstance().getCommunicator());
+  MPI_Send(&_minPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
+           tarch::parallel::Node::getInstance().getCommunicator());
+  MPI_Send(&_minPredictorTimeStamp, 1, MPI_DOUBLE, rank, tag,
+           tarch::parallel::Node::getInstance().getCommunicator());
+  MPI_Send(&_minNextPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
+           tarch::parallel::Node::getInstance().getCommunicator());
+#endif
 }
 
 void exahype::solvers::Solver::receiveFromRank(int rank, int tag) {
-  #ifdef Parallel
-  MPI_Recv( &_minCorrectorTimeStamp,        1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
-  MPI_Recv( &_minCorrectorTimeStepSize,     1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
-  MPI_Recv( &_minPredictorTimeStepSize,     1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
-  MPI_Recv( &_minPredictorTimeStamp,        1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
-  MPI_Recv( &_minNextPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag, tarch::parallel::Node::getInstance().getCommunicator(), MPI_STATUS_IGNORE );
-  #endif
+#ifdef Parallel
+  MPI_Recv(&_minCorrectorTimeStamp, 1, MPI_DOUBLE, rank, tag,
+           tarch::parallel::Node::getInstance().getCommunicator(),
+           MPI_STATUS_IGNORE);
+  MPI_Recv(&_minCorrectorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
+           tarch::parallel::Node::getInstance().getCommunicator(),
+           MPI_STATUS_IGNORE);
+  MPI_Recv(&_minPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
+           tarch::parallel::Node::getInstance().getCommunicator(),
+           MPI_STATUS_IGNORE);
+  MPI_Recv(&_minPredictorTimeStamp, 1, MPI_DOUBLE, rank, tag,
+           tarch::parallel::Node::getInstance().getCommunicator(),
+           MPI_STATUS_IGNORE);
+  MPI_Recv(&_minNextPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
+           tarch::parallel::Node::getInstance().getCommunicator(),
+           MPI_STATUS_IGNORE);
+#endif
 }
-
 
 double exahype::solvers::Solver::getMinSolverTimeStamp() {
   double currentMinTimeStamp = std::numeric_limits<double>::max();
 
-  for (
-    std::vector<exahype::solvers::Solver*>::const_iterator p =
-      exahype::solvers::RegisteredSolvers.begin();
-    p != exahype::solvers::RegisteredSolvers.end();
-    p++
-  ) {
-    currentMinTimeStamp = std::min(currentMinTimeStamp, (*p)->getMinCorrectorTimeStamp());
+  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
+           exahype::solvers::RegisteredSolvers.begin();
+       p != exahype::solvers::RegisteredSolvers.end(); p++) {
+    currentMinTimeStamp =
+        std::min(currentMinTimeStamp, (*p)->getMinCorrectorTimeStamp());
   }
 
   return currentMinTimeStamp;
 }
 
-
 double exahype::solvers::Solver::getMinSolverTimeStepSize() {
   double currentMinTimeStepSize = std::numeric_limits<double>::max();
 
-  for (
-    std::vector<exahype::solvers::Solver*>::const_iterator p =
-      exahype::solvers::RegisteredSolvers.begin();
-    p != exahype::solvers::RegisteredSolvers.end();
-    p++
-  ) {
-    currentMinTimeStepSize = std::min(currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
+  for (std::vector<exahype::solvers::Solver*>::const_iterator p =
+           exahype::solvers::RegisteredSolvers.begin();
+       p != exahype::solvers::RegisteredSolvers.end(); p++) {
+    currentMinTimeStepSize =
+        std::min(currentMinTimeStepSize, (*p)->getMinCorrectorTimeStepSize());
   }
 
   return currentMinTimeStepSize;

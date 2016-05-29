@@ -8,18 +8,18 @@
 #ifndef EXAHYPE_MAPPINGS_Augmentation_H_
 #define EXAHYPE_MAPPINGS_Augmentation_H_
 
-#include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
+#include "tarch/logging/Log.h"
 
-#include "peano/grid/VertexEnumerator.h"
-#include "peano/MappingSpecification.h"
 #include "peano/CommunicationSpecification.h"
+#include "peano/MappingSpecification.h"
+#include "peano/grid/VertexEnumerator.h"
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "exahype/Vertex.h"
 #include "exahype/Cell.h"
 #include "exahype/State.h"
+#include "exahype/Vertex.h"
 
 #include "peano/utils/Globals.h"
 
@@ -45,13 +45,15 @@ class exahype::mappings::Augmentation {
   static tarch::logging::Log _log;
 
   /**
-   * Check if a tree cell has neighbours that hold a cell description of a particular
+   * Check if a tree cell has neighbours that hold a cell description of a
+   * particular
    * type \p cellType for the solver \p solverNumber.
    */
   bool hasNeighboursOfType(
-    const int                                      solverNumber,
-    exahype::records::ADERDGCellDescription::Type  cellType,
-    const tarch::la::Vector<THREE_POWER_D,int>&    neighbourCellDescriptionIndices);
+      const int solverNumber,
+      exahype::records::ADERDGCellDescription::Type cellType,
+      const tarch::la::Vector<THREE_POWER_D, int>&
+          neighbourCellDescriptionIndices);
 
  public:
   /**

@@ -8,18 +8,18 @@
 #ifndef EXAHYPE_MAPPINGS_FaceUnknownsProjection_H_
 #define EXAHYPE_MAPPINGS_FaceUnknownsProjection_H_
 
-#include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
+#include "tarch/logging/Log.h"
 
-#include "peano/grid/VertexEnumerator.h"
-#include "peano/MappingSpecification.h"
 #include "peano/CommunicationSpecification.h"
+#include "peano/MappingSpecification.h"
+#include "peano/grid/VertexEnumerator.h"
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "exahype/Vertex.h"
 #include "exahype/Cell.h"
 #include "exahype/State.h"
+#include "exahype/Vertex.h"
 
 // ! Begin of code for DG method
 #include "peano/utils/Globals.h"
@@ -65,7 +65,7 @@ class exahype::mappings::FaceUnknownsProjection {
   void prolongateFaceData(
       const exahype::records::ADERDGCellDescription& cellDescription,
       const int parentIndex,
-      const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) const;
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const;
 
   /**
    * Restricts face data from \p cellDescriptio to
@@ -79,13 +79,13 @@ class exahype::mappings::FaceUnknownsProjection {
   void restrictFaceData(
       const exahype::records::ADERDGCellDescription& cellDescription,
       const int parentIndex,
-      const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) const;
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const;
 
   /**
    * Picks out the subcell indices that are not at position \p.
    */
-  tarch::la::Vector<DIMENSIONS-1,int> getSubfaceIndex(
-      const tarch::la::Vector<DIMENSIONS,int>& subcellIndex,
+  tarch::la::Vector<DIMENSIONS - 1, int> getSubfaceIndex(
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
       const int d) const;
 
  public:

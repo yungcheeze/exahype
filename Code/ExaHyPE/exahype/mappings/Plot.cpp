@@ -304,7 +304,8 @@ void exahype::mappings::Plot::enterCell(
           case exahype::records::ADERDGCellDescription::Cell:
             switch (pPatch->getRefinementEvent()) {
               case exahype::records::ADERDGCellDescription::None:
-              case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
+              case exahype::records::ADERDGCellDescription::
+                  DeaugmentingRequested:
                 u = DataHeap::getInstance()
                         .getData(pPatch->getSolution())
                         .data();

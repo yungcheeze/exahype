@@ -8,23 +8,23 @@
 #ifndef EXAHYPE_MAPPINGS_SpaceTimePredictor_H_
 #define EXAHYPE_MAPPINGS_SpaceTimePredictor_H_
 
-#include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
+#include "tarch/logging/Log.h"
 
-#include "peano/grid/VertexEnumerator.h"
-#include "peano/MappingSpecification.h"
 #include "peano/CommunicationSpecification.h"
+#include "peano/MappingSpecification.h"
+#include "peano/grid/VertexEnumerator.h"
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "exahype/Vertex.h"
 #include "exahype/Cell.h"
 #include "exahype/State.h"
+#include "exahype/Vertex.h"
 
 namespace exahype {
- namespace mappings {
-  class SpaceTimePredictor;
- }
+namespace mappings {
+class SpaceTimePredictor;
+}
 }
 
 /**
@@ -64,7 +64,7 @@ class exahype::mappings::SpaceTimePredictor {
   /**
    * Tag that is used to exchange all the solver instances in MPI
    */
-  static int                 _mpiTag;
+  static int _mpiTag;
 
  public:
   static peano::MappingSpecification touchVertexLastTimeSpecification();
@@ -93,12 +93,12 @@ class exahype::mappings::SpaceTimePredictor {
    */
   virtual ~SpaceTimePredictor();
 
-  #if defined(SharedMemoryParallelisation)
+#if defined(SharedMemoryParallelisation)
   /**
    * Nop
    */
   void mergeWithWorkerThread(const SpaceTimePredictor& workerThread);
-  #endif
+#endif
 
   /**
    * Nop
@@ -183,7 +183,7 @@ class exahype::mappings::SpaceTimePredictor {
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
-  #ifdef Parallel
+#ifdef Parallel
   /**
    * Nop
    */
@@ -272,7 +272,8 @@ class exahype::mappings::SpaceTimePredictor {
   /**
    * Exchange all the global states with the worker
    *
-   * This ensures that all workers have correct states with correct time step sizes.
+   * This ensures that all workers have correct states with correct time step
+   * sizes.
    */
   bool prepareSendToWorker(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,

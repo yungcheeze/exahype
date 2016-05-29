@@ -8,18 +8,18 @@
 #ifndef EXAHYPE_MAPPINGS_NewTimeStep_H_
 #define EXAHYPE_MAPPINGS_NewTimeStep_H_
 
-#include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
+#include "tarch/logging/Log.h"
 
-#include "peano/grid/VertexEnumerator.h"
-#include "peano/MappingSpecification.h"
 #include "peano/CommunicationSpecification.h"
+#include "peano/MappingSpecification.h"
+#include "peano/grid/VertexEnumerator.h"
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "exahype/Vertex.h"
 #include "exahype/Cell.h"
 #include "exahype/State.h"
+#include "exahype/Vertex.h"
 
 namespace exahype {
 namespace mappings {
@@ -45,7 +45,7 @@ class exahype::mappings::NewTimeStep {
   /**
    * Tag that is used to exchange all the solver instances in MPI
    */
-  static int                 _mpiTag;
+  static int _mpiTag;
 
   /**
    * Local copy of the state.

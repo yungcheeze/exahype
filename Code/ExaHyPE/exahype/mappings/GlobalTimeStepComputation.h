@@ -8,28 +8,25 @@
 #ifndef EXAHYPE_MAPPINGS_GlobalTimeStepComputation_H_
 #define EXAHYPE_MAPPINGS_GlobalTimeStepComputation_H_
 
-#include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
+#include "tarch/logging/Log.h"
 
-#include "peano/grid/VertexEnumerator.h"
-#include "peano/MappingSpecification.h"
 #include "peano/CommunicationSpecification.h"
+#include "peano/MappingSpecification.h"
+#include "peano/grid/VertexEnumerator.h"
 
-#include "tarch/multicore/MulticoreDefinitions.h"
 #include "tarch/multicore/BooleanSemaphore.h"
+#include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "exahype/Vertex.h"
 #include "exahype/Cell.h"
 #include "exahype/State.h"
-
+#include "exahype/Vertex.h"
 
 namespace exahype {
-  namespace mappings {
-    class GlobalTimeStepComputation;
-  }
+namespace mappings {
+class GlobalTimeStepComputation;
 }
-
-
+}
 
 /**
  * Determine a global time step size
@@ -69,7 +66,7 @@ class exahype::mappings::GlobalTimeStepComputation {
   /**
    * Tag that is used to exchange all the solver instances in MPI
    */
-  static int                 _mpiTag;
+  static int _mpiTag;
 
   /**
    * We could directly compute the minimal time step sizes and the minimum time
@@ -81,9 +78,10 @@ class exahype::mappings::GlobalTimeStepComputation {
    * locally in a vector, and we project it back to the global data in
    * endIteration().
    */
-  std::vector<double>   _minTimeStepSizes;
+  std::vector<double> _minTimeStepSizes;
 
   void prepareEmptyLocalTimeStepData();
+
  public:
   /**
    * These flags are used to inform Peano about your operation. It tells the
@@ -776,18 +774,17 @@ tarch::parallel::Node::getInstance().getRank() ) ) {
       int worker, const exahype::State& workerState,
       exahype::State& masterState);
 
-    /**
-     * Send the local array of minimal time step sizes up to the master. This is
-     * one MPI_Send on the whole array.
-     */
-    void prepareSendToMaster(
+  /**
+   * Send the local array of minimal time step sizes up to the master. This is
+   * one MPI_Send on the whole array.
+   */
+  void prepareSendToMaster(
       exahype::Cell& localCell, exahype::Vertex* vertices,
       const peano::grid::VertexEnumerator& verticesEnumerator,
       const exahype::Vertex* const coarseGridVertices,
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       const exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell
-    );
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
    * Counterpart of prepareSendToWorker(). This operation is called once when

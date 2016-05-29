@@ -76,19 +76,20 @@ class exahype::mappings::RiemannSolver {
    * @param[in] cellDescriptionIndexOfLeftCell
    * @param[in] cellDescriptionIndexOfRightCell
    * @param[in] faceIndexForLeftCell    The index of the interface
-   *                                    from the perspective of the "left" cell. One out of
+   *                                    from the perspective of the "left" cell.
+   * One out of
    *                                    (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
    * @param[in] faceIndexForRightCell   The index of the interface from the
    *                                    perspective of the "right" cell.
    * @param[in] normalNonZero           Non zero component of the
-   *                                    normal vector orthogonal to the interface.
+   *                                    normal vector orthogonal to the
+   * interface.
    */
-  void solveRiemannProblemAtInterface(
-      const int cellDescriptionIndexOfLeftCell,
-      const int cellDescriptionIndexOfRightCell,
-      const int faceIndexForLeftCell,
-      const int faceIndexForRightCell,
-      const int normalNonZero);
+  void solveRiemannProblemAtInterface(const int cellDescriptionIndexOfLeftCell,
+                                      const int cellDescriptionIndexOfRightCell,
+                                      const int faceIndexForLeftCell,
+                                      const int faceIndexForRightCell,
+                                      const int normalNonZero);
 
   /**
    * Single-sided version of the other solveRiemannProblemAtInterface(). It
@@ -104,9 +105,9 @@ class exahype::mappings::RiemannSolver {
   void solveRiemannProblemAtInterface(
       records::ADERDGCellDescription& cellDescription,
       const int faceIndexForCell,
-      const int normalNonZero,  // @todo is redundant. We should be able to derive this from faceIndexForCell
-      const int indexOfQValues,
-      const int indexOfFValues);
+      const int normalNonZero,  // @todo is redundant. We should be able to
+                                // derive this from faceIndexForCell
+      const int indexOfQValues, const int indexOfFValues);
 
   /**
    * Apply the boundary conditions at the face with index \p faceIndex
@@ -115,16 +116,16 @@ class exahype::mappings::RiemannSolver {
    *
    * @param[in] cellDescription         The cell description
    * @param[in] faceIndex               The index of the interface
-   *                                    from the perspective of the cell/cell description. One out of
+   *                                    from the perspective of the cell/cell
+   * description. One out of
    *                                    (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
    * @param[in] normalNonZero           Non zero component of the
-   *                                    normal vector orthogonal to the interface.
+   *                                    normal vector orthogonal to the
+   * interface.
    * \note Not thread-safe.
    */
-  void applyBoundaryConditions(
-      records::ADERDGCellDescription& cellDescription,
-      const int faceIndex,
-      const int normalNonZero);
+  void applyBoundaryConditions(records::ADERDGCellDescription& cellDescription,
+                               const int faceIndex, const int normalNonZero);
 
  public:
   /**
@@ -642,7 +643,8 @@ class exahype::mappings::RiemannSolver {
    * When Peano is running in parallel the data exchange is done vertex-wise
    * between two grid iterations, i.e. the predictor sends out data in one step
    * and in the following step we receive this data and merge it into the local
-   * Riemann integrals. The routine is thus very similar to touchVertexFirstTime():
+   * Riemann integrals. The routine is thus very similar to
+   * touchVertexFirstTime():
    *
    * - We identify incoming faces.
    * - We create (temporary) indices on the heap.
@@ -902,7 +904,8 @@ class exahype::mappings::RiemannSolver {
    * both cell descriptions.
    *
    * \note The function itself is not thread-safe.
-   * Thread-safety of this function is ensured by setting RiemannSolver::touchVertexFirstTimeSpecification()
+   * Thread-safety of this function is ensured by setting
+   * RiemannSolver::touchVertexFirstTimeSpecification()
    * to peano::MappingSpecification::AvoidFineGridRaces.
    */
   void touchVertexFirstTime(

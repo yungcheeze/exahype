@@ -18,9 +18,11 @@
  */
 peano::CommunicationSpecification
 exahype::mappings::VolumeUnknownsProjection::communicationSpecification() {
-    return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+  return peano::CommunicationSpecification(
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::
+          SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::
+          SendDataAndStateAfterLastTouchVertexLastTime,
       true);
 }
 
@@ -474,28 +476,28 @@ void exahype::mappings::VolumeUnknownsProjection::ascend(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell) {
   logTraceInWith2Arguments("ascend(...)", coarseGridCell.toString(),
-      coarseGridVerticesEnumerator.toString());
+                           coarseGridVerticesEnumerator.toString());
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-      coarseGridCell.getADERDGCellDescriptionsIndex())) {
+          coarseGridCell.getADERDGCellDescriptionsIndex())) {
     for (std::vector<exahype::records::ADERDGCellDescription>::iterator
-        pCoarse =
-            ADERDGCellDescriptionHeap::getInstance()
-        .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
-        .begin();
-        pCoarse !=
-            ADERDGCellDescriptionHeap::getInstance()
-        .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
-        .end();
-        ++pCoarse) {
+             pCoarse =
+                 ADERDGCellDescriptionHeap::getInstance()
+                     .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
+                     .begin();
+         pCoarse !=
+         ADERDGCellDescriptionHeap::getInstance()
+             .getData(coarseGridCell.getADERDGCellDescriptionsIndex())
+             .end();
+         ++pCoarse) {
       bool refiningDone = true;
 
       switch (pCoarse->getType()) {
-      case exahype::records::ADERDGCellDescription::Cell:
-        switch (pCoarse->getRefinementEvent()) {
-        case exahype::records::ADERDGCellDescription::Refining:
-          refiningDone = true;
-          // clang-format off
+        case exahype::records::ADERDGCellDescription::Cell:
+          switch (pCoarse->getRefinementEvent()) {
+            case exahype::records::ADERDGCellDescription::Refining:
+              refiningDone = true;
+              // clang-format off
           dfor3(k)
           if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
               fineGridCells[kScalar].getADERDGCellDescriptionsIndex())) {

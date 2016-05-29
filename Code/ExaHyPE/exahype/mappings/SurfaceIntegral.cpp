@@ -5,8 +5,8 @@
 
 #include "peano/utils/Globals.h"
 
-#include "tarch/multicore/Loop.h"
 #include "peano/datatraversal/autotuning/Oracle.h"
+#include "tarch/multicore/Loop.h"
 
 #include "exahype/solvers/Solver.h"
 
@@ -16,8 +16,10 @@
 peano::CommunicationSpecification
 exahype::mappings::SurfaceIntegral::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::
+          SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::
+          SendDataAndStateAfterLastTouchVertexLastTime,
       true);
 }
 
@@ -318,11 +320,12 @@ void exahype::mappings::SurfaceIntegral::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+          fineGridCell.getADERDGCellDescriptionsIndex())) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
-    .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-    .size());
+            .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+            .size());
 
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
@@ -331,34 +334,34 @@ void exahype::mappings::SurfaceIntegral::enterCell(
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      records::ADERDGCellDescription& p =
-          ADERDGCellDescriptionHeap::getInstance().getData(
-              fineGridCell.getADERDGCellDescriptionsIndex())[i];
+        records::ADERDGCellDescription& p =
+            ADERDGCellDescriptionHeap::getInstance().getData(
+                fineGridCell.getADERDGCellDescriptionsIndex())[i];
     exahype::solvers::Solver* solver =
         exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
-    double* lduh   = 0;
+    double* lduh = 0;
     double* lFhbnd = 0;
 
-      switch(p.getType()) {
-        case exahype::records::ADERDGCellDescription::Cell:
-          switch(p.getRefinementEvent()) {
+    switch (p.getType()) {
+      case exahype::records::ADERDGCellDescription::Cell:
+        switch (p.getRefinementEvent()) {
           case exahype::records::ADERDGCellDescription::None:
           case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
-              lduh   = DataHeap::getInstance().getData(p.getUpdate()).data();
-              lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
+            lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
+            lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
-              solver->surfaceIntegral(lduh, lFhbnd,
-                                      fineGridVerticesEnumerator.getCellSize());
-              break;
-            default:
-              break;
-          }
-          break;
+            solver->surfaceIntegral(lduh, lFhbnd,
+                                    fineGridVerticesEnumerator.getCellSize());
+            break;
           default:
             break;
-      }
+        }
+        break;
+      default:
+        break;
+    }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-    .parallelSectionHasTerminated(methodTrace);
+        .parallelSectionHasTerminated(methodTrace);
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }

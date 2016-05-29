@@ -101,15 +101,13 @@ class exahype::mappings::AugmentedAMRTreePlot2d {
   AugmentedAMRTreePlot2d();
 
 #if defined(SharedMemoryParallelisation)
-  AugmentedAMRTreePlot2d(
-      const AugmentedAMRTreePlot2d& masterThread);
+  AugmentedAMRTreePlot2d(const AugmentedAMRTreePlot2d& masterThread);
 #endif
 
   virtual ~AugmentedAMRTreePlot2d();
 
 #if defined(SharedMemoryParallelisation)
-  void mergeWithWorkerThread(
-      const AugmentedAMRTreePlot2d& workerThread);
+  void mergeWithWorkerThread(const AugmentedAMRTreePlot2d& workerThread);
 #endif
 
   void createInnerVertex(

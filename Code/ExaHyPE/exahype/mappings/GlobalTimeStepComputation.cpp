@@ -375,7 +375,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
         exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
     double* luh = 0;
-    double  admissibleTimeStepSize;
+    double admissibleTimeStepSize;
 
     switch (p.getType()) {
       case exahype::records::ADERDGCellDescription::Cell:

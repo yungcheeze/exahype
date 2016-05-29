@@ -8,18 +8,18 @@
 #ifndef EXAHYPE_MAPPINGS_VolumeUnknownsProjection_H_
 #define EXAHYPE_MAPPINGS_VolumeUnknownsProjection_H_
 
-#include "tarch/logging/Log.h"
 #include "tarch/la/Vector.h"
+#include "tarch/logging/Log.h"
 
-#include "peano/grid/VertexEnumerator.h"
-#include "peano/MappingSpecification.h"
 #include "peano/CommunicationSpecification.h"
+#include "peano/MappingSpecification.h"
+#include "peano/grid/VertexEnumerator.h"
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
-#include "exahype/Vertex.h"
 #include "exahype/Cell.h"
 #include "exahype/State.h"
+#include "exahype/Vertex.h"
 
 // ! Begin of code for DG method
 #include "peano/utils/Globals.h"
@@ -58,7 +58,7 @@ class exahype::mappings::VolumeUnknownsProjection {
   void prolongateVolumeData(
       const exahype::records::ADERDGCellDescription& p,
       const exahype::records::ADERDGCellDescription& pParent,
-      const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) const;
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const;
 
   /**
    * Restricts Volume data from \p cellDescriptio to
@@ -72,7 +72,7 @@ class exahype::mappings::VolumeUnknownsProjection {
   void restrictVolumeData(
       const exahype::records::ADERDGCellDescription& p,
       const exahype::records::ADERDGCellDescription& pParent,
-      const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) const;
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const;
 
  public:
   /**
