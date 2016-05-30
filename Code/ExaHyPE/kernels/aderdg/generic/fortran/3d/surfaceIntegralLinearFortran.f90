@@ -1,10 +1,5 @@
 SUBROUTINE ADERSurfaceIntegralLinear(lduh,lFbnd,dx)
     USE typesDef
-
-    !! TODO: Please review apparent change from lFbnd(nVar,6,nDOF(2),nDOF(3)) to
-    !!       lFbnd(nVar,nDOF(2),nDOF(3),6) and PLUS -> MINUS in the three
-    !!       statements that modify lduh.
-
     USE, INTRINSIC :: ISO_C_BINDING
     IMPLICIT NONE
     ! Argument list

@@ -2,8 +2,8 @@
 #ifndef _EXAHYPE_TESTS_GENERIC_EULER_KERNEL_TEST_H_
 #define _EXAHYPE_TESTS_GENERIC_EULER_KERNEL_TEST_H_
 
-#include "tarch/tests/TestCase.h"
 #include "peano/utils/Globals.h"
+#include "tarch/tests/TestCase.h"
 
 namespace exahype {
 namespace tests {
@@ -24,13 +24,15 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
   void testVolumeIntegralNonlinear();
   void testRiemannSolverLinear();
   void testRiemannSolverNonlinear();
-  void testSurfaceIntegral();
+  void testSurfaceIntegralLinear();
+  void testSurfaceIntegralNonlinear();
   void testSolutionUpdate();
   void testVolumeUnknownsProjection();
   void testFaceUnknownsProjection();
 #if DIMENSIONS == 2
   static void testFlux(const double* const Q, double* f, double* g);
-  // todo move testFace(...) out of here as soon as similar code for 3D case exists
+// todo move testFace(...) out of here as soon as similar code for 3D case
+// exists
 #elif DIMENSIONS == 3
   static void testFlux(const double* const Q, double* f, double* g, double* h);
 #endif

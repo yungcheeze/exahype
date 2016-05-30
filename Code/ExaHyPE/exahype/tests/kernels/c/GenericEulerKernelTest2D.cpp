@@ -133,7 +133,11 @@ void GenericEulerKernelTest::testSolutionUpdate() {
   delete[] luh;
 }  // testSolutionUpdate
 
-void GenericEulerKernelTest::testSurfaceIntegral() {
+void GenericEulerKernelTest::testSurfaceIntegralLinear() {
+  // TODO(guera): Implement
+}  // testSurfaceIntegralLinear
+
+void GenericEulerKernelTest::testSurfaceIntegralNonlinear() {
   cout << "Test surface integral, ORDER=2, DIM=2" << endl;
 
   // inputs:
@@ -157,10 +161,9 @@ void GenericEulerKernelTest::testSurfaceIntegral() {
   // input:
   // ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in
   double *lduh = new double[80];
-  std::memcpy(
-      lduh,
-      ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in,
-      80 * sizeof(double));
+  std::memcpy(lduh, ::exahype::tests::testdata::generic_euler::
+                        testSurfaceIntegralNonlinear::lduh_in,
+              80 * sizeof(double));
 
   // lFhbnd = [ FLeft | FRight | FFront | FBack ]
   kernels::aderdg::generic::c::surfaceIntegralNonlinear(
@@ -172,15 +175,15 @@ void GenericEulerKernelTest::testSurfaceIntegral() {
   for (int i = 0; i < 80; i++) {
     validateNumericalEqualsWithEpsWithParams1(
         lduh[i], ::exahype::tests::testdata::generic_euler::
-                     testSurfaceIntegral::lduh_out[i],
+                     testSurfaceIntegralNonlinear::lduh_out[i],
         eps, i);
   }
 
   delete[] lduh;
-}  // testSurfaceIntegral
+}  // testSurfaceIntegralNonlinear
 
 void GenericEulerKernelTest::testRiemannSolverLinear() {
-  // TODO: Implement
+  // TODO(guera): Implement
 }  // testRiemannSolverLinear
 
 void GenericEulerKernelTest::testRiemannSolverNonlinear() {
