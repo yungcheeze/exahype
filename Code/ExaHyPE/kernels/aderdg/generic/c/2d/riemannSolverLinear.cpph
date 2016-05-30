@@ -1,15 +1,112 @@
+#include <algorithm>
+#include <cstring>
+
 namespace kernels {
 namespace aderdg {
 namespace generic {
 namespace c {
 
+// Warning: Untested!
+
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
+                              double* lambda),
+          void PDEPDEMatrixB(const double* const Q, const int normalNonZero,
+                             double* Bn)>
 void riemannSolverLinear(double* FL, double* FR, const double* const QL,
                          const double* const QR, const double dt,
                          const int normalNonZero, const int numberOfVariables,
                          const int basisSize) {
-  // TODO(guera): Implement
+  const int order = basisSize - 1;
+
+  // Compute the average states from the left and the right, which we need to
+  // compute the numerical dissipation
+  double* QavL = new double[numberOfVariables];
+  double* QavR = new double[numberOfVariables];
+  std::memset(QavL, 0, numberOfVariables * sizeof(double));
+  std::memset(QavR, 0, numberOfVariables * sizeof(double));
+  for (int j = 0; j < basisSize; j++) {
+    const double weight = kernels::gaussLegendreWeights[order][j];
+
+    for (int k = 0; k < numberOfVariables; k++) {
+      QavL[k] += weight * QL[j * numberOfVariables + k];
+      QavR[k] += weight * QR[j * numberOfVariables + k];
+    }
+  }
+
+  double* LL = new double[numberOfVariables];
+  double* LR = new double[numberOfVariables];
+  PDEEigenvalues(QavL, normalNonZero, LL);
+  PDEEigenvalues(QavR, normalNonZero, LR);
+
+  // Here, we implement a very simple Rusanov scheme with scalar dissipation
+  // (smax*Id).
+  // We can change this into a more sophisticated Osher or HLLEM Riemann solver
+  // whenever needed!
+  std::transform(LL, LL + numberOfVariables, LL,
+                 [](double d) { return std::abs(d); });
+  std::transform(LR, LR + numberOfVariables, LR,
+                 [](double d) { return std::abs(d); });
+  const double* smax_L = std::max_element(LL, LL + numberOfVariables);
+  const double* smax_R = std::max_element(LR, LR + numberOfVariables);
+  const double smax = std::max(*smax_L, *smax_R);
+
+  // We now compute the numerical flux. Note that the scheme is at the moment
+  // written in CONSERVATION FORM => no fluctuations, but real fluxes. Later,
+  // this will be converted into the left and right fluctuations.
+
+  // evaluate the system matrix just once in the averaged state
+  double* Qav = new double[numberOfVariables];
+  // Qav = 0.5 * (QavL + QavR)
+  std::transform(QavL, QavL + numberOfVariables, QavR, Qav,
+                 [](double a, double b) { return 0.5 * (a + b); });
+  double* Bn = new double[numberOfVariables * numberOfVariables];
+  PDEPDEMatrixB(Qav, normalNonZero, Bn);
+
+  double* BnMinusIdSmax = new double[numberOfVariables * numberOfVariables];
+  double* BnPlusIdSmax = new double[numberOfVariables * numberOfVariables];
+  std::memcpy(BnMinusIdSmax, Bn,
+              numberOfVariables * numberOfVariables * sizeof(double));
+  std::memcpy(BnPlusIdSmax, Bn,
+              numberOfVariables * numberOfVariables * sizeof(double));
+  for (int i = 0; i < numberOfVariables; i++) {
+    BnMinusIdSmax[i * numberOfVariables + i] -= smax;
+    BnPlusIdSmax[i * numberOfVariables + i] += smax;
+  }
+
+  double* Q = new double[basisSize * numberOfVariables];
+  std::transform(QR, QR + basisSize * numberOfVariables, QL, Q,
+                 [](double a, double b) { return 0.5 * (a - b); });
+
+  std::memset(FL, 0, basisSize * numberOfVariables * sizeof(double));
+  std::memset(FR, 0, basisSize * numberOfVariables * sizeof(double));
+  for (int i = 0; i < basisSize; i++) {
+    // FL(:,i) = 0.5 * (Bn - Id*smax)(:,:) * (QR(:,i) - QL(:,i))
+    // FR(:,i) = 0.5 * (Bn + Id*smax)(:,:) * (QR(:,i) - QL(:,i))
+    for (int j = 0; j < numberOfVariables; j++) {
+      for (int k = 0; k < numberOfVariables; k++) {
+        FL[i * numberOfVariables + j] +=
+            BnMinusIdSmax[k * numberOfVariables + j] *
+            Q[i * numberOfVariables + k];
+        FR[i * numberOfVariables + j] +=
+            BnPlusIdSmax[k * numberOfVariables + j] *
+            Q[i * numberOfVariables + k];
+      }
+    }
+  }
+
+  // Delete heap-allocated arrays
+  delete[] QavL;
+  delete[] QavR;
+  delete[] LL;
+  delete[] LR;
+  delete[] Qav;
+  delete[] Bn;
+  delete[] BnMinusIdSmax;
+  delete[] BnPlusIdSmax;
+  delete[] Q;
+
+  // TODO(guera): Use std::dynarray as a safe way to have all these small
+  // arrays on the stack.
 }
 
 }  // namespace c
