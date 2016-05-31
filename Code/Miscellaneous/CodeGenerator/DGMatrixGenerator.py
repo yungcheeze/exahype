@@ -60,8 +60,8 @@ class DGMatrixGenerator:
         l_matrices['Kxi'] = l_linearisedKxi
 
         # iK1
-        iK1 = np.linalg.inv(aderdg.assembleK1(Kxi, self.m_xGPN, self.m_order))
-        l_linearisediK1 = np.concatenate((Kxi,l_padMatrix),axis=0).flatten('F')
+        iK1 = np.transpose(np.linalg.inv(aderdg.assembleK1(Kxi, self.m_xGPN, self.m_order)))
+        l_linearisediK1 = np.concatenate((iK1,l_padMatrix),axis=0).flatten('F')
         l_matrices['iK1'] = l_linearisediK1
 
         # dudx (only needed for Cauchy-Kovalevski)
