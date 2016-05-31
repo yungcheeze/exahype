@@ -52,6 +52,7 @@ class SpaceTimePredictorGenerator:
         #self.m_luhChunkSize    = self.m_config['nDof']**self.m_config['nDim']
         #self.m_luhLength       = Backend.getSizeWithPadding(self.m_luhChunkSize)
 
+        self.m_rhsLength = self.m_config['nVar'] * (self.m_config['nDof']**(self.m_config['nDim']+1))
 
 
     def __writeHeaderForPicardLoop(self, i_pathToFile):
@@ -212,9 +213,56 @@ class SpaceTimePredictorGenerator:
         # (2) rhs0(iVar,i,j,k,l) = weights3(i,j,k) * F0 * luh(iVar,i,j,k)
         # TODO
 
-        l_sourceFile.close()
+        # define a sequence of matmul configs
+        l_matmulList = []
+
+        # discrete Picard iterations
+        # TODO
+
+        # lqh(:,:,i,j,k) = MATMUL( rhs(:,i,j,k,:), TRANSPOSE(iK1) )
+        l_matmul = MatmulConfig(    # M
+                                    self.m_config['nVar'],                             \
+                                    # N
+                                    self.m_config['nDof'],                             \
+                                    # K
+                                    self.m_config['nDof'],                             \
+                                    # LDA
+                                    Backend.getSizeWithPadding(self.m_config['nVar']) * self.m_config['nDof']**self.m_config['nDim'], \
+                                    # LDB
+                                    Backend.getSizeWithPadding(self.m_config['nDof']), \
+                                    # LDC
+                                    Backend.getSizeWithPadding(self.m_config['nVar']), \
+                                    # alpha
+                                    1,                                                 \
+                                    # beta
+                                    0,                                                 \
+                                    # alignment A
+                                    0,                                                 \
+                                    # alignment C
+                                    0,                                                 \
+                                    # name
+                                    "lqh",                                             \
+                                    # prefetching
+                                    "nopf",                                            \
+                                    # type
+                                    "gemm")
+        l_matmulList.append(l_matmul)
+
+        # write the function call to the driver file
+        # note that the DGmatrices.cpp already stores the transpose of iK1
+        for i in range(0, self.m_config['nDof']**self.m_config['nDim']):
+            l_sourceFile.write("  "+l_matmul.baseroutinename
+                                   +"(&rhs["+str(i*self.m_config['nVar'])+"]," \
+                                    " &kernels::iK1[0],"  \
+                                    " &lqh["+str(i*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof'])+"]);\n")
+
+        Backend.generateAssemblerCode("asm_"+l_filename, l_matmulList)
+
+
         # write missing closing bracket
-        l_file.write('}')
+        l_sourceFile.write('}')
+
+        l_sourceFile.close()
 
 
     def __generateCauchyKovalewski(self):
