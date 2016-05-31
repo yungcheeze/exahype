@@ -55,6 +55,15 @@ extern const double lQhbnd[80];
 extern const double lFhbnd[80];
 }  // namespace testSpaceTimePredictorNonlinear
 
+namespace testRiemannSolverLinear {
+extern const double QL[20];
+extern const double QR[20];
+extern const double FL_1[20];
+extern const double FR_1[20];
+extern const double FL_2[20];
+extern const double FR_2[20];
+}  // namespace testRiemannSolverLinear
+
 #endif  // Dim2
 
 #ifdef Dim3

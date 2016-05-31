@@ -6,8 +6,6 @@ namespace aderdg {
 namespace generic {
 namespace c {
 
-// Warning: Untested!
-
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda),
           void PDEPDEMatrixB(const double* const Q, const int normalNonZero,
