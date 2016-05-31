@@ -18,8 +18,15 @@ extern const double lduh[80];
 extern const double luh[80];
 }  // namespace testSolutionUpdate
 
-namespace testSurfaceIntegralNonlinear {
+namespace testSurfaceIntegral {
 extern const double lduh_in[80];
+}  // namespace testSurfaceIntegral
+
+namespace testSurfaceIntegralLinear {
+extern const double lduh_out[80];
+}  // namespace testSurfaceIntegralLinear
+
+namespace testSurfaceIntegralNonlinear {
 extern const double lduh_out[80];
 }  // namespace testSurfaceIntegralNonlinear
 

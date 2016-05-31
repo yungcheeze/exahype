@@ -2,7 +2,10 @@
 
 #if DIMENSIONS == 2
 
-// WARNING: Untested!
+namespace kernels {
+namespace aderdg {
+namespace generic {
+namespace c {
 
 void surfaceIntegralLinear(double* lduh, const double* const lFbnd,
                            const tarch::la::Vector<DIMENSIONS, double>& dx,
@@ -32,8 +35,7 @@ void surfaceIntegralLinear(double* lduh, const double* const lFbnd,
   // y faces
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {
-      const double weight = kernels::gaussLegendreWeights[order][i] *
-                            kernels::gaussLegendreWeights[order][j];
+      const double weight = kernels::gaussLegendreWeights[order][j];
       const double updateSize = weight / dx[1];
 
       // back flux minus front flux
@@ -50,5 +52,10 @@ void surfaceIntegralLinear(double* lduh, const double* const lFbnd,
     }
   }
 }
+
+}  // namespace c
+}  // namespace generic
+}  // namespace aderdg
+}  // namespace kernels
 
 #endif  // DIMENSIONS == 2
