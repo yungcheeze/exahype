@@ -30,11 +30,14 @@ namespace testSurfaceIntegralNonlinear {
 extern const double lduh_out[80];
 }  // namespace testSurfaceIntegralNonlinear
 
-namespace testVolumeIntegralNonlinear {
+namespace testVolumeIntegral {
 extern const double lFhi[160];
+}  // namespace testVolumeIntegral
+
+namespace testVolumeIntegralLinear {
 extern const double lduh_1[80];
 extern const double lduh_2[80];
-}  // namespace testVolumeIntegralNonlinear
+}  // namespace testVolumeIntegralLinear
 
 namespace testVolumeIntegralNonlinear {
 extern const double lduh_1[80];

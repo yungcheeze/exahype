@@ -259,7 +259,66 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
 }  // testRiemannSolverNonlinear
 
 void GenericEulerKernelTest::testVolumeIntegralLinear() {
-  // TODO: Implement
+  std::cout << "Test volume integral linear, ORDER=2, DIM=2" << std::endl;
+
+  {  // first test
+
+    // output:
+    double *lduh = new double[80];
+
+    // input:
+    double dx[2] = {3.70370370370370349811e-02,
+                    3.70370370370370349811e-02};  // mesh spacing
+    // ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi[160]
+
+    kernels::aderdg::generic::c::volumeIntegralLinear(
+        lduh,
+        ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi,
+        dx[0],
+        5,  // getNumberOfVariables(),
+        4   // getNodesPerCoordinateAxis()
+        );
+
+    for (int i = 0; i < 80; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          lduh[i], ::exahype::tests::testdata::generic_euler::
+                       testVolumeIntegralLinear::lduh_1[i],
+          eps, i);
+    }
+
+    delete[] lduh;
+  }  // scope limiter first test
+
+  {  // second test, analogous to 3d seed
+
+    // input:
+    double dx[2] = {0.05, 0.05};       // mesh spacing
+    double *lFhi = new double[160]();  // nVar * dim * nDOFx * nDOFy
+    // lFhi = [ lFhi_x | lFhi_y ]
+    double *lFhi_x = &lFhi[0];
+    double *lFhi_y = &lFhi[80];
+
+    // seed direction
+    for (int i = 0; i < 80; i += 5) {
+      lFhi_x[i + 1] = 1.;
+      lFhi_y[i + 2] = 1.;
+    }
+
+    // output:
+    double *lduh = new double[80];  // intentionally left uninitialised
+
+    kernels::aderdg::generic::c::volumeIntegralLinear(lduh, lFhi, dx[0], 5, 4);
+
+    for (int i = 0; i < 80; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          lduh[i], ::exahype::tests::testdata::generic_euler::
+                       testVolumeIntegralLinear::lduh_2[i],
+          eps, i);
+    }
+
+    delete[] lFhi;
+    delete[] lduh;
+  }  // scope second test
 }  // testVolumeIntegralLinear
 
 void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
@@ -273,11 +332,11 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
     // input:
     double dx[2] = {3.70370370370370349811e-02,
                     3.70370370370370349811e-02};  // mesh spacing
-    // ::exahype::tests::testdata::generic_euler::testVolumeIntegralNonlinear::lFhi[160]
+    // ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi[160]
 
     kernels::aderdg::generic::c::volumeIntegralNonlinear(
-        lduh, ::exahype::tests::testdata::generic_euler::
-                  testVolumeIntegralNonlinear::lFhi,
+        lduh,
+        ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi,
         dx[0],
         5,  // getNumberOfVariables(),
         4   // getNodesPerCoordinateAxis()

@@ -7,8 +7,6 @@ namespace c {
 
 #if DIMENSIONS == 2
 
-// WARNING: Untested!
-
 void volumeIntegralLinear(double* lduh, const double* const lFhi,
                           const tarch::la::Vector<DIMENSIONS, double>& dx,
                           const int numberOfVariables, const int basisSize) {
@@ -23,10 +21,9 @@ void volumeIntegralLinear(double* lduh, const double* const lFhi,
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {
       double weight = kernels::gaussLegendreWeights[order][i] *
-                      kernels::gaussLegendreWeights[order][i] *
                       kernels::gaussLegendreWeights[order][j];
 
-      // Fortran: lduh(:,k,j) = -SUM(lFhi(:,k,j,1:nDim), dim = 4) * weight
+      // Fortran: lduh(:,j,i) = -SUM(lFhi(:,j,i,1:nDim), dim = 4) * weight
       for (int k = 0; k < numberOfVariables; k++) {
         for (int l = 0; l < 2; l++) {
           lduh[i * basisSize * numberOfVariables + j * numberOfVariables + k] -=
