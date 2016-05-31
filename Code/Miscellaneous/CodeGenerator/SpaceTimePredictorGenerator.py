@@ -219,6 +219,11 @@ class SpaceTimePredictorGenerator:
         # discrete Picard iterations
         # TODO
 
+
+        l_sourceFile.write("  // Assume equispaced mesh, dx[0] == dx[1] == dx[2]\n")
+        l_sourceFile.write("  double dtdx = dt/dx[0];\n\n")
+
+
         # lqh(:,:,i,j,k) = MATMUL( rhs(:,i,j,k,:), TRANSPOSE(iK1) )
         l_matmul = MatmulConfig(    # M
                                     self.m_config['nVar'],                             \
@@ -251,10 +256,13 @@ class SpaceTimePredictorGenerator:
         # write the function call to the driver file
         # note that the DGmatrices.cpp already stores the transpose of iK1
         for i in range(0, self.m_config['nDof']**self.m_config['nDim']):
+            l_sourceFile.write(Utils.generateDSCAL("1./kernels::weights3["+str(i)+"]",
+                                                   "kernels::iK1",
+                                                   "s_m", self.m_config['nDof']*Backend.getSizeWithPadding(self.m_config['nDof'])))
             l_sourceFile.write("  "+l_matmul.baseroutinename
                                    +"(&rhs["+str(i*self.m_config['nVar'])+"]," \
-                                    " &kernels::iK1[0],"  \
-                                    " &lqh["+str(i*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof'])+"]);\n")
+                                    " &kernels::s_m[0],"  \
+                                    " &lqh["+str(i*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof'])+"]);\n\n")
 
         Backend.generateAssemblerCode("asm_"+l_filename, l_matmulList)
 
