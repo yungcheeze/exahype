@@ -135,47 +135,80 @@ void GenericEulerKernelTest::testSolutionUpdate() {
 void GenericEulerKernelTest::testSurfaceIntegralLinear() {
   cout << "Test surface integral linear, ORDER=2, DIM=2" << endl;
 
-  // inputs:
-  const double dx[2] = {0.1, 0.1};  // mesh spacing
-  double lFhbnd[5 * 4 * 4] = {};    // nVar * nDofY * 4, zero initialized
+  {  // test 1
+    // inputs:
+    const double dx[2] = {0.1, 0.1};  // mesh spacing
+    double lFhbnd[5 * 4 * 4] = {};    // nVar * nDofY * 4, zero initialized
 
-  double *FLeft = &lFhbnd[0];
-  double *FRight = &lFhbnd[20];
-  double *FFront = &lFhbnd[40];
-  double *FBack = &lFhbnd[60];
+    double *FLeft = &lFhbnd[0];
+    double *FRight = &lFhbnd[20];
+    double *FFront = &lFhbnd[40];
+    double *FBack = &lFhbnd[60];
 
-  for (int i = 0; i < 20; i += 5) {
-    // in x orientation 1
-    FLeft[i + 1] = 1.;
-    FRight[i + 1] = 1.;
-    // in y orientation 1
-    FFront[i + 2] = 1.;
-    FBack[i + 2] = 1.;
-  }
+    for (int i = 0; i < 20; i += 5) {
+      // in x orientation 1
+      FLeft[i + 1] = 1.;
+      FRight[i + 1] = 1.;
+      // in y orientation 1
+      FFront[i + 2] = 1.;
+      FBack[i + 2] = 1.;
+    }
 
-  // input:
-  // ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in
-  double *lduh = new double[80];
-  std::memcpy(
-      lduh,
-      ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in,
-      80 * sizeof(double));
+    // input:
+    // ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in
+    double *lduh = new double[80];
+    std::memcpy(
+        lduh,
+        ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in,
+        80 * sizeof(double));
 
-  // lFhbnd = [ FLeft | FRight | FFront | FBack ]
-  kernels::aderdg::generic::c::surfaceIntegralLinear(
-      lduh, lFhbnd, dx[0],
-      5,  // getNumberOfVariables(),
-      4   // getNodesPerCoordinateAxis()
-      );
+    // lFhbnd = [ FLeft | FRight | FFront | FBack ]
+    kernels::aderdg::generic::c::surfaceIntegralLinear(
+        lduh, lFhbnd, dx[0],
+        5,  // getNumberOfVariables(),
+        4   // getNodesPerCoordinateAxis()
+        );
 
-  for (int i = 0; i < 80; i++) {
-    validateNumericalEqualsWithEpsWithParams1(
-        lduh[i], ::exahype::tests::testdata::generic_euler::
-                     testSurfaceIntegralLinear::lduh_out[i],
-        eps, i);
-  }
+    for (int i = 0; i < 80; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          lduh[i], ::exahype::tests::testdata::generic_euler::
+                       testSurfaceIntegralLinear::lduh_out_1[i],
+          eps, i);
+    }
 
-  delete[] lduh;
+    delete[] lduh;
+  }  // test 1
+
+  {  // test 2
+    // inputs:
+    const double dx[2] = {0.1, 0.1};  // mesh spacing
+    // ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lFhbnd_in
+    // ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in
+    double *lduh = new double[80];
+    std::memcpy(
+        lduh,
+        ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in,
+        80 * sizeof(double));
+
+    // lFhbnd = [ FLeft | FRight | FFront | FBack ]
+    kernels::aderdg::generic::c::surfaceIntegralLinear(
+        lduh, ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::
+                  lFhbnd_in,
+        dx[0],
+        5,  // getNumberOfVariables(),
+        4   // getNodesPerCoordinateAxis()
+        );
+
+    for (int i = 0; i < 80; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          lduh[i], ::exahype::tests::testdata::generic_euler::
+                       testSurfaceIntegralLinear::lduh_out_2[i],
+          eps, i);
+    }
+
+    delete[] lduh;
+  }  // test 2
+
 }  // testSurfaceIntegralLinear
 
 void GenericEulerKernelTest::testSurfaceIntegralNonlinear() {
@@ -338,7 +371,6 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
   std::cout << "Test volume integral linear, ORDER=2, DIM=2" << std::endl;
 
   {  // first test
-
     // output:
     double *lduh = new double[80];
 

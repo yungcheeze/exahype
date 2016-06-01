@@ -20,10 +20,12 @@ extern const double luh[80];
 
 namespace testSurfaceIntegral {
 extern const double lduh_in[80];
+extern const double lFhbnd_in[80];
 }  // namespace testSurfaceIntegral
 
 namespace testSurfaceIntegralLinear {
-extern const double lduh_out[80];
+extern const double lduh_out_1[80];
+extern const double lduh_out_2[80];
 }  // namespace testSurfaceIntegralLinear
 
 namespace testSurfaceIntegralNonlinear {
