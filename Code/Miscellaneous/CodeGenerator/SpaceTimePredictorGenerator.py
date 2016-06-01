@@ -220,8 +220,50 @@ class SpaceTimePredictorGenerator:
         # TODO
 
 
+
+        # Compute the "derivatives" (contributions of the stiffness matrix)
+        # (1) rhs(:,:,j,k,l) = rhs0(:,:,j,k,l) - PRODUCT(aux(1:nDim))*dt/dx(1)*MATMUL( lFh(:,1,:,j,k,l), Kxi )
+        # (2) rhs(:,i,:,k,l) = rhs(:,i,:,k,l) - PRODUCT(aux(1:nDim))*dt/dx(2)*MATMUL( lFh(:,2,i,:,k,l), Kxi )
+        # (3) rhs(:,i,j,:,l) = rhs(:,i,j,:,l) - PRODUCT(aux(1:nDim))*dt/dx(3)*MATMUL( lFh(:,3,i,j,:,l), Kxi )
         l_sourceFile.write("  // Assume equispaced mesh, dx[0] == dx[1] == dx[2]\n")
         l_sourceFile.write("  double dtdx = dt/dx[0];\n\n")
+
+        l_sourceFile.write("  memcpy(rhs,rhs0,"+str(self.m_rhsLength)+"*sizeof(double));\n")
+
+        # (1) rhs(:,:,j,k,l) = rhs0(:,:,j,k,l) - PRODUCT(aux(1:nDim))*dt/dx(1)*MATMUL( lFh(:,1,:,j,k,l), Kxi )
+        l_matmul = MatmulConfig(    # M
+                                    self.m_config['nVar'],                             \
+                                    # N
+                                    self.m_config['nDof'],                             \
+                                    # K
+                                    self.m_config['nDof'],                             \
+                                    # LDA
+                                    Backend.getSizeWithPadding(self.m_config['nVar'])  \
+                                    # LDB
+                                    Backend.getSizeWithPadding(self.m_config['nDof']), \
+                                    # LDC
+                                    self.m_config['nVar'],                             \
+                                    # alpha
+                                    -1,                                                \
+                                    # beta
+                                    1,                                                 \
+                                    # alignment A
+                                    0,                                                 \
+                                    # alignment C
+                                    0,                                                 \
+                                    # name
+                                    "lqh",                                             \
+                                    # prefetching
+                                    "nopf",                                            \
+                                    # type
+                                    "gemm")
+        l_matmulList.append(l_matmul)
+
+
+        # (2) rhs(:,i,:,k,l) = rhs(:,i,:,k,l) - PRODUCT(aux(1:nDim))*dt/dx(2)*MATMUL( lFh(:,2,i,:,k,l), Kxi )
+
+
+        # (3) rhs(:,i,j,:,l) = rhs(:,i,j,:,l) - PRODUCT(aux(1:nDim))*dt/dx(3)*MATMUL( lFh(:,3,i,j,:,l), Kxi )
 
 
         # lqh(:,:,i,j,k) = MATMUL( rhs(:,i,j,k,:), TRANSPOSE(iK1) )
