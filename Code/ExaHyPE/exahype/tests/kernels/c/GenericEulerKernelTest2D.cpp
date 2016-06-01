@@ -470,7 +470,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   // nVar * nDOFx * nDOFy]
 
   const tarch::la::Vector<DIMENSIONS, double> dx(0.5, 0.5);
-  const double timeStepSize = 1.267423918681417E-002;
+  const double dt = 1.267423918681417E-002;
 
   // local:
   double *lQi = new double[320];  // nVar * nDOFx * nDOFy * nDOFt
@@ -480,48 +480,47 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   double *lQhi = new double[80];  // nVar * nDOFx * nDOFz
                                   // intentionally left uninitialised
 
-  double *lFhi = new double[160];    // nVar * nDOFx * nDOFy * dim
-  double *lQhbnd = new double[120];  // nVar * nDOFy * 6/4
-  double *lFhbnd = new double[120];  // nVar * nDOFy * 6/4
-                                     // TODO(varduhn): !!!
+  double *lFhi = new double[160];  // nVar * nDOFx * nDOFy * dim
+  double *lQbnd = new double[80];  // nVar * nDOFy * 4
+  double *lFbnd = new double[80];  // nVar * nDOFy * 4
 
   kernels::aderdg::generic::c::spaceTimePredictorLinear<testNCP>(
-      lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd,
+      lQi, lFi, lQhi, lFhi, lQbnd, lFbnd,
       exahype::tests::testdata::generic_euler::testSpaceTimePredictorLinear::
           luh,
-      dx, timeStepSize,
+      dx, dt,
       5,  // numberOfVariables
       4   // basisSize
       );
 
-  //  for (int i = 0; i < 320; i++) {
-  //    validateNumericalEqualsWithEpsWithParams1(
-  //        lQhi[i], ::exahype::tests::testdata::generic_euler::
-  //                     testSpaceTimePredictorLinear::lQhi[i],
-  //        eps, i);
-  //  }
-  //
-  //  for (int i = 0; i < 640; i++) {
-  //    validateNumericalEqualsWithEpsWithParams1(lFhi[i], 0.0, eps, i);
-  //  }
-  //
-  //  for (int i = 0; i < 120; i++) {
-  //    validateNumericalEqualsWithEpsWithParams1(
-  //        lQhbnd[i], ::exahype::tests::testdata::generic_euler::
-  //                       testSpaceTimePredictorLinear::lQhbnd[i],
-  //        eps, i);
-  //  }
-  //
-  //  for (int i = 0; i < 120; i++) {
-  //    validateNumericalEqualsWithEpsWithParams1(lFhbnd[i], 0.0, eps, i);
-  //  }
+  for (int i = 0; i < 80; i++) {
+    validateNumericalEqualsWithEpsWithParams1(
+        lQhi[i], ::exahype::tests::testdata::generic_euler::
+                     testSpaceTimePredictorLinear::lQhi[i],
+        eps, i);
+  }
+
+  for (int i = 0; i < 160; i++) {
+    validateNumericalEqualsWithEpsWithParams1(lFhi[i], 0.0, eps, i);
+  }
+
+  for (int i = 0; i < 80; i++) {
+    validateNumericalEqualsWithEpsWithParams1(
+        lQbnd[i], ::exahype::tests::testdata::generic_euler::
+                      testSpaceTimePredictorLinear::lQbnd[i],
+        eps, i);
+  }
+
+  for (int i = 0; i < 80; i++) {
+    validateNumericalEqualsWithEpsWithParams1(lFbnd[i], 0.0, eps, i);
+  }
 
   delete[] lQi;
   delete[] lFi;
   delete[] lFhi;
   delete[] lQhi;
-  delete[] lQhbnd;
-  delete[] lFhbnd;
+  delete[] lQbnd;
+  delete[] lFbnd;
 }  // testSpaceTimePredictorLinear
 
 void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {

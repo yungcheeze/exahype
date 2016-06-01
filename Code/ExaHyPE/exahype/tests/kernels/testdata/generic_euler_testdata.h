@@ -46,6 +46,8 @@ extern const double lduh_2[80];
 
 namespace testSpaceTimePredictorLinear {
 extern const double luh[80];
+extern const double lQhi[80];
+extern const double lQbnd[80];
 }  // namespace testSpaceTimePredictorLinear
 
 namespace testSpaceTimePredictorNonlinear {
@@ -103,7 +105,7 @@ extern const double FR[80];
 namespace testRiemannSolverNonlinear {
 extern const double FL[80];
 extern const double FR[80];
-}  // namespace testRiemannNonlinear
+}  // namespace testRiemannSolverNonlinear
 
 namespace testSolutionUpdate {
 extern const double luh[320];
