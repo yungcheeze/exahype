@@ -29,7 +29,8 @@ extern const double lduh_out_2[80];
 }  // namespace testSurfaceIntegralLinear
 
 namespace testSurfaceIntegralNonlinear {
-extern const double lduh_out[80];
+extern const double lduh_1[80];
+extern const double lduh_2[80];
 }  // namespace testSurfaceIntegralNonlinear
 
 namespace testVolumeIntegral {
