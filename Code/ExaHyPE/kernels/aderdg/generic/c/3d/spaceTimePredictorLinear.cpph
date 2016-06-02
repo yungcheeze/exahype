@@ -25,7 +25,7 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
   std::memset(lQh, 0, basisSize4 * numberOfVariables * sizeof(double));
 
   // The zeroth time derivative (time dof number 1) is the initial condition
-  // lqh(iVar,1,i,j,k) = lqh(iVar,1,i,j,k) + luh(iVar,i,j,k)
+  // lqh(l,1,k,j,i) += luh(l,k,j,i)
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {
       for (int k = 0; k < basisSize; k++) {
@@ -139,6 +139,26 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
         }
       }
     }
+
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < basisSize; l++) {
+          // lQh(:,l,k,j,i+1) -= SUM(lFh(:,1:nDim,l,k,j,i), dim=2)
+          for (int m = 0; m < 3; m++) {
+            for (int n = 0; n < numberOfVariables; n++) {
+              lQh[(i + 1) * basisSize3 * numberOfVariables +
+                  j * basisSize2 * numberOfVariables +
+                  k * basisSize * numberOfVariables + l * numberOfVariables +
+                  n] -=
+                  lFh[i * basisSize3 * 3 * numberOfVariables +
+                      j * basisSize2 * 3 * numberOfVariables +
+                      k * basisSize * 3 * numberOfVariables +
+                      l * 3 * numberOfVariables + m * numberOfVariables + n];
+            }
+          }
+        }
+      }
+    }
   }
 
   // Immediately compute the time-averaged space-time polynomials
@@ -178,7 +198,7 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
     dtavFac *= dt / (i + 2);
   }
 
-  // lFhi = lFh(:,:,:,:,:,1)
+  // lFhi(:,:,:,:,:) = lFh(:,:,:,:,:,1)
   for (int i = 0; i < 3; i++) {
     for (int j = 0; j < basisSize; j++) {
       for (int k = 0; k < basisSize; k++) {
@@ -210,9 +230,9 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
                    k * basisSize2 * numberOfVariables +
                    l * basisSize * numberOfVariables + m * basisSize + n] +=
                   lFh[i * basisSize3 * 3 * numberOfVariables +
-                      j * basisSize2 * 3 * numberOfVariables +
-                      k * basisSize * 3 * numberOfVariables +
-                      l * 3 * numberOfVariables + m * numberOfVariables + n];
+                      k * basisSize2 * 3 * numberOfVariables +
+                      l * basisSize * 3 * numberOfVariables +
+                      m * 3 * numberOfVariables + j * numberOfVariables + n];
             }
           }
         }
