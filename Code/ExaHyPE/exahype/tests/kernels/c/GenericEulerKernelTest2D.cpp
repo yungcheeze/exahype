@@ -267,8 +267,8 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
     double *FR = new double[5 * 4];  // nVar * nDOF(2)
 
     // input
-    // ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QL
-    // ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QR
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR
     const int normalNonZero = 0;
     const double dt = 0.1;
 
@@ -276,9 +276,9 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
         GenericEulerKernelTest::testEigenvalues,
         GenericEulerKernelTest::testMatrixB>(
         FL, FR,
-        ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QL,
-        ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QR,
-        dt, normalNonZero, 5 /* nVar */, 4 /* basisSize */);
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR, dt,
+        normalNonZero, 5 /* nVar */, 4 /* basisSize */);
 
     for (int i = 0; i < 20; i++) {
       validateNumericalEqualsWithEpsWithParams1(
@@ -304,8 +304,8 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
     double *FR = new double[5 * 4];  // nVar * nDOF(2)
 
     // input:
-    // ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QL
-    // ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QR
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR
     const int normalNonZero = 1;
     const double dt = 0.1;
 
@@ -313,9 +313,9 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
         GenericEulerKernelTest::testEigenvalues,
         GenericEulerKernelTest::testMatrixB>(
         FL, FR,
-        ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QL,
-        ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QR,
-        dt, normalNonZero, 5 /* nVar */, 4 /* basisSize */);
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR, dt,
+        normalNonZero, 5 /* nVar */, 4 /* basisSize */);
 
     for (int i = 0; i < 20; i++) {
       validateNumericalEqualsWithEpsWithParams1(
@@ -340,31 +340,111 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
 void GenericEulerKernelTest::testRiemannSolverNonlinear() {
   // Rusanov
   cout << "Test Riemann Solver nonlinear (Rusanov), ORDER=2, DIM=2" << endl;
-  // input:
-  double QL[20] = {1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5,
-                   1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5};
-  double QR[20] = {1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5,
-                   1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5};
 
-  // output:
-  double *FL = new double[20];
-  double *FR = new double[20];
+  {  // test 1
+     // input:
+    double QL[20] = {1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5,
+                     1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5};
+    double QR[20] = {1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5,
+                     1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5};
 
-  kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
-      FL, FR, QL, QR,
-      0.0,  // dt
-      0,    // normalNonZero
-      5,    // getNumberOfVariables(),
-      4     // getNodesPerCoordinateAxis()
-      );
+    // output:
+    double *FL = new double[20];
+    double *FR = new double[20];
 
-  // FL == FR, element by element
-  for (int i = 0; i < 20; i++) {
-    validateEquals(FL[i], FR[i]);
-  }
+    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
+        FL, FR, QL, QR,
+        0.0,  // dt
+        0,    // normalNonZero
+        5,    // getNumberOfVariables(),
+        4     // getNodesPerCoordinateAxis()
+        );
 
-  delete[] FL;
-  delete[] FR;
+    // FL == FR, element by element
+    for (int i = 0; i < 20; i++) {
+      validateEquals(FL[i], FR[i]);
+    }
+
+    delete[] FL;
+    delete[] FR;
+  }  // test 1
+
+  cout << endl << endl;
+
+  {  // test 2 nnz = 0
+     // input:
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR
+
+    // output:
+    double *FL = new double[20];
+    double *FR = new double[20];
+
+    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
+        FL, FR,
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR,
+        0.0,  // dt
+        0,    // normalNonZero
+        5,    // getNumberOfVariables(),
+        4     // getNodesPerCoordinateAxis()
+        );
+
+    for (int i = 0; i < 20; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          FL[i], ::exahype::tests::testdata::generic_euler::
+                     testRiemannSolverNonlinear::FL_1[i],
+          eps, i);
+    }
+
+    for (int i = 0; i < 20; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          FR[i], ::exahype::tests::testdata::generic_euler::
+                     testRiemannSolverNonlinear::FR_1[i],
+          eps, i);
+    }
+
+    delete[] FL;
+    delete[] FR;
+  }  // test 2
+
+  {  // test 3 nnz = 1
+     // input:
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR
+
+    // output:
+    double *FL = new double[20];
+    double *FR = new double[20];
+
+    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
+        FL, FR,
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR,
+        0.0,  // dt
+        1,    // normalNonZero
+        5,    // getNumberOfVariables(),
+        4     // getNodesPerCoordinateAxis()
+        );
+
+    for (int i = 0; i < 20; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          FL[i], ::exahype::tests::testdata::generic_euler::
+                     testRiemannSolverNonlinear::FL_2[i],
+          eps, i);
+    }
+
+    for (int i = 0; i < 20; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          FR[i], ::exahype::tests::testdata::generic_euler::
+                     testRiemannSolverNonlinear::FR_2[i],
+          eps, i);
+    }
+
+    delete[] FL;
+    delete[] FR;
+  }  // test3
+
 }  // testRiemannSolverNonlinear
 
 void GenericEulerKernelTest::testVolumeIntegralLinear() {
