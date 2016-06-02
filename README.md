@@ -9,7 +9,7 @@ Copy and paste these commands to start with a working ExaHyPE application:
     tar xvfz peano.tar.gz
     git checkout .gitignore
     cd ..
-    ln -s Toolkit/Dist/ExaHyPE.jar
+    ln -s Toolkit/dist/ExaHyPE.jar
 
 Now you are ready to follow compile and run an ExaHyPE application [according to the guidebook](http://www5.in.tum.de/exahype/guidebook.pdf):
 
@@ -17,7 +17,7 @@ Now you are ready to follow compile and run an ExaHyPE application [according to
     export CC=gcc
     export TBB_INC=/usr/include/tbb
     export TBB_LIB=/usr/lib/tbb
-    cd Application/eulerflow2d && make -j
+    cd Applications/eulerflow2d && make -j
     ./ExaHyPE-Euler2d ../eulerflow2d.exahype
 
 ## General remarks ##
