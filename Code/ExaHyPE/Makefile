@@ -174,11 +174,7 @@ cfiles.mk:
 	find -H $(TARCH_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(MULTISCALELINKEDCELL_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(SHAREDMEMORYORACLES_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
-ifdef USE_OPTIMISED_KERNELS
-	find -H $(EXAHYPE_PATH) -name '*.cpp' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/*' | tr '\n' ' ' >> cfiles.mk
-else
 	find -H $(EXAHYPE_PATH) -name '*.cpp' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran/*'  | tr '\n' ' ' >> cfiles.mk
-endif
 ifneq (,$(findstring Yes, $(MIXEDLANG) )) 
 	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.cpp'  | tr '\n' ' ' >> cfiles.mk
 endif
