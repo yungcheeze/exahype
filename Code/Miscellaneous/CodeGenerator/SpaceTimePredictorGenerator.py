@@ -219,11 +219,99 @@ class SpaceTimePredictorGenerator:
         # discrete Picard iterations
         # TODO
 
+        # compute the fluxes
+        #if(self.m_config['nDim'] == 2):
+        #    l_sourceFile.write("PDEFlux2d(Q,f,g)")
 
+        #if(self.m_config['nDim'] == 3):
+        #    l_sourceFile.write("PDEFlux3d(Q,f,g,h)")
+
+        # Compute the "derivatives" (contributions of the stiffness matrix)
+        # (1) rhs(:,:,j,k,l) = rhs0(:,:,j,k,l) - PRODUCT(aux(1:nDim))*dt/dx(1)*MATMUL( lFh(:,:,j,k,l,1), Kxi )
+        # (2) rhs(:,i,:,k,l) = rhs(:,i,:,k,l) - PRODUCT(aux(1:nDim))*dt/dx(2)*MATMUL( lFh(:,i,:,k,l,2), Kxi )
+        # (3) rhs(:,i,j,:,l) = rhs(:,i,j,:,l) - PRODUCT(aux(1:nDim))*dt/dx(3)*MATMUL( lFh(:,i,j,:,l,3), Kxi )
+        # Incorporate minus sign into dt/dx
         l_sourceFile.write("  // Assume equispaced mesh, dx[0] == dx[1] == dx[2]\n")
-        l_sourceFile.write("  double dtdx = dt/dx[0];\n\n")
+        l_sourceFile.write("  const double dtdx = -dt/dx[0];\n\n")
+
+        # (1) rhs(:,:,j,k,l) = rhs0(:,:,j,k,l) + PRODUCT(aux(1:nDim))*dt/dx(1)*MATMUL( lFh(:,:,j,k,l,1), Kxi )
+        l_sourceFile.write("  memcpy(rhs,rhs0,"+str(self.m_rhsLength)+"*sizeof(double));\n")
+        l_matmul = MatmulConfig(    # M
+                                    self.m_config['nVar'],                             \
+                                    # N
+                                    self.m_config['nDof'],                             \
+                                    # K
+                                    self.m_config['nDof'],                             \
+                                    # LDA
+                                    Backend.getSizeWithPadding(self.m_config['nVar']), \
+                                    # LDB
+                                    Backend.getSizeWithPadding(self.m_config['nDof']), \
+                                    # LDC
+                                    self.m_config['nVar'],                             \
+                                    # alpha
+                                    1,                                                 \
+                                    # beta
+                                    1,                                                 \
+                                    # alignment A
+                                    0,                                                 \
+                                    # alignment C
+                                    0,                                                 \
+                                    # name
+                                    "rhs_x",                                           \
+                                    # prefetching
+                                    "nopf",                                            \
+                                    # type
+                                    "gemm")
+        l_matmulList.append(l_matmul)
+
+        # write the function call to the driver file
+        for i in range(0, self.m_config['nDof']**self.m_config['nDim']):
+            l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::weights3["+str(i)+"]",
+                                                   "kernels::Kxi",
+                                                   "s_m", self.m_config['nDof']*Backend.getSizeWithPadding(self.m_config['nDof'])))
+            l_sourceFile.write("  "+l_matmul.baseroutinename
+                                   +"(&lFh["+str(i*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof'])+"]," \
+                                    " &kernels::s_m[0],"  \
+                                    " &rhs["+str(i*self.m_config['nVar']*self.m_config['nDof'])+"]);\n\n")
 
 
+
+        # (2) rhs(:,i,:,k,l) = rhs(:,i,:,k,l) + PRODUCT(aux(1:nDim))*dt/dx(2)*MATMUL( lFh(:,i,:,k,l,2), Kxi )
+        l_matmul = MatmulConfig(    # M
+                                    self.m_config['nVar'],                             \
+                                    # N
+                                    self.m_config['nDof'],                             \
+                                    # K
+                                    self.m_config['nDof'],                             \
+                                    # LDA
+                                    Backend.getSizeWithPadding(self.m_config['nVar'])
+                                    * self.m_config['nDof'],     \
+                                    # LDB
+                                    Backend.getSizeWithPadding(self.m_config['nDof']), \
+                                    # LDC
+                                    self.m_config['nVar'] * self.m_config['nDof'],     \
+                                    # alpha
+                                    1,                                                 \
+                                    # beta
+                                    1,                                                 \
+                                    # alignment A
+                                    0,                                                 \
+                                    # alignment C
+                                    0,                                                 \
+                                    # name
+                                    "rhs_y",                                           \
+                                    # prefetching
+                                    "nopf",                                            \
+                                    # type
+                                    "gemm")
+        l_matmulList.append(l_matmul)
+
+
+
+
+        # (3) rhs(:,i,j,:,l) = rhs(:,i,j,:,l) + PRODUCT(aux(1:nDim))*dt/dx(3)*MATMUL( lFh(:,i,j,:,l,3), Kxi )
+
+        # loop over time DOFs done
         # lqh(:,:,i,j,k) = MATMUL( rhs(:,i,j,k,:), TRANSPOSE(iK1) )
         l_matmul = MatmulConfig(    # M
                                     self.m_config['nVar'],                             \
@@ -336,14 +424,14 @@ class SpaceTimePredictorGenerator:
         # TODO
         if(self.m_config['nDim'] == 2):
             pass
-            # (2) lFhi_x(:,i,j,k) = MATMUL(lFh(:,1,i,j,k,:), wGPN)
-            #     lFhi_y(:,j,j,k) = MATMUL(lFh(:,2,i,j,k,:), wGPN)
+            # (2) lFhi_x(:,i,j,k) = MATMUL(lFh(:,i,j,k,:,1), wGPN)
+            # (3) lFhi_y(:,j,j,k) = MATMUL(lFh(:,i,j,k,:,2), wGPN)
 
         elif(self.m_config['nDim'] == 3):
             pass
-            # (2) lFhi_x(:,i,j,k) = MATMUL(lFh(:,1,i,j,k,:), wGPN)
-            #     lFhi_y(:,j,j,k) = MATMUL(lFh(:,2,i,j,k,:), wGPN)
-            #     lFhi_z(:,k,j,i) = MATMUL(lFh(:,3,i,j,k,:), wGPN)
+            # (2) lFhi_x(:,i,j,k) = MATMUL(lFh(:,i,j,k,:,1), wGPN)
+            # (3) lFhi_y(:,j,j,k) = MATMUL(lFh(:,i,j,k,:,2), wGPN)
+            # (4) lFhi_z(:,k,j,i) = MATMUL(lFh(:,i,j,k,:,3), wGPN)
 
         else:
             print("SpaceTimePredictorGenerator.generatePredictor(): nDim not supported")
@@ -591,7 +679,7 @@ class SpaceTimePredictorGenerator:
 
 
         else:
-            print("SpaceTimePredictorGenerator.generateExtrapolator(): nDim not supported")        
+            print("SpaceTimePredictorGenerator.generateExtrapolator(): nDim not supported")
 
 
         Backend.generateAssemblerCode("asm_"+l_filename, l_matmulList)
