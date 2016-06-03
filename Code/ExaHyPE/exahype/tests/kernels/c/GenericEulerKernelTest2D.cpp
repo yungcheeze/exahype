@@ -135,93 +135,159 @@ void GenericEulerKernelTest::testSolutionUpdate() {
 void GenericEulerKernelTest::testSurfaceIntegralLinear() {
   cout << "Test surface integral linear, ORDER=2, DIM=2" << endl;
 
-  // inputs:
-  const double dx[2] = {0.1, 0.1};  // mesh spacing
-  double lFhbnd[5 * 4 * 4] = {};    // nVar * nDofY * 4, zero initialized
+  {  // test 1
+    // inputs:
+    const double dx[2] = {0.1, 0.1};  // mesh spacing
+    double lFhbnd[5 * 4 * 4] = {};    // nVar * nDofY * 4, zero initialized
 
-  double *FLeft = &lFhbnd[0];
-  double *FRight = &lFhbnd[20];
-  double *FFront = &lFhbnd[40];
-  double *FBack = &lFhbnd[60];
+    double *FLeft = &lFhbnd[0];
+    double *FRight = &lFhbnd[20];
+    double *FFront = &lFhbnd[40];
+    double *FBack = &lFhbnd[60];
 
-  for (int i = 0; i < 20; i += 5) {
-    // in x orientation 1
-    FLeft[i + 1] = 1.;
-    FRight[i + 1] = 1.;
-    // in y orientation 1
-    FFront[i + 2] = 1.;
-    FBack[i + 2] = 1.;
-  }
+    for (int i = 0; i < 20; i += 5) {
+      // in x orientation 1
+      FLeft[i + 1] = 1.;
+      FRight[i + 1] = 1.;
+      // in y orientation 1
+      FFront[i + 2] = 1.;
+      FBack[i + 2] = 1.;
+    }
 
-  // input:
-  // ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in
-  double *lduh = new double[80];
-  std::memcpy(
-      lduh,
-      ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in,
-      80 * sizeof(double));
+    // input:
+    // ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in
+    double *lduh = new double[80];
+    std::memcpy(
+        lduh,
+        ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in,
+        80 * sizeof(double));
 
-  // lFhbnd = [ FLeft | FRight | FFront | FBack ]
-  kernels::aderdg::generic::c::surfaceIntegralLinear(
-      lduh, lFhbnd, dx[0],
-      5,  // getNumberOfVariables(),
-      4   // getNodesPerCoordinateAxis()
-      );
+    // lFhbnd = [ FLeft | FRight | FFront | FBack ]
+    kernels::aderdg::generic::c::surfaceIntegralLinear(
+        lduh, lFhbnd, dx[0],
+        5,  // getNumberOfVariables(),
+        4   // getNodesPerCoordinateAxis()
+        );
 
-  for (int i = 0; i < 80; i++) {
-    validateNumericalEqualsWithEpsWithParams1(
-        lduh[i], ::exahype::tests::testdata::generic_euler::
-                     testSurfaceIntegralLinear::lduh_out[i],
-        eps, i);
-  }
+    for (int i = 0; i < 80; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          lduh[i], ::exahype::tests::testdata::generic_euler::
+                       testSurfaceIntegralLinear::lduh_out_1[i],
+          eps, i);
+    }
 
-  delete[] lduh;
+    delete[] lduh;
+  }  // test 1
+
+  {  // test 2
+    // inputs:
+    const double dx[2] = {0.1, 0.1};  // mesh spacing
+    // ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lFhbnd_in
+    // ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in
+    double *lduh = new double[80];
+    std::memcpy(
+        lduh,
+        ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in,
+        80 * sizeof(double));
+
+    // lFhbnd = [ FLeft | FRight | FFront | FBack ]
+    kernels::aderdg::generic::c::surfaceIntegralLinear(
+        lduh, ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::
+                  lFhbnd_in,
+        dx[0],
+        5,  // getNumberOfVariables(),
+        4   // getNodesPerCoordinateAxis()
+        );
+
+    for (int i = 0; i < 80; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          lduh[i], ::exahype::tests::testdata::generic_euler::
+                       testSurfaceIntegralLinear::lduh_out_2[i],
+          eps, i);
+    }
+
+    delete[] lduh;
+  }  // test 2
+
 }  // testSurfaceIntegralLinear
 
 void GenericEulerKernelTest::testSurfaceIntegralNonlinear() {
   cout << "Test surface integral nonlinear, ORDER=2, DIM=2" << endl;
 
-  // inputs:
-  const double dx[2] = {0.1, 0.1};  // mesh spacing
-  double lFhbnd[4 * 20] = {0.};
+  {  // test 1
+    // inputs:
+    const double dx[2] = {0.1, 0.1};  // mesh spacing
+    double lFhbnd[4 * 20] = {0.};
 
-  double *FLeft = &lFhbnd[0];
-  double *FRight = &lFhbnd[20];
-  double *FFront = &lFhbnd[40];
-  double *FBack = &lFhbnd[60];
+    double *FLeft = &lFhbnd[0];
+    double *FRight = &lFhbnd[20];
+    double *FFront = &lFhbnd[40];
+    double *FBack = &lFhbnd[60];
 
-  for (int i = 0; i < 20; i += 5) {
-    // in x orientation 1
-    FLeft[i + 1] = 1.;
-    FRight[i + 1] = 1.;
-    // in y orientation 1
-    FFront[i + 2] = 1.;
-    FBack[i + 2] = 1.;
-  }
+    for (int i = 0; i < 20; i += 5) {
+      // in x orientation 1
+      FLeft[i + 1] = 1.;
+      FRight[i + 1] = 1.;
+      // in y orientation 1
+      FFront[i + 2] = 1.;
+      FBack[i + 2] = 1.;
+    }
 
-  // input:
-  // ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in
-  double *lduh = new double[80];
-  std::memcpy(
-      lduh,
-      ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in,
-      80 * sizeof(double));
+    // input:
+    // ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in
+    double *lduh = new double[80];
+    std::memcpy(
+        lduh,
+        ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in,
+        80 * sizeof(double));
 
-  // lFhbnd = [ FLeft | FRight | FFront | FBack ]
-  kernels::aderdg::generic::c::surfaceIntegralNonlinear(
-      lduh, lFhbnd, dx[0],
-      5,  // getNumberOfVariables(),
-      4   // getNodesPerCoordinateAxis()
-      );
+    // lFhbnd = [ FLeft | FRight | FFront | FBack ]
+    kernels::aderdg::generic::c::surfaceIntegralNonlinear(
+        lduh, lFhbnd, dx[0],
+        5,  // getNumberOfVariables(),
+        4   // getNodesPerCoordinateAxis()
+        );
 
-  for (int i = 0; i < 80; i++) {
-    validateNumericalEqualsWithEpsWithParams1(
-        lduh[i], ::exahype::tests::testdata::generic_euler::
-                     testSurfaceIntegralNonlinear::lduh_out[i],
-        eps, i);
-  }
+    for (int i = 0; i < 80; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          lduh[i], ::exahype::tests::testdata::generic_euler::
+                       testSurfaceIntegralNonlinear::lduh_1[i],
+          eps, i);
+    }
 
-  delete[] lduh;
+    delete[] lduh;
+  }  // test 1
+
+  {  // test 2
+    // inputs:
+    const double dx[2] = {0.1, 0.1};  // mesh spacing
+
+    // ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in
+    // ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lFhbnd_in
+
+    double *lduh = new double[80];
+    std::memcpy(
+        lduh,
+        ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::lduh_in,
+        80 * sizeof(double));
+
+    kernels::aderdg::generic::c::surfaceIntegralNonlinear(
+        lduh, ::exahype::tests::testdata::generic_euler::testSurfaceIntegral::
+                  lFhbnd_in,
+        dx[0],
+        5,  // getNumberOfVariables(),
+        4   // getNodesPerCoordinateAxis()
+        );
+
+    for (int i = 0; i < 80; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          lduh[i], ::exahype::tests::testdata::generic_euler::
+                       testSurfaceIntegralNonlinear::lduh_2[i],
+          eps, i);
+    }
+
+    delete[] lduh;
+  }  // test2
 }  // testSurfaceIntegralNonlinear
 
 void GenericEulerKernelTest::testRiemannSolverLinear() {
@@ -234,8 +300,8 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
     double *FR = new double[5 * 4];  // nVar * nDOF(2)
 
     // input
-    // ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QL
-    // ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QR
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR
     const int normalNonZero = 0;
     const double dt = 0.1;
 
@@ -243,9 +309,9 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
         GenericEulerKernelTest::testEigenvalues,
         GenericEulerKernelTest::testMatrixB>(
         FL, FR,
-        ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QL,
-        ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QR,
-        dt, normalNonZero, 5 /* nVar */, 4 /* basisSize */);
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR, dt,
+        normalNonZero, 5 /* nVar */, 4 /* basisSize */);
 
     for (int i = 0; i < 20; i++) {
       validateNumericalEqualsWithEpsWithParams1(
@@ -271,8 +337,8 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
     double *FR = new double[5 * 4];  // nVar * nDOF(2)
 
     // input:
-    // ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QL
-    // ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QR
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR
     const int normalNonZero = 1;
     const double dt = 0.1;
 
@@ -280,9 +346,9 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
         GenericEulerKernelTest::testEigenvalues,
         GenericEulerKernelTest::testMatrixB>(
         FL, FR,
-        ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QL,
-        ::exahype::tests::testdata::generic_euler::testRiemannSolverLinear::QR,
-        dt, normalNonZero, 5 /* nVar */, 4 /* basisSize */);
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR, dt,
+        normalNonZero, 5 /* nVar */, 4 /* basisSize */);
 
     for (int i = 0; i < 20; i++) {
       validateNumericalEqualsWithEpsWithParams1(
@@ -307,38 +373,115 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
 void GenericEulerKernelTest::testRiemannSolverNonlinear() {
   // Rusanov
   cout << "Test Riemann Solver nonlinear (Rusanov), ORDER=2, DIM=2" << endl;
-  // input:
-  double QL[20] = {1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5,
-                   1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5};
-  double QR[20] = {1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5,
-                   1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5};
 
-  // output:
-  double *FL = new double[20];
-  double *FR = new double[20];
+  {  // test 1
+     // input:
+    double QL[20] = {1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5,
+                     1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5};
+    double QR[20] = {1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5,
+                     1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5};
 
-  kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
-      FL, FR, QL, QR,
-      0.0,  // dt
-      0,    // normalNonZero
-      5,    // getNumberOfVariables(),
-      4     // getNodesPerCoordinateAxis()
-      );
+    // output:
+    double *FL = new double[20];
+    double *FR = new double[20];
 
-  // FL == FR, element by element
-  for (int i = 0; i < 20; i++) {
-    validateEquals(FL[i], FR[i]);
-  }
+    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
+        FL, FR, QL, QR,
+        0.0,  // dt
+        0,    // normalNonZero
+        5,    // getNumberOfVariables(),
+        4     // getNodesPerCoordinateAxis()
+        );
 
-  delete[] FL;
-  delete[] FR;
+    // FL == FR, element by element
+    for (int i = 0; i < 20; i++) {
+      validateEquals(FL[i], FR[i]);
+    }
+
+    delete[] FL;
+    delete[] FR;
+  }  // test 1
+
+  {  // test 2 nnz = 0
+     // input:
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR
+
+    // output:
+    double *FL = new double[20];
+    double *FR = new double[20];
+
+    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
+        FL, FR,
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR,
+        0.0,  // dt
+        0,    // normalNonZero
+        5,    // getNumberOfVariables(),
+        4     // getNodesPerCoordinateAxis()
+        );
+
+    for (int i = 0; i < 20; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          FL[i], ::exahype::tests::testdata::generic_euler::
+                     testRiemannSolverNonlinear::FL_1[i],
+          eps, i);
+    }
+
+    for (int i = 0; i < 20; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          FR[i], ::exahype::tests::testdata::generic_euler::
+                     testRiemannSolverNonlinear::FR_1[i],
+          eps, i);
+    }
+
+    delete[] FL;
+    delete[] FR;
+  }  // test 2
+
+  {  // test 3 nnz = 1
+     // input:
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL
+    // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR
+
+    // output:
+    double *FL = new double[20];
+    double *FR = new double[20];
+
+    kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
+        FL, FR,
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
+        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR,
+        0.0,  // dt
+        1,    // normalNonZero
+        5,    // getNumberOfVariables(),
+        4     // getNodesPerCoordinateAxis()
+        );
+
+    for (int i = 0; i < 20; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          FL[i], ::exahype::tests::testdata::generic_euler::
+                     testRiemannSolverNonlinear::FL_2[i],
+          eps, i);
+    }
+
+    for (int i = 0; i < 20; i++) {
+      validateNumericalEqualsWithEpsWithParams1(
+          FR[i], ::exahype::tests::testdata::generic_euler::
+                     testRiemannSolverNonlinear::FR_2[i],
+          eps, i);
+    }
+
+    delete[] FL;
+    delete[] FR;
+  }  // test3
+
 }  // testRiemannSolverNonlinear
 
 void GenericEulerKernelTest::testVolumeIntegralLinear() {
   std::cout << "Test volume integral linear, ORDER=2, DIM=2" << std::endl;
 
   {  // first test
-
     // output:
     double *lduh = new double[80];
 

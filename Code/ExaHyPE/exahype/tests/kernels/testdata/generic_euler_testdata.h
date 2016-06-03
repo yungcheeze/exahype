@@ -20,14 +20,17 @@ extern const double luh[80];
 
 namespace testSurfaceIntegral {
 extern const double lduh_in[80];
+extern const double lFhbnd_in[80];
 }  // namespace testSurfaceIntegral
 
 namespace testSurfaceIntegralLinear {
-extern const double lduh_out[80];
+extern const double lduh_out_1[80];
+extern const double lduh_out_2[80];
 }  // namespace testSurfaceIntegralLinear
 
 namespace testSurfaceIntegralNonlinear {
-extern const double lduh_out[80];
+extern const double lduh_1[80];
+extern const double lduh_2[80];
 }  // namespace testSurfaceIntegralNonlinear
 
 namespace testVolumeIntegral {
@@ -57,14 +60,24 @@ extern const double lQhbnd[80];
 extern const double lFhbnd[80];
 }  // namespace testSpaceTimePredictorNonlinear
 
-namespace testRiemannSolverLinear {
+namespace testRiemannSolver {
 extern const double QL[20];
 extern const double QR[20];
+}  // namespace testRiemannSolver
+
+namespace testRiemannSolverLinear {
 extern const double FL_1[20];
 extern const double FR_1[20];
 extern const double FL_2[20];
 extern const double FR_2[20];
 }  // namespace testRiemannSolverLinear
+
+namespace testRiemannSolverNonlinear {
+extern const double FL_1[20];
+extern const double FR_1[20];
+extern const double FL_2[20];
+extern const double FR_2[20];
+}  // namespace testRiemannSolverNonlinear
 
 #endif  // Dim2
 
