@@ -217,14 +217,50 @@ class SpaceTimePredictorGenerator:
         l_matmulList = []
 
         # discrete Picard iterations
-        # TODO
+        #l_sourceFile.write("  for(int iter=0;iter<"+str(self.m_config['nDof'])+";iter++) {\n")
 
         # compute the fluxes
-        #if(self.m_config['nDim'] == 2):
-        #    l_sourceFile.write("PDEFlux2d(Q,f,g)")
+        # Loops are being unrolled - temporary solution. Later on the flux function should be vectorised
+        # distance in terms of memory addresses between flux in x,y,z direction
+        fluxOffset = Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**(self.m_config['nDim']+1)
+        if(self.m_config['nDim'] == 3):
+            for l in range(0,self.m_config['nDof']):
+                for k in range(0,self.m_config['nDof']):
+                    for j in range(0,self.m_config['nDof']):
+                        for i in range(0,self.m_config['nDof']):
+                            lqh_base_addr = \
+                                  k*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**3\
+                                + j*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**2\
+                                + i*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**1\
+                                + l*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**0
+                            lFh_base_addr = \
+                                  l*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**3\
+                                + k*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**2\
+                                + j*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**1\
+                                + i*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**0
+                            # call PDEFlux3d(Q,f,g,h)
+                            l_sourceFile.write("  PDEFlux3d(&lqh["+str(lqh_base_addr)+"],"\
+                                                           "&lFh["+str(lFh_base_addr)+"],"\
+                                                           "&lFh["+str(lFh_base_addr+fluxOffset)+"],"\
+                                                           "&lFh["+str(lFh_base_addr+2*fluxOffset)+"]);\n")
 
-        #if(self.m_config['nDim'] == 3):
-        #    l_sourceFile.write("PDEFlux3d(Q,f,g,h)")
+        if(self.m_config['nDim'] == 2):
+            for l in range(0,self.m_config['nDof']):
+                for j in range(0,self.m_config['nDof']):
+                    for i in range(0,self.m_config['nDof']):
+                        lqh_base_addr = \
+                                  j*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**2\
+                                + i*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**1\
+                                + l*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**0
+                        lFh_base_addr = \
+                                  l*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**2\
+                                + j*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**1\
+                                + i*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**0
+                        # call PDEFlux2d(Q,f,g)
+                        l_sourceFile.write("  PDEFlux2d(&lqh["+str(lqh_base_addr)+"],"\
+                                                        "&lFh["+str(lFh_base_addr)+"],"\
+                                                        "&lFh["+str(lFh_base_addr+fluxOffset)+"]);\n")
+
 
         # Compute the "derivatives" (contributions of the stiffness matrix)
         # (1) rhs(:,:,j,k,l) = rhs0(:,:,j,k,l) - PRODUCT(aux(1:nDim))*dt/dx(1)*MATMUL( lFh(:,:,j,k,l,1), Kxi )
@@ -355,6 +391,9 @@ class SpaceTimePredictorGenerator:
         Backend.generateAssemblerCode("asm_"+l_filename, l_matmulList)
 
 
+        # close picard iterations loop
+        #l_sourceFile.write('  } // for iter\n')
+
         # write missing closing bracket
         l_sourceFile.write('}')
 
@@ -362,7 +401,10 @@ class SpaceTimePredictorGenerator:
 
 
     def __generateCauchyKovalewski(self):
-        pass
+        l_filename = "cauchyKovalewski.cpp"
+        l_sourceFile = open(l_filename, 'a')
+        # TODO
+        l_sourceFile.close()
 
 
     def __generatePredictor(self):
