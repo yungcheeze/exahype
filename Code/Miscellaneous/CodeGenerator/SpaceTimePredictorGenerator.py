@@ -346,6 +346,36 @@ class SpaceTimePredictorGenerator:
 
 
         # (3) rhs(:,i,j,:,l) = rhs(:,i,j,:,l) + PRODUCT(aux(1:nDim))*dt/dx(3)*MATMUL( lFh(:,i,j,:,l,3), Kxi )
+        l_matmul = MatmulConfig(    # M
+                                    self.m_config['nVar'],                             \
+                                    # N
+                                    self.m_config['nDof'],                             \
+                                    # K
+                                    self.m_config['nDof'],                             \
+                                    # LDA
+                                    Backend.getSizeWithPadding(self.m_config['nVar'])
+                                    * self.m_config['nDof']**2,     \
+                                    # LDB
+                                    Backend.getSizeWithPadding(self.m_config['nDof']), \
+                                    # LDC
+                                    self.m_config['nVar'] * self.m_config['nDof']**2,  \
+                                    # alpha
+                                    1,                                                 \
+                                    # beta
+                                    1,                                                 \
+                                    # alignment A
+                                    0,                                                 \
+                                    # alignment C
+                                    0,                                                 \
+                                    # name
+                                    "rhs_z",                                           \
+                                    # prefetching
+                                    "nopf",                                            \
+                                    # type
+                                    "gemm")
+        l_matmulList.append(l_matmul)
+
+
 
         # loop over time DOFs done
         # lqh(:,:,i,j,k) = MATMUL( rhs(:,i,j,k,:), TRANSPOSE(iK1) )
