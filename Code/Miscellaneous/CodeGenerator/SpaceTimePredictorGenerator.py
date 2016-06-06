@@ -300,7 +300,7 @@ class SpaceTimePredictorGenerator:
                                     "gemm")
         l_matmulList.append(l_matmul)
 
-        # write the function call to the driver file
+        # write the function calls to the driver file
         for i in range(0, self.m_config['nDof']**self.m_config['nDim']):
             l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::weights3["+str(i)+"]",
                                                    "kernels::Kxi",
@@ -342,7 +342,15 @@ class SpaceTimePredictorGenerator:
                                     "gemm")
         l_matmulList.append(l_matmul)
 
-
+        # write the function calls to the driver file
+        for i in range(0, self.m_config['nDof']**self.m_config['nDim']):
+            l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::weights3["+str(i)+"]",
+                                                   "kernels::Kxi",
+                                                   "s_m", self.m_config['nDof']*Backend.getSizeWithPadding(self.m_config['nDof'])))
+            l_sourceFile.write("  "+l_matmul.baseroutinename
+                                   +"(&lFh["+str(i*Backend.getSizeWithPadding(self.m_config['nVar']))+"]," \
+                                    " &kernels::s_m[0],"  \
+                                    " &rhs["+str(i*self.m_config['nVar'])+"]);\n\n")
 
 
         # (3) rhs(:,i,j,:,l) = rhs(:,i,j,:,l) + PRODUCT(aux(1:nDim))*dt/dx(3)*MATMUL( lFh(:,i,j,:,l,3), Kxi )
@@ -373,7 +381,8 @@ class SpaceTimePredictorGenerator:
                                     "nopf",                                            \
                                     # type
                                     "gemm")
-        l_matmulList.append(l_matmul)
+        if(self.m_config['nDim'] >= 3):
+            l_matmulList.append(l_matmul)
 
 
 
