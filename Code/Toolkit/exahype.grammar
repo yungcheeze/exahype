@@ -70,6 +70,7 @@ Tokens
 
   token_optimisation              = 'optimisation';
   token_fuse_algorithm_steps      = 'fuse-algorithmic-steps';
+  token_profile                   = 'profiling';
 
   
   token_on_off                    = 'on' | 'off';
@@ -169,8 +170,9 @@ Productions
    optimisation {->optimisation} = 
       [begin_token]:token_optimisation  
         token_fuse_algorithm_steps [token_fuse_algorithm_steps_equals]:token_equals [fuse_algorithm_steps]:token_on_off
+        token_profile [token_profile_equals]:token_equals [profile]:identifier
       token_end [end_token]:token_optimisation
-        { -> New optimisation(fuse_algorithm_steps) }
+        { -> New optimisation(fuse_algorithm_steps,profile) }
       ;
 
    plot_solution_list {->plot_solution*} = 
@@ -225,7 +227,7 @@ Abstract Syntax Tree
      ;
 
    optimisation = 
-     [fuse_algorithm_steps]:token_on_off;
+     [fuse_algorithm_steps]:token_on_off [profile]:identifier;
     
    solver = 
      {aderdg} [name]:identifier [unknowns]:int_number  [parameters]:int_number [order]:int_number [kernel]:typename [language]:identifier plot_solution*
