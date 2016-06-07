@@ -384,6 +384,16 @@ class SpaceTimePredictorGenerator:
         if(self.m_config['nDim'] >= 3):
             l_matmulList.append(l_matmul)
 
+            # write the function calls to the driver file
+            for i in range(0, self.m_config['nDof']**self.m_config['nDim']):
+                l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::weights3["+str(i)+"]",
+                                                       "kernels::Kxi",
+                                                       "s_m", self.m_config['nDof']*Backend.getSizeWithPadding(self.m_config['nDof'])))
+                l_sourceFile.write("  "+l_matmul.baseroutinename
+                                       +"(&lFh["+str(i*Backend.getSizeWithPadding(self.m_config['nVar']))+"]," \
+                                        " &kernels::s_m[0],"  \
+                                        " &rhs["+str(i*self.m_config['nVar'])+"]);\n\n")
+
 
 
         # loop over time DOFs done
