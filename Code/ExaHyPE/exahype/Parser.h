@@ -5,10 +5,10 @@ namespace exahype {
 class Parser;
 }
 
-#include <vector>
-#include "tarch/logging/Log.h"
-#include "tarch/la/Vector.h"
 #include "peano/utils/Globals.h"
+#include "tarch/la/Vector.h"
+#include "tarch/logging/Log.h"
+#include <vector>
 
 /**
  * ExaHyPE command line parser
@@ -33,6 +33,13 @@ class exahype::Parser {
                             int additionalTokensToSkip = 0) const;
 
  public:
+  Parser() {}
+  virtual ~Parser() {}
+
+  // Disallow copy and assignment
+  Parser(const Parser& other) = delete;
+  Parser& operator=(const Parser& other) = delete;
+
   enum MulticoreOracleType {
     Dummy,
     Autotuning,

@@ -30,7 +30,7 @@ class exahype::runners::Runner {
  private:
   static tarch::logging::Log _log;
 
-  const exahype::Parser _parser;
+  const exahype::Parser& _parser;
 
   /**
    * Setup the oracles for the shared memory parallelisation. Different
