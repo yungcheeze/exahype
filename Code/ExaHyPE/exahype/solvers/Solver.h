@@ -143,6 +143,10 @@ class exahype::solvers::Solver {
 
   virtual ~Solver() {}
 
+  // Disallow copy and assignment
+  Solver(const Solver& other) = delete;
+  Solver& operator=(const Solver& other) = delete;
+
   /**
    * Identify minimal mesh width at a certain point in the domain. This
    * minimal mesh width is used both as a constraint on the AMR as well

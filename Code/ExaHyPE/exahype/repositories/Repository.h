@@ -24,7 +24,12 @@ class Repository;
  */
 class exahype::repositories::Repository {
  public:
+  Repository() {}
   virtual ~Repository() {}
+
+  // Disallow copy and assignment
+  Repository(const Repository& other) = delete;
+  Repository& operator=(const Repository& other) = delete;
 
   /**
    * Iterate with current active event handle.

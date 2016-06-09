@@ -100,8 +100,12 @@ class exahype::runners::Runner {
       exahype::repositories::Repository& repository, bool plot);
 
  public:
-  Runner(const Parser& parser);
+  explicit Runner(const Parser& parser);
   virtual ~Runner();
+
+  // Disallow copy and assignment
+  Runner(const Runner& other) = delete;
+  Runner& operator=(const Runner& other) = delete;
 
   /**
    * Run

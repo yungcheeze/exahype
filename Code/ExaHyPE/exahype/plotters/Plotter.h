@@ -47,6 +47,10 @@ class exahype::plotters::Plotter {
  public:
   Plotter(int solver, int plotterCount, const exahype::Parser& parser);
 
+  // Disallow copy and assignment
+  Plotter(const Plotter& other) = delete;
+  Plotter& operator=(const Plotter& other) = delete;
+
   /**
    * Checks whether there should be a plotter according to this class.
    * If it should become open, it is opened
