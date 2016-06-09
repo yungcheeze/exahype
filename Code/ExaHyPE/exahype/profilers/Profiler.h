@@ -11,12 +11,7 @@ class Profiler {
  public:
   Profiler() {}
 
-  virtual ~Profiler() {
-    // TODO(guera): Remove this
-    // TODO(guera): I'm not sure if it is a good idea to (indirectly) call
-    // virtual functions inside the destructor.
-    writeToCout();
-  }
+  virtual ~Profiler() {}
 
   // Disallow copy and assignment
   Profiler(const Profiler& other) = delete;

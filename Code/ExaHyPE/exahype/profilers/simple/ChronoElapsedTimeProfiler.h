@@ -17,7 +17,7 @@ class ChronoElapsedTimeProfiler : public Profiler {
  public:
   ChronoElapsedTimeProfiler() {}
 
-  virtual ~ChronoElapsedTimeProfiler() {}
+  virtual ~ChronoElapsedTimeProfiler() { writeToCout(); }
 
   void setNumberOfTags(int n) override;
   void registerTag(const std::string& tag) override;

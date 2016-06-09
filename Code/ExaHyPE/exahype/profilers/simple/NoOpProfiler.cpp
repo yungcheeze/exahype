@@ -10,6 +10,4 @@ void exahype::profilers::simple::NoOpProfiler::start(const std::string& tag) {}
 void exahype::profilers::simple::NoOpProfiler::stop(const std::string& tag) {}
 
 void exahype::profilers::simple::NoOpProfiler::writeToOstream(
-    std::ostream* os) const {
-  *os << "NoOpProfiler" << std::endl;
-}
+    std::ostream* os) const {}

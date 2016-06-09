@@ -14,7 +14,7 @@ class NoOpProfiler : public Profiler {
  public:
   NoOpProfiler() {}
 
-  virtual ~NoOpProfiler() {}
+  virtual ~NoOpProfiler() { writeToCout(); }
 
   void setNumberOfTags(int n) override;
   void registerTag(const std::string& tag) override;
