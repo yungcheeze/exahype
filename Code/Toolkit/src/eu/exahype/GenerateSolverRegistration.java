@@ -97,9 +97,9 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write("\n");
       _methodBodyWriter.write(
           "  std::set<int> orders;\n"+
-          "  for (std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin(); p != exahype::solvers::RegisteredSolvers.end(); p++) {\n" +          
-          "    orders.insert((*p)->getNodesPerCoordinateAxis()-1);\n" +
-          "  }\n" +
+          "  for (const auto p : exahype::solvers::RegisteredSolvers) {\n"+          
+          "    orders.insert((*p)->getNodesPerCoordinateAxis()-1);\n"+
+          "  }\n"+
           "  kernels::initGaussLegendreNodesAndWeights(orders);\n"+
           "  kernels::initDGMatrices(orders);\n");
       _methodBodyWriter.write("}\n"); // close initSolvers(...)
@@ -108,11 +108,19 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write("void kernels::finalise() {\n");
       _methodBodyWriter.write(
           "  std::set<int> orders;\n"+
-          "  for (std::vector<exahype::solvers::Solver*>::const_iterator p = exahype::solvers::RegisteredSolvers.begin(); p != exahype::solvers::RegisteredSolvers.end(); p++) {\n" +          
+          "  for (const auto p : exahype::solvers::RegisteredSolvers) {\n" +          
           "    orders.insert((*p)->getNodesPerCoordinateAxis()-1);\n" +
           "  }\n" +
           "  kernels::freeGaussLegendreNodesAndWeights(orders);\n"+
-          "  kernels::freeDGMatrices(orders);\n");
+          "  kernels::freeDGMatrices(orders);\n\n"+
+          "  for (auto solver : exahype::solvers::RegisteredSolvers) {\n"+
+          "    delete solver;\n"+
+          "  }\n"+
+          "  exahype::solvers::RegisteredSolvers.clear();\n\n"+
+          "  for (auto plotter : exahype::plotters::RegisteredPlotters) {\n"+
+          "    delete plotter;\n"+
+          "  }\n"+
+          "  exahype::plotters::RegisteredPlotters.clear();\n");
       _methodBodyWriter.write("}\n");
       _writer.write("\n");
       _writer.write("\n");

@@ -34,9 +34,10 @@ class Solver;
  * All the registered solvers. Has to be declared extern in C++ standard as
  * it is instantiated in the corresponding cpp file.
  */
+// TODO: std::vector<std::unique_ptr<Solver>> ?!
 extern std::vector<Solver*> RegisteredSolvers;
-}
-}
+}  // namespace solvers
+}  // namespace exahype
 
 /**
  * Describes one solver.
