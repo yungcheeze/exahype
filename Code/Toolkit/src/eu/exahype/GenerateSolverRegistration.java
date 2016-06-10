@@ -98,7 +98,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write(
           "  std::set<int> orders;\n"+
           "  for (const auto p : exahype::solvers::RegisteredSolvers) {\n"+          
-          "    orders.insert((*p)->getNodesPerCoordinateAxis()-1);\n"+
+          "    orders.insert(p->getNodesPerCoordinateAxis()-1);\n"+
           "  }\n"+
           "  kernels::initGaussLegendreNodesAndWeights(orders);\n"+
           "  kernels::initDGMatrices(orders);\n");
@@ -109,7 +109,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write(
           "  std::set<int> orders;\n"+
           "  for (const auto p : exahype::solvers::RegisteredSolvers) {\n" +          
-          "    orders.insert((*p)->getNodesPerCoordinateAxis()-1);\n" +
+          "    orders.insert(p->getNodesPerCoordinateAxis()-1);\n" +
           "  }\n" +
           "  kernels::freeGaussLegendreNodesAndWeights(orders);\n"+
           "  kernels::freeDGMatrices(orders);\n\n"+
