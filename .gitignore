@@ -1,3 +1,16 @@
+# Generated code by ExaHyPE
+*_generated.cpp
+cfiles.mk
+buildinfo.h
+
+# Any kind of log files created by some editors
+# (swap files or temporary files)
+*~
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+
+# Python compiled files
+*.pyc
 
 # Compiled Object files
 *.slo
