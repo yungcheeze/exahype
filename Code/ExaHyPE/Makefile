@@ -34,22 +34,22 @@ ifeq ($(ARCHITECTURE),Phi)
 		ifeq ($(MODE),Debug)
 			# Settings for the Intel Compiler (Debug Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DDebug -mmic -DAsserts -O0 -fstrict-aliasing -restrict -std=c++14
+			COMPILER_CFLAGS=-DDebug -mmic -DAsserts -O0 -fstrict-aliasing -restrict -std=c++0x
 			COMPILER_LFLAGS=-mmic
 		else ifeq ($(MODE),Profile)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -mmic -std=c++14
+			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -mmic -std=c++0x
 			COMPILER_LFLAGS=-p -pg -mmic
 		else ifeq ($(MODE),Asserts)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DAsserts -fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -mmic -std=c++14
+			COMPILER_CFLAGS=-DAsserts -fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -mmic -std=c++0x
 			COMPILER_LFLAGS=-mmic -lrt
 		else
 			# Settings for the Intel Compiler (Release Mode)
 			# ----------------------------------------------
-			COMPILER_CFLAGS=-fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -mmic -std=c++14
+			COMPILER_CFLAGS=-fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -mmic -std=c++0x
 			COMPILER_LFLAGS=-mmic -lrt
 		endif
 else
@@ -61,26 +61,26 @@ else
 		ifeq ($(MODE),Debug)
 			# Settings for the GNU Compiler (Debug Mode)
 			# ------------------------------------------
-			COMPILER_CFLAGS=-DDebug -DAsserts -O0 -pedantic -Wall -Wstrict-aliasing -fstrict-aliasing -ggdb -std=c++14 \
+			COMPILER_CFLAGS=-DDebug -DAsserts -O0 -pedantic -Wall -Wstrict-aliasing -fstrict-aliasing -ggdb -std=c++0x \
 											-Drestrict=__restrict__ -D__assume_aligned=__builtin_assume_aligned -pipe
 			COMPILER_LFLAGS=
 		else ifeq ($(MODE),Asserts)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DAsserts -p -pg -O3 -pedantic -Wall -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++14 -march=native -pipe \
+			COMPILER_CFLAGS=-DAsserts -p -pg -O3 -pedantic -Wall -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x -march=native -pipe \
 											-Drestrict=__restrict__ -D__assume_aligned=__builtin_assume_aligned
 			COMPILER_LFLAGS=-p -pg
 		else ifeq ($(MODE),Profile)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -O3 -pedantic -Wall -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++14 -march=native -pipe \
+			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -O3 -pedantic -Wall -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x -march=native -pipe \
 																	-Drestrict=__restrict__ -D__assume_aligned=__builtin_assume_aligned 
 			COMPILER_LFLAGS=-p -pg
 
 		else
 			# Settings for the GNU Compiler (Release Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-O3 -pedantic -pedantic-errors -Wall -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++14 -march=native -pipe \
+			COMPILER_CFLAGS=-O3 -pedantic -pedantic-errors -Wall -fstrict-aliasing -fno-rtti -fno-exceptions -std=c++0x -march=native -pipe \
 											-Drestrict=__restrict__ -D__assume_aligned=__builtin_assume_aligned 
 			COMPILER_LFLAGS=
 		endif
@@ -92,22 +92,22 @@ else
 		ifeq ($(MODE),Debug)
 			# Settings for the Intel Compiler (Debug Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DDebug -DAsserts -O0 -fstrict-aliasing -restrict -std=c++14
+			COMPILER_CFLAGS=-DDebug -DAsserts -O0 -fstrict-aliasing -restrict -std=c++0x
 			COMPILER_LFLAGS=
 		else ifeq ($(MODE),Profile)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -xHost -std=c++14
+			COMPILER_CFLAGS=-DPerformanceAnalysis -p -pg -fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -xHost -std=c++0x
 			COMPILER_LFLAGS=-p -pg
 		else ifeq ($(MODE),Asserts)
 			# Settings for the GNU Compiler (Profile Mode)
 			# --------------------------------------------
-			COMPILER_CFLAGS=-DAsserts -fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -xHost -std=c++14
+			COMPILER_CFLAGS=-DAsserts -fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -xHost -std=c++0x
 			COMPILER_LFLAGS=
 		else
 			# Settings for the Intel Compiler (Release Mode)
 			# ----------------------------------------------
-			COMPILER_CFLAGS=-fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -xHost -std=c++14
+			COMPILER_CFLAGS=-fast -fstrict-aliasing -restrict -fno-rtti -no-ipo -ip -xHost -std=c++0x
 			COMPILER_LFLAGS=
 		endif
 	endif
