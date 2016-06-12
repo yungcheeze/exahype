@@ -15,12 +15,14 @@ const std::unordered_map<
     map = {
         {"NoOpProfiler",
          [](const std::vector<std::string>& modules) {
-           return std::make_unique<exahype::profilers::simple::NoOpProfiler>();
+           return std::unique_ptr<exahype::profilers::simple::NoOpProfiler>(
+               new exahype::profilers::simple::NoOpProfiler());
          }},
         {"ChronoElapsedTimeProfiler",
          [](const std::vector<std::string>& modules) {
-           return std::make_unique<
-               exahype::profilers::simple::ChronoElapsedTimeProfiler>();
+           return std::unique_ptr<
+               exahype::profilers::simple::ChronoElapsedTimeProfiler>(
+               new exahype::profilers::simple::ChronoElapsedTimeProfiler());
          }},
 };
 
