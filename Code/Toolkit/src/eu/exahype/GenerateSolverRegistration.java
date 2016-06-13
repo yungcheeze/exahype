@@ -39,14 +39,16 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("// \n");
       _writer.write("// ========================\n");
       _writer.write("//   www.exahype.eu\n");
-      _writer.write("// ========================\n\n\n");
+      _writer.write("// ========================\n\n");
+      _writer.write("#include <sstream>\n\n");
 
-      _writer.write("#include \"kernels/KernelCalls.h\"\n");
       _writer.write("#include \"exahype/plotters/Plotter.h\"\n");
       _writer.write("#include \"exahype/profilers/ProfilerFactory.h\"\n");
-      _writer.write("#include \"exahype/solvers/Solver.h\"\n\n");
+      _writer.write("#include \"exahype/solvers/Solver.h\"\n");
+      _writer.write("#include \"kernels/KernelCalls.h\"\n\n");
+
       _writer.write("#include \"kernels/GaussLegendreQuadrature.h\"\n");
-      _writer.write("#include \"kernels/DGMatrices.h\"\n\n\n");
+      _writer.write("#include \"kernels/DGMatrices.h\"\n\n");
 
       _methodBodyWriter.write("void kernels::initSolvers(const exahype::Parser& parser) {\n");
       if (node.getSolver().size() == 0) {
@@ -65,10 +67,36 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _writer.write("#include \"" + solverName + ".h\"\n");
 
-      _methodBodyWriter.write("  auto profiler = exahype::profilers::ProfilerFactory::getInstance().create(\n"+
-                              "      \"NoOpProfiler\", {});\n");
-      _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName
-          + "::" + solverName + "(" + _kernelNumber + ", std::move(profiler)) ); \n");
+      _methodBodyWriter.write("  std::string parser_identifier = parser.getProfilerIdentifier();\n");
+      _methodBodyWriter.write("  std::string metrics_identifier_list = parser.getMetricsIdentifierList();\n\n");
+
+      _methodBodyWriter.write(
+    		  "  assertion1(metrics_identifier_list.find_first_of(\"{\") == 0,\n"+
+    		  "           metrics_identifier_list);\n");
+
+      _methodBodyWriter.write(
+    		  "  assertion1(metrics_identifier_list.find_last_of(\"}\") ==\n"+
+    	      "                 metrics_identifier_list.size() - 1,\n"+
+    		  "             metrics_identifier_list);\n\n");
+
+      _methodBodyWriter.write("  // Split \"{metric1,metric2...}\" into {\"metric1\", \"metric2\", ...}\n");
+      _methodBodyWriter.write("  std::vector<std::string> metrics_vector;\n");
+      _methodBodyWriter.write("  std::stringstream ss;\n");
+      _methodBodyWriter.write("  ss << metrics_identifier_list.substr(1, metrics_identifier_list.size() - 2);\n");
+      _methodBodyWriter.write("  std::string metric;\n");
+      _methodBodyWriter.write(
+          "  while (std::getline(ss, metric, ',')) {\n"+
+          "    metrics_vector.emplace_back(std::move(metric));\n"+
+          "  }\n\n");
+
+      _methodBodyWriter.write("  // Create profiler\n");
+      _methodBodyWriter.write(
+    		  "  auto profiler = exahype::profilers::ProfilerFactory::getInstance().create(\n"+
+    		  "    parser_identifier, metrics_vector);\n\n");
+
+      _methodBodyWriter.write("  // Create and register solver\n");
+      _methodBodyWriter.write("exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
+    		                  "::" + solverName + "(" + _kernelNumber + ", std::move(profiler)));\n\n");
 
       _kernelNumber++;
       _plotterNumber = 0;
@@ -85,7 +113,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     try {
       _methodBodyWriter.write(
           "  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter("
-              + (_kernelNumber - 1) + "," + _plotterNumber + ",parser)); \n");
+              + (_kernelNumber - 1) + "," + _plotterNumber + ",parser));\n\n");
       _plotterNumber++;
       System.out.println("added plotter ... ok");
     } catch (Exception exc) {
@@ -100,7 +128,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write("\n");
       _methodBodyWriter.write(
           "  std::set<int> orders;\n"+
-          "  for (const auto p : exahype::solvers::RegisteredSolvers) {\n"+          
+          "  for (const auto p : exahype::solvers::RegisteredSolvers) {\n"+
           "    orders.insert(p->getNodesPerCoordinateAxis()-1);\n"+
           "  }\n"+
           "  kernels::initGaussLegendreNodesAndWeights(orders);\n"+
@@ -111,7 +139,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write("void kernels::finalise() {\n");
       _methodBodyWriter.write(
           "  std::set<int> orders;\n"+
-          "  for (const auto p : exahype::solvers::RegisteredSolvers) {\n" +          
+          "  for (const auto p : exahype::solvers::RegisteredSolvers) {\n" +
           "    orders.insert(p->getNodesPerCoordinateAxis()-1);\n" +
           "  }\n" +
           "  kernels::freeGaussLegendreNodesAndWeights(orders);\n"+
