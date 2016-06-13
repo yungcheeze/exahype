@@ -19,6 +19,10 @@ Helpers
 
     filename_element     =  digit | nondigit | '-' | '/' | dot;
 
+    identifier           = nondigit ( digit | nondigit ) *;
+    identifier_list_tail = ',' identifier;
+    identifier_list      = '{' identifier? identifier_list_tail* '}';
+
     cr                   =   13;
     lf                   =   10;
     tab                  =   9;
@@ -70,7 +74,8 @@ Tokens
 
   token_optimisation              = 'optimisation';
   token_fuse_algorithm_steps      = 'fuse-algorithmic-steps';
-  token_profiler                   = 'profiling';
+  token_profiler                  = 'profiler';
+  token_metrics                   = 'metrics';
 
 
   token_on_off                    = 'on' | 'off';
@@ -79,7 +84,8 @@ Tokens
   token_comma                 = ',';
 
   blank                       = ( cr | lf | tab | ' ' ) +;
-  identifier                  = nondigit ( digit | nondigit ) *;
+  identifier                  = identifier;
+  identifier_list             = identifier_list;
   typename                    = nondigit ( digit | nondigit | '::' ) *;
 
   int_number                  = digit+;
@@ -171,8 +177,9 @@ Productions
       [begin_token]:token_optimisation
         token_fuse_algorithm_steps [token_fuse_algorithm_steps_equals]:token_equals [fuse_algorithm_steps]:token_on_off
         token_profiler [token_profiler_equals]:token_equals [profile]:identifier
+        token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
       token_end [end_token]:token_optimisation
-        { -> New optimisation(fuse_algorithm_steps,profile) }
+        { -> New optimisation(fuse_algorithm_steps,profile,metrics) }
       ;
 
    plot_solution_list {->plot_solution*} =
@@ -227,7 +234,7 @@ Abstract Syntax Tree
      ;
 
    optimisation =
-     [fuse_algorithm_steps]:token_on_off [profile]:identifier;
+     [fuse_algorithm_steps]:token_on_off [profile]:identifier [metrics]:identifier_list;
 
    solver =
      {aderdg} [name]:identifier [unknowns]:int_number  [parameters]:int_number [order]:int_number [kernel]:typename [language]:identifier plot_solution*
