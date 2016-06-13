@@ -1,3 +1,15 @@
+#!/bin/env python
+##
+#
+#
+#--------------------------------------------------------------
+# Generates the code for the quadrature weights
+# for a specific configuration
+#--------------------------------------------------------------
+#
+# TODO
+# remove gaussLegendreWeights***
+
 import numpy as np
 import Backend
 import re
@@ -24,7 +36,6 @@ class WeightsGenerator:
         self.m_order     = i_config['nDof']-1
         self.m_nDim      = i_config['nDim']
 
-
         # compute the Gauss-Legendre weights
         _, w = np.polynomial.legendre.leggauss(self.m_order+1)
         # map onto [0,1]
@@ -37,18 +48,30 @@ class WeightsGenerator:
         self.__writeToFile()
 
 
-
     def __generateWeightsCombinations(self):
-        # We need two kinds of combinations
-        # (a) aux    = (/ 1.0, wGPN(j), wGPN(k) /)
+        # We need three kinds of combinations
+        # (a) weight = wGPN
+        #     suffix :=1
+        # (b) aux    = (/ 1.0, wGPN(j), wGPN(k) /)
         #     weight = PRODUCT(aux(1:nDim))
         #     suffix := 2
-        # (b) aux    = (/ wGPN(i), wGPN(j), wGPN(k) /)
+        # (c) aux    = (/ wGPN(i), wGPN(j), wGPN(k) /)
         #     weight = PRODUCT(aux(1:nDim))
         #     suffix := 3
 
+
+        # case (1)
+        # in any case (2D/3D) we need the ordinary Gauss-Legendre weights
+        # in contrast to the generic version, guarantee alignment and pad
+        # weight := [wGPN + Pad]
+        l_sizeWithoutPadding = np.size(self.m_wGPN)
+        l_padWidth           = Backend.getPadWidth(l_sizeWithoutPadding)
+        l_weightsVector      = np.pad(self.m_wGPN, (0.0, l_padWidth), mode='constant')
+        self.m_vectors['weights1'] = l_weightsVector
+
+
         if(self.m_nDim == 2):
-            # case (a)
+            # case (b)
             # weightsVector is wGPN itself
             # pad weights vector with zeros
             l_sizeWithoutPadding = np.size(self.m_wGPN) 
@@ -56,9 +79,8 @@ class WeightsGenerator:
             l_weightsVector      = np.pad(self.m_wGPN, (0.0, l_padWidth), mode='constant')
 
             self.m_vectors['weights2'] = l_weightsVector
-            #self.__writeToFile(l_weightsVector, 2)
 
-            # case (b)
+            # case (c)
             # all combinations of two weights, written as an 1D array
             l_weightsVector = np.outer(self.m_wGPN, self.m_wGPN).flatten('F')
 
@@ -68,10 +90,9 @@ class WeightsGenerator:
             l_weightsVector      = np.pad(l_weightsVector, (0.0, l_padWidth), mode='constant')
 
             self.m_vectors['weights3'] = l_weightsVector
-            #self.__writeToFile(l_weightsVector, 3)
 
         elif(self.m_nDim == 3):
-            # case (a)
+            # case (b)
             # all combinations of two weights, written as an 1D array
             l_weightsVector = np.outer(self.m_wGPN, self.m_wGPN).flatten('F')
 
@@ -81,9 +102,8 @@ class WeightsGenerator:
             l_weightsVector      = np.pad(l_weightsVector, (0.0, l_padWidth), mode='constant')
 
             self.m_vectors['weights2'] = l_weightsVector
-            #self.__writeToFile(l_weightsVector, 2)
 
-            # case (b)
+            # case (c)
             # all combination of three weights, written as an 1D array
             l_weightsVector = np.kron(np.outer(self.m_wGPN, self.m_wGPN), self.m_wGPN).flatten('F')
 
@@ -93,7 +113,6 @@ class WeightsGenerator:
             l_weightsVector      = np.pad(l_weightsVector, (0.0, l_padWidth), mode='constant')
 
             self.m_vectors['weights3'] = l_weightsVector
-            #self.__writeToFile(l_weightsVector, 3)
 
         else:
             print("WeightsGenerator.__generateWeightsCombinations(): nDim not supported")
@@ -112,6 +131,7 @@ class WeightsGenerator:
                            'void freeGaussLegendreNodesAndWeights(const std::set<int>& orders);\n\n' \
                            'extern double **gaussLegendreNodes;\n'                                   \
                            'extern double **gaussLegendreWeights;\n'                                 \
+                           'extern double *weights1;\n'                                              \
                            'extern double *weights2;\n'                                              \
                            'extern double *weights3;\n}\n')
         # close include guard
@@ -123,8 +143,9 @@ class WeightsGenerator:
         l_sourceFile = open(self.m_sourceName, 'a')
         l_sourceFile.write('#include "kernels/'+self.m_headerName+'"\n' \
                            '#include <mm_malloc.h> //g++\n\n')
-        l_sourceFile.write('double** kernels::gaussLegendreWeights;\n' \
+        l_sourceFile.write('double** kernels::gaussLegendreWeights;\n'  \
                            'double** kernels::gaussLegendreNodes;\n'    \
+                           'double* kernels::weights1;\n'               \
                            'double* kernels::weights2;\n'               \
                            'double* kernels::weights3;\n\n')
 
