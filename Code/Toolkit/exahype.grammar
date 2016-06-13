@@ -16,17 +16,17 @@ Helpers
     nonzero_digit       =   [ '1' .. '9' ];
     not_star            =   [ all - '*' ];
     not_star_not_slash  =   [ not_star - '/' ];
-    
+
     filename_element =  digit | nondigit | '-' | '/' | dot;
 
-    cr                  =   13;   
+    cr                  =   13;
     lf                  =   10;
-    tab                 =   9;  
-    line_terminator     = lf | cr | cr lf; 
+    tab                 =   9;
+    line_terminator     = lf | cr | cr lf;
     not_line_terminator = [[all - cr] - lf];
-    
-    
-Tokens 
+
+
+Tokens
   token_end                   = 'end';
 
   token_project                   = 'exahype-project';
@@ -60,7 +60,7 @@ Tokens
   token_time                      = 'time';
   token_repeat                    = 'repeat';
   token_filename                  = 'filename';
-  
+
   token_shared_memory             = 'shared-memory';
   token_cores                     = 'cores';
   token_properties_file           = 'properties-file';
@@ -72,12 +72,12 @@ Tokens
   token_fuse_algorithm_steps      = 'fuse-algorithmic-steps';
   token_profile                   = 'profiling';
 
-  
+
   token_on_off                    = 'on' | 'off';
-  
+
   token_equals                = '=';
   token_comma                 = ',';
-    
+
   blank                       = ( cr | lf | tab | ' ' ) +;
   identifier                  = nondigit ( digit | nondigit ) *;
   typename                    = nondigit ( digit | nondigit | '::' ) *;
@@ -86,13 +86,13 @@ Tokens
   float_number                = (digit+ | digit+ '.' digit+);
 
   filename                    = '/' ? (filename_element + '/') * filename_element +;
-  
+
   traditional_comment         = '/*' not_star+ '*'+ (not_star_not_slash not_star* '*'+)* '/';
   documentation_comment       = '/**' '*'* (not_star_not_slash not_star* '*'+)* '/';
 
 
 Ignored Tokens
-  
+
   traditional_comment,
   documentation_comment,
   blank;
@@ -100,9 +100,9 @@ Ignored Tokens
 
 
 Productions
-  
-  project {->project} = 
-      [begin_token]:token_project [name]:identifier 
+
+  project {->project} =
+      [begin_token]:token_project [name]:identifier
         paths
         token_architecture token_equals [architecture]:identifier
         computational_domain
@@ -112,44 +112,44 @@ Productions
         optimisation?
       token_end [end_token]:token_project
         { -> New project( name, paths.paths, architecture, computational_domain.computational_domain, [solver_list.solver], shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation ) }
-    ;    
+    ;
 
   paths {->paths} =
      {without_libxsmm}
-        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
-        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
+        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename
+        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename
         token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename
-        token_sharedmemoryoracles_path   [sharedmemoryoracles_path_equals]:token_equals         [sharedmemoryoracles_path]:filename  
+        token_sharedmemoryoracles_path   [sharedmemoryoracles_path_equals]:token_equals         [sharedmemoryoracles_path]:filename
         token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
         token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
      { -> New paths(peano_path, tarch_path, multiscalelinkedcell_path, sharedmemoryoracles_path, exahype_path, Null, output_directory) }
      |
      {with_libxsmm}
-        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename  
-        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename  
+        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename
+        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename
         token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename
-        token_sharedmemoryoracles_path   [sharedmemoryoracles_path_equals]:token_equals         [sharedmemoryoracles_path]:filename  
+        token_sharedmemoryoracles_path   [sharedmemoryoracles_path_equals]:token_equals         [sharedmemoryoracles_path]:filename
         token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
-        token_libxsmm_path               [libxsmm_path_equals]:token_equals                     [libxsmm_path]:filename  
+        token_libxsmm_path               [libxsmm_path_equals]:token_equals                     [libxsmm_path]:filename
         token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
      { -> New paths(peano_path, tarch_path, multiscalelinkedcell_path, sharedmemoryoracles_path, exahype_path, libxsmm_path, output_directory) }
     ;
-    
+
   distributed_memory {->distributed_memory} =
     [begin_token]:token_distributed_memory
       token_identifier [identifier_equals]:token_equals [identifier]:identifier
     token_end [end_token]:token_distributed_memory
       { -> New distributed_memory( identifier ) };
-    
+
   shared_memory {->shared_memory} =
     [begin_token]:token_shared_memory
       token_identifier [identifier_equals]:token_equals [identifier]:identifier
-      token_cores [cores_equals]:token_equals [cores]:int_number 
+      token_cores [cores_equals]:token_equals [cores]:int_number
       token_properties_file [properties_equals]:token_equals [properties_file]:filename
     token_end [end_token]:token_shared_memory
       { -> New shared_memory( identifier,cores,properties_file ) };
 
-  computational_domain {->computational_domain} = 
+  computational_domain {->computational_domain} =
      {two_dimensional}
       [begin_token]:token_computational_domain
        token_dimension  [dimension_equals]:token_equals    [dimension]:int_number
@@ -162,31 +162,31 @@ Productions
       [begin_token]:token_computational_domain
        token_dimension  [dimension_equals]:token_equals    [dimension]:int_number
        token_width      [width_equals]:token_equals        [width]:float_number
-       token_offset     [offset_equals]:token_equals       [offset_x]:float_number [comma_xy]:token_comma [offset_y]:float_number [comma_yz]:token_comma [offset_z]:float_number 
+       token_offset     [offset_equals]:token_equals       [offset_x]:float_number [comma_xy]:token_comma [offset_y]:float_number [comma_yz]:token_comma [offset_z]:float_number
        token_end_time   [end_time_equals]:token_equals     [end_time]:float_number
       token_end [end_token]:token_computational_domain
        { -> New computational_domain.three_dimensional( dimension, width,offset_x,offset_y,offset_z,end_time ) };
 
-   optimisation {->optimisation} = 
-      [begin_token]:token_optimisation  
+   optimisation {->optimisation} =
+      [begin_token]:token_optimisation
         token_fuse_algorithm_steps [token_fuse_algorithm_steps_equals]:token_equals [fuse_algorithm_steps]:token_on_off
         token_profile [token_profile_equals]:token_equals [profile]:identifier
       token_end [end_token]:token_optimisation
         { -> New optimisation(fuse_algorithm_steps,profile) }
       ;
 
-   plot_solution_list {->plot_solution*} = 
-     [begin_token]:token_plot [plotter_type]:typename 
-       token_time      [time_equals]:token_equals     [time]:float_number 
-       token_repeat    [repeat_equals]:token_equals   [repeat]:float_number 
+   plot_solution_list {->plot_solution*} =
+     [begin_token]:token_plot [plotter_type]:typename
+       token_time      [time_equals]:token_equals     [time]:float_number
+       token_repeat    [repeat_equals]:token_equals   [repeat]:float_number
        token_filename  [filename_equals]:token_equals filename
      token_end [end_token]:token_plot
      plot_solution_list?
        { -> [New plot_solution(plotter_type,time,repeat,filename),plot_solution_list.plot_solution] }
      ;
-     
-   solver_list {->solver*} = 
-     {aderdg} 
+
+   solver_list {->solver*} =
+     {aderdg}
        [begin_token]:token_solver token_aderdg [name]:identifier
          token_unknowns    [unknowns_equals]:token_equals   [unknowns]:int_number
          token_parameters  [parameters_equals]:token_equals [parameters]:int_number
@@ -201,8 +201,8 @@ Productions
 
 
 Abstract Syntax Tree
-   project = 
-     [name]:identifier 
+   project =
+     [name]:identifier
      paths
      [architecture]:identifier
      computational_domain
@@ -211,28 +211,28 @@ Abstract Syntax Tree
      distributed_memory?
      optimisation?
      ;
-  
-   paths = 
+
+   paths =
      [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [sharedmemoryoracles_path]:filename [exahype_path]:filename [libxsmm_path]:filename? [output_directory]:filename;
-    
-   shared_memory = 
+
+   shared_memory =
      [identifier]:identifier [cores]:int_number [properties_file]:filename;
-     
+
    distributed_memory =
      [identifier]:identifier;
 
-   computational_domain = 
+   computational_domain =
      {two_dimensional}   [dimension]:int_number [width]:float_number [offset_x]:float_number [offset_y]:float_number [end_time]:float_number |
      {three_dimensional} [dimension]:int_number [width]:float_number [offset_x]:float_number [offset_y]:float_number [offset_z]:float_number [end_time]:float_number
      ;
 
-   optimisation = 
+   optimisation =
      [fuse_algorithm_steps]:token_on_off [profile]:identifier;
-    
-   solver = 
+
+   solver =
      {aderdg} [name]:identifier [unknowns]:int_number  [parameters]:int_number [order]:int_number [kernel]:typename [language]:identifier plot_solution*
      ;
 
-   plot_solution = 
-     [plotter_type]:typename [time]:float_number [repeat]:float_number [filename]:filename; 
-     
+   plot_solution =
+     [plotter_type]:typename [time]:float_number [repeat]:float_number [filename]:filename;
+
