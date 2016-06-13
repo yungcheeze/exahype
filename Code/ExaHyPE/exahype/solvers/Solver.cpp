@@ -6,7 +6,8 @@ std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
 exahype::solvers::Solver::Solver(const std::string& identifier, Type type,
                                  int kernelNumber, int numberOfVariables,
                                  int nodesPerCoordinateAxis,
-                                 TimeStepping timeStepping)
+                                 TimeStepping timeStepping,
+                                 std::unique_ptr<profilers::Profiler> profiler)
     : _identifier(identifier),
       _type(type),
       _kernelNumber(kernelNumber),
@@ -22,6 +23,7 @@ exahype::solvers::Solver::Solver(const std::string& identifier, Type type,
                                 power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
       _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell * DIMENSIONS),
       _timeStepping(timeStepping),
+      _profiler(std::move(profiler)),
       _minCorrectorTimeStamp(std::numeric_limits<double>::max()),
       _minPredictorTimeStamp(std::numeric_limits<double>::max()),
       _minCorrectorTimeStepSize(std::numeric_limits<double>::max()),

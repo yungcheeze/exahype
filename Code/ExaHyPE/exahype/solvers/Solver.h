@@ -3,6 +3,7 @@
 #ifndef _EXAHYPE_SOLVERS_SOLVER_H_
 #define _EXAHYPE_SOLVERS_SOLVER_H_
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -10,6 +11,8 @@
 
 #include "tarch/la/Vector.h"
 
+#include "exahype/profilers/Profiler.h"
+#include "exahype/profilers/simple/NoOpProfiler.h"
 #include "exahype/records/ADERDGCellDescription.h"
 
 #define EXAHYPE_FACE_LEFT 0
@@ -104,6 +107,8 @@ class exahype::solvers::Solver {
 
   const TimeStepping _timeStepping;
 
+  std::unique_ptr<profilers::Profiler> _profiler;
+
   // @ŧodo 16/02/16:Dominic Etienne Charrier
   // Global time stepping will require min values
   // of step sizes
@@ -139,7 +144,10 @@ class exahype::solvers::Solver {
  public:
   Solver(const std::string& identifier, Type type, int kernelNumber,
          int numberOfVariables, int nodesPerCoordinateAxis,
-         TimeStepping timeStepping);
+         TimeStepping timeStepping,
+         std::unique_ptr<profilers::Profiler> profiler =
+             std::unique_ptr<profilers::Profiler>(
+                 new profilers::simple::NoOpProfiler));
 
   virtual ~Solver() {}
 
