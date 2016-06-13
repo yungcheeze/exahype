@@ -77,6 +77,9 @@ class exahype::Parser {
   std::string getIdentifierForPlotter(int solverNumber,
                                       int plotterNumber) const;
   std::string getFilenameForPlotter(int solverNumber, int plotterNumber) const;
+
+  std::string getProfilerIdentifier() const;
+  std::string getMetricsIdentifierList() const;
 };
 
 #endif
