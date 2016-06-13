@@ -43,6 +43,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _writer.write("#include \"kernels/KernelCalls.h\"\n");
       _writer.write("#include \"exahype/plotters/Plotter.h\"\n");
+      _writer.write("#include \"exahype/profilers/ProfilerFactory.h\"\n");
       _writer.write("#include \"exahype/solvers/Solver.h\"\n\n");
       _writer.write("#include \"kernels/GaussLegendreQuadrature.h\"\n");
       _writer.write("#include \"kernels/DGMatrices.h\"\n\n\n");
@@ -64,8 +65,10 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _writer.write("#include \"" + solverName + ".h\"\n");
 
+      _methodBodyWriter.write("  auto profiler = exahype::profilers::ProfilerFactory::getInstance().create(\n"+
+                              "      \"NoOpProfiler\", {});\n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName
-          + "::" + solverName + "(" + _kernelNumber + ") ); \n");
+          + "::" + solverName + "(" + _kernelNumber + ", std::move(profiler)) ); \n");
 
       _kernelNumber++;
       _plotterNumber = 0;

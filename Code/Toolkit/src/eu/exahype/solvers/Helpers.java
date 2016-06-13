@@ -18,7 +18,7 @@ public class Helpers {
     writer.write(
         "class " + projectName + "::" + solverName + ": public exahype::solvers::Solver {\n");
     writer.write("  public:\n");
-    writer.write("    " + solverName + "(int kernelNumber); \n");
+    writer.write("    " + solverName + "(int kernelNumber, std::unique_ptr<exahype::profilers::Profiler> profiler); \n");
     writer.write("    virtual int getMinimumTreeDepth() const;\n");
 
     writer.write(
@@ -69,7 +69,9 @@ public class Helpers {
    */
   private static void writeHeaderIncludesAndDefines(
       java.io.BufferedWriter writer, String solverName, String projectName) throws IOException {
-    writer.write("\n\n\n");
+    writer.write("\n\n");
+    writer.write("#include <memory>\n\n");
+    writer.write("#include \"exahype/profilers/Profiler.h\"\n");
     writer.write("#include \"exahype/solvers/Solver.h\"");
     writer.write("\n\n\n");
 
@@ -81,12 +83,12 @@ public class Helpers {
   public static void writeMinimalADERDGSolverUserImplementation(String solverName,
       java.io.BufferedWriter writer, String projectName, int numberOfUnknowns, int numberOfParameters, int order)
       throws IOException {
-    writer.write("#include \"" + solverName + ".h\"\n");
-    writer.write("\n\n\n");
-    writer.write(projectName + "::" + solverName + "::" + solverName + "( int kernelNumber):\n");
+    writer.write("#include \"" + solverName + ".h\"\n\n");
+    writer.write("#include <memory>\n\n");
+    writer.write(projectName + "::" + solverName + "::" + solverName + "( int kernelNumber, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
     writer.write("  exahype::solvers::Solver(\"" + solverName
         + "\",exahype::solvers::Solver::ADER_DG,kernelNumber," + (numberOfUnknowns + numberOfParameters) + "," + order
-        + "+1,exahype::solvers::Solver::GlobalTimeStepping) {\n");
+        + "+1,exahype::solvers::Solver::GlobalTimeStepping, std::move(profiler)) {\n");
     writer.write("  // @todo Please implement/augment if required\n");
     writer.write("}\n");
     writer.write("\n\n\n");
