@@ -251,13 +251,12 @@ void volumeUnknownsRestriction(
 #include "kernels/aderdg/generic/c/2d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/2d/stableTimeStepSize.cpph"
 #elif DIMENSIONS == 3
-// // //@todo
-// #include "kernels/aderdg/generic/c/3d/solutionAdjustment.cpph"
-// #include "kernels/aderdg/generic/c/3d/stableTimeStepSize.cpph"
 #include "kernels/aderdg/generic/c/3d/riemannSolverLinear.cpph"
 #include "kernels/aderdg/generic/c/3d/riemannSolverNonlinear.cpph"
+#include "kernels/aderdg/generic/c/3d/solutionAdjustment.cpph"
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorNonlinear.cpph"
+#include "kernels/aderdg/generic/c/3d/stableTimeStepSize.cpph"
 #endif
 
 namespace kernels {
@@ -279,7 +278,8 @@ void spaceTimePredictorNonlinear(
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
-template <void PDEFlux(const double* const Q, double* f, double* g, double* h)>
+template <void PDENCP(const double* const Q, const double* const gradQ,
+                      double* BgradQ)>
 void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
                               double* lFhi, double* lQhbnd, double* lFhbnd,
                               const double* const luh,
@@ -364,7 +364,9 @@ void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
                             const int numberOfVariables, const int basisSize);
 
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
+                              double* lambda),
+          void PDEMatrixB(const double* const Q, const int normalNonZero,
+                          double* Bn)>
 void riemannSolverLinear(double* FL, double* FR, const double* const QL,
                          const double* const QR, const double dt,
                          const int normalNonZero, const int numberOfVariables,
