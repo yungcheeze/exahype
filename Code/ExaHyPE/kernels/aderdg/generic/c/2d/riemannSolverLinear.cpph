@@ -8,8 +8,8 @@ namespace c {
 
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda),
-          void PDEPDEMatrixB(const double* const Q, const int normalNonZero,
-                             double* Bn)>
+          void PDEMatrixB(const double* const Q, const int normalNonZero,
+                          double* Bn)>
 void riemannSolverLinear(double* FL, double* FR, const double* const QL,
                          const double* const QR, const double dt,
                          const int normalNonZero, const int numberOfVariables,
@@ -58,7 +58,7 @@ void riemannSolverLinear(double* FL, double* FR, const double* const QL,
   std::transform(QavL, QavL + numberOfVariables, QavR, Qav,
                  [](double a, double b) { return 0.5 * (a + b); });
   double* Bn = new double[numberOfVariables * numberOfVariables];
-  PDEPDEMatrixB(Qav, normalNonZero, Bn);
+  PDEMatrixB(Qav, normalNonZero, Bn);
 
   double* BnMinusIdSmax = new double[numberOfVariables * numberOfVariables];
   double* BnPlusIdSmax = new double[numberOfVariables * numberOfVariables];
