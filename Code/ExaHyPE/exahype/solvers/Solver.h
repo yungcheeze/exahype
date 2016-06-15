@@ -149,7 +149,10 @@ class exahype::solvers::Solver {
              std::unique_ptr<profilers::Profiler>(
                  new profilers::simple::NoOpProfiler));
 
-  virtual ~Solver() {}
+  virtual ~Solver() {
+    // TODO(guera): Remove?!
+    _profiler->writeToCout();
+  }
 
   // Disallow copy and assignment
   Solver(const Solver& other) = delete;
