@@ -78,7 +78,6 @@ public class CreateSolverClasses extends DepthFirstAdapter {
         new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/"
             + solverName + "_generated.cpp");
 
-    String kernel = node.getKernel().toString().trim();
 
     boolean isFortran = false;
     if (node.getLanguage().getText().trim().equals("C")) {
@@ -96,44 +95,50 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       return;
     }
 
-    int numberOfUnknowns   = Integer.parseInt(node.getUnknowns().toString().trim());
+    String kernel = node.getKernel().toString().trim();
+    boolean isLinear = kernel.substring(kernel.lastIndexOf("::")).equalsIgnoreCase("linear");
+
+    int numberOfUnknowns = Integer.parseInt(node.getUnknowns().toString().trim());
     int numberOfParameters = Integer.parseInt(node.getParameters().toString().trim());
-    int order              = Integer.parseInt(node.getOrder().toString().trim());
+    int order = Integer.parseInt(node.getOrder().toString().trim());
 
     eu.exahype.solvers.Solver solver = null;
+
     if (isFortran) {
       switch (kernel) {
         case eu.exahype.solvers.UserDefinedADER_DGinFortran.Identifier:
           solver = new eu.exahype.solvers.UserDefinedADER_DGinFortran();
           break;
         case eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran.Identifier:
-          solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran(
-              _dimensions, numberOfUnknowns, numberOfParameters, order);
+          solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran(_dimensions,
+              numberOfUnknowns, numberOfParameters, order);
           break;
         case eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran.Identifier:
-          solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran(
-              _dimensions, numberOfUnknowns, numberOfParameters, order);
+          solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran(_dimensions,
+              numberOfUnknowns, numberOfParameters, order);
           break;
       }
     } else {
       switch (kernel) {
         case eu.exahype.solvers.UserDefinedADER_DGinC.Identifier:
-          solver = new eu.exahype.solvers.UserDefinedADER_DGinC(numberOfUnknowns, numberOfParameters, order);
+          solver = new eu.exahype.solvers.UserDefinedADER_DGinC(numberOfUnknowns,
+              numberOfParameters, order);
           break;
         case eu.exahype.solvers.GenericFluxesLinearADER_DGinC.Identifier:
-          solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinC(_dimensions);
+          solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinC(_dimensions,
+              numberOfUnknowns, numberOfParameters, order);
           break;
         case eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC.Identifier:
-          solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC(
-              _dimensions, numberOfUnknowns, numberOfParameters, order);
+          solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC(_dimensions,
+              numberOfUnknowns, numberOfParameters, order);
           break;
         case eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier:
-          solver = new eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC(
-              _dimensions, numberOfUnknowns, numberOfParameters, order, _microarchitecture, _pathToLibxsmm);
+          solver = new eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC(_dimensions,
+              numberOfUnknowns, numberOfParameters, order, _microarchitecture, _pathToLibxsmm);
           break;
         case eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier:
-          solver = new eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC(
-              _dimensions, numberOfUnknowns, numberOfParameters, order, _microarchitecture, _pathToLibxsmm);
+          solver = new eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC(_dimensions,
+              numberOfUnknowns, numberOfParameters, order, _microarchitecture, _pathToLibxsmm);
           break;
         case eu.exahype.solvers.KernelEuler2d.Identifier:
           solver = new eu.exahype.solvers.KernelEuler2d();
@@ -179,7 +184,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       if (isFortran) {
         if (userTypesDefFile.exists()) {
           System.out.println("create typesDef ...  does exist already. Is overwritten");
-        } 
+        }
         java.io.BufferedWriter typesDefWriter =
             new java.io.BufferedWriter(new java.io.FileWriter(userTypesDefFile));
         solver.writeTypesDef(typesDefWriter, solverName, _projectName);
@@ -193,8 +198,8 @@ public class CreateSolverClasses extends DepthFirstAdapter {
           java.io.BufferedWriter userPDEWriter =
               new java.io.BufferedWriter(new java.io.FileWriter(userPDEFile));
           solver.writeUserPDE(userPDEWriter, solverName, _projectName);
-          System.out.println(
-              "create user PDE template of solver " + solverName + " ... please complete");
+          System.out
+              .println("create user PDE template of solver " + solverName + " ... please complete");
           userPDEWriter.close();
         }
       }

@@ -1,120 +1,32 @@
 package eu.exahype.solvers;
 
-public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
+public final class GenericFluxesNonlinearADER_DGinFortran extends GenericFluxesADER_DG {
   public static final String Identifier = GenericFluxesNonlinearADER_DGinC.Identifier;
 
-  private int _dimensions;
-  private int _numberOfUnknowns;
-  private int _numberOfParameters;
-  private int _order;
-
-  public GenericFluxesNonlinearADER_DGinFortran(int dimensions, int numberOfUnknowns, int numberOfParameters, int order) {
-    _dimensions = dimensions;
-    _numberOfUnknowns = numberOfUnknowns;
-    _numberOfParameters = numberOfParameters;
-    _order = order;
+  public GenericFluxesNonlinearADER_DGinFortran(int dimensions, int numberOfUnknowns,
+      int numberOfParameters, int order) {
+    super(dimensions, numberOfUnknowns, numberOfParameters, order);
   }
-  public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
-      throws java.io.IOException {
-    // @todo
-    Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName);
-
-    writer.write("  private:\n");
-    if (_dimensions == 2) {
-      writer.write("    static void flux(const double* const Q, double* f, double* g);\n");
-    } else {
-      writer.write(
-          "    static void flux(const double* const Q, double* f, double* g, double* h);\n");
-    }
-    writer.write(
-        "    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
-    writer.write(
-        "    static void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);\n");
-
-    writer.write("};\n\n\n");
+  
+  @Override
+  public final boolean isLinear() {
+    return false;
   }
-
-  public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
-      String projectName) throws java.io.IOException {
-    writer.write("// ==============================================\n");
-    writer.write("// Please do not change the implementations below\n");
-    writer.write("// =============================---==============\n");
-    writer.write("#include \"" + solverName + ".h\"\n");
-    writer.write("#include \"kernels/aderdg/generic/Kernels.h\"\n");
-    writer.write("\n\n\n");
-    writer.write("void " + projectName + "::" + solverName
-        + "::spaceTimePredictor( double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {\n");
-    writer.write(
-        "   kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear<flux>( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-    writer.write("}\n");
-    writer.write("\n\n\n");
-    writer.write("void " + projectName + "::" + solverName
-        + "::solutionUpdate(double* luh, const double* const lduh, const double dt) {\n");
-    writer.write(
-        "   kernels::aderdg::generic::fortran::solutionUpdate( luh, lduh, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-    writer.write("}\n");
-    writer.write("\n\n\n");
-    writer.write("void " + projectName + "::" + solverName
-        + "::volumeIntegral(double* lduh, const double* const lFhi, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
-    writer.write(
-        "   kernels::aderdg::generic::fortran::volumeIntegralNonlinear( lduh, lFhi, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-    writer.write("}\n");
-    writer.write("\n\n\n");
-    writer.write("void " + projectName + "::" + solverName
-        + "::surfaceIntegral(double* lduh, const double* const lFhbnd, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
-    writer.write(
-        "   kernels::aderdg::generic::fortran::surfaceIntegralNonlinear( lduh, lFhbnd, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-    writer.write("}\n");
-    writer.write("\n\n\n");
-    writer.write("void " + projectName + "::" + solverName
-        + "::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex) {\n");
-    writer.write(
-        "   kernels::aderdg::generic::fortran::riemannSolverNonlinear<eigenvalues>( FL, FR, QL, QR, dt, normalNonZeroIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-    writer.write("}\n");
-    writer.write("\n\n\n");
-    writer.write("double " + projectName + "::" + solverName
-        + "::stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
-    writer.write(
-        "   return kernels::aderdg::generic::fortran::stableTimeStepSize<eigenvalues>( luh, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-    writer.write("}\n");
-    writer.write("\n\n\n");
-    writer.write("void " + projectName + "::" + solverName
-        + "::solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {\n");
-    writer.write(
-        "   kernels::aderdg::generic::fortran::solutionAdjustment<adjustedSolutionValues>( luh, center, dx, t, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-    writer.write("}\n");
-    writer.write("\n\n\n");
-    writer.write("void " + projectName + "::" + solverName
-            + "::faceUnknownsProlongation(double* lQhbndFine,double* lFhbndFine,const double* lQhbndCoarse,const double* lFhbndCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex) {\n");
-    writer.write("   kernels::aderdg::generic::fortran::faceUnknownsProlongation( lQhbndFine, lFhbndFine, lQhbndCoarse, lFhbndCoarse, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-    writer.write("}\n");
-    writer.write("\n\n\n");
-    writer.write("void " + projectName + "::" + solverName
-            + "::faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex) {\n");
-    writer.write("   kernels::aderdg::generic::fortran::faceUnknownsRestriction( lQhbndCoarse, lFhbndCoarse, lQhbndFine, lFhbndFine, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-    writer.write("}\n");
-    writer.write("\n\n\n");
-    writer.write("void " + projectName + "::" + solverName
-            + "::volumeUnknownsProlongation(double* luhFine, const double* luhCoarse, const int coarseGridLevel, const int fineGridLevel, const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {\n");
-    writer.write("   kernels::aderdg::generic::fortran::volumeUnknownsProlongation( luhFine, luhCoarse, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-    writer.write("}\n");
-    writer.write("\n\n\n");
-    writer.write("void " + projectName + "::" + solverName
-            + "::volumeUnknownsRestriction(double* luhCoarse, const double* luhFine, const int coarseGridLevel, const int fineGridLevel, const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {\n");
-    writer.write("   kernels::aderdg::generic::fortran::volumeUnknownsRestriction( luhCoarse, luhFine, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
-    writer.write("}\n");
-    writer.write("\n\n\n");
+  
+  @Override
+  public final boolean isFortran() {
+    return true;
   }
 
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
-    Helpers.writeMinimalADERDGSolverUserImplementation(
-        solverName, writer, projectName, _numberOfUnknowns, _numberOfParameters, _order);
+    Helpers.writeMinimalADERDGSolverUserImplementation(solverName, writer, projectName,
+        _numberOfUnknowns, _numberOfParameters, _order);
 
     int digits = String.valueOf(_numberOfUnknowns + _numberOfParameters).length();
 
     writer.write("bool " + projectName + "::" + solverName
-            + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {\n");
+        + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {\n");
     writer.write("  // @todo Please implement\n");
     writer.write("  return false;\n");
     writer.write("}\n");
@@ -122,7 +34,9 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
     writer.write("void " + projectName + "::" + solverName
         + "::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {\n");
     writer.write("  // Dimensions             = " + _dimensions + "\n");
-    writer.write("  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters) + " (#unknowns + #parameters)\n");
+    writer.write(
+        "  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters)
+            + " (#unknowns + #parameters)\n");
     writer.write("  // @todo Please implement\n");
     for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
       writer.write("  Q[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
@@ -130,7 +44,7 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("exahype::solvers::Solver::RefinementControl " + projectName + "::" + solverName
-            + "::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {\n");
+        + "::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {\n");
     writer.write("  // @todo Please implement\n");
     writer.write("  return exahype::solvers::Solver::Keep;\n");
     writer.write("}\n");
@@ -138,10 +52,11 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
     writer.write("\n\n\n");
     writer.write("//************************************************* \n");
     writer.write("//for FORTRAN kernels the fluxes and eigenvalues \n");
-    writer.write("//have to be implemented in the file ./PDE.f90 \n" );
+    writer.write("//have to be implemented in the file ./PDE.f90 \n");
     writer.write("//************************************************* \n");
     writer.write("\n\n\n");
   }
+
   public void writeUserPDE(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
     // @todo Implement
@@ -191,7 +106,7 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
     }
     writer.write("  !\n");
     writer.write("END SUBROUTINE PDEFlux \n");
-    
+
     writer.write(" \n\n\n");
 
     writer.write("SUBROUTINE PDENCP(BgradQ,Q,gradQ) \n");
@@ -199,8 +114,8 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
     writer.write("  PRINT *, 'PDENCP is not used for nonlinear-solvers' \n");
     writer.write("  CALL EXIT  \n");
     writer.write("  !\n");
-    writer.write("END SUBROUTINE PDENCP \n");    
-    
+    writer.write("END SUBROUTINE PDENCP \n");
+
     writer.write(" \n\n\n");
 
     writer.write("SUBROUTINE PDEMatrixB(Bn,Q,nv) \n");
@@ -208,8 +123,9 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
     writer.write("  PRINT *, 'PDEMatrixB is not used for nonlinear-solvers' \n");
     writer.write("  CALL EXIT  \n");
     writer.write("  !\n");
-    writer.write("END SUBROUTINE PDEMatrixB \n");     
+    writer.write("END SUBROUTINE PDEMatrixB \n");
   }
+
   public void writeTypesDef(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
     // @todo Implement
@@ -223,14 +139,15 @@ public class GenericFluxesNonlinearADER_DGinFortran implements Solver {
     writer.write("    ! \n");
     writer.write(
         "    INTEGER, PARAMETER             :: d = 3                               ! This is the maximum number of space dimensions we want to deal with in our heads. !! NEVER change this parameter, unless you are bold and want to solve the Boltzmann equation !!  \n");
-    writer.write(
-        "    INTEGER, PARAMETER             :: N = " + _order + "                               ! Polynomial degree of our approximation in space and time  \n");
-    writer.write(
-        "    INTEGER, PARAMETER             :: nDim = "+ _dimensions + "                            ! The number of space dimensions that we actually want to simulate  \n");
-    writer.write(
-        "    INTEGER, PARAMETER             :: nVar = "+ _numberOfUnknowns + "                            ! The number of variables of the PDE system  \n");
-    writer.write(
-        "    INTEGER, PARAMETER             :: nDOF(0:3) = (/ " + (_order+1) + ", " + (_order+1) + ", " + (_order+1) + ", " + (_order+1) + " /)                           ! The number of degrees of freedom in space and time  \n");
+    writer.write("    INTEGER, PARAMETER             :: N = " + _order
+        + "                               ! Polynomial degree of our approximation in space and time  \n");
+    writer.write("    INTEGER, PARAMETER             :: nDim = " + _dimensions
+        + "                            ! The number of space dimensions that we actually want to simulate  \n");
+    writer.write("    INTEGER, PARAMETER             :: nVar = " + _numberOfUnknowns
+        + "                            ! The number of variables of the PDE system  \n");
+    writer.write("    INTEGER, PARAMETER             :: nDOF(0:3) = (/ " + (_order + 1) + ", "
+        + (_order + 1) + ", " + (_order + 1) + ", " + (_order + 1)
+        + " /)                           ! The number of degrees of freedom in space and time  \n");
     writer.write("     \n");
     writer.write(
         "    DOUBLE PRECISION, PARAMETER    :: wGPN(N+1)     = (/ 0.1739274225687273, 0.3260725774312732, 0.3260725774312732, 0.1739274225687273 /) \n");

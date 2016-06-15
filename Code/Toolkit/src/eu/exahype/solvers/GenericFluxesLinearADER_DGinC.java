@@ -1,52 +1,20 @@
 package eu.exahype.solvers;
 
-public class GenericFluxesLinearADER_DGinC implements Solver {
+public final class GenericFluxesLinearADER_DGinC extends GenericFluxesADER_DGinC {
   public static final String Identifier = "generic::fluxes::linear";
 
-  private int _dimensions;
-
-  public GenericFluxesLinearADER_DGinC(int dimensions) {
-    _dimensions = dimensions;
+  public GenericFluxesLinearADER_DGinC(int dimensions, int numberOfUnknowns, int numberOfParameters,
+      int order) {
+    super(dimensions, numberOfUnknowns, numberOfParameters, order);
   }
 
-  public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
-      throws java.io.IOException {
-    Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName);
-
-    writer.write("  private:\n");
-    if (_dimensions == 2) {
-      writer.write("    static void flux(const double* const Q, double* f, double* g);\n");
-    } else {
-      writer.write(
-          "    static void flux(const double* const Q, double* f, double* g, double* h);\n");
-    }
-    writer.write(
-        "    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
-    writer.write(
-        "    static void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);\n");
-
-    writer.write("};\n\n\n");
+  @Override
+  public final boolean isLinear() {
+    return true;
   }
 
-  public void writeGeneratedImplementation(java.io.BufferedWriter writer, String solverName,
-      String projectName) throws java.io.IOException {
-    // @todo Implement
-    System.err.println("not implemented yet\n");
-  }
-
-  public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
-      String projectName) throws java.io.IOException {
-    // @todo Implement
-    System.err.println("not implemented yet\n");
-  }
-  public void writeUserPDE(java.io.BufferedWriter writer, String solverName, String projectName)
-      throws java.io.IOException {
-    // @todo Implement
-    System.err.println("C-style kernels do not have a PDF.f90.\n");
-  }
-  public void writeTypesDef(java.io.BufferedWriter writer, String solverName, String projectName)
-      throws java.io.IOException {
-    // @todo Implement
-    System.err.println("C-style kernels do not have a typesDef.f90.\n");
+  @Override
+  public final boolean isFortran() {
+    return false;
   }
 }

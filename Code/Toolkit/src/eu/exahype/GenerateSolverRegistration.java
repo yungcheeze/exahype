@@ -95,7 +95,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     		  "    profiler_identifier, metrics_vector);\n\n");
 
       _methodBodyWriter.write("  // Create and register solver\n");
-      _methodBodyWriter.write("exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
+      _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
     		                  "::" + solverName + "(" + _kernelNumber + ", std::move(profiler)));\n\n");
 
       _kernelNumber++;
