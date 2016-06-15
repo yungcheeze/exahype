@@ -90,6 +90,26 @@ public class OptimisedFluxesNonlinearADER_DGinC implements Solver {
         "   kernels::aderdg::optimised::solutionAdjustment<adjustedSolutionValues>( luh, center, dx, t, dt );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
+    writer.write("void " + projectName + "::" + solverName
+            + "::faceUnknownsProlongation(double* lQhbndFine,double* lFhbndFine,const double* lQhbndCoarse,const double* lFhbndCoarse,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex) {\n");
+    writer.write("   kernels::aderdg::optimised::faceUnknownsProlongation( lQhbndFine, lFhbndFine, lQhbndCoarse, lFhbndCoarse, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("}\n");
+    writer.write("\n\n\n");
+    writer.write("void " + projectName + "::" + solverName
+            + "::faceUnknownsRestriction(double* lQhbndCoarse,double* lFhbndCoarse,const double* lQhbndFine,const double* lFhbndFine,const int coarseGridLevel,const int fineGridLevel,const tarch::la::Vector<DIMENSIONS-1, int>& subfaceIndex) {\n");
+    writer.write("   kernels::aderdg::optimised::faceUnknownsRestriction( lQhbndCoarse, lFhbndCoarse, lQhbndFine, lFhbndFine, coarseGridLevel, fineGridLevel, subfaceIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("}\n");
+    writer.write("\n\n\n");
+    writer.write("void " + projectName + "::" + solverName
+            + "::volumeUnknownsProlongation(double* luhFine, const double* luhCoarse, const int coarseGridLevel, const int fineGridLevel, const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {\n");
+    writer.write("   kernels::aderdg::optimised::volumeUnknownsProlongation( luhFine, luhCoarse, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("}\n");
+    writer.write("\n\n\n");
+    writer.write("void " + projectName + "::" + solverName
+            + "::volumeUnknownsRestriction(double* luhCoarse, const double* luhFine, const int coarseGridLevel, const int fineGridLevel, const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {\n");
+    writer.write("   kernels::aderdg::optimised::volumeUnknownsRestriction( luhCoarse, luhFine, coarseGridLevel, fineGridLevel, subcellIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    writer.write("}\n");
+    writer.write("\n\n\n");
   }
 
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
