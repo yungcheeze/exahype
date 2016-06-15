@@ -7,12 +7,12 @@ public final class GenericFluxesNonlinearADER_DGinFortran extends GenericFluxesA
       int numberOfParameters, int order) {
     super(dimensions, numberOfUnknowns, numberOfParameters, order);
   }
-  
+
   @Override
   public final boolean isLinear() {
     return false;
   }
-  
+
   @Override
   public final boolean isFortran() {
     return true;
