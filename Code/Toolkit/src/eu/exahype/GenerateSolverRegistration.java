@@ -67,7 +67,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _writer.write("#include \"" + solverName + ".h\"\n");
 
-      _methodBodyWriter.write("  std::string parser_identifier = parser.getProfilerIdentifier();\n");
+      _methodBodyWriter.write("  std::string profiler_identifier = parser.getProfilerIdentifier();\n");
       _methodBodyWriter.write("  std::string metrics_identifier_list = parser.getMetricsIdentifierList();\n\n");
 
       _methodBodyWriter.write(
@@ -92,7 +92,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write("  // Create profiler\n");
       _methodBodyWriter.write(
     		  "  auto profiler = exahype::profilers::ProfilerFactory::getInstance().create(\n"+
-    		  "    parser_identifier, metrics_vector);\n\n");
+    		  "    profiler_identifier, metrics_vector);\n\n");
 
       _methodBodyWriter.write("  // Create and register solver\n");
       _methodBodyWriter.write("exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
