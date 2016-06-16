@@ -17,7 +17,7 @@
 
 #if DIMENSIONS == 2
 
-template <void PDEFlux2d(const double* const Q, double* f, double* g)>
+template <void PDEFlux(const double* const Q, double** F)>
 void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
     double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
     double* lFhbnd, const double* const luh,
@@ -122,12 +122,13 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
               spaceTimeDofStartIndex * DIMENSIONS;
 
           Q = &lQi[spaceTimeDofStartIndex];
-          f = &lFi[spaceTimeFluxDofStartIndex];
-          g = &lFi[spaceTimeFluxDofStartIndex + numberOfVariables];
+          double* F[2];
+          F[0] = &lFi[spaceTimeFluxDofStartIndex];
+          F[1] = &lFi[spaceTimeFluxDofStartIndex + numberOfVariables];
 
           // @todo Angelika's old code
           // exahype::problem::PDEFlux(Q,f,g);
-          PDEFlux2d(Q, f, g);
+          PDEFlux(Q, F);
         }
       }
       // Above seems okay!
@@ -452,7 +453,7 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
 *******************************************************************************************************
 ******************************************************************************************************/
 
-template <void PDEFlux2d(const double* const Q, double* f, double* g)>
+template <void PDEFlux(const double* const Q, double** F)>
 void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
     double* lQi, double* lFi, const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt,
@@ -557,12 +558,13 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
               spaceTimeDofStartIndex * DIMENSIONS;
 
           Q = &lQi[spaceTimeDofStartIndex];
-          f = &lFi[spaceTimeFluxDofStartIndex];
-          g = &lFi[spaceTimeFluxDofStartIndex + numberOfVariables];
+          double* F[2];
+          F[0] = &lFi[spaceTimeFluxDofStartIndex];
+          F[1] = &lFi[spaceTimeFluxDofStartIndex + numberOfVariables];
 
           // @todo Angelika's old code
           // exahype::problem::PDEFlux(Q,f,g);
-          PDEFlux2d(Q, f, g);
+          PDEFlux(Q, F);
         }
       }
       // Above seems okay!

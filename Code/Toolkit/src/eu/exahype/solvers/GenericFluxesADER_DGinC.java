@@ -19,19 +19,20 @@ public abstract class GenericFluxesADER_DGinC extends GenericFluxesADER_DG {
     int digits = String.valueOf(_numberOfUnknowns + _numberOfParameters).length();
 
     // flux
-    if (_dimensions == 2) {
       writer.write("void " + projectName + "::" + solverName
-          + "::flux(const double* const Q, double* f, double* g) {\n");
-    } else {
-      writer.write("void " + projectName + "::" + solverName
-          + "::flux(const double* const Q, double* f, double* g, double* h) {\n");
-    }
+          + "::flux(const double* const Q, double** F) {\n");
     writer.write("  // Dimensions             = " + _dimensions + "\n");
     writer.write(
         "  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters)
-            + " (#unknowns + #parameters)\n");
-    writer.write("  // f\n");
+            + " (#unknowns + #parameters)\n\n");
+    writer.write("  double* f = F[0];\n");
+    writer.write("  double* g = F[1];\n");
+    if (_dimensions == 3) {
+      writer.write("  double* h = F[2];\n");
+    }
+    writer.write("\n");
     writer.write("  // @todo Please implement\n");
+    writer.write("  // f\n");
     for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
       writer.write("  f[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
     }

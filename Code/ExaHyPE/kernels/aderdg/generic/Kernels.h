@@ -47,32 +47,10 @@ namespace aderdg {
 namespace generic {
 namespace c {
 
-#if DIMENSIONS == 2
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
-template <void PDEFlux(const double* const Q, double* f, double* g)>
-void spaceTimePredictorNonlinear(
-    double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQbnd,
-    double* lFbnd, const double* const luh,
-    const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double predictorTimeStepSize, const int numberOfVariables,
-    const int basisSize);
-
-// @todo Dominic Etienne Charrier
-// Inconsistent ordering of inout and in arguments for
-// template argument functions and non-template argument function.
-template <void PDEFlux(const double* const Q, double* f, double* g)>
-void spaceTimePredictorNonlinear(
-    double* lQi, double* lFi, const double* const luh,
-    const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double predictorTimeStepSize, const int numberOfVariables,
-    const int basisSize);
-#else
-// @todo Dominic Etienne Charrier
-// Inconsistent ordering of inout and in arguments for
-// template argument functions and non-template argument function.
-template <void PDEFlux(const double* const Q, double* f, double* g, double* h)>
+template <void PDEFlux(const double* const Q, double** F)>
 void spaceTimePredictorNonlinear(
     double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
     double* lFhbnd, const double* const luh,
@@ -80,7 +58,16 @@ void spaceTimePredictorNonlinear(
     const double predictorTimeStepSize, const int numberOfVariables,
     const int basisSize);
 
-#endif
+#if DIMENSIONS == 2
+
+template <void PDEFlux(const double* const Q, double** F)>
+void spaceTimePredictorNonlinear(
+    double* lQi, double* lFi, const double* const luh,
+    const tarch::la::Vector<DIMENSIONS, double>& dx,
+    const double predictorTimeStepSize, const int numberOfVariables,
+    const int basisSize);
+
+#endif  // DIMENSIONS == 2
 
 /**
  * (At the moment, we always evaluate the time averaged space-time
@@ -267,7 +254,7 @@ namespace fortran {
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
-template <void PDEFlux(const double* const Q, double* f, double* g, double* h)>
+template <void PDEFlux(const double* const Q, double** F)>
 void spaceTimePredictorNonlinear(
     double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
     double* lFhbnd, const double* const luh,

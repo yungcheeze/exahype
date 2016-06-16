@@ -22,8 +22,10 @@ bool Euler2d::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSI
   return false;
 }
 
-void Euler2d::MyEulerSolver::flux(const double *const Q, double *f, double *g) {
-  // @todo Please implement
+void Euler2d::MyEulerSolver::flux(const double *const Q, double **F) {
+  double* f = F[0];
+  double* g = F[1];
+
   const double GAMMA = 1.4;
 
   const double irho = 1.0 / Q[0];

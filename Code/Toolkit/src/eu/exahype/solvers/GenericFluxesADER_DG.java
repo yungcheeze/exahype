@@ -26,12 +26,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     writer.write("  private:\n");
     writer.write(
         "    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
-    if (_dimensions == 2) {
-      writer.write("    static void flux(const double* const Q, double* f, double* g);\n");
-    } else {
-      writer
-          .write("    static void flux(const double* const Q, double* f, double* g, double* h);\n");
-    }
+    writer.write("    static void flux(const double* const Q, double** F);\n");
     writer.write(
         "    static void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);\n");
 

@@ -8,8 +8,8 @@
 #include "SRHDApplication.h"
 
 
-srhd2d::SRHDSolver::SRHDSolver( int kernelNumber):
-  exahype::solvers::Solver("SRHDSolver",exahype::solvers::Solver::ADER_DG,kernelNumber,5,3+1,exahype::solvers::Solver::GlobalTimeStepping) {
+srhd2d::SRHDSolver::SRHDSolver( int kernelNumber, std::unique_ptr<exahype::profilers::Profiler> profiler):
+  exahype::solvers::Solver("SRHDSolver",exahype::solvers::Solver::ADER_DG,kernelNumber,5,3+1,exahype::solvers::Solver::GlobalTimeStepping,std::move(profiler)) {
   // @todo Please implement/augment if required
 }
 
@@ -22,7 +22,10 @@ int srhd2d::SRHDSolver::getMinimumTreeDepth() const {
 
 
 
-void srhd2d::SRHDSolver::flux(const double* const Q, double* f, double* g) {
+void srhd2d::SRHDSolver::flux(const double* const Q, double** F) {
+        double* f = F[0];
+        double* g = F[1];
+
 	// Dimensions             = 2
 	// Number of variables    = 5 (#unknowns + #parameters)
 	

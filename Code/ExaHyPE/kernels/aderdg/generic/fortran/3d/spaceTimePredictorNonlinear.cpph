@@ -17,18 +17,17 @@
 
 extern "C" {
 void aderpicardloopnonlinear_(double *luhTemp, double *dtTemp, double *dxTemp,
-                     double *lQi, double *lFi);
+                              double *lQi, double *lFi);
 // void aderpredictor_(double *lQi, double *lFi, double *lQhi, double *lFhi);
-void aderpredictornonlinear_(double *lQi, double *lFi_x, double *lFhi_y, double *lFhi_z,
-                    double *lQhi, double *lFhi);
+void aderpredictornonlinear_(double *lQi, double *lFi_x, double *lFhi_y,
+                             double *lFhi_z, double *lQhi, double *lFhi);
 // void aderextrapolator_(double *lQhi, double *lFhi, double *lQbnd, double
 // *lFbnd);
 void aderextrapolatornonlinear_(double *lQhi, double *lFhi_x, double *lFhi_y,
-                       double *lFhi_z, double *lQbnd, double *lFbnd);
+                                double *lFhi_z, double *lQbnd, double *lFbnd);
 }
 
-template <void PDEFlux3d(const double *const Q, double *f, double *g,
-                         double *h)>
+template <void PDEFlux3d(const double *const Q, double **F)>
 void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
     double *lQi, double *lFi, double *lQhi, double *lFhi, double *lQbnd,
     double *lFbnd, const double *const luh,
@@ -53,11 +52,12 @@ void kernels::aderdg::generic::fortran::spaceTimePredictorNonlinear(
   const int numSpaceDof = numberOfVariables * basisSize * basisSize * basisSize;
   // lFhi = [ lFhi_x | lFhi_y | lFhi_z ]
   // aderpredictor_(lQi,lFi,lQhi,lFhi);
-  aderpredictornonlinear_(lQi, lFi, lQhi, &lFhi[0 * numSpaceDof], &lFhi[1 * numSpaceDof],
-                 &lFhi[2 * numSpaceDof]);
+  aderpredictornonlinear_(lQi, lFi, lQhi, &lFhi[0 * numSpaceDof],
+                          &lFhi[1 * numSpaceDof], &lFhi[2 * numSpaceDof]);
   // aderextrapolator_(lQhi,lFhi,lQbnd,lFbnd);
-  aderextrapolatornonlinear_(lQhi, &lFhi[0 * numSpaceDof], &lFhi[1 * numSpaceDof],
-                    &lFhi[2 * numSpaceDof], lQbnd, lFbnd);
+  aderextrapolatornonlinear_(lQhi, &lFhi[0 * numSpaceDof],
+                             &lFhi[1 * numSpaceDof], &lFhi[2 * numSpaceDof],
+                             lQbnd, lFbnd);
 
   delete[] luhTemp;
   delete[] dxTemp;

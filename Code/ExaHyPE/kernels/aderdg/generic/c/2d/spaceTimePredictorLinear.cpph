@@ -5,6 +5,8 @@ namespace aderdg {
 namespace generic {
 namespace c {
 
+#if DIMENSIONS == 2
+
 template <void PDENCP(const double* const Q, const double* const gradQ,
                       double* BgradQ)>
 void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
@@ -260,6 +262,8 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
   delete[] gradQ;
   delete[] lFh;
 }
+
+#endif  // DIMENSIONS == 2
 
 }  // namespace c
 }  // namespace generic
