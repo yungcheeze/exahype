@@ -30,7 +30,7 @@ exahype-project  Euler3d
     parameters= 0 
     order     = 3
     kernel    = generic::fluxes::nonlinear
-    language  = C
+    language  = Fortran
  
     plot vtk::ascii
       time     = 0.0

@@ -1,9 +1,9 @@
 #include "MyEulerSolver.h"
 
-Euler2d::MyEulerSolver::MyEulerSolver(int kernelNumber)
+Euler2d::MyEulerSolver::MyEulerSolver(int kernelNumber, std::unique_ptr<exahype::profilers::Profiler> profiler)
     : exahype::solvers::Solver(
           "MyEulerSolver", exahype::solvers::Solver::ADER_DG, kernelNumber, 5,
-          4 + 1,exahype::solvers::Solver::GlobalTimeStepping) {
+          4 + 1,exahype::solvers::Solver::GlobalTimeStepping, std::move(profiler)) {
   // @todo Please implement/augment if required
 }
 
