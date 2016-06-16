@@ -30,7 +30,7 @@ exahype-project  Euler3d
     parameters= 0 
     order     = 3
     kernel    = generic::fluxes::nonlinear
-    language  = Fortran
+    language  = C
  
     plot vtk::ascii
       time     = 0.0
@@ -41,6 +41,8 @@ exahype-project  Euler3d
 
   optimisation
     fuse-algorithmic-steps   = on
+    profiler = NoOpProfiler
+    metrics = {}
   end optimisation  
   
 

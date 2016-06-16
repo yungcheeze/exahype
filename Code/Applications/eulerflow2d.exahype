@@ -47,6 +47,8 @@ exahype-project  Euler2d
 
   optimisation
     fuse-algorithmic-steps   = on
+    profiler = NoOpProfiler
+    metrics = {}
   end optimisation  
   
 
