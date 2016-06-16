@@ -84,7 +84,7 @@ class DGMatrixGenerator:
         # 2D: nVar * getSizeWithPadding(nDOF)
         # 3D: nVar * getSizeWithPadding(nDOF*nDOF)
         l_nTotalDof = self.m_config['nDof']**(self.m_nDim-1)
-        l_nEntries  = self.m_config['nVar'] * Backend.getSizeWithPadding(l_nTotalDof)
+        l_nEntries  = Backend.getSizeWithPadding(self.m_config['nVar']) * Backend.getSizeWithPadding(l_nTotalDof)
         tmp_bnd = np.zeros((1,l_nEntries))
         l_matrices['tmp_bnd'] = tmp_bnd.flatten('F')
 
@@ -107,6 +107,7 @@ class DGMatrixGenerator:
 
         self.__generateHeaderFile()
         self.__writeToFile(l_matrices)
+
 
     def __generateHeaderFile(self):
         l_sourceFile = open(self.m_headerName, 'a')
