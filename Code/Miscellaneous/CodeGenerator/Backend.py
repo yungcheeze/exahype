@@ -9,6 +9,7 @@ from glob import iglob
 from shutil import move
 import FunctionSignatures
 import SpaceTimePredictorGenerator
+import VolumeIntegralGenerator
 import RiemannGenerator
 import SolutionUpdateGenerator
 import StableTimeStepSizeGenerator
@@ -45,9 +46,10 @@ def executeLibxsmmGenerator(i_commandLineParameters):
 
 def generateAssemblerCode(i_pathToOutputFile,
                           i_matmulConfigList):
+    l_pathToAsmFile = os.path.splitext(i_pathToOutputFile)[0]+'.c'
     for l_matmul in i_matmulConfigList:
         l_commandLineArguments =       "dense"  + \
-                                 ' ' + m_pathToLibxsmmGenerator+"/"+i_pathToOutputFile + \
+                                 ' ' + m_pathToLibxsmmGenerator+"/"+l_pathToAsmFile + \
                                  ' ' + l_matmul.baseroutinename + \
                                  ' ' + str(l_matmul.M) + \
                                  ' ' + str(l_matmul.N) + \
@@ -89,7 +91,7 @@ def prepareOutputDirectory(i_outputDirectory):
     # remove all .cpp, .cpph and .h files (we are in append mode!)
     for l_fileName in os.listdir(i_outputDirectory):
         _ , l_ext = os.path.splitext(l_fileName)
-        if(l_ext in ['.cpp', '.cpph', '.h']):
+        if(l_ext in ['.cpp', '.cpph', '.c', '.h']):
             os.remove(i_outputDirectory + "/" + l_fileName)
 
 
@@ -177,6 +179,8 @@ def generateCommonHeader():
 def generateComputeKernels():
     spaceTimePredictorGenerator = SpaceTimePredictorGenerator.SpaceTimePredictorGenerator(m_config, m_numerics)
     spaceTimePredictorGenerator.generateCode()
+    volumeIntegralGenerator = VolumeIntegralGenerator.VolumeIntegralGenerator(m_config, m_numerics)
+    volumeIntegralGenerator.generateCode()
     riemannGenerator = RiemannGenerator.RiemannGenerator(m_config, m_numerics, m_precision)
     riemannGenerator.generateCode()
     solutionUpdateGenerator = SolutionUpdateGenerator.SolutionUpdateGenerator(m_config)

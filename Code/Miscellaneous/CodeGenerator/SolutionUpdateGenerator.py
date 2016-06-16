@@ -83,7 +83,7 @@ class SolutionUpdateGenerator:
         l_description = '// update the elements \n\n'
 
         l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n'   \
-                             '#include "kernels/GaussLegendreQuadrature.h"\n\n'
+                             '#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"\n\n'
 
         l_functionSignature = FunctionSignatures.getSolutionUpdateSignature()+" {\n"
 

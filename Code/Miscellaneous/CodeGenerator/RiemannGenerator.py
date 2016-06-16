@@ -51,8 +51,8 @@ class RiemannGenerator:
 
         l_includeStatement = '#include "string.h"\n'                             \
                              '#include "kernels/aderdg/optimised/Kernels.h"\n'   \
-                             '#include "kernels/DGMatrices.h"\n'                 \
-                             '#include "kernels/GaussLegendreQuadrature.h"\n\n'
+                             '#include "kernels/aderdg/optimised/DGMatrices.h"\n'\
+                             '#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"\n\n'
 
         l_functionSignature = FunctionSignatures.getRiemannSolverSignature()+" {\n"
 
