@@ -161,6 +161,14 @@ class multiscalelinkedcell::HangingVertexBookkeeper {
      */
     void destroyCell(int cellIndex);
 
+    /**
+     * This operation does not really merge anything. It simply runs over a
+     * vertex's adjacency information and invalidates all entries that for
+     * non-local patches. Basically, such information always has to remain the
+     * same and the dynamic update here is not really required. However, it may
+     * happen that you fork the grid dynamically. Then, this routine updates
+     * the entries dynamically, too.
+     */
     tarch::la::Vector<TWO_POWER_D,int> updateCellIndicesInMergeWithNeighbour(
       const tarch::la::Vector<TWO_POWER_D,int>&  adjacentRanks,
       const tarch::la::Vector<TWO_POWER_D,int>&  oldAdjacencyEntries
