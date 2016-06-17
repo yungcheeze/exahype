@@ -226,7 +226,12 @@ int exahype::runners::Runner::runAsMaster(
 
   bool plot = exahype::plotters::isAPlotterActive(
       solvers::Solver::getMinSolverTimeStamp());
-  repository.switchToGlobalTimeStepComputationAndPlot();  // Inside cell
+  if (plot) {
+    repository.switchToGlobalTimeStepComputationAndPlot();
+  }
+  else {
+    repository.switchToGlobalTimeStepComputation();
+  }
   repository.iterate();
 
   // #if DIMENSIONS==2
