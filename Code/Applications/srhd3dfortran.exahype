@@ -41,20 +41,19 @@ exahype-project  srhd3dfortran
     end plot
   end solver
 
-  /* OMP: Does not work, always wants TBB. */
-/*
   shared-memory
     identifier               = dummy
     cores                    = 30
     properties-file          = sharedmemory.properties
   end shared-memory  
-*/
+
+  distributed-memory
+    identifier               = static_load_balancing
+  end distributed-memory
 
   optimisation
     fuse-algorithmic-steps   = on
-    profiler = NoOpProfiler
-    metrics = {}
+    profiling = NoOpProfiler
   end optimisation  
   
-
 end exahype-project  

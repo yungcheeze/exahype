@@ -40,17 +40,20 @@ exahype-project  srhd2d
       filename = ./solution
     end plot
   end solver
-/*
+
   shared-memory
     identifier               = dummy
     cores                    = 30
     properties-file          = sharedmemory.properties
   end shared-memory  
-*/
+
+  distributed-memory
+    identifier               = static_load_balancing
+  end distributed-memory
+
   optimisation
     fuse-algorithmic-steps   = on
-    profiler = NoOpProfiler
-    metrics = {}
+    profiling = NoOpProfiler
   end optimisation  
   
 
