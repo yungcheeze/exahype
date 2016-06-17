@@ -50,13 +50,15 @@ void srhd2d::SRHDSolver::flux(const double* const Q, double** F) {
 	g[3] = ww*vy*vz;
 	g[4] = ww*vy - g[0];
 	
-	/*
+#if DIMENSIONS == 3
+	double* h = F[2];
 	h[0] = vz*rho*lf;
 	h[1] = ww*vz*vx;
 	h[2] = ww*vz*vy;
 	h[3] = ww*vz*vz + p;
 	h[4] = ww*vz - h[0];
-	*/
+#endif /* DIMENSIONS == 3 */
+
 }
 
 

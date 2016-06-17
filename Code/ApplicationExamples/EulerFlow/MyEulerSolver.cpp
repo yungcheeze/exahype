@@ -114,7 +114,7 @@ void Euler::MyEulerSolver::adjustedSolutionValues(const double* const x,const do
     Q[4] =
         1. / (GAMMA - 1) +
         std::exp(-((x[0] - 0.5) * (x[0] - 0.5) + (x[1] - 0.5) * (x[1] - 0.5) 
-                  + (x[1] - 0.5) * (x[1] - 0.5)) / (0.05 * 0.05 * 0.05)) *
+                  + (x[2] - 0.5) * (x[2] - 0.5)) / (0.05 * 0.05 * 0.05)) *
             1.0e-3;
 #endif  
   }
