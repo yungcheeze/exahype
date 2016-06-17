@@ -59,6 +59,8 @@ class exahype::solvers::Solver {
     GlobalTimeStepping,  // Local, Anarchic
   };
 
+  // @todo Dominic: Please change
+  // enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
   enum RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
 
   enum AugmentationControl {
