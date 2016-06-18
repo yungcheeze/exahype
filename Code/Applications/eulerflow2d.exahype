@@ -45,13 +45,10 @@ exahype-project  Euler2d
     properties-file          = sharedmemory.properties
   end shared-memory  
 
-  distributed-memory
-    identifier               = static_load_balancing
-  end distributed-memory  
-
   optimisation
     fuse-algorithmic-steps   = on
-    profiling = NoOpProfiler
+    profiler = NoOpProfiler
+    metrics = {}
   end optimisation  
   
 
