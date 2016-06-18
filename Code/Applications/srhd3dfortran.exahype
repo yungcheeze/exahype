@@ -53,7 +53,8 @@ exahype-project  srhd3dfortran
 
   optimisation
     fuse-algorithmic-steps   = on
-    profiling = NoOpProfiler
+    profiler = NoOpProfiler
+    metrics = {}
   end optimisation  
   
 end exahype-project  

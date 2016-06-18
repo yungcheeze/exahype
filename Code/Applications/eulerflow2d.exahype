@@ -43,7 +43,12 @@ exahype-project  Euler2d
     identifier               = dummy
     cores                    = 2
     properties-file          = sharedmemory.properties
-  end shared-memory  
+  end shared-memory
+
+  distributed-memory
+    identifier               = static_load_balancing
+  end distributed-memory
+
 
   optimisation
     fuse-algorithmic-steps   = on

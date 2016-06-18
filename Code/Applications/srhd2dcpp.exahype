@@ -53,7 +53,8 @@ exahype-project  srhd2d
 
   optimisation
     fuse-algorithmic-steps   = on
-    profiling = NoOpProfiler
+    profiler = NoOpProfiler
+    metrics = {}
   end optimisation  
   
 
