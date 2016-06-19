@@ -1,11 +1,11 @@
 /**
- 
+
  3D Special Relativistic Hydrodynamics
  with a custom ExaHyPE kernel written in Fortran,
  provided by Olindo and modified by Sven.
 
  Started 03. May, 2016.
- 
+
  */
 exahype-project  srhd3dfortran
 
@@ -16,36 +16,19 @@ exahype-project  srhd3dfortran
   exahype-path               = ./ExaHyPE
   output-directory           = ./Applications/srhd3dfortran/
   architecture               = noarch
-  
-  
-  
+
   computational-domain
     dimension                = 3
     width                    = 10.0
     offset                   = 0.0, 0.0, 0.0
     end-time                 = 0.2
   end computational-domain
- 
-  
-  solver ADER-DG SRHDSolver
-    unknowns  = 5 
-    parameters= 0 
-    order     = 3
-    kernel    = generic::fluxes::nonlinear
-    language  = Fortran
-   
-    plot vtk::binary
-      time     = 0.0
-      repeat   = 0.005
-      filename = ./solution
-    end plot
-  end solver
 
   shared-memory
     identifier               = dummy
     cores                    = 30
     properties-file          = sharedmemory.properties
-  end shared-memory  
+  end shared-memory
 
   distributed-memory
     identifier               = static_load_balancing
@@ -53,8 +36,20 @@ exahype-project  srhd3dfortran
 
   optimisation
     fuse-algorithmic-steps   = on
-    profiler = NoOpProfiler
-    metrics = {}
-  end optimisation  
-  
-end exahype-project  
+  end optimisation
+
+  solver ADER-DG SRHDSolver
+    unknowns  = 5
+    parameters= 0
+    order     = 3
+    kernel    = generic::fluxes::nonlinear
+    language  = Fortran
+
+    plot vtk::binary
+      time     = 0.0
+      repeat   = 0.005
+      filename = ./solution
+    end plot
+  end solver
+
+end exahype-project

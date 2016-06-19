@@ -1,8 +1,8 @@
 /**
- 
+
  2D Euler Flow
- 
- A simple project 
+
+ A simple project
 
  */
 exahype-project  Euler2d
@@ -14,30 +14,13 @@ exahype-project  Euler2d
   exahype-path               = ./ExaHyPE
   output-directory           = ./Applications/eulerflow2d
   architecture               = noarch
-  
-  
-  
+
   computational-domain
     dimension                = 2
     width                    = 1.0
     offset                   = 0.0, 0.0
     end-time                 = 0.4
   end computational-domain
- 
-  
-  solver ADER-DG MyEulerSolver
-    unknowns  = 5 
-    parameters= 0 
-    order     = 3
-    kernel    = generic::fluxes::nonlinear
-    language  = C
-   
-    plot vtk::ascii
-      time     = 0.0
-      repeat   = 0.05
-      filename = ./solution
-    end plot
-  end solver
 
   shared-memory
     identifier               = dummy
@@ -49,12 +32,22 @@ exahype-project  Euler2d
     identifier               = static_load_balancing
   end distributed-memory
 
-
   optimisation
     fuse-algorithmic-steps   = on
-    profiler = NoOpProfiler
-    metrics = {}
-  end optimisation  
-  
+  end optimisation
 
-end exahype-project  
+  solver ADER-DG MyEulerSolver
+    unknowns  = 5
+    parameters= 0
+    order     = 3
+    kernel    = generic::fluxes::nonlinear
+    language  = C
+
+    plot vtk::ascii
+      time     = 0.0
+      repeat   = 0.05
+      filename = ./solution
+    end plot
+  end solver
+
+end exahype-project

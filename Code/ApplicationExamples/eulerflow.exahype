@@ -1,8 +1,8 @@
 /**
- 
+
  Euler Flow
- 
- A simple project 
+
+ A simple project
 
  */
 exahype-project  Euler
@@ -14,9 +14,7 @@ exahype-project  Euler
   exahype-path               = ./ExaHyPE
   output-directory           = ./ApplicationExamples/EulerFlow
   architecture               = noarch
-  
-  
-  
+
   computational-domain
     dimension                = 2
 /*    dimension                = 3 */
@@ -25,15 +23,24 @@ exahype-project  Euler
 /*    offset                   = 0.0, 0.0, 0.0 */
     end-time                 = 0.4
   end computational-domain
- 
-  
+
+  shared-memory
+    identifier               = dummy
+    cores                    = 2
+    properties-file          = sharedmemory.properties
+  end shared-memory
+
+  optimisation
+    fuse-algorithmic-steps   = on
+  end optimisation
+
   solver ADER-DG MyEulerSolver
-    unknowns  = 5 
-    parameters= 0 
+    unknowns  = 5
+    parameters= 0
     order     = 3
     kernel    = generic::fluxes::nonlinear
     language  = C
-   
+
     plot vtk::ascii
       time     = 0.0
       repeat   = 0.05
@@ -41,17 +48,4 @@ exahype-project  Euler
     end plot
   end solver
 
-  shared-memory
-    identifier               = dummy
-    cores                    = 2
-    properties-file          = sharedmemory.properties
-  end shared-memory  
-
-  optimisation
-    fuse-algorithmic-steps   = on
-    profiler = NoOpProfiler
-    metrics = {}
-  end optimisation  
-  
-
-end exahype-project  
+end exahype-project

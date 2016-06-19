@@ -1,5 +1,5 @@
 /**
- 
+
  Ideal Special Relativistic Magnetohydrodynamics.
  A custom ExaHype Kernel written in Fortran,
  currently only 3D,
@@ -7,7 +7,7 @@
 
  Started 17. June, 2016.
  Based on srhd3dfortran.exahype
- 
+
  */
 exahype-project  srhd3dfortran
 
@@ -18,36 +18,21 @@ exahype-project  srhd3dfortran
   exahype-path               = ./ExaHyPE
   output-directory           = ./Applications/idealMHDfortran/
   architecture               = noarch
-  
-  
-  
+
   computational-domain
     dimension                = 3
     width                    = 10.0
     offset                   = 0.0, 0.0, 0.0
     end-time                 = 0.2
   end computational-domain
- 
-  
-  solver ADER-DG idealMHDSolver
-    unknowns  = 9 
-    parameters= 0 
-    order     = 3
-    kernel    = generic::fluxes::nonlinear
-    language  = Fortran
-   
-    plot vtk::binary
-      time     = 0.0
-      repeat   = 0.005
-      filename = ./solution
-    end plot
-  end solver
+
+
 
   shared-memory
     identifier               = dummy
     cores                    = 30
     properties-file          = sharedmemory.properties
-  end shared-memory  
+  end shared-memory
 
   distributed-memory
     identifier               = static_load_balancing
@@ -55,8 +40,20 @@ exahype-project  srhd3dfortran
 
   optimisation
     fuse-algorithmic-steps   = on
-    profiler = NoOpProfiler
-    metrics = {}
-  end optimisation  
-  
-end exahype-project  
+  end optimisation
+
+  solver ADER-DG idealMHDSolver
+    unknowns  = 9
+    parameters= 0
+    order     = 3
+    kernel    = generic::fluxes::nonlinear
+    language  = Fortran
+
+    plot vtk::binary
+      time     = 0.0
+      repeat   = 0.005
+      filename = ./solution
+    end plot
+  end solver
+
+end exahype-project
