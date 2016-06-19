@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AAderdgSolver;
+import eu.exahype.node.AProfiling;
 import eu.exahype.node.AProject;
 import eu.exahype.node.ATwoDimensionalComputationalDomain;
 import eu.exahype.node.AThreeDimensionalComputationalDomain;
@@ -22,11 +23,14 @@ public class CreateSolverClasses extends DepthFirstAdapter {
   private String _pathToLibxsmm;
 
   private int _dimensions;
+  
+  private boolean _enableProfiler;
 
   public CreateSolverClasses(DirectoryAndPathChecker directoryAndPathChecker) {
     _directoryAndPathChecker = directoryAndPathChecker;
     _supportedMicroarchitectures =
         java.util.Arrays.asList("wsm", "snb", "hsw", "knc", "knl", "noarch");
+    _enableProfiler = false;
   }
 
   @Override
@@ -63,6 +67,11 @@ public class CreateSolverClasses extends DepthFirstAdapter {
   public void inAThreeDimensionalComputationalDomain(AThreeDimensionalComputationalDomain node) {
     _dimensions = 3;
   }
+  
+  @Override
+  public void inAProfiling(AProfiling node) {
+    _enableProfiler = !node.getProfiler().toString().trim().equals("NoOpProfiler");
+  };
 
   @Override
   public void inAAderdgSolver(AAderdgSolver node) {
@@ -111,11 +120,11 @@ public class CreateSolverClasses extends DepthFirstAdapter {
           break;
         case eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran.Identifier:
           solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran(_dimensions,
-              numberOfUnknowns, numberOfParameters, order);
+              numberOfUnknowns, numberOfParameters, order, _enableProfiler);
           break;
         case eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran.Identifier:
           solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran(_dimensions,
-              numberOfUnknowns, numberOfParameters, order);
+              numberOfUnknowns, numberOfParameters, order, _enableProfiler);
           break;
       }
     } else {
@@ -126,11 +135,11 @@ public class CreateSolverClasses extends DepthFirstAdapter {
           break;
         case eu.exahype.solvers.GenericFluxesLinearADER_DGinC.Identifier:
           solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinC(_dimensions,
-              numberOfUnknowns, numberOfParameters, order);
+              numberOfUnknowns, numberOfParameters, order, _enableProfiler);
           break;
         case eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC.Identifier:
           solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC(_dimensions,
-              numberOfUnknowns, numberOfParameters, order);
+              numberOfUnknowns, numberOfParameters, order, _enableProfiler);
           break;
         case eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier:
           solver = new eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC(_dimensions,

@@ -4,8 +4,8 @@ public final class GenericFluxesNonlinearADER_DGinC extends GenericFluxesADER_DG
   public static final String Identifier = "generic::fluxes::nonlinear";
 
   public GenericFluxesNonlinearADER_DGinC(int dimensions, int numberOfUnknowns,
-      int numberOfParameters, int order) {
-    super(dimensions, numberOfUnknowns, numberOfParameters, order);
+      int numberOfParameters, int order, boolean enableProfiler) {
+    super(dimensions, numberOfUnknowns, numberOfParameters, order, enableProfiler);
   }
 
   @Override

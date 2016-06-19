@@ -4,8 +4,8 @@ public final class GenericFluxesNonlinearADER_DGinFortran extends GenericFluxesA
   public static final String Identifier = GenericFluxesNonlinearADER_DGinC.Identifier;
 
   public GenericFluxesNonlinearADER_DGinFortran(int dimensions, int numberOfUnknowns,
-      int numberOfParameters, int order) {
-    super(dimensions, numberOfUnknowns, numberOfParameters, order);
+      int numberOfParameters, int order, boolean enableProfiler) {
+    super(dimensions, numberOfUnknowns, numberOfParameters, order, enableProfiler);
   }
 
   @Override

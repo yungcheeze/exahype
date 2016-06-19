@@ -17,8 +17,6 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
   private DirectoryAndPathChecker _directoryAndPathChecker;
 
   private boolean _requiresFortran;
-  
-  private boolean _enableProfiler;
 
   public SetupBuildEnvironment(DirectoryAndPathChecker directoryAndPathChecker) {
     _directoryAndPathChecker = directoryAndPathChecker;
@@ -94,7 +92,6 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
   @Override
   public void inAProject(AProject node) {
     _requiresFortran = false;
-    _enableProfiler = false;
 
     try {
       java.io.File logFile = new java.io.File(
@@ -149,10 +146,6 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       valid = false;
     }
   }
-  
-  public void inAOptimisation(AOptimisation node) {
-    _enableProfiler = !node.getProfile().toString().trim().equals("NoOpProfiler");
-  }
 
   @Override
   public void outAProject(AProject node) {
@@ -163,9 +156,6 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       _writer.write("\n\n");
       if (_requiresFortran) {
         _writer.write("MIXEDLANG=Yes\n");
-      }
-      if (_enableProfiler) {
-        _writer.write("PROJECT_CFLAGS+=-DEXAHYPE_ENABLE_PROFILER");
       }
       _writer.write("\n\n");
       _writer.write(

@@ -6,8 +6,8 @@ import java.io.IOException;
 public abstract class GenericFluxesADER_DGinC extends GenericFluxesADER_DG {
 
   public GenericFluxesADER_DGinC(int dimensions, int numberOfUnknowns, int numberOfParameters,
-      int order) {
-    super(dimensions, numberOfUnknowns, numberOfParameters, order);
+      int order, boolean enableProfiler) {
+    super(dimensions, numberOfUnknowns, numberOfParameters, order, enableProfiler);
   }
 
   @Override

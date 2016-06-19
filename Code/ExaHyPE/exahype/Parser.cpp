@@ -249,14 +249,14 @@ std::string exahype::Parser::getFilenameForPlotter(int solverNumber,
 
 std::string exahype::Parser::getProfilerIdentifier() const {
   assertion(isValid());
-  std::string token = getTokenAfter("optimisation", "profiler");
+  std::string token = getTokenAfter("profiling", "profiler");
   logDebug("getProfilerIdentifier()", "found token" << token);
   return (token != "notoken") ? token : "NoOpProfiler";
 }
 
 std::string exahype::Parser::getMetricsIdentifierList() const {
   assertion(isValid());
-  std::string token = getTokenAfter("optimisation", "metrics");
+  std::string token = getTokenAfter("profiling", "metrics");
   logDebug("getMetricsIdentifierList()", "found token " << token);
   return (token != "notoken") ? token : "{}";
 }
