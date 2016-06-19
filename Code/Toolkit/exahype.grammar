@@ -78,6 +78,8 @@ Tokens
   token_profiling                 = 'profiling';
   token_profiler                  = 'profiler';
   token_metrics                   = 'metrics';
+  token_likwid_inc                = 'likwid_inc';
+  token_likwid_lib                = 'likwid_lib';
 
   token_on_off                    = 'on' | 'off';
 
@@ -183,11 +185,21 @@ Productions
       ;
 
    profiling {->profiling} =
-      [begin_token]:token_profiling
-        token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
-        token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
-      token_end [end_token]:token_profiling
-        { -> New profiling(profiler,metrics) }
+      {with_liblikwid}
+       [begin_token]:token_profiling
+         token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
+         token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
+         token_likwid_inc [token_likwid_inc_equals]:token_equals [likwid_inc]:filename
+         token_likwid_lib [token_likwid_lib_equals]:token_equals [likwid_lib]:filename
+       token_end [end_token]:token_profiling
+        { -> New profiling(profiler,metrics,likwid_inc,likwid_lib) }
+      |
+      {default}
+       [begin_token]:token_profiling
+         token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
+         token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
+       token_end [end_token]:token_profiling
+        { -> New profiling(profiler,metrics,Null,Null) }
       ;
 
    plot_solution_list {->plot_solution*} =
@@ -246,7 +258,7 @@ Abstract Syntax Tree
      [fuse_algorithm_steps]:token_on_off;
 
    profiling =
-     [profiler]:identifier [metrics]:identifier_list;
+     [profiler]:identifier [metrics]:identifier_list [likwid_inc]:filename? [likwid_lib]:filename?;
 
    solver =
      {aderdg} [name]:identifier [unknowns]:int_number  [parameters]:int_number [order]:int_number [kernel]:typename [language]:identifier plot_solution*
