@@ -186,8 +186,7 @@ int exahype::runners::Runner::run() {
 
 int exahype::runners::Runner::runAsMaster(
     exahype::repositories::Repository& repository) {
-  peano::utils::UserInterface userInterface;
-  userInterface.writeHeader();
+  peano::utils::UserInterface::writeHeader();
 
   /*
    * Initialise the solvers.
