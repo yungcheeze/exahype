@@ -1,10 +1,12 @@
 /**
 
- 3D Special Relativistic Hydrodynamics
- with a custom ExaHyPE kernel written in Fortran,
+ Ideal Special Relativistic Magnetohydrodynamics.
+ A custom ExaHype Kernel written in Fortran,
+ currently only 3D,
  provided by Olindo and modified by Sven.
 
- Started 03. May, 2016.
+ Started 17. June, 2016.
+ Based on srhd3dfortran.exahype
 
  */
 exahype-project  srhd3dfortran
@@ -14,7 +16,7 @@ exahype-project  srhd3dfortran
   multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
   sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
   exahype-path               = ./ExaHyPE
-  output-directory           = ./Applications/srhd3dfortran/
+  output-directory           = ./Applications/idealMHDfortran/
   architecture               = noarch
 
   computational-domain
@@ -23,6 +25,8 @@ exahype-project  srhd3dfortran
     offset                   = 0.0, 0.0, 0.0
     end-time                 = 0.2
   end computational-domain
+
+
 
   shared-memory
     identifier               = dummy
@@ -38,8 +42,8 @@ exahype-project  srhd3dfortran
     fuse-algorithmic-steps   = on
   end optimisation
 
-  solver ADER-DG SRHDSolver
-    unknowns  = 5
+  solver ADER-DG idealMHDSolver
+    unknowns  = 9
     parameters= 0
     order     = 3
     kernel    = generic::fluxes::nonlinear

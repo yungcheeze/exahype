@@ -59,6 +59,8 @@ class exahype::solvers::Solver {
     GlobalTimeStepping,  // Local, Anarchic
   };
 
+  // @todo Dominic: Please change
+  // enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
   enum RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
 
   enum AugmentationControl {
@@ -149,7 +151,10 @@ class exahype::solvers::Solver {
              std::unique_ptr<profilers::Profiler>(
                  new profilers::simple::NoOpProfiler));
 
-  virtual ~Solver() {}
+  virtual ~Solver() {
+    // TODO(guera): Remove?!
+    _profiler->writeToCout();
+  }
 
   // Disallow copy and assignment
   Solver(const Solver& other) = delete;

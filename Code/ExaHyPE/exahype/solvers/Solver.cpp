@@ -1,5 +1,15 @@
 #include "exahype/solvers/Solver.h"
 
+namespace {
+constexpr const char* tags[]{
+    "solutionUpdate",           "volumeIntegral",
+    "surfaceIntegral",          "riemannSolver",
+    "spaceTimePredictor",       "stableTimeStepSize",
+    "solutionAdjustment",       "faceUnknownsProlongation",
+    "faceUnknownsRestriction",  "volumeUnknownsProlongation",
+    "volumeUnknownsRestriction"};
+}  // namespace
+
 // TODO: std::vector<std::unique_ptr<Solver>> ?!
 std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
 
@@ -29,7 +39,10 @@ exahype::solvers::Solver::Solver(const std::string& identifier, Type type,
       _minCorrectorTimeStepSize(std::numeric_limits<double>::max()),
       _minPredictorTimeStepSize(std::numeric_limits<double>::max()),
       _minNextPredictorTimeStepSize(std::numeric_limits<double>::max()) {
-  // do nothing
+  // register tags with profiler
+  for (const char* tag : tags) {
+    _profiler->registerTag(tag);
+  }
 }
 
 std::string exahype::solvers::Solver::getIdentifier() const {

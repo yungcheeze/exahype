@@ -74,9 +74,12 @@ Tokens
 
   token_optimisation              = 'optimisation';
   token_fuse_algorithm_steps      = 'fuse-algorithmic-steps';
+
+  token_profiling                 = 'profiling';
   token_profiler                  = 'profiler';
   token_metrics                   = 'metrics';
-
+  token_likwid_inc                = 'likwid_inc';
+  token_likwid_lib                = 'likwid_lib';
 
   token_on_off                    = 'on' | 'off';
 
@@ -112,12 +115,13 @@ Productions
         paths
         token_architecture token_equals [architecture]:identifier
         computational_domain
-        solver_list?
         shared_memory?
         distributed_memory?
         optimisation?
+        profiling?
+        solver_list?
       token_end [end_token]:token_project
-        { -> New project( name, paths.paths, architecture, computational_domain.computational_domain, [solver_list.solver], shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation ) }
+        { -> New project( name, paths.paths, architecture, computational_domain.computational_domain, shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation, profiling.profiling, [solver_list.solver] ) }
     ;
 
   paths {->paths} =
@@ -176,10 +180,26 @@ Productions
    optimisation {->optimisation} =
       [begin_token]:token_optimisation
         token_fuse_algorithm_steps [token_fuse_algorithm_steps_equals]:token_equals [fuse_algorithm_steps]:token_on_off
-        token_profiler [token_profiler_equals]:token_equals [profile]:identifier
-        token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
       token_end [end_token]:token_optimisation
-        { -> New optimisation(fuse_algorithm_steps,profile,metrics) }
+        { -> New optimisation(fuse_algorithm_steps) }
+      ;
+
+   profiling {->profiling} =
+      {with_liblikwid}
+       [begin_token]:token_profiling
+         token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
+         token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
+         token_likwid_inc [token_likwid_inc_equals]:token_equals [likwid_inc]:filename
+         token_likwid_lib [token_likwid_lib_equals]:token_equals [likwid_lib]:filename
+       token_end [end_token]:token_profiling
+        { -> New profiling(profiler,metrics,likwid_inc,likwid_lib) }
+      |
+      {default}
+       [begin_token]:token_profiling
+         token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
+         token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
+       token_end [end_token]:token_profiling
+        { -> New profiling(profiler,metrics,Null,Null) }
       ;
 
    plot_solution_list {->plot_solution*} =
@@ -213,10 +233,11 @@ Abstract Syntax Tree
      paths
      [architecture]:identifier
      computational_domain
-     solver*
      shared_memory?
      distributed_memory?
      optimisation?
+     profiling?
+     solver*
      ;
 
    paths =
@@ -234,7 +255,10 @@ Abstract Syntax Tree
      ;
 
    optimisation =
-     [fuse_algorithm_steps]:token_on_off [profile]:identifier [metrics]:identifier_list;
+     [fuse_algorithm_steps]:token_on_off;
+
+   profiling =
+     [profiler]:identifier [metrics]:identifier_list [likwid_inc]:filename? [likwid_lib]:filename?;
 
    solver =
      {aderdg} [name]:identifier [unknowns]:int_number  [parameters]:int_number [order]:int_number [kernel]:typename [language]:identifier plot_solution*

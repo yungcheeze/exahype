@@ -186,8 +186,7 @@ int exahype::runners::Runner::run() {
 
 int exahype::runners::Runner::runAsMaster(
     exahype::repositories::Repository& repository) {
-  peano::utils::UserInterface userInterface;
-  userInterface.writeHeader();
+  peano::utils::UserInterface::writeHeader();
 
   /*
    * Initialise the solvers.
@@ -226,7 +225,12 @@ int exahype::runners::Runner::runAsMaster(
 
   bool plot = exahype::plotters::isAPlotterActive(
       solvers::Solver::getMinSolverTimeStamp());
-  repository.switchToGlobalTimeStepComputationAndPlot();  // Inside cell
+  if (plot) {
+    repository.switchToGlobalTimeStepComputationAndPlot();
+  }
+  else {
+    repository.switchToGlobalTimeStepComputation();
+  }
   repository.iterate();
 
   // #if DIMENSIONS==2

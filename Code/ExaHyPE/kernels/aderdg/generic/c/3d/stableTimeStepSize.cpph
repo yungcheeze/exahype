@@ -1,0 +1,46 @@
+#include <algorithm>
+#include <cmath>
+#include <limits>
+
+#include "tarch/la/Vector.h"
+
+#define EXAHYPE_CFL_FACTOR 0.9
+
+template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
+                              double* lambda)>
+double kernels::aderdg::generic::c::stableTimeStepSize(
+    const double* const luh, const tarch::la::Vector<DIMENSIONS, double>& dx,
+    const int numberOfVariables, const int basisSize) {
+  const double PNPM[10] = {1.0,   0.33,  0.17, 0.1,  0.069,
+                           0.045, 0.038, 0.03, 0.02, 0.015};
+
+  double* lambda = new double[numberOfVariables];
+
+  double dt = std::numeric_limits<double>::max();
+
+  for (int ii = 0; ii < basisSize; ii++) {
+    for (int jj = 0; jj < basisSize; jj++) {
+      for (int kk = 0; kk < basisSize; kk++) {
+        const int nodeIndex = ii + basisSize * jj + basisSize * basisSize * kk;
+        const int dofStartIndex = nodeIndex * numberOfVariables;
+
+        double denominator = 0.0;
+        for (int d = 0; d < DIMENSIONS; d++) {
+          PDEEigenvalues(&luh[dofStartIndex], d, lambda);
+
+          double maxEigenvalue = 0.0;
+          for (int ivar = 0; ivar < numberOfVariables; ivar++) {
+            maxEigenvalue = std::max(fabs(lambda[ivar]), maxEigenvalue);
+          }
+          denominator += maxEigenvalue / dx[d];
+        }
+
+        dt = std::min(dt, EXAHYPE_CFL_FACTOR * PNPM[basisSize - 1] /
+                              denominator);  // order N = basisSize-1
+      }
+    }
+  }
+
+  delete[] lambda;
+  return dt;
+}

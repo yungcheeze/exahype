@@ -8,8 +8,8 @@
 #include "SRHDApplication.h"
 
 
-srhd2d::SRHDSolver::SRHDSolver( int kernelNumber):
-  exahype::solvers::Solver("SRHDSolver",exahype::solvers::Solver::ADER_DG,kernelNumber,5,3+1,exahype::solvers::Solver::GlobalTimeStepping) {
+srhd2d::SRHDSolver::SRHDSolver( int kernelNumber, std::unique_ptr<exahype::profilers::Profiler> profiler):
+  exahype::solvers::Solver("SRHDSolver",exahype::solvers::Solver::ADER_DG,kernelNumber,5,3+1,exahype::solvers::Solver::GlobalTimeStepping,std::move(profiler)) {
   // @todo Please implement/augment if required
 }
 
@@ -22,7 +22,10 @@ int srhd2d::SRHDSolver::getMinimumTreeDepth() const {
 
 
 
-void srhd2d::SRHDSolver::flux(const double* const Q, double* f, double* g) {
+void srhd2d::SRHDSolver::flux(const double* const Q, double** F) {
+        double* f = F[0];
+        double* g = F[1];
+
 	// Dimensions             = 2
 	// Number of variables    = 5 (#unknowns + #parameters)
 	
@@ -47,13 +50,15 @@ void srhd2d::SRHDSolver::flux(const double* const Q, double* f, double* g) {
 	g[3] = ww*vy*vz;
 	g[4] = ww*vy - g[0];
 	
-	/*
+#if DIMENSIONS == 3
+	double* h = F[2];
 	h[0] = vz*rho*lf;
 	h[1] = ww*vz*vx;
 	h[2] = ww*vz*vy;
 	h[3] = ww*vz*vz + p;
 	h[4] = ww*vz - h[0];
-	*/
+#endif /* DIMENSIONS == 3 */
+
 }
 
 

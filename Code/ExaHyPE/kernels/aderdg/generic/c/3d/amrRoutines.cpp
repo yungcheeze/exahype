@@ -28,7 +28,7 @@ void singleLevelFaceUnknownsProlongation(
             lQhbndFine[mDofStartIndex+ivar] +=
                 lQhbndCoarse[nDofStartIndex + ivar] *
                 kernels::fineGridProjector1d[basisSize-1][subfaceIndex[0]][n1][m1] *
-                kernels::fineGridProjector1d[basisSize-1][subfaceIndex[1]][n2][m2];// q_n * Pi_nm
+                kernels::fineGridProjector1d[basisSize-1][subfaceIndex[1]][n2][m2];
           }
         }
       }
@@ -49,31 +49,32 @@ void kernels::aderdg::generic::c::faceUnknownsProlongation(double* lQhbndFine,
   double * lQhbndFineTemp = new double[basisSize*basisSize*numberOfVariables];
   double * lFhbndFineTemp = new double[basisSize*basisSize*numberOfVariables];
 
-  double * workPointerQhbnd1 = 0;
-  double * workPointerFhbnd1 = 0;
+  double * pointerQhbnd1 = 0;
+  double * pointerFhbnd1 = 0;
 
-  double * workPointerQhbnd2 = 0;
-  double * workPointerFhbnd2 = 0;
+  double * pointerQhbnd2 = 0;
+  double * pointerFhbnd2 = 0;
 
-  // This ensures that the last workPointerQhbnd1 points to lQhbndFine.
-  // Analogous is done for workPointerFhbnd1.
+  // This ensures that the pointerQhbnd1 
+  // of the last iteration points to lQhbndFine.
+  // The same is done for pointerFhbnd1.
   if (levelDelta % 2 == 0) {
-    workPointerQhbnd1 = lQhbndFineTemp;
-    workPointerFhbnd1 = lFhbndFineTemp;
+    pointerQhbnd1 = lQhbndFineTemp;
+    pointerFhbnd1 = lFhbndFineTemp;
   } else {
-    workPointerQhbnd1 = lQhbndFine;
-    workPointerFhbnd1 = lFhbndFine;
+    pointerQhbnd1 = lQhbndFine;
+    pointerFhbnd1 = lFhbndFine;
   }
 
   tarch::la::Vector<DIMENSIONS-1,int> subfaceIndexPrevious (subfaceIndex);
   tarch::la::Vector<DIMENSIONS-1,int> subfaceIndexCurrent;
 
   tarch::la::Vector<DIMENSIONS-1,int> subintervalIndex;
-  // This loop step by step decodes subfaceIndex[0] into a tertiary basis
+  // This loop decodes the elements of subfaceIndex into a tertiary basis
   // starting with the highest significance 3^(levelDelta-1).
-  // Per step, the digit corresponding to the current significance then determines
-  // the subinterval for the one level prolongation (which is performed
-  // in the same step).
+  // 
+  // Per iteration, the digits corresponding to the current significances then determine
+  // the subintervals for the single level prolongation.
   for (int l = 1; l < levelDelta+1; ++l) {
     const int significance = tarch::la::aPowI(levelDelta-l,3);
     subfaceIndexCurrent[0] = subfaceIndexPrevious[0] % significance;
@@ -83,23 +84,22 @@ void kernels::aderdg::generic::c::faceUnknownsProlongation(double* lQhbndFine,
     assertion(subintervalIndex[0] < 3);
     assertion(subintervalIndex[1] < 3);
 
-    // Zero the values of 'workPointer1' since we compute a sum for each entry.
-    memset(workPointerQhbnd1, 0, basisSize*basisSize*numberOfVariables*sizeof(double));
-    memset(workPointerFhbnd1, 0, basisSize*basisSize*numberOfVariables*sizeof(double));
+    // Zero the values of the first pointer.
+    memset(pointerQhbnd1, 0, basisSize*basisSize*numberOfVariables*sizeof(double));
+    memset(pointerFhbnd1, 0, basisSize*basisSize*numberOfVariables*sizeof(double));
 
-    // Apply the one level prolongation operator.
-    // Use the coarse grid unknowns in the first iteration
-    // and use workPointerQhbnd2,workPointerFhbnd2 in the following.
+    // Apply the single level prolongation operator.
+    // Use the coarse level unknowns as input in the first iteration.
     if (l==1) {
       singleLevelFaceUnknownsProlongation(
-          workPointerQhbnd1,
+          pointerQhbnd1,
           lQhbndCoarse,
           subintervalIndex,
           numberOfVariables,
           basisSize);
 
       singleLevelFaceUnknownsProlongation(
-          workPointerFhbnd1,
+          pointerFhbnd1,
           lFhbndCoarse,
           subintervalIndex,
           numberOfVariables,
@@ -107,15 +107,15 @@ void kernels::aderdg::generic::c::faceUnknownsProlongation(double* lQhbndFine,
 
     } else {
       singleLevelFaceUnknownsProlongation(
-          workPointerQhbnd1,
-          workPointerQhbnd2,
+          pointerQhbnd1,
+          pointerQhbnd2,
           subintervalIndex,
           numberOfVariables,
           basisSize);
 
       singleLevelFaceUnknownsProlongation(
-          workPointerFhbnd1,
-          workPointerFhbnd2,
+          pointerFhbnd1,
+          pointerFhbnd2,
           subintervalIndex,
           numberOfVariables,
           basisSize);
@@ -124,16 +124,16 @@ void kernels::aderdg::generic::c::faceUnknownsProlongation(double* lQhbndFine,
     // Prepare next iteration.
     subfaceIndexPrevious = subfaceIndexCurrent;
 
-    workPointerQhbnd2 = workPointerQhbnd1;
-    workPointerFhbnd2 = workPointerFhbnd1;
-    // One check is sufficient since we change both work pointers
-    // for lQhbnd and lFhbnd at the same time.
-    if (workPointerQhbnd1 == lQhbndFineTemp) {
-      workPointerQhbnd1 = lQhbndFine;
-      workPointerFhbnd1 = lFhbndFine;
+    pointerQhbnd2 = pointerQhbnd1;
+    pointerFhbnd2 = pointerFhbnd1;
+    
+    // Toggle the addresses of the pointers.
+    if (pointerQhbnd1 == lQhbndFineTemp) {
+      pointerQhbnd1 = lQhbndFine;
+      pointerFhbnd1 = lFhbndFine;
     } else {
-      workPointerQhbnd1 = lQhbndFineTemp;
-      workPointerFhbnd1 = lFhbndFineTemp;
+      pointerQhbnd1 = lQhbndFineTemp;
+      pointerFhbnd1 = lFhbndFineTemp;
     }
   }
 
@@ -157,11 +157,7 @@ void singleLevelFaceUnknownsRestriction(
           for (int n1 = 0; n1 < basisSize; ++n1) {
             const int nNodeIndex     = basisSize*n2 + n1;
             const int nDofStartIndex = nNodeIndex * numberOfVariables;
-
-            // Pi_mn * q_n
-            // Note that the indices are interchanged
-            // in expression 'fineGridProjector1d[order][digit][mm][ii]'
-            // in comparsion to the one level prolongation operator.
+            
             lQhbndCoarse[mDofStartIndex+ivar] +=
                              kernels::gaussLegendreWeights[basisSize-1][n1] *
                              kernels::gaussLegendreWeights[basisSize-1][n2] *
@@ -201,24 +197,23 @@ void kernels::aderdg::generic::c::faceUnknownsRestriction(double* lQhbndCoarse,
   double * lQhbndCoarseTemp2 = new double[basisSize*numberOfVariables];
   double * lFhbndCoarseTemp2 = new double[basisSize*numberOfVariables];
 
-  double * workPointerQhbnd1 = 0;
-  double * workPointerQhbnd2 = 0;
-  double * workPointerFhbnd1 = 0;
-  double * workPointerFhbnd2 = 0;
+  double * pointerQhbnd1 = 0;
+  double * pointerQhbnd2 = 0;
+  double * pointerFhbnd1 = 0;
+  double * pointerFhbnd2 = 0;
 
-  // This ensures that the last workPointerQhbnd1 points to lQhbndFine.
-  // Analogous is done for workPointerFhbnd1.
-  workPointerQhbnd1 = lQhbndCoarseTemp1;
-  workPointerFhbnd1 = lFhbndCoarseTemp1;
+  pointerQhbnd1 = lQhbndCoarseTemp1;
+  pointerFhbnd1 = lFhbndCoarseTemp1;
 
   tarch::la::Vector<DIMENSIONS-1,int> subfaceIndexCurrent(subfaceIndex);
 
   tarch::la::Vector<DIMENSIONS-1,int> subintervalIndex;
-  // This loop step by step decodes subfaceIndex[0] into a tertiary basis
-  // starting with the lowest significance 3^0 (in contrast to the the prolongation).
-  // Per step, the digit corresponding to the current significance then determines
-  // the subinterval for the one level prolongation (which is performed
-  // in the same step).
+  
+  // This loop decodes the indices of subfaceIndex into a tertiary basis
+  // starting with the lowest significance 3^0 (in contrast to the prolongation loop).
+  //
+  // Per iteration, the digits corresponding to the current significances then determine
+  // the subintervals for the single level restriction.
   for (int l = 1; l < levelDelta+1; ++l) {
     subintervalIndex[0]    = subfaceIndexCurrent[0] % 3;
     subintervalIndex[1]    = subfaceIndexCurrent[1] % 3;
@@ -227,58 +222,58 @@ void kernels::aderdg::generic::c::faceUnknownsRestriction(double* lQhbndCoarse,
     assertion(subintervalIndex[0] < 3);
     assertion(subintervalIndex[1] < 3);
 
-    // Zero the values of workPointerQhbnd1 and workPointerFhbnd1 since we compute a sum for each entry.
-    memset(workPointerQhbnd1, 0, basisSize*basisSize*numberOfVariables*sizeof(double));
-    memset(workPointerFhbnd1, 0, basisSize*basisSize*numberOfVariables*sizeof(double));
+    // Zero the values of of the first pair of pointers.
+    memset(pointerQhbnd1, 0, basisSize*basisSize*numberOfVariables*sizeof(double));
+    memset(pointerFhbnd1, 0, basisSize*basisSize*numberOfVariables*sizeof(double));
 
-    // Apply the one level restriction operator.
+    // Apply the single level restriction operator.
+    // Use the fine level unknowns as input in the first iteration.
     if (l==1) {
       singleLevelFaceUnknownsRestriction(
-          workPointerQhbnd1,
+          pointerQhbnd1,
           lQhbndFine,
           subintervalIndex,
           numberOfVariables,
           basisSize);
 
       singleLevelFaceUnknownsRestriction(
-          workPointerFhbnd1,
+          pointerFhbnd1,
           lFhbndFine,
           subintervalIndex,
           numberOfVariables,
           basisSize);
     } else {
       singleLevelFaceUnknownsRestriction(
-          workPointerQhbnd1,
-          workPointerQhbnd2,
+          pointerQhbnd1,
+          pointerQhbnd2,
           subintervalIndex,
           numberOfVariables,
           basisSize);
 
       singleLevelFaceUnknownsRestriction(
-          workPointerFhbnd1,
-          workPointerFhbnd2,
+          pointerFhbnd1,
+          pointerFhbnd2,
           subintervalIndex,
           numberOfVariables,
           basisSize);
     }
 
     // Prepare next iteration.
-    workPointerQhbnd2 = workPointerQhbnd1;
-    workPointerFhbnd2 = workPointerFhbnd1;
-    // One check is sufficient since we change both work pointers
-    // for lQhbnd and lFhbnd at the same time.
-    if (workPointerQhbnd1 == lQhbndCoarseTemp1) {
-      workPointerQhbnd1 = lQhbndCoarseTemp2;
-      workPointerFhbnd1 = lFhbndCoarseTemp2;
+    pointerQhbnd2 = pointerQhbnd1;
+    pointerFhbnd2 = pointerFhbnd1;
+    // Toggle pointer pairs.
+    if (pointerQhbnd1 == lQhbndCoarseTemp1) {
+      pointerQhbnd1 = lQhbndCoarseTemp2;
+      pointerFhbnd1 = lFhbndCoarseTemp2;
     } else {
-      workPointerQhbnd1 = lQhbndCoarseTemp1;
-      workPointerFhbnd1 = lFhbndCoarseTemp1;
+      pointerQhbnd1 = lQhbndCoarseTemp1;
+      pointerFhbnd1 = lFhbndCoarseTemp1;
     }
   }
 
-  // Add to coarse grid degrees of freedom:
-  accumulate(lQhbndCoarse, workPointerQhbnd2, basisSize*basisSize*numberOfVariables);
-  accumulate(lFhbndCoarse, workPointerFhbnd2, basisSize*basisSize*numberOfVariables);
+  // Add restricted fine level unknowns to coarse level unknowns.
+  accumulate(lQhbndCoarse, pointerQhbnd2, basisSize*basisSize*numberOfVariables);
+  accumulate(lFhbndCoarse, pointerFhbnd2, basisSize*basisSize*numberOfVariables);
 
   // Clean up.
   delete [] lQhbndCoarseTemp1;
@@ -309,7 +304,7 @@ void singleLevelVolumeUnknownsProlongation(
                         += luhCoarse[nDofStartIndex + ivar] *
                         kernels::fineGridProjector1d[basisSize-1][subcellIndex[0]][n1][m1] *
                         kernels::fineGridProjector1d[basisSize-1][subcellIndex[1]][n2][m2] *
-                        kernels::fineGridProjector1d[basisSize-1][subcellIndex[2]][n3][m3]; // \sum q_n * P_nm
+                        kernels::fineGridProjector1d[basisSize-1][subcellIndex[2]][n3][m3];
               }
             }
           }
@@ -329,26 +324,27 @@ void kernels::aderdg::generic::c::volumeUnknownsProlongation(double* luhFine,
 
   double * luhFineTemp = new double[basisSize*basisSize*basisSize*numberOfVariables];
 
-  double * workPointerUh1 = 0;
-  double * workPointerUh2 = 0;
+  double * pointerUh1 = 0;
+  double * pointerUh2 = 0;
 
-  // This ensures that the last workPointeruh1 points to luhFine.
-  // Analogous is done for workPointerFhbnd1.
+  // This ensures that the first pointer 
+  // points to luhFine in the last iteration
+  // of the following loop.
   if (levelDelta % 2 == 0) {
-    workPointerUh1 = luhFineTemp;
+    pointerUh1 = luhFineTemp;
   } else {
-    workPointerUh1 = luhFine;
+    pointerUh1 = luhFine;
   }
 
   tarch::la::Vector<DIMENSIONS,int> subcellIndexPrevious (subcellIndex);
   tarch::la::Vector<DIMENSIONS,int> subcellIndexCurrent;
 
   tarch::la::Vector<DIMENSIONS,int> subintervalIndex;
-  // This loop step by step decodes subfaceIndex[0] into a tertiary basis
+  // This loop step by step decodes the elements of subcellIndex into a tertiary basis
   // starting with the highest significance 3^(levelDelta-1).
-  // Per step, the digit corresponding to the current significance then determines
-  // the subinterval for the one level prolongation (which is performed
-  // in the same step).
+  // 
+  // Per iteration, the digits corresponding to the current significances then determine
+  // the subintervals for the single level prolongation.
   for (int l = 1; l < levelDelta+1; ++l) {
     const int significance = tarch::la::aPowI(levelDelta-l,3);
     subcellIndexCurrent[0] = subcellIndexPrevious[0] % significance;
@@ -361,23 +357,22 @@ void kernels::aderdg::generic::c::volumeUnknownsProlongation(double* luhFine,
     assertion(subintervalIndex[1] < 3);
     assertion(subintervalIndex[2] < 3);
 
-    // Zero the values of 'workPointer1' since we compute a sum for each entry.
-    memset(workPointerUh1, 0, basisSize*basisSize*basisSize*numberOfVariables*sizeof(double));
+    // Zero the values of the first pointer.
+    memset(pointerUh1, 0, basisSize*basisSize*basisSize*numberOfVariables*sizeof(double));
 
-    // Apply the one level prolongation operator.
-    // Use the coarse grid unknowns in the first iteration
-    // and use workPointeruh2,workPointerFhbnd2 in the following.
+    // Apply the single level prolongation operator.
+    // Use the coarse level unknowns as input in the first iteration.
     if (l==1) {
       singleLevelVolumeUnknownsProlongation(
-          workPointerUh1,
+          pointerUh1,
           luhCoarse,
           subintervalIndex,
           numberOfVariables,
           basisSize);
     } else {
       singleLevelVolumeUnknownsProlongation(
-          workPointerUh1,
-          workPointerUh2,
+          pointerUh1,
+          pointerUh2,
           subintervalIndex,
           numberOfVariables,
           basisSize);
@@ -386,13 +381,13 @@ void kernels::aderdg::generic::c::volumeUnknownsProlongation(double* luhFine,
     // Prepare next iteration.
     subcellIndexPrevious = subcellIndexCurrent;
 
-    workPointerUh2 = workPointerUh1;
-    // One check is sufficient since we change both work pointers
-    // for luh and lFhbnd at the same time.
-    if (workPointerUh1 == luhFineTemp) {
-      workPointerUh1 = luhFine;
+    pointerUh2 = pointerUh1;
+
+    // Toggle pointers.
+    if (pointerUh1 == luhFineTemp) {
+      pointerUh1 = luhFine;
     } else {
-      workPointerUh1 = luhFineTemp;
+      pointerUh1 = luhFineTemp;
     }
   }
 
@@ -418,10 +413,6 @@ void singleLevelVolumeUnknownsRestriction(
                 const int nNodeIndex     = basisSize*basisSize*n3 + basisSize*n2 + n1;
                 const int nDofStartIndex = nNodeIndex * numberOfVariables;
 
-                // P_mn * q_n
-                // Note that the indices are interchanged
-                // in expression 'fineGridProjector1d[order][digit][mm][ii]'
-                // in comparsion to the one level prolongation operator.
                 luhCoarse[mDofStartIndex+ivar] +=
                     kernels::gaussLegendreWeights[basisSize-1][n1] *
                     kernels::gaussLegendreWeights[basisSize-1][n2] *
@@ -432,7 +423,7 @@ void singleLevelVolumeUnknownsRestriction(
                     luhFine[nDofStartIndex + ivar] /
                     kernels::gaussLegendreWeights[basisSize-1][m1] /
                     kernels::gaussLegendreWeights[basisSize-1][m2] /
-                    kernels::gaussLegendreWeights[basisSize-1][m3] / 27.0; // 9=3^DIMENSIONS
+                    kernels::gaussLegendreWeights[basisSize-1][m3] / 27.0;
               }
             }
           }
@@ -454,21 +445,19 @@ void kernels::aderdg::generic::c::volumeUnknownsRestriction(
   double * luhCoarseTemp1 = new double[basisSize*basisSize*basisSize*numberOfVariables];
   double * luhCoarseTemp2 = new double[basisSize*basisSize*basisSize*numberOfVariables];
 
-  double * workPointerUh1 = 0;
-  double * workPointerUh2 = 0;
+  double * pointerUh1 = 0;
+  double * pointerUh2 = 0;
 
-  // This ensures that the last workPointeruh1 points to luhFine.
-  // Analogous is done for workPointerFhbnd1.
-  workPointerUh1 = luhCoarseTemp1;
+  pointerUh1 = luhCoarseTemp1;
 
   tarch::la::Vector<DIMENSIONS,int> subcellIndexCurrent(subcellIndex);
 
   tarch::la::Vector<DIMENSIONS,int> subintervalIndex;
-  // This loop step by step decodes subcellIndex[0] into a tertiary basis
+  // This loop step by step decodes the elements of subcellIndex into a tertiary basis
   // starting with the lowest significance 3^0 (in contrast to the prolongation decoding).
-  // Per step, the digit corresponding to the current significance then determines
-  // the subinterval for the one level prolongation (which is performed
-  // in the same step).
+  //
+  // Per iteration, the digits corresponding to the current significances then determine
+  // the subintervals for the single level restriction.
   for (int l = 1; l < levelDelta+1; ++l) {
     subintervalIndex[0]    = subcellIndexCurrent[0] % 3;
     subintervalIndex[1]    = subcellIndexCurrent[1] % 3;
@@ -480,37 +469,40 @@ void kernels::aderdg::generic::c::volumeUnknownsRestriction(
     assertion(subintervalIndex[1] < 3);
     assertion(subintervalIndex[2] < 3);
 
-    // Zero the values of workPointeruh1 since we compute a sum for each entry.
-    memset(workPointerUh1, 0, basisSize*basisSize*basisSize*numberOfVariables*sizeof(double));
+    // Zero the values of the first pointer.
+    memset(pointerUh1, 0, basisSize*basisSize*basisSize*numberOfVariables*sizeof(double));
 
-    // Apply the one level restriction operator.
+    // Apply the single level restriction operator.
+    // Use the fine level unknowns as input in the first iteration.
     if (l==1) {
       singleLevelVolumeUnknownsRestriction(
-          workPointerUh1,
+          pointerUh1,
           luhFine,
           subintervalIndex,
           numberOfVariables,
           basisSize);
     } else {
       singleLevelVolumeUnknownsRestriction(
-          workPointerUh1,
-          workPointerUh2,
+          pointerUh1,
+          pointerUh2,
           subintervalIndex,
           numberOfVariables,
           basisSize);
     }
 
     // Prepare next iteration.
-    workPointerUh2 = workPointerUh1;
-    if (workPointerUh1 == luhCoarseTemp1) {
-      workPointerUh1 = luhCoarseTemp2;
+    pointerUh2 = pointerUh1;
+
+    // Toggle the addresses of the pointers.
+    if (pointerUh1 == luhCoarseTemp1) {
+      pointerUh1 = luhCoarseTemp2;
     } else {
-      workPointerUh1 = luhCoarseTemp1;
+      pointerUh1 = luhCoarseTemp1;
     }
   }
 
-  // Add to coarse grid degrees of freedom:
-  accumulate(luhCoarse,workPointerUh2,basisSize*basisSize*basisSize*numberOfVariables);
+  // Add restricted fine level unknowns to coarse level unknowns.
+  accumulate(luhCoarse,pointerUh2,basisSize*basisSize*basisSize*numberOfVariables);
 
   // Clean up.
   delete [] luhCoarseTemp1;

@@ -35,7 +35,9 @@ void aderriemannsolverlinear_(const double* lQbndL, double* lFbndL,
 // todo change template parameter in header and generator
 // template <void PDEFlux2d(const double * const Q, double * f, double * g)>
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
+                              double* lambda),
+          void PDEMatrixB(const double* const Q, const int normalNonZero,
+                          double* Bn)>
 void kernels::aderdg::generic::fortran::riemannSolverLinear(
     double* FL, double* FR, const double* const QL, const double* const QR,
     const double dt, const int normalNonZero, const int numberOfVariables,

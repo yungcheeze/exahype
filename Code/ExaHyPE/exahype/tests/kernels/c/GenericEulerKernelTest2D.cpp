@@ -16,7 +16,10 @@ namespace c {
 
 // 2.5D Euler
 
-void GenericEulerKernelTest::testFlux(const double *Q, double *f, double *g) {
+void GenericEulerKernelTest::testFlux(const double *Q, double **F) {
+  double *f = F[0];
+  double *g = F[1];
+
   const double GAMMA = 1.4;
 
   const double irho = 1.0 / Q[0];
@@ -85,8 +88,9 @@ void GenericEulerKernelTest::testPDEFluxes() {
 
   double Q[5] = {1., 0.1, 0.2, 0.3, 3.5};  // pressure = 1.39
   double f[5], g[5];
+  double *F[2] = {f, g};
 
-  testFlux(Q, f, g);
+  testFlux(Q, F);
 
   for (int i = 0; i < 5; i++) {
     validateNumericalEqualsWithParams1(

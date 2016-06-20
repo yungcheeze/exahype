@@ -2,8 +2,8 @@
 
 
 
-srhd3dfortran::SRHDSolver::SRHDSolver( int kernelNumber):
-  exahype::solvers::Solver("SRHDSolver",exahype::solvers::Solver::ADER_DG,kernelNumber,5,3+1,exahype::solvers::Solver::GlobalTimeStepping) {
+srhd3dfortran::SRHDSolver::SRHDSolver( int kernelNumber, std::unique_ptr<exahype::profilers::Profiler> profiler):
+  exahype::solvers::Solver("SRHDSolver",exahype::solvers::Solver::ADER_DG,kernelNumber,5,3+1,exahype::solvers::Solver::GlobalTimeStepping,std::move(profiler)) {
   // @todo Please implement/augment if required
 }
 

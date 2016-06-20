@@ -7,6 +7,8 @@ import eu.exahype.node.ASharedMemory;
 import eu.exahype.node.ATwoDimensionalComputationalDomain;
 import eu.exahype.node.AThreeDimensionalComputationalDomain;
 import eu.exahype.node.ADistributedMemory;
+import eu.exahype.node.AOptimisation;
+import eu.exahype.node.AProfiling;
 
 public class SetupBuildEnvironment extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -16,6 +18,9 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
   private DirectoryAndPathChecker _directoryAndPathChecker;
 
   private boolean _requiresFortran;
+
+  private String _likwidInc;
+  private String _likwidLib;
 
   public SetupBuildEnvironment(DirectoryAndPathChecker directoryAndPathChecker) {
     _directoryAndPathChecker = directoryAndPathChecker;
@@ -147,14 +152,32 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
   }
 
   @Override
+  public void inAProfiling(AProfiling node) {
+    if (node.getLikwidInc() != null) {
+      _likwidInc = node.getLikwidInc().toString().trim();
+    }
+
+    if(node.getLikwidLib() != null) {
+      _likwidLib = node.getLikwidLib().toString().trim();
+    }
+  };
+
+  @Override
   public void outAProject(AProject node) {
     // @todo Vasco
     // can we evaluate _requiresFortran here?
 
     try {
+      _writer.write("\n\n");
       if (_requiresFortran) {
-        _writer.write("\n\n");
         _writer.write("MIXEDLANG=Yes\n");
+      }
+      if (_likwidInc != null) {
+        _writer.write("PROJECT_CFLAGS+=-I" + _likwidInc + "\n");
+        _writer.write("PROJECT_CFLAGS+=-DLIKWID_AVAILABLE\n");
+      }
+      if (_likwidLib != null) {
+        _writer.write("PROJECT_LFLAGS+=-L" + _likwidLib + " -llikwid\n");
       }
       _writer.write("\n\n");
       _writer.write(

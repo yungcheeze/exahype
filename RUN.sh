@@ -9,8 +9,9 @@ java -jar Toolkit/dist/ExaHyPE.jar --not-interactive Applications/eulerflow2d.ex
 
 # set build parameters
 export CC=gcc
+#export SHAREDMEM=TBB
 #export TBB_INC=/usr/include/tbb
-#export TBB_LIB=/usr/lib/tbb
+#export TBB_SHLIB="-L/usr/lib -ltbb"
 
 # build sample application
 cd Applications/eulerflow2d && make -j

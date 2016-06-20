@@ -1,53 +1,49 @@
 /**
 
- 3D Special Relativistic Hydrodynamics
- with a custom ExaHyPE kernel written in Fortran,
- provided by Olindo and modified by Sven.
+ Euler Flow
 
- Started 03. May, 2016.
+ A simple project
 
  */
-exahype-project  srhd3dfortran
+exahype-project  Euler
 
   peano-path                 = ./Peano/peano
   tarch-path                 = ./Peano/tarch
   multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
   sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
   exahype-path               = ./ExaHyPE
-  output-directory           = ./Applications/srhd3dfortran/
+  output-directory           = ./ApplicationExamples/EulerFlow
   architecture               = noarch
 
   computational-domain
-    dimension                = 3
-    width                    = 10.0
-    offset                   = 0.0, 0.0, 0.0
-    end-time                 = 0.2
+    dimension                = 2
+/*    dimension                = 3 */
+    width                    = 1.0
+    offset                   = 0.0, 0.0
+/*    offset                   = 0.0, 0.0, 0.0 */
+    end-time                 = 0.4
   end computational-domain
 
   shared-memory
     identifier               = dummy
-    cores                    = 30
+    cores                    = 2
     properties-file          = sharedmemory.properties
   end shared-memory
-
-  distributed-memory
-    identifier               = static_load_balancing
-  end distributed-memory
 
   optimisation
     fuse-algorithmic-steps   = on
   end optimisation
 
-  solver ADER-DG SRHDSolver
+  solver ADER-DG MyEulerSolver
     unknowns  = 5
     parameters= 0
     order     = 3
     kernel    = generic::fluxes::nonlinear
-    language  = Fortran
+    language  = C
 
-    plot vtk::binary
+    plot vtk::ascii
       time     = 0.0
-      repeat   = 0.005
+      repeat   = 0.05
       filename = ./solution
     end plot
   end solver
