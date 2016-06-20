@@ -59,6 +59,12 @@ class DGMatrixGenerator:
         # stored in column major order
         l_matrices['Kxi'] = l_linearisedKxi
 
+        # Kxi transposed
+        # for the time being we need both Kxi and its tranpose
+        Kxi_T = np.transpose(Kxi)
+        l_linearised_Kxi_T = np.concatenate((Kxi_T,l_padMatrix),axis=0).flatten('F')
+        l_matrices['Kxi_T'] = l_linearised_Kxi_T
+
         # iK1
         iK1 = np.transpose(np.linalg.inv(aderdg.assembleK1(Kxi, self.m_xGPN, self.m_order)))
         l_linearisediK1 = np.concatenate((iK1,l_padMatrix),axis=0).flatten('F')
@@ -120,6 +126,7 @@ class DGMatrixGenerator:
                            'void initDGMatrices(const std::set<int>& orders);\n' \
                            'void freeDGMatrices(const std::set<int>& orders);\n\n' \
                            'extern double *Kxi;\n'      \
+                           'extern double *Kxi_T;\n'    \
                            'extern double *iK1;\n'      \
                            'extern double *dudx;\n'     \
                            'extern double *s_m;\n'      \
@@ -140,6 +147,7 @@ class DGMatrixGenerator:
         l_sourceFile.write('#include "kernels/'+self.m_headerName+'"\n' \
                            '#include <mm_malloc.h> //g++\n\n')
         l_sourceFile.write('double* kernels::Kxi;\n'     \
+                           'double* kernels::Kxi_T;\n'   \
                            'double* kernels::iK1;\n'     \
                            'double* kernels::dudx;\n'    \
                            'double* kernels::s_m;\n'     \
