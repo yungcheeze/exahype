@@ -20,6 +20,7 @@
 #include "ipcm/metrics/IpcmBytesReadDramMetric.h"
 #include "ipcm/metrics/IpcmBytesWrittenDramMetric.h"
 #include "ipcm/metrics/IpcmConsumedJoulesMetric.h"
+#include "ipcm/metrics/IpcmCountMetric.h"
 #include "ipcm/metrics/IpcmCyclesLostL2MissesMetric.h"
 #include "ipcm/metrics/IpcmCyclesLostL3MissesMetric.h"
 #include "ipcm/metrics/IpcmCyclesMetric.h"
@@ -89,6 +90,13 @@ const std::unordered_map<
                exahype::profilers::ipcm::IpcmL3CacheMissesMetric>(
                new exahype::profilers::ipcm::IpcmL3CacheMissesMetric);
          }},
+        {"IpcmCountMetric",
+         []() {
+           return std::unique_ptr<exahype::profilers::ipcm::IpcmCountMetric>(
+               new exahype::profilers::ipcm::IpcmCountMetric);
+         }
+
+        },
 };
 #endif  // LIKWID_AVAILABLE
 
