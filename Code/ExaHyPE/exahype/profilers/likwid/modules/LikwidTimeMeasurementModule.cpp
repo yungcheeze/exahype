@@ -41,15 +41,11 @@ void LikwidTimeMeasurementModule::stop(const std::string& tag) {
 }
 
 void LikwidTimeMeasurementModule::writeToOstream(std::ostream* os) const {
-  *os << "TimeMeasurementModule" << std::endl;
-
   for (const auto& m : timer_data_) {
-    *os << m.first
-        << ": time_sec = " << timer_print(const_cast<TimerData*>(&m.second))
-        << std::endl;
-    *os << m.first
-        << ": cycles = " << timer_printCycles(const_cast<TimerData*>(&m.second))
-        << std::endl;
+    *os << "TimeMeasurementModule " << m.first << " time_sec "
+        << timer_print(const_cast<TimerData*>(&m.second)) << std::endl;
+    *os << "TimeMeasurementModule " << m.first << " cycles "
+        << timer_printCycles(const_cast<TimerData*>(&m.second)) << std::endl;
   }
 }
 
