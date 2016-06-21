@@ -10,6 +10,7 @@
 
 #ifdef LIKWID_AVAILABLE
 #include "likwid/LikwidProfiler.h"
+#include "likwid/modules/LikwidPowerAndEnergyMonitoringModule.h"
 #include "likwid/modules/LikwidTimeMeasurementModule.h"
 #endif  // LIKWID_AVAILABLE
 
@@ -28,7 +29,15 @@ const std::unordered_map<
                new exahype::profilers::likwid::LikwidTimeMeasurementModule(
                    state));
          }},
-};
+        {
+            "LikwidPowerAndEnergyMonitoringModule",
+            [](const exahype::profilers::likwid::LikwidProfilerState& state) {
+              return std::unique_ptr<exahype::profilers::likwid::
+                                         LikwidPowerAndEnergyMonitoringModule>(
+                  new exahype::profilers::likwid::
+                      LikwidPowerAndEnergyMonitoringModule(state));
+            },
+        }};
 #endif  // LIKWID_AVAILABLE
 
 const std::unordered_map<
