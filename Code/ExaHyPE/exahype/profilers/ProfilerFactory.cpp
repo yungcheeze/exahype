@@ -17,6 +17,7 @@
 
 #ifdef IPCM_AVAILABLE
 #include "ipcm/IpcmProfiler.h"
+#include "ipcm/metrics/IpcmBytesReadDramMetric.h"
 #include "ipcm/metrics/IpcmCyclesMetric.h"
 #endif  // IPCM_AVAILABLE
 
@@ -66,6 +67,12 @@ const std::unordered_map<
          []() {
            return std::unique_ptr<exahype::profilers::ipcm::IpcmMetric>(
                new exahype::profilers::ipcm::IpcmCyclesMetric);
+         }},
+        {"IpcmBytesReadDramMetric",
+         []() {
+           return std::unique_ptr<
+               exahype::profilers::ipcm::IpcmBytesReadDramMetric>(
+               new exahype::profilers::ipcm::IpcmBytesReadDramMetric);
          }},
 };
 #endif  // IPCM_AVAILABLE
