@@ -15,6 +15,11 @@
 #include "likwid/modules/LikwidTimeMeasurementModule.h"
 #endif  // LIKWID_AVAILABLE
 
+#ifdef IPCM_AVAILABLE
+#include "ipcm/IpcmProfiler.h"
+#include "ipcm/metrics/IpcmCyclesMetric.h"
+#endif  // IPCM_AVAILABLE
+
 namespace {
 
 #ifdef LIKWID_AVAILABLE
@@ -52,17 +57,30 @@ const std::unordered_map<
          }}};
 #endif  // LIKWID_AVAILABLE
 
+#ifdef IPCM_AVAILABLE
+const std::unordered_map<
+    std::string,
+    std::function<std::unique_ptr<exahype::profilers::ipcm::IpcmMetric>()>>
+    ipcm_metrics_map = {
+        {"IpcmCyclesMetric",
+         []() {
+           return std::unique_ptr<exahype::profilers::ipcm::IpcmMetric>(
+               new exahype::profilers::ipcm::IpcmCyclesMetric);
+         }},
+};
+#endif  // IPCM_AVAILABLE
+
 const std::unordered_map<
     std::string, std::function<std::unique_ptr<exahype::profilers::Profiler>(
                      const std::vector<std::string>&)>>
     profiler_map = {
         {"NoOpProfiler",
-         [](const std::vector<std::string>& modules) {
+         [](const std::vector<std::string>& metrics) {
            return std::unique_ptr<exahype::profilers::simple::NoOpProfiler>(
                new exahype::profilers::simple::NoOpProfiler());
          }},
         {"ChronoElapsedTimeProfiler",
-         [](const std::vector<std::string>& modules) {
+         [](const std::vector<std::string>& metrics) {
            return std::unique_ptr<
                exahype::profilers::simple::ChronoElapsedTimeProfiler>(
                new exahype::profilers::simple::ChronoElapsedTimeProfiler());
@@ -94,6 +112,23 @@ const std::unordered_map<
            return profiler;
          }},
 #endif  // LIKWID_AVAILABLE
+#ifdef IPCM_AVAILABLE
+        {"IpcmProfiler",
+         [](const std::vector<std::string>& metrics) {
+           std::unique_ptr<exahype::profilers::ipcm::IpcmProfiler> profiler(
+               new exahype::profilers::ipcm::IpcmProfiler());
+           for (const auto& metric : metrics) {
+             if (ipcm_metrics_map.count(metric)) {
+               profiler->addMetric(ipcm_metrics_map.at(metric)());
+             } else {
+               std::cerr << "ProfilerFactory: Unknown ipcm metric name '"
+                         << metric << "'" << std::endl;
+               std::exit(EXIT_FAILURE);
+             }
+           }
+           return profiler;
+         }},
+#endif  // IPCM_AVAILABLE
 };
 
 }  // namespace

@@ -21,6 +21,8 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
 
   private String _likwidInc;
   private String _likwidLib;
+  private String _ipcmInc;
+  private String _ipcmLib;
 
   public SetupBuildEnvironment(DirectoryAndPathChecker directoryAndPathChecker) {
     _directoryAndPathChecker = directoryAndPathChecker;
@@ -160,6 +162,13 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
     if(node.getLikwidLib() != null) {
       _likwidLib = node.getLikwidLib().toString().trim();
     }
+
+    if (node.getIpcmInc() != null) {
+      _ipcmInc = node.getIpcmInc().toString().trim();
+    }
+    if (node.getIpcmLib() != null) {
+      _ipcmLib = node.getIpcmLib().toString().trim();
+    }
   };
 
   @Override
@@ -176,8 +185,15 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
         _writer.write("PROJECT_CFLAGS+=-I" + _likwidInc + "\n");
         _writer.write("PROJECT_CFLAGS+=-DLIKWID_AVAILABLE\n");
       }
+      if (_ipcmInc != null) {
+        _writer.write("PROJECT_CFLAGS+=-I" + _ipcmInc + "\n");
+        _writer.write("PROJECT_CFLAGS+=-DIPCM_AVAILABLE\n");
+      }
       if (_likwidLib != null) {
         _writer.write("PROJECT_LFLAGS+=-L" + _likwidLib + " -llikwid\n");
+      }
+      if (_ipcmLib != null) {
+        _writer.write("PROJECT_LFLAGS+=-L" + _ipcmLib + " -lintelpcm\n");
       }
       _writer.write("\n\n");
       _writer.write(
