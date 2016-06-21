@@ -5,8 +5,6 @@
 
 #include "GenericIpcmMetric.h"
 
-// TODO(guera): Guard
-
 namespace exahype {
 namespace profilers {
 namespace ipcm {
