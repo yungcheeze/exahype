@@ -10,6 +10,7 @@
 
 #ifdef LIKWID_AVAILABLE
 #include "likwid/LikwidProfiler.h"
+#include "likwid/modules/LikwidPerformanceMonitoringModule.h"
 #include "likwid/modules/LikwidPowerAndEnergyMonitoringModule.h"
 #include "likwid/modules/LikwidTimeMeasurementModule.h"
 #endif  // LIKWID_AVAILABLE
@@ -20,10 +21,12 @@ namespace {
 const std::unordered_map<
     std::string,
     std::function<std::unique_ptr<exahype::profilers::likwid::LikwidModule>(
-        const exahype::profilers::likwid::LikwidProfilerState&)>>
+        const exahype::profilers::likwid::LikwidProfilerState&,
+        const std::string&)>>
     likwid_module_map = {
         {"LikwidTimeMeasurementModule",
-         [](const exahype::profilers::likwid::LikwidProfilerState& state) {
+         [](const exahype::profilers::likwid::LikwidProfilerState& state,
+            const std::string& suffix) {
            return std::unique_ptr<
                exahype::profilers::likwid::LikwidTimeMeasurementModule>(
                new exahype::profilers::likwid::LikwidTimeMeasurementModule(
@@ -31,13 +34,22 @@ const std::unordered_map<
          }},
         {
             "LikwidPowerAndEnergyMonitoringModule",
-            [](const exahype::profilers::likwid::LikwidProfilerState& state) {
+            [](const exahype::profilers::likwid::LikwidProfilerState& state,
+               const std::string& suffix) {
               return std::unique_ptr<exahype::profilers::likwid::
                                          LikwidPowerAndEnergyMonitoringModule>(
                   new exahype::profilers::likwid::
                       LikwidPowerAndEnergyMonitoringModule(state));
             },
-        }};
+        },
+        {"LikwidPerformanceMonitoringModule",
+         [](const exahype::profilers::likwid::LikwidProfilerState& state,
+            const std::string& suffix) {
+           return std::unique_ptr<
+               exahype::profilers::likwid::LikwidPerformanceMonitoringModule>(
+               new exahype::profilers::likwid::
+                   LikwidPerformanceMonitoringModule(state, suffix));
+         }}};
 #endif  // LIKWID_AVAILABLE
 
 const std::unordered_map<
@@ -61,12 +73,21 @@ const std::unordered_map<
            std::unique_ptr<exahype::profilers::likwid::LikwidProfiler> profiler(
                new exahype::profilers::likwid::LikwidProfiler());
            for (const auto& module : modules) {
-             if (likwid_module_map.count(module)) {
-               profiler->addModule(
-                   likwid_module_map.at(module)(profiler->state()));
+             std::string module_identifier, suffix;
+             size_t pos_underscore = module.find_first_of('_');
+             if (pos_underscore != std::string::npos) {
+               module_identifier = module.substr(0, pos_underscore);
+               suffix = module.substr(pos_underscore + 1);
+             } else {
+               module_identifier = module;
+               suffix = "";
+             }
+             if (likwid_module_map.count(module_identifier)) {
+               profiler->addModule(likwid_module_map.at(module_identifier)(
+                   profiler->state(), suffix));
              } else {
                std::cerr << "ProfilerFactory: Unknown likwid module name '"
-                         << module << "'." << std::endl;
+                         << module_identifier << "'." << std::endl;
                std::exit(EXIT_FAILURE);
              }
            }
