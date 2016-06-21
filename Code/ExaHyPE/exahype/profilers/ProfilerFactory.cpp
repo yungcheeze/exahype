@@ -25,6 +25,7 @@
 #include "ipcm/metrics/IpcmCyclesMetric.h"
 #include "ipcm/metrics/IpcmInstructionsRetiredMetric.h"
 #include "ipcm/metrics/IpcmL2CacheHitsMetric.h"
+#include "ipcm/metrics/IpcmL2CacheMissesMetric.h"
 #endif  // IPCM_AVAILABLE
 
 namespace {
@@ -67,6 +68,12 @@ const std::unordered_map<
            return std::unique_ptr<
                exahype::profilers::ipcm::IpcmL2CacheHitsMetric>(
                new exahype::profilers::ipcm::IpcmL2CacheHitsMetric);
+         }},
+        {"IpcmL2CacheMissesMetric",
+         []() {
+           return std::unique_ptr<
+               exahype::profilers::ipcm::IpcmL2CacheMissesMetric>(
+               new exahype::profilers::ipcm::IpcmL2CacheMissesMetric);
          }},
 };
 #endif  // LIKWID_AVAILABLE
