@@ -21,6 +21,7 @@
 #include "ipcm/metrics/IpcmBytesWrittenDramMetric.h"
 #include "ipcm/metrics/IpcmConsumedJoulesMetric.h"
 #include "ipcm/metrics/IpcmCyclesLostL2MissesMetric.h"
+#include "ipcm/metrics/IpcmCyclesLostL3MissesMetric.h"
 #include "ipcm/metrics/IpcmCyclesMetric.h"
 #endif  // IPCM_AVAILABLE
 
@@ -89,11 +90,19 @@ const std::unordered_map<
                exahype::profilers::ipcm::IpcmConsumedJoulesMetric>(
                new exahype::profilers::ipcm::IpcmConsumedJoulesMetric);
          }},
-        {"IpcmCyclesLostL2MissesMetric", []() {
+        {"IpcmCyclesLostL2MissesMetric",
+         []() {
            return std::unique_ptr<
                exahype::profilers::ipcm::IpcmCyclesLostL2MissesMetric>(
                new exahype::profilers::ipcm::IpcmCyclesLostL2MissesMetric);
-         }}};
+         }},
+        {"IpcmCyclesLostL3MissesMetric",
+         []() {
+           return std::unique_ptr<
+               exahype::profilers::ipcm::IpcmCyclesLostL3MissesMetric>(
+               new exahype::profilers::ipcm::IpcmCyclesLostL3MissesMetric);
+         }},
+};
 #endif  // IPCM_AVAILABLE
 
 const std::unordered_map<
