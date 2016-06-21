@@ -23,6 +23,7 @@
 #include "ipcm/metrics/IpcmCyclesLostL2MissesMetric.h"
 #include "ipcm/metrics/IpcmCyclesLostL3MissesMetric.h"
 #include "ipcm/metrics/IpcmCyclesMetric.h"
+#include "ipcm/metrics/IpcmInstructionsRetiredMetric.h"
 #endif  // IPCM_AVAILABLE
 
 namespace {
@@ -101,6 +102,12 @@ const std::unordered_map<
            return std::unique_ptr<
                exahype::profilers::ipcm::IpcmCyclesLostL3MissesMetric>(
                new exahype::profilers::ipcm::IpcmCyclesLostL3MissesMetric);
+         }},
+        {"IpcmInstructionsRetiredMetric",
+         []() {
+           return std::unique_ptr<
+               exahype::profilers::ipcm::IpcmInstructionsRetiredMetric>(
+               new exahype::profilers::ipcm::IpcmInstructionsRetiredMetric);
          }},
 };
 #endif  // IPCM_AVAILABLE
