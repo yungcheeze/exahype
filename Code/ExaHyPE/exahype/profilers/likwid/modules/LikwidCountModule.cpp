@@ -41,7 +41,8 @@ void LikwidCountModule::stop(const std::string& tag) {
 
 void LikwidCountModule::writeToOstream(std::ostream* os) const {
   for (const auto& count : counts_) {
-    *os << "Count " << count.first << " " << count.second << std::endl;
+    *os << "LikwidCountModule " << count.first << " count " << count.second
+        << std::endl;
   }
 }
 
