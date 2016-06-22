@@ -16,8 +16,8 @@ srhd2d::SRHDSolver::SRHDSolver( int kernelNumber, std::unique_ptr<exahype::profi
 
 
 int srhd2d::SRHDSolver::getMinimumTreeDepth() const {
-  // @todo Please implement
-  return 3;
+	// This number basically controls dx.
+	return 4;
 }
 
 
@@ -107,14 +107,16 @@ void srhd2d::SRHDSolver::adjustedSolutionValues(const double* const x,const doub
 		double V[nVar];
 		SHORTHANDS(V);
 
+		vx = vy = vz = 0.;
 		if(x[0] < 0.5) {
 			rho = 1.0;
-			p = 1.0;
+			p = 10.;
+			vx = -0.6;
 		} else {
-			rho = 0.1;
-			p = 0.1;
+			rho = 10.;
+			p = 20.;
+			vx = 0.5;
 		}
-		vx = vy = vz = 0.;
 
 		prim2cons(V, Q);
 	}
