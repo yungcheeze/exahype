@@ -1,3 +1,4 @@
+#ifndef _EXAHYPE_TESTS_TEST_CASE_H_
 #define _EXAHYPE_TESTS_TEST_CASE_H_
 
 #include "tarch/tests/TestCase.h"
