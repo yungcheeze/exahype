@@ -1,6 +1,3 @@
-// This file is part of the ExaHyPE project. For conditions of distribution and
-// use, please see the copyright notice at www.exahype.eu
-
 #ifndef _EXAHYPE_KERNELS_KERNEL_CALLS_H_
 #define _EXAHYPE_KERNELS_KERNEL_CALLS_H_
 

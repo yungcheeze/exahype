@@ -1,10 +1,3 @@
-// This file originally was created by pdt (Peano Development Toolkit) as part
-// of a code based upon the Peano project by Tobias Weinzierl. For conditions
-// of distribution and use of this project, please see the copyright notice at
-// www.peano-framework.org. Feel free to adopt the license and authorship of
-// this file and your project to your needs as long as the license is in
-// agreement with the original Peano user constraints. A reference to/citation
-// of  Peano and its author is highly appreciated.
 #ifndef EXAHYPE_MAPPINGS_SurfaceIntegral_H_
 #define EXAHYPE_MAPPINGS_SurfaceIntegral_H_
 

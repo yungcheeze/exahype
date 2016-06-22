@@ -1,5 +1,3 @@
-// This file is part of the Peano project. For conditions of distribution and 
-// use, please see the copyright notice at www.peano-framework.org
 #ifndef _EXAHYPE_VERTEX_OPERATIONS_H_ 
 #define _EXAHYPE_VERTEX_OPERATIONS_H_
 
