@@ -3,14 +3,14 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released unter the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #include "ProfilerFactory.h"
 
 #include <cstdlib>
@@ -79,37 +79,6 @@ const std::unordered_map<
                new exahype::profilers::likwid::
                    LikwidPerformanceMonitoringModule(state, suffix));
          }},
-        {"IpcmL2CacheHitsMetric",
-         []() {
-           return std::unique_ptr<
-               exahype::profilers::ipcm::IpcmL2CacheHitsMetric>(
-               new exahype::profilers::ipcm::IpcmL2CacheHitsMetric);
-         }},
-        {"IpcmL2CacheMissesMetric",
-         []() {
-           return std::unique_ptr<
-               exahype::profilers::ipcm::IpcmL2CacheMissesMetric>(
-               new exahype::profilers::ipcm::IpcmL2CacheMissesMetric);
-         }},
-        {"IpcmL3CacheHitsMetric",
-         []() {
-           return std::unique_ptr<
-               exahype::profilers::ipcm::IpcmL3CacheHitsMetric>(
-               new exahype::profilers::ipcm::IpcmL3CacheHitsMetric);
-         }},
-        {"IpcmL3CacheMissesMetric",
-         []() {
-           return std::unique_ptr<
-               exahype::profilers::ipcm::IpcmL3CacheMissesMetric>(
-               new exahype::profilers::ipcm::IpcmL3CacheMissesMetric);
-         }},
-        {"IpcmCountMetric",
-         []() {
-           return std::unique_ptr<exahype::profilers::ipcm::IpcmCountMetric>(
-               new exahype::profilers::ipcm::IpcmCountMetric);
-         }
-
-        },
 };
 #endif  // LIKWID_AVAILABLE
 
@@ -158,6 +127,35 @@ const std::unordered_map<
            return std::unique_ptr<
                exahype::profilers::ipcm::IpcmInstructionsRetiredMetric>(
                new exahype::profilers::ipcm::IpcmInstructionsRetiredMetric);
+         }},
+        {"IpcmL2CacheHitsMetric",
+         []() {
+           return std::unique_ptr<
+               exahype::profilers::ipcm::IpcmL2CacheHitsMetric>(
+               new exahype::profilers::ipcm::IpcmL2CacheHitsMetric);
+         }},
+        {"IpcmL2CacheMissesMetric",
+         []() {
+           return std::unique_ptr<
+               exahype::profilers::ipcm::IpcmL2CacheMissesMetric>(
+               new exahype::profilers::ipcm::IpcmL2CacheMissesMetric);
+         }},
+        {"IpcmL3CacheHitsMetric",
+         []() {
+           return std::unique_ptr<
+               exahype::profilers::ipcm::IpcmL3CacheHitsMetric>(
+               new exahype::profilers::ipcm::IpcmL3CacheHitsMetric);
+         }},
+        {"IpcmL3CacheMissesMetric",
+         []() {
+           return std::unique_ptr<
+               exahype::profilers::ipcm::IpcmL3CacheMissesMetric>(
+               new exahype::profilers::ipcm::IpcmL3CacheMissesMetric);
+         }},
+        {"IpcmCountMetric",
+         []() {
+           return std::unique_ptr<exahype::profilers::ipcm::IpcmCountMetric>(
+               new exahype::profilers::ipcm::IpcmCountMetric);
          }},
 };
 #endif  // IPCM_AVAILABLE
