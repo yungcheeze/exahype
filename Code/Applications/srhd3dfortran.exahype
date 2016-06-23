@@ -41,7 +41,7 @@ exahype-project  srhd3dfortran
   solver ADER-DG SRHDSolver
     unknowns  = 5
     parameters= 0
-    order     = 1
+    order     = 3
     kernel    = generic::fluxes::nonlinear
     language  = Fortran
 

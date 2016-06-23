@@ -55,11 +55,13 @@ SUBROUTINE PDEFlux(F,Q)
   F(4, 2)   = wwy*vz  
   F(5, 2)   = wwy - F(1, 2)
 
-  F(1, 3)   = vz*rho*lf
-  F(2, 3)   = wwz*vx  
-  F(3, 3)   = wwz*vy  
-  F(4, 3)   = wwz*vz + p
-  F(5, 3)   = wwz - F(1, 3)
+  IF ( d > 2 ) then
+    F(1, 3)   = vz*rho*lf
+    F(2, 3)   = wwz*vx  
+    F(3, 3)   = wwz*vy  
+    F(4, 3)   = wwz*vz + p
+    F(5, 3)   = wwz - F(1, 3)
+  END IF
 
 END SUBROUTINE PDEFlux 
 
@@ -75,24 +77,22 @@ SUBROUTINE PDEEigenvalues(Lambda,Q,nv)
   REAL, INTENT(OUT) :: Lambda(nVar)  
   ! Local variables  
   INTEGER :: iErr
-  REAL :: rho,vx,vy,vz,p
+  REAL :: rho, vel(d), p
   REAL :: cs2, cs, c0, v2, w, gamma1, vn, den, u, c
   REAL :: V(nVar)
   REAL, PARAMETER :: epsilon = 1e-14  
   Lambda(:) = 0.0
   !
-  !@todo Please implement
   CALL PDECons2Prim(V,Q,iErr)
   rho    = V(1)
-  vx     = V(2)
-  vy     = V(3)
-  vz     = V(4)
+  ! the velocity vector is dimension agnostic
+  vel    = V(2:2+d-1)
   p      = V(5)
   gamma1 = gamma/(gamma-1.0)
   w      = rho + gamma1*p
   cs2    = gamma*p/w
-  v2     = vx**2 + vy**2 + vz**2
-  vn     = vx*nv(1) + vy*nv(2) + vz*nv(3)
+  v2     = SUM(vel**2)
+  vn     = SUM(vel * nv)
   den    = 1.0/(1.0 - v2*cs2)
   IF(SUM(nv**2).EQ.0.) THEN  
      u = SQRT( v2) 
