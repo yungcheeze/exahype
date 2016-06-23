@@ -61,16 +61,16 @@ class SpaceTimePredictorGenerator:
                         '// computed as \n'                                                               \
                         '// \\hat{q}^{n+1} = K_{1}^{-1}[F_0 \\cdot \\hat{u} - K_{\\xi} \\cdot \\hat{F}^{n}] \n'
 
-        l_includeStatement = '#include "string.h"\n'                             \
-                             '#include "kernels/aderdg/optimised/Kernels.h"\n'   \
-                             '#include "kernels/DGMatrices.h"\n'                 \
-                             '#include "kernels/GaussLegendreQuadrature.h"\n'    \
-                             '#include "kernels/aderdg/optimised/asm_picard.cpp"\n\n'
+        l_includeStatement = '#include "string.h"\n'                                           \
+                             '#include "kernels/aderdg/optimised/Kernels.h"\n'                 \
+                             '#include "kernels/aderdg/optimised/DGMatrices.h"\n'              \
+                             '#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"\n' \
+                             '#include "kernels/aderdg/optimised/asm_picard.c"\n\n'
 
         l_functionSignature = FunctionSignatures.getPicardLoopSignature(self.m_config['nDim']) + " {\n"
 
         l_sourceFile = open(i_pathToFile, 'a')
-        #l_sourceFile.write(l_description)
+        l_sourceFile.write(l_description)
         l_sourceFile.write(l_includeStatement)
         l_sourceFile.write(l_functionSignature)
         l_sourceFile.close()
@@ -79,24 +79,15 @@ class SpaceTimePredictorGenerator:
     def __writeHeaderForPredictor(self, i_pathToFile):
         l_description = '// Compute the time-averaged space-time polynomials (integration in time) \n\n'
 
-        l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n'              \
-                             '#include "kernels/GaussLegendreQuadrature.h"\n'              \
-                             '#include "kernels/aderdg/optimised/asm_predictor.cpp"\n\n'
+        l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n'                 \
+                             '#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"\n' \
+                             '#include "kernels/aderdg/optimised/asm_predictor.c"\n\n'
 
         l_functionSignature = FunctionSignatures.getPredictorSignature()+" {\n"
 
-        l_parameterDocumentation = '// lqh[nVar][nDOFt][nDOFx][nDOFy][nDOFz]      : space-time DOFs\n'                                \
-                                   '// lFh[nVar][dim][nDOFx][nDOFy][nDOFz][nDOFt] : space-time DOFs\n'                                \
-                                   '// lQhi[nVar][nDOFx][nDOFy][nDOFz]            : time-averaged space-time DOFs\n'                  \
-                                   '// lFhi[nVar][nDOF?][nDOF?][nDOF?][dim]       : time-averaged non-linear flux tensor\n'           \
-                                   '// where lFhi[nVar][nDOFx][nDOFy][nDOFz][1]\n'                                                    \
-                                   '//       lFhi[nVar][nDOFy][nDOFx][nDOFz][2]\n'                                                    \
-                                   '//       lFhi[nVar][nDOFz][nDOFy][nDOFx][3]\n\n'
-
         l_sourceFile = open(i_pathToFile, 'a')
-        #l_sourceFile.write(l_description)
+        l_sourceFile.write(l_description)
         l_sourceFile.write(l_includeStatement)
-        l_sourceFile.write(l_parameterDocumentation)
         l_sourceFile.write(l_functionSignature)
         l_sourceFile.close()
 
@@ -105,32 +96,23 @@ class SpaceTimePredictorGenerator:
         l_description = '// Compute the boundary-extrapolated values for Q and F*n \n\n'
 
         l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n'      \
-                             '#include "kernels/DGMatrices.h"\n'                    \
-                             '#include "kernels/aderdg/optimised/asm_extrapolatedPredictor.cpp"\n\n'
+                             '#include "kernels/aderdg/optimised/DGMatrices.h"\n'   \
+                             '#include "kernels/aderdg/optimised/asm_extrapolatedPredictor.c"\n\n'
 
         l_functionSignature = FunctionSignatures.getExtrapolatorSignature()+" {\n"
 
-        l_parameterDocumentation = '// lQbnd[nVar][nDOF][nDOF][2*dim]         : boundary-extrapolated data for the state vector\n'    \
-                                   '// lFbnd[nVar][nDOFx][nDOFy][nDOFz][2*dim]: the boundary-extrapolated data for the normal flux\n' \
-                                   '// lQhi[nVar][nDOFx][nDOFy][nDOFz]        : time-averaged space-time DOFs\n'                      \
-                                   '// lFhi[nVar][nDOF?][nDOF?][nDOF?][dim]   : time-averaged non-linear flux tensor\n'               \
-                                   '// where lFhi[nVar][nDOFx][nDOFy][nDOFz][1]\n'                                                    \
-                                   '//       lFhi[nVar][nDOFy][nDOFx][nDOFz][2]\n'                                                    \
-                                   '//       lFhi[nVar][nDOFz][nDOFy][nDOFx][3]\n\n'
-
         l_sourceFile = open(i_pathToFile, 'a')
-        #l_sourceFile.write(l_description)
+        l_sourceFile.write(l_description)
         l_sourceFile.write(l_includeStatement)
-        l_sourceFile.write(l_parameterDocumentation)
         l_sourceFile.write(l_functionSignature)
         l_sourceFile.close()
 
 
     def __writeHeaderForCauchyKovalewski(self, i_pathToFile):
         l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h" \n'   \
-                             '#include "kernels/DGMatrices.h"\n' \
+                             '#include "kernels/aderdg/optimised/DGMatrices.h"\n' \
                              '#include "string.h"\n'                              \
-                             '#include "kernels/aderdg/optimised/asm_cauchyKovalewski.cpp"\n\n'
+                             '#include "kernels/aderdg/optimised/asm_cauchyKovalewski.c"\n\n'
         l_functionSignature = FunctionSignatures.getCauchyKovalewskiSignature()+" {\n"
 
         l_sourceFile = open(i_pathToFile, 'a')
@@ -466,7 +448,16 @@ class SpaceTimePredictorGenerator:
         l_matmulList = []
 
         # let's open the file to which we write our function calls to the assembler code
-        l_file = open(l_filename, 'a')
+        l_sourceFile = open(l_filename, 'a')
+
+
+        # in contrast to the Fortran kernels, split the
+        # computation of lqhi and lFhi into two separate loops
+
+
+        #-----------------------------
+        # lqhi
+        #-----------------------------
 
         # (1) lqhi(:,i,j,k) = MATMUL(lqh(:,:,i,j,k), wGPN)
         l_matmul = MatmulConfig(    # M
@@ -478,7 +469,7 @@ class SpaceTimePredictorGenerator:
                                     # LDA
                                     Backend.getSizeWithPadding(self.m_config['nVar']), \
                                     # LDB
-                                    self.m_config['nDof'],                             \
+                                    Backend.getSizeWithPadding(self.m_config['nDof']), \
                                     # LDC
                                     Backend.getSizeWithPadding(self.m_config['nVar']), \
                                     # alpha
@@ -498,55 +489,164 @@ class SpaceTimePredictorGenerator:
         l_matmulList.append(l_matmul)
 
 
-        # write the function call to the cpp file
+        # write the driver file
         l_iters = self.m_config['nDof'] ** self.m_config['nDim']
-        l_baseAddrC = 0
+
+        # variant 1: loop not unrolled
+        l_matrixSize = Backend.getSizeWithPadding(self.m_config['nVar']) * self.m_config['nDof']
+        l_sourceFile.write("  for(int ijk=0;ijk<"+str(l_iters)+";ijk++)\n")
+        l_sourceFile.write("    "+l_matmul.baseroutinename\
+                          +'(&lqh[ijk*'+str(l_matrixSize)+'],'+  \
+                            '&kernels::weights1[0],'+ \
+                            '&lqhi[ijk*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+']);\n')
+
+        # variant 2: loop unrolled
+        #l_baseAddrC = 0
+        #l_baseAddrA = 0
+        #for it in range(0, l_iters):
+        #    l_sourceFile.write("  "+l_matmul.baseroutinename+'(&lqh['+str(l_baseAddrA)+'],'+  \
+        #                                                            '&kernels::weights1[0],'+ \
+        #                                                     '&lqhi['+str(l_baseAddrC)+'])')
+        #    l_baseAddrC = l_baseAddrC + Backend.getSizeWithPadding(self.m_config['nVar'])
+        #    l_baseAddrA = l_baseAddrA + Backend.getSizeWithPadding(self.m_config['nVar']) * self.m_config['nDof']
+
+        l_sourceFile.write("\n\n")
+
+        #-----------------------------
+        # lFhi
+        #-----------------------------
+
+        # (2) lFhi_x(:,i,j,k) = MATMUL(lFh(:,i,j,k,:,1), wGPN)
+        # (3) lFhi_y(:,j,i,k) = MATMUL(lFh(:,i,j,k,:,2), wGPN)
+        # (4) lFhi_z(:,k,i,j) = MATMUL(lFh(:,i,j,k,:,3), wGPN)
+        # The function signature specifies lFhi = [lFhi_x | lFhi_y | lFhi_z].
+        l_fluxDofSize = Backend.getSizeWithPadding(self.m_config['nVar']) \
+                         * Backend.getSizeWithPadding(self.m_config['nDof']**self.m_config['nDim'])
+        l_baseAddr_lFhi_x = 0
+        l_baseAddr_lFhi_y = 1*l_fluxDofSize
+        l_baseAddr_lFhi_z = 2*l_fluxDofSize
+
+        # lFh = [lFh_x | lFh_y | lFh_z]
+        lFh_y_startAddr = 1*Backend.getSizeWithPadding(self.m_config['nVar']) \
+                           *(self.m_config['nDof']**(self.m_config['nDim']+1))
+        lFh_z_startAddr = 2*Backend.getSizeWithPadding(self.m_config['nVar']) \
+                           *(self.m_config['nDof']**(self.m_config['nDim']+1))
+
+        # (2)-(4) lFhi_x(:,i,j,k) = MATMUL(lFh(:,i,j,k,:,1), wGPN)
+        l_matmul = MatmulConfig(    # M
+                                    self.m_config['nVar'],                             \
+                                    # N
+                                    1,                                                 \
+                                    # K
+                                    self.m_config['nDof'],                             \
+                                    # LDA
+                                    Backend.getSizeWithPadding(self.m_config['nVar']) * (self.m_config['nDof']**self.m_config['nDim']), \
+                                    # LDB
+                                    Backend.getSizeWithPadding(self.m_config['nDof']), \
+                                    # LDC
+                                    Backend.getSizeWithPadding(self.m_config['nVar']), \
+                                    # alpha
+                                    1,                                                 \
+                                    # beta
+                                    0,                                                 \
+                                    # alignment A
+                                    0,                                                 \
+                                    # alignment C
+                                    0,                                                 \
+                                    # name
+                                    "lFhi",                                            \
+                                    # prefetching
+                                    "nopf",                                            \
+                                    # type
+                                    "gemv")
+        l_matmulList.append(l_matmul)
+
+        # write the driver file
+        # (2) lFhi_x(:,i,j,k) = MATMUL(lFh(:,i,j,k,:,1), wGPN)
+        l_sourceFile.write("  // lFhi_x(:,i,j,k) = MATMUL(lFh(:,i,j,k,:,1), wGPN)\n")
         l_baseAddrA = 0
+        l_baseAddrC = 0
         for it in range(0, l_iters):
-            l_file.write("  "+l_matmul.baseroutinename+'(&lqh['+str(l_baseAddrA)+'],'+  \
-                                                        '&kernels::gaussLegendreWeights['+self.m_order+'][0],'+\
-                                                        '&lQhi['+str(l_baseAddrC)+'])')
+            l_sourceFile.write("  "+l_matmul.baseroutinename+'(&lFh['+str(l_baseAddrA)+'],'+  \
+                                                             '&kernels::weights1[0],'+\
+                                                             '&lFhi['+str(l_baseAddr_lFhi_x+l_baseAddrC)+']);\n')
+            l_baseAddrA = l_baseAddrA + Backend.getSizeWithPadding(self.m_config['nVar'])
             l_baseAddrC = l_baseAddrC + Backend.getSizeWithPadding(self.m_config['nVar'])
-            l_baseAddrA = l_baseAddrA + Backend.getSizeWithPadding(self.m_config['nVar']) * self.m_config['nDof']
 
 
+        # (3) lFhi_y(:,j,i,k) = MATMUL(lFh(:,i,j,k,:,2), wGPN)
+        l_sourceFile.write("  // lFhi_y(:,j,i,k) = MATMUL(lFh(:,i,j,k,:,2), wGPN)\n")
 
-
-        # TODO
-        if(self.m_config['nDim'] == 2):
-            pass
-            # (2) lFhi_x(:,i,j,k) = MATMUL(lFh(:,i,j,k,:,1), wGPN)
-            # (3) lFhi_y(:,j,j,k) = MATMUL(lFh(:,i,j,k,:,2), wGPN)
-
-        elif(self.m_config['nDim'] == 3):
-            pass
-            # (2) lFhi_x(:,i,j,k) = MATMUL(lFh(:,i,j,k,:,1), wGPN)
-            # (3) lFhi_y(:,j,j,k) = MATMUL(lFh(:,i,j,k,:,2), wGPN)
-            # (4) lFhi_z(:,k,j,i) = MATMUL(lFh(:,i,j,k,:,3), wGPN)
-
+        # 2D/3D compatibility
+        if(self.m_config['nDim'] == 3):
+            kMax = self.m_config['nDof']
         else:
-            print("SpaceTimePredictorGenerator.generatePredictor(): nDim not supported")
+            kMax = 1
+
+        for k in range(0,kMax):
+            for j in range(0, self.m_config['nDof']):
+                for i in range(0, self.m_config['nDof']):
+                    l_baseAddrA =   Backend.getSizeWithPadding(self.m_config['nVar'])*i\
+                                  + Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']*j\
+                                  + Backend.getSizeWithPadding(self.m_config['nVar'])*(self.m_config['nDof']**2)*k\
+                                  + lFh_y_startAddr
+                    l_baseAddrC =   Backend.getSizeWithPadding(self.m_config['nVar'])*j\
+                                  + Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']*i\
+                                  + Backend.getSizeWithPadding(self.m_config['nVar'])*(self.m_config['nDof']**2)*k
+                    l_sourceFile.write("  "+l_matmul.baseroutinename\
+                                           +'(&lFh['+str(l_baseAddrA)+'],'+  \
+                                            '&kernels::weights1[0],'+\
+                                            '&lFhi['+str(l_baseAddr_lFhi_y+l_baseAddrC)+']);\n')
+
+
+        # (4) lFhi_z(:,k,i,j) = MATMUL(lFh(:,i,j,k,:,3), wGPN)
+        l_sourceFile.write("  // lFhi_z(:,k,i,j) = MATMUL(lFh(:,i,j,k,:,3), wGPN)\n")
+        if(self.m_config['nDim'] >= 3):
+            for k in range(0,self.m_config['nDof']):
+                for j in range(0, self.m_config['nDof']):
+                    for i in range(0, self.m_config['nDof']):
+                        l_baseAddrA =   Backend.getSizeWithPadding(self.m_config['nVar'])*i\
+                                  + Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']*j\
+                                  + Backend.getSizeWithPadding(self.m_config['nVar'])*(self.m_config['nDof']**2)*k\
+                                  + lFh_z_startAddr
+                        l_baseAddrC =   Backend.getSizeWithPadding(self.m_config['nVar'])*k\
+                                  + Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']*j\
+                                  + Backend.getSizeWithPadding(self.m_config['nVar'])*(self.m_config['nDof']**2)*i
+                        l_sourceFile.write("  "+l_matmul.baseroutinename\
+                                           +'(&lFh['+str(l_baseAddrA)+'],'+  \
+                                            '&kernels::weights1[0],'+\
+                                            '&lFhi['+str(l_baseAddr_lFhi_z+l_baseAddrC)+']);\n')
 
 
         # all matmuls have been collected, now launch code generator backend
         Backend.generateAssemblerCode("asm_"+l_filename, l_matmulList)
 
         # write missing closing bracket
-        l_file.write('}')
-        l_file.close()
+        l_sourceFile.write('}')
+        l_sourceFile.close()
+
+
 
     def __generateExtrapolator(self):
         l_filename = "extrapolatedPredictor.cpp"
-        
+
         # write #include's and function signature
         self.__writeHeaderForExtrapolator(l_filename)
-                
-        # define a sequence of matmul configs        
+
+        # define a sequence of matmul configs
         l_matmulList = []
-               
-        # let's open the file to which we write our function calls to the assembler code 
-        l_file = open(l_filename, 'a')
-       
+
+        # The function signature specifies lFhi = [lFhi_x | lFhi_y | lFhi_z].
+        l_fluxDofSize = Backend.getSizeWithPadding(self.m_config['nVar']) \
+                         * Backend.getSizeWithPadding(self.m_config['nDof']**self.m_config['nDim'])
+        l_baseAddr_lFhi_x = 0
+        l_baseAddr_lFhi_y = 1*l_fluxDofSize
+        l_baseAddr_lFhi_z = 2*l_fluxDofSize
+
+        # driver file
+        l_sourceFile = open(l_filename, 'a')
+
+
         if(self.m_config['nDim'] == 2):
             # x-direction
             # (1) lQbnd(:,j,1) = MATMUL(lqhi(:,:,j), FLCoeff)
@@ -556,7 +656,7 @@ class SpaceTimePredictorGenerator:
                                      1,                     \
                                      # N
                                      self.m_config['nVar'] * self.m_config['nDof'],   \
-                                     # K                    
+                                     # K
                                      self.m_config['nDof'], \
                                      # LDA
                                      1,                     \
@@ -564,7 +664,7 @@ class SpaceTimePredictorGenerator:
                                      self.m_config['nDof'], \
                                      # LDC
                                      1,                     \
-                                     # alpha 
+                                     # alpha
                                      1,                     \
                                      # beta
                                      0,                     \
@@ -583,22 +683,22 @@ class SpaceTimePredictorGenerator:
             l_matmulList.append(l_matmul)
 
             # write the function call to the cpp file
-            l_file.write("  "+l_matmul.baseroutinename+"(&kernels::FLCoeff["+self.m_order+"][0]," \
+            l_sourceFile.write("  "+l_matmul.baseroutinename+"(&kernels::FLCoeff["+self.m_order+"][0]," \
                                                        " &lQhi[0],"                               \
                                                        " &lQbnd[0]);\n")
-            l_file.write("  "+l_matmul.baseroutinename+"(&kernels::FRCoeff["+self.m_order+"][0]," \
+            l_sourceFile.write("  "+l_matmul.baseroutinename+"(&kernels::FRCoeff["+self.m_order+"][0]," \
                                                        " &lQhi[0],"                               \
                                                        " &lQbnd["+str(1 * self.m_config['nVar']*self.m_config['nDof'])+"]);\n")
 
-                      
+
             # y direction
             # (5) lQbnd(:,i,3) = MATMUL(lqhi(:,i,:), FLCoeff)
             # (6) lQbnd(:,i,4) = MATMUL(lqhi(:,i,:), FRCoeff)
-            
+
             # TODO: strided access?
-            
-            
-         
+
+
+
             # x-direction
             # (3) lFbnd(:,j,1) = MATMUL(lFhi_x(:,:,j), FLCoeff)
             # (4) lFbnd(:,j,2) = MATMUL(lFhi_x(:,:,j), FRCoeff)
@@ -618,7 +718,7 @@ class SpaceTimePredictorGenerator:
                                      self.m_config['nDof'], \
                                      # LDC
                                      1,                     \
-                                     # alpha 
+                                     # alpha
                                      1,                     \
                                      # beta
                                      0,                     \
@@ -632,25 +732,25 @@ class SpaceTimePredictorGenerator:
                                      "nopf",                \
                                      # type
                                      "gemv")
-            
+
             l_matmulList.append(l_matmul)
-            
-            l_file.write("  "+l_matmul.baseroutinename+"(&kernels::FLCoeff["+self.m_order+"][0]," \
+
+            l_sourceFile.write("  "+l_matmul.baseroutinename+"(&kernels::FLCoeff["+self.m_order+"][0]," \
                                                        " &lFhi["+str(0 * self.m_config['nVar'] * self.m_config['nDof']**2)+"]," \
                                                        " &lFbnd["+str(0 * self.m_config['nVar']*self.m_config['nDof'])+"]);\n")
-            l_file.write("  "+l_matmul.baseroutinename+"(&kernels::FRCoeff["+self.m_order+"][0]," \
+            l_sourceFile.write("  "+l_matmul.baseroutinename+"(&kernels::FRCoeff["+self.m_order+"][0]," \
                                                        " &lFhi["+str(0 * self.m_config['nVar'] * self.m_config['nDof']**2)+"]," \
                                                        " &lFbnd["+str(1 * self.m_config['nVar']*self.m_config['nDof'])+"]);\n")
-            l_file.write("  "+l_matmul.baseroutinename+"(&kernels::FLCoeff["+self.m_order+"][0]," \
+            l_sourceFile.write("  "+l_matmul.baseroutinename+"(&kernels::FLCoeff["+self.m_order+"][0]," \
                                                        " &lFhi["+str(1 * self.m_config['nVar'] * self.m_config['nDof']**2)+"]," \
                                                        " &lFbnd["+str(2 * self.m_config['nVar']*self.m_config['nDof'])+"]);\n")
-            l_file.write("  "+l_matmul.baseroutinename+"(&kernels::FRCoeff["+self.m_order+"][0]," \
+            l_sourceFile.write("  "+l_matmul.baseroutinename+"(&kernels::FRCoeff["+self.m_order+"][0]," \
                                                        " &lFhi["+str(1 * self.m_config['nVar'] * self.m_config['nDof']**2)+"]," \
                                                        " &lFbnd["+str(3 * self.m_config['nVar']*self.m_config['nDof'])+"]);\n")
 
 
         elif(self.m_config['nDim'] == 3):
-            # x-direction           
+            # x-direction
             # (1) lQbnd(:,j,k,1) = MATMUL(lqhi(:,:,j,k), FLCoeff)
             # (2) lQbnd(:,j,k,2) = MATMUL(lqhi(:,:,j,k), FRCoeff)
 
@@ -682,7 +782,7 @@ class SpaceTimePredictorGenerator:
                                      "gemv")
 
             l_matmulList.append(l_matmul)
-            
+
             # write the function call to the cpp file
             l_file.write("  "+l_matmul.baseroutinename+"(&kernels::FLCoeff["+self.m_order+"][0]," \
                                                        " &lQhi[0],"                               \
@@ -696,17 +796,15 @@ class SpaceTimePredictorGenerator:
             # y-direction
             # (5) lQbnd(:,i,k,3) = MATMUL(lqhi(:,i,:,k), FLCoeff)
             # (6) lQbnd(:,i,k,4) = MATMUL(lqhi(:,i,:,k), FRCoeff)
-            
+
             # TODO: strided access???
-            
+
             # z-direction
             # (9)  lQbnd(:,i,j,5) = MATMUL(lqhi(:,i,j,:), FLCoeff)
             # (10) lQbnd(:,i,j,6) = MATMUL(lqhi(:,i,j,:), FRCoeff)
-            
+
             # TODO: strided access?
-            
-            
-            
+
 
             # x-direction
             # (3) lFbnd(:,j,k,1) = MATMUL(lFhi_x(:,:,j,k), FLCoeff)
@@ -719,7 +817,7 @@ class SpaceTimePredictorGenerator:
             # z-direction
             # (11) lFbnd(:,i,j,5) = MATMUL(lFhi_z(:,:,i,j), FLCoeff)
             # (12) lFbnd(:,i,j,6) = MATMUL(lFhi_z(:,:,i,j), FRCoeff)
-            
+
             l_matmul = MatmulConfig( # M
                                      1,                     \
                                      # N
