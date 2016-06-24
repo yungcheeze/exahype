@@ -9,8 +9,8 @@ extern "C" {
 void minimumtreedepth_(int* depth);
 void hastoadjustsolution_(double* time, bool* refine);
 void adjustedsolutionvalues_(const double* const x,const double* w,const double* t,const double* dt,double* Q);
-void flux_(const double* const Q, double* F);
-void eigenvalues_(const double* const Q, const int* normalNonZeroIndex, double* lambda);
+void pdeflux_(double* F, const double* const Q);
+void pdeeigenvalues_(const double* const Q, const int* normalNonZeroIndex, double* lambda);
 }
 
 SRHD::SRHDSolver::SRHDSolver( int kernelNumber, std::unique_ptr<exahype::profilers::Profiler> profiler):
@@ -33,7 +33,7 @@ void SRHD::SRHDSolver::flux(const double* const Q, double** F) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
 
-  flux_(Q, F[0]);
+  pdeflux_(F[0], Q);
   
 }
 
@@ -44,7 +44,7 @@ void SRHD::SRHDSolver::eigenvalues(const double* const Q, const int normalNonZer
   // Number of variables    = 5 (#unknowns + #parameters)
   
   const int nnzi = normalNonZeroIndex+1;
-  eigenvalues_(Q, &nnzi, lambda);
+  pdeeigenvalues_(Q, &nnzi, lambda);
   
 }
 

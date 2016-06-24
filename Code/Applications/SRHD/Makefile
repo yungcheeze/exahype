@@ -1,9 +1,9 @@
-PEANO_PATH=/home/hpc/pr63so/gu89tik2/data/ExaHyPE/Code/./Peano/peano
-TARCH_PATH=/home/hpc/pr63so/gu89tik2/data/ExaHyPE/Code/./Peano/tarch
-MULTISCALELINKEDCELL_PATH=/home/hpc/pr63so/gu89tik2/data/ExaHyPE/Code/./Peano/multiscalelinkedcell
-SHAREDMEMORYORACLES_PATH=/home/hpc/pr63so/gu89tik2/data/ExaHyPE/Code/./Peano/sharedmemoryoracles
-EXAHYPE_PATH=/home/hpc/pr63so/gu89tik2/data/ExaHyPE/Code/./ExaHyPE
-PROJECT_PATH=/home/hpc/pr63so/gu89tik2/data/ExaHyPE/Code/./Applications/SRHD
+PEANO_PATH=../.././Peano/peano
+TARCH_PATH=../.././Peano/tarch
+MULTISCALELINKEDCELL_PATH=../.././Peano/multiscalelinkedcell
+SHAREDMEMORYORACLES_PATH=../.././Peano/sharedmemoryoracles
+EXAHYPE_PATH=../.././ExaHyPE
+PROJECT_PATH=../.././Applications/SRHD
 EXECUTABLE=ExaHyPE-SRHD 
 
 
@@ -14,7 +14,7 @@ PROJECT_CFLAGS+=-DDim2
 
 MIXEDLANG=Yes
 
--include /home/hpc/pr63so/gu89tik2/data/ExaHyPE/Code/./ExaHyPE/MakefileFORTRAN
+-include ../.././ExaHyPE/MakefileFORTRAN
 
 
 
