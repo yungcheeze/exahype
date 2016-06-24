@@ -1,0 +1,53 @@
+/**
+
+ 2D Elastic Waves
+
+ A simple project
+
+ */
+exahype-project  elasticwaves2d
+
+  peano-path                 = ./Peano/peano
+  tarch-path                 = ./Peano/tarch
+  multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
+  sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
+  exahype-path               = ./ExaHyPE
+  output-directory           = ./Applications/elasticwaves2d
+  architecture               = noarch
+
+  computational-domain
+    dimension                = 2
+    width                    = 1.0
+    offset                   = 0.0, 0.0
+    end-time                 = 1.0
+  end computational-domain
+
+  shared-memory
+    identifier               = dummy
+    cores                    = 2
+    properties-file          = sharedmemory.properties
+  end shared-memory
+
+  distributed-memory
+    identifier               = static_load_balancing
+  end distributed-memory
+
+  optimisation
+    fuse-algorithmic-steps   = on
+  end optimisation
+
+  solver ADER-DG MyElasticSolver
+    unknowns  = 5
+    parameters= 0
+    order     = 3
+    kernel    = generic::fluxes::nonlinear
+    language  = C
+
+    plot vtk::ascii
+      time     = 0.0
+      repeat   = 0.05
+      filename = ./solution
+    end plot
+  end solver
+
+end exahype-project
