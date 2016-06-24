@@ -647,232 +647,233 @@ class SpaceTimePredictorGenerator:
         l_sourceFile = open(l_filename, 'a')
 
 
-        if(self.m_config['nDim'] == 2):
-            # x-direction
-            # (1) lQbnd(:,j,1) = MATMUL(lqhi(:,:,j), FLCoeff)
-            # (2) lQbnd(:,j,2) = MATMUL(lqhi(:,:,j), FRCoeff)
+        #------------------------------------------
+        # lQbnd
+        #------------------------------------------
 
-            l_matmul = MatmulConfig( # M
-                                     1,                     \
-                                     # N
-                                     self.m_config['nVar'] * self.m_config['nDof'],   \
-                                     # K
-                                     self.m_config['nDof'], \
-                                     # LDA
-                                     1,                     \
-                                     # LDB
-                                     self.m_config['nDof'], \
-                                     # LDC
-                                     1,                     \
-                                     # alpha
-                                     1,                     \
-                                     # beta
-                                     0,                     \
-                                     # alignment A
-                                     0,                     \
-                                     # alignment C
-                                     0,                     \
-                                     # name
-                                     "lQbnd",               \
-                                     # prefetching
-                                     "nopf",                \
-                                     # type
-                                     "gemv")
+        # ( 1) lQbnd(:,j,k,1) = MATMUL( lqhi(:,:,j,k), FLCoeff )
+        # ( 2) lQbnd(:,j,k,2) = MATMUL( lqhi(:,:,j,k), FRCoeff )
+        # ( 3) lQbnd(:,i,k,3) = MATMUL( lqhi(:,i,:,k), FLCoeff )
+        # ( 4) lQbnd(:,i,k,4) = MATMUL( lqhi(:,i,:,k), FRCoeff )
+        # ( 5) lQbnd(:,i,j,5) = MATMUL( lqhi(:,i,j,:), FLCoeff )
+        # ( 6) lQbnd(:,i,j,6) = MATMUL( lqhi(:,i,j,:), FRCoeff )
 
 
-            l_matmulList.append(l_matmul)
+        l_sourceFile.write(" // #pragma this? works on independent data structures!\n")
+        # (1),(2) lQbnd(:,j,k,1) = MATMUL( lqhi(:,:,j,k), FLCoeff )
+        l_matmul = MatmulConfig(# M
+                                self.m_config['nVar'],                              \
+                                # N
+                                1,                                                  \
+                                # K
+                                self.m_config['nDof'],                              \
+                                # LDA
+                                Backend.getSizeWithPadding(self.m_config['nVar']),  \
+                                # LDB
+                                self.m_config['nDof'],                              \
+                                # LDC
+                                Backend.getSizeWithPadding(self.m_config['nVar']),  \
+                                # alpha
+                                1,                                                  \
+                                # beta
+                                0,                                                  \
+                                # alignment A
+                                0,                                                  \
+                                # alignment C
+                                1,                                                  \
+                                # name
+                                "lQbnd_x",                                          \
+                                # prefetching
+                                "nopf",                                             \
+                                # type
+                                "gemv")
+        l_matmulList.append(l_matmul)
 
-            # write the function call to the cpp file
-            l_sourceFile.write("  "+l_matmul.baseroutinename+"(&kernels::FLCoeff["+self.m_order+"][0]," \
-                                                       " &lQhi[0],"                               \
-                                                       " &lQbnd[0]);\n")
-            l_sourceFile.write("  "+l_matmul.baseroutinename+"(&kernels::FRCoeff["+self.m_order+"][0]," \
-                                                       " &lQhi[0],"                               \
-                                                       " &lQbnd["+str(1 * self.m_config['nVar']*self.m_config['nDof'])+"]);\n")
-
-
-            # y direction
-            # (5) lQbnd(:,i,3) = MATMUL(lqhi(:,i,:), FLCoeff)
-            # (6) lQbnd(:,i,4) = MATMUL(lqhi(:,i,:), FRCoeff)
-
-            # TODO: strided access?
-
-
-
-            # x-direction
-            # (3) lFbnd(:,j,1) = MATMUL(lFhi_x(:,:,j), FLCoeff)
-            # (4) lFbnd(:,j,2) = MATMUL(lFhi_x(:,:,j), FRCoeff)
-            #
-            # y-direction
-            # (7) lFbnd(:,i,3) = MATMUL(lFhi_y(:,:,i), FLCoeff)
-            # (8) lFbnd(:,i,4) = MATMUL(lFhi_y(:,:,i), FRCoeff)
-            l_matmul = MatmulConfig( # M
-                                     1,                     \
-                                     # N
-                                     self.m_config['nVar'] * self.m_config['nDof'],   \
-                                     # K                    
-                                     self.m_config['nDof'], \
-                                     # LDA
-                                     1,                     \
-                                     # LDB
-                                     self.m_config['nDof'], \
-                                     # LDC
-                                     1,                     \
-                                     # alpha
-                                     1,                     \
-                                     # beta
-                                     0,                     \
-                                     # alignment A
-                                     0,                     \
-                                     # alignment C
-                                     0,                     \
-                                     # name
-                                     "lFbnd",               \
-                                     # prefetching
-                                     "nopf",                \
-                                     # type
-                                     "gemv")
-
-            l_matmulList.append(l_matmul)
-
-            l_sourceFile.write("  "+l_matmul.baseroutinename+"(&kernels::FLCoeff["+self.m_order+"][0]," \
-                                                       " &lFhi["+str(0 * self.m_config['nVar'] * self.m_config['nDof']**2)+"]," \
-                                                       " &lFbnd["+str(0 * self.m_config['nVar']*self.m_config['nDof'])+"]);\n")
-            l_sourceFile.write("  "+l_matmul.baseroutinename+"(&kernels::FRCoeff["+self.m_order+"][0]," \
-                                                       " &lFhi["+str(0 * self.m_config['nVar'] * self.m_config['nDof']**2)+"]," \
-                                                       " &lFbnd["+str(1 * self.m_config['nVar']*self.m_config['nDof'])+"]);\n")
-            l_sourceFile.write("  "+l_matmul.baseroutinename+"(&kernels::FLCoeff["+self.m_order+"][0]," \
-                                                       " &lFhi["+str(1 * self.m_config['nVar'] * self.m_config['nDof']**2)+"]," \
-                                                       " &lFbnd["+str(2 * self.m_config['nVar']*self.m_config['nDof'])+"]);\n")
-            l_sourceFile.write("  "+l_matmul.baseroutinename+"(&kernels::FRCoeff["+self.m_order+"][0]," \
-                                                       " &lFhi["+str(1 * self.m_config['nVar'] * self.m_config['nDof']**2)+"]," \
-                                                       " &lFbnd["+str(3 * self.m_config['nVar']*self.m_config['nDof'])+"]);\n")
+        l_matrixSize = Backend.getSizeWithPadding(self.m_config['nVar']) * self.m_config['nDof']
+        l_sourceFile.write("  for(int jk=0;jk<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";jk++)\n")
+        l_sourceFile.write("  "+l_matmul.baseroutinename\
+                               +'(&lqhi[jk*'+str(l_matrixSize)+'],'+  \
+                                ' &kernels::FLCoeff[0],'+\
+                                ' &kernels::tmp_bnd[jk*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+']);\n')
+        # TODO scatter
 
 
-        elif(self.m_config['nDim'] == 3):
-            # x-direction
-            # (1) lQbnd(:,j,k,1) = MATMUL(lqhi(:,:,j,k), FLCoeff)
-            # (2) lQbnd(:,j,k,2) = MATMUL(lqhi(:,:,j,k), FRCoeff)
+        # (3),(4) lQbnd(:,i,k,3) = MATMUL( lqhi(:,i,:,k), FLCoeff )
+        l_matmul = MatmulConfig(# M
+                                self.m_config['nVar'],                              \
+                                # N
+                                1,                                                  \
+                                # K
+                                self.m_config['nDof'],                              \
+                                # LDA
+                                Backend.getSizeWithPadding(self.m_config['nVar'])   \
+                                    *self.m_config['nDof'],                         \
+                                # LDB
+                                self.m_config['nDof'],                              \
+                                # LDC
+                                Backend.getSizeWithPadding(self.m_config['nVar']),  \
+                                # alpha
+                                1,                                                  \
+                                # beta
+                                0,                                                  \
+                                # alignment A
+                                0,                                                  \
+                                # alignment C
+                                1,                                                  \
+                                # name
+                                "lQbnd_y",                                          \
+                                # prefetching
+                                "nopf",                                             \
+                                # type
+                                "gemv")
+        l_matmulList.append(l_matmul)
 
-            l_matmul = MatmulConfig( # M
-                                     1,                     \
-                                     # N
-                                     self.m_config['nVar'] * self.m_config['nDof'] * self.m_config['nDof'],   \
-                                     # K
-                                     self.m_config['nDof'], \
-                                     # LDA
-                                     1,                     \
-                                     # LDB
-                                     self.m_config['nDof'], \
-                                     # LDC
-                                     1,                     \
-                                     # alpha
-                                     1,                     \
-                                     # beta
-                                     0,                     \
-                                     # alignment A
-                                     0,                     \
-                                     # alignment C
-                                     0,                     \
-                                     # name
-                                     "lQbnd",               \
-                                     # prefetching
-                                     "nopf",                \
-                                     # type
-                                     "gemv")
+        l_sourceFile.write("  for(int ik=0;ik<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";ik++)\n")
+        l_sourceFile.write("  "+l_matmul.baseroutinename\
+                               +'(&lqhi[ik*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+'],'+  \
+                                ' &kernels::FLCoeff[0],'+\
+                                ' &kernels::tmp_bnd[ik*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+']);\n')
+        # TODO scatter
 
-            l_matmulList.append(l_matmul)
 
-            # write the function call to the cpp file
-            l_file.write("  "+l_matmul.baseroutinename+"(&kernels::FLCoeff["+self.m_order+"][0]," \
-                                                       " &lQhi[0],"                               \
-                                                       " &lQbnd["+str(0 * self.m_config['nVar']*self.m_config['nDof']*self.m_config['nDof'])+"]);\n")
-            l_file.write("  "+l_matmul.baseroutinename+"(&kernels::FRCoeff["+self.m_order+"][0]," \
-                                                       " &lQhi[0],"                               \
-                                                       " &lQbnd["+str(1 * self.m_config['nVar']*self.m_config['nDof']*self.m_config['nDof'])+"]);\n")
+        # (5),(6) lQbnd(:,i,j,5) = MATMUL( lqhi(:,i,j,:), FLCoeff )
+        l_matmul = MatmulConfig(# M
+                                self.m_config['nVar'],                             \
+                                # N
+                                1,                                                 \
+                                # K
+                                self.m_config['nDof'],                             \
+                                # LDA
+                                Backend.getSizeWithPadding(self.m_config['nVar'])  \
+                                    *(self.m_config['nDof']**2),                   \
+                                # LDB
+                                self.m_config['nDof'],                             \
+                                # LDC
+                                Backend.getSizeWithPadding(self.m_config['nVar']), \
+                                # alpha
+                                1,                                                 \
+                                # beta
+                                0,                                                 \
+                                # alignment A
+                                0,                                                 \
+                                # alignment C
+                                1,                                                 \
+                                # name
+                                "lQbnd_z",                                         \
+                                # prefetching
+                                "nopf",                                            \
+                                # type
+                                "gemv")
+        l_matmulList.append(l_matmul)
+
+        if(self.m_config['nDim'] >= 3):
+            l_sourceFile.write("  for(int ij=0;ij<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";ij++)\n")
+            l_sourceFile.write("  "+l_matmul.baseroutinename\
+                                   +'(&lqhi[ij*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+'],'+  \
+                                    ' &kernels::FLCoeff[0],'+\
+                                    ' &kernels::tmp_bnd[ij*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+']);\n')
+            # TODO scatter
 
 
 
-            # y-direction
-            # (5) lQbnd(:,i,k,3) = MATMUL(lqhi(:,i,:,k), FLCoeff)
-            # (6) lQbnd(:,i,k,4) = MATMUL(lqhi(:,i,:,k), FRCoeff)
+        #------------------------------------------
+        # lFbnd
+        #------------------------------------------
 
-            # TODO: strided access???
-
-            # z-direction
-            # (9)  lQbnd(:,i,j,5) = MATMUL(lqhi(:,i,j,:), FLCoeff)
-            # (10) lQbnd(:,i,j,6) = MATMUL(lqhi(:,i,j,:), FRCoeff)
-
-            # TODO: strided access?
-
-
-            # x-direction
-            # (3) lFbnd(:,j,k,1) = MATMUL(lFhi_x(:,:,j,k), FLCoeff)
-            # (4) lFbnd(:,j,k,2) = MATMUL(lFhi_x(:,:,j,k), FRCoeff)
-            #
-            # y-direction
-            # (7) lFbnd(:,i,k,3) = MATMUL(lFhi_y(:,:,i,k), FLCoeff)
-            # (8) lFbnd(:,i,k,4) = MATMUL(lFhi_y(:,:,i,k), FRCoeff)
-            #
-            # z-direction
-            # (11) lFbnd(:,i,j,5) = MATMUL(lFhi_z(:,:,i,j), FLCoeff)
-            # (12) lFbnd(:,i,j,6) = MATMUL(lFhi_z(:,:,i,j), FRCoeff)
-
-            l_matmul = MatmulConfig( # M
-                                     1,                     \
-                                     # N
-                                     self.m_config['nVar'] * self.m_config['nDof'] * self.m_config['nDof'],   \
-                                     # K
-                                     self.m_config['nDof'], \
-                                     # LDA
-                                     1,                     \
-                                     # LDB
-                                     self.m_config['nDof'], \
-                                     # LDC
-                                     1,                     \
-                                     # alpha
-                                     1,                     \
-                                     # beta
-                                     0,                     \
-                                     # alignment A
-                                     0,                     \
-                                     # alignment C
-                                     0,                     \
-                                     # name
-                                     "lFbnd",               \
-                                     # prefetching
-                                     "nopf",                \
-                                     # type
-                                     "gemv")
-
-            l_matmulList.append(l_matmul)
-
-            l_file.write("  "+l_matmul.baseroutinename+"(&kernels::FLCoeff["+self.m_order+"][0]," \
-                                                       " &lFhi["+str(0 * self.m_config['nVar'] * self.m_config['nDof']**3)+"],"                               \
-                                                       " &lFbnd["+str(0 * self.m_config['nVar']*self.m_config['nDof']*self.m_config['nDof'])+"]);\n")
-            l_file.write("  "+l_matmul.baseroutinename+"(&kernels::FRCoeff["+self.m_order+"][0]," \
-                                                       " &lFhi["+str(0 * self.m_config['nVar'] * self.m_config['nDof']**3)+"],"                               \
-                                                       " &lFbnd["+str(1 * self.m_config['nVar']*self.m_config['nDof']*self.m_config['nDof'])+"]);\n")
-            l_file.write("  "+l_matmul.baseroutinename+"(&kernels::FLCoeff["+self.m_order+"][0]," \
-                                                       " &lFhi["+str(1 * self.m_config['nVar'] * self.m_config['nDof']**3)+"],"                               \
-                                                       " &lFbnd["+str(2 * self.m_config['nVar']*self.m_config['nDof']*self.m_config['nDof'])+"]);\n")
-            l_file.write("  "+l_matmul.baseroutinename+"(&kernels::FRCoeff["+self.m_order+"][0]," \
-                                                       " &lFhi["+str(1 * self.m_config['nVar'] * self.m_config['nDof']**3)+"],"                               \
-                                                       " &lFbnd["+str(3 * self.m_config['nVar']*self.m_config['nDof']*self.m_config['nDof'])+"]);\n")
-            l_file.write("  "+l_matmul.baseroutinename+"(&kernels::FLCoeff["+self.m_order+"][0]," \
-                                                       " &lFhi["+str(2 * self.m_config['nVar'] * self.m_config['nDof']**3)+"],"                               \
-                                                       " &lFbnd["+str(4 * self.m_config['nVar']*self.m_config['nDof']*self.m_config['nDof'])+"]);\n")
-            l_file.write("  "+l_matmul.baseroutinename+"(&kernels::FRCoeff["+self.m_order+"][0]," \
-                                                       " &lFhi["+str(2 * self.m_config['nVar'] * self.m_config['nDof']**3)+"],"                               \
-                                                       " &lFbnd["+str(5 * self.m_config['nVar']*self.m_config['nDof']*self.m_config['nDof'])+"]);\n")
+        # (1) lFbnd(:,j,k,1) = MATMUL( lFhi_x(:,:,j,k), FLCoeff )
+        # (2) lFbnd(:,j,k,2) = MATMUL( lFhi_x(:,:,j,k), FRCoeff )
+        # (3) lFbnd(:,i,k,3) = MATMUL( lFhi_y(:,:,i,k), FLCoeff )
+        # (4) lFbnd(:,i,k,4) = MATMUL( lFhi_y(:,:,i,k), FRCoeff )
+        # (5) lFbnd(:,i,j,5) = MATMUL( lFhi_z(:,:,i,j), FLCoeff )
+        # (6) lFbnd(:,i,j,6) = MATMUL( lFhi_z(:,:,i,j), FRCoeff )
 
 
-        else:
-            print("SpaceTimePredictorGenerator.generateExtrapolator(): nDim not supported")
+        l_sourceFile.write(" // #pragma this? works on independent data structures!\n")
+        # (1)-(6) lFbnd(:,j,k,1) = MATMUL( lFhi_x(:,:,j,k), FLCoeff )
+        l_matmul = MatmulConfig(# M
+                                self.m_config['nVar'],                              \
+                                # N
+                                1,                                                  \
+                                # K
+                                self.m_config['nDof'],                              \
+                                # LDA
+                                Backend.getSizeWithPadding(self.m_config['nVar']),  \
+                                # LDB
+                                self.m_config['nDof'],                              \
+                                # LDC
+                                Backend.getSizeWithPadding(self.m_config['nVar']),  \
+                                # alpha
+                                1,                                                  \
+                                # beta
+                                0,                                                  \
+                                # alignment A
+                                0,                                                  \
+                                # alignment C
+                                1,                                                  \
+                                # name
+                                "lFbnd",                                            \
+                                # prefetching
+                                "nopf",                                             \
+                                # type
+                                "gemv")
+        l_matmulList.append(l_matmul)
+
+        l_sourceFile.write("  // x-direction\n")
+        l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++) {\n")
+        l_sourceFile.write("    "+l_matmul.baseroutinename\
+                                 +"(&lFhi["+str(l_baseAddr_lFhi_x)+"+"+str(l_matrixSize)+"*j],"\
+                                  " &kernels::FLCoeff[0],"\
+                                  " &kernels::tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
+        # TODO scatter
+        l_sourceFile.write("    "+l_matmul.baseroutinename\
+                                 +"(&lFhi["+str(l_baseAddr_lFhi_x)+"+"+str(l_matrixSize)+"*j],"\
+                                  " &kernels::FRCoeff[0],"\
+                                  " &kernels::tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
+        # TODO scatter
+        # close for loop
+        l_sourceFile.write("  }\n\n")
 
 
+        l_sourceFile.write("  // y-direction\n")
+        l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++) {\n")
+        l_sourceFile.write("    "+l_matmul.baseroutinename\
+                                 +"(&lFhi["+str(l_baseAddr_lFhi_y)+"+"+str(l_matrixSize)+"*j],"\
+                                  " &kernels::FLCoeff[0],"\
+                                  " &kernels::tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
+        # TODO scatter
+        l_sourceFile.write("    "+l_matmul.baseroutinename\
+                                 +"(&lFhi["+str(l_baseAddr_lFhi_y)+"+"+str(l_matrixSize)+"*j],"\
+                                  " &kernels::FRCoeff[0],"\
+                                  " &kernels::tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
+        # TODO scatter
+        # close for loop
+        l_sourceFile.write("  }\n\n")
+
+        if(self.m_config['nDim'] >= 3):
+            l_sourceFile.write("  // z-direction\n")
+            l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++) {\n")
+            l_sourceFile.write("    "+l_matmul.baseroutinename\
+                                    +"(&lFhi["+str(l_baseAddr_lFhi_z)+"+"+str(l_matrixSize)+"*j],"\
+                                    " &kernels::FLCoeff[0],"\
+                                    " &kernels::tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
+            # TODO scatter
+            l_sourceFile.write("    "+l_matmul.baseroutinename\
+                                    +"(&lFhi["+str(l_baseAddr_lFhi_z)+"+"+str(l_matrixSize)+"*j],"\
+                                    " &kernels::FRCoeff[0],"\
+                                    " &kernels::tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
+            # TODO scatter
+            # close for loop
+            l_sourceFile.write("  }\n\n")
+
+
+        # all matmuls have been collected, now launch code generator backend
         Backend.generateAssemblerCode("asm_"+l_filename, l_matmulList)
 
         # write missing closing bracket
-        l_file.write('}')
-        l_file.close()
+        l_sourceFile.write('}\n')
+        l_sourceFile.close()
+
+
+
+
+
