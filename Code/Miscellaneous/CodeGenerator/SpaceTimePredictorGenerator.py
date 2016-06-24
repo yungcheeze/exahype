@@ -643,6 +643,18 @@ class SpaceTimePredictorGenerator:
         l_baseAddr_lFhi_y = 1*l_fluxDofSize
         l_baseAddr_lFhi_z = 2*l_fluxDofSize
 
+        # structure of lFbnd, lQbnd
+        l_chunkSize       = Backend.getSizeWithPadding(self.m_config['nDof']**(self.m_config['nDim']-1))
+        l_vectorLength    = self.m_config['nVar'] * l_chunkSize
+        l_startAddr_face1 = 0 * l_vectorLength
+        l_startAddr_face2 = 1 * l_vectorLength
+        l_startAddr_face3 = 2 * l_vectorLength
+        l_startAddr_face4 = 3 * l_vectorLength
+        l_startAddr_face5 = 4 * l_vectorLength
+        l_startAddr_face6 = 5 * l_vectorLength
+
+
+
         # driver file
         l_sourceFile = open(l_filename, 'a')
 
