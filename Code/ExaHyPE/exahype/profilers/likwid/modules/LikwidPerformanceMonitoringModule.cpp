@@ -7,7 +7,7 @@
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
- * Released unter the BSD 3 Open Source License.
+ * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
  
@@ -1093,7 +1093,7 @@ LikwidPerformanceMonitoringModule::LikwidPerformanceMonitoringModule(
 }
 
 LikwidPerformanceMonitoringModule::~LikwidPerformanceMonitoringModule() {
-  timer_finalize();
+  //timer_finalize();
   perfmon_finalize();
 }
 

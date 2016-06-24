@@ -3,14 +3,14 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
- * Released unter the BSD 3 Open Source License.
+ * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #include "LikwidTimeMeasurementModule.h"
 
 #ifdef LIKWID_AVAILABLE
@@ -34,12 +34,14 @@ LikwidTimeMeasurementModule::~LikwidTimeMeasurementModule() {
 
 void LikwidTimeMeasurementModule::setNumberOfTags(int n) {
   timer_data_.reserve(n);
+  aggregates_cycles_seconds_.reserve(n);
 }
 
 void LikwidTimeMeasurementModule::registerTag(const std::string& tag) {
   assert((timer_data_.count(tag) == 0) &&
          "At least one tag has been registered twice");
   timer_data_[tag];
+  aggregates_cycles_seconds_[tag] = {0, 0.0};
 }
 
 void LikwidTimeMeasurementModule::start(const std::string& tag) {
@@ -50,15 +52,19 @@ void LikwidTimeMeasurementModule::start(const std::string& tag) {
 }
 
 void LikwidTimeMeasurementModule::stop(const std::string& tag) {
-  timer_stop(&timer_data_.at(tag));
+  TimerData* timer_data = &timer_data_.at(tag);
+  timer_stop(timer_data);
+  auto& cycles_seconds_pair = aggregates_cycles_seconds_.at(tag);
+  cycles_seconds_pair.first += timer_printCycles(timer_data);
+  cycles_seconds_pair.second += timer_print(timer_data);
 }
 
 void LikwidTimeMeasurementModule::writeToOstream(std::ostream* os) const {
-  for (const auto& m : timer_data_) {
+  for (const auto& m : aggregates_cycles_seconds_) {
+    *os << "TimeMeasurementModule " << m.first << " cycles " << m.second.first
+        << std::endl;
     *os << "TimeMeasurementModule " << m.first << " time_sec "
-        << timer_print(const_cast<TimerData*>(&m.second)) << std::endl;
-    *os << "TimeMeasurementModule " << m.first << " cycles "
-        << timer_printCycles(const_cast<TimerData*>(&m.second)) << std::endl;
+        << m.second.second << std::endl;
   }
 }
 

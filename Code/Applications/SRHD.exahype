@@ -1,0 +1,45 @@
+/**
+
+ Special Relativistic Hydrodynamics
+ with a generic kernels written in C++ and FORTRAN user interface,
+ provided in Fortran by Olindo and rewritten in C++ by Sven.
+
+ Started 06. May, 2016.
+
+ */
+exahype-project  SRHD
+
+  peano-path                 = ./Peano/peano
+  tarch-path                 = ./Peano/tarch
+  multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
+  sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
+  exahype-path               = ./ExaHyPE
+  output-directory           = ./Applications/SRHD
+  architecture               = noarch
+
+  computational-domain
+    dimension                = 2
+    width                    = 1.0
+    offset                   = 0.0, 0.0
+    end-time                 = 0.2
+  end computational-domain
+
+  optimisation
+    fuse-algorithmic-steps   = on
+  end optimisation
+
+  solver ADER-DG SRHDSolver
+    unknowns  = 5
+    parameters= 0
+    order     = 1
+    kernel    = generic::fluxes::nonlinear
+    language  = C
+
+    plot vtk::binary
+      time     = 0.0
+      repeat   = 0.004
+      filename = ./solution
+    end plot
+  end solver
+
+end exahype-project
