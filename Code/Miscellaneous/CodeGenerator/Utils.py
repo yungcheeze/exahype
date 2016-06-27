@@ -20,7 +20,7 @@ def generateDSCAL(i_scalarName: str, i_inVectorName: str, i_outVectorName:str, i
 
 # --------------------------------------------------------------------------------------
 
-def __scatter_avx(i_nVar: int, i_chunkSize: int, i_baseAddr_lhs: int, i_baseAddr_rhs) -> str:
+def __scatter_avx(i_nVar: int, i_chunkSize: int, i_baseAddr_lhs: int, i_baseAddr_rhs: int, i_simdWidth: int) -> str:
     """
     Scatter for architectures with a SIMD width of 4 working
     on four input vectors
@@ -34,12 +34,12 @@ def __scatter_avx(i_nVar: int, i_chunkSize: int, i_baseAddr_lhs: int, i_baseAddr
             start address of the output buffer
         i_baseAddr_rhs:
             start address of the input buffer
+        i_simdWidth:
+            the SIMD width used for computing offsets (may be a fraction of the true SIMD width)
     Returns:
         l_code:
             intrinsics implementation of the scatter operation
     """
-    i_architecture = Backend.m_architecture
-    i_simdWidth = Backend.m_simdWidth['DP'][i_architecture]
     l_iters = int(i_nVar/i_simdWidth)
     l_remainder = i_nVar % i_simdWidth
     l_offset = Backend.getSizeWithPadding(i_nVar)
@@ -106,7 +106,7 @@ def __scatter_avx(i_nVar: int, i_chunkSize: int, i_baseAddr_lhs: int, i_baseAddr
     return l_code
 
 
-def __scatter_sse2(i_nVar: int, i_chunkSize: int, i_baseAddr_lhs: int, i_baseAddr_rhs) -> str:
+def __scatter_sse2(i_nVar: int, i_chunkSize: int, i_baseAddr_lhs: int, i_baseAddr_rhs: int, i_simdWidth: int) -> str:
     """
     Scatter for architectures with a SIMD width of 2 working
     on two input vectors
@@ -120,12 +120,12 @@ def __scatter_sse2(i_nVar: int, i_chunkSize: int, i_baseAddr_lhs: int, i_baseAdd
             start address of the output buffer
         i_baseAddr_rhs:
             start address of the input buffer
+        i_simdWidth:
+            the SIMD width used for computing offsets (may be a fraction of the true SIMD width)
     Returns:
         l_code:
             intrinsics implementation of the scatter operation
     """
-    i_architecture = Backend.m_architecture
-    i_simdWidth = Backend.m_simdWidth['DP'][i_architecture]
     l_iters = int(i_nVar/i_simdWidth)
     l_remainder = i_nVar % i_simdWidth
     l_offset = Backend.getSizeWithPadding(i_nVar)
@@ -175,13 +175,6 @@ def __scatter_scalar(i_nVar: int, i_chunkSize: int, i_startAddr_lhs: int, i_star
         l_code:
             plain C implementation of the scatter operation
     """
-    #i_architecture = Backend.m_architecture
-    #i_simdWidth = Backend.m_simdWidth['DP'][i_architecture]
-    #l_iters = int(i_nVar/i_simdWidth)
-    #l_remainder = i_nVar % i_simdWidth
-    #l_offset = Backend.getSizeWithPadding(i_nVar)
-    # E.g. 9 Vars => 2*simdWidth + 1 => 2*packed + 1*remainder
-
     l_startAddress = 0
     l_code = ''
     for iVar in range(0, i_nVar):
@@ -236,12 +229,22 @@ def generateScatter(i_nVar: int, i_nVectors: int, i_chunkSize: int):
 
         # full vector groups (micro kernel 1)
         for iVec in range(0, l_nVectorGroup):
-            l_code = l_code + __scatter_avx(i_nVar, i_chunkSize, l_startAddr_lhs, l_startAddr_rhs)
+            l_code = l_code + __scatter_avx(i_nVar, i_chunkSize, l_startAddr_lhs, l_startAddr_rhs, i_simdWidth)
             l_startAddr_rhs = l_startAddr_rhs + 4*Backend.getSizeWithPadding(i_nVar)
             l_startAddr_lhs = l_startAddr_lhs + 4
 
         # rest (micro kernel 2)
-        # ...
+        if(l_nVectorRest == 1):
+            l_code = l_code + __scatter_scalar(i_nVar, i_chunkSize, l_startAddr_lhs, l_startAddr_rhs)
+        if(l_nVectorRest == 2):
+            l_code = l_code + __scatter_sse2(i_nVar, i_chunkSize, l_startAddr_lhs, l_startAddr_rhs, 2)
+            l_startAddr_rhs = l_startAddr_rhs + 2*Backend.getSizeWithPadding(i_nVar)
+            l_startAddr_lhs = l_startAddr_lhs + 2
+        if(l_nVectorRest == 3):
+            l_code = l_code + __scatter_sse2(i_nVar, i_chunkSize, l_startAddr_lhs, l_startAddr_rhs, 2)
+            l_startAddr_rhs = l_startAddr_rhs + 2*Backend.getSizeWithPadding(i_nVar)
+            l_startAddr_lhs = l_startAddr_lhs + 2
+            l_code = l_code + __scatter_scalar(i_nVar, i_chunkSize, l_startAddr_lhs, l_startAddr_rhs)
 
         l_sourceFile.write(l_code)
 
@@ -251,12 +254,14 @@ def generateScatter(i_nVar: int, i_nVectors: int, i_chunkSize: int):
 
         # process full vector groups (micro kernel 1)
         for iVec in range(0, l_nVectorGroup):
-            l_code = l_code + __scatter_sse2(i_nVar, i_chunkSize, l_startAddr_lhs, l_startAddr_rhs)
+            l_code = l_code + __scatter_sse2(i_nVar, i_chunkSize, l_startAddr_lhs, l_startAddr_rhs, i_simdWidth)
             l_startAddr_rhs = l_startAddr_rhs + 2*Backend.getSizeWithPadding(i_nVar)
             l_startAddr_lhs = l_startAddr_lhs + 2
 
         # rest (micro kernel 2)
-        # ...
+        for iVec in range(0, l_nVectorRest):
+            l_code = l_code + __scatter_scalar(i_nVar, i_chunkSize, l_startAddr_lhs, l_startAddr_rhs)
+
 
         l_sourceFile.write(l_code)
 
