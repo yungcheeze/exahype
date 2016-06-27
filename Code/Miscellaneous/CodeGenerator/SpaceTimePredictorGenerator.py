@@ -95,9 +95,10 @@ class SpaceTimePredictorGenerator:
     def __writeHeaderForExtrapolator(self, i_pathToFile):
         l_description = '// Compute the boundary-extrapolated values for Q and F*n \n\n'
 
-        l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n'      \
-                             '#include "kernels/aderdg/optimised/DGMatrices.h"\n'   \
-                             '#include "kernels/aderdg/optimised/asm_extrapolatedPredictor.c"\n\n'
+        l_includeStatement = '#include "kernels/aderdg/optimised/Kernels.h"\n'                 \
+                             '#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"\n' \
+                             '#include "kernels/aderdg/optimised/asm_predictor.c"\n'           \
+                             '#include "kernels/aderdg/optimised/asm_scatter.c"\n\n'
 
         l_functionSignature = FunctionSignatures.getExtrapolatorSignature()+" {\n"
 
@@ -653,7 +654,11 @@ class SpaceTimePredictorGenerator:
         l_startAddr_face5 = 4 * l_vectorLength
         l_startAddr_face6 = 5 * l_vectorLength
 
-
+        # 2D/3D compatibility
+        if(self.m_config['nDim'] >= 3):
+            kmax = self.m_config['nDof']
+        else:
+            kmax = 1
 
         # driver file
         l_sourceFile = open(l_filename, 'a')
@@ -671,7 +676,7 @@ class SpaceTimePredictorGenerator:
         # ( 6) lQbnd(:,i,j,6) = MATMUL( lqhi(:,i,j,:), FRCoeff )
 
 
-        l_sourceFile.write(" // #pragma this? works on independent data structures!\n")
+        l_sourceFile.write("  // #pragma this? works on independent data structures!\n")
         # (1),(2) lQbnd(:,j,k,1) = MATMUL( lqhi(:,:,j,k), FLCoeff )
         l_matmul = MatmulConfig(# M
                                 self.m_config['nVar'],                              \
@@ -707,8 +712,14 @@ class SpaceTimePredictorGenerator:
                                +'(&lqhi[jk*'+str(l_matrixSize)+'],'+  \
                                 ' &kernels::FLCoeff[0],'+\
                                 ' &kernels::tmp_bnd[jk*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+']);\n')
-        # TODO scatter
+        l_sourceFile.write("  scatter(&kernels::tmp_bnd[0], &lQbnd["+str(l_startAddr_face1)+"]);\n\n")
 
+        l_sourceFile.write("  for(int jk=0;jk<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";jk++)\n")
+        l_sourceFile.write("  "+l_matmul.baseroutinename\
+                               +'(&lqhi[jk*'+str(l_matrixSize)+'],'+  \
+                                ' &kernels::FRCoeff[0],'+\
+                                ' &kernels::tmp_bnd[jk*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+']);\n')
+        l_sourceFile.write("  scatter(&kernels::tmp_bnd[0], &lQbnd["+str(l_startAddr_face2)+"]);\n\n")
 
         # (3),(4) lQbnd(:,i,k,3) = MATMUL( lqhi(:,i,:,k), FLCoeff )
         l_matmul = MatmulConfig(# M
@@ -740,13 +751,31 @@ class SpaceTimePredictorGenerator:
                                 "gemv")
         l_matmulList.append(l_matmul)
 
-        l_sourceFile.write("  for(int ik=0;ik<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";ik++)\n")
-        l_sourceFile.write("  "+l_matmul.baseroutinename\
-                               +'(&lqhi[ik*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+'],'+  \
-                                ' &kernels::FLCoeff[0],'+\
-                                ' &kernels::tmp_bnd[ik*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+']);\n')
-        # TODO scatter
+        for k in range(0, kmax):
+            for i in range(0, self.m_config['nDof']):
+                l_startAddr_lqhi =   k * Backend.getSizeWithPadding(self.m_config['nVar'])*(self.m_config['nDof']**2)\
+                                   + i * Backend.getSizeWithPadding(self.m_config['nVar'])
+                l_startAddr_bnd  =   k * Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']\
+                                   + i * Backend.getSizeWithPadding(self.m_config['nVar'])
+                l_sourceFile.write("  "+l_matmul.baseroutinename\
+                     +'(&lqhi['+str(l_startAddr_lqhi)+'],'+  \
+                      ' &kernels::FLCoeff[0],'+\
+                      ' &kernels::tmp_bnd['+str(l_startAddr_bnd)+']);\n')
 
+        l_sourceFile.write("  scatter(&kernels::tmp_bnd[0], &lQbnd["+str(l_startAddr_face3)+"]);\n\n")
+
+        for k in range(0, kmax):
+            for i in range(0, self.m_config['nDof']):
+                l_startAddr_lqhi =   k * Backend.getSizeWithPadding(self.m_config['nVar'])*(self.m_config['nDof']**2)\
+                                   + i * Backend.getSizeWithPadding(self.m_config['nVar'])
+                l_startAddr_bnd  =   k * Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']\
+                                   + i * Backend.getSizeWithPadding(self.m_config['nVar'])
+                l_sourceFile.write("  "+l_matmul.baseroutinename\
+                     +'(&lqhi['+str(l_startAddr_lqhi)+'],'+  \
+                      ' &kernels::FRCoeff[0],'+\
+                      ' &kernels::tmp_bnd['+str(l_startAddr_bnd)+']);\n')
+
+        l_sourceFile.write("  scatter(&kernels::tmp_bnd[0], &lQbnd["+str(l_startAddr_face4)+"]);\n\n")
 
         # (5),(6) lQbnd(:,i,j,5) = MATMUL( lqhi(:,i,j,:), FLCoeff )
         l_matmul = MatmulConfig(# M
@@ -784,8 +813,14 @@ class SpaceTimePredictorGenerator:
                                    +'(&lqhi[ij*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+'],'+  \
                                     ' &kernels::FLCoeff[0],'+\
                                     ' &kernels::tmp_bnd[ij*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+']);\n')
-            # TODO scatter
+            l_sourceFile.write("  scatter(&kernels::tmp_bnd[0], &lQbnd["+str(l_startAddr_face5)+"]);\n\n")
 
+            l_sourceFile.write("  for(int ij=0;ij<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";ij++)\n")
+            l_sourceFile.write("  "+l_matmul.baseroutinename\
+                                +'(&lqhi[ij*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+'],'+  \
+                                    ' &kernels::FRCoeff[0],'+\
+                                    ' &kernels::tmp_bnd[ij*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+']);\n')
+            l_sourceFile.write("  scatter(&kernels::tmp_bnd[0], &lQbnd["+str(l_startAddr_face6)+"]);\n\n")
 
 
         #------------------------------------------
@@ -800,7 +835,7 @@ class SpaceTimePredictorGenerator:
         # (6) lFbnd(:,i,j,6) = MATMUL( lFhi_z(:,:,i,j), FRCoeff )
 
 
-        l_sourceFile.write(" // #pragma this? works on independent data structures!\n")
+        l_sourceFile.write("\n  // #pragma this? works on independent data structures!\n")
         # (1)-(6) lFbnd(:,j,k,1) = MATMUL( lFhi_x(:,:,j,k), FLCoeff )
         l_matmul = MatmulConfig(# M
                                 self.m_config['nVar'],                              \
@@ -831,51 +866,50 @@ class SpaceTimePredictorGenerator:
         l_matmulList.append(l_matmul)
 
         l_sourceFile.write("  // x-direction\n")
-        l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++) {\n")
+        l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++)\n")
         l_sourceFile.write("    "+l_matmul.baseroutinename\
                                  +"(&lFhi["+str(l_baseAddr_lFhi_x)+"+"+str(l_matrixSize)+"*j],"\
                                   " &kernels::FLCoeff[0],"\
                                   " &kernels::tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
-        # TODO scatter
+        l_sourceFile.write("  scatter(&kernels::tmp_bnd[0], &lFbnd["+str(l_startAddr_face1)+"]);\n")
+
+        l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++)\n")
         l_sourceFile.write("    "+l_matmul.baseroutinename\
                                  +"(&lFhi["+str(l_baseAddr_lFhi_x)+"+"+str(l_matrixSize)+"*j],"\
                                   " &kernels::FRCoeff[0],"\
                                   " &kernels::tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
-        # TODO scatter
-        # close for loop
-        l_sourceFile.write("  }\n\n")
-
+        l_sourceFile.write("  scatter(&kernels::tmp_bnd[0], &lFbnd["+str(l_startAddr_face2)+"]);\n\n")
 
         l_sourceFile.write("  // y-direction\n")
-        l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++) {\n")
+        l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++)\n")
         l_sourceFile.write("    "+l_matmul.baseroutinename\
                                  +"(&lFhi["+str(l_baseAddr_lFhi_y)+"+"+str(l_matrixSize)+"*j],"\
                                   " &kernels::FLCoeff[0],"\
                                   " &kernels::tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
-        # TODO scatter
+        l_sourceFile.write("  scatter(&kernels::tmp_bnd[0], &lFbnd["+str(l_startAddr_face3)+"]);\n")
+
+        l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++)\n")
         l_sourceFile.write("    "+l_matmul.baseroutinename\
                                  +"(&lFhi["+str(l_baseAddr_lFhi_y)+"+"+str(l_matrixSize)+"*j],"\
                                   " &kernels::FRCoeff[0],"\
                                   " &kernels::tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
-        # TODO scatter
-        # close for loop
-        l_sourceFile.write("  }\n\n")
+        l_sourceFile.write("  scatter(&kernels::tmp_bnd[0], &lFbnd["+str(l_startAddr_face4)+"]);\n\n")
 
         if(self.m_config['nDim'] >= 3):
             l_sourceFile.write("  // z-direction\n")
-            l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++) {\n")
+            l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++)\n")
             l_sourceFile.write("    "+l_matmul.baseroutinename\
                                     +"(&lFhi["+str(l_baseAddr_lFhi_z)+"+"+str(l_matrixSize)+"*j],"\
                                     " &kernels::FLCoeff[0],"\
                                     " &kernels::tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
-            # TODO scatter
+            l_sourceFile.write("  scatter(&kernels::tmp_bnd[0], &lFbnd["+str(l_startAddr_face5)+"]);\n")
+
+            l_sourceFile.write("  for(int j=0;j<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";j++)\n")
             l_sourceFile.write("    "+l_matmul.baseroutinename\
                                     +"(&lFhi["+str(l_baseAddr_lFhi_z)+"+"+str(l_matrixSize)+"*j],"\
                                     " &kernels::FRCoeff[0],"\
                                     " &kernels::tmp_bnd[j*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"]);\n")
-            # TODO scatter
-            # close for loop
-            l_sourceFile.write("  }\n\n")
+            l_sourceFile.write("  scatter(&kernels::tmp_bnd[0], &lFbnd["+str(l_startAddr_face6)+"]);\n\n")
 
 
         # all matmuls have been collected, now launch code generator backend
