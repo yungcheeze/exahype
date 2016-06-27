@@ -23,7 +23,17 @@ from Backend import prepareOutputDirectory
 from Backend import moveGeneratedFiles
 import Backend
 import os
+import sys
 
+
+# --------------------------------------------------------
+# Require python3
+# --------------------------------------------------------
+requiredVersion = (3,0)
+currentVersion  = sys.version_info
+
+if(requiredVersion > currentVersion):
+    sys.exit('CodeGenerator: Requires Python 3.0 or newer. Abort.')
 
 
 # --------------------------------------------------------
