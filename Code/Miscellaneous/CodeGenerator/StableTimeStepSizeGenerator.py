@@ -14,6 +14,8 @@ import FunctionSignatures
 import Backend
 
 class StableTimeStepSizeGenerator:
+    m_config = {}
+
     # order of the approximation polynomial
     m_order = -1
 
@@ -37,11 +39,12 @@ class StableTimeStepSizeGenerator:
 
 
     def __init__(self, i_config):
-        self.m_order = i_config['nDof']-1
-        self.m_nDim  = i_config['nDim']
-        self.m_CFL   = 0.9 * self.m_PNPM[self.m_order]
-        self.m_nVar  = i_config['nVar']
-        self.m_nDof  = i_config['nDof']
+        self.m_order  = i_config['nDof']-1
+        self.m_nDim   = i_config['nDim']
+        self.m_CFL    = 0.9 * self.m_PNPM[self.m_order]
+        self.m_nVar   = i_config['nVar']
+        self.m_nDof   = i_config['nDof']
+        self.m_config = i_config
 
 
     def generateCode(self):
@@ -52,42 +55,91 @@ class StableTimeStepSizeGenerator:
         # temporary arrays for the eigenvalues and assembly of quantities
         l_paddedVectorLength = Backend.getSizeWithPadding(self.m_nVar)
 
-        # without padding
-        l_chunkSize = self.m_nDof ** self.m_nDim
-        l_vectorLength = self.m_nVar * l_chunkSize
-
-        # with padding
-        #l_chunkSize = Backend.getSizeWithPadding(self.m_nDof ** self.m_nDim)
+        #-----------------------------------------------------------------------------------
+        # soa version. later on we probably want to revive this.
+        #-----------------------------------------------------------------------------------
+        ## without padding
+        #l_chunkSize = self.m_nDof ** self.m_nDim
         #l_vectorLength = self.m_nVar * l_chunkSize
 
-        # number of real Dofs per chunk without any padded entries
-        l_varsPerChunk = self.m_nDof**self.m_nDim
+        ## with padding
+        ##l_chunkSize = Backend.getSizeWithPadding(self.m_nDof ** self.m_nDim)
+        ##l_vectorLength = self.m_nVar * l_chunkSize
 
+        ## number of real Dofs per chunk without any padded entries
+        #l_varsPerChunk = self.m_nDof**self.m_nDim
+
+        #l_sourceFile.write('  double lambda['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n')
+        #l_sourceFile.write('  double contiguousVars['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n\n')
+        #l_sourceFile.write('  double dt = std::numeric_limits<double>::max();\n')
+
+        #l_sourceFile.write('  for(int i=0;i<'+str(l_varsPerChunk)+';i++) {\n')
+        #for iVar in range(0, self.m_nVar):
+            #l_sourceFile.write('    contiguousVars['+str(iVar)+'] = luh[i+'+str(iVar*l_chunkSize)+'];\n')
+
+        #l_sourceFile.write('\n')
+        #l_sourceFile.write('    double denominator = 0.0;\n')
+        #l_sourceFile.write('    for(int d=0;d<'+str(self.m_nDim)+';d++) {\n')
+        #l_sourceFile.write('      PDEEigenvalues(&contiguousVars[0], d, &lambda[0]);\n\n')
+        #l_sourceFile.write('      double maxEigenvalue = 0.0;\n')
+        ## process without(!) padding
+        #l_sourceFile.write('      for (int ivar = 0; ivar < '+str(self.m_nVar)+'; ivar++) {\n')
+        #l_sourceFile.write('        maxEigenvalue = std::max(fabs(lambda[ivar]), maxEigenvalue);\n')
+        #l_sourceFile.write('      }\n')
+        #l_sourceFile.write('      denominator += maxEigenvalue / dx[d];\n')
+        #l_sourceFile.write('    }\n\n')
+        #l_sourceFile.write('    dt = std::min(dt, ' + str(self.m_CFL) + '/denominator);\n')
+        #l_sourceFile.write('  }\n')
+        #l_sourceFile.write('  return dt;\n')
+        #l_sourceFile.write('}')
+        #l_sourceFile.close()
+
+        #-----------------------------------------------------------------------------------
+        # aos version. temporary solution. be compatible with generic code base
+        # ugly and slow. directly copied from the generic code base. 
+        #-----------------------------------------------------------------------------------
         l_sourceFile.write('  double lambda['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n')
-        l_sourceFile.write('  double contiguousVars['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n\n')
         l_sourceFile.write('  double dt = std::numeric_limits<double>::max();\n')
+        if(self.m_config['nDim']==2):
+            l_sourceFile.write('  for(int ii=0;ii<'+str(self.m_config['nDof'])+';ii++) {\n'\
+                               '    for(int jj=0;jj<'+str(self.m_config['nDof'])+';jj++) {\n'\
+                               '      const int nodeIndex = ii + '+str(self.m_config['nDof'])+' * jj;\n'\
+                               '      const int dofStartIndex = nodeIndex * '+str(self.m_config['nVar'])+';\n'\
+                               '      double denominator = 0.0;\n'\
+                               '      for (int d = 0; d < 2; d++) {\n'\
+                               '        PDEEigenvalues(&luh[dofStartIndex], d, lambda);\n\n'\
+                               '        double maxEigenvalue = 0.0;\n'\
+                               '        for (int ivar = 0; ivar < '+str(self.m_config['nVar'])+'; ivar++) {\n'\
+                               '          maxEigenvalue = std::max(fabs(lambda[ivar]), maxEigenvalue);\n'\
+                               '        }\n'\
+                               '        denominator += maxEigenvalue / dx[d];\n'\
+                               '      }\n\n'\
+                               '      dt = std::min(dt, ' + str(self.m_CFL) + '/denominator);\n'\
+                               '    }\n'\
+                               '  }\n')
+        elif(self.m_config['nDim']==3):
+            l_sourceFile.write('  for(int ii=0;ii<'+str(self.m_config['nDof'])+';ii++) {\n'\
+                               '    for(int jj=0;jj<'+str(self.m_config['nDof'])+';jj++) {\n'\
+                               '      for(int kk=0;kk<'+str(self.m_config['nDof'])+';kk++) {\n'\
+                               '        const int nodeIndex = ii + '+str(self.m_config['nDof'])+' * jj + '+str(self.m_config['nDof']**2)+' * kk;\n'\
+                               '        const int dofStartIndex = nodeIndex * '+str(self.m_config['nVar'])+';\n'\
+                               '        double denominator = 0.0;\n'\
+                               '        for (int d = 0; d < 3; d++) {\n'\
+                               '          PDEEigenvalues(&luh[dofStartIndex], d, lambda);\n\n'\
+                               '          double maxEigenvalue = 0.0;\n'\
+                               '          for (int ivar = 0; ivar < '+str(self.m_config['nVar'])+'; ivar++) {\n'\
+                               '            maxEigenvalue = std::max(fabs(lambda[ivar]), maxEigenvalue);\n'\
+                               '          }\n'\
+                               '          denominator += maxEigenvalue / dx[d];\n'\
+                               '        }\n\n'\
+                               '        dt = std::min(dt, ' + str(self.m_CFL) + '/denominator);\n'\
+                               '      }\n'\
+                               '    }\n'\
+                               '  }\n')
 
-        l_sourceFile.write('  for(int i=0;i<'+str(l_varsPerChunk)+';i++) {\n')
-        for iVar in range(0, self.m_nVar):
-            l_sourceFile.write('    contiguousVars['+str(iVar)+'] = luh[i+'+str(iVar*l_chunkSize)+'];\n')
-
-        l_sourceFile.write('\n')
-        l_sourceFile.write('    double denominator = 0.0;\n')
-        l_sourceFile.write('    for(int d=0;d<'+str(self.m_nDim)+';d++) {\n')
-        l_sourceFile.write('      PDEEigenvalues(&contiguousVars[0], d, &lambda[0]);\n\n')
-        l_sourceFile.write('      double maxEigenvalue = 0.0;\n')
-        # process without(!) padding
-        l_sourceFile.write('      for (int ivar = 0; ivar < '+str(self.m_nVar)+'; ivar++) {\n')
-        l_sourceFile.write('        maxEigenvalue = std::max(fabs(lambda[ivar]), maxEigenvalue);\n')
-        l_sourceFile.write('      }\n')
-        l_sourceFile.write('      denominator += maxEigenvalue / dx[d];\n')
-        l_sourceFile.write('    }\n\n')
-        l_sourceFile.write('    dt = std::min(dt, ' + str(self.m_CFL) + '/denominator);\n')
-        l_sourceFile.write('  }\n')
         l_sourceFile.write('  return dt;\n')
         l_sourceFile.write('}')
         l_sourceFile.close()
-
 
 
     def __writeHeader(self):
