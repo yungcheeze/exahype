@@ -1,0 +1,8 @@
+ExaHyPE-elasticwaves2d
+KernelCalls.cpp
+Makefile
+MyElasticSolver.h
+MyElasticSolver_generated.cpp
+buildinfo.h
+cfiles.mk
+
