@@ -11,12 +11,39 @@ def generateImmediateDSCAL(i_scalar: float, i_inVectorName: str, i_outVectorName
     return l_code
 
 
-def generateDSCAL(i_scalarName: str, i_inVectorName: str, i_outVectorName:str, i_vectorSize: int) -> str:
-    l_code = '#pragma simd\n'                                \
-             '  for(int i=0;i<'+str(i_vectorSize)+';i++) \n' \
-             '    '+i_outVectorName+'[i] = '+ i_scalarName+' * '+i_inVectorName+'[i];\n'
-    return l_code
+def generateDSCAL(i_scalarName: str, i_inVectorName: str, i_outVectorName: str, i_vectorSize: int, i_inBaseAddr=0, i_outBaseAddr=0) -> str:
+    """
+    Generates code snippet that scales a vector by a constant.
+    A compiler should be able to vectorise this.
 
+    Args:
+        i_scalarName:
+            the variable name of the scalar quantity the vector is multiplied with
+        i_inVectorName:
+            the vector that is multiplied with the scalar
+        i_outVectorName:
+            the result
+        i_vectorSize:
+            length of the vector that is multiplied with the scalar
+        i_inBaseAddr:
+            the start address/offset where the first element that should be scaled resides.
+            Recall that this code snippet is inlined and we cannot mimic this behavior
+            through start addresses
+        i_outBaseAddr:
+            the start address/offset where the first element should be written to.
+    Returns:
+        l_code:
+            intrinsics implementation of the scatter operation
+    """
+    if(i_inBaseAddr > 0 or i_outBaseAddr > 0):
+        l_code = '#pragma simd\n'                                \
+        '  for(int i=0;i<'+str(i_vectorSize)+';i++) \n' \
+        '    '+i_outVectorName+'['+str(i_outBaseAddr)+'+i] = '+ i_scalarName+' * '+i_inVectorName+'['+str(i_inBaseAddr)+'+i];\n'
+    else:
+        l_code = '#pragma simd\n'                                \
+                '  for(int i=0;i<'+str(i_vectorSize)+';i++) \n' \
+                '    '+i_outVectorName+'[i] = '+ i_scalarName+' * '+i_inVectorName+'[i];\n'
+    return l_code
 
 # --------------------------------------------------------------------------------------
 
