@@ -140,65 +140,105 @@ class SpaceTimePredictorGenerator:
 
         l_sourceFile = open(l_filename, 'a')
 
+        # gcc and icc specify distinct ways to inform the compiler about guaranteed alignment
+        # gcc: double* arr_ = (double*) __builtin_assume_aligned(a, ALIGNMENT);
+        # icc: __assume_aligned(a, ALIGNMENT);
+        # the default gcc on the cluster exhibits a well-known bug in alignment assumptions
+        # => we skip gcc here
+        # do not query __GNUC__ - icc also defines this
+        l_sourceFile.write('#ifdef __INTEL_COMPILER\n'\
+                           '  __assume_aligned(kernels::s_m, ALIGNMENT)\n'\
+                           '  __assume_aligned(kernels::F0, ALIGNMENT)\n'\
+                           '  __assume_aligned(kernels::Kxi, ALIGNMENT)\n'
+                           '#endif\n')
+
         # initialisation of lqh and rhs0:
-        # (1) lqh(iVar,l,i,j,k) = luh(i,j,k,iVar)
+        # (1) lqh(iVar,l,i,j,k) = luh(iVar,i,j,k)
         # (2) rhs0(iVar,i,j,k,l) = weights3(i,j,k) * F0 * luh(iVar,i,j,k)
 
-        nDOF       = str(self.m_config['nDof'])
-        blockWidth = str(self.m_config['nDof'] * self.m_structSize)
-
+        #-----------------------------------------------------------------------------------
+        # soa version. later on we probably want to revive this.
+        # Note the ordering of luh.
+        #-----------------------------------------------------------------------------------
+        # (1) lqh(iVar,l,i,j,k) = luh(i,j,k,iVar)
+        #nDOF       = str(self.m_config['nDof'])
+        #blockWidth = str(self.m_config['nDof'] * self.m_structSize)
+        #
         # (1) lqh(iVar,l,i,j,k) = luh(i,j,k,iVar);
-        if(self.m_config['nDim'] == 2):
-            l_sourceFile.write( "  for(int i=0;i<"+nDOF+";i++) {\n"   \
-                                "    for(int j=0;j<"+nDOF+";j++) {\n" \
-                                "       const int lqh_base_addr = ("+str(self.m_config['nDof']**2)+"*j+"
-                                                                    +str(self.m_config['nDof'])   +"*i)*"
-                                                                    +str(self.m_structSize)+";\n" \
-                                "       const int luh_addr = i + j*"+str(self.m_config['nDof'])+";\n"
-                               )
-            for iVar in range(0, self.m_config['nVar']):
-                l_sourceFile.write("       lqh[lqh_base_addr+"+str(iVar)+"] = luh["+str(iVar*self.m_luhChunkSize)+"+luh_addr];\n")
-            l_sourceFile.write( "    }\n"
-                                "  }\n"
-                              )
-
-        if(self.m_config['nDim'] == 3):
-            l_sourceFile.write( "  for(int i=0;i<"+nDOF+";i++) {\n"     \
-                                "    for(int j=0;j<"+nDOF+";j++) {\n"   \
-                                "      for(int k=0;k<"+nDOF+";k++) {\n" \
-                                "         const int lqh_base_addr = ("+str(self.m_config['nDof']**3)+"*k+"
-                                                                      +str(self.m_config['nDof']**2)+"*j+"
-                                                                      +str(self.m_config['nDof'])   +"*i)*"
-                                                                      +str(self.m_structSize)+";\n" \
-                                "         const int luh_addr = i + j*"+str(self.m_config['nDof']) +
-                                                                "+ k*"+str(self.m_config['nDof']**2)+";\n"
-                               )
-            for iVar in range(0, self.m_config['nVar']):
-                l_sourceFile.write("         lqh[lqh_base_addr+"+str(iVar)+"] = luh["+str(iVar*self.m_luhChunkSize)+"+luh_addr];\n")
-            l_sourceFile.write( "      }\n"
-                                "    }\n"
-                                "  }\n"
-                              )
-
-
-
+        #if(self.m_config['nDim'] == 2):
+        #    l_sourceFile.write( "  for(int i=0;i<"+nDOF+";i++) {\n"   \
+        #                        "    for(int j=0;j<"+nDOF+";j++) {\n" \
+        #                        "       const int lqh_base_addr = ("+str(self.m_config['nDof']**2)+"*j+"
+        #                                                            +str(self.m_config['nDof'])   +"*i)*"
+        #                                                            +str(self.m_structSize)+";\n" \
+        #                        "       const int luh_addr = i + j*"+str(self.m_config['nDof'])+";\n"
+        #                       )
+        #    for iVar in range(0, self.m_config['nVar']):
+        #        l_sourceFile.write("       lqh[lqh_base_addr+"+str(iVar)+"] = luh["+str(iVar*self.m_luhChunkSize)+"+luh_addr];\n")
+        #    l_sourceFile.write( "    }\n"\
+        #                        "  }\n"
+        #                      )
+        #
+        #if(self.m_config['nDim'] == 3):
+        #    l_sourceFile.write( "  for(int i=0;i<"+nDOF+";i++) {\n"     \
+        #                        "    for(int j=0;j<"+nDOF+";j++) {\n"   \
+        #                        "      for(int k=0;k<"+nDOF+";k++) {\n" \
+        #                        "         const int lqh_base_addr = ("+str(self.m_config['nDof']**3)+"*k+"
+        #                                                              +str(self.m_config['nDof']**2)+"*j+"
+        #                                                              +str(self.m_config['nDof'])   +"*i)*"
+        #                                                              +str(self.m_structSize)+";\n" \
+        #                        "         const int luh_addr = i + j*"+str(self.m_config['nDof']) +
+        #                                                        "+ k*"+str(self.m_config['nDof']**2)+";\n"
+        #                       )
+        #    for iVar in range(0, self.m_config['nVar']):
+        #        l_sourceFile.write("         lqh[lqh_base_addr+"+str(iVar)+"] = luh["+str(iVar*self.m_luhChunkSize)+"+luh_addr];\n")
+        #    l_sourceFile.write( "      }\n"
+        #                        "    }\n"
+        #                        "  }\n"
+        #                      )
         # 2D/3D
-        l_sourceFile.write("  //#pragma omp parallel for\n")
-        l_sourceFile.write("  for(int it=0;it<"+str(self.m_config['nDof']**self.m_config['nDim'])+";it++) {\n" \
-                           "    const int base_addr = it*"+blockWidth+";\n" \
-                           "    for(int l=1;l<"+nDOF+";l++) {\n" \
-                           "      memcpy(&lqh[base_addr+l*"+str(self.m_structSize)+"], &lqh[base_addr],"+str(self.m_structSize)+"*sizeof(double));\n"
-                           "    }\n" \
-                           "  }\n"
-                          )
+        #l_sourceFile.write("  //#pragma omp parallel for\n")
+        #l_sourceFile.write("  for(int it=0;it<"+str(self.m_config['nDof']**self.m_config['nDim'])+";it++) {\n" \
+        #                   "    const int base_addr = it*"+blockWidth+";\n" \
+        #                   "    for(int l=1;l<"+nDOF+";l++) {\n" \
+        #                   "      memcpy(&lqh[base_addr+l*"+str(self.m_structSize)+"], &lqh[base_addr],"+str(self.m_structSize)+"*sizeof(double));\n"
+        #                   "    }\n" \
+        #                   "  }\n"
+        #                  )
+        #
+        # (2) rhs0(iVar,i,j,k,l) = weights3(i,j,k) * F0 * luh(i,j,k,iVar)
+        # is missing
+
+
+        #-----------------------------------------------------------------------------------
+        # aos version. Probably only a temporary solution.
+        # Copied from the generic code base.
+        #-----------------------------------------------------------------------------------
+        # (1) lqh(iVar,l,i,j,k) = luh(iVar,i,j,k)
+        l_nSpaceDof = self.m_config['nDof']**self.m_config['nDim']
+
+        # recall that lqh is padded whereas luh is not
+        l_colWidth   = Backend.getSizeWithPadding(self.m_config['nVar']) # size of lqh(:,l,i,j,k)
+        l_blockWidth = l_colWidth*self.m_config['nDof']                  # size of lqh(:,:,i,j,k)
+
+        l_sourceFile.write('  for(int ijk=0;ijk<'+str(l_nSpaceDof)+';ijk++) {\n')
+        # replicate luh(:,i,j,k) nDOFt times
+        for i in range(0, self.m_config['nDof']):
+            l_sourceFile.write('    std::memcpy(&lqh[ijk*'+str(l_blockWidth)+'+'+str(i*l_colWidth)+'], '\
+                                               '&luh[ijk*'+str(self.m_config['nVar'])+'], '+\
+                                                str(self.m_config['nVar'])+'*sizeof(double));\n')
+        # close for loop
+        l_sourceFile.write('  }\n')
 
 
         # (2) rhs0(iVar,i,j,k,l) = weights3(i,j,k) * F0 * luh(iVar,i,j,k)
         # TODO
 
+
         # define a sequence of matmul configs
         l_matmulList = []
 
+        # TODO: comment in the picard loop
         # discrete Picard iterations
         #l_sourceFile.write("  for(int iter=0;iter<"+str(self.m_config['nDof'])+";iter++) {\n")
 
