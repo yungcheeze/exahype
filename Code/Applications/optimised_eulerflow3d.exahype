@@ -13,7 +13,7 @@ exahype-project  Euler3d
   sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
   exahype-path               = ./ExaHyPE
   libxsmm-path               = ../libxsmm
-  output-directory           = ./Applications/eulerflow3d
+  output-directory           = ./Applications/optimised_eulerflow3d
   architecture               = hsw
 
   computational-domain
