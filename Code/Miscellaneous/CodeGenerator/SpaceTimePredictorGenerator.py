@@ -232,8 +232,36 @@ class SpaceTimePredictorGenerator:
 
 
         # (2) rhs0(iVar,i,j,k,l) = weights3(i,j,k) * F0 * luh(iVar,i,j,k)
-        # TODO
+        if(self.m_config['nDim']==2):
+            pass
+            # TODO
+        if(self.m_config['nDim']==3):
+            l_sourceFile.write('  for(int k=0;k<'+str(self.m_config['nDof'])+';k++) {\n'\
+                               '    for(int j=0;j<'+str(self.m_config['nDof'])+';j++) {\n'\
+                               '      for(int i=0;i<'+str(self.m_config['nDof'])+';i++) {\n'\
+                               '        double w=kernels::weights1[i]*kernels::weights1[j]*kernels::weights1[k];\n'\
+                               '        for(int iVar=0;iVar<'+str(self.m_config['nVar'])+';iVar++) {\n')
+            l_sourceFile.write('          int addr = k*'+str(self.m_config['nVar']*(self.m_config['nDof']**2))+\
+                                                   '+j*'+str(self.m_config['nVar']*self.m_config['nDof'])+\
+                                                   '+i*'+str(self.m_config['nVar'])+\
+                                                   '+iVar;\n')
+            l_dscalCode = Utils.generateDSCAL('w*luh[addr]',  \
+                                                   'kernels::F0',  \
+                                                   'kernels::s_m', \
+                                                   Backend.getSizeWithPadding(self.m_config['nDof']))
+            l_sourceFile.write(Backend.reindentBlock(l_dscalCode,8))
+            l_sourceFile.write('\n')
+            # write rhs0(iVar,i,j,k,:) = s_m(:)
+            # unroll loop over time dofs; entries to be updated are evenly spread out
+            l_baseAddr = self.m_config['nVar']*self.m_config['nDof']**3
+            for l in range(0, self.m_config['nDof']):
+                l_sourceFile.write('          rhs0['+str(l*l_baseAddr)+'+addr] = s_m['+str(l)+'];\n')
 
+            # close for loops
+            l_sourceFile.write('        }\n'\
+                               '      }\n'\
+                               '    }\n'\
+                               '  }\n\n')
 
         # define a sequence of matmul configs
         l_matmulList = []

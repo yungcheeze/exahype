@@ -29,12 +29,12 @@ def generateDSCAL(i_scalarName: str, i_inVectorName: str, i_outVectorName: str, 
     """
     if(i_inBaseAddr > 0 or i_outBaseAddr > 0):
         l_code = '#pragma simd\n'                                \
-        '  for(int i=0;i<'+str(i_vectorSize)+';i++) \n' \
-        '    '+i_outVectorName+'['+str(i_outBaseAddr)+'+i] = '+ i_scalarName+' * '+i_inVectorName+'['+str(i_inBaseAddr)+'+i];\n'
+        '  for(int it=0;it<'+str(i_vectorSize)+';it++) \n' \
+        '    '+i_outVectorName+'['+str(i_outBaseAddr)+'+it] = '+ i_scalarName+' * '+i_inVectorName+'['+str(i_inBaseAddr)+'+it];\n'
     else:
         l_code = '#pragma simd\n'                                \
-                '  for(int i=0;i<'+str(i_vectorSize)+';i++) \n' \
-                '    '+i_outVectorName+'[i] = '+ i_scalarName+' * '+i_inVectorName+'[i];\n'
+                '  for(int it=0;it<'+str(i_vectorSize)+';it++) \n' \
+                '    '+i_outVectorName+'[it] = '+ i_scalarName+' * '+i_inVectorName+'[it];\n'
     return l_code
 
 # --------------------------------------------------------------------------------------
