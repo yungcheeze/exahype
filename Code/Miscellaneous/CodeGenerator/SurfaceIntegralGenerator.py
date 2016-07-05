@@ -1,13 +1,27 @@
 #!/bin/env python
 ##
+# @file This file is part of the ExaHyPE project.
+# @author ExaHyPE Group (exahype@lists.lrz.de)
+#
+# @section LICENSE
+#
+# Copyright (c) 2016  http://exahype.eu
+# All rights reserved.
+#
+# The project has received funding from the European Union's Horizon 
+# 2020 research and innovation programme under grant agreement
+# No 671698. For copyrights and licensing, please consult the webpage.
+#
+# Released under the BSD 3 Open Source License.
+# For the full license text, see LICENSE.txt
 #
 #
-#--------------------------------------------------------------
+# @section DESCRIPTION
+#
 # Generates the code for the surface integral
 # for a specific configuration
-#--------------------------------------------------------------
 #
-#
+
 import Backend
 import FunctionSignatures
 import Utils
@@ -117,6 +131,7 @@ class SurfaceIntegralGenerator:
         #-----------------------------
         # x-direction
         #-----------------------------
+        # independent of 2d/3d since outer dofs are merged
         l_sourceFile.write('  // x-direction\n')
         l_sourceFile.write('  for(int iVar=0;iVar<'+str(self.m_config['nVar'])+';iVar++) {\n')
         l_sourceFile.write('    for(int jk=0;jk<'+str(self.m_config['nDof']**(self.m_config['nDim']-1))+';jk++) {\n')
@@ -160,7 +175,7 @@ class SurfaceIntegralGenerator:
             l_sourceFile.write('  for(int iVar=0;iVar<'+str(self.m_config['nVar'])+';iVar++) {\n')
             l_sourceFile.write('    for(int k=0;k<'+str(self.m_config['nDof'])+';k++) {\n'\
                                '      for(int i=0;i<'+str(self.m_config['nDof'])+';i++) {\n')
-            # FRCoeff_s = lFbnd(j,k,iVar,4)*FRCoeff
+            # FRCoeff_s = lFbnd(i,k,iVar,4)*FRCoeff
             l_sourceFile.write(
                 Utils.generateDSCAL('lFbnd['+str(self.m_startAddr_face4)+'+iVar*'+str(self.m_chunkSize)+'+k*'+str(self.m_config['nDof'])+'+i]',\
                                     'kernels::FRCoeff',\
@@ -193,7 +208,39 @@ class SurfaceIntegralGenerator:
                                '  }\n')
 
         elif(self.m_config['nDim']==2):
-            print("SurfaceIntegralGenerator.py: 2D y-direction not yet implemented")
+            l_sourceFile.write('  for(int iVar=0;iVar<'+str(self.m_config['nVar'])+';iVar++) {\n')
+            l_sourceFile.write('    for(int i=0;i<'+str(self.m_config['nDof'])+';i++) {\n')
+            # FRCoeff_s = lFbnd(i,iVar,4)*FRCoeff
+            l_sourceFile.write(
+                Utils.generateDSCAL('lFbnd['+str(self.m_startAddr_face4)+'+iVar*'+str(self.m_chunkSize)+'+i]',\
+                                    'kernels::FRCoeff',\
+                                    'FRCoeff_s',\
+                                    self.m_config['nDof']))
+            # FLCoeff_s = lFbnd(i,iVar,3)*FLCoeff
+            l_sourceFile.write(
+                Utils.generateDSCAL('lFbnd['+str(self.m_startAddr_face3)+'+iVar*'+str(self.m_chunkSize)+'+i]',\
+                                    'kernels::FLCoeff',\
+                                    'FLCoeff_s',\
+                                    self.m_config['nDof']))
+
+            # weight(i)/dx(2) * (FRCoeff_s - FLCoeff_s)
+            l_sourceFile.write('        double s = kernels::weights1[i]/dx[1];\n')
+            l_sourceFile.write('#pragma simd\n'\
+                               '        for(int it=0;it<'+str(paddedDof)+';it++)\n'\
+                               '          kernels::s_m[it] = s*(FRCoeff_s[it]-FLCoeff_s[it]);\n')
+
+            # lduh(iVar,i,:) -= s_m(:)
+            l_stride = self.m_config['nVar']*self.m_config['nDof']
+            for j in range(0, self.m_config['nDof']):
+                l_sourceFile.write('  lduh['+str(j*l_stride)+\
+                                           '+i*'+str(self.m_config['nVar'])+\
+                                           '+iVar] '\
+                                   '-= kernels::s_m['+str(j)+'];\n')
+
+            # close for loops
+            l_sourceFile.write('    }\n'\
+                               '  }\n')
+
 
         #-----------------------------
         # z-direction
