@@ -2,8 +2,9 @@
 
 cd $(dirname "$0")
 
+# Vasco, 26. June by mail: No Sharedmem in this user-spec file.
 export CC=gcc
-export SHAREDMEM=TBB
+export SHAREDMEM="TBB" # None
 export TBB_INC=/usr/include/tbb
 
 MPI_LDFLAGS="$(mpicc -showme:link)"

@@ -3,6 +3,13 @@
  Special Relativistic Hydrodynamics
  with a generic kernels written in C++ and FORTRAN user interface,
  provided in Fortran by Olindo and rewritten in C++ by Sven.
+ 
+ This exahype specification file is for the (currently still) artificial
+ kernel with the name "SRHD" which demonstrates the new connector from the
+ C++ toolkit to the FORTRAN kernel.
+ 
+ In order to run this particular application, *do not* (re)run the toolkit
+ but just go on and compile the application.
 
  Started 06. May, 2016.
 
@@ -21,9 +28,15 @@ exahype-project  SRHD
     dimension                = 2
     width                    = 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 0.2
+    end-time                 = 0.4
   end computational-domain
-
+  
+  shared-memory
+    identifier               = dummy
+    cores                    = 30
+    properties-file          = sharedmemory.properties
+  end shared-memory
+  
   optimisation
     fuse-algorithmic-steps   = on
   end optimisation
@@ -38,7 +51,7 @@ exahype-project  SRHD
     plot vtk::binary
       time     = 0.0
       repeat   = 0.004
-      filename = ./solution
+      filename = ./output/solution
     end plot
   end solver
 

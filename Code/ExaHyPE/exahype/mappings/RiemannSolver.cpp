@@ -521,11 +521,11 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
     logDebug("touchVertexLastTime(...)::solveRiemannProblemAtInterface(...)",
              "Performing Riemann solve. "
                  << "faceIndexForLeftCell:" << faceIndexForLeftCell
-                 << " faceIndexForRightCell:" << faceIndexForRightCell
-                 << " indexOfLeftCell:"
-                 << adjacentADERDGCellDescriptionsIndices[indexOfLeftCell]
-                 << " indexOfRightCell:"
-                 << adjacentADERDGCellDescriptionsIndices[indexOfRightCell]);
+                 << " faceIndexForRightCell:" << faceIndexForRightCell);
+                 // << " indexOfLeftCell:"
+                 // << adjacentADERDGCellDescriptionsIndices[indexOfLeftCell]
+                 // << " indexOfRightCell:"
+                 // << adjacentADERDGCellDescriptionsIndices[indexOfRightCell]);
 
     std::vector<records::ADERDGCellDescription>& cellDescriptionsOfLeftCell =
         ADERDGCellDescriptionHeap::getInstance().getData(
