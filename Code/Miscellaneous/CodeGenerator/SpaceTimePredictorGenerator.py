@@ -160,9 +160,9 @@ class SpaceTimePredictorGenerator:
         # => we skip gcc here
         # do not query __GNUC__ - icc also defines this
         l_sourceFile.write('#ifdef __INTEL_COMPILER\n'\
-                           '  __assume_aligned(kernels::s_m, ALIGNMENT)\n'\
-                           '  __assume_aligned(kernels::F0, ALIGNMENT)\n'\
-                           '  __assume_aligned(kernels::Kxi, ALIGNMENT)\n'
+                           '  __assume_aligned(kernels::s_m, ALIGNMENT);\n'\
+                           '  __assume_aligned(kernels::F0, ALIGNMENT);\n'\
+                           '  __assume_aligned(kernels::Kxi, ALIGNMENT);\n'
                            '#endif\n')
 
         # initialisation of lqh and rhs0:
@@ -245,6 +245,8 @@ class SpaceTimePredictorGenerator:
 
 
         # (2) rhs0(iVar,i,j,k,l) = weights3(i,j,k) * F0 * luh(iVar,i,j,k)
+        rhs0_length = self.m_config['nVar']*(self.m_config['nDof']**(self.m_config['nDim']+1))
+        l_sourceFile.write('  double* rhs0 = (double*) _mm_malloc('+str(rhs0_length)+'*sizeof(double),ALIGNMENT);\n')
         if(self.m_config['nDim']==2):
             l_sourceFile.write('  for(int j=0;j<'+str(self.m_config['nDof'])+';j++) {\n'\
                                '    for(int i=0;i<'+str(self.m_config['nDof'])+';i++) {\n'\
