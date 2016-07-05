@@ -10,6 +10,7 @@ from shutil import move
 import FunctionSignatures
 import SpaceTimePredictorGenerator
 import VolumeIntegralGenerator
+import SurfaceIntegralGenerator
 import RiemannGenerator
 import SolutionUpdateGenerator
 import StableTimeStepSizeGenerator
@@ -104,15 +105,6 @@ def executeBashCommand(i_command, i_commandLineParameters):
 
 
 
-def writeIntrinsicsInclude(i_pathToFile):
-    l_includeStatement = "#if defined( __SSE3__) || defined(__MIC__)\n"\
-                         "#include <immintrin.h>\n"\
-                         "#endif\n\n"
-    l_sourceFile = open(i_pathToFile, 'a')
-    l_sourceFile.write(l_includeStatement)
-    l_sourceFile.close()
-
-
 def generateCommonHeader():
     # name of generated output file
     l_filename = "Kernels.h"
@@ -181,6 +173,8 @@ def generateComputeKernels():
     spaceTimePredictorGenerator.generateCode()
     volumeIntegralGenerator = VolumeIntegralGenerator.VolumeIntegralGenerator(m_config, m_numerics)
     volumeIntegralGenerator.generateCode()
+    surfaceIntegralGenerator = SurfaceIntegralGenerator.SurfaceIntegralGenerator(m_config, m_numerics)
+    surfaceIntegralGenerator.generateCode()
     riemannGenerator = RiemannGenerator.RiemannGenerator(m_config, m_numerics, m_precision)
     riemannGenerator.generateCode()
     solutionUpdateGenerator = SolutionUpdateGenerator.SolutionUpdateGenerator(m_config)
