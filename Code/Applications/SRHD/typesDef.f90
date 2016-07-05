@@ -8,10 +8,10 @@
 
     ! If you modify the SRHD.exahype, please do the following mapping by hand:
     !
-    ! solver ADER-DG SRHDSolver / order   ->  goes to ->  nVar
-    ! computational-domain / dimension    ->  goes to ->  nDim
+    ! solver ADER-DG SRHDSolver / unknowns   ->  goes to ->  nVar
+    ! computational-domain / dimension       ->  goes to ->  nDim
     !
 
     INTEGER, PARAMETER             :: nDim = 2                            ! The number of space dimensions that we actually want to simulate  
-    INTEGER, PARAMETER             :: nVar = 1                            ! The number of variables of the PDE system  
+    INTEGER, PARAMETER             :: nVar = 5                            ! The number of variables of the PDE system  
   END MODULE typesDef  

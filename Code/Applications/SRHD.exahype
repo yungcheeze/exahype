@@ -31,6 +31,12 @@ exahype-project  SRHD
     end-time                 = 0.4
   end computational-domain
   
+  shared-memory
+    identifier               = dummy
+    cores                    = 30
+    properties-file          = sharedmemory.properties
+  end shared-memory
+  
   optimisation
     fuse-algorithmic-steps   = on
   end optimisation
@@ -45,7 +51,7 @@ exahype-project  SRHD
     plot vtk::binary
       time     = 0.0
       repeat   = 0.004
-      filename = ./solution
+      filename = ./output/solution
     end plot
   end solver
 
