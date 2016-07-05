@@ -13,14 +13,14 @@ MODULE eos
 ENDMODULE
 
 SUBROUTINE PDEFlux(F,Q) 
-  USE typesDef, ONLY : nVar, d
+  USE typesDef, ONLY : nVar, nDim
   USE eos, ONLY : gamma
   USE, INTRINSIC :: ISO_C_BINDING 
   IMPLICIT NONE 
   REAL, PARAMETER :: epsilon = 1e-14
   ! Argument list  
   REAL, INTENT(IN)  :: Q(nVar) 
-  REAL, INTENT(OUT) :: F(nVar,d) 
+  REAL, INTENT(OUT) :: F(nVar,nDim) 
   ! Local variables  
   REAL :: rho,vx,vy,vz,p
   REAL :: v2,lf,w,ww,wwx,wwy,wwz,gamma1
@@ -55,7 +55,7 @@ SUBROUTINE PDEFlux(F,Q)
   F(4, 2)   = wwy*vz  
   F(5, 2)   = wwy - F(1, 2)
 
-  IF ( d > 2 ) then
+  IF ( nDim > 2 ) then
     F(1, 3)   = vz*rho*lf
     F(2, 3)   = wwz*vx  
     F(3, 3)   = wwz*vy  
@@ -68,16 +68,16 @@ END SUBROUTINE PDEFlux
 
 
 SUBROUTINE PDEEigenvalues(Lambda,Q,nv) 
-  USE typesDef, ONLY : nVar, d
+  USE typesDef, ONLY : nVar, nDim
   USE eos, ONLY : gamma
   USE, INTRINSIC :: ISO_C_BINDING 
   IMPLICIT NONE 
   ! Argument list  
-  REAL, INTENT(IN)  :: Q(nVar), nv(d)  
+  REAL, INTENT(IN)  :: Q(nVar), nv(nDim)  
   REAL, INTENT(OUT) :: Lambda(nVar)  
   ! Local variables  
   INTEGER :: iErr
-  REAL :: rho, vel(d), p
+  REAL :: rho, vel(nDim), p
   REAL :: cs2, cs, c0, v2, w, gamma1, vn, den, u, c
   REAL :: V(nVar)
   REAL, PARAMETER :: epsilon = 1e-14  
@@ -86,7 +86,7 @@ SUBROUTINE PDEEigenvalues(Lambda,Q,nv)
   CALL PDECons2Prim(V,Q,iErr)
   rho    = V(1)
   ! the velocity vector is dimension agnostic
-  vel    = V(2:2+d-1)
+  vel    = V(2:2+nDim-1)
   p      = V(5)
   gamma1 = gamma/(gamma-1.0)
   w      = rho + gamma1*p
@@ -322,7 +322,7 @@ END SUBROUTINE PDECons2Prim
 ! This subroutine is not used in this fortran code but only by the initial conditions,
 ! which are given in C++ code. We need an interface for that.
 SUBROUTINE PDEPrim2Cons(Q,V)
-  USE typesDef, ONLY : nVar, d
+  USE typesDef, ONLY : nVar
   USE eos, ONLY : gamma
   USE, INTRINSIC :: ISO_C_BINDING 
   IMPLICIT NONE

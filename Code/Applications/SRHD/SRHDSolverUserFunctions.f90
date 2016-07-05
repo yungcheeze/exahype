@@ -40,7 +40,7 @@ END SUBROUTINE HasToAdjustSolution
 
 SUBROUTINE AdjustedSolutionValues(x, w, t, dt, Q)
 	USE, INTRINSIC :: ISO_C_BINDING
-	USE typesDef, ONLY : nVar, d
+	USE typesDef, ONLY : nVar
 	IMPLICIT NONE 
 	! Argument list 
 	REAL, INTENT(IN)               :: x(2)        ! 
@@ -62,7 +62,7 @@ SUBROUTINE AdjustedSolutionValues(x, w, t, dt, Q)
 	!PRINT *, Q
 	!PRINT *, ' ---------------------------------------- ' 
 
-	IF ( t == 0. ) THEN
+	IF ( t < 1e-15 ) THEN
 		CALL InitialData(x, Q)
 	ENDIF
 END SUBROUTINE AdjustedSolutionValues
@@ -70,7 +70,7 @@ END SUBROUTINE AdjustedSolutionValues
 
 SUBROUTINE InitialData(x, Q)
 	USE, INTRINSIC :: ISO_C_BINDING
-	USE typesDef, ONLY : nVar, d
+	USE typesDef, ONLY : nVar
 	IMPLICIT NONE 
 	! Argument list 
 	REAL, INTENT(IN)               :: x(2)        ! 
