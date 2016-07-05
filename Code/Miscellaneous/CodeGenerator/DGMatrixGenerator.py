@@ -1,3 +1,32 @@
+#!/bin/env python
+##
+# @file This file is part of the ExaHyPE project.
+# @author ExaHyPE Group (exahype@lists.lrz.de)
+#
+# @section LICENSE
+#
+# Copyright (c) 2016  http://exahype.eu
+# All rights reserved.
+#
+# The project has received funding from the European Union's Horizon 
+# 2020 research and innovation programme under grant agreement
+# No 671698. For copyrights and licensing, please consult the webpage.
+#
+# Released under the BSD 3 Open Source License.
+# For the full license text, see LICENSE.txt
+#
+#
+# @section DESCRIPTION
+#
+# Generates the data structures for the system matrices
+# for a specific configuration. In particular, it decides
+# on padding.
+#
+# @note Utilises the same procedures as the generic code base
+# to generate the matrices, but internally transposes the
+# data or introduces padding.
+#
+
 import numpy as np
 import Backend
 import re

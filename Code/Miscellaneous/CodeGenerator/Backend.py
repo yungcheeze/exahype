@@ -1,4 +1,28 @@
 #!/bin/env python
+##
+# @file This file is part of the ExaHyPE project.
+# @author ExaHyPE Group (exahype@lists.lrz.de)
+#
+# @section LICENSE
+#
+# Copyright (c) 2016  http://exahype.eu
+# All rights reserved.
+#
+# The project has received funding from the European Union's Horizon 
+# 2020 research and innovation programme under grant agreement
+# No 671698. For copyrights and licensing, please consult the webpage.
+#
+# Released under the BSD 3 Open Source License.
+# For the full license text, see LICENSE.txt
+#
+#
+# @section DESCRIPTION
+#
+# This file is pivotal to the code generator. It manages 
+# the internal decisions about padding, triggers the code
+# generation of the solver kernels and calls the back end 
+# assembly code generation.
+#
 
 import os
 from os.path import join
@@ -10,6 +34,7 @@ from shutil import move
 import FunctionSignatures
 import SpaceTimePredictorGenerator
 import VolumeIntegralGenerator
+import SurfaceIntegralGenerator
 import RiemannGenerator
 import SolutionUpdateGenerator
 import StableTimeStepSizeGenerator
@@ -104,15 +129,6 @@ def executeBashCommand(i_command, i_commandLineParameters):
 
 
 
-def writeIntrinsicsInclude(i_pathToFile):
-    l_includeStatement = "#if defined( __SSE3__) || defined(__MIC__)\n"\
-                         "#include <immintrin.h>\n"\
-                         "#endif\n\n"
-    l_sourceFile = open(i_pathToFile, 'a')
-    l_sourceFile.write(l_includeStatement)
-    l_sourceFile.close()
-
-
 def generateCommonHeader():
     # name of generated output file
     l_filename = "Kernels.h"
@@ -181,6 +197,8 @@ def generateComputeKernels():
     spaceTimePredictorGenerator.generateCode()
     volumeIntegralGenerator = VolumeIntegralGenerator.VolumeIntegralGenerator(m_config, m_numerics)
     volumeIntegralGenerator.generateCode()
+    surfaceIntegralGenerator = SurfaceIntegralGenerator.SurfaceIntegralGenerator(m_config, m_numerics)
+    surfaceIntegralGenerator.generateCode()
     riemannGenerator = RiemannGenerator.RiemannGenerator(m_config, m_numerics, m_precision)
     riemannGenerator.generateCode()
     solutionUpdateGenerator = SolutionUpdateGenerator.SolutionUpdateGenerator(m_config)
