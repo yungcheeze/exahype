@@ -10,7 +10,7 @@ void minimumtreedepth_(int* depth);
 void hastoadjustsolution_(double* time, bool* refine);
 void adjustedsolutionvalues_(const double* const x,const double* w,const double* t,const double* dt,double* Q);
 void pdeflux_(double* F, const double* const Q);
-void pdeeigenvalues_(const double* const Q, const int* normalNonZeroIndex, double* lambda);
+void pdeeigenvalues_(double* lambda, const double* const Q, const int* normalNonZeroIndex);
 }
 
 SRHD::SRHDSolver::SRHDSolver( int kernelNumber, std::unique_ptr<exahype::profilers::Profiler> profiler):
@@ -44,7 +44,7 @@ void SRHD::SRHDSolver::eigenvalues(const double* const Q, const int normalNonZer
   // Number of variables    = 5 (#unknowns + #parameters)
   
   const int nnzi = normalNonZeroIndex+1;
-  pdeeigenvalues_(Q, &nnzi, lambda);
+  pdeeigenvalues_(lambda, Q, &nnzi);
   
 }
 
