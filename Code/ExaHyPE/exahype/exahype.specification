@@ -81,15 +81,12 @@ event-mapping:
 
 adapter:
   name: AugmentedAMRGrid
-  merge-with-user-defined-mapping: MarkingForRefinement      // (enterCell,runconcurrently)
-  merge-with-user-defined-mapping: MarkingForAugmentation    // (enterCell,runconcurrently)    
   merge-with-user-defined-mapping: RegularMesh               // (createInner/BoundaryVertex,enterCell,serial)
+  merge-with-user-defined-mapping: MarkingForRefinement      // (enterCell,runconcurrently)
   merge-with-user-defined-mapping: Refinement                // (touchVertexLastTime,enterCell,serial)
+  merge-with-user-defined-mapping: SolutionUpdate            // (enterCell,runconcurrently)             
+  merge-with-user-defined-mapping: MarkingForAugmentation    // (enterCell,runconcurrently)
   merge-with-user-defined-mapping: Augmentation              // (touchVertexLastTime,enterCell,serial)
-  merge-with-user-defined-mapping: InitialisationAndCleaning // (touchVertexLastTime,enterCell,serial)
-  merge-with-user-defined-mapping: VolumeUnknownsProjection  // (enterCell,runconcurrently)
-  merge-with-user-defined-mapping: SolutionUpdate            // (enterCell,runconcurrently)
-  merge-with-user-defined-mapping: Erasing                   // (touchVertexLastTime,enterCell,serial)
   merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)       
   
 adapter:

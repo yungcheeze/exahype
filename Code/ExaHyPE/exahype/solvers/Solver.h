@@ -72,13 +72,13 @@ class exahype::solvers::Solver {
 
   // @todo Dominic: Please change
   // enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
-  enum RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
+  enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
 
-  enum AugmentationControl {
+  enum class AugmentationControl {
     NextToCell = 0,
     NextToAncestor = 1,
     NextToCellAndAncestor = 2,
-    Unncessary = 3
+    Unnecessary = 3
   };
 
  protected:

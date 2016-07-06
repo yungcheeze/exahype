@@ -27,6 +27,7 @@
 tarch::logging::Log exahype::Cell::_log("exahype::Cell");
 
 const int exahype::Cell::InvalidCellDescriptionsIndex = -4;
+const int exahype::Cell::ErasedCellDescriptionsIndex  = -5;
 
 exahype::Cell::Cell() : Base() {
   _cellData.setADERDGCellDescriptionsIndex(
@@ -47,16 +48,6 @@ int exahype::Cell::getADERDGCellDescriptionsIndex() const {
   return _cellData.getADERDGCellDescriptionsIndex();
 }
 
-void exahype::Cell::initialiseStorageOnHeap() {
-  assertion1(!ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-                 _cellData.getADERDGCellDescriptionsIndex()),
-             toString());
-
-  const int ADERDGCellDescriptionIndex =
-      ADERDGCellDescriptionHeap::getInstance().createData(0, 0);
-  _cellData.setADERDGCellDescriptionsIndex(ADERDGCellDescriptionIndex);
-}
-
 void exahype::Cell::setupMetaData() {
   assertion1(!ADERDGCellDescriptionHeap::getInstance().isValidIndex(
                  _cellData.getADERDGCellDescriptionsIndex()),
@@ -74,6 +65,7 @@ void exahype::Cell::shutdownMetaData() {
 
   ADERDGCellDescriptionHeap::getInstance().deleteData(
       _cellData.getADERDGCellDescriptionsIndex());
+  _cellData.setADERDGCellDescriptionsIndex(ErasedCellDescriptionsIndex);
 }
 
 void exahype::Cell::addNewCellDescription(
@@ -86,7 +78,7 @@ void exahype::Cell::addNewCellDescription(
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre) {
   if (_cellData.getADERDGCellDescriptionsIndex() ==
       exahype::Cell::InvalidCellDescriptionsIndex) {
-    initialiseStorageOnHeap();
+    setupMetaData();
   }
 
   assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(

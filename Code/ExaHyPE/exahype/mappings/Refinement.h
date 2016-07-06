@@ -52,6 +52,33 @@ class exahype::mappings::Refinement {
    */
   static tarch::logging::Log _log;
 
+  /**
+   * Prolongates Volume data from a parent cell description to
+   * \p cellDescription if the fine grid cell associated with
+   * \p cellDescription is adjacent to a boundary of the
+   * coarse grid cell associated with the parent cell description.
+   *
+   * \note This method makes only sense for virtual shells
+   * in the current AMR concept.
+   */
+  void prolongateVolumeData(
+      exahype::records::ADERDGCellDescription& p,
+      const exahype::records::ADERDGCellDescription& pParent,
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const;
+
+  /**
+   * Restricts Volume data from \p cellDescriptio to
+   * a parent cell description if the fine grid cell associated with
+   * \p cellDescription is adjacent to a boundary of the
+   * coarse grid cell associated with the parent cell description.
+   *
+   * \note This method makes only sense for real cells.
+   * in the current AMR concept.
+   */
+  void restrictVolumeData(
+      exahype::records::ADERDGCellDescription& pParent,
+      const exahype::records::ADERDGCellDescription& p,
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const;
  public:
   /**
    * These flags are used to inform Peano about your operation. It tells the

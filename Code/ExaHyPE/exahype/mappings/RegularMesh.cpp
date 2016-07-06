@@ -337,10 +337,7 @@ void exahype::mappings::RegularMesh::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   int solverNumber = 0;
-  if (fineGridCell.getADERDGCellDescriptionsIndex() ==
-      //      multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex)
-      //      {
-      exahype::Cell::InvalidCellDescriptionsIndex) {
+  if (fineGridCell.getADERDGCellDescriptionsIndex() == exahype::Cell::InvalidCellDescriptionsIndex) {
     for (const auto& p : exahype::solvers::RegisteredSolvers) {
       // @todo replace by parloops?
       if (fineGridVerticesEnumerator.getLevel() ==
@@ -353,6 +350,7 @@ void exahype::mappings::RegularMesh::enterCell(
             fineGridVerticesEnumerator.getCellSize(),
             // We pass the lower left corner of the cell as offset.
             fineGridVerticesEnumerator.getVertexPosition());
+        fineGridCell.ensureNecessaryMemoryIsAllocated(solverNumber);
       }
       solverNumber++;
     }

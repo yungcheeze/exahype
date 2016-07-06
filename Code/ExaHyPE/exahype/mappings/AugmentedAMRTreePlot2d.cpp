@@ -442,7 +442,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::beginIteration(
   _cellDescriptionIndexWriter =
       _vtkWriter->createCellDataWriter("NoPatch=-1,ValidPatch>=0", 1);
   _cellRefinementEventWriter = _vtkWriter->createCellDataWriter(
-      "None=0,ErasingRequested=1,Restricting=2,Erasing=3,AllocatingMemory=4,"
+      "NoPatch=-1,None=0,ErasingRequested=1,Restricting=2,Erasing=3,AllocatingMemory=4,"
       "ErasingChildren=5,RefiningRequested=6,Refining=7,Prolongating=8,"
       "DeaugmentingRequested=9,AugmentingRequested=10,Augmenting=11)",
       1);
