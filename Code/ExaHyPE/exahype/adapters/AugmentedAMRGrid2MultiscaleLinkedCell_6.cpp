@@ -73,8 +73,8 @@ void exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_6::createHangingVe
   const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
   const int level = coarseGridVerticesEnumerator.getLevel()+1;
-
-  fineGridVertex.getADERDGCellDescriptionsIndex() =
+  
+  fineGridVertex.getADERDGCellDescriptionsIndex() = 
     multiscalelinkedcell::HangingVertexBookkeeper::getInstance().createHangingVertex(
       fineGridX,level,
       fineGridPositionOfVertex,

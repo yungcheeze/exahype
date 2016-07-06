@@ -17,7 +17,7 @@ srhd2d::SRHDSolver::SRHDSolver( int kernelNumber, std::unique_ptr<exahype::profi
 
 int srhd2d::SRHDSolver::getMinimumTreeDepth() const {
 	// This number basically controls dx.
-	return 4;
+	return 2;
 }
 
 
@@ -87,6 +87,10 @@ void srhd2d::SRHDSolver::eigenvalues(const double* const Q, const int nnzi, doub
 	lambda[2] = 0.0;
 	lambda[3] = 0.0;
 	lambda[4] = ( u*(1.0-cs2)+sqrt( cs2*(1.0-v2)*( (1.0-v2*cs2) - u*u*(1.0-cs2) )) )*den;
+
+
+//	std::cout << "lambda[0]: " << lambda[0] << std::endl; 
+//	std::cout << "lambda[4]: " << lambda[4] << std::endl; 
 }
 
 

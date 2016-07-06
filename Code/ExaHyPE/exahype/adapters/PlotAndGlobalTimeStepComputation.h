@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_ADERDGTimeStepAndPlot_H_
-#define EXAHYPE_ADAPTERS_ADERDGTimeStepAndPlot_H_
+#ifndef EXAHYPE_ADAPTERS_PlotAndGlobalTimeStepComputation_H_
+#define EXAHYPE_ADAPTERS_PlotAndGlobalTimeStepComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,21 +18,14 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/RiemannSolver.h"
- #include "exahype/mappings/RiemannSolverReset.h"
- #include "exahype/mappings/SurfaceIntegral.h"
- #include "exahype/mappings/SolutionUpdate.h"
  #include "exahype/mappings/Plot.h"
- #include "exahype/mappings/SpaceTimePredictor.h"
- #include "exahype/mappings/VolumeIntegral.h"
  #include "exahype/mappings/GlobalTimeStepComputation.h"
- #include "exahype/mappings/FaceUnknownsProjection.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class ADERDGTimeStepAndPlot;
+        class PlotAndGlobalTimeStepComputation;
       } 
 }
 
@@ -44,27 +37,13 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::ADERDGTimeStepAndPlot {
+class exahype::adapters::PlotAndGlobalTimeStepComputation {
   private:
-    typedef mappings::RiemannSolver Mapping0;
-    typedef mappings::RiemannSolverReset Mapping1;
-    typedef mappings::SurfaceIntegral Mapping2;
-    typedef mappings::SolutionUpdate Mapping3;
-    typedef mappings::Plot Mapping4;
-    typedef mappings::SpaceTimePredictor Mapping5;
-    typedef mappings::VolumeIntegral Mapping6;
-    typedef mappings::GlobalTimeStepComputation Mapping7;
-    typedef mappings::FaceUnknownsProjection Mapping8;
+    typedef mappings::Plot Mapping0;
+    typedef mappings::GlobalTimeStepComputation Mapping1;
 
-     Mapping0  _map2RiemannSolver;
-     Mapping1  _map2RiemannSolverReset;
-     Mapping2  _map2SurfaceIntegral;
-     Mapping3  _map2SolutionUpdate;
-     Mapping4  _map2Plot;
-     Mapping5  _map2SpaceTimePredictor;
-     Mapping6  _map2VolumeIntegral;
-     Mapping7  _map2GlobalTimeStepComputation;
-     Mapping8  _map2FaceUnknownsProjection;
+     Mapping0  _map2Plot;
+     Mapping1  _map2GlobalTimeStepComputation;
 
 
   public:
@@ -76,16 +55,16 @@ class exahype::adapters::ADERDGTimeStepAndPlot {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    ADERDGTimeStepAndPlot();
+    PlotAndGlobalTimeStepComputation();
 
     #if defined(SharedMemoryParallelisation)
-    ADERDGTimeStepAndPlot(const ADERDGTimeStepAndPlot& masterThread);
+    PlotAndGlobalTimeStepComputation(const PlotAndGlobalTimeStepComputation& masterThread);
     #endif
 
-    virtual ~ADERDGTimeStepAndPlot();
+    virtual ~PlotAndGlobalTimeStepComputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const ADERDGTimeStepAndPlot& workerThread);
+    void mergeWithWorkerThread(const PlotAndGlobalTimeStepComputation& workerThread);
     #endif
 
     void createInnerVertex(
