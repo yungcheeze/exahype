@@ -1,16 +1,5 @@
-/**
- * This file is part of the ExaHyPE project.
- * Copyright (c) 2016  http://exahype.eu
- * All rights reserved.
- *
- * The project has received funding from the European Union's Horizon 
- * 2020 research and innovation programme under grant agreement
- * No 671698. For copyrights and licensing, please consult the webpage.
- *
- * Released under the BSD 3 Open Source License.
- * For the full license text, see LICENSE.txt
- **/
- 
+// This file is part of the Peano project. For conditions of distribution and 
+// use, please see the copyright notice at www.peano-framework.org
 #ifndef EXAHYPE_ADAPTERS_ADERDGTimeStepAndPlot_H_
 #define EXAHYPE_ADAPTERS_ADERDGTimeStepAndPlot_H_
 
@@ -33,10 +22,10 @@
  #include "exahype/mappings/RiemannSolverReset.h"
  #include "exahype/mappings/SurfaceIntegral.h"
  #include "exahype/mappings/SolutionUpdate.h"
+ #include "exahype/mappings/Plot.h"
  #include "exahype/mappings/SpaceTimePredictor.h"
  #include "exahype/mappings/VolumeIntegral.h"
  #include "exahype/mappings/GlobalTimeStepComputation.h"
- #include "exahype/mappings/Plot.h"
  #include "exahype/mappings/FaceUnknownsProjection.h"
 
 
@@ -61,20 +50,20 @@ class exahype::adapters::ADERDGTimeStepAndPlot {
     typedef mappings::RiemannSolverReset Mapping1;
     typedef mappings::SurfaceIntegral Mapping2;
     typedef mappings::SolutionUpdate Mapping3;
-    typedef mappings::SpaceTimePredictor Mapping4;
-    typedef mappings::VolumeIntegral Mapping5;
-    typedef mappings::GlobalTimeStepComputation Mapping6;
-    typedef mappings::Plot Mapping7;
+    typedef mappings::Plot Mapping4;
+    typedef mappings::SpaceTimePredictor Mapping5;
+    typedef mappings::VolumeIntegral Mapping6;
+    typedef mappings::GlobalTimeStepComputation Mapping7;
     typedef mappings::FaceUnknownsProjection Mapping8;
 
      Mapping0  _map2RiemannSolver;
      Mapping1  _map2RiemannSolverReset;
      Mapping2  _map2SurfaceIntegral;
      Mapping3  _map2SolutionUpdate;
-     Mapping4  _map2SpaceTimePredictor;
-     Mapping5  _map2VolumeIntegral;
-     Mapping6  _map2GlobalTimeStepComputation;
-     Mapping7  _map2Plot;
+     Mapping4  _map2Plot;
+     Mapping5  _map2SpaceTimePredictor;
+     Mapping6  _map2VolumeIntegral;
+     Mapping7  _map2GlobalTimeStepComputation;
      Mapping8  _map2FaceUnknownsProjection;
 
 

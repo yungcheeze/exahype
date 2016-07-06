@@ -1,16 +1,3 @@
-/**
- * This file is part of the ExaHyPE project.
- * Copyright (c) 2016  http://exahype.eu
- * All rights reserved.
- *
- * The project has received funding from the European Union's Horizon 
- * 2020 research and innovation programme under grant agreement
- * No 671698. For copyrights and licensing, please consult the webpage.
- *
- * Released under the BSD 3 Open Source License.
- * For the full license text, see LICENSE.txt
- **/
- 
 #include "exahype/records/RepositoryState.h"
 
 exahype::records::RepositoryState::PersistentRecords::PersistentRecords() {
@@ -53,11 +40,12 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case UseAdapterAugmentedAMRGrid: return "UseAdapterAugmentedAMRGrid";
       case UseAdapterPlotAugmentedAMRGrid: return "UseAdapterPlotAugmentedAMRGrid";
       case UseAdapterSolutionUpdateAndGlobalTimeStepComputation: return "UseAdapterSolutionUpdateAndGlobalTimeStepComputation";
+      case UseAdapterPredictorAndPlotAndGlobalTimeStepComputation: return "UseAdapterPredictorAndPlotAndGlobalTimeStepComputation";
       case UseAdapterPredictorAndGlobalTimeStepComputation: return "UseAdapterPredictorAndGlobalTimeStepComputation";
       case UseAdapterADERDGTimeStep: return "UseAdapterADERDGTimeStep";
       case UseAdapterADERDGTimeStepAndPlot: return "UseAdapterADERDGTimeStepAndPlot";
       case UseAdapterGlobalTimeStepComputation: return "UseAdapterGlobalTimeStepComputation";
-      case UseAdapterGlobalTimeStepComputationAndPlot: return "UseAdapterGlobalTimeStepComputationAndPlot";
+      case UseAdapterPlotAndGlobalTimeStepComputation: return "UseAdapterPlotAndGlobalTimeStepComputation";
       case UseAdapterFaceDataExchange: return "UseAdapterFaceDataExchange";
       case UseAdapterPredictor: return "UseAdapterPredictor";
       case UseAdapterPredictorRerun: return "UseAdapterPredictorRerun";
@@ -68,7 +56,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterAugmentedAMRGrid=4,UseAdapterPlotAugmentedAMRGrid=5,UseAdapterSolutionUpdateAndGlobalTimeStepComputation=6,UseAdapterPredictorAndGlobalTimeStepComputation=7,UseAdapterADERDGTimeStep=8,UseAdapterADERDGTimeStepAndPlot=9,UseAdapterGlobalTimeStepComputation=10,UseAdapterGlobalTimeStepComputationAndPlot=11,UseAdapterFaceDataExchange=12,UseAdapterPredictor=13,UseAdapterPredictorRerun=14,UseAdapterCorrector=15,NumberOfAdapters=16)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterAugmentedAMRGrid=4,UseAdapterPlotAugmentedAMRGrid=5,UseAdapterSolutionUpdateAndGlobalTimeStepComputation=6,UseAdapterPredictorAndPlotAndGlobalTimeStepComputation=7,UseAdapterPredictorAndGlobalTimeStepComputation=8,UseAdapterADERDGTimeStep=9,UseAdapterADERDGTimeStepAndPlot=10,UseAdapterGlobalTimeStepComputation=11,UseAdapterPlotAndGlobalTimeStepComputation=12,UseAdapterFaceDataExchange=13,UseAdapterPredictor=14,UseAdapterPredictorRerun=15,UseAdapterCorrector=16,NumberOfAdapters=17)";
 }
 
 
