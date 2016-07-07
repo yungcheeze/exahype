@@ -217,7 +217,7 @@ Productions
      [begin_token]:token_plot [plotter_type]:typename
        token_time      [time_equals]:token_equals     [time]:float_number
        token_repeat    [repeat_equals]:token_equals   [repeat]:float_number
-       token_output    [output_equals]:token_equals   output
+       token_output    [output_equals]:token_equals   [output]:filename
      token_end [end_token]:token_plot
      plot_solution_list?
        { -> [New plot_solution(plotter_type,time,repeat,output),plot_solution_list.plot_solution] }
@@ -261,7 +261,7 @@ Abstract Syntax Tree
      [identifier]:identifier;
 
    computational_domain =
-     [dimension]:int_number [width_x]:float_number [width_y]:float_number [width_z]:float_number [offset_x]:float_number [offset_y]:float_number [offset_z]:float_number [end_time]:float_number;
+     [dimension]:int_number [width_x]:float_number [width_y]:float_number [width_z]:float_number? [offset_x]:float_number [offset_y]:float_number [offset_z]:float_number? [end_time]:float_number;
 
    optimisation =
      [fuse_algorithm_steps]:token_on_off;
@@ -274,4 +274,4 @@ Abstract Syntax Tree
      ;
 
    plot_solution =
-     [plotter_type]:typename [time]:float_number [repeat]:float_number [output]:output;
+     [plotter_type]:typename [time]:float_number [repeat]:float_number [output]:filename;
