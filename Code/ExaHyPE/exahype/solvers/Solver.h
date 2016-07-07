@@ -60,26 +60,21 @@ class exahype::solvers::Solver {
  public:
   enum Type { ADER_DG };
 
-  /*
-    enum Type {
-      SOLVE, SUBSOLVE
-    };
+  /**
+   * The time stepping modus.
    */
-
-  enum TimeStepping {
-    GlobalTimeStepping,  // Local, Anarchic
+  enum class TimeStepping {
+    /**
+     * In the global time stepping mode, every cells works with the same time step.
+     */
+    Global,
+    // Local, Anarchic
   };
 
-  // @todo Dominic: Please change
-  // enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
+  /**
+   * The refinement controls a solver can use.
+   */
   enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
-
-  enum class AugmentationControl {
-    NextToCell = 0,
-    NextToAncestor = 1,
-    NextToCellAndAncestor = 2,
-    Unnecessary = 3
-  };
 
  protected:
   /**
@@ -96,37 +91,68 @@ class exahype::solvers::Solver {
   const int _kernelNumber;
 
   /**
-   * Each solver has a kernel number that says which kernel is to be
-   * executed. Typically this is an ascending index starting from 0.
+   * The number of state variables of the conservation or balance law.
    */
   const int _numberOfVariables;
 
   /**
-   * The numbe
+   * The number of nodal basis functions that are employed in each
+   * coordinate direction.
    */
   const int _nodesPerCoordinateAxis;
 
+  /**
+   * The maximum extent a cell is allowed to have in each coordinate direction.
+   */
+  const tarch::la::Vector<DIMENSIONS,double> _maximumMeshSize;
+
+  /**
+   * The number of unknowns/basis functions associated with each face of an element.
+   * This number includes the unknowns of all state variables.
+   */
   const int _unknownsPerFace;
 
+  /**
+   * The total number of unknowns/basis functions associated with the 2^d faces of an element.
+   * This number includes the unknowns of all state variables.
+   */
   const int _unknownsPerCellBoundary;
 
+  /**
+   * The total number of unknowns/basis functions associated with the volume of a cell.
+   * This number includes the unknowns of all state variables.
+   */
   const int _unknownsPerCell;
 
+  /**
+   * The total number of volume flux unknowns/basis functions associated with the volume of a cell.
+   * This number includes the unknowns of all state variables.
+   */
   const int _fluxUnknownsPerCell;
 
+  /**
+   * The total number of space-time unknowns/basis functions associated with the
+   * space-time volume of a cell and its time stepping interval.
+   * This number includes the unknowns of all state variables.
+   */
   const int _spaceTimeUnknownsPerCell;
 
+  /**
+   * The total number of space-time volume flux unknowns/basis functions associated with the
+   * space-time volume of a cell and its time stepping interval.
+   * This number includes the unknowns of all state variables.
+   */
   const int _spaceTimeFluxUnknownsPerCell;
 
+  /**
+   * The time stepping mode of this solver.
+   */
   const TimeStepping _timeStepping;
 
+  /**
+   * A profiler for this solver.
+   */
   std::unique_ptr<profilers::Profiler> _profiler;
-
-  // @ŧodo 16/02/16:Dominic Etienne Charrier
-  // Global time stepping will require min values
-  // of step sizes
-  // Local time stepping will require macro (max) values
-  // of step sizes (right?)
 
   /**
    * Minimum corrector time stamp.
@@ -157,6 +183,7 @@ class exahype::solvers::Solver {
  public:
   Solver(const std::string& identifier, Type type, int kernelNumber,
          int numberOfVariables, int nodesPerCoordinateAxis,
+         tarch::la::Vector<DIMENSIONS,double> maximumMeshSize,
          TimeStepping timeStepping,
          std::unique_ptr<profilers::Profiler> profiler =
              std::unique_ptr<profilers::Profiler>(
@@ -172,19 +199,34 @@ class exahype::solvers::Solver {
   Solver& operator=(const Solver& other) = delete;
 
   /**
-   * Identify minimal mesh width at a certain point in the domain. This
-   * minimal mesh width is used both as a constraint on the AMR as well
-   * as to set up the initial grid. If you return 0, you indicate that
-   * this PDE might not exist in the domain.
+   * Returns the maximum extent a mesh cell is allowed to have
+   * in each coordinate direction.
+   * This maximum mesh size is used both as a
+   * constraint on the AMR as well as to set up the initial
+   * grid. If you return the extent of the computational domain in
+   * each coordinate direction or larger values,
+   * you indicate that this PDE might not exist in the domain.
    */
-  virtual int getMinimumTreeDepth() const = 0;
+  tarch::la::Vector<DIMENSIONS,double> getMaximumMeshSize() const = 0;
 
+  /**
+   * Returns the identifier of this solver.
+   */
   std::string getIdentifier() const;
 
+  /**
+   * Returns the type of this solver.
+   */
   Type getType() const;
 
+  /**
+   * Returns the time stepping mode of this solver.
+   */
   TimeStepping getTimeStepping() const;
 
+  /**
+   * Returns the number of state variables.
+   */
   int getNumberOfVariables() const;
 
   /**

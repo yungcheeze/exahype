@@ -26,9 +26,12 @@ constexpr const char* tags[]{
 // TODO: std::vector<std::unique_ptr<Solver>> ?!
 std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
 
-exahype::solvers::Solver::Solver(const std::string& identifier, Type type,
-                                 int kernelNumber, int numberOfVariables,
+exahype::solvers::Solver::Solver(const std::string& identifier,
+                                 Type type,
+                                 int kernelNumber,
+                                 int numberOfVariables,
                                  int nodesPerCoordinateAxis,
+                                 tarch::la::Vector<DIMENSIONS,double> maximumMeshSize,
                                  TimeStepping timeStepping,
                                  std::unique_ptr<profilers::Profiler> profiler)
     : _identifier(identifier),
@@ -36,6 +39,7 @@ exahype::solvers::Solver::Solver(const std::string& identifier, Type type,
       _kernelNumber(kernelNumber),
       _numberOfVariables(numberOfVariables),
       _nodesPerCoordinateAxis(nodesPerCoordinateAxis),
+      _maximumMeshSize(_maximumMeshSize),
       _unknownsPerFace(numberOfVariables *
                        power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
       _unknownsPerCellBoundary(DIMENSIONS_TIMES_TWO * _unknownsPerFace),
@@ -73,6 +77,11 @@ int exahype::solvers::Solver::getNumberOfVariables() const {
 int exahype::solvers::Solver::getNodesPerCoordinateAxis() const {
   return _nodesPerCoordinateAxis;
 }
+
+tarch::la::Vector<DIMENSIONS,double> exahype::solvers::Solver::getMaximumMeshSize() const {
+  return _maximumMeshSize;
+}
+
 
 int exahype::solvers::Solver::getUnknownsPerFace() const {
   return _unknownsPerFace;
@@ -112,7 +121,7 @@ void exahype::solvers::Solver::synchroniseTimeStepping(
 
   //  if (p.getNextPredictorTimeStepSize() < )
 
-  if (_timeStepping == GlobalTimeStepping) {
+  if (_timeStepping == TimeStepping::Global) {
     p.setCorrectorTimeStamp(_minCorrectorTimeStamp);
     p.setCorrectorTimeStepSize(_minCorrectorTimeStepSize);
     p.setPredictorTimeStamp(_minPredictorTimeStamp);

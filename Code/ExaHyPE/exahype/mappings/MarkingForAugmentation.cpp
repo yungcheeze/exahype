@@ -337,8 +337,8 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
         case exahype::records::ADERDGCellDescription::Ancestor:
         case exahype::records::ADERDGCellDescription::EmptyAncestor:
           switch (augmentationControl) {
-            case exahype::solvers::Solver::AugmentationControl::NextToCell:
-            case exahype::solvers::Solver::AugmentationControl::NextToCellAndAncestor:
+            case AugmentationControl::NextToCell:
+            case AugmentationControl::NextToCellAndAncestor:
               pFine.setType(exahype::records::ADERDGCellDescription::Ancestor);
               fineGridCell.ensureNecessaryMemoryIsAllocated(pFine.getSolverNumber());
               break;
@@ -351,8 +351,8 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
         case exahype::records::ADERDGCellDescription::Descendant:
         case exahype::records::ADERDGCellDescription::EmptyDescendant:
           switch (augmentationControl) {
-            case exahype::solvers::Solver::AugmentationControl::NextToCell:
-            case exahype::solvers::Solver::AugmentationControl::NextToCellAndAncestor:
+            case AugmentationControl::NextToCell:
+            case AugmentationControl::NextToCellAndAncestor:
               pFine.setType(exahype::records::ADERDGCellDescription::Descendant);
               fineGridCell.ensureNecessaryMemoryIsAllocated(pFine.getSolverNumber());
               break;
@@ -373,8 +373,8 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
           switch (pFine.getType()) {
             case exahype::records::ADERDGCellDescription::Cell:
               switch (augmentationControl) {
-                case exahype::solvers::Solver::AugmentationControl::NextToAncestor:
-                case exahype::solvers::Solver::AugmentationControl::NextToCellAndAncestor:
+                case AugmentationControl::NextToAncestor:
+                case AugmentationControl::NextToCellAndAncestor:
                   pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::AugmentingRequested);
                   dfor2(v)
                     if ((fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
@@ -393,8 +393,8 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
             case exahype::records::ADERDGCellDescription::Descendant:
             case exahype::records::ADERDGCellDescription::EmptyDescendant:
               switch (augmentationControl) {
-                case exahype::solvers::Solver::AugmentationControl::NextToAncestor:
-                case exahype::solvers::Solver::AugmentationControl::NextToCellAndAncestor:
+                case AugmentationControl::NextToAncestor:
+                case AugmentationControl::NextToCellAndAncestor:
                   pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::AugmentingRequested);
                   dfor2(v)
                     if ((fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
@@ -405,7 +405,7 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
                     }
                   enddforx
                   break;
-                case exahype::solvers::Solver::AugmentationControl::Unnecessary:
+                case AugmentationControl::Default:
                   pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::DeaugmentingRequested);
                   break;
                 default:
@@ -425,7 +425,7 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
-exahype::solvers::Solver::AugmentationControl
+exahype::mappings::MarkingForAugmentation::AugmentationControl
 exahype::mappings::MarkingForAugmentation::augmentationCriterion(
     const int solverNumber,
     const exahype::records::ADERDGCellDescription::Type type, const int level,
@@ -466,16 +466,16 @@ exahype::mappings::MarkingForAugmentation::augmentationCriterion(
 
   // NOTE: The order below is important.
   if (nextToCell && nextToAncestor) {
-    return exahype::solvers::Solver::AugmentationControl::NextToCellAndAncestor;
+    return AugmentationControl::NextToCellAndAncestor;
   }
   if (nextToAncestor) {
-    return exahype::solvers::Solver::AugmentationControl::NextToAncestor;
+    return AugmentationControl::NextToAncestor;
   }
   if (nextToCell) {
-    return exahype::solvers::Solver::AugmentationControl::NextToCell;
+    return AugmentationControl::NextToCell;
   }
   // Erase otherwise.
-  return exahype::solvers::Solver::AugmentationControl::Unnecessary;
+  return AugmentationControl::Default;
 }
 
 void exahype::mappings::MarkingForAugmentation::leaveCell(
