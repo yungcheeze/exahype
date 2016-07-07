@@ -49,7 +49,7 @@ peano::MappingSpecification
 exahype::mappings::MarkingForRefinement::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+      peano::MappingSpecification::Serial);
 }
 peano::MappingSpecification
 exahype::mappings::MarkingForRefinement::leaveCellSpecification() {
@@ -338,7 +338,13 @@ void exahype::mappings::MarkingForRefinement::enterCell(
               switch (refinementControl) {
                 case exahype::solvers::Solver::RefinementControl::Refine:
                   pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::RefiningRequested);
-
+                  dfor2(v)
+                    if ((fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
+                        exahype::Vertex::Records::RefinementControl::Unrefined)
+                        && !fineGridVertices[ fineGridVerticesEnumerator(v) ].isRefinedOrRefining()) {
+                      fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
+                    }
+                  enddforx
                   break;
                 case exahype::solvers::Solver::RefinementControl::Erase:
                   pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::ErasingRequested);
