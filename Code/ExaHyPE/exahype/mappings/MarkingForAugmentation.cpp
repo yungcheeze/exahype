@@ -304,25 +304,6 @@ void exahype::mappings::MarkingForAugmentation::touchVertexLastTime(
   // do nothing
 }
 
-bool adjacencyInformationIsConsistent(
-  const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&  indices
-) {
-  bool adjacencyInformationIsConsistent = true;
-
-  #ifdef Dim2
-  adjacencyInformationIsConsistent = adjacencyInformationIsConsistent && (indices( 0*TWO_POWER_D + 1 ) == indices( 1*TWO_POWER_D + 0 ));
-  adjacencyInformationIsConsistent = adjacencyInformationIsConsistent && (indices( 0*TWO_POWER_D + 3 ) == indices( 3*TWO_POWER_D + 0 ));
-  adjacencyInformationIsConsistent = adjacencyInformationIsConsistent && (indices( 3*TWO_POWER_D + 2 ) == indices( 2*TWO_POWER_D + 3 ));
-  adjacencyInformationIsConsistent = adjacencyInformationIsConsistent && (indices( 3*TWO_POWER_D + 1 ) == indices( 1*TWO_POWER_D + 3 ));
-
-  adjacencyInformationIsConsistent = adjacencyInformationIsConsistent && (indices( 0*TWO_POWER_D + 3 ) == indices( 1*TWO_POWER_D + 2 ));
-  adjacencyInformationIsConsistent = adjacencyInformationIsConsistent && (indices( 1*TWO_POWER_D + 2 ) == indices( 3*TWO_POWER_D + 0 ));
-  adjacencyInformationIsConsistent = adjacencyInformationIsConsistent && (indices( 3*TWO_POWER_D + 0 ) == indices( 2*TWO_POWER_D + 1 ));
-  #endif
-
-  return adjacencyInformationIsConsistent;
-}
-
 void exahype::mappings::MarkingForAugmentation::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -335,8 +316,7 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex()) &&
-//      multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
-      adjacencyInformationIsConsistent(
+      multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
           VertexOperations::readADERDGCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices))) {
     const tarch::la::Vector<THREE_POWER_D, int>
         neighbourCellDescriptionIndices =
@@ -396,6 +376,15 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
                 case exahype::solvers::Solver::AugmentationControl::NextToAncestor:
                 case exahype::solvers::Solver::AugmentationControl::NextToCellAndAncestor:
                   pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::AugmentingRequested);
+                  dfor2(v)
+                    if ((fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
+                        exahype::Vertex::Records::RefinementControl::Unrefined)
+                        &&
+                        !fineGridVertices[ fineGridVerticesEnumerator(v) ].isRefinedOrRefining()
+                    ) {
+                      fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
+                    }
+                  enddforx
                   break;
                 default:
                   break;
@@ -407,6 +396,14 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
                 case exahype::solvers::Solver::AugmentationControl::NextToAncestor:
                 case exahype::solvers::Solver::AugmentationControl::NextToCellAndAncestor:
                   pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::AugmentingRequested);
+                  dfor2(v)
+                    if ((fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
+                        exahype::Vertex::Records::RefinementControl::Unrefined)
+                        && !fineGridVertices[ fineGridVerticesEnumerator(v) ].isRefinedOrRefining()
+                    ) {
+                      fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
+                    }
+                  enddforx
                   break;
                 case exahype::solvers::Solver::AugmentationControl::Unnecessary:
                   pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::DeaugmentingRequested);
@@ -447,36 +444,17 @@ exahype::mappings::MarkingForAugmentation::augmentationCriterion(
     const int neighbourCellDescriptionIndex =
         neighbourCellDescriptionIndices[neighbourPositions[i]];
     if (DataHeap::getInstance().isValidIndex(neighbourCellDescriptionIndex)) {
-      // NOTE: The order of the following two for loops is important.
-      // First, check if we are next to a ancestor.
       for (auto& pNeighbour : ADERDGCellDescriptionHeap::getInstance().getData(
                neighbourCellDescriptionIndex)) {
         if (pNeighbour.getSolverNumber() == solverNumber &&
             pNeighbour.getLevel() == level) {
-          switch (pNeighbour.getType()) {  // What type has the neighbour?
+          switch (pNeighbour.getType()) {
             case exahype::records::ADERDGCellDescription::Ancestor:
             case exahype::records::ADERDGCellDescription::EmptyAncestor:
-              switch (type) {  // What type am I?
-                case exahype::records::ADERDGCellDescription::Cell:
-                case exahype::records::ADERDGCellDescription::EmptyDescendant:
-                case exahype::records::ADERDGCellDescription::Descendant:
-                  nextToAncestor = true;
-                  break;
-                default:
-                  break;
-              }
+              nextToAncestor = true;
               break;
             case exahype::records::ADERDGCellDescription::Cell:
-              switch (type) {  // What type am I?
-                case exahype::records::ADERDGCellDescription::EmptyAncestor:
-                case exahype::records::ADERDGCellDescription::Ancestor:
-                case exahype::records::ADERDGCellDescription::EmptyDescendant:
-                case exahype::records::ADERDGCellDescription::Descendant:
-                  nextToCell = true;
-                  break;
-                default:
-                  break;
-              }
+              nextToCell = true;
               break;
             default:
               break;
