@@ -57,7 +57,7 @@ exahype-project  Euler
     plot vtk::ascii
       time     = 0.0
       repeat   = 0.05
-      filename = ./solution
+      output   = ./solution
 /*      specification = default */
     end plot
   end solver

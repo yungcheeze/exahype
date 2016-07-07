@@ -69,10 +69,8 @@ class exahype::Parser {
    */
   int getNumberOfThreads() const;
 
-  /**
-   * Our domain always is cubic.
-   */
-  double getSize() const;
+  tarch::la::Vector<DIMENSIONS, double> getDomainSize() const;
+  tarch::la::Vector<DIMENSIONS, double> getBoundingBoxSize() const;
 
   tarch::la::Vector<DIMENSIONS, double> getOffset() const;
 

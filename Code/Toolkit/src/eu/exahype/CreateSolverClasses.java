@@ -6,8 +6,8 @@ import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.AProfiling;
 import eu.exahype.node.AProject;
-import eu.exahype.node.ATwoDimensionalComputationalDomain;
-import eu.exahype.node.AThreeDimensionalComputationalDomain;
+import eu.exahype.node.AComputationalDomain;
+
 
 public class CreateSolverClasses extends DepthFirstAdapter {
   public Boolean valid = true;
@@ -59,14 +59,13 @@ public class CreateSolverClasses extends DepthFirstAdapter {
   };
 
   @Override
-  public void inATwoDimensionalComputationalDomain(ATwoDimensionalComputationalDomain node) {
-    _dimensions = 2;
+  public void inAComputationalDomain(AComputationalDomain node) {
+    _dimensions = Integer.parseInt( node.getDimension().toString().trim() );
+    if (_dimensions!=2 && _dimensions!=3) {
+      System.err.println( "ERROR: dimension has to be either 2 or 3.");
+    }
   }
 
-  @Override
-  public void inAThreeDimensionalComputationalDomain(AThreeDimensionalComputationalDomain node) {
-    _dimensions = 3;
-  }
   
   @Override
   public void inAProfiling(AProfiling node) {

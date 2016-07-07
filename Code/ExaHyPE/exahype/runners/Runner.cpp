@@ -159,35 +159,42 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 #endif
 }
 
+
+exahype::repositories::Repository* exahype::runners::Runner::createRepository() const {
+  // Geometry is static as we need it survive the whole simulation time.
+  static peano::geometry::Hexahedron geometry(
+    _parser.getDomainSize(),
+    tarch::la::Vector<DIMENSIONS, double>(_parser.getOffset()));
+
+  logInfo(
+    "run(...)",
+    "create computational domain at " << _parser.getOffset() <<
+    " of width/size " << _parser.getDomainSize() <<
+    ". bounding box has size " << _parser.getBoundingBoxSize() );
+
+  return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
+    geometry,
+    tarch::la::Vector<DIMENSIONS, double>(_parser.getBoundingBoxSize()),
+    tarch::la::Vector<DIMENSIONS, double>(_parser.getOffset()));
+}
+
+
 int exahype::runners::Runner::run() {
-  logInfo("run(...)", "create computational domain at " << _parser.getOffset()
-                                                        << " of width/size "
-                                                        << _parser.getSize());
+
+  exahype::repositories::Repository* repository = createRepository();
 
   initDistributedMemoryConfiguration();
-
-  peano::geometry::Hexahedron geometry(
-      _parser.getSize(),
-      tarch::la::Vector<DIMENSIONS, double>(_parser.getOffset()));
-
-  exahype::repositories::Repository* repository =
-      exahype::repositories::RepositoryFactory::getInstance()
-          .createWithSTDStackImplementation(
-              geometry,
-              tarch::la::Vector<DIMENSIONS, double>(_parser.getSize()),
-              tarch::la::Vector<DIMENSIONS, double>(_parser.getOffset()));
-
   initSharedMemoryConfiguration();
 
   int result = 0;
   if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
     result = runAsMaster(*repository);
   }
-#ifdef Parallel
+  #ifdef Parallel
   else {
     result = runAsWorker(*repository);
   }
-#endif
+  #endif
 
   shutdownSharedMemoryConfiguration();
   shutdownDistributedMemoryConfiguration();
