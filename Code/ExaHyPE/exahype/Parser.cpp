@@ -63,7 +63,9 @@ void exahype::Parser::readFile(const std::string& filename) {
   }
 }
 
+
 bool exahype::Parser::isValid() const { return !_tokenStream.empty(); }
+
 
 std::string exahype::Parser::getTokenAfter(std::string token,
                                            int additionalTokensToSkip) const {
@@ -79,6 +81,7 @@ std::string exahype::Parser::getTokenAfter(std::string token,
   } else
     return "notoken";
 }
+
 
 std::string exahype::Parser::getTokenAfter(std::string token0,
                                            std::string token1,
@@ -124,6 +127,7 @@ std::string exahype::Parser::getTokenAfter(std::string token0, int occurance0,
     return "notoken";
 }
 
+
 int exahype::Parser::getNumberOfThreads() const {
   assertion(isValid());
   std::string token = getTokenAfter("shared-memory", "cores");
@@ -138,18 +142,28 @@ int exahype::Parser::getNumberOfThreads() const {
   return result;
 }
 
-double exahype::Parser::getSize() const {
+tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getDomainSize() const {
   assertion(isValid());
-  std::string token = getTokenAfter("computational-domain", "width");
-  logDebug("getSize()", "found token " << token);
-  double result = atof(token.c_str());
-  if (result <= 0) {
-    logError("getSize()", "Invalid width of computational domain: "
-                              << token << ". Use unit cube");
-    result = 1.0;
-  }
+  std::string token;
+  tarch::la::Vector<DIMENSIONS, double> result;
+  token = getTokenAfter("computational-domain", "width", 0);
+  result(0) = atof(token.c_str());
+  token = getTokenAfter("computational-domain", "width", 1);
+  result(1) = atof(token.c_str());
+  #if DIMENSIONS == 3
+  token = getTokenAfter("computational-domain", "width", 2);
+  result(2) = atof(token.c_str());
+  #endif
   return result;
 }
+
+
+tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getBoundingBoxSize() const {
+  tarch::la::Vector<DIMENSIONS, double> domainSize = getDomainSize();
+  double longestH = tarch::la::max( domainSize );
+  return tarch::la::Vector<DIMENSIONS, double>(longestH);
+}
+
 
 tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getOffset() const {
   assertion(isValid());
@@ -159,13 +173,14 @@ tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getOffset() const {
   result(0) = atof(token.c_str());
   token = getTokenAfter("computational-domain", "offset", 1);
   result(1) = atof(token.c_str());
-#if DIMENSIONS == 3
+  #if DIMENSIONS == 3
   token = getTokenAfter("computational-domain", "offset", 2);
   result(2) = atof(token.c_str());
-#endif
+  #endif
   logDebug("getSize()", "found offset " << result);
   return result;
 }
+
 
 std::string exahype::Parser::getMulticorePropertiesFile() const {
   std::string result = getTokenAfter("shared-memory", "properties-file");

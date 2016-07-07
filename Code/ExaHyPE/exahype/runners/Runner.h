@@ -105,6 +105,11 @@ class exahype::runners::Runner {
   void runOneTimeStampWithFourSeparateAlgorithmicSteps(
       exahype::repositories::Repository& repository, bool plot);
 
+  /**
+   * Sets up the geometry, hands it over to a new instance of the repository
+   * and returns the repository.
+   */
+  exahype::repositories::Repository* createRepository() const;
  public:
   explicit Runner(const Parser& parser);
   virtual ~Runner();
