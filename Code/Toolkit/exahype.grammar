@@ -63,7 +63,7 @@ Tokens
   token_variable                  = 'variable';
   token_time                      = 'time';
   token_repeat                    = 'repeat';
-  token_filename                  = 'filename';
+  token_output                    = 'output';
 
   token_shared_memory             = 'shared-memory';
   token_cores                     = 'cores';
@@ -165,19 +165,19 @@ Productions
      {two_dimensional}
       [begin_token]:token_computational_domain
        token_dimension  [dimension_equals]:token_equals    [dimension]:int_number
-       token_width      [width_equals]:token_equals        [width]:float_number
-       token_offset     [offset_equals]:token_equals       [offset_x]:float_number [comma_xy]:token_comma [offset_y]:float_number
+       token_width      [width_equals]:token_equals        [width_x]:float_number [width_comma_xy]:token_comma [width_y]:float_number 
+       token_offset     [offset_equals]:token_equals       [offset_x]:float_number [offset_comma_xy]:token_comma [offset_y]:float_number
        token_end_time   [end_time_equals]:token_equals     [end_time]:float_number
       token_end [end_token]:token_computational_domain
-       { -> New computational_domain.two_dimensional( dimension, width,offset_x,offset_y,end_time ) } |
+       { -> New computational_domain( dimension, width_x, width_y, Null, offset_x, offset_y, Null, end_time ) } |
      {three_dimensional}
       [begin_token]:token_computational_domain
        token_dimension  [dimension_equals]:token_equals    [dimension]:int_number
-       token_width      [width_equals]:token_equals        [width]:float_number
-       token_offset     [offset_equals]:token_equals       [offset_x]:float_number [comma_xy]:token_comma [offset_y]:float_number [comma_yz]:token_comma [offset_z]:float_number
+       token_width      [width_equals]:token_equals        [width_x]:float_number [width_comma_xy]:token_comma [width_y]:float_number [width_comma_yz]:token_comma [width_z]:float_number 
+       token_offset     [offset_equals]:token_equals       [offset_x]:float_number  [offset_comma_xy]:token_comma [offset_y]:float_number [offset_comma_yz]:token_comma [offset_z]:float_number
        token_end_time   [end_time_equals]:token_equals     [end_time]:float_number
       token_end [end_token]:token_computational_domain
-       { -> New computational_domain.three_dimensional( dimension, width,offset_x,offset_y,offset_z,end_time ) };
+       { -> New computational_domain( dimension, width_x, width_y, width_z, offset_x, offset_y, offset_z, end_time ) };
 
    optimisation {->optimisation} =
       [begin_token]:token_optimisation
@@ -217,10 +217,10 @@ Productions
      [begin_token]:token_plot [plotter_type]:typename
        token_time      [time_equals]:token_equals     [time]:float_number
        token_repeat    [repeat_equals]:token_equals   [repeat]:float_number
-       token_filename  [filename_equals]:token_equals filename
+       token_output    [output_equals]:token_equals   output
      token_end [end_token]:token_plot
      plot_solution_list?
-       { -> [New plot_solution(plotter_type,time,repeat,filename),plot_solution_list.plot_solution] }
+       { -> [New plot_solution(plotter_type,time,repeat,output),plot_solution_list.plot_solution] }
      ;
 
    solver_list {->solver*} =
@@ -261,9 +261,7 @@ Abstract Syntax Tree
      [identifier]:identifier;
 
    computational_domain =
-     {two_dimensional}   [dimension]:int_number [width]:float_number [offset_x]:float_number [offset_y]:float_number [end_time]:float_number |
-     {three_dimensional} [dimension]:int_number [width]:float_number [offset_x]:float_number [offset_y]:float_number [offset_z]:float_number [end_time]:float_number
-     ;
+     [dimension]:int_number [width_x]:float_number [width_y]:float_number [width_z]:float_number [offset_x]:float_number [offset_y]:float_number [offset_z]:float_number [end_time]:float_number;
 
    optimisation =
      [fuse_algorithm_steps]:token_on_off;
@@ -276,5 +274,4 @@ Abstract Syntax Tree
      ;
 
    plot_solution =
-     [plotter_type]:typename [time]:float_number [repeat]:float_number [filename]:filename;
-
+     [plotter_type]:typename [time]:float_number [repeat]:float_number [output]:output;
