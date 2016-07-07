@@ -20,9 +20,9 @@
 #include "tarch/plotter/griddata/unstructured/vtk/VTKBinaryFileWriter.h"
 
 namespace exahype {
-namespace plotters {
-class ADERDG2BinaryVTK;
-}
+  namespace plotters {
+    class ADERDG2BinaryVTK;
+  }
 }
 
 class exahype::plotters::ADERDG2BinaryVTK
@@ -33,6 +33,7 @@ class exahype::plotters::ADERDG2BinaryVTK
   const std::string _filename;
   const int _order;
   const int _unknowns;
+  const std::string _select;
 
   tarch::plotter::griddata::blockstructured::PatchWriterUnstructured*
       _patchWriter;
@@ -44,7 +45,7 @@ class exahype::plotters::ADERDG2BinaryVTK
       _vertexDataWriter;
 
  public:
-  ADERDG2BinaryVTK(const std::string& filename, int order, int unknowns);
+  ADERDG2BinaryVTK(const std::string& filename, int order, int unknowns, const std::string& select);
   virtual ~ADERDG2BinaryVTK();
 
   virtual void plotPatch(

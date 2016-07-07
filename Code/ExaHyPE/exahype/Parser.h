@@ -87,6 +87,7 @@ class exahype::Parser {
   double getFirstSnapshotTimeForPlotter(int solverNumber,
                                         int plotterNumber) const;
   double getRepeatTimeForPlotter(int solverNumber, int plotterNumber) const;
+  std::string getSelectorForPlotter(int solverNumber, int plotterNumber) const;
   std::string getIdentifierForPlotter(int solverNumber,
                                       int plotterNumber) const;
   std::string getFilenameForPlotter(int solverNumber, int plotterNumber) const;

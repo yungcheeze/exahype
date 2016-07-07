@@ -54,6 +54,7 @@ class exahype::plotters::Plotter {
   double _time;
   const double _repeat;
   const std::string _filename;
+  const std::string _select;
 
   Device* _device;
 

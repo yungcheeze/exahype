@@ -22,9 +22,16 @@
 
 int exahype::plotters::ADERDG2AsciiVTK::FileCounter(0);
 
-exahype::plotters::ADERDG2AsciiVTK::ADERDG2AsciiVTK(const std::string& filename,
-                                                    int order, int unknowns)
-    : _filename(filename), _order(order), _unknowns(unknowns) {
+exahype::plotters::ADERDG2AsciiVTK::ADERDG2AsciiVTK(
+  const std::string& filename,
+  int                order,
+  int                unknowns,
+  const std::string& select)
+  :
+  _filename(filename),
+  _order(order),
+  _unknowns(unknowns),
+  _select(select) {
   _patchWriter =
       new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
           new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter());
@@ -35,8 +42,10 @@ exahype::plotters::ADERDG2AsciiVTK::ADERDG2AsciiVTK(const std::string& filename,
   for (int i = 0; i < unknowns; i++) {
     std::ostringstream identifier;
     identifier << "Q" << i;
-    _vertexDataWriter.push_back(
+    if ( _select.find(identifier.str())!=std::string::npos || _select=="{all}" ) {
+      _vertexDataWriter.push_back(
         _patchWriter->createVertexDataWriter(identifier.str(), 1));
+    }
   }
 }
 
@@ -83,21 +92,27 @@ void exahype::plotters::ADERDG2AsciiVTK::plotPatch(
     for (int i = 0; i < _order + 1; i++) {
       _timeStampDataWriter->plotVertex(vertexIndex, timeStamp);
 
-      int unknown = 0;
-      for (auto& p : _vertexDataWriter) {
-        double value = 0;
-        for (int jj = 0; jj < _order + 1;
-             jj++) {  // Gauss-Legendre node indices
-          for (int ii = 0; ii < _order + 1; ii++) {
-            int iGauss = jj * (_order + 1) + ii;
-            value += kernels::equidistantGridProjector1d[_order][ii][i] *
-                     kernels::equidistantGridProjector1d[_order][jj][j] *
-                     u[iGauss * _unknowns + unknown];
-            assertion3(value == value, offsetOfPatch, sizeOfPatch, iGauss);
+      int unknownPlotter = 0;
+      for (int unknown=0; unknown < _unknowns; unknown++) {
+        std::ostringstream identifier;
+        identifier << "Q" << unknown;
+
+        if ( _select.find(identifier.str())!=std::string::npos || _select=="{all}" ) {
+          double value = 0;
+          for (int jj = 0; jj < _order + 1;
+               jj++) {  // Gauss-Legendre node indices
+            for (int ii = 0; ii < _order + 1; ii++) {
+              int iGauss = jj * (_order + 1) + ii;
+              value += kernels::equidistantGridProjector1d[_order][ii][i] *
+                       kernels::equidistantGridProjector1d[_order][jj][j] *
+                       u[iGauss * _unknowns + unknown];
+              assertion3(value == value, offsetOfPatch, sizeOfPatch, iGauss);
+            }
           }
+
+          _vertexDataWriter[unknownPlotter]->plotVertex(vertexIndex, value);
+          unknownPlotter++;
         }
-        p->plotVertex(vertexIndex, value);
-        unknown++;
       }
       vertexIndex++;
     }
@@ -113,25 +128,27 @@ void exahype::plotters::ADERDG2AsciiVTK::plotPatch(
       for (int i = 0; i < _order + 1; i++) {
         _timeStampDataWriter->plotVertex(vertexIndex, timeStamp);
 
-        int unknown = 0;
-        for (auto& p : _vertexDataWriter) {
-          double value = 0;
-          for (int kk = 0; kk < _order + 1;
-               kk++) {  // Gauss-Legendre node indices
-            for (int jj = 0; jj < _order + 1; jj++) {
+        int unknownPlotter = 0;
+        for (int unknown=0; unknown < _unknowns; unknown++) {
+          std::ostringstream identifier;
+          identifier << "Q" << unknown;
+
+          if ( _select.find(identifier.str())!=std::string::npos || _select=="{all}" ) {
+            double value = 0;
+            for (int jj = 0; jj < _order + 1;
+                 jj++) {  // Gauss-Legendre node indices
               for (int ii = 0; ii < _order + 1; ii++) {
-                int iGauss =
-                    ii + (_order + 1) * jj + (_order + 1) * (_order + 1) * kk;
+                int iGauss = jj * (_order + 1) + ii;
                 value += kernels::equidistantGridProjector1d[_order][ii][i] *
                          kernels::equidistantGridProjector1d[_order][jj][j] *
-                         kernels::equidistantGridProjector1d[_order][kk][k] *
                          u[iGauss * _unknowns + unknown];
                 assertion3(value == value, offsetOfPatch, sizeOfPatch, iGauss);
               }
             }
+
+            _vertexDataWriter[unknownPlotter]->plotVertex(vertexIndex, value);
+            unknownPlotter++;
           }
-          p->plotVertex(vertexIndex, value);
-          unknown++;
         }
         vertexIndex++;
       }
