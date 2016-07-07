@@ -30,7 +30,7 @@ exahype-project  Euler
 
   computational-domain
     dimension                = 2
-    width                    = 1.0, 1.0
+    width                    = 1.0, 0.6
     offset                   = 0.0, 0.0
     end-time                 = 0.4
   end computational-domain
@@ -58,7 +58,7 @@ exahype-project  Euler
       time     = 0.0
       repeat   = 0.05
       output   = ./solution
-/*      specification = default */
+      select   = {all} 
     end plot
   end solver
 
