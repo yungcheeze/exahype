@@ -220,17 +220,14 @@ class exahype::records::ADERDGCellDescription {
 
   enum RefinementEvent {
     None,
-    ErasingRequested,       // post
-    Restricting,            // pre
-    Erasing,                // pre
-    AllocatingMemory,       // pre
-    ErasingChildren,        // pre
-    RefiningRequested,      // pre
-    Refining,               // pre
-    Prolongating,           // pre
-    DeaugmentingRequested,  // post
-    AugmentingRequested,    // pre
-    Augmenting              // pre
+    ErasingRequested,            // post
+    Erasing,                     // pre
+    ChangeToDescendantRequested, // post
+    RefiningRequested,           // pre
+    Refining,                    // pre
+    DeaugmentingRequested,       // post
+    AugmentingRequested,         // pre
+    Augmenting                   // pre
   };
 
   /**

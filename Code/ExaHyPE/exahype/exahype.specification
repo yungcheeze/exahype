@@ -64,16 +64,7 @@ event-mapping:
   name: Augmentation
 
 event-mapping:
-  name: VolumeUnknownsProjection  
-
-event-mapping:
-  name: InitialisationAndCleaning  
-
-event-mapping:
-  name: DropIncomingMPIMessages  
-
-event-mapping:
-  name: Erasing    
+  name: DropIncomingMPIMessages
 // 
 
 event-mapping:
