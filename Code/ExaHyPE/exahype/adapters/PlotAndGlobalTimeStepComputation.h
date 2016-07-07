@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_PredictorRerun_H_
-#define EXAHYPE_ADAPTERS_PredictorRerun_H_
+#ifndef EXAHYPE_ADAPTERS_PlotAndGlobalTimeStepComputation_H_
+#define EXAHYPE_ADAPTERS_PlotAndGlobalTimeStepComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,16 +18,14 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/DropIncomingMPIMessages.h"
- #include "exahype/mappings/SpaceTimePredictor.h"
- #include "exahype/mappings/VolumeIntegral.h"
- #include "exahype/mappings/FaceUnknownsProjection.h"
+ #include "exahype/mappings/Plot.h"
+ #include "exahype/mappings/GlobalTimeStepComputation.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class PredictorRerun;
+        class PlotAndGlobalTimeStepComputation;
       } 
 }
 
@@ -39,17 +37,13 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::PredictorRerun {
+class exahype::adapters::PlotAndGlobalTimeStepComputation {
   private:
-    typedef mappings::DropIncomingMPIMessages Mapping0;
-    typedef mappings::SpaceTimePredictor Mapping1;
-    typedef mappings::VolumeIntegral Mapping2;
-    typedef mappings::FaceUnknownsProjection Mapping3;
+    typedef mappings::Plot Mapping0;
+    typedef mappings::GlobalTimeStepComputation Mapping1;
 
-     Mapping0  _map2DropIncomingMPIMessages;
-     Mapping1  _map2SpaceTimePredictor;
-     Mapping2  _map2VolumeIntegral;
-     Mapping3  _map2FaceUnknownsProjection;
+     Mapping0  _map2Plot;
+     Mapping1  _map2GlobalTimeStepComputation;
 
 
   public:
@@ -61,16 +55,16 @@ class exahype::adapters::PredictorRerun {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    PredictorRerun();
+    PlotAndGlobalTimeStepComputation();
 
     #if defined(SharedMemoryParallelisation)
-    PredictorRerun(const PredictorRerun& masterThread);
+    PlotAndGlobalTimeStepComputation(const PlotAndGlobalTimeStepComputation& masterThread);
     #endif
 
-    virtual ~PredictorRerun();
+    virtual ~PlotAndGlobalTimeStepComputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const PredictorRerun& workerThread);
+    void mergeWithWorkerThread(const PlotAndGlobalTimeStepComputation& workerThread);
     #endif
 
     void createInnerVertex(

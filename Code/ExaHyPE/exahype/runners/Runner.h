@@ -80,8 +80,8 @@ class exahype::runners::Runner {
   void runGlobalStep();
 #endif
 
-  void initSolvers();
-  void startNewTimeStep(int n);
+  void initSolverTimeStamps();
+  void startNewTimeStep(int n,bool printInfo);
 
   /**
    * Do one time step where all phases are actually fused into one traversal

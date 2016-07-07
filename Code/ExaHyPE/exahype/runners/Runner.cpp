@@ -202,11 +202,6 @@ int exahype::runners::Runner::runAsMaster(
   peano::utils::UserInterface::writeHeader();
 
   /*
-   * Initialise the solvers.
-   */
-  initSolvers();
-
-  /*
    * Build up the initial space tree.
    */
   repository.switchToAugmentedAMRGrid();
@@ -234,31 +229,43 @@ int exahype::runners::Runner::runAsMaster(
 #endif
   repository.switchToSolutionUpdateAndGlobalTimeStepComputation();
   repository.iterate();
-  startNewTimeStep(-1);
-
-  bool plot = exahype::plotters::isAPlotterActive(
-      solvers::Solver::getMinSolverTimeStamp());
-  if (plot) {
-    repository.switchToGlobalTimeStepComputationAndPlot();
-  }
-  else {
-    repository.switchToGlobalTimeStepComputation();
-  }
-  repository.iterate();
-
-  // #if DIMENSIONS==2
-  //  repository.switchToPlotAugmentedAMRGrid();
-  //  repository.iterate();
-  // #endif
+#if defined(Debug) || defined(Asserts)
+  startNewTimeStep(-1,true);
+#else
+  startNewTimeStep(-1,false);
+#endif
+  /*
+   * Set the time stamps of the solvers to the initial value again.
+   *
+   * !!! Rationale
+   *
+   * The time step size computation
+   * sets the predictor time stamp to the value
+   * of the predictor time stamp plus the admissible
+   * time step size on each patch for each solver.
+   */
+  initSolverTimeStamps();
 
   /*
    * Compute current first predictor based on current time step size.
    * Set current time step size as old time step size of next iteration.
    * Compute the current time step size of the next iteration.
    */
-  repository.switchToPredictorAndGlobalTimeStepComputation();
+  bool plot = exahype::plotters::isAPlotterActive(
+      solvers::Solver::getMinSolverTimeStamp());
+  if (plot) {
+    repository.switchToPredictorAndPlotAndGlobalTimeStepComputation();
+  }
+  else {
+    repository.switchToPredictorAndGlobalTimeStepComputation();
+  }
   repository.iterate();
-  startNewTimeStep(0);
+  startNewTimeStep(0,true);
+
+  // #if DIMENSIONS==2
+  //  repository.switchToPlotAugmentedAMRGrid();
+  //  repository.iterate();
+  // #endif
 
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n = 1;
@@ -271,10 +278,10 @@ int exahype::runners::Runner::runAsMaster(
     if (_parser.fuseAlgorithmicSteps()) {
       runOneTimeStampWithFusedAlgorithmicSteps(repository, plot);
       recomputePredictorIfNecessary(repository);
-      startNewTimeStep(n);
+      startNewTimeStep(n,true);
     } else {
       runOneTimeStampWithFourSeparateAlgorithmicSteps(repository, plot);
-      startNewTimeStep(n);
+      startNewTimeStep(n,true);
     }
 
     n++;
@@ -287,7 +294,7 @@ int exahype::runners::Runner::runAsMaster(
   return 0;
 }
 
-void exahype::runners::Runner::initSolvers() {
+void exahype::runners::Runner::initSolverTimeStamps() {
   // todo 16/02/26:Dominic Etienne Charrier: The initial time stamp
   // should be set by the user in his solver sub class.
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
@@ -299,7 +306,7 @@ void exahype::runners::Runner::initSolvers() {
   }
 }
 
-void exahype::runners::Runner::startNewTimeStep(int n) {
+void exahype::runners::Runner::startNewTimeStep(int n,bool printInfo) {
   double currentMinTimeStamp = std::numeric_limits<double>::max();
   double currentMinTimeStepSize = std::numeric_limits<double>::max();
   double nextMinTimeStepSize = std::numeric_limits<double>::max();
@@ -315,15 +322,16 @@ void exahype::runners::Runner::startNewTimeStep(int n) {
         std::min(nextMinTimeStepSize, p->getMinPredictorTimeStepSize());
   }
 
-  logInfo("startNewTimeStep(...)",
-          "step " << n << "\t t_min          =" << currentMinTimeStamp);
+  if (printInfo) {
+    logInfo("startNewTimeStep(...)",
+            "step " << n << "\t t_min          =" << currentMinTimeStamp);
 
-  logInfo("startNewTimeStep(...)",
-          "\t\t dt_min         =" << currentMinTimeStepSize);
+    logInfo("startNewTimeStep(...)",
+            "\t\t dt_min         =" << currentMinTimeStepSize);
 
-  logInfo("startNewTimeStep(...)",
-          "\t\t next dt_min    =" << nextMinTimeStepSize);
-
+    logInfo("startNewTimeStep(...)",
+            "\t\t next dt_min    =" << nextMinTimeStepSize);
+  }
 #if defined(Debug) || defined(Asserts)
   tarch::logging::CommandLineLogger::getInstance()
       .closeOutputStreamAndReopenNewOne();
@@ -417,7 +425,7 @@ void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(
   repository.iterate();
 
   if (plot) {
-    repository.switchToGlobalTimeStepComputationAndPlot();  // Inside cell
+    repository.switchToPlotAndGlobalTimeStepComputation();  // Inside cell
   } else {
     repository.switchToGlobalTimeStepComputation();  // Inside cell
   }

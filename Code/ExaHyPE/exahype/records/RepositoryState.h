@@ -1,16 +1,3 @@
-/**
- * This file is part of the ExaHyPE project.
- * Copyright (c) 2016  http://exahype.eu
- * All rights reserved.
- *
- * The project has received funding from the European Union's Horizon 
- * 2020 research and innovation programme under grant agreement
- * No 671698. For copyrights and licensing, please consult the webpage.
- *
- * Released under the BSD 3 Open Source License.
- * For the full license text, see LICENSE.txt
- **/
- 
 #ifndef _EXAHYPE_RECORDS_REPOSITORYSTATE_H
 #define _EXAHYPE_RECORDS_REPOSITORYSTATE_H
 
@@ -44,7 +31,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   20/05/2016 13:31
+ * @date   06/07/2016 15:49
  */
 class exahype::records::RepositoryState { 
    
@@ -53,7 +40,7 @@ class exahype::records::RepositoryState {
       typedef exahype::records::RepositoryStatePacked Packed;
       
       enum Action {
-         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterAugmentedAMRGrid = 4, UseAdapterPlotAugmentedAMRGrid = 5, UseAdapterSolutionUpdateAndGlobalTimeStepComputation = 6, UseAdapterPredictorAndGlobalTimeStepComputation = 7, UseAdapterADERDGTimeStep = 8, UseAdapterADERDGTimeStepAndPlot = 9, UseAdapterGlobalTimeStepComputation = 10, UseAdapterGlobalTimeStepComputationAndPlot = 11, UseAdapterFaceDataExchange = 12, UseAdapterPredictor = 13, UseAdapterPredictorRerun = 14, UseAdapterCorrector = 15, NumberOfAdapters = 16
+         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterAugmentedAMRGrid = 4, UseAdapterPlotAugmentedAMRGrid = 5, UseAdapterSolutionUpdateAndGlobalTimeStepComputation = 6, UseAdapterPredictorAndPlotAndGlobalTimeStepComputation = 7, UseAdapterPredictorAndGlobalTimeStepComputation = 8, UseAdapterADERDGTimeStep = 9, UseAdapterADERDGTimeStepAndPlot = 10, UseAdapterGlobalTimeStepComputation = 11, UseAdapterPlotAndGlobalTimeStepComputation = 12, UseAdapterFaceDataExchange = 13, UseAdapterPredictor = 14, UseAdapterPredictorRerun = 15, UseAdapterCorrector = 16, NumberOfAdapters = 17
       };
       
       struct PersistentRecords {
@@ -304,7 +291,7 @@ class exahype::records::RepositoryState {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   20/05/2016 13:31
+    * @date   06/07/2016 15:49
     */
    class exahype::records::RepositoryStatePacked { 
       
