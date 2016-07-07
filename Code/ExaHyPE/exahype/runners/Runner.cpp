@@ -210,10 +210,9 @@ int exahype::runners::Runner::runAsMaster(
     repository.iterate();
     gridSetupIterations++;
   } while (!repository.getState().isGridBalanced());
-  repository.iterate();  // We need one extra iteration.
-  gridSetupIterations++;
-  repository.iterate();  // We need one extra iteration.
-  gridSetupIterations++;
+
+//    repository.switchToPlotAugmentedAMRGrid();
+//    repository.iterate();
 
   logInfo("runAsMaster()",
           "grid setup iterations=" << gridSetupIterations << ", max-level="
@@ -261,11 +260,6 @@ int exahype::runners::Runner::runAsMaster(
   }
   repository.iterate();
   startNewTimeStep(0,true);
-
-  // #if DIMENSIONS==2
-  //  repository.switchToPlotAugmentedAMRGrid();
-  //  repository.iterate();
-  // #endif
 
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n = 1;
