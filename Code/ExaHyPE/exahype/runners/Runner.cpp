@@ -211,6 +211,7 @@ int exahype::runners::Runner::runAsMaster(
     gridSetupIterations++;
   } while (!repository.getState().isGridBalanced());
 
+//    NOTE: Only plot the three in 2d. Otherwise the program will crash.
 //    repository.switchToPlotAugmentedAMRGrid();
 //    repository.iterate();
 
