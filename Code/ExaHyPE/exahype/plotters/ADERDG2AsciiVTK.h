@@ -20,9 +20,9 @@
 #include "tarch/plotter/griddata/unstructured/vtk/VTKTextFileWriter.h"
 
 namespace exahype {
-namespace plotters {
-class ADERDG2AsciiVTK;
-}
+  namespace plotters {
+    class ADERDG2AsciiVTK;
+  }
 }
 
 class exahype::plotters::ADERDG2AsciiVTK
@@ -33,6 +33,7 @@ class exahype::plotters::ADERDG2AsciiVTK
   const std::string _filename;
   const int _order;
   const int _unknowns;
+  const std::string _select;
 
   tarch::plotter::griddata::blockstructured::PatchWriterUnstructured*
       _patchWriter;
@@ -44,7 +45,7 @@ class exahype::plotters::ADERDG2AsciiVTK
       _vertexDataWriter;
 
  public:
-  ADERDG2AsciiVTK(const std::string& filename, int order, int unknowns);
+  ADERDG2AsciiVTK(const std::string& filename, int order, int unknowns, const std::string& select);
   virtual ~ADERDG2AsciiVTK();
 
   virtual void plotPatch(

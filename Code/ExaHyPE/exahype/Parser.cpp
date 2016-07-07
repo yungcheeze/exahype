@@ -234,7 +234,7 @@ double exahype::Parser::getFirstSnapshotTimeForPlotter(
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
                                     plotterNumber * 2 + 1, 2);
-  logDebug("fuseAlgorithmicSteps()", "found token " << token);
+  logDebug("getFirstSnapshotTimeForPlotter()", "found token " << token);
   assertion3(token.compare("notoken") != 0, token, solverNumber, plotterNumber);
   return atof(token.c_str());
 }
@@ -246,7 +246,7 @@ double exahype::Parser::getRepeatTimeForPlotter(int solverNumber,
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
                                     plotterNumber * 2 + 1, 4);
-  logDebug("fuseAlgorithmicSteps()", "found token " << token);
+  logDebug("getRepeatTimeForPlotter()", "found token " << token);
   assertion3(token.compare("notoken") != 0, token, solverNumber, plotterNumber);
   return atof(token.c_str());
 }
@@ -258,7 +258,7 @@ std::string exahype::Parser::getIdentifierForPlotter(int solverNumber,
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
                                     plotterNumber * 2 + 1);
-  logDebug("fuseAlgorithmicSteps()", "found token " << token);
+  logDebug("getIdentifierForPlotter()", "found token " << token);
   assertion3(token.compare("notoken") != 0, token, solverNumber, plotterNumber);
   return token;
 }
@@ -270,9 +270,20 @@ std::string exahype::Parser::getFilenameForPlotter(int solverNumber,
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
                                     plotterNumber * 2 + 1, 6);
-  logDebug("fuseAlgorithmicSteps()", "found token " << token);
+  logDebug("getFilenameForPlotter()", "found token " << token);
   assertion3(token.compare("notoken") != 0, token, solverNumber, plotterNumber);
   return token;
+}
+
+std::string exahype::Parser::getSelectorForPlotter(int solverNumber, int plotterNumber) const {
+  assertion(isValid());
+  // We have to multiply with two as the token solver occurs twice (to open and
+  // close the section)
+  std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
+                                    plotterNumber * 2 + 1, 8);
+  logDebug("getSelectorForPlotter()", "found token " << token);
+  assertion3(token.compare("notoken") != 0, token, solverNumber, plotterNumber);
+  return (token != "notoken") ? token : "{}";
 }
 
 std::string exahype::Parser::getProfilerIdentifier() const {

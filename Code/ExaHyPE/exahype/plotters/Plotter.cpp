@@ -29,6 +29,7 @@ exahype::plotters::Plotter::Plotter(int solver, int plotterCount,
       _time(parser.getFirstSnapshotTimeForPlotter(solver, plotterCount)),
       _repeat(parser.getRepeatTimeForPlotter(solver, plotterCount)),
       _filename(parser.getFilenameForPlotter(solver, plotterCount)),
+      _select(parser.getSelectorForPlotter(solver, plotterCount)),
       _device(nullptr) {
   if (_time < 0.0) {
     logError("Plotter(...)",
@@ -63,8 +64,9 @@ bool exahype::plotters::Plotter::checkWetherSolverBecomesActive(
               // Consider to pass the nodes per coordinate axis instead of the
               // order
               solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis() -
-                  1,
-              solvers::RegisteredSolvers[_solver]->getNumberOfVariables());
+              1,
+              solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
+              _select);
         } else if (_identifier.compare("vtk::ascii") == 0) {
           logDebug("open()",
                    "create vtk::ascii plotter for "
@@ -77,8 +79,9 @@ bool exahype::plotters::Plotter::checkWetherSolverBecomesActive(
               // Consider to pass the nodes per coordinate axis instead of the
               // order
               solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis() -
-                  1,
-              solvers::RegisteredSolvers[_solver]->getNumberOfVariables());
+              1,
+              solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
+              _select);
         } else {
           logError("open()",
                    "unknown plotter type "
