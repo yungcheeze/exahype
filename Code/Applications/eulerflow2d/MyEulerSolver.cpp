@@ -94,7 +94,7 @@ exahype::solvers::Solver::RefinementControl Euler2d::MyEulerSolver::refinementCr
 //        //            center[0] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
 //        //          if (center[1] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
 //        //              center[1] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
-//        return exahype::solvers::Solver::Refine;
+//        return exahype::solvers::Solver::RefinementControl::Refine;
 //      }
 //    }
 //  }
@@ -105,7 +105,7 @@ exahype::solvers::Solver::RefinementControl Euler2d::MyEulerSolver::refinementCr
 //        //            center[0] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
 //        //          if (center[1] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
 //        //              center[1] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
-//        return exahype::solvers::Solver::Refine;
+//        return exahype::solvers::Solver::RefinementControl::Refine;
 //      }
 //    }
 //  }
@@ -117,9 +117,9 @@ exahype::solvers::Solver::RefinementControl Euler2d::MyEulerSolver::refinementCr
 //        //            center[0] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
 //        //          if (center[1] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
 //        //              center[1] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
-//        return exahype::solvers::Solver::Refine;
+//        return exahype::solvers::Solver::RefinementControl::Refine;
 //      }
 //    }
 //  }
-  return exahype::solvers::Solver::Keep;
+  return exahype::solvers::Solver::RefinementControl::Keep;
 }

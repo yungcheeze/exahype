@@ -134,7 +134,7 @@ void elasticwaves3d::MyElasticSolver::adjustedSolutionValues(const double* const
 
 exahype::solvers::Solver::RefinementControl elasticwaves3d::MyElasticSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
   // @todo Please implement
-  return exahype::solvers::Solver::Keep;
+  return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
 

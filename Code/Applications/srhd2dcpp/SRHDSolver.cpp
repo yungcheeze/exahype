@@ -130,7 +130,7 @@ void srhd2d::SRHDSolver::adjustedSolutionValues(const double* const x,const doub
 
 exahype::solvers::Solver::RefinementControl srhd2d::SRHDSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
 	// @todo Please implement
-	return exahype::solvers::Solver::Keep;
+  return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
 

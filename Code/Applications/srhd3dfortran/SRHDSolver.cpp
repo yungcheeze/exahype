@@ -89,7 +89,7 @@ void srhd3dfortran::SRHDSolver::adjustedSolutionValues(const double* const x,con
 
 exahype::solvers::Solver::RefinementControl srhd3dfortran::SRHDSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
   // @todo Please implement
-  return exahype::solvers::Solver::Keep;
+  return exahype::solvers::Solver::RefinementControl::Keep;
   // Problem here: Determine how to access conserved quantities Q
   // which give the criterion whether to refine or not.
 }
