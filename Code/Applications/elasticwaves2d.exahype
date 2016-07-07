@@ -19,7 +19,6 @@ exahype-project  elasticwaves2d
     dimension                = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
-    maximum-mesh-size        = 0.05, 0.05
     end-time                 = 1.0
   end computational-domain
 
@@ -38,11 +37,12 @@ exahype-project  elasticwaves2d
   end optimisation
 
   solver ADER-DG MyElasticSolver
-    unknowns  = 5
-    parameters= 0
-    order     = 3
-    kernel    = generic::fluxes::nonlinear
-    language  = C
+    unknowns           = 5
+    parameters         = 0
+    order              = 3
+    maximum-mesh-size  = 0.05, 0.05
+    kernel             = generic::fluxes::nonlinear
+    language           = C
 
     plot vtk::ascii
       time     = 0.0

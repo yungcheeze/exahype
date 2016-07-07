@@ -7,14 +7,6 @@ Euler2d::MyEulerSolver::MyEulerSolver(int kernelNumber, std::unique_ptr<exahype:
   // @todo Please implement/augment if required
 }
 
-int Euler2d::MyEulerSolver::getMinimumTreeDepth() const {
-  #if defined(Asserts)
-  return 2;
-  #else
-  return 4;
-  #endif
-}
-
 bool Euler2d::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
   if (tarch::la::equals(t, 0.0)) {
     return true;

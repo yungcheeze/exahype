@@ -20,7 +20,6 @@ exahype-project  TrivialProject
     dimension                = 2
     width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
-    maximum-mesh-size        = 0.05, 0.05
     end-time                 = 0.1
   end computational-domain
 
