@@ -167,6 +167,22 @@ tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getOffset() const {
   return result;
 }
 
+tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getMaximumMeshSize() const {
+  assertion(isValid());
+  std::string token;
+  tarch::la::Vector<DIMENSIONS, double> result;
+  token = getTokenAfter("computational-domain", "maximum-mesh-size", 0);
+  result(0) = atof(token.c_str());
+  token = getTokenAfter("computational-domain", "maximum-mesh-size", 1);
+  result(1) = atof(token.c_str());
+#if DIMENSIONS == 3
+  token = getTokenAfter("computational-domain", "maximum-mesh-size", 2);
+  result(2) = atof(token.c_str());
+#endif
+  logDebug("getSize()", "found offset " << result);
+  return result;
+}
+
 std::string exahype::Parser::getMulticorePropertiesFile() const {
   std::string result = getTokenAfter("shared-memory", "properties-file");
   logDebug("getMulticorePropertiesFile()", "found token " << result);

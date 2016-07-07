@@ -76,6 +76,8 @@ class exahype::Parser {
 
   tarch::la::Vector<DIMENSIONS, double> getOffset() const;
 
+  tarch::la::Vector<DIMENSIONS, double> getMaximumMeshSize() const;
+
   std::string getMulticorePropertiesFile() const;
 
   MulticoreOracleType getMulticoreOracleType() const;
