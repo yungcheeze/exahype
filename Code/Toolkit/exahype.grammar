@@ -64,6 +64,7 @@ Tokens
   token_time                      = 'time';
   token_repeat                    = 'repeat';
   token_output                    = 'output';
+  token_select                    = 'select';
 
   token_shared_memory             = 'shared-memory';
   token_cores                     = 'cores';
@@ -218,9 +219,10 @@ Productions
        token_time      [time_equals]:token_equals     [time]:float_number
        token_repeat    [repeat_equals]:token_equals   [repeat]:float_number
        token_output    [output_equals]:token_equals   [output]:filename
+       token_select    [select_equals]:token_equals   [select]:identifier_list
      token_end [end_token]:token_plot
      plot_solution_list?
-       { -> [New plot_solution(plotter_type,time,repeat,output),plot_solution_list.plot_solution] }
+       { -> [New plot_solution(plotter_type,time,repeat,output,select),plot_solution_list.plot_solution] }
      ;
 
    solver_list {->solver*} =
@@ -274,4 +276,4 @@ Abstract Syntax Tree
      ;
 
    plot_solution =
-     [plotter_type]:typename [time]:float_number [repeat]:float_number [output]:filename;
+     [plotter_type]:typename [time]:float_number [repeat]:float_number [output]:filename [select]:identifier_list;
