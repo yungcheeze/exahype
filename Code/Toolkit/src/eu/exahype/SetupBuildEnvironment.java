@@ -42,7 +42,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
     else if (dimensions==3) {
       System.out.print("3d experiment ... ok\n");
       try {
-        _writer.write("PROJECT_CFLAGS+=-DDim2\n");
+        _writer.write("PROJECT_CFLAGS+=-DDim3\n");
       } catch (Exception exc) {
         System.err.println("ERROR: " + exc.toString());
         valid = false;
