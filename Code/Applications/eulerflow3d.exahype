@@ -17,7 +17,7 @@ exahype-project  Euler3d
 
   computational-domain
     dimension                = 3
-    width                    = 1.0
+    width                    = 1.0, 1.0, 1.0
     offset                   = 0.0, 0.0, 0.0
     end-time                 = 0.02
   end computational-domain
@@ -41,7 +41,8 @@ exahype-project  Euler3d
     plot vtk::ascii
       time     = 0.0
       repeat   = 0.005
-      filename = ./solution
+      output = ./solution
+      select   = {all}
     end plot
   end solver
 
