@@ -74,8 +74,6 @@ class exahype::Parser {
 
   tarch::la::Vector<DIMENSIONS, double> getOffset() const;
 
-  tarch::la::Vector<DIMENSIONS, double> getMaximumMeshSize() const;
-
   std::string getMulticorePropertiesFile() const;
 
   MulticoreOracleType getMulticoreOracleType() const;
@@ -83,6 +81,26 @@ class exahype::Parser {
   double getSimulationEndTime() const;
 
   bool fuseAlgorithmicSteps() const;
+
+  /**
+   * @return The number of state variables.
+   */
+  int getVariables(int solverNumber) const;
+
+  /**
+   * @return The number of parameters, e.g. material values etc.
+   */
+  int getParameters(int solverNumber) const;
+
+  /**
+   * @return The order of the ansatz polynomials.
+   */
+  int getOrder(int solverNumber) const;
+
+  /**
+   * @return The maximum extent in each coordinate direction a cell is allowed to have.
+   */
+  tarch::la::Vector<DIMENSIONS, double> getMaximumMeshSize(int solverNumber) const;
 
   double getFirstSnapshotTimeForPlotter(int solverNumber,
                                         int plotterNumber) const;

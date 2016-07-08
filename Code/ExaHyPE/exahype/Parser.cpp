@@ -108,7 +108,6 @@ std::string exahype::Parser::getTokenAfter(std::string token0, int occurance0,
                                            int additionalTokensToSkip) const {
   assertion(isValid());
   assertion(occurance0 > 0);
-  assertion(occurance1 > 0);
   int currentToken = 0;
   while (currentToken < static_cast<int>(_tokenStream.size()) &&
          (_tokenStream[currentToken] != token0 || occurance0 > 1)) {
@@ -181,22 +180,6 @@ tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getOffset() const {
   return result;
 }
 
-tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getMaximumMeshSize() const {
-  assertion(isValid());
-  std::string token;
-  tarch::la::Vector<DIMENSIONS, double> result;
-  token = getTokenAfter("computational-domain", "maximum-mesh-size", 0);
-  result(0) = atof(token.c_str());
-  token = getTokenAfter("computational-domain", "maximum-mesh-size", 1);
-  result(1) = atof(token.c_str());
-#if DIMENSIONS == 3
-  token = getTokenAfter("computational-domain", "maximum-mesh-size", 2);
-  result(2) = atof(token.c_str());
-#endif
-  logDebug("getMaximumMeshSize()", "found offset " << result);
-  return result;
-}
-
 std::string exahype::Parser::getMulticorePropertiesFile() const {
   std::string result = getTokenAfter("shared-memory", "properties-file");
   logDebug("getMulticorePropertiesFile()", "found token " << result);
@@ -240,6 +223,52 @@ bool exahype::Parser::fuseAlgorithmicSteps() const {
   std::string token = getTokenAfter("optimisation", "fuse-algorithmic-steps");
   logDebug("fuseAlgorithmicSteps()", "found token " << token);
   return token.compare("on") == 0;
+}
+
+int exahype::Parser::getVariables(int solverNumber) const {
+  assertion(isValid());
+  std::string token;
+  int result;
+  token = getTokenAfter("solver", solverNumber * 2 + 1, "variables", 1);
+  result = atof(token.c_str());
+  logDebug("getVariables()", "found variables " << result);
+  return result;
+}
+
+int exahype::Parser::getParameters(int solverNumber) const {
+  assertion(isValid());
+  std::string token;
+  int result;
+  token = getTokenAfter("solver", solverNumber * 2 + 1, "parameters", 1);
+  result = atof(token.c_str());
+  logDebug("getParameters()", "found parameters " << result);
+  return result;
+}
+
+int exahype::Parser::getOrder(int solverNumber) const {
+  assertion(isValid());
+  std::string token;
+  int result;
+  token = getTokenAfter("solver", solverNumber * 2 + 1, "order", 1);
+  result = atof(token.c_str());
+  logDebug("getOrder()", "found order " << result);
+  return result;
+}
+
+tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getMaximumMeshSize(int solverNumber) const {
+  assertion(isValid());
+  std::string token;
+  tarch::la::Vector<DIMENSIONS, double> result;
+  token = getTokenAfter("solver", solverNumber * 2 + 1, "maximum-mesh-size", 0);
+  result(0) = atof(token.c_str());
+  token = getTokenAfter("solver", solverNumber * 2 + 1, "maximum-mesh-size", 1);
+  result(1) = atof(token.c_str());
+#if DIMENSIONS == 3
+  token = getTokenAfter("solver", solverNumber * 2 + 1, "maximum-mesh-size", 2);
+  result(2) = atof(token.c_str());
+#endif
+  logDebug("getMaximumMeshSize()", "found maximum mesh size " << result);
+  return result;
 }
 
 double exahype::Parser::getFirstSnapshotTimeForPlotter(
