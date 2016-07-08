@@ -37,7 +37,7 @@ exahype-project  elasticwaves2d
   end optimisation
 
   solver ADER-DG MyElasticSolver
-    unknowns           = 5
+    variables          = 5
     parameters         = 0
     order              = 3
     maximum-mesh-size  = 0.05, 0.05
@@ -47,8 +47,8 @@ exahype-project  elasticwaves2d
     plot vtk::ascii
       time     = 0.0
       repeat   = 0.05
-      output   = ./solution
-      select   = {Q4}
+      output = ./solution
+      select   = {all}
     end plot
   end solver
 

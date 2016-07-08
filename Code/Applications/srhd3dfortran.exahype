@@ -39,7 +39,7 @@ exahype-project  srhd3dfortran
   end optimisation
 
   solver ADER-DG SRHDSolver
-    unknowns           = 5
+    variables          = 5
     parameters         = 0
     order              = 3
     maximum-mesh-size  = 0.05, 0.05, 0.05

@@ -48,7 +48,7 @@ exahype-project  Euler
   end optimisation
 
   solver ADER-DG MyEulerSolver
-    unknowns  = 5
+    variables = 5
     parameters= 0
     order     = 3
     kernel    = generic::fluxes::nonlinear
