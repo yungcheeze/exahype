@@ -27,11 +27,11 @@ exahype-project  Euler2d
     cores                    = 2
     properties-file          = sharedmemory.properties
   end shared-memory
-
+/*
   distributed-memory
     identifier               = static_load_balancing
   end distributed-memory
-
+*/
   optimisation
     fuse-algorithmic-steps   = on
   end optimisation
@@ -48,7 +48,7 @@ exahype-project  Euler2d
       time     = 0.0
       repeat   = 0.05
       output   = ./solution
-      select   = {Q4}
+      select   = {all}
     end plot
   end solver
 

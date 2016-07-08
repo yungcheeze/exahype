@@ -42,8 +42,13 @@ exahype-project  Euler3d
     plot vtk::ascii
       time     = 0.0
       repeat   = 0.005
+<<<<<<< HEAD
       output   = ./solution
       select   = {Q4}
+=======
+      output = ./solution
+      select   = {all}
+>>>>>>> ff34900b0e9741fd50fe0982819cac3446650e48
     end plot
   end solver
 
