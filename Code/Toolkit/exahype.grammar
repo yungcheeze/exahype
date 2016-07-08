@@ -54,7 +54,7 @@ Tokens
 
   token_solver                    = 'solver';
   token_aderdg                    = 'ADER-DG';
-  token_unknowns                  = 'unknowns';
+  token_variables                 = 'variables';
   token_parameters                = 'parameters';
   token_order                     = 'order';
   token_kernel                    = 'kernel';
@@ -230,7 +230,7 @@ Productions
    solver_list {->solver*} =
      {aderdg2d}
        [begin_token]:token_solver token_aderdg [name]:identifier
-         token_unknowns           [unknowns_equals]:token_equals           [unknowns]:int_number
+         token_variables          [variables_equals]:token_equals          [variables]:int_number
          token_parameters         [parameters_equals]:token_equals         [parameters]:int_number
          token_order              [order_equals]:token_equals              [order]:int_number
          token_maximum_mesh_size  [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size_x]:float_number [maximum_mesh_size_comma_xy]:token_comma [maximum_mesh_size_y]:float_number    
@@ -239,11 +239,11 @@ Productions
          plot_solution_list?
        token_end [end_token]:token_solver
        solver_list?
-       { -> [New solver.aderdg(name,unknowns,parameters,order,maximum_mesh_size_x,maximum_mesh_size_y,Null,kernel,language,[plot_solution_list.plot_solution]),solver_list.solver] }
+       { -> [New solver.aderdg(name,variables,parameters,order,maximum_mesh_size_x,maximum_mesh_size_y,Null,kernel,language,[plot_solution_list.plot_solution]),solver_list.solver] }
        |
       {aderdg3d}
        [begin_token]:token_solver token_aderdg [name]:identifier
-         token_unknowns           [unknowns_equals]:token_equals           [unknowns]:int_number
+         token_variables          [variables_equals]:token_equals         [variables]:int_number
          token_parameters         [parameters_equals]:token_equals         [parameters]:int_number
          token_order              [order_equals]:token_equals              [order]:int_number
          token_maximum_mesh_size  [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size_x]:float_number [maximum_mesh_size_comma_xy]:token_comma [maximum_mesh_size_y]:float_number [maximum_mesh_size_comma_yz]:token_comma [maximum_mesh_size_z]:float_number
@@ -252,7 +252,7 @@ Productions
          plot_solution_list?
        token_end [end_token]:token_solver
        solver_list?
-       { -> [New solver.aderdg(name,unknowns,parameters,order,maximum_mesh_size_x,maximum_mesh_size_y,maximum_mesh_size_z,kernel,language,[plot_solution_list.plot_solution]),solver_list.solver] } 
+       { -> [New solver.aderdg(name,variables,parameters,order,maximum_mesh_size_x,maximum_mesh_size_y,maximum_mesh_size_z,kernel,language,[plot_solution_list.plot_solution]),solver_list.solver] } 
      ;
 
 
@@ -288,7 +288,7 @@ Abstract Syntax Tree
      [profiler]:identifier [metrics]:identifier_list [likwid_inc]:filename? [likwid_lib]:filename? [ipcm_inc]:filename? [ipcm_lib]:filename?;
 
    solver =
-      {aderdg} [name]:identifier [unknowns]:int_number  [parameters]:int_number [order]:int_number [maximum_mesh_size_x]:float_number [maximum_mesh_size_y]:float_number [maximum_mesh_size_z]:float_number? [kernel]:typename [language]:identifier plot_solution*
+      {aderdg} [name]:identifier [variables]:int_number  [parameters]:int_number [order]:int_number [maximum_mesh_size_x]:float_number [maximum_mesh_size_y]:float_number [maximum_mesh_size_z]:float_number? [kernel]:typename [language]:identifier plot_solution*
     ;
 
    plot_solution =
