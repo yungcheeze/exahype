@@ -8,19 +8,6 @@ elasticwaves3d::MyElasticSolver::MyElasticSolver(const std::string& identifier, 
   // @todo Please implement/augment if required
 }
 
-
-
-int elasticwaves3d::MyElasticSolver::getMinimumTreeDepth() const {
-  // @todo Please implement
-#if defined(Asserts)
-  return 2;
-#else
-  return 4;
-#endif
-}
-
-
-
 void elasticwaves3d::MyElasticSolver::flux(const double* const Q, double** F) {
   // Dimensions             = 3
   // Number of variables    = 9 (#unknowns + #parameters)

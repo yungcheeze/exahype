@@ -8,15 +8,6 @@ srhd3dfortran::SRHDSolver::SRHDSolver(const std::string& identifier, exahype::so
   // @todo Please implement/augment if required
 }
 
-
-
-int srhd3dfortran::SRHDSolver::getMinimumTreeDepth() const {
-  // @todo Please implement
-  return 3;
-}
-
-
-
 bool srhd3dfortran::SRHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
   // @todo Please implement
   if (tarch::la::equals(t, 0.0)) {

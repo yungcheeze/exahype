@@ -8,21 +8,10 @@ srhd3dfortran::idealMHDSolver::idealMHDSolver(const std::string& identifier, exa
   // @todo Please implement/augment if required
 }
 
-
-
-int srhd3dfortran::idealMHDSolver::getMinimumTreeDepth() const {
-  // @todo Please implement
-  return 3;
-}
-
-
-
 bool srhd3dfortran::idealMHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
   // @todo Please implement
   return false;
 }
-
-
 
 void srhd3dfortran::idealMHDSolver::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
 	// Dimensions             = 3

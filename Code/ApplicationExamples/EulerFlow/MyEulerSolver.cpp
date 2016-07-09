@@ -21,15 +21,6 @@ Euler::MyEulerSolver::MyEulerSolver(const std::string& identifier, exahype::solv
   // @todo Please implement/augment if required
 }
 
-
-
-int Euler::MyEulerSolver::getMinimumTreeDepth() const {
-  // @todo Please implement
-  return 3;
-}
-
-
-
 void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
   // Dimensions             = 2/3
   // Number of variables    = 5 (#unknowns + #parameters)

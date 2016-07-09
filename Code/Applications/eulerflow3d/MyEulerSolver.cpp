@@ -6,11 +6,6 @@ Euler3d::MyEulerSolver::MyEulerSolver(const std::string& identifier, exahype::so
   // @todo Please implement/augment if required
 }
 
-int Euler3d::MyEulerSolver::getMinimumTreeDepth() const {
-  // @todo Please implement
-  return 3;
-}
-
 bool Euler3d::MyEulerSolver::hasToAdjustSolution(
     const tarch::la::Vector<DIMENSIONS, double>& center,
     const tarch::la::Vector<DIMENSIONS, double>& dx, double t) {

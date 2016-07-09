@@ -18,18 +18,6 @@ SRHD::SRHDSolver::SRHDSolver(const std::string& identifier, exahype::solvers::So
             identifier, type, kernelNumber, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
 }
 
-
-
-int SRHD::SRHDSolver::getMinimumTreeDepth() const {
-  int depth;
-
-  minimumtreedepth_(&depth);
-  
-  return depth;
-}
-
-
-
 void SRHD::SRHDSolver::flux(const double* const Q, double** F) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)

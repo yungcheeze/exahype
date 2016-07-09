@@ -14,15 +14,6 @@ srhd2d::SRHDSolver::SRHDSolver(const std::string& identifier, exahype::solvers::
   // @todo Please implement/augment if required
 }
 
-
-
-int srhd2d::SRHDSolver::getMinimumTreeDepth() const {
-	// This number basically controls dx.
-	return 2;
-}
-
-
-
 void srhd2d::SRHDSolver::flux(const double* const Q, double** F) {
         double* f = F[0];
         double* g = F[1];
