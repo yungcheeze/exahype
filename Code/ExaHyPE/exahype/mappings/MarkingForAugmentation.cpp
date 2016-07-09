@@ -326,7 +326,7 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
 
     for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(
              fineGridCell.getADERDGCellDescriptionsIndex())) {
-      const exahype::solvers::Solver::AugmentationControl augmentationControl =
+      const AugmentationControl augmentationControl =
           augmentationCriterion(pFine.getSolverNumber(), pFine.getType(),
                                 pFine.getLevel(),
                                 neighbourCellDescriptionIndices);
