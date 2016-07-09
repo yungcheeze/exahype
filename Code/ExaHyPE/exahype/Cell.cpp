@@ -98,7 +98,7 @@ void exahype::Cell::addNewCellDescription(
 
   const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
   switch (solver->getType()) {
-    case exahype::solvers::Solver::ADER_DG: {
+    case exahype::solvers::Solver::Type::ADER_DG: {
       exahype::records::ADERDGCellDescription newCellDescription;
       newCellDescription.setSolverNumber(solverNumber);
 
@@ -155,7 +155,7 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(const int solverNumber) {
   const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
 
   switch (solver->getType()) {
-    case exahype::solvers::Solver::ADER_DG:
+    case exahype::solvers::Solver::Type::ADER_DG:
       for (auto& p : ADERDGCellDescriptionHeap::getInstance().getData(
                _cellData.getADERDGCellDescriptionsIndex())) {
         if (solverNumber == p.getSolverNumber()) {
@@ -251,7 +251,7 @@ void exahype::Cell::ensureNoUnnecessaryMemoryIsAllocated(
   const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
 
   switch (solver->getType()) {
-    case exahype::solvers::Solver::ADER_DG:
+    case exahype::solvers::Solver::Type::ADER_DG:
       for (auto& p : ADERDGCellDescriptionHeap::getInstance().getData(
                _cellData.getADERDGCellDescriptionsIndex())) {
         if (solverNumber == p.getSolverNumber()) {
@@ -334,7 +334,7 @@ exahype::Cell::computeSubcellPositionOfCellOrAncestor(
                  _cellData.getADERDGCellDescriptionsIndex()),
              toString());
   assertion1(solvers::RegisteredSolvers[pChild.getSolverNumber()]->getType() ==
-                 exahype::solvers::Solver::ADER_DG,
+                 exahype::solvers::Solver::Type::ADER_DG,
              toString());
   assertion1(
       pChild.getType() == exahype::records::ADERDGCellDescription::Cell ||
@@ -395,7 +395,7 @@ exahype::Cell::computeSubcellPositionOfDescendant(
                  _cellData.getADERDGCellDescriptionsIndex()),
              toString());
   assertion1(solvers::RegisteredSolvers[pChild.getSolverNumber()]->getType() ==
-                 exahype::solvers::Solver::ADER_DG,
+                 exahype::solvers::Solver::Type::ADER_DG,
              toString());
   assertion1(
       pChild.getType() == exahype::records::ADERDGCellDescription::Descendant,

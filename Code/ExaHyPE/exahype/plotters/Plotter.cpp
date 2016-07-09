@@ -51,7 +51,7 @@ bool exahype::plotters::Plotter::checkWetherSolverBecomesActive(
   if ((_time >= 0.0) && tarch::la::greaterEquals(currentTimeStamp, _time)) {
     assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
     switch (solvers::RegisteredSolvers[_solver]->getType()) {
-      case solvers::Solver::ADER_DG:
+      case exahype::solvers::Solver::Type::ADER_DG:
         if (_identifier.compare("vtk::binary") == 0) {
           logDebug("open()",
                    "create vtk::binary plotter for "
