@@ -145,6 +145,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::createHangingVertex(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+#if DIMENSIONS == 2
   bool needToPlotVertex = false;
 
   tarch::la::Vector<DIMENSIONS,double> fineGridCellSize = coarseGridVerticesEnumerator.getCellSize();
@@ -154,7 +155,6 @@ void exahype::mappings::AugmentedAMRTreePlot2d::createHangingVertex(
       needToPlotVertex = tarch::la::allSmallerEquals(fineGridCellSize,p->getMaximumMeshSize());
   }
 
-#if DIMENSIONS == 2
   if (needToPlotVertex) {
     int mapEntries = _level2OffsetMap.size();
     _level2OffsetMap.insert( std::pair<int,double>(coarseGridVerticesEnumerator.getLevel()+1,mapEntries) ); // Checks for duplicate keys. Does not insert if key exists.
@@ -318,6 +318,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::touchVertexFirstTime(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+#if DIMENSIONS == 2
   bool needToPlotVertex = false;
 
   tarch::la::Vector<DIMENSIONS,double> fineGridCellSize = coarseGridVerticesEnumerator.getCellSize();
@@ -327,7 +328,6 @@ void exahype::mappings::AugmentedAMRTreePlot2d::touchVertexFirstTime(
       needToPlotVertex = tarch::la::allSmallerEquals(fineGridCellSize,p->getMaximumMeshSize());
   }
 
-#if DIMENSIONS == 2
   if (needToPlotVertex) {
     int mapEntries = _level2OffsetMap.size();
     _level2OffsetMap.insert( std::pair<int,double>(coarseGridVerticesEnumerator.getLevel()+1,mapEntries) ); // Checks for duplicate keys. Does not insert if key exists.
