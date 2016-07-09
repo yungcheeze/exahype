@@ -10,8 +10,8 @@
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
 #include "exahype/Parser.h"
+
 #include "tarch/Assertions.h"
 
 #include <fstream>
@@ -19,7 +19,17 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "tarch/la/VectorScalarOperations.h"
+
 tarch::logging::Log exahype::Parser::_log("exahype::Parser");
+
+exahype::Parser::Parser() {
+  _identifier2Type.insert (
+      std::pair<std::string,exahype::solvers::Solver::Type> ("ADER-DG", exahype::solvers::Solver::Type::ADER_DG) );
+
+  _identifier2TimeStepping.insert (
+      std::pair<std::string,exahype::solvers::Solver::TimeStepping> ("global", exahype::solvers::Solver::TimeStepping::Global) );
+}
 
 void exahype::Parser::readFile(const std::string& filename) {
   const int MAX_CHARS_PER_LINE = 512;
@@ -104,10 +114,28 @@ std::string exahype::Parser::getTokenAfter(std::string token0,
 }
 
 std::string exahype::Parser::getTokenAfter(std::string token0, int occurance0,
+                                           int additionalTokensToSkip) const {
+  assertion(isValid());
+  assertion(occurance0 > 0);
+  int currentToken = 0;
+  while (currentToken < static_cast<int>(_tokenStream.size()) &&
+         (_tokenStream[currentToken] != token0 || occurance0 > 1)) {
+    if (_tokenStream[currentToken] == token0) occurance0--;
+    currentToken++;
+  }
+  currentToken += (additionalTokensToSkip + 1);
+  if (currentToken < static_cast<int>(_tokenStream.size())) {
+    return _tokenStream[currentToken];
+  } else
+    return "notoken";
+}
+
+std::string exahype::Parser::getTokenAfter(std::string token0, int occurance0,
                                            std::string token1, int occurance1,
                                            int additionalTokensToSkip) const {
   assertion(isValid());
   assertion(occurance0 > 0);
+  assertion(occurance1 > 0);
   int currentToken = 0;
   while (currentToken < static_cast<int>(_tokenStream.size()) &&
          (_tokenStream[currentToken] != token0 || occurance0 > 1)) {
@@ -125,7 +153,6 @@ std::string exahype::Parser::getTokenAfter(std::string token0, int occurance0,
   } else
     return "notoken";
 }
-
 
 int exahype::Parser::getNumberOfThreads() const {
   assertion(isValid());
@@ -218,11 +245,52 @@ double exahype::Parser::getSimulationEndTime() const {
   return result;
 }
 
-bool exahype::Parser::fuseAlgorithmicSteps() const {
+bool exahype::Parser::getFuseAlgorithmicSteps() const {
   assertion(isValid());
   std::string token = getTokenAfter("optimisation", "fuse-algorithmic-steps");
-  logDebug("fuseAlgorithmicSteps()", "found token " << token);
+  logDebug("getFuseAlgorithmicSteps()", "found fuse-algorithmic-steps" << token);
   return token.compare("on") == 0;
+}
+
+double exahype::Parser::getFuseAlgorithmicStepsFactor() const {
+  assertion(isValid());
+  std::string token = getTokenAfter("optimisation", "fuse-algorithmic-steps-factor");
+  double result = atof(token.c_str());
+  logDebug("getFuseAlgorithmicStepsFactor()", "found fuse-algorithmic-steps-factor " << token);
+
+  if (result < 0.0 || result > 1.0) {
+    logError("getFuseAlgorithmicStepsFactor()","'fuse-algorithmic-steps-factor': Value must be greater than zero and smaller than one.");
+    std::cerr.flush();
+    assert(false);
+    exit(ASSERTION_EXIT_CODE);
+  }
+
+  return result;
+}
+
+exahype::solvers::Solver::Type exahype::Parser::getType(int solverNumber) const {
+  assertion(isValid());
+  std::string token;
+  exahype::solvers::Solver::Type result;
+  token = getTokenAfter("solver", solverNumber * 2 + 1, 0);
+  if (_identifier2Type.find(token)!=_identifier2Type.end()) {
+    result = _identifier2Type.at(token);
+    logDebug("getType()", "found type " << result);
+    return result;
+  } else {
+    logError("getType()","'" << getIdentifier(solverNumber) << "': 'type': Value '" << token << "' is invalid. See the ExaHyPE documentation for valid values.");
+    std::cerr.flush();
+    assert(false);
+    exit(ASSERTION_EXIT_CODE);
+  }
+}
+
+std::string exahype::Parser::getIdentifier(int solverNumber) const {
+  assertion(isValid());
+  std::string token;
+  token = getTokenAfter("solver", solverNumber * 2 + 1, 1);
+  logDebug("getIdentifier()", "found identifier " << token);
+  return token;
 }
 
 int exahype::Parser::getVariables(int solverNumber) const {
@@ -230,7 +298,15 @@ int exahype::Parser::getVariables(int solverNumber) const {
   std::string token;
   int result;
   token = getTokenAfter("solver", solverNumber * 2 + 1, "variables", 1);
-  result = atof(token.c_str());
+  result = atoi(token.c_str());
+
+  if (result < 1) {
+    logError("getVariables()","'" << getIdentifier(solverNumber) << "': 'variables': Value must be greater than zero.");
+    std::cerr.flush();
+    assert(false);
+    exit(ASSERTION_EXIT_CODE);
+  }
+
   logDebug("getVariables()", "found variables " << result);
   return result;
 }
@@ -240,7 +316,15 @@ int exahype::Parser::getParameters(int solverNumber) const {
   std::string token;
   int result;
   token = getTokenAfter("solver", solverNumber * 2 + 1, "parameters", 1);
-  result = atof(token.c_str());
+  result = atoi(token.c_str());
+
+  if (result < 0) {
+    logError("getParameters()","'" << getIdentifier(solverNumber) << "': 'parameters': Value must not be negative.");
+    std::cerr.flush();
+    assert(false);
+    exit(ASSERTION_EXIT_CODE);
+  }
+
   logDebug("getParameters()", "found parameters " << result);
   return result;
 }
@@ -251,6 +335,14 @@ int exahype::Parser::getOrder(int solverNumber) const {
   int result;
   token = getTokenAfter("solver", solverNumber * 2 + 1, "order", 1);
   result = atof(token.c_str());
+
+  if (result < 0) {
+    logError("getOrder()","'" << getIdentifier(solverNumber) << "': 'order': Value must not be negative.");
+    std::cerr.flush();
+    assert(false);
+    exit(ASSERTION_EXIT_CODE);
+  }
+
   logDebug("getOrder()", "found order " << result);
   return result;
 }
@@ -259,16 +351,41 @@ tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getMaximumMeshSize(int so
   assertion(isValid());
   std::string token;
   tarch::la::Vector<DIMENSIONS, double> result;
-  token = getTokenAfter("solver", solverNumber * 2 + 1, "maximum-mesh-size", 0);
+  token = getTokenAfter("solver", solverNumber * 2 + 1, "maximum-mesh-size", 1, 0);
   result(0) = atof(token.c_str());
-  token = getTokenAfter("solver", solverNumber * 2 + 1, "maximum-mesh-size", 1);
+  token = getTokenAfter("solver", solverNumber * 2 + 1, "maximum-mesh-size", 1, 1);
   result(1) = atof(token.c_str());
 #if DIMENSIONS == 3
-  token = getTokenAfter("solver", solverNumber * 2 + 1, "maximum-mesh-size", 2);
+  token = getTokenAfter("solver", solverNumber * 2 + 1, "maximum-mesh-size", 1, 2);
   result(2) = atof(token.c_str());
 #endif
+  if (tarch::la::oneSmallerEquals(result,0.0)) {
+    logError("getMaximumMeshSize()","'" << getIdentifier(solverNumber) << "': 'maximum-mesh-size': All values must be greater than zero.");
+    std::cerr.flush();
+    assert(false);
+    exit(ASSERTION_EXIT_CODE);
+  }
+
   logDebug("getMaximumMeshSize()", "found maximum mesh size " << result);
   return result;
+}
+
+exahype::solvers::Solver::TimeStepping exahype::Parser::getTimeStepping(int solverNumber) const {
+  assertion(isValid());
+  std::string token;
+  exahype::solvers::Solver::TimeStepping result;
+  token = getTokenAfter("solver", solverNumber * 2 + 1, "time-stepping", 1);
+  if (_identifier2TimeStepping.find(token)!=_identifier2TimeStepping.end()) {
+    result = _identifier2TimeStepping.at(token);
+    logDebug("getTimeStepping()", "found TimeStepping " << result);
+    return result;
+  } else {
+    logError("getTimeStepping()","'" << getIdentifier(solverNumber) << "': 'time-stepping': Value '" << token << "' is invalid. See the ExaHyPE documentation for valid values.");
+    std::cerr.flush();
+    assert(false);
+    exit(ASSERTION_EXIT_CODE);
+  }
+  return exahype::solvers::Solver::TimeStepping::Global;
 }
 
 double exahype::Parser::getFirstSnapshotTimeForPlotter(
@@ -342,4 +459,13 @@ std::string exahype::Parser::getMetricsIdentifierList() const {
   std::string token = getTokenAfter("profiling", "metrics");
   logDebug("getMetricsIdentifierList()", "found token " << token);
   return (token != "notoken") ? token : "{}";
+}
+
+void exahype::Parser::logSolverDetails(int solverNumber) const {
+    logInfo("logSolverDetails()", "Solver "               << getTokenAfter("solver", solverNumber * 2 + 1, 0) << " " << getIdentifier(solverNumber) << ":");
+    logInfo("logSolverDetails()", "variables:\t\t"        << getVariables(solverNumber));
+    logInfo("logSolverDetails()", "parameters:\t"         << getParameters(solverNumber));
+    logInfo("logSolverDetails()", "order:\t\t"            << getOrder(solverNumber));
+    logInfo("logSolverDetails()", "maximum-mesh-size:\t"  << getMaximumMeshSize(solverNumber));
+    logInfo("logSolverDetails()", "time-stepping:\t"      << getTokenAfter("solver", solverNumber * 2 + 1, "time-stepping", 1));
 }

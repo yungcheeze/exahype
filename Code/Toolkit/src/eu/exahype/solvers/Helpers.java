@@ -85,10 +85,9 @@ public class Helpers {
       throws IOException {
     writer.write("#include \"" + solverName + ".h\"\n\n");
     writer.write("#include <memory>\n\n");
-    writer.write(projectName + "::" + solverName + "::" + solverName + "( int kernelNumber, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
-    writer.write("  exahype::solvers::Solver(\"" + solverName
-        + "\",exahype::solvers::Solver::ADER_DG,kernelNumber," + (numberOfUnknowns + numberOfParameters) + "," + order
-        + "+1,exahype::solvers::Solver::GlobalTimeStepping, std::move(profiler)) {\n");
+    writer.write(projectName + "::" + solverName + "::" + solverName + "(const std::string& identifier, exahype::solvers::Solver::Type type, int kernelNumber, int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis, tarch::la::Vector<DIMENSIONS,double> maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
+    writer.write("  exahype::solvers::Solver("
+        + " identifier, type, kernelNumber, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {\n");
     writer.write("  // @todo Please implement/augment if required\n");
     writer.write("}\n");
     writer.write("\n\n\n");

@@ -35,7 +35,8 @@ exahype-project  srhd3dfortran
   end distributed-memory
 
   optimisation
-    fuse-algorithmic-steps   = on
+    fuse-algorithmic-steps        = on
+    fuse-algorithmic-steps-factor = 0.99
   end optimisation
 
   solver ADER-DG SRHDSolver
@@ -43,6 +44,7 @@ exahype-project  srhd3dfortran
     parameters         = 0
     order              = 3
     maximum-mesh-size  = 0.05, 0.05, 0.05
+    time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     language           = Fortran
 

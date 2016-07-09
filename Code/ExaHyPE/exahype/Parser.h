@@ -18,10 +18,16 @@ namespace exahype {
 class Parser;
 }
 
+#include <iostream>
+
+#include <vector>
+#include <map>
+
 #include "peano/utils/Globals.h"
 #include "tarch/la/Vector.h"
 #include "tarch/logging/Log.h"
-#include <vector>
+
+#include "exahype/solvers/Solver.h"
 
 /**
  * ExaHyPE command line parser
@@ -34,19 +40,30 @@ class exahype::Parser {
 
   std::vector<std::string> _tokenStream;
 
+  /*
+   * Helper map for converting strings to types.
+   */
+  std::map<std::string,exahype::solvers::Solver::Type> _identifier2Type;
+
+  /*
+   * Helper map for converting strings to types.
+   */
+  std::map<std::string,exahype::solvers::Solver::TimeStepping> _identifier2TimeStepping;
+
   /**
-   * @return "notoken" if not found.
+   * \return "notoken" if not found.
    */
   std::string getTokenAfter(std::string token,
                             int additionalTokensToSkip = 0) const;
   std::string getTokenAfter(std::string token0, std::string token1,
                             int additionalTokensToSkip = 0) const;
   std::string getTokenAfter(std::string token0, int occurance0,
+                            int additionalTokensToSkip) const;
+  std::string getTokenAfter(std::string token0, int occurance0,
                             std::string token1, int occurance1,
                             int additionalTokensToSkip = 0) const;
-
  public:
-  Parser() {}
+  Parser();
   virtual ~Parser() {}
 
   // Disallow copy and assignment
@@ -65,7 +82,7 @@ class exahype::Parser {
   bool isValid() const;
 
   /**
-   * @return How many threads is the code supposed to use?
+   * \return How many threads is the code supposed to use?
    */
   int getNumberOfThreads() const;
 
@@ -80,27 +97,55 @@ class exahype::Parser {
 
   double getSimulationEndTime() const;
 
-  bool fuseAlgorithmicSteps() const;
+  /**
+   * \return Indicates if the user has chosen the fused ADER-DG time stepping variant.
+   */
+  bool getFuseAlgorithmicSteps() const;
 
   /**
-   * @return The number of state variables.
+   * \return Time step size underestimation factor for the fused ADER-DG time stepping variant.
+   */
+  double getFuseAlgorithmicStepsFactor() const;
+
+  /**
+   * \return The type of a solver.
+   */
+  exahype::solvers::Solver::Type getType(int solverNumber) const;
+
+  /**
+   * \return The identifier of a solver.
+   */
+  std::string getIdentifier(int solverNumber) const;
+
+  /**
+   * \return The number of state variables of a solver.
    */
   int getVariables(int solverNumber) const;
 
   /**
-   * @return The number of parameters, e.g. material values etc.
+   * \return The number of parameters of a solver, e.g. material values etc.
    */
   int getParameters(int solverNumber) const;
 
   /**
-   * @return The order of the ansatz polynomials.
+   * \return The order of the ansatz polynomials of a solver.
    */
   int getOrder(int solverNumber) const;
 
   /**
-   * @return The maximum extent in each coordinate direction a cell is allowed to have.
+   * \return The maximum extent in each coordinate direction a cell is allowed to have.
    */
   tarch::la::Vector<DIMENSIONS, double> getMaximumMeshSize(int solverNumber) const;
+
+  /**
+   * Prints a summary of the parameters read in for a solver.
+   */
+  void logSolverDetails(int solverNumber) const;
+
+  /**
+   * \return The time stepping mode of a solver.
+   */
+  exahype::solvers::Solver::TimeStepping getTimeStepping(int solverNumber) const;
 
   double getFirstSnapshotTimeForPlotter(int solverNumber,
                                         int plotterNumber) const;

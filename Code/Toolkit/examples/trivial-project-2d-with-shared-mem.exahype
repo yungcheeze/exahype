@@ -32,7 +32,8 @@ exahype-project  TrivialProject
 
 
   optimisation
-    fuse-algorithmic-steps   = on
+    fuse-algorithmic-steps        = on
+    fuse-algorithmic-steps-factor = 0.99
   end optimisation  
   
 

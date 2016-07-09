@@ -23,7 +23,8 @@ exahype-project  Euler3d
   end computational-domain
 
   optimisation
-    fuse-algorithmic-steps   = on
+    fuse-algorithmic-steps        = on
+    fuse-algorithmic-steps-factor = 0.99
   end optimisation
 
   profiling
@@ -36,19 +37,15 @@ exahype-project  Euler3d
     parameters         = 0
     order              = 3
     maximum-mesh-size  = 0.05, 0.05, 0.05
+    time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     language           = Fortran
 
     plot vtk::ascii
       time     = 0.0
       repeat   = 0.005
-<<<<<<< HEAD
-      output   = ./solution
-      select   = {Q4}
-=======
       output = ./solution
       select   = {all}
->>>>>>> ff34900b0e9741fd50fe0982819cac3446650e48
     end plot
   end solver
 
