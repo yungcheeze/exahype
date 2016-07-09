@@ -316,8 +316,6 @@ void exahype::mappings::Refinement::enterCell(
       coarseGridCell.getADERDGCellDescriptionsIndex())) {
     for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(
         coarseGridCell.getADERDGCellDescriptionsIndex())) {
-      bool solverNotFound = true;
-
       switch (pCoarse.getType()) {
         case exahype::records::ADERDGCellDescription::Cell:
           switch (pCoarse.getRefinementEvent()) {
@@ -338,7 +336,6 @@ void exahype::mappings::Refinement::enterCell(
                * we change the type of the children to Cell.
                * We furthermore set the
                */
-              solverNotFound = true;
               if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
                   fineGridCell.getADERDGCellDescriptionsIndex())) {
                 for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())) {
@@ -353,7 +350,6 @@ void exahype::mappings::Refinement::enterCell(
                         pCoarse,
                         fineGridPositionOfCell);
                     pCoarse.setRefinementEvent(exahype::records::ADERDGCellDescription::Refining);
-                    solverNotFound = false;
                   }
                 }
               } else  {
