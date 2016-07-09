@@ -91,10 +91,10 @@ class exahype::runners::Runner {
   void runOneTimeStampWithFusedAlgorithmicSteps(
       exahype::repositories::Repository& repository, bool plot);
 
-  bool setAccurateTimeStepSizesIfStabilityConditionWasHarmed();
+  bool setStableTimeStepSizesIfStabilityConditionWasHarmed(double factor);
 
   void recomputePredictorIfNecessary(
-      exahype::repositories::Repository& repository);
+      exahype::repositories::Repository& repository,double factor);
 
   /**
    * Do one time step but actually use a couple of iterations to do so.

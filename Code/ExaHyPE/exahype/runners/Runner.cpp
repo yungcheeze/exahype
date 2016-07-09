@@ -211,14 +211,21 @@ int exahype::runners::Runner::runAsMaster(
   /*
    * Build up the initial space tree.
    */
-  repository.switchToAugmentedAMRGrid();
+  repository.switchToRegularMesh();
   int gridSetupIterations = 0;
   do {
     repository.iterate();
     gridSetupIterations++;
   } while (!repository.getState().isGridBalanced());
 
-//    NOTE: Only plot the three in 2d. Otherwise the program will crash.
+  repository.switchToAugmentedAMRGrid();
+  do {
+    repository.iterate();
+    gridSetupIterations++;
+  } while (!repository.getState().isGridBalanced());
+  repository.iterate();
+
+//    NOTE: Only plot the tree in 2d. Otherwise the program will crash.
 //    repository.switchToPlotAugmentedAMRGrid();
 //    repository.iterate();
 
@@ -277,9 +284,9 @@ int exahype::runners::Runner::runAsMaster(
     bool plot = exahype::plotters::isAPlotterActive(
         solvers::Solver::getMinSolverTimeStamp());
 
-    if (_parser.fuseAlgorithmicSteps()) {
+    if (_parser.getFuseAlgorithmicSteps()) {
       runOneTimeStampWithFusedAlgorithmicSteps(repository, plot);
-      recomputePredictorIfNecessary(repository);
+      recomputePredictorIfNecessary(repository,_parser.getFuseAlgorithmicStepsFactor());
       startNewTimeStep(n,true);
     } else {
       runOneTimeStampWithFourSeparateAlgorithmicSteps(repository, plot);
@@ -297,14 +304,11 @@ int exahype::runners::Runner::runAsMaster(
 }
 
 void exahype::runners::Runner::initSolverTimeStamps() {
-  // todo 16/02/26:Dominic Etienne Charrier: The initial time stamp
-  // should be set by the user in his solver sub class.
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    // todo:16/03/04:Dominic Charrier
     p->setMinPredictorTimeStamp(
-        0.0);  // introduce reset method that sets both to t=zero
+        0.0);
     p->setMinCorrectorTimeStamp(
-        0.0);  // introduce reset method that sets both to t=zero
+        0.0);
   }
 }
 
@@ -370,24 +374,18 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
 // @Tobias: This should move into solver class, or not?
 // The function does only make sense for optimistic time stepping
 bool exahype::runners::Runner::
-    setAccurateTimeStepSizesIfStabilityConditionWasHarmed() {
+    setStableTimeStepSizesIfStabilityConditionWasHarmed(double factor) {
   bool cflConditionWasViolated = false;
 
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
     bool solverTimeStepSizeIsInstable = (p->getMinPredictorTimeStepSize() >
                                          p->getMinNextPredictorTimeStepSize());
 
-    // todo 16/02/26:Dominic Etienne Charrier: The initial time stamp
-    // introduce reset method that sets both to t=0.99*... make alpha=0.99
-    // solver variable
     if (solverTimeStepSizeIsInstable) {
       p->updateMinNextPredictorTimeStepSize(
-          0.99 * p->getMinNextPredictorTimeStepSize());  // set next
-                                                         // predictor time
-                                                         // step size
+          factor * p->getMinNextPredictorTimeStepSize());
       p->setMinPredictorTimeStepSize(
-          0.99 * p->getMinPredictorTimeStepSize());  // set next corrector
-                                                     // time step size
+          factor * p->getMinPredictorTimeStepSize());
     } else {
       p->updateMinNextPredictorTimeStepSize(
           .5 * (p->getMinPredictorTimeStepSize() +
@@ -402,10 +400,10 @@ bool exahype::runners::Runner::
 }
 
 void exahype::runners::Runner::recomputePredictorIfNecessary(
-    exahype::repositories::Repository& repository) {
+    exahype::repositories::Repository& repository,double factor) {
   // Must be evaluated before we start a new time step
   bool stabilityConditionWasHarmed =
-      setAccurateTimeStepSizesIfStabilityConditionWasHarmed();
+      setStableTimeStepSizesIfStabilityConditionWasHarmed(factor);
   // Note that it is important to switch the time step sizes, i.e,
   // start a new time step, before we recompute the predictor.
 
