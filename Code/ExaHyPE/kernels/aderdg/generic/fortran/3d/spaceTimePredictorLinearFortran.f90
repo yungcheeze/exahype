@@ -32,8 +32,9 @@ SUBROUTINE ADERSpaceTimePredictorLinear(lqhi,lFhi,lQbnd,lFbnd,luh,dt,dx)
     INTEGER :: i,j,k,l,iVar,iDim, iter 
     DOUBLE PRECISION    :: rhs0(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))               ! contribution of the initial condition to the known right hand side 
     DOUBLE PRECISION    :: rhs(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! known right hand side 
-    DOUBLE PRECISION    :: lqh(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! space-time degrees of freedom 
-    ! shall become         lqh(nVar,nDOF(0),nDOF(1),nDOF(2),nDOF(3)) -> time second argument
+    DOUBLE PRECISION    :: lqh(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0)+1)              ! space-time degrees of freedom
+    ! the time DOFs should be last - otherwise we loose the block structure.
+    ! the variable ordering of lqh in the linear and nonlinear case are distinct
     DOUBLE PRECISION    :: lFh(nVar,d,nDOF(1),nDOF(2),nDOF(3),nDOF(0))              ! nonlinear flux tensor in each space-time DOF 
     ! lFh shall remain as it is
     DOUBLE PRECISION    :: aux(d), w                                                ! auxiliary variables 
