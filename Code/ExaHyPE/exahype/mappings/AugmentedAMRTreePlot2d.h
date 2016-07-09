@@ -69,6 +69,11 @@ class exahype::mappings::AugmentedAMRTreePlot2d {
                   tarch::la::VectorCompare<DIMENSIONS + 1> >
       _cellCenter2IndexMap;
 
+  /**
+   * A small map that maps levels to their offset in z direction.
+   */
+  static std::map<int, double> _level2OffsetMap;
+
 #if defined(Debug) || defined(Asserts)
   typedef tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter
       UsedWriter;
