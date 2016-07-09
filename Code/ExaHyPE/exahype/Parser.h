@@ -135,7 +135,7 @@ class exahype::Parser {
   /**
    * \return The maximum extent in each coordinate direction a cell is allowed to have.
    */
-  tarch::la::Vector<DIMENSIONS, double> getMaximumMeshSize(int solverNumber) const;
+  double getMaximumMeshSize(int solverNumber) const;
 
   /**
    * Prints a summary of the parameters read in for a solver.

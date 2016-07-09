@@ -18,7 +18,6 @@
 #include "exahype/solvers/Solver.h"
 
 #include "tarch/la/VectorScalarOperations.h"
-#include "tarch/la/VectorVectorOperations.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.

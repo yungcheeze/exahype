@@ -36,7 +36,7 @@ public class UserDefinedADER_DGinC implements Solver {
       String projectName) throws java.io.IOException {
     writer.write("#include \"" + solverName + ".h\"\n");
     writer.write("\n\n\n");
-    writer.write(projectName + "::" + solverName + "::" + solverName + "(const std::string& identifier, exahype::solvers::Solver::Type type, int kernelNumber, int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis, tarch::la::Vector<DIMENSIONS,double> maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
+    writer.write(projectName + "::" + solverName + "::" + solverName + "(const std::string& identifier, exahype::solvers::Solver::Type type, int kernelNumber, int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
     writer.write("  exahype::solvers::Solver("
         + " identifier, type, kernelNumber, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {\n");
     writer.write("  // @todo Please implement/augment if required\n");

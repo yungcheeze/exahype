@@ -46,7 +46,7 @@ exahype-project  SRHD
     variables          = 5
     parameters         = 0
     order              = 1
-    maximum-mesh-size  = 0.05, 0.05
+    maximum-mesh-size  = 0.05
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     language           = C

@@ -32,7 +32,7 @@ exahype::solvers::Solver::Solver(const std::string& identifier,
                                  int numberOfVariables,
                                  int numberOfParameters,
                                  int nodesPerCoordinateAxis,
-                                 tarch::la::Vector<DIMENSIONS,double> maximumMeshSize,
+                                 double maximumMeshSize,
                                  exahype::solvers::Solver::TimeStepping timeStepping,
                                  std::unique_ptr<profilers::Profiler> profiler)
     : _identifier(identifier),
@@ -82,7 +82,7 @@ int exahype::solvers::Solver::getNodesPerCoordinateAxis() const {
   return _nodesPerCoordinateAxis;
 }
 
-tarch::la::Vector<DIMENSIONS,double> exahype::solvers::Solver::getMaximumMeshSize() const {
+double exahype::solvers::Solver::getMaximumMeshSize() const {
   return _maximumMeshSize;
 }
 

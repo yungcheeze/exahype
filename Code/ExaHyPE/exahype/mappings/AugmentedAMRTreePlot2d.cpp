@@ -18,7 +18,7 @@
 #include "peano/grid/CellFlags.h"
 #include "peano/utils/Loop.h"
 
-#include "tarch/la/VectorVectorOperations.h"
+#include "tarch/la/VectorScalarOperations.h"
 
 #include "exahype/solvers/Solver.h"
 

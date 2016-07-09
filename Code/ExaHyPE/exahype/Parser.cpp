@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "tarch/la/VectorScalarOperations.h"
+#include "tarch/la/ScalarOperations.h"
 
 tarch::logging::Log exahype::Parser::_log("exahype::Parser");
 
@@ -347,20 +347,14 @@ int exahype::Parser::getOrder(int solverNumber) const {
   return result;
 }
 
-tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getMaximumMeshSize(int solverNumber) const {
+double exahype::Parser::getMaximumMeshSize(int solverNumber) const {
   assertion(isValid());
   std::string token;
-  tarch::la::Vector<DIMENSIONS, double> result;
+  double result;
   token = getTokenAfter("solver", solverNumber * 2 + 1, "maximum-mesh-size", 1, 0);
-  result(0) = atof(token.c_str());
-  token = getTokenAfter("solver", solverNumber * 2 + 1, "maximum-mesh-size", 1, 1);
-  result(1) = atof(token.c_str());
-#if DIMENSIONS == 3
-  token = getTokenAfter("solver", solverNumber * 2 + 1, "maximum-mesh-size", 1, 2);
-  result(2) = atof(token.c_str());
-#endif
-  if (tarch::la::oneSmallerEquals(result,0.0)) {
-    logError("getMaximumMeshSize()","'" << getIdentifier(solverNumber) << "': 'maximum-mesh-size': All values must be greater than zero.");
+  result = atof(token.c_str());
+  if (tarch::la::smallerEquals(result,0.0)) {
+    logError("getMaximumMeshSize()","'" << getIdentifier(solverNumber) << "': 'maximum-mesh-size': Value must be greater than zero.");
     std::cerr.flush();
     assert(false);
     exit(ASSERTION_EXIT_CODE);

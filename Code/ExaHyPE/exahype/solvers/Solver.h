@@ -112,7 +112,7 @@ class exahype::solvers::Solver {
   /**
    * The maximum extent a cell is allowed to have in each coordinate direction.
    */
-  const tarch::la::Vector<DIMENSIONS,double> _maximumMeshSize;
+  const double _maximumMeshSize;
 
   /**
    * The number of unknowns/basis functions associated with each face of an element.
@@ -196,7 +196,7 @@ class exahype::solvers::Solver {
  public:
   Solver(const std::string& identifier, exahype::solvers::Solver::Type type, int kernelNumber,
          int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis,
-         tarch::la::Vector<DIMENSIONS,double> maximumMeshSize,
+         double maximumMeshSize,
          exahype::solvers::Solver::TimeStepping timeStepping,
          std::unique_ptr<profilers::Profiler> profiler =
              std::unique_ptr<profilers::Profiler>(
@@ -213,14 +213,14 @@ class exahype::solvers::Solver {
 
   /**
    * Returns the maximum extent a mesh cell is allowed to have
-   * in each coordinate direction.
+   * in all coordinate directions.
    * This maximum mesh size is used both as a
    * constraint on the AMR as well as to set up the initial
    * grid. If you return the extent of the computational domain in
    * each coordinate direction or larger values,
-   * you indicate that this PDE might not exist in the domain.
+   * you indicate that this solver is not active in the domain.
    */
-  tarch::la::Vector<DIMENSIONS,double> getMaximumMeshSize() const;
+  double getMaximumMeshSize() const;
 
   /**
    * Returns the identifier of this solver.
