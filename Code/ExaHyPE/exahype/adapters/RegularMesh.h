@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_AugmentedAMRGrid_H_
-#define EXAHYPE_ADAPTERS_AugmentedAMRGrid_H_
+#ifndef EXAHYPE_ADAPTERS_RegularMesh_H_
+#define EXAHYPE_ADAPTERS_RegularMesh_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,18 +18,14 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/MarkingForRefinement.h"
- #include "exahype/mappings/Refinement.h"
- #include "exahype/mappings/SolutionUpdate.h"
- #include "exahype/mappings/MarkingForAugmentation.h"
- #include "exahype/mappings/Augmentation.h"
- #include "exahype/adapters/AugmentedAMRGrid2MultiscaleLinkedCell_5.h"
+ #include "exahype/mappings/RegularMesh.h"
+ #include "exahype/adapters/RegularMesh2MultiscaleLinkedCell_1.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class AugmentedAMRGrid;
+        class RegularMesh;
       } 
 }
 
@@ -41,21 +37,13 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::AugmentedAMRGrid {
+class exahype::adapters::RegularMesh {
   private:
-    typedef mappings::MarkingForRefinement Mapping0;
-    typedef mappings::Refinement Mapping1;
-    typedef mappings::SolutionUpdate Mapping2;
-    typedef mappings::MarkingForAugmentation Mapping3;
-    typedef mappings::Augmentation Mapping4;
-    typedef adapters::AugmentedAMRGrid2MultiscaleLinkedCell_5 Mapping5;
+    typedef mappings::RegularMesh Mapping0;
+    typedef adapters::RegularMesh2MultiscaleLinkedCell_1 Mapping1;
 
-     Mapping0  _map2MarkingForRefinement;
-     Mapping1  _map2Refinement;
-     Mapping2  _map2SolutionUpdate;
-     Mapping3  _map2MarkingForAugmentation;
-     Mapping4  _map2Augmentation;
-     Mapping5  _map2AugmentedAMRGrid2MultiscaleLinkedCell_5;
+     Mapping0  _map2RegularMesh;
+     Mapping1  _map2RegularMesh2MultiscaleLinkedCell_1;
 
 
   public:
@@ -67,16 +55,16 @@ class exahype::adapters::AugmentedAMRGrid {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    AugmentedAMRGrid();
+    RegularMesh();
 
     #if defined(SharedMemoryParallelisation)
-    AugmentedAMRGrid(const AugmentedAMRGrid& masterThread);
+    RegularMesh(const RegularMesh& masterThread);
     #endif
 
-    virtual ~AugmentedAMRGrid();
+    virtual ~RegularMesh();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const AugmentedAMRGrid& workerThread);
+    void mergeWithWorkerThread(const RegularMesh& workerThread);
     #endif
 
     void createInnerVertex(
