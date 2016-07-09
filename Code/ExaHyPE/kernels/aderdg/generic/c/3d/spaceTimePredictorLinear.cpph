@@ -3,14 +3,14 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #include <cstring>
 
 #if DIMENSIONS == 3
@@ -255,7 +255,7 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
     dtavFac *= dt / (i + 2);
   }
 
-  // Compute the bounday-extrapolated values for Q and F*n
+  // Compute the boundary-extrapolated values for Q and F*n
   std::memset(lQbnd, 0, 6 * basisSize2 * numberOfVariables * sizeof(double));
   std::memset(lFbnd, 0, 6 * basisSize2 * numberOfVariables * sizeof(double));
 
