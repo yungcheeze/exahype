@@ -44,15 +44,18 @@ exahype-project  Euler
  */
  
   optimisation
-    fuse-algorithmic-steps   = on
+    fuse-algorithmic-steps          = on
+    fuse-algorithmic-steps-factor   = 0.99    
   end optimisation
 
   solver ADER-DG MyEulerSolver
-    variables = 5
-    parameters= 0
-    order     = 3
-    kernel    = generic::fluxes::nonlinear
-    language  = C
+    variables         = 5
+    parameters        = 0
+    order             = 3
+    maximum-mesh-size = 0.1,0.1,0.1
+    time-stepping     = global
+    kernel            = generic::fluxes::nonlinear
+    language          = C
 
     plot vtk::ascii
       time     = 0.0
