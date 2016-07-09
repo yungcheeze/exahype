@@ -127,11 +127,12 @@ public abstract class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"stableTimeStepSize\");\n");
     }
-    writer.write("   return kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
+    writer.write("  double d = kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
         + "::stableTimeStepSize<eigenvalues>( luh, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"stableTimeStepSize\");\n");
     }
+    writer.write("  return d;\n");
     writer.write("}\n");
     writer.write("\n\n\n");
 

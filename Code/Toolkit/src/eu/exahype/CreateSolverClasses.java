@@ -142,11 +142,13 @@ public class CreateSolverClasses extends DepthFirstAdapter {
           break;
         case eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier:
           solver = new eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC(_dimensions,
-              numberOfVariables, numberOfParameters, order, _microarchitecture, _pathToLibxsmm);
+              numberOfVariables, numberOfParameters, order, _microarchitecture, _pathToLibxsmm,
+              _enableProfiler);
           break;
         case eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier:
           solver = new eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC(_dimensions,
-              numberOfVariables, numberOfParameters, order, _microarchitecture, _pathToLibxsmm);
+              numberOfVariables, numberOfParameters, order, _microarchitecture, _pathToLibxsmm,
+              _enableProfiler);
           break;
         case eu.exahype.solvers.KernelEuler2d.Identifier:
           solver = new eu.exahype.solvers.KernelEuler2d();
