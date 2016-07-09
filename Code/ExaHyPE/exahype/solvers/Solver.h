@@ -58,7 +58,10 @@ extern std::vector<Solver*> RegisteredSolvers;
  */
 class exahype::solvers::Solver {
  public:
-  enum Type { ADER_DG };
+  /**
+   * The type of this solver.
+   */
+  enum class Type { ADER_DG };
 
   /**
    * The time stepping modus.
@@ -94,6 +97,11 @@ class exahype::solvers::Solver {
    * The number of state variables of the conservation or balance law.
    */
   const int _numberOfVariables;
+
+  /**
+   * The number of parameters, e.g, material parameters.
+   */
+  const int _numberOfParameters;
 
   /**
    * The number of nodal basis functions that are employed in each
@@ -145,6 +153,11 @@ class exahype::solvers::Solver {
   const int _spaceTimeFluxUnknownsPerCell;
 
   /**
+    * The size of data required to store cell volume based unknowns and associated parameters.
+    */
+  const int _dataPerCell;
+
+  /**
    * The time stepping mode of this solver.
    */
   const TimeStepping _timeStepping;
@@ -181,10 +194,10 @@ class exahype::solvers::Solver {
   double _minNextPredictorTimeStepSize;
 
  public:
-  Solver(const std::string& identifier, Type type, int kernelNumber,
-         int numberOfVariables, int nodesPerCoordinateAxis,
+  Solver(const std::string& identifier, exahype::solvers::Solver::Type type, int kernelNumber,
+         int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis,
          tarch::la::Vector<DIMENSIONS,double> maximumMeshSize,
-         TimeStepping timeStepping,
+         exahype::solvers::Solver::TimeStepping timeStepping,
          std::unique_ptr<profilers::Profiler> profiler =
              std::unique_ptr<profilers::Profiler>(
                  new profilers::simple::NoOpProfiler));
@@ -207,7 +220,7 @@ class exahype::solvers::Solver {
    * each coordinate direction or larger values,
    * you indicate that this PDE might not exist in the domain.
    */
-  tarch::la::Vector<DIMENSIONS,double> getMaximumMeshSize() const = 0;
+  tarch::la::Vector<DIMENSIONS,double> getMaximumMeshSize() const;
 
   /**
    * Returns the identifier of this solver.
@@ -228,6 +241,11 @@ class exahype::solvers::Solver {
    * Returns the number of state variables.
    */
   int getNumberOfVariables() const;
+
+  /**
+   * Returns the number of parameters, e.g.,material constants etc.
+   */
+  int getNumberOfParameters() const;
 
   /**
    * This operation returns the number of space time
@@ -277,6 +295,12 @@ class exahype::solvers::Solver {
    * returns the number of cells within a patch per coordinate axis.
    */
   int getNodesPerCoordinateAxis() const;
+
+  /**
+   * This operation returns the size of data required
+   * to store cell volume based unknowns and associated parameters.
+   */
+  int getDataPerCell() const;
 
   /**
    * @brief Adds the solution update to the solution.
@@ -508,6 +532,8 @@ class exahype::solvers::Solver {
    */
   void sendToRank(int rank, int tag);
   void receiveFromRank(int rank, int tag);
+
+  void toString();
 
   /**
    * Run over all solvers and identify the minimal time stamp.
