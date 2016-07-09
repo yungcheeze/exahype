@@ -16,9 +16,9 @@
 #include "peano/utils/Globals.h"
 
 #include "exahype/solvers/Solver.h"
-#include "kernels/KernelCalls.h"
 
-#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+#include "tarch/la/VectorScalarOperations.h"
+#include "tarch/la/VectorVectorOperations.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -124,10 +124,12 @@ void exahype::mappings::RegularMesh::createInnerVertex(
   logTraceInWith6Arguments("createInnerVertex(...)", fineGridVertex, fineGridX,
                            fineGridH, coarseGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfVertex);
+  tarch::la::Vector<DIMENSIONS,double> fineGridCellSize = coarseGridVerticesEnumerator.getCellSize();
+  fineGridCellSize /= 3.0;
 
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
     if (fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined &&
-        coarseGridVerticesEnumerator.getLevel() < p->getMinimumTreeDepth()) {
+        tarch::la::allGreater(fineGridCellSize,p->getMaximumMeshSize())) {
       fineGridVertex.refine();
     }
   }
@@ -147,10 +149,12 @@ void exahype::mappings::RegularMesh::createBoundaryVertex(
                            fineGridX, fineGridH,
                            coarseGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfVertex);
+  tarch::la::Vector<DIMENSIONS,double> fineGridCellSize = coarseGridVerticesEnumerator.getCellSize();
+  fineGridCellSize /= 3.0;
 
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
     if (fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined &&
-        coarseGridVerticesEnumerator.getLevel() < p->getMinimumTreeDepth()) {
+        tarch::la::allGreater(fineGridCellSize,p->getMaximumMeshSize())) {
       fineGridVertex.refine();
     }
   }
@@ -339,9 +343,7 @@ void exahype::mappings::RegularMesh::enterCell(
   int solverNumber = 0;
   if (fineGridCell.getADERDGCellDescriptionsIndex() == exahype::Cell::InvalidCellDescriptionsIndex) {
     for (const auto& p : exahype::solvers::RegisteredSolvers) {
-      // @todo replace by parloops?
-      if (fineGridVerticesEnumerator.getLevel() ==
-          p->getMinimumTreeDepth() + 1) {
+      if (tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),p->getMaximumMeshSize())) {
         fineGridCell.addNewCellDescription(
             solverNumber, exahype::records::ADERDGCellDescription::Cell,
             exahype::records::ADERDGCellDescription::None,
