@@ -16,11 +16,36 @@
 
 #include "exahype/plotters/ADERDG2AsciiVTK.h"
 #include "exahype/plotters/ADERDG2BinaryVTK.h"
+#include "exahype/plotters/ADERDG2AsciiSeismogram.h"
 
 std::vector<exahype::plotters::Plotter*> exahype::plotters::RegisteredPlotters;
 
 tarch::logging::Log exahype::plotters::Plotter::_log(
     "exahype::solvers::Plotter");
+
+
+double exahype::plotters::getValueFromPropertyString( const std::string& parameterString, const std::string& key ) {
+  std::size_t startIndex      = parameterString.find(key);
+              startIndex      = parameterString.find(":",startIndex);
+  std::size_t endIndexBracket = parameterString.find("}",startIndex+1);
+  std::size_t endIndexComma   = parameterString.find(",",startIndex+1);
+
+  std::size_t endIndex        = endIndexBracket<endIndexComma ? endIndexBracket : endIndexComma;
+
+  std::string substring       = parameterString.substr(startIndex+1,endIndex-startIndex-1);
+
+  double result;
+  std::istringstream ss(substring);
+  ss >> result;
+
+  if (ss) {
+    return result;
+  }
+  else {
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+}
+
 
 exahype::plotters::Plotter::Plotter(int solver, int plotterCount,
                                     const exahype::Parser& parser)
@@ -30,6 +55,7 @@ exahype::plotters::Plotter::Plotter(int solver, int plotterCount,
       _repeat(parser.getRepeatTimeForPlotter(solver, plotterCount)),
       _filename(parser.getFilenameForPlotter(solver, plotterCount)),
       _select(parser.getSelectorForPlotter(solver, plotterCount)),
+      _isActive(false),
       _device(nullptr) {
   if (_time < 0.0) {
     logError("Plotter(...)",
@@ -44,67 +70,90 @@ exahype::plotters::Plotter::Plotter(int solver, int plotterCount,
                               << _filename << " every " << _repeat
                               << " time units with first snapshot at " << _time
                               << ". plotter type is " << _identifier);
+
+  assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
+  switch (solvers::RegisteredSolvers[_solver]->getType()) {
+    case exahype::solvers::Solver::Type::ADER_DG:
+      /**
+       * This is actually some kind of switch expression though switches do
+       * not work for strings, so we map it onto an if-then-else cascade.
+       */
+      if (_identifier.compare( ADERDG2AsciiVTK::getIdentifier() ) == 0) {
+        _device = new ADERDG2AsciiVTK();
+      }
+      else if (_identifier.compare( ADERDG2BinaryVTK::getIdentifier() ) == 0) {
+        _device = new ADERDG2BinaryVTK();
+      }
+      else if (_identifier.compare( ADERDG2AsciiSeismogram::getIdentifier() ) == 0) {
+        _device = new ADERDG2AsciiSeismogram();
+      }
+
+
+      if (_device==nullptr) {
+        logError(
+          "checkWetherSolverBecomesActive(double)",
+          "unknown plotter type "
+              << _identifier << " for "
+              << solvers::RegisteredSolvers[_solver]->getIdentifier()
+        );
+      }
+      else {
+        _device->init(
+            _filename,
+            // Internally, we always use the nodes per coordinate axis, i.e.,
+            // "order+1"
+            // Consider to pass the nodes per coordinate axis instead of the
+            // order
+            solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis() -
+            1,
+            solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
+            _select
+        );
+      }
+    break;
+  }
 }
+
+
+exahype::plotters::Plotter::~Plotter() {
+  if (_device!=nullptr) {
+    delete _device;
+    _device = nullptr;
+  }
+}
+
 
 bool exahype::plotters::Plotter::checkWetherSolverBecomesActive(double currentTimeStamp) {
   if ((_time >= 0.0) && tarch::la::greaterEquals(currentTimeStamp, _time)) {
-    assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
-    assertion(_device==nullptr);
-
-    switch (solvers::RegisteredSolvers[_solver]->getType()) {
-      case exahype::solvers::Solver::Type::ADER_DG:
-        /**
-         * This is actually some kind of switch expression though switches do
-         * not work for strings, so we map it onto an if-then-else cascade.
-         */
-        if (_identifier.compare( ADERDG2AsciiVTK::getIdentifier() ) == 0) {
-          _device = new ADERDG2AsciiVTK();
-        }
-        else if (_identifier.compare( ADERDG2BinaryVTK::getIdentifier() ) == 0) {
-          _device = new ADERDG2BinaryVTK();
-        }
-
-
-        if (_device==nullptr) {
-          logError(
-            "checkWetherSolverBecomesActive(double)",
-            "unknown plotter type "
-                << _identifier << " for "
-                << solvers::RegisteredSolvers[_solver]->getIdentifier()
-          );
-        }
-        else {
-          _device->init(
-              _filename,
-              // Internally, we always use the nodes per coordinate axis, i.e.,
-              // "order+1"
-              // Consider to pass the nodes per coordinate axis instead of the
-              // order
-              solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis() -
-              1,
-              solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
-              _select
-          );
-        }
-      break;
-    }
+    assertion(_device!=nullptr);
+    _isActive = true;
+    _device->startPlotting(currentTimeStamp);
   }
   return isActive();
 }
 
-bool exahype::plotters::Plotter::isActive() const { return _device != nullptr; }
+
+bool exahype::plotters::Plotter::isActive() const {
+  return _isActive;
+}
+
 
 bool exahype::plotters::Plotter::plotDataFromSolver(int solver) const {
   return isActive() && _solver == solver;
 }
 
+
 void exahype::plotters::Plotter::plotPatch(
-    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
-    double timeStamp) {
+  const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+  const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
+  double timeStamp
+) {
   assertion(_device != nullptr);
-  _device->plotPatch(offsetOfPatch, sizeOfPatch, u, timeStamp);
+  if (_device!=nullptr) {
+    _device->plotPatch(offsetOfPatch, sizeOfPatch, u, timeStamp);
+  }
 }
+
 
 void exahype::plotters::Plotter::finishedPlotting() {
   assertion(isActive());
@@ -113,9 +162,12 @@ void exahype::plotters::Plotter::finishedPlotting() {
   } else {
     _time = -1.0;
   }
-  delete _device;
-  _device = nullptr;
+  if (_device!=nullptr) {
+    _device->finishPlotting();
+  }
+  _isActive = false;
 }
+
 
 bool exahype::plotters::isAPlotterActive(double currentTimeStep) {
   bool result = false;
@@ -125,6 +177,7 @@ bool exahype::plotters::isAPlotterActive(double currentTimeStep) {
   return result;
 }
 
+
 void exahype::plotters::finishedPlotting() {
   for (auto& p : RegisteredPlotters) {
     if (p->isActive()) {
@@ -132,6 +185,7 @@ void exahype::plotters::finishedPlotting() {
     }
   }
 }
+
 
 std::string exahype::plotters::Plotter::getFileName() const {
   return _filename;

@@ -25,11 +25,9 @@ namespace exahype {
   }
 }
 
-class exahype::plotters::ADERDG2BinaryVTK
-    : public exahype::plotters::Plotter::Device {
+class exahype::plotters::ADERDG2BinaryVTK: public exahype::plotters::Plotter::Device {
  private:
-  static int FileCounter;
-
+  int           _fileCounter;
   std::string   _filename;
   int           _order;
   int           _unknowns;
@@ -56,6 +54,9 @@ class exahype::plotters::ADERDG2BinaryVTK
       const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
       const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
       double timeStamp);
+
+  virtual void startPlotting( double time );
+  virtual void finishPlotting();
 };
 
 #endif

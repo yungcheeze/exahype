@@ -31,6 +31,15 @@ namespace exahype {
 
     bool isAPlotterActive(double currentTimeStep);
     void finishedPlotting();
+
+    /**
+     * Property strings in ExaHyPE are string alike "{all,left=0.5,Q4}". This
+     * operation returns the value of a property, i.e. if you invoke
+     * getvalueFromProperyString( "left" ), you obtain 0.5 in the example
+     * above. The routine returns nan if now entry is found or the entry's
+     * value  is not a valid floating point number.
+     */
+    double getValueFromPropertyString( const std::string& parameterString, const std::string& key );
   }
 }
 
@@ -72,22 +81,27 @@ class exahype::plotters::Plotter {
         const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
         const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
         double timeStamp) = 0;
+
+    virtual void startPlotting( double time ) = 0;
+    virtual void finishPlotting() = 0;
   };
 
  private:
   static tarch::logging::Log _log;
 
-  const int _solver;
-  const std::string _identifier;
-  double _time;
-  const double _repeat;
-  const std::string _filename;
-  const std::string _select;
+  const int              _solver;
+  const std::string      _identifier;
+  double                 _time;
+  const double           _repeat;
+  const std::string      _filename;
+  const std::string      _select;
+  bool                   _isActive;
 
-  Device* _device;
+  Device*                _device;
 
  public:
   Plotter(int solver, int plotterCount, const exahype::Parser& parser);
+  ~Plotter();
 
   // Disallow copy and assignment
   Plotter(const Plotter& other) = delete;
