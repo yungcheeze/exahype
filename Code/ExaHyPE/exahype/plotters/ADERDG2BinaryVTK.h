@@ -33,6 +33,9 @@ class exahype::plotters::ADERDG2BinaryVTK: public exahype::plotters::Plotter::De
   int           _unknowns;
   std::string   _select;
 
+  tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestLeftBottomFront;
+  tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestRightTopBack;
+
   tarch::plotter::griddata::blockstructured::PatchWriterUnstructured*
       _patchWriter;
   tarch::plotter::griddata::blockstructured::PatchWriter::SinglePatchWriter*

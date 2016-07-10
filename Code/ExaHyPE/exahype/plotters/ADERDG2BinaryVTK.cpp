@@ -42,6 +42,27 @@ void exahype::plotters::ADERDG2BinaryVTK::init(
   _order       = order;
   _unknowns    = unknowns;
   _select      = select;
+
+
+  double x;
+  x = getValueFromPropertyString( select, "left" );
+  _regionOfInterestLeftBottomFront(0) = x!=x ? std::numeric_limits<double>::min() : x;
+  x = getValueFromPropertyString( select, "bottom" );
+  _regionOfInterestLeftBottomFront(1) = x!=x ? std::numeric_limits<double>::min() : x;
+#ifdef Din3
+  x = getValueFromPropertyString( select, "front" );
+  _regionOfInterestLeftBottomFront(2) = x!=x ? std::numeric_limits<double>::min() : x;
+#endif
+
+
+  x = getValueFromPropertyString( select, "right" );
+  _regionOfInterestRightTopBack(0) = x!=x ? std::numeric_limits<double>::max() : x;
+  x = getValueFromPropertyString( select, "top" );
+  _regionOfInterestRightTopBack(1) = x!=x ? std::numeric_limits<double>::max() : x;
+#ifdef Dim3
+  x = getValueFromPropertyString( select, "back" );
+  _regionOfInterestRightTopBack(2) = x!=x ? std::numeric_limits<double>::max() : x;
+#endif
 }
 
 
@@ -106,6 +127,13 @@ void exahype::plotters::ADERDG2BinaryVTK::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
     double timeStamp) {
+  if (
+    tarch::la::allSmaller(_regionOfInterestLeftBottomFront,offsetOfPatch+sizeOfPatch)
+    &&
+    tarch::la::allGreater(_regionOfInterestRightTopBack,offsetOfPatch)
+  ) {
+
+
   int vertexIndex =
       _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _order).first;
 
@@ -140,5 +168,6 @@ void exahype::plotters::ADERDG2BinaryVTK::plotPatch(
       }
     }
     vertexIndex++;
+  }
   }
 }

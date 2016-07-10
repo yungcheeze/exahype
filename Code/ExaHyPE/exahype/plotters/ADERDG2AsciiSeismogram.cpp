@@ -74,5 +74,36 @@ void exahype::plotters::ADERDG2AsciiSeismogram::plotPatch(
   const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
   double timeStamp
 ) {
+  if (
+    tarch::la::allSmaller(offsetOfPatch,_x)
+    &&
+    tarch::la::allGreater(offsetOfPatch+sizeOfPatch,_x)
+  ) {
+/*
+    int unknownPlotter = 0;
+    for (int unknown=0; unknown < _unknowns; unknown++) {
+        std::ostringstream identifier;
+        identifier << "Q" << unknown;
 
+        if ( _select.find(identifier.str())!=std::string::npos || _select.find("all")!=std::string::npos ) {
+          double value = 0.0;
+          dfor(ii,_order+1) { // Gauss-Legendre node indices
+            int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
+            value += kernels::equidistantGridProjector1d[_order][ii(1)][i(1)] *
+                     kernels::equidistantGridProjector1d[_order][ii(0)][i(0)] *
+                     #ifdef Dim3
+                     kernels::equidistantGridProjector1d[_order][ii(2)][i(2)] *
+                     #endif
+                     u[iGauss * _unknowns + unknown];
+            assertion3(value == value, offsetOfPatch, sizeOfPatch, iGauss);
+          }
+
+          _vertexDataWriter[unknownPlotter]->plotVertex(vertexIndex, value);
+          unknownPlotter++;
+        }
+      }
+      vertexIndex++;
+
+*/
+  }
 }
