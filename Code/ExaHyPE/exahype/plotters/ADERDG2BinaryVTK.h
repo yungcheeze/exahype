@@ -30,10 +30,10 @@ class exahype::plotters::ADERDG2BinaryVTK
  private:
   static int FileCounter;
 
-  const std::string _filename;
-  const int _order;
-  const int _unknowns;
-  const std::string _select;
+  std::string   _filename;
+  int           _order;
+  int           _unknowns;
+  std::string   _select;
 
   tarch::plotter::griddata::blockstructured::PatchWriterUnstructured*
       _patchWriter;
@@ -45,8 +45,12 @@ class exahype::plotters::ADERDG2BinaryVTK
       _vertexDataWriter;
 
  public:
-  ADERDG2BinaryVTK(const std::string& filename, int order, int unknowns, const std::string& select);
+  ADERDG2BinaryVTK();
   virtual ~ADERDG2BinaryVTK();
+
+  virtual void init(const std::string& filename, int order, int unknowns, const std::string& select);
+
+  static std::string getIdentifier();
 
   virtual void plotPatch(
       const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,

@@ -22,16 +22,24 @@
 
 int exahype::plotters::ADERDG2AsciiVTK::FileCounter(0);
 
-exahype::plotters::ADERDG2AsciiVTK::ADERDG2AsciiVTK(
+exahype::plotters::ADERDG2AsciiVTK::ADERDG2AsciiVTK() {
+}
+
+
+std::string exahype::plotters::ADERDG2AsciiVTK::getIdentifier() {
+  return "vtk::ascii";
+}
+
+
+void exahype::plotters::ADERDG2AsciiVTK::init(
   const std::string& filename,
   int                order,
   int                unknowns,
-  const std::string& select)
-  :
-  _filename(filename),
-  _order(order),
-  _unknowns(unknowns),
-  _select(select) {
+  const std::string& select) {
+  _filename    = filename;
+  _order       = order;
+  _unknowns    = unknowns;
+  _select      = select;
   _patchWriter =
       new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
           new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter());

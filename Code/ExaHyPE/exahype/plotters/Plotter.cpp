@@ -46,49 +46,47 @@ exahype::plotters::Plotter::Plotter(int solver, int plotterCount,
                               << ". plotter type is " << _identifier);
 }
 
-bool exahype::plotters::Plotter::checkWetherSolverBecomesActive(
-    double currentTimeStamp) {
+bool exahype::plotters::Plotter::checkWetherSolverBecomesActive(double currentTimeStamp) {
   if ((_time >= 0.0) && tarch::la::greaterEquals(currentTimeStamp, _time)) {
     assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
+    assertion(_device==nullptr);
+
     switch (solvers::RegisteredSolvers[_solver]->getType()) {
       case exahype::solvers::Solver::Type::ADER_DG:
-        if (_identifier.compare("vtk::binary") == 0) {
-          logDebug("open()",
-                   "create vtk::binary plotter for "
-                       << solvers::RegisteredSolvers[_solver]->getIdentifier());
-          _device = new ADERDG2BinaryVTK(
-              _filename,
-              // @todo 16/05/03:Dominic Etienne Charrier
-              // Internally, we always use the nodes per coordinate axis, i.e.,
-              // "order+1"
-              // Consider to pass the nodes per coordinate axis instead of the
-              // order
-              solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis() -
-              1,
-              solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
-              _select);
-        } else if (_identifier.compare("vtk::ascii") == 0) {
-          logDebug("open()",
-                   "create vtk::ascii plotter for "
-                       << solvers::RegisteredSolvers[_solver]->getIdentifier());
-          _device = new ADERDG2AsciiVTK(
-              _filename,
-              // @todo 16/05/03:Dominic Etienne Charrier
-              // Internally, we always use the nodes per coordinate axis, i.e.,
-              // "order+1"
-              // Consider to pass the nodes per coordinate axis instead of the
-              // order
-              solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis() -
-              1,
-              solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
-              _select);
-        } else {
-          logError("open()",
-                   "unknown plotter type "
-                       << _identifier << " for "
-                       << solvers::RegisteredSolvers[_solver]->getIdentifier());
+        /**
+         * This is actually some kind of switch expression though switches do
+         * not work for strings, so we map it onto an if-then-else cascade.
+         */
+        if (_identifier.compare( ADERDG2AsciiVTK::getIdentifier() ) == 0) {
+          _device = new ADERDG2AsciiVTK();
         }
-        break;
+        else if (_identifier.compare( ADERDG2BinaryVTK::getIdentifier() ) == 0) {
+          _device = new ADERDG2BinaryVTK();
+        }
+
+
+        if (_device==nullptr) {
+          logError(
+            "checkWetherSolverBecomesActive(double)",
+            "unknown plotter type "
+                << _identifier << " for "
+                << solvers::RegisteredSolvers[_solver]->getIdentifier()
+          );
+        }
+        else {
+          _device->init(
+              _filename,
+              // Internally, we always use the nodes per coordinate axis, i.e.,
+              // "order+1"
+              // Consider to pass the nodes per coordinate axis instead of the
+              // order
+              solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis() -
+              1,
+              solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
+              _select
+          );
+        }
+      break;
     }
   }
   return isActive();

@@ -21,16 +21,24 @@
 
 int exahype::plotters::ADERDG2BinaryVTK::FileCounter(0);
 
-exahype::plotters::ADERDG2BinaryVTK::ADERDG2BinaryVTK(
+exahype::plotters::ADERDG2BinaryVTK::ADERDG2BinaryVTK() {
+}
+
+
+std::string exahype::plotters::ADERDG2BinaryVTK::getIdentifier() {
+  return "vtk::binary";
+}
+
+
+void exahype::plotters::ADERDG2BinaryVTK::init(
   const std::string& filename,
   int                order,
   int                unknowns,
-  const std::string& select)
-  :
-  _filename(filename),
-  _order(order),
-  _unknowns(unknowns),
-  _select(select) {
+  const std::string& select) {
+  _filename    = filename;
+  _order       = order;
+  _unknowns    = unknowns;
+  _select      = select;
   _patchWriter =
       new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
           new tarch::plotter::griddata::unstructured::vtk::
