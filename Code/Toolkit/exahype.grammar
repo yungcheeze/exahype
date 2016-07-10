@@ -95,9 +95,9 @@ Tokens
   typename                          = nondigit ( digit | nondigit | '::' ) *;
 
   parameter_list                    = '{' 
-                                      (identifier ( '=' (digit+ | digit+ '.' digit+) )? ) 
+                                      (identifier ( ':' (digit+ | digit+ '.' digit+) )? ) 
                                       (',' 
-                                        (identifier ( '=' (digit+ | digit+ '.' digit+) )? )
+                                        (identifier ( ':' (digit+ | digit+ '.' digit+) )? )
                                       )* 
                                       '}';
 
