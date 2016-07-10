@@ -19,10 +19,8 @@ Helpers
 
     filename_element     =  digit | nondigit | '-' | '/' | dot;
 
-    identifier           = nondigit ( digit | nondigit ) *;
-    identifier_list_tail = ',' identifier;
-    identifier_list      = '{' identifier? identifier_list_tail* '}';
-
+    identifier           = nondigit ( digit | nondigit ) *;    
+    
     cr                   =   13;
     lf                   =   10;
     tab                  =   9;
@@ -94,8 +92,14 @@ Tokens
 
   blank                             = ( cr | lf | tab | ' ' ) +;
   identifier                        = identifier;
-  identifier_list                   = identifier_list;
   typename                          = nondigit ( digit | nondigit | '::' ) *;
+
+  parameter_list                    = '{' 
+                                      (identifier ( '=' (digit+ | digit+ '.' digit+) )? ) 
+                                      (',' 
+                                        (identifier ( '=' (digit+ | digit+ '.' digit+) )? )
+                                      )* 
+                                      '}';
 
   int_number                        = digit+;
   float_number                      = (digit+ | digit+ '.' digit+);
@@ -196,7 +200,7 @@ Productions
       {with_likwid}
        [begin_token]:token_profiling
          token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
-         token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
+         token_metrics [token_metrics_equals]:token_equals [metrics]:parameter_list
          token_likwid_inc [token_likwid_inc_equals]:token_equals [likwid_inc]:filename
          token_likwid_lib [token_likwid_lib_equals]:token_equals [likwid_lib]:filename
        token_end [end_token]:token_profiling
@@ -205,7 +209,7 @@ Productions
       {with_ipcm}
        [begin_token]:token_profiling
          token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
-         token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
+         token_metrics [token_metrics_equals]:token_equals [metrics]:parameter_list
          token_ipcm_inc [token_ipcm_inc_equals]:token_equals [ipcm_inc]:filename
          token_ipcm_lib [token_ipcm_lib_equals]:token_equals [ipcm_lib]:filename
        token_end [end_token]:token_profiling
@@ -214,7 +218,7 @@ Productions
       {default}
        [begin_token]:token_profiling
          token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
-         token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
+         token_metrics [token_metrics_equals]:token_equals [metrics]:parameter_list
        token_end [end_token]:token_profiling
         { -> New profiling(profiler,metrics,Null,Null,Null,Null) }
       ;
@@ -224,7 +228,7 @@ Productions
        token_time      [time_equals]:token_equals     [time]:float_number
        token_repeat    [repeat_equals]:token_equals   [repeat]:float_number
        token_output    [output_equals]:token_equals   [output]:filename
-       token_select    [select_equals]:token_equals   [select]:identifier_list
+       token_select    [select_equals]:token_equals   [select]:parameter_list
      token_end [end_token]:token_plot
      plot_solution_list?
        { -> [New plot_solution(plotter_type,time,repeat,output,select),plot_solution_list.plot_solution] }
@@ -275,11 +279,11 @@ Abstract Syntax Tree
      [fuse_algorithm_steps]:token_on_off [fuse_algorithm_steps_factor]:float_number;
 
    profiling =
-     [profiler]:identifier [metrics]:identifier_list [likwid_inc]:filename? [likwid_lib]:filename? [ipcm_inc]:filename? [ipcm_lib]:filename?;
+     [profiler]:identifier [metrics]:parameter_list [likwid_inc]:filename? [likwid_lib]:filename? [ipcm_inc]:filename? [ipcm_lib]:filename?;
 
    solver =
       {aderdg} [name]:identifier [variables]:int_number [parameters]:int_number [order]:int_number [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier plot_solution*
     ;
 
    plot_solution =
-     [plotter_type]:typename [time]:float_number [repeat]:float_number [output]:filename [select]:identifier_list;
+     [plotter_type]:typename [time]:float_number [repeat]:float_number [output]:filename [select]:parameter_list;
