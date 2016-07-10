@@ -79,14 +79,15 @@ void exahype::plotters::ADERDG2AsciiSeismogram::plotPatch(
     &&
     tarch::la::allGreater(offsetOfPatch+sizeOfPatch,_x)
   ) {
-/*
-    int unknownPlotter = 0;
     for (int unknown=0; unknown < _unknowns; unknown++) {
-        std::ostringstream identifier;
-        identifier << "Q" << unknown;
+      std::ostringstream identifier;
+      identifier << "Q" << unknown;
 
-        if ( _select.find(identifier.str())!=std::string::npos || _select.find("all")!=std::string::npos ) {
-          double value = 0.0;
+      if ( _select.find(identifier.str())!=std::string::npos || _select.find("all")!=std::string::npos ) {
+        double value = 0.0;
+
+        value += u[unknown]; // @tdodo Dominic perhaps already has programmed the right interpolation for this AMR
+/*
           dfor(ii,_order+1) { // Gauss-Legendre node indices
             int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
             value += kernels::equidistantGridProjector1d[_order][ii(1)][i(1)] *
@@ -97,13 +98,9 @@ void exahype::plotters::ADERDG2AsciiSeismogram::plotPatch(
                      u[iGauss * _unknowns + unknown];
             assertion3(value == value, offsetOfPatch, sizeOfPatch, iGauss);
           }
-
-          _vertexDataWriter[unknownPlotter]->plotVertex(vertexIndex, value);
-          unknownPlotter++;
-        }
-      }
-      vertexIndex++;
-
 */
+        (*_out) << ", " << value;
+      }
+    }
   }
 }
