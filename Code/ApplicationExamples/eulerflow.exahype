@@ -35,13 +35,18 @@ exahype-project  Euler
     end-time                 = 0.4
   end computational-domain
 
-/*
   shared-memory
-    identifier               = dummy
+    identifier               = sampling
     cores                    = 2
     properties-file          = sharedmemory.properties
   end shared-memory
- */
+ 
+  distributed-memory
+    identifier               = static_load_balancing
+    configure                = {greedy,FCFS}
+    buffer-size              = 64
+    timeout                  = 120
+  end distributed-memory
  
   optimisation
     fuse-algorithmic-steps          = on

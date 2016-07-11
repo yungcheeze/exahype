@@ -45,22 +45,22 @@ void exahype::plotters::ADERDG2BinaryVTK::init(
 
 
   double x;
-  x = getValueFromPropertyString( select, "left" );
+  x = Parser::getValueFromPropertyString( select, "left" );
   _regionOfInterestLeftBottomFront(0) = x!=x ? std::numeric_limits<double>::min() : x;
-  x = getValueFromPropertyString( select, "bottom" );
+  x = Parser::getValueFromPropertyString( select, "bottom" );
   _regionOfInterestLeftBottomFront(1) = x!=x ? std::numeric_limits<double>::min() : x;
 #ifdef Din3
-  x = getValueFromPropertyString( select, "front" );
+  x = Parser::getValueFromPropertyString( select, "front" );
   _regionOfInterestLeftBottomFront(2) = x!=x ? std::numeric_limits<double>::min() : x;
 #endif
 
 
-  x = getValueFromPropertyString( select, "right" );
+  x = Parser::getValueFromPropertyString( select, "right" );
   _regionOfInterestRightTopBack(0) = x!=x ? std::numeric_limits<double>::max() : x;
-  x = getValueFromPropertyString( select, "top" );
+  x = Parser::getValueFromPropertyString( select, "top" );
   _regionOfInterestRightTopBack(1) = x!=x ? std::numeric_limits<double>::max() : x;
 #ifdef Dim3
-  x = getValueFromPropertyString( select, "back" );
+  x = Parser::getValueFromPropertyString( select, "back" );
   _regionOfInterestRightTopBack(2) = x!=x ? std::numeric_limits<double>::max() : x;
 #endif
 }

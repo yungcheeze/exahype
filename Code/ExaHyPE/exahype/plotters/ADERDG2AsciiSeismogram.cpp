@@ -36,10 +36,10 @@ void exahype::plotters::ADERDG2AsciiSeismogram::init(const std::string& filename
   _unknowns = unknowns;
   _select   = select;
 
-  _x(0) = getValueFromPropertyString( select, "x" );
-  _x(1) = getValueFromPropertyString( select, "y" );
+  _x(0) = Parser::getValueFromPropertyString( select, "x" );
+  _x(1) = Parser::getValueFromPropertyString( select, "y" );
   #if DIM3
-  _x(2) = getValueFromPropertyString( select, "z" );
+  _x(2) = Parser::getValueFromPropertyString( select, "z" );
   #endif
 
   logDebug( "init(...)", "probe at location " << _x );
