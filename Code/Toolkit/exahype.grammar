@@ -19,8 +19,8 @@ Helpers
 
     filename_element     =  digit | nondigit | '-' | '/' | dot;
 
-    identifier           = nondigit ( digit | nondigit ) *;    
-    
+    identifier           = nondigit ( digit | nondigit ) *;
+
     cr                   =   13;
     lf                   =   10;
     tab                  =   9;
@@ -97,11 +97,11 @@ Tokens
   identifier                        = identifier;
   typename                          = nondigit ( digit | nondigit | '::' ) *;
 
-  parameter_list                    = '{' 
-                                      (identifier ( ':' (digit+ | digit+ '.' digit+) )? ) 
-                                      (',' 
+  parameter_list                    = '{'
+                                      ((identifier ( ':' (digit+ | digit+ '.' digit+) )? )
+                                      (','
                                         (identifier ( ':' (digit+ | digit+ '.' digit+) )? )
-                                      )* 
+                                      )*)?
                                       '}';
 
   int_number                        = digit+;
@@ -166,9 +166,9 @@ Productions
       token_timeout      [timeout_equals]:token_equals    [timeout]:int_number
     token_end [end_token]:token_distributed_memory
       { -> New distributed_memory( identifier,configure,buffersize,timeout ) };
-      
-      
-      
+
+
+
 
   shared_memory {->shared_memory} =
     [begin_token]:token_shared_memory
@@ -186,12 +186,12 @@ Productions
        token_offset             [offset_equals]:token_equals             [offset_x]:float_number [offset_comma_xy]:token_comma [offset_y]:float_number
        token_end_time           [end_time_equals]:token_equals           [end_time]:float_number
       token_end [end_token]:token_computational_domain
-       { -> New computational_domain( dimension, width_x, width_y, Null, offset_x, offset_y, Null, end_time ) } 
+       { -> New computational_domain( dimension, width_x, width_y, Null, offset_x, offset_y, Null, end_time ) }
        |
      {three_dimensional}
       [begin_token]:token_computational_domain
        token_dimension          [dimension_equals]:token_equals          [dimension]:int_number
-       token_width              [width_equals]:token_equals              [width_x]:float_number [width_comma_xy]:token_comma [width_y]:float_number [width_comma_yz]:token_comma [width_z]:float_number 
+       token_width              [width_equals]:token_equals              [width_x]:float_number [width_comma_xy]:token_comma [width_y]:float_number [width_comma_yz]:token_comma [width_z]:float_number
        token_offset             [offset_equals]:token_equals             [offset_x]:float_number  [offset_comma_xy]:token_comma [offset_y]:float_number [offset_comma_yz]:token_comma [offset_z]:float_number
        token_end_time           [end_time_equals]:token_equals           [end_time]:float_number
       token_end [end_token]:token_computational_domain
@@ -249,7 +249,7 @@ Productions
          token_variables          [variables_equals]:token_equals          [variables]:int_number
          token_parameters         [parameters_equals]:token_equals         [parameters]:int_number
          token_order              [order_equals]:token_equals              [order]:int_number
-         token_maximum_mesh_size  [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number    
+         token_maximum_mesh_size  [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
          token_time_stepping      [time_stepping_equals]:token_equals      [time_stepping]:identifier
          token_kernel             [kernel_equals]:token_equals             [kernel]:typename
          token_language           [language_equals]:token_equals           [language]:identifier
