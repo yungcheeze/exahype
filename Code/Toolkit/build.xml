@@ -1,4 +1,5 @@
 <project name="pdt" basedir=".">
+	
 
 	<!-- define path properties -->
 	<property name="src.dir" value="${basedir}/src"/>
@@ -43,7 +44,7 @@
 	</target>
 	
 	<target name="compile" depends="init" description="compiles the sources to ./bin">
-		<javac  srcdir="${src.dir}"
+		<javac target="1.7" srcdir="${src.dir}"
 			destdir="${bin.dir}"
 			classpathref="lib.path"
               		includeantruntime="true" />
