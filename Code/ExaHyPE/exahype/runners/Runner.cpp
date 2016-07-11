@@ -52,43 +52,45 @@ exahype::runners::Runner::Runner(const Parser& parser) : _parser(parser) {}
 exahype::runners::Runner::~Runner() {}
 
 void exahype::runners::Runner::initDistributedMemoryConfiguration() {
+  std::string configuration = _parser.getMPIConfiguration();
   if (_parser.getMPILoadBalancingType()==Parser::MPILoadBalancingType::Static) {
-    std::string configuration = _parser.getMPIConfiguration();
     if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
-      if (configuration.find( "fcfs" )!=std::string::npos ) {
+      if (configuration.find( "FCFS" )!=std::string::npos ) {
         tarch::parallel::NodePool::getInstance().setStrategy(
           new tarch::parallel::FCFSNodePoolStrategy()
         );
         logInfo("initDistributedMemoryConfiguration()", "load balancing relies on FCFS answering strategy");
       }
+      // @todo evtl. fehlen hier die Includes
+      /*
+        if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
+          tarch::parallel::NodePool::getInstance().setStrategy(
+            new mpibalancing::FairNodePoolStrategy(6)
+          );
+        }
+        #else
+      */
       else {
+        logError("initDistributedMemoryConfiguration()", "no valid load balancing answering strategy specified: use FCFS");
         tarch::parallel::NodePool::getInstance().setStrategy(
           new tarch::parallel::FCFSNodePoolStrategy()
         );
-        logError("initDistributedMemoryConfiguration()", "no valid load balancing answering strategy specified: use FCFS");
       }
     }
-    // @todo evtl. fehlen hier die Includes
-    /*
-      if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
-        tarch::parallel::NodePool::getInstance().setStrategy(
-          new mpibalancing::FairNodePoolStrategy(6)
-        );
-      }
-      #else
-    */
-    // @todo evtl. fehlen hier die Includes
-    /*
+
+    if ( configuration.find( "greedy" )!=std::string::npos ) {
+      logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-        new mpibalancing::StaticBalancing(true)
+        new peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning(false)
       );
-      #else
-    */
-    peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-        new peano::parallel::loadbalancing::
-            OracleForOnePhaseWithGreedyPartitioning(true));
-    logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing");
-  }
+    }
+    else {
+      logError("initDistributedMemoryConfiguration()", "no valid load balancing configured. Use greedy load balancing without joins");
+      peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
+        new peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning(false)
+      );
+    }
+  } // end of static load balancing
 
 
   tarch::parallel::NodePool::getInstance().restart();
