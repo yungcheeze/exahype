@@ -24,29 +24,6 @@ tarch::logging::Log exahype::plotters::Plotter::_log(
     "exahype::solvers::Plotter");
 
 
-double exahype::plotters::getValueFromPropertyString( const std::string& parameterString, const std::string& key ) {
-  std::size_t startIndex      = parameterString.find(key);
-              startIndex      = parameterString.find(":",startIndex);
-  std::size_t endIndexBracket = parameterString.find("}",startIndex+1);
-  std::size_t endIndexComma   = parameterString.find(",",startIndex+1);
-
-  std::size_t endIndex        = endIndexBracket<endIndexComma ? endIndexBracket : endIndexComma;
-
-  std::string substring       = parameterString.substr(startIndex+1,endIndex-startIndex-1);
-
-  double result;
-  std::istringstream ss(substring);
-  ss >> result;
-
-  if (ss) {
-    return result;
-  }
-  else {
-    return std::numeric_limits<double>::quiet_NaN();
-  }
-}
-
-
 exahype::plotters::Plotter::Plotter(int solver, int plotterCount,
                                     const exahype::Parser& parser)
     : _solver(solver),

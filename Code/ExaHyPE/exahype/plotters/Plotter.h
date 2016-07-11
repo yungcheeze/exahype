@@ -31,15 +31,6 @@ namespace exahype {
 
     bool isAPlotterActive(double currentTimeStep);
     void finishedPlotting();
-
-    /**
-     * Property strings in ExaHyPE are string alike "{all,left=0.5,Q4}". This
-     * operation returns the value of a property, i.e. if you invoke
-     * getvalueFromProperyString( "left" ), you obtain 0.5 in the example
-     * above. The routine returns nan if now entry is found or the entry's
-     * value  is not a valid floating point number.
-     */
-    double getValueFromPropertyString( const std::string& parameterString, const std::string& key );
   }
 }
 
