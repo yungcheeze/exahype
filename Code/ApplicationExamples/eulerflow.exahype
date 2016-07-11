@@ -36,7 +36,7 @@ exahype-project  Euler
   end computational-domain
 
   shared-memory
-    identifier               = sampling
+    identifier               = autotuning
     cores                    = 2
     properties-file          = sharedmemory.properties
   end shared-memory

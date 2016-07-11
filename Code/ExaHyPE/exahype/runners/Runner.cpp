@@ -162,11 +162,22 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
       break;
     case Parser::MulticoreOracleType::Autotuning:
     case Parser::MulticoreOracleType::GrainSizeSampling:
+      #ifdef Parallel
+      if (tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getNumberOfNodes()-1) {
+        logInfo("shutdownSharedMemoryConfiguration()",
+          "wrote statistics into file " << _parser.getMulticorePropertiesFile()
+	  << ". Dump from all other ranks subpressed to avoid file races"
+	);
+        peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics(
+          _parser.getMulticorePropertiesFile());
+      }
+      #else
       logInfo("shutdownSharedMemoryConfiguration()",
               "wrote statistics into file "
                   << _parser.getMulticorePropertiesFile());
       peano::datatraversal::autotuning::Oracle::getInstance().plotStatistics(
           _parser.getMulticorePropertiesFile());
+      #endif
       break;
   }
 #endif
