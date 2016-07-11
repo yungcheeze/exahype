@@ -23,6 +23,30 @@
 
 tarch::logging::Log exahype::Parser::_log("exahype::Parser");
 
+
+double exahype::Parser::getValueFromPropertyString( const std::string& parameterString, const std::string& key ) {
+  std::size_t startIndex      = parameterString.find(key);
+              startIndex      = parameterString.find(":",startIndex);
+  std::size_t endIndexBracket = parameterString.find("}",startIndex+1);
+  std::size_t endIndexComma   = parameterString.find(",",startIndex+1);
+
+  std::size_t endIndex        = endIndexBracket<endIndexComma ? endIndexBracket : endIndexComma;
+
+  std::string substring       = parameterString.substr(startIndex+1,endIndex-startIndex-1);
+
+  double result;
+  std::istringstream ss(substring);
+  ss >> result;
+
+  if (ss) {
+    return result;
+  }
+  else {
+    return std::numeric_limits<double>::quiet_NaN();
+  }
+}
+
+
 exahype::Parser::Parser() {
   _identifier2Type.insert (
       std::pair<std::string,exahype::solvers::Solver::Type> ("ADER-DG", exahype::solvers::Solver::Type::ADER_DG) );
@@ -213,21 +237,62 @@ std::string exahype::Parser::getMulticorePropertiesFile() const {
   return result;
 }
 
+
+exahype::Parser::MPILoadBalancingType exahype::Parser::getMPILoadBalancingType() const {
+  std::string token = getTokenAfter("distributed-memory", "identifier");
+  exahype::Parser::MPILoadBalancingType result = MPILoadBalancingType::Static;
+  if (token.compare("static_load_balancing") == 0) {
+    result = MPILoadBalancingType::Static;
+  }
+  else {
+    logError("getMPILoadBalancingType()", "Invalid distributed memory identifier " << token );
+  }
+  return result;
+}
+
+
+std::string exahype::Parser::getMPIConfiguration() const {
+  return getTokenAfter("distributed-memory", "configure");
+}
+
+
+int exahype::Parser::getMPIBufferSize() const {
+  std::string token = getTokenAfter("distributed-memory", "buffer-size");
+  int result = atoi(token.c_str());
+  if (result<=0) {
+    logError("getMPIBufferSize()", "Invalid MPI buffer size " << token << ". reset to 64");
+    result = 64;
+  }
+  return result;
+}
+
+
+int exahype::Parser::getMPITimeOut() const {
+  std::string token = getTokenAfter("distributed-memory", "timeout");
+  int result = atoi(token.c_str());
+  if (result<=0) {
+    logError("getMPIBufferSize()", "Invalid MPI timeout value " << token << ". reset to 0, i.e. no timeout");
+    result = 0;
+  }
+  return result;
+}
+
+
 exahype::Parser::MulticoreOracleType exahype::Parser::getMulticoreOracleType()
     const {
   std::string token = getTokenAfter("shared-memory", "identifier");
-  exahype::Parser::MulticoreOracleType result = Dummy;
+  exahype::Parser::MulticoreOracleType result = MulticoreOracleType::Dummy;
   if (token.compare("dummy") == 0) {
-    result = Dummy;
+    result = MulticoreOracleType::Dummy;
   } else if (token.compare("autotuning") == 0) {
-    result = Autotuning;
+    result = MulticoreOracleType::Autotuning;
   } else if (token.compare("sampling") == 0) {
-    result = GrainSizeSampling;
+    result = MulticoreOracleType::GrainSizeSampling;
   } else {
     logError("getMulticoreOracleType()",
              "Invalid shared memory identifier "
                  << token << ". Use dummy, autotuning, sampling. Set to dummy");
-    result = Dummy;
+    result = MulticoreOracleType::Dummy;
   }
   return result;
 }

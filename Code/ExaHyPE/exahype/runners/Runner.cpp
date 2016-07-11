@@ -52,47 +52,58 @@ exahype::runners::Runner::Runner(const Parser& parser) : _parser(parser) {}
 exahype::runners::Runner::~Runner() {}
 
 void exahype::runners::Runner::initDistributedMemoryConfiguration() {
-  // @todo evtl. fehlen hier die Includes
-  /*
+  if (_parser.getMPILoadBalancingType()==Parser::MPILoadBalancingType::Static) {
+    std::string configuration = _parser.getMPIConfiguration();
     if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
-      tarch::parallel::NodePool::getInstance().setStrategy(
-        new mpibalancing::FairNodePoolStrategy(6)
-      );
+      if (configuration.find( "fcfs" )!=std::string::npos ) {
+        tarch::parallel::NodePool::getInstance().setStrategy(
+          new tarch::parallel::FCFSNodePoolStrategy()
+        );
+        logInfo("initDistributedMemoryConfiguration()", "load balancing relies on FCFS answering strategy");
+      }
+      else {
+        tarch::parallel::NodePool::getInstance().setStrategy(
+          new tarch::parallel::FCFSNodePoolStrategy()
+        );
+        logError("initDistributedMemoryConfiguration()", "no valid load balancing answering strategy specified: use FCFS");
+      }
     }
-    #else
-  */
-  if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
-    tarch::parallel::NodePool::getInstance().setStrategy(
-        new tarch::parallel::FCFSNodePoolStrategy());
+    // @todo evtl. fehlen hier die Includes
+    /*
+      if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
+        tarch::parallel::NodePool::getInstance().setStrategy(
+          new mpibalancing::FairNodePoolStrategy(6)
+        );
+      }
+      #else
+    */
+    // @todo evtl. fehlen hier die Includes
+    /*
+      peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
+        new mpibalancing::StaticBalancing(true)
+      );
+      #else
+    */
+    peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
+        new peano::parallel::loadbalancing::
+            OracleForOnePhaseWithGreedyPartitioning(true));
+    logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing");
   }
 
-  // @todo evtl. fehlen hier die Includes
-  /*
-    peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-      new mpibalancing::StaticBalancing(true)
-    );
-    #else
-  */
-  peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-      new peano::parallel::loadbalancing::
-          OracleForOnePhaseWithGreedyPartitioning(true));
 
   tarch::parallel::NodePool::getInstance().restart();
   tarch::parallel::NodePool::getInstance().waitForAllNodesToBecomeIdle();
 
-#if defined(Debug) || defined(Asserts)
-  tarch::parallel::Node::getInstance().setDeadlockTimeOut(120 * 4);
-  tarch::parallel::Node::getInstance().setTimeOutWarning(60 * 4);
-#else
-  tarch::parallel::Node::getInstance().setDeadlockTimeOut(120);
-  tarch::parallel::Node::getInstance().setTimeOutWarning(60);
-#endif
+  tarch::parallel::Node::getInstance().setDeadlockTimeOut(_parser.getMPITimeOut());
+  tarch::parallel::Node::getInstance().setTimeOutWarning(_parser.getMPITimeOut()/2);
+  logInfo("initDistributedMemoryConfiguration()", "use MPI time out of " << _parser.getMPITimeOut() << " (warn after half the timeout span)");
 
-  const int bufferSize = 64;
-  peano::parallel::SendReceiveBufferPool::getInstance().setBufferSize(
-      bufferSize);
+  const int bufferSize = _parser.getMPIBufferSize();
+  peano::parallel::SendReceiveBufferPool::getInstance().setBufferSize(bufferSize);
   peano::parallel::JoinDataBufferPool::getInstance().setBufferSize(bufferSize);
+  logInfo("initDistributedMemoryConfiguration()", "use MPI buffer size of " << bufferSize);
 }
+
 
 void exahype::runners::Runner::shutdownDistributedMemoryConfiguration() {
   tarch::parallel::NodePool::getInstance().terminate();
@@ -106,7 +117,7 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
   tarch::multicore::Core::getInstance().configure(numberOfThreads);
 
   switch (_parser.getMulticoreOracleType()) {
-    case Parser::Dummy:
+    case Parser::MulticoreOracleType::Dummy:
       logInfo("initSharedMemoryConfiguration()",
               "use dummy shared memory oracle");
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
@@ -115,13 +126,13 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
               0)  // @todo Vasco bitte mal auf 1 setzen und nochmal durchjagen
           );
       break;
-    case Parser::Autotuning:
+    case Parser::MulticoreOracleType::Autotuning:
       logInfo("initSharedMemoryConfiguration()",
               "use autotuning shared memory oracle");
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
           new sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize());
       break;
-    case Parser::GrainSizeSampling:
+    case Parser::MulticoreOracleType::GrainSizeSampling:
       logInfo("initSharedMemoryConfiguration()",
               "use shared memory oracle sampling");
       peano::datatraversal::autotuning::Oracle::getInstance().setOracle(
@@ -145,10 +156,10 @@ void exahype::runners::Runner::initSharedMemoryConfiguration() {
 void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 #ifdef SharedMemoryParallelisation
   switch (_parser.getMulticoreOracleType()) {
-    case Parser::Dummy:
+    case Parser::MulticoreOracleType::Dummy:
       break;
-    case Parser::Autotuning:
-    case Parser::GrainSizeSampling:
+    case Parser::MulticoreOracleType::Autotuning:
+    case Parser::MulticoreOracleType::GrainSizeSampling:
       logInfo("shutdownSharedMemoryConfiguration()",
               "wrote statistics into file "
                   << _parser.getMulticorePropertiesFile());

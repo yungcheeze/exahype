@@ -15,7 +15,7 @@
 #define EXAHYPE_PARSER
 
 namespace exahype {
-class Parser;
+  class Parser;
 }
 
 #include <iostream>
@@ -63,6 +63,15 @@ class exahype::Parser {
                             std::string token1, int occurance1,
                             int additionalTokensToSkip = 0) const;
  public:
+  /**
+   * Property strings in ExaHyPE are string alike "{all,left=0.5,Q4}". This
+   * operation returns the value of a property, i.e. if you invoke
+   * getvalueFromProperyString( "left" ), you obtain 0.5 in the example
+   * above. The routine returns nan if now entry is found or the entry's
+   * value  is not a valid floating point number.
+   */
+  static double getValueFromPropertyString( const std::string& parameterString, const std::string& key );
+
   Parser();
   virtual ~Parser() {}
 
@@ -70,11 +79,15 @@ class exahype::Parser {
   Parser(const Parser& other) = delete;
   Parser& operator=(const Parser& other) = delete;
 
-  enum MulticoreOracleType {
+  enum class MulticoreOracleType {
     Dummy,
     Autotuning,
     GrainSizeSampling
     // evtl. spaeter mal InvadeSHM
+  };
+
+  enum class MPILoadBalancingType {
+    Static
   };
 
   void readFile(const std::string& filename);
@@ -94,6 +107,11 @@ class exahype::Parser {
   std::string getMulticorePropertiesFile() const;
 
   MulticoreOracleType getMulticoreOracleType() const;
+
+  MPILoadBalancingType getMPILoadBalancingType() const;
+  std::string          getMPIConfiguration() const;
+  int                  getMPIBufferSize() const;
+  int                  getMPITimeOut() const;
 
   double getSimulationEndTime() const;
 
