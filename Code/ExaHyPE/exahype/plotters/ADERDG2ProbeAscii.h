@@ -24,29 +24,26 @@ namespace exahype {
   }
 }
 
+
+/**
+ * Writes the probe into a file. All the data is first
+ */
 class exahype::plotters::ADERDG2ProbeAscii
     : public exahype::plotters::Plotter::Device {
  private:
   static tarch::logging::Log _log;
 
-  int            _order;
-  int            _unknowns;
-  std::string    _select;
-  std::ofstream* _out;
+  std::string          _filename;
+  int                  _order;
+  int                  _unknowns;
+  std::string          _select;
+  std::ofstream*       _out;
+  bool                 _hasWrittenData;
+  double               _time;
 
   tarch::la::Vector<DIMENSIONS,double> _x;
 
-/*
-  tarch::plotter::griddata::blockstructured::PatchWriterUnstructured*
-      _patchWriter;
-  tarch::plotter::griddata::blockstructured::PatchWriter::SinglePatchWriter*
-      _gridWriter;
-
-  tarch::plotter::griddata::Writer::VertexDataWriter* _timeStampDataWriter;
-  std::vector<tarch::plotter::griddata::Writer::VertexDataWriter*>
-      _vertexDataWriter;
-*/
-
+  void openOutputStream();
  public:
   ADERDG2ProbeAscii();
   virtual ~ADERDG2ProbeAscii();

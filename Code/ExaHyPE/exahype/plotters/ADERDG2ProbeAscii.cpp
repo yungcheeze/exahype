@@ -1,4 +1,5 @@
 #include "exahype/plotters/ADERDG2ProbeAscii.h"
+#include <fstream>
 
 
 tarch::logging::Log exahype::plotters::ADERDG2ProbeAscii::_log( "exahype::plotters::ADERDG2ProbeAscii" );
@@ -18,8 +19,12 @@ exahype::plotters::ADERDG2ProbeAscii::~ADERDG2ProbeAscii() {
 
 
 void exahype::plotters::ADERDG2ProbeAscii::startPlotting( double time ) {
-  if (_out!=nullptr && *_out) {
-    (*_out) << time;
+  // In the very first time step, the
+  if (time==std::numeric_limits<double>::max() ) {
+    _time = 0.0;
+  }
+  else {
+    _time = time;
   }
 }
 
@@ -35,6 +40,8 @@ void exahype::plotters::ADERDG2ProbeAscii::init(const std::string& filename, int
   _order    = order;
   _unknowns = unknowns;
   _select   = select;
+  _filename = filename;
+  _time     = 0.0;
 
   _x(0) = Parser::getValueFromPropertyString( select, "x" );
   _x(1) = Parser::getValueFromPropertyString( select, "y" );
@@ -43,26 +50,45 @@ void exahype::plotters::ADERDG2ProbeAscii::init(const std::string& filename, int
   #endif
 
   logDebug( "init(...)", "probe at location " << _x );
+}
 
-  if ( !tarch::la::oneEquals(_x,std::numeric_limits<double>::quiet_NaN()) ) {
+
+void exahype::plotters::ADERDG2ProbeAscii::openOutputStream() {
+  if (
+    _out == nullptr
+    &&
+    !tarch::la::oneEquals(_x,std::numeric_limits<double>::quiet_NaN())
+  ) {
     _out = new std::ofstream;
-    _out->open( filename );
+
+    std::ostringstream outputFilename;
+    outputFilename << _filename
+                   #ifdef Parallel
+	           << "-rank-" << tarch::parallel::Node::getInstance().getRank()
+                   #endif
+	           << ".probe";
+    // @todo Parallel
+    _out->open( outputFilename.str() );
+
+    if (*_out) {
+      (*_out) << "# plot-time, real-time";
+      for (int unknown=0; unknown < _unknowns; unknown++) {
+        std::ostringstream identifier;
+        identifier << "Q" << unknown;
+
+        if ( _select.find(identifier.str())!=std::string::npos || _select.find("all")!=std::string::npos ) {
+          (*_out) << "," << identifier.str();
+        }
+      }
+      (*_out) << std::endl;
+    }
   }
   else {
-    logError( "init(...)", "probe requires valid x, y (and z) coordinates in select statement. No plot written" );
+    logError( "init(...)", "probe requires valid x, y (and z) coordinates in select statement. No plot written as plot location has been " << _x );
   }
 
-  if (_out!=nullptr && *_out) {
-    (*_out) << "# time";
-    for (int unknown=0; unknown < _unknowns; unknown++) {
-      std::ostringstream identifier;
-      identifier << "Q" << unknown;
-
-      if ( _select.find(identifier.str())!=std::string::npos || _select.find("all")!=std::string::npos ) {
-        (*_out) << "," << identifier.str();
-      }
-    }
-    (*_out) << std::endl;
+  if (_out!=nullptr && *_out  ) {
+    (*_out) << _time;
   }
 }
 
@@ -82,6 +108,13 @@ void exahype::plotters::ADERDG2ProbeAscii::plotPatch(
     &&
     tarch::la::allGreater(offsetOfPatch+sizeOfPatch,_x)
   ) {
+    // lazy opening
+    openOutputStream();
+
+    if (_out!=nullptr && *_out) {
+      (*_out) << ", " << timeStamp;
+    }
+
     for (int unknown=0; unknown < _unknowns; unknown++) {
       std::ostringstream identifier;
       identifier << "Q" << unknown;
