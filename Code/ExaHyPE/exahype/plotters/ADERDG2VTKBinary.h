@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#ifndef _EXAHYPE_PLOTTERS_ADERDG_2_BINARY_VTK_H_
-#define _EXAHYPE_PLOTTERS_ADERDG_2_BINARY_VTK_H_
+#ifndef _EXAHYPE_PLOTTERS_ADERDG_2_VTK_BINARY_H_
+#define _EXAHYPE_PLOTTERS_ADERDG_2_VTK_BINARY_H_
 
 #include "exahype/plotters/Plotter.h"
 
@@ -21,11 +21,11 @@
 
 namespace exahype {
   namespace plotters {
-    class ADERDG2BinaryVTK;
+    class ADERDG2VTKBinary;
   }
 }
 
-class exahype::plotters::ADERDG2BinaryVTK: public exahype::plotters::Plotter::Device {
+class exahype::plotters::ADERDG2VTKBinary: public exahype::plotters::Plotter::Device {
  private:
   int           _fileCounter;
   std::string   _filename;
@@ -46,8 +46,8 @@ class exahype::plotters::ADERDG2BinaryVTK: public exahype::plotters::Plotter::De
       _vertexDataWriter;
 
  public:
-  ADERDG2BinaryVTK();
-  virtual ~ADERDG2BinaryVTK();
+  ADERDG2VTKBinary();
+  virtual ~ADERDG2VTKBinary();
 
   virtual void init(const std::string& filename, int order, int unknowns, const std::string& select);
 

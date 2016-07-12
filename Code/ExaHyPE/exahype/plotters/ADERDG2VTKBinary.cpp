@@ -11,7 +11,7 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#include "exahype/plotters/ADERDG2BinaryVTK.h"
+#include "ADERDG2VTKBinary.h"
 #include "tarch/parallel/Node.h"
 // @todo 16/05/03:Dominic Etienne Charreir Plotter depends now on kernels.
 // Should thus be placed in kernel module or the solver
@@ -21,17 +21,17 @@
 #include "peano/utils/Loop.h"
 
 
-exahype::plotters::ADERDG2BinaryVTK::ADERDG2BinaryVTK():
+exahype::plotters::ADERDG2VTKBinary::ADERDG2VTKBinary():
   _fileCounter(-1) {
 }
 
 
-std::string exahype::plotters::ADERDG2BinaryVTK::getIdentifier() {
+std::string exahype::plotters::ADERDG2VTKBinary::getIdentifier() {
   return "vtk::binary";
 }
 
 
-void exahype::plotters::ADERDG2BinaryVTK::init(
+void exahype::plotters::ADERDG2VTKBinary::init(
   const std::string& filename,
   int                order,
   int                unknowns,
@@ -66,7 +66,7 @@ void exahype::plotters::ADERDG2BinaryVTK::init(
 }
 
 
-void exahype::plotters::ADERDG2BinaryVTK::startPlotting( double time ) {
+void exahype::plotters::ADERDG2VTKBinary::startPlotting( double time ) {
   _fileCounter++;
 
   assertion( _patchWriter==nullptr );
@@ -90,7 +90,7 @@ void exahype::plotters::ADERDG2BinaryVTK::startPlotting( double time ) {
 }
 
 
-void exahype::plotters::ADERDG2BinaryVTK::finishPlotting() {
+void exahype::plotters::ADERDG2VTKBinary::finishPlotting() {
   _gridWriter->close();
   _timeStampDataWriter->close();
   for (auto& p : _vertexDataWriter) {
@@ -120,10 +120,10 @@ void exahype::plotters::ADERDG2BinaryVTK::finishPlotting() {
 }
 
 
-exahype::plotters::ADERDG2BinaryVTK::~ADERDG2BinaryVTK() {
+exahype::plotters::ADERDG2VTKBinary::~ADERDG2VTKBinary() {
 }
 
-void exahype::plotters::ADERDG2BinaryVTK::plotPatch(
+void exahype::plotters::ADERDG2VTKBinary::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
     double timeStamp) {

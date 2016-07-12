@@ -23,4 +23,5 @@ info             exahype  -1                      white
 
 
 info             sharedmemoryoracles  -1            white
+info             sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::loadStatistics  -1            black
 

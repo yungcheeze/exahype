@@ -11,7 +11,7 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#include "exahype/plotters/ADERDG2AsciiVTK.h"
+#include "ADERDG2VTKAscii.h"
 #include "tarch/parallel/Node.h"
 
 // @todo 16/05/03:Dominic Etienne Charreir Plotter depends now on kernels.
@@ -22,17 +22,17 @@
 #include "peano/utils/Loop.h"
 
 
-exahype::plotters::ADERDG2AsciiVTK::ADERDG2AsciiVTK():
+exahype::plotters::ADERDG2VTKAscii::ADERDG2VTKAscii():
   _fileCounter(-1) {
 }
 
 
-std::string exahype::plotters::ADERDG2AsciiVTK::getIdentifier() {
+std::string exahype::plotters::ADERDG2VTKAscii::getIdentifier() {
   return "vtk::ascii";
 }
 
 
-void exahype::plotters::ADERDG2AsciiVTK::init(
+void exahype::plotters::ADERDG2VTKAscii::init(
   const std::string& filename,
   int                order,
   int                unknowns,
@@ -69,7 +69,7 @@ void exahype::plotters::ADERDG2AsciiVTK::init(
 }
 
 
-void exahype::plotters::ADERDG2AsciiVTK::startPlotting( double time ) {
+void exahype::plotters::ADERDG2VTKAscii::startPlotting( double time ) {
   _fileCounter++;
 
   assertion( _patchWriter==nullptr );
@@ -96,7 +96,7 @@ void exahype::plotters::ADERDG2AsciiVTK::startPlotting( double time ) {
 }
 
 
-void exahype::plotters::ADERDG2AsciiVTK::finishPlotting() {
+void exahype::plotters::ADERDG2VTKAscii::finishPlotting() {
   assertion( _patchWriter!=nullptr );
   assertion( _gridWriter!=nullptr );
   assertion( _timeStampDataWriter!=nullptr );
@@ -131,11 +131,11 @@ void exahype::plotters::ADERDG2AsciiVTK::finishPlotting() {
 }
 
 
-exahype::plotters::ADERDG2AsciiVTK::~ADERDG2AsciiVTK() {
+exahype::plotters::ADERDG2VTKAscii::~ADERDG2VTKAscii() {
 }
 
 
-void exahype::plotters::ADERDG2AsciiVTK::plotPatch(
+void exahype::plotters::ADERDG2VTKAscii::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
     double timeStamp) {
