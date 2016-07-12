@@ -53,17 +53,55 @@ class exahype::mappings::MarkingForAugmentation {
   static tarch::logging::Log _log;
 
   /**
-   * Returns exahype::solvers::Solver::NextToCell if the cell has a neighbour of
+   * The augmentation control states.
+   */
+  enum class AugmentationControl {
+    /**
+     * Indicates that a spacetree cell is next to another spacetree cell
+     * of type exahype::records::ADERDGCellDescription::Cell.
+     */
+    NextToCell = 0,
+    /**
+     * Indicates that a spacetree cell is next to another spacetree cell
+     * of type exahype::records::ADERDGCellDescription::Ancestor or
+     * exahype::records::ADERDGCellDescription::EmptyAncestor.
+     */
+    NextToAncestor = 1,
+    /**
+     * Indicates that a spacetree cell is both, next to another spacetree cell
+     * of type exahype::records::ADERDGCellDescription::Ancestor or
+     * exahype::records::ADERDGCellDescription::EmptyAncestor, and
+     * a spacetree cell of type
+     * exahype::records::ADERDGCellDescription::Cell.
+     */
+    NextToCellAndAncestor = 2,
+    /**
+     * Indicates that a spacetree cell is neither, next to another spacetree cell
+     * of type exahype::records::ADERDGCellDescription::Ancestor or
+     * exahype::records::ADERDGCellDescription::EmptyAncestor, nor
+     * next to a spacetree cell of type exahype::records::ADERDGCellDescription::Cell.
+     *
+     * A cell of type exahype::records::ADERDGCellDescription::Descendant can then request erasing.
+     * A cell of type exahype::records::ADERDGCellDescription::Cell does then not need
+     * to request augmenting.
+     */
+    Default = 3
+  };
+
+
+
+  /**
+   * Returns  AugmentationControl::::NextToCell if the cell has a neighbour of
    * type exahype::records::ADERDGCellDescription:Cell,
    * exahype::solvers::Solver::NextToAncestor if the cell has a neighbour of
    * type exahype::records::ADERDGCellDescription:Ancestor or
    * exahype::records::ADERDGCellDescription::EmptyAncestor.
    * Is both the case, this function returns
-   * exahype::solvers::Solver::NextToCellOrAncestor.
+   * AugmentationControl::::NextToCellOrAncestor.
    * If none of the previous is the case, this function returns
-   * exahype::records::ADERDGCellDescription:Erase.
+   * AugmentationControl::Default.
    */
-  exahype::solvers::Solver::AugmentationControl augmentationCriterion(
+  AugmentationControl augmentationCriterion(
       const int solverNumber,
       const exahype::records::ADERDGCellDescription::Type type, const int level,
       const tarch::la::Vector<THREE_POWER_D, int>&

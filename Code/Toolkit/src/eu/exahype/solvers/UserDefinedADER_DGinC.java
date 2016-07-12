@@ -36,16 +36,10 @@ public class UserDefinedADER_DGinC implements Solver {
       String projectName) throws java.io.IOException {
     writer.write("#include \"" + solverName + ".h\"\n");
     writer.write("\n\n\n");
-    writer.write(projectName + "::" + solverName + "::" + solverName + "( int kernelNumber):\n");
-    writer.write("  exahype::solvers::Solver(\"" + solverName
-        + "\",exahype::solvers::Solver::ADER_DG,kernelNumber," + _numberOfUnknowns + "," + _numberOfParameters + "," + _order
-        + "+1,exahype::solvers::Solver::GlobalTimeStepping) {\n");
+    writer.write(projectName + "::" + solverName + "::" + solverName + "(const std::string& identifier, exahype::solvers::Solver::Type type, int kernelNumber, int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
+    writer.write("  exahype::solvers::Solver("
+        + " identifier, type, kernelNumber, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {\n");
     writer.write("  // @todo Please implement/augment if required\n");
-    writer.write("}\n");
-    writer.write("\n\n\n");
-    writer.write("int " + projectName + "::" + solverName + "::getMinimumTreeDepth() const {\n");
-    writer.write("  // @todo Please implement\n");
-    writer.write("  return 3;\n");
     writer.write("}\n");
     writer.write("\n\n\n");
 
@@ -94,7 +88,7 @@ public class UserDefinedADER_DGinC implements Solver {
     writer.write("exahype::solvers::Solver::RefinementControl " + projectName + "::" + solverName
             + "::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {\n");
     writer.write("  // @todo Please implement\n");
-    writer.write("  return exahype::solvers::Solver::Keep;\n");
+    writer.write("  return exahype::solvers::Solver::RefinementControl::Keep;\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName

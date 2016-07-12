@@ -15,13 +15,19 @@
 #define EXAHYPE_PARSER
 
 namespace exahype {
-class Parser;
+  class Parser;
 }
+
+#include <iostream>
+
+#include <vector>
+#include <map>
 
 #include "peano/utils/Globals.h"
 #include "tarch/la/Vector.h"
 #include "tarch/logging/Log.h"
-#include <vector>
+
+#include "exahype/solvers/Solver.h"
 
 /**
  * ExaHyPE command line parser
@@ -34,30 +40,54 @@ class exahype::Parser {
 
   std::vector<std::string> _tokenStream;
 
+  /*
+   * Helper map for converting strings to types.
+   */
+  std::map<std::string,exahype::solvers::Solver::Type> _identifier2Type;
+
+  /*
+   * Helper map for converting strings to types.
+   */
+  std::map<std::string,exahype::solvers::Solver::TimeStepping> _identifier2TimeStepping;
+
   /**
-   * @return "notoken" if not found.
+   * \return "notoken" if not found.
    */
   std::string getTokenAfter(std::string token,
                             int additionalTokensToSkip = 0) const;
   std::string getTokenAfter(std::string token0, std::string token1,
                             int additionalTokensToSkip = 0) const;
   std::string getTokenAfter(std::string token0, int occurance0,
+                            int additionalTokensToSkip) const;
+  std::string getTokenAfter(std::string token0, int occurance0,
                             std::string token1, int occurance1,
                             int additionalTokensToSkip = 0) const;
-
  public:
-  Parser() {}
+  /**
+   * Property strings in ExaHyPE are string alike "{all,left=0.5,Q4}". This
+   * operation returns the value of a property, i.e. if you invoke
+   * getvalueFromProperyString( "left" ), you obtain 0.5 in the example
+   * above. The routine returns nan if now entry is found or the entry's
+   * value  is not a valid floating point number.
+   */
+  static double getValueFromPropertyString( const std::string& parameterString, const std::string& key );
+
+  Parser();
   virtual ~Parser() {}
 
   // Disallow copy and assignment
   Parser(const Parser& other) = delete;
   Parser& operator=(const Parser& other) = delete;
 
-  enum MulticoreOracleType {
+  enum class MulticoreOracleType {
     Dummy,
     Autotuning,
     GrainSizeSampling
     // evtl. spaeter mal InvadeSHM
+  };
+
+  enum class MPILoadBalancingType {
+    Static
   };
 
   void readFile(const std::string& filename);
@@ -65,14 +95,12 @@ class exahype::Parser {
   bool isValid() const;
 
   /**
-   * @return How many threads is the code supposed to use?
+   * \return How many threads is the code supposed to use?
    */
   int getNumberOfThreads() const;
 
-  /**
-   * Our domain always is cubic.
-   */
-  double getSize() const;
+  tarch::la::Vector<DIMENSIONS, double> getDomainSize() const;
+  tarch::la::Vector<DIMENSIONS, double> getBoundingBoxSize() const;
 
   tarch::la::Vector<DIMENSIONS, double> getOffset() const;
 
@@ -80,13 +108,67 @@ class exahype::Parser {
 
   MulticoreOracleType getMulticoreOracleType() const;
 
+  MPILoadBalancingType getMPILoadBalancingType() const;
+  std::string          getMPIConfiguration() const;
+  int                  getMPIBufferSize() const;
+  int                  getMPITimeOut() const;
+
   double getSimulationEndTime() const;
 
-  bool fuseAlgorithmicSteps() const;
+  /**
+   * \return Indicates if the user has chosen the fused ADER-DG time stepping variant.
+   */
+  bool getFuseAlgorithmicSteps() const;
+
+  /**
+   * \return Time step size underestimation factor for the fused ADER-DG time stepping variant.
+   */
+  double getFuseAlgorithmicStepsFactor() const;
+
+  /**
+   * \return The type of a solver.
+   */
+  exahype::solvers::Solver::Type getType(int solverNumber) const;
+
+  /**
+   * \return The identifier of a solver.
+   */
+  std::string getIdentifier(int solverNumber) const;
+
+  /**
+   * \return The number of state variables of a solver.
+   */
+  int getVariables(int solverNumber) const;
+
+  /**
+   * \return The number of parameters of a solver, e.g. material values etc.
+   */
+  int getParameters(int solverNumber) const;
+
+  /**
+   * \return The order of the ansatz polynomials of a solver.
+   */
+  int getOrder(int solverNumber) const;
+
+  /**
+   * \return The maximum extent in each coordinate direction a cell is allowed to have.
+   */
+  double getMaximumMeshSize(int solverNumber) const;
+
+  /**
+   * Prints a summary of the parameters read in for a solver.
+   */
+  void logSolverDetails(int solverNumber) const;
+
+  /**
+   * \return The time stepping mode of a solver.
+   */
+  exahype::solvers::Solver::TimeStepping getTimeStepping(int solverNumber) const;
 
   double getFirstSnapshotTimeForPlotter(int solverNumber,
                                         int plotterNumber) const;
   double getRepeatTimeForPlotter(int solverNumber, int plotterNumber) const;
+  std::string getSelectorForPlotter(int solverNumber, int plotterNumber) const;
   std::string getIdentifierForPlotter(int solverNumber,
                                       int plotterNumber) const;
   std::string getFilenameForPlotter(int solverNumber, int plotterNumber) const;

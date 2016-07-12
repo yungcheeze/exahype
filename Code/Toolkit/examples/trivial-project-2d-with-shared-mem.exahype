@@ -18,7 +18,7 @@ exahype-project  TrivialProject
   
   computational-domain
     dimension                = 2
-    width                    = 1.0
+    width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
     end-time                 = 0.1
   end computational-domain
@@ -32,7 +32,8 @@ exahype-project  TrivialProject
 
 
   optimisation
-    fuse-algorithmic-steps   = on
+    fuse-algorithmic-steps        = on
+    fuse-algorithmic-steps-factor = 0.99
   end optimisation  
   
 

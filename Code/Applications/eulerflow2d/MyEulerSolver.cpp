@@ -1,18 +1,8 @@
 #include "MyEulerSolver.h"
 
-Euler2d::MyEulerSolver::MyEulerSolver(int kernelNumber, std::unique_ptr<exahype::profilers::Profiler> profiler)
-    : exahype::solvers::Solver(
-          "MyEulerSolver", exahype::solvers::Solver::ADER_DG, kernelNumber, 5,
-          4 + 1,exahype::solvers::Solver::GlobalTimeStepping, std::move(profiler)) {
-  // @todo Please implement/augment if required
-}
-
-int Euler2d::MyEulerSolver::getMinimumTreeDepth() const {
-  #if defined(Asserts)
-  return 2;
-  #else
-  return 4;
-  #endif
+Euler2d::MyEulerSolver::MyEulerSolver(const std::string& identifier, exahype::solvers::Solver::Type type, int kernelNumber, int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
+  : exahype::solvers::Solver(
+            identifier, type, kernelNumber, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
 }
 
 bool Euler2d::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
@@ -85,41 +75,40 @@ void Euler2d::MyEulerSolver::adjustedSolutionValues(const double *const x,
 }
 
 exahype::solvers::Solver::RefinementControl Euler2d::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
-  assertion(level>=getMinimumTreeDepth()+1);
+  if (dx[0] > 1./81.) {
+    if (center[0] > 0 && center[0] < 0.3333) {
+      if (center[1] > 0 && center[1] < 0.3333) {
+        //        if (center[0] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
+        //            center[0] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
+        //          if (center[1] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
+        //              center[1] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
+        return exahype::solvers::Solver::RefinementControl::Refine;
+      }
+    }
+  }
+  
+  if (dx[0] > 1./81.) {
+    if (center[0] > 0.33333 && center[0] < 0.66667) {
+      if (center[1] > 0.33333 && center[1] < 0.66667) {
+        //        if (center[0] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
+        //            center[0] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
+        //          if (center[1] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
+        //              center[1] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
+        return exahype::solvers::Solver::RefinementControl::Refine;
+      }
+    }
+  }
 
-//  if (level < getMinimumTreeDepth() + 2) {
-//    if (center[0] > 0 && center[0] < 0.3333) {
-//      if (center[1] > 0 && center[1] < 0.3333) {
-//        //        if (center[0] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
-//        //            center[0] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
-//        //          if (center[1] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
-//        //              center[1] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
-//        return exahype::solvers::Solver::Refine;
-//      }
-//    }
-//  }
-//  if (level < getMinimumTreeDepth() + 3) {
-//    if (center[0] > 0.33333 && center[0] < 0.66667) {
-//      if (center[1] > 0.33333 && center[1] < 0.66667) {
-//        //        if (center[0] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
-//        //            center[0] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
-//        //          if (center[1] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
-//        //              center[1] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
-//        return exahype::solvers::Solver::Refine;
-//      }
-//    }
-//  }
-//
-//  if (level < getMinimumTreeDepth() + 4) {
-//    if (center[0] > 0.66667 && center[0] < 1) {
-//      if (center[1] > 0.33333 && center[1] < 1) {
-//        //        if (center[0] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
-//        //            center[0] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
-//        //          if (center[1] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
-//        //              center[1] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
-//        return exahype::solvers::Solver::Refine;
-//      }
-//    }
-//  }
-  return exahype::solvers::Solver::Keep;
+  if (dx[0] > 1./243.) {
+    if (center[0] > 0.66667 && center[0] < 1) {
+      if (center[1] > 0.33333 && center[1] < 1) {
+        //        if (center[0] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
+        //            center[0] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
+        //          if (center[1] < 0.5 + std::pow(0.333333, deltaLevel) * .5 &&
+        //              center[1] > 0.5 - std::pow(0.333333, deltaLevel) * .5) {
+        return exahype::solvers::Solver::RefinementControl::Refine;
+      }
+    }
+  }
+  return exahype::solvers::Solver::RefinementControl::Keep;
 }

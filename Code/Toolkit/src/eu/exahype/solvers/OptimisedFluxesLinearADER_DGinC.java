@@ -9,15 +9,17 @@ public class OptimisedFluxesLinearADER_DGinC implements Solver {
   private int _order;
   private String _microarchitecture;
   private String _pathToLibxsmm;
+  private boolean _enableProfiler;
 
   public OptimisedFluxesLinearADER_DGinC(int dimensions, int numberOfUnknowns, int numberOfParameters, int order,
-      String microarchitecture, String pathToLibxsmm) {
+      String microarchitecture, String pathToLibxsmm, boolean enableProfiler) {
     _dimensions = dimensions;
     _numberOfUnknowns = numberOfUnknowns;
     _numberOfParameters = numberOfParameters;
     _order = order;
     _microarchitecture = microarchitecture;
     _pathToLibxsmm = pathToLibxsmm;
+    _enableProfiler = enableProfiler;
   }
 
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
@@ -54,41 +56,84 @@ public class OptimisedFluxesLinearADER_DGinC implements Solver {
     writer.write("void " + projectName + "::" + solverName
         + "::spaceTimePredictor( double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) {\n");
     // Cauchy-Kowalewski
+    if (_enableProfiler) {
+      writer.write("    _profiler->start(\"spaceTimePredictor\");\n");
+    }
     writer.write("   kernels::aderdg::optimised::predictor( lQhi, lFhi, lQi, lFi );\n");
     writer.write("   kernels::aderdg::optimised::extrapolator( lQhbnd, lFhbnd, lQhi, lFhi );\n");
+    if (_enableProfiler) {
+      writer.write("   _profiler->stop(\"spaceTimePredictor\");\n");
+    }
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
         + "::solutionUpdate(double* luh, const double* const lduh, const double dt) {\n");
+    if (_enableProfiler) {
+      writer.write("   _profiler->start(\"solutionUpdate\");\n");
+    }
     writer.write("   kernels::aderdg::optimised::solutionUpdate( luh, lduh, dt );\n");
+    if (_enableProfiler) {
+      writer.write("   _profiler->stop(\"solutionUpdate\");\n");
+    }
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
         + "::volumeIntegral(double* lduh, const double* const lFhi, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
+    if (_enableProfiler) {
+      writer.write("   _profiler->start(\"volumeIntegral\");\n");
+    }
     writer.write("   kernels::aderdg::optimised::volumeIntegral( lduh, lFhi, dx );\n");
+    if (_enableProfiler) {
+      writer.write("   _profiler->stop(\"volumeIntegral\");\n");
+    }
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
         + "::surfaceIntegral(double* lduh, const double* const lFhbnd, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
+    if (_enableProfiler) {
+      writer.write("   _profiler->start(\"surfaceIntegral\");\n");
+    }
     writer.write("   kernels::aderdg::optimised::surfaceIntegral( lduh, lFhbnd, dx );\n");
+    if (_enableProfiler) {
+      writer.write("   _profiler->stop(\"surfaceIntegral\");\n");
+    }
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
         + "::riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex) {\n");
+    if (_enableProfiler) {
+      writer.write("   _profiler->start(\"riemannSolver\");\n");
+    }
     writer.write(
         "   kernels::aderdg::optimised::riemannSolver<eigenvalues>( FL, FR, QL, QR, dt, normalNonZeroIndex );\n");
+    if (_enableProfiler) {
+      writer.write("   _profiler->stop(\"riemannSolver\");\n");
+    }
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("double " + projectName + "::" + solverName
         + "::stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
+    if (_enableProfiler) {
+      writer.write("   _profiler->start(\"stableTimeStepSize\");\n");
+    }
     writer.write(
-        "   return kernels::aderdg::optimised::stableTimeStepSize<eigenvalues>( luh, dx );\n");
+        "   double d = kernels::aderdg::optimised::stableTimeStepSize<eigenvalues>( luh, dx );\n");
+    if (_enableProfiler) {
+      writer.write("   _profiler->stop(\"stableTimeStepSize\");\n");
+    }
+    writer.write("   return d;\n");
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("void " + projectName + "::" + solverName
         + "::solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {\n");
+    if (_enableProfiler) {
+      writer.write("   _profiler->start(\"solutionAdjustment\");\n");
+    }
     writer.write(
         "   kernels::aderdg::optimised::solutionAdjustment<adjustedSolutionValues>( luh, center, dx, t, dt );\n");
+    if (_enableProfiler) {
+      writer.write("   _profiler->stop(\"solutionAdjustment\");\n");
+    }
     writer.write("}\n");
     writer.write("\n\n\n");
   }

@@ -18,7 +18,7 @@ exahype-project  Euler3d
 
   computational-domain
     dimension                = 3
-    width                    = 1.0
+    width                    = 1.0, 1.0, 1.0
     offset                   = 0.0, 0.0, 0.0
     end-time                 = 0.4
   end computational-domain
@@ -30,19 +30,24 @@ exahype-project  Euler3d
   end shared-memory
 
   optimisation
-    fuse-algorithmic-steps   = on
+    fuse-algorithmic-steps        = on
+    fuse-algorithmic-steps-factor = 0.99
   end optimisation
 
   solver ADER-DG MyEulerSolver
-    variables = 5
-    order     = 3
-    kernel    = optimised::fluxes::nonlinear
-    language  = C
+    variables          = 5
+    parameters         = 0
+    order              = 3
+    maximum-mesh-size  = 0.05
+    time-stepping      = global
+    kernel             = optimised::fluxes::nonlinear
+    language           = C
 
     plot vtk::ascii
       time     = 0.0
       repeat   = 0.05
-      filename = ./solution
+      output   = ./solution
+      select   = {Q4}
     end plot
   end solver
 

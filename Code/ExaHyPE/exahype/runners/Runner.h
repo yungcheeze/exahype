@@ -80,8 +80,8 @@ class exahype::runners::Runner {
   void runGlobalStep();
 #endif
 
-  void initSolvers();
-  void startNewTimeStep(int n);
+  void initSolverTimeStamps();
+  void startNewTimeStep(int n,bool printInfo);
 
   /**
    * Do one time step where all phases are actually fused into one traversal
@@ -91,10 +91,10 @@ class exahype::runners::Runner {
   void runOneTimeStampWithFusedAlgorithmicSteps(
       exahype::repositories::Repository& repository, bool plot);
 
-  bool setAccurateTimeStepSizesIfStabilityConditionWasHarmed();
+  bool setStableTimeStepSizesIfStabilityConditionWasHarmed(double factor);
 
   void recomputePredictorIfNecessary(
-      exahype::repositories::Repository& repository);
+      exahype::repositories::Repository& repository,double factor);
 
   /**
    * Do one time step but actually use a couple of iterations to do so.
@@ -105,6 +105,11 @@ class exahype::runners::Runner {
   void runOneTimeStampWithFourSeparateAlgorithmicSteps(
       exahype::repositories::Repository& repository, bool plot);
 
+  /**
+   * Sets up the geometry, hands it over to a new instance of the repository
+   * and returns the repository.
+   */
+  exahype::repositories::Repository* createRepository() const;
  public:
   explicit Runner(const Parser& parser);
   virtual ~Runner();

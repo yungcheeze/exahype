@@ -26,6 +26,16 @@ class exahype::records::ADERDGCellDescription {
    */
   parallelise persistent bool riemannSolvePerformed[DIMENSIONS_TIMES_TWO];
   ///@}
+  
+  #ifdef Parallel
+  /**
+   * Face data exchange in ExaHyPE is realised in vertices: each vertex checks
+   * whether one of its adjacent faces should go to another rank. As a result, 
+   * a face might be exchanged up to 2^{d-1} times. We use this flag to avoid 
+   * this. See prepareSendToNeighbour() in SpaceTimePredictor.
+   */
+  parallelise persistent bool faceDataSentToNeighbouringRank[DIMENSIONS_TIMES_TWO];
+  #endif
 
   /**
    * @defgroup TimeInfo Time Stamps and Step Sizes
@@ -220,17 +230,14 @@ class exahype::records::ADERDGCellDescription {
 
   enum RefinementEvent {
     None,
-    ErasingRequested,       // post
-    Restricting,            // pre
-    Erasing,                // pre
-    AllocatingMemory,       // pre
-    ErasingChildren,        // pre
-    RefiningRequested,      // pre
-    Refining,               // pre
-    Prolongating,           // pre
-    DeaugmentingRequested,  // post
-    AugmentingRequested,    // pre
-    Augmenting              // pre
+    ErasingRequested,            // post
+    Erasing,                     // pre
+    ChangeToDescendantRequested, // post
+    RefiningRequested,           // pre
+    Refining,                    // pre
+    DeaugmentingRequested,       // post
+    AugmentingRequested,         // pre
+    Augmenting                   // pre
   };
 
   /**

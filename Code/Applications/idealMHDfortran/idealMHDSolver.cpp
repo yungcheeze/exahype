@@ -2,26 +2,16 @@
 
 #include <memory>
 
-srhd3dfortran::idealMHDSolver::idealMHDSolver( int kernelNumber, std::unique_ptr<exahype::profilers::Profiler> profiler):
-  exahype::solvers::Solver("idealMHDSolver",exahype::solvers::Solver::ADER_DG,kernelNumber,9,3+1,exahype::solvers::Solver::GlobalTimeStepping, std::move(profiler)) {
+srhd3dfortran::idealMHDSolver::idealMHDSolver(const std::string& identifier, exahype::solvers::Solver::Type type, int kernelNumber, int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
+  : exahype::solvers::Solver(
+            identifier, type, kernelNumber, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
   // @todo Please implement/augment if required
 }
-
-
-
-int srhd3dfortran::idealMHDSolver::getMinimumTreeDepth() const {
-  // @todo Please implement
-  return 3;
-}
-
-
 
 bool srhd3dfortran::idealMHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
   // @todo Please implement
   return false;
 }
-
-
 
 void srhd3dfortran::idealMHDSolver::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
 	// Dimensions             = 3
@@ -52,7 +42,7 @@ void srhd3dfortran::idealMHDSolver::adjustedSolutionValues(const double* const x
 
 exahype::solvers::Solver::RefinementControl srhd3dfortran::idealMHDSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
   // @todo Please implement
-  return exahype::solvers::Solver::Keep;
+  return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
 

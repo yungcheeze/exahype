@@ -49,7 +49,7 @@ peano::MappingSpecification
 exahype::mappings::MarkingForRefinement::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+      peano::MappingSpecification::Serial);
 }
 peano::MappingSpecification
 exahype::mappings::MarkingForRefinement::leaveCellSpecification() {
@@ -336,15 +336,18 @@ void exahype::mappings::MarkingForRefinement::enterCell(
                   pFine.getLevel());
 
               switch (refinementControl) {
-                case exahype::solvers::Solver::Refine:
-                  pFine.setRefinementEvent(
-                      exahype::records::ADERDGCellDescription::
-                          RefiningRequested);
+                case exahype::solvers::Solver::RefinementControl::Refine:
+                  pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::RefiningRequested);
+                  dfor2(v)
+                    if ((fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
+                        exahype::Vertex::Records::RefinementControl::Unrefined)
+                        && !fineGridVertices[ fineGridVerticesEnumerator(v) ].isRefinedOrRefining()) {
+                      fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
+                    }
+                  enddforx
                   break;
-                case exahype::solvers::Solver::Erase:
-                  pFine.setRefinementEvent(
-                      exahype::records::ADERDGCellDescription::
-                          ErasingRequested);
+                case exahype::solvers::Solver::RefinementControl::Erase:
+                  pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::ErasingRequested);
                   break;
                 default:
                   break;
@@ -383,92 +386,16 @@ void exahype::mappings::MarkingForRefinement::endIteration(
   // do nothing
 }
 
-void exahype::mappings::MarkingForRefinement::descend(
+void exahype::mappings::MarkingForRefinement::ascend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell) {
-  logTraceInWith2Arguments("descend(...)", coarseGridCell.toString(),
-                           coarseGridVerticesEnumerator.toString());
-
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          coarseGridCell.getADERDGCellDescriptionsIndex())) {
-    for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(
-             coarseGridCell.getADERDGCellDescriptionsIndex())) {
-      bool eraseChildren = true;
-
-      switch (pCoarse.getType()) {
-        case exahype::records::ADERDGCellDescription::EmptyAncestor:
-        case exahype::records::ADERDGCellDescription::Ancestor:
-          switch (pCoarse.getRefinementEvent()) {
-            case exahype::records::ADERDGCellDescription::None:
-            // Overwrite augmentation events if necessary.
-            case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
-            case exahype::records::ADERDGCellDescription::AugmentingRequested:
-              eraseChildren = true;
-
-              // clang-format off
-              dfor3(k)  //
-              assertion(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-                  fineGridCells[kScalar].getADERDGCellDescriptionsIndex()));
-              for (auto& pFine : ADERDGCellDescriptionHeap::getInstance()
-                  .getData(fineGridCells[kScalar]
-                  .getADERDGCellDescriptionsIndex())) {
-                if (pCoarse.getSolverNumber() == pFine.getSolverNumber()) {
-                  eraseChildren = eraseChildren &&
-                      pFine.getRefinementEvent() ==
-                          exahype::records::ADERDGCellDescription::
-                          ErasingRequested;
-                }
-              }
-              enddforx
-
-              if (eraseChildren) {
-                assertion1(pCoarse.getType() ==
-                    exahype::records::ADERDGCellDescription::EmptyAncestor ||
-                    pCoarse.getType() ==
-                        exahype::records::ADERDGCellDescription::Ancestor,
-                    pCoarse.getType());
-
-                pCoarse.setType(exahype::records::ADERDGCellDescription::Cell);
-                pCoarse.setRefinementEvent(
-                    exahype::records::ADERDGCellDescription::AllocatingMemory);
-
-                // clang-format off
-                dfor3(k)  //
-                for (auto& pFine : ADERDGCellDescriptionHeap::getInstance()
-                    .getData(fineGridCells[kScalar]
-                    .getADERDGCellDescriptionsIndex())) {
-                  if (pCoarse.getSolverNumber() ==
-                      pFine.getSolverNumber()) {
-                    assertion1(
-                        pFine.getRefinementEvent() ==
-                            exahype::records::ADERDGCellDescription::
-                            ErasingRequested,
-                            toString(fineGridVerticesEnumerator
-                                     .getCellFlags()));
-                    pFine.setRefinementEvent(
-                        exahype::records::ADERDGCellDescription::Restricting);
-                  }
-                }
-              }
-              enddforx
-              break;  // clang-format on
-            default:
-              break;
-          }
-          break;
-        default:
-          break;
-      }
-    }
-  }
-
-  logTraceOut("descend(...)");
+  // do nothing
 }
 
-void exahype::mappings::MarkingForRefinement::ascend(
+void exahype::mappings::MarkingForRefinement::descend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,

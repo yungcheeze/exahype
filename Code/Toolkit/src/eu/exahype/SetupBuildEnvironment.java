@@ -4,8 +4,7 @@ import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.AProject;
 import eu.exahype.node.ASharedMemory;
-import eu.exahype.node.ATwoDimensionalComputationalDomain;
-import eu.exahype.node.AThreeDimensionalComputationalDomain;
+import eu.exahype.node.AComputationalDomain;
 import eu.exahype.node.ADistributedMemory;
 import eu.exahype.node.AOptimisation;
 import eu.exahype.node.AProfiling;
@@ -29,37 +28,28 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
   }
 
   @Override
-  public void inATwoDimensionalComputationalDomain(ATwoDimensionalComputationalDomain node) {
-    if (!node.getDimension().toString().trim().equals("2")) {
-      System.err.println("ERROR: please set dimension to 2 instead of " + node.getDimension()
-          + " if you specify a three-dimensional offset");
-      valid = false;
-    } else {
+  public void inAComputationalDomain(AComputationalDomain node) {
+    int dimensions = Integer.parseInt( node.getDimension().toString().trim() );
+    if (dimensions==2) {
       System.out.print("2d experiment ... ok\n");
+      try {
+        _writer.write("PROJECT_CFLAGS+=-DDim2\n");
+      } catch (Exception exc) {
+        System.err.println("ERROR: " + exc.toString());
+        valid = false;
+      }
     }
-
-    try {
-      _writer.write("PROJECT_CFLAGS+=-DDim2\n");
-    } catch (Exception exc) {
-      System.err.println("ERROR: " + exc.toString());
-      valid = false;
-    }
-  }
-
-  @Override
-  public void inAThreeDimensionalComputationalDomain(AThreeDimensionalComputationalDomain node) {
-    if (!node.getDimension().toString().trim().equals("3")) {
-      System.err.println("ERROR: please set dimension to 3 instead of " + node.getDimension()
-          + " if you specify a three-dimensional offset");
-      valid = false;
-    } else {
+    else if (dimensions==3) {
       System.out.print("3d experiment ... ok\n");
+      try {
+        _writer.write("PROJECT_CFLAGS+=-DDim3\n");
+      } catch (Exception exc) {
+        System.err.println("ERROR: " + exc.toString());
+        valid = false;
+      }
     }
-
-    try {
-      _writer.write("PROJECT_CFLAGS+=-DDim3\n");
-    } catch (Exception exc) {
-      System.err.println("ERROR: " + exc.toString());
+    else {
+      System.err.println( "ERROR: dimension has to be either 2 or 3.");
       valid = false;
     }
   }

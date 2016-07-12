@@ -8,19 +8,11 @@
 #include "SRHDApplication.h"
 
 
-srhd2d::SRHDSolver::SRHDSolver( int kernelNumber, std::unique_ptr<exahype::profilers::Profiler> profiler):
-  exahype::solvers::Solver("SRHDSolver",exahype::solvers::Solver::ADER_DG,kernelNumber,5,3+1,exahype::solvers::Solver::GlobalTimeStepping,std::move(profiler)) {
+srhd2d::SRHDSolver::SRHDSolver(const std::string& identifier, exahype::solvers::Solver::Type type, int kernelNumber, int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
+  : exahype::solvers::Solver(
+            identifier, type, kernelNumber, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
   // @todo Please implement/augment if required
 }
-
-
-
-int srhd2d::SRHDSolver::getMinimumTreeDepth() const {
-	// This number basically controls dx.
-	return 4;
-}
-
-
 
 void srhd2d::SRHDSolver::flux(const double* const Q, double** F) {
         double* f = F[0];
@@ -87,6 +79,10 @@ void srhd2d::SRHDSolver::eigenvalues(const double* const Q, const int nnzi, doub
 	lambda[2] = 0.0;
 	lambda[3] = 0.0;
 	lambda[4] = ( u*(1.0-cs2)+sqrt( cs2*(1.0-v2)*( (1.0-v2*cs2) - u*u*(1.0-cs2) )) )*den;
+
+
+//	std::cout << "lambda[0]: " << lambda[0] << std::endl; 
+//	std::cout << "lambda[4]: " << lambda[4] << std::endl; 
 }
 
 
@@ -126,7 +122,7 @@ void srhd2d::SRHDSolver::adjustedSolutionValues(const double* const x,const doub
 
 exahype::solvers::Solver::RefinementControl srhd2d::SRHDSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
 	// @todo Please implement
-	return exahype::solvers::Solver::Keep;
+  return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
 

@@ -11,28 +11,30 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#ifndef _EXAHYPE_PLOTTERS_ADERDG_2_ASCII_VTK_H_
-#define _EXAHYPE_PLOTTERS_ADERDG_2_ASCII_VTK_H_
+#ifndef _EXAHYPE_PLOTTERS_ADERDG_2_VTK_BINARY_H_
+#define _EXAHYPE_PLOTTERS_ADERDG_2_VTK_BINARY_H_
 
 #include "exahype/plotters/Plotter.h"
 
 #include "tarch/plotter/griddata/blockstructured/PatchWriterUnstructured.h"
-#include "tarch/plotter/griddata/unstructured/vtk/VTKTextFileWriter.h"
+#include "tarch/plotter/griddata/unstructured/vtk/VTKBinaryFileWriter.h"
 
 namespace exahype {
-namespace plotters {
-class ADERDG2AsciiVTK;
-}
+  namespace plotters {
+    class ADERDG2VTKBinary;
+  }
 }
 
-class exahype::plotters::ADERDG2AsciiVTK
-    : public exahype::plotters::Plotter::Device {
+class exahype::plotters::ADERDG2VTKBinary: public exahype::plotters::Plotter::Device {
  private:
-  static int FileCounter;
+  int           _fileCounter;
+  std::string   _filename;
+  int           _order;
+  int           _unknowns;
+  std::string   _select;
 
-  const std::string _filename;
-  const int _order;
-  const int _unknowns;
+  tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestLeftBottomFront;
+  tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestRightTopBack;
 
   tarch::plotter::griddata::blockstructured::PatchWriterUnstructured*
       _patchWriter;
@@ -44,13 +46,20 @@ class exahype::plotters::ADERDG2AsciiVTK
       _vertexDataWriter;
 
  public:
-  ADERDG2AsciiVTK(const std::string& filename, int order, int unknowns);
-  virtual ~ADERDG2AsciiVTK();
+  ADERDG2VTKBinary();
+  virtual ~ADERDG2VTKBinary();
+
+  virtual void init(const std::string& filename, int order, int unknowns, const std::string& select);
+
+  static std::string getIdentifier();
 
   virtual void plotPatch(
       const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
       const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
       double timeStamp);
+
+  virtual void startPlotting( double time );
+  virtual void finishPlotting();
 };
 
 #endif

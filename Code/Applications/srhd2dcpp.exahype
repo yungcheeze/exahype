@@ -19,7 +19,7 @@ exahype-project  srhd2d
 
   computational-domain
     dimension                = 2
-    width                    = 1.0
+    width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
     end-time                 = 0.2
   end computational-domain
@@ -35,20 +35,24 @@ exahype-project  srhd2d
   end distributed-memory
 
   optimisation
-    fuse-algorithmic-steps   = on
+    fuse-algorithmic-steps        = on
+    fuse-algorithmic-steps-factor = 0.99
   end optimisation
 
   solver ADER-DG SRHDSolver
-    unknowns  = 5
-    parameters= 0
-    order     = 1
-    kernel    = generic::fluxes::nonlinear
-    language  = C
+    variables          = 5
+    parameters         = 0
+    order              = 1
+    maximum-mesh-size  = 0.05
+    time-stepping      = global
+    kernel             = generic::fluxes::nonlinear
+    language           = C
 
     plot vtk::binary
       time     = 0.0
       repeat   = 0.004
-      filename = ./solution
+      output   = ./solution
+      select   = {Q4}
     end plot
   end solver
 

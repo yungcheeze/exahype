@@ -26,25 +26,29 @@ constexpr const char* tags[]{
 // TODO: std::vector<std::unique_ptr<Solver>> ?!
 std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
 
-exahype::solvers::Solver::Solver(const std::string& identifier, Type type,
-                                 int kernelNumber, int numberOfVariables,
+exahype::solvers::Solver::Solver(const std::string& identifier,
+                                 exahype::solvers::Solver::Type type,
+                                 int kernelNumber,
+                                 int numberOfVariables,
+                                 int numberOfParameters,
                                  int nodesPerCoordinateAxis,
-                                 TimeStepping timeStepping,
+                                 double maximumMeshSize,
+                                 exahype::solvers::Solver::TimeStepping timeStepping,
                                  std::unique_ptr<profilers::Profiler> profiler)
     : _identifier(identifier),
       _type(type),
       _kernelNumber(kernelNumber),
       _numberOfVariables(numberOfVariables),
+      _numberOfParameters(numberOfParameters),
       _nodesPerCoordinateAxis(nodesPerCoordinateAxis),
-      _unknownsPerFace(numberOfVariables *
-                       power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
+      _maximumMeshSize(maximumMeshSize),
+      _unknownsPerFace(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
       _unknownsPerCellBoundary(DIMENSIONS_TIMES_TWO * _unknownsPerFace),
-      _unknownsPerCell(numberOfVariables *
-                       power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
+      _unknownsPerCell(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
       _fluxUnknownsPerCell(_unknownsPerCell * DIMENSIONS),
-      _spaceTimeUnknownsPerCell(numberOfVariables *
-                                power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
+      _spaceTimeUnknownsPerCell(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
       _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell * DIMENSIONS),
+      _dataPerCell((numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
       _timeStepping(timeStepping),
       _profiler(std::move(profiler)),
       _minCorrectorTimeStamp(std::numeric_limits<double>::max()),
@@ -70,9 +74,18 @@ int exahype::solvers::Solver::getNumberOfVariables() const {
   return _numberOfVariables;
 }
 
+int exahype::solvers::Solver::getNumberOfParameters() const {
+  return _numberOfParameters;
+}
+
 int exahype::solvers::Solver::getNodesPerCoordinateAxis() const {
   return _nodesPerCoordinateAxis;
 }
+
+double exahype::solvers::Solver::getMaximumMeshSize() const {
+  return _maximumMeshSize;
+}
+
 
 int exahype::solvers::Solver::getUnknownsPerFace() const {
   return _unknownsPerFace;
@@ -98,6 +111,10 @@ int exahype::solvers::Solver::getSpaceTimeFluxUnknownsPerCell() const {
   return _spaceTimeFluxUnknownsPerCell;
 }
 
+int exahype::solvers::Solver::getDataPerCell() const {
+  return _dataPerCell;
+}
+
 void exahype::solvers::Solver::synchroniseTimeStepping(
     exahype::records::ADERDGCellDescription& p) const {
   // todo 16/02/27:Dominic Etienne Charrier
@@ -112,7 +129,7 @@ void exahype::solvers::Solver::synchroniseTimeStepping(
 
   //  if (p.getNextPredictorTimeStepSize() < )
 
-  if (_timeStepping == GlobalTimeStepping) {
+  if (_timeStepping == TimeStepping::Global) {
     p.setCorrectorTimeStamp(_minCorrectorTimeStamp);
     p.setCorrectorTimeStepSize(_minCorrectorTimeStepSize);
     p.setPredictorTimeStamp(_minPredictorTimeStamp);

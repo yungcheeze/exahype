@@ -160,9 +160,9 @@ class SpaceTimePredictorGenerator:
         # => we skip gcc here
         # do not query __GNUC__ - icc also defines this
         l_sourceFile.write('#ifdef __INTEL_COMPILER\n'\
-                           '  __assume_aligned(kernels::s_m, ALIGNMENT)\n'\
-                           '  __assume_aligned(kernels::F0, ALIGNMENT)\n'\
-                           '  __assume_aligned(kernels::Kxi, ALIGNMENT)\n'
+                           '  __assume_aligned(kernels::s_m, ALIGNMENT);\n'\
+                           '  __assume_aligned(kernels::F0, ALIGNMENT);\n'\
+                           '  __assume_aligned(kernels::Kxi, ALIGNMENT);\n'
                            '#endif\n')
 
         # initialisation of lqh and rhs0:
@@ -245,6 +245,8 @@ class SpaceTimePredictorGenerator:
 
 
         # (2) rhs0(iVar,i,j,k,l) = weights3(i,j,k) * F0 * luh(iVar,i,j,k)
+        rhs0_length = self.m_config['nVar']*(self.m_config['nDof']**(self.m_config['nDim']+1))
+        l_sourceFile.write('  double* rhs0 = (double*) _mm_malloc('+str(rhs0_length)+'*sizeof(double),ALIGNMENT);\n')
         if(self.m_config['nDim']==2):
             l_sourceFile.write('  for(int j=0;j<'+str(self.m_config['nDof'])+';j++) {\n'\
                                '    for(int i=0;i<'+str(self.m_config['nDof'])+';i++) {\n'\
@@ -305,10 +307,18 @@ class SpaceTimePredictorGenerator:
         # discrete Picard iterations
         #l_sourceFile.write("  for(int iter=0;iter<"+str(self.m_config['nDof'])+";iter++) {\n")
 
-        # compute the fluxes
-        # Loops are being unrolled - temporary solution. Later on the flux function should be vectorised
         # distance in terms of memory addresses between flux in x,y,z direction
         fluxOffset = Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**(self.m_config['nDim']+1)
+
+        # addresses lFh = [lFh_x | lFh_y | lFh_z]
+        l_startAddr_lFh_x = 0*fluxOffset
+        l_startAddr_lFh_y = 1*fluxOffset
+        l_startAddr_lFh_z = 2*fluxOffset
+
+        # in contrast to the Fortran code, the loop over the time dofs has been split up
+
+        # compute the fluxes
+        # Loops are being unrolled - temporary solution. Later on the flux function should be vectorised
         if(self.m_config['nDim'] == 3):
             for l in range(0,self.m_config['nDof']):
                 for k in range(0,self.m_config['nDof']):
@@ -387,15 +397,18 @@ class SpaceTimePredictorGenerator:
         l_matmulList.append(l_matmul)
 
         # write the function calls to the driver file
-        for i in range(0, self.m_config['nDof']**self.m_config['nDim']):
-            l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::weights3["+str(i)+"]",
-                                                   "kernels::Kxi",
-                                                   "s_m", self.m_config['nDof']*Backend.getSizeWithPadding(self.m_config['nDof'])))
-            l_sourceFile.write("  "+l_matmul.baseroutinename
-                                   +"(&lFh["+str(i*Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof'])+"]," \
-                                    " &kernels::s_m[0],"  \
-                                    " &rhs["+str(i*self.m_config['nVar']*self.m_config['nDof'])+"]);\n\n")
-
+        l_sourceFile.write("  for(int i=0;i<"+str(self.m_config['nDof']**self.m_config['nDim'])+";i++) {\n")
+        l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::weights3[i]",
+                                               "kernels::Kxi",
+                                               "s_m", self.m_config['nDof']*Backend.getSizeWithPadding(self.m_config['nDof'])))
+        l_matrixSize = self.m_config['nVar']*self.m_config['nDof']
+        l_paddedMatrixSize = Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']
+        l_sourceFile.write("  "+l_matmul.baseroutinename
+                               +"(&lFh["+str(l_startAddr_lFh_x)+"+i*"+str(l_paddedMatrixSize)+"]," \
+                                " &kernels::s_m[0],"  \
+                                " &rhs[i*"+str(l_matrixSize)+"]);\n\n")
+        # close for loop
+        l_sourceFile.write("  }\n")
 
 
         # (2) rhs(:,i,:,k,l) = rhs(:,i,:,k,l) + PRODUCT(aux(1:nDim))*dt/dx(2)*MATMUL( lFh(:,i,:,k,l,2), Kxi )
@@ -429,14 +442,21 @@ class SpaceTimePredictorGenerator:
         l_matmulList.append(l_matmul)
 
         # write the function calls to the driver file
-        for i in range(0, self.m_config['nDof']**self.m_config['nDim']):
-            l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::weights3["+str(i)+"]",
+        # merge k and l into one loop
+        l_sourceFile.write("  for(int i=0;i<"+str(self.m_config['nDof']**(self.m_config['nDim']-1))+";i++) {\n")
+        l_matrixSize = self.m_config['nVar']*self.m_config['nDof']**2
+        l_paddedMatrixSize = Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**2
+        # unroll inner loop (i -> nDOFx)
+        for i in range(0, self.m_config['nDof']):
+            l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::weights2[i]*kernels::weights1["+str(i)+"]",
                                                    "kernels::Kxi",
                                                    "s_m", self.m_config['nDof']*Backend.getSizeWithPadding(self.m_config['nDof'])))
-            l_sourceFile.write("  "+l_matmul.baseroutinename
-                                   +"(&lFh["+str(i*Backend.getSizeWithPadding(self.m_config['nVar']))+"]," \
-                                    " &kernels::s_m[0],"  \
-                                    " &rhs["+str(i*self.m_config['nVar'])+"]);\n\n")
+            l_sourceFile.write("    "+l_matmul.baseroutinename
+                                     +"(&lFh["+str(l_startAddr_lFh_y)+"+"+str(i*Backend.getSizeWithPadding(self.m_config['nVar']))+"+i*"+str(l_paddedMatrixSize)+"],"\
+                                      " &kernels::s_m[0],"\
+                                      " &rhs["+str(i*self.m_config['nVar'])+"+i*"+str(l_matrixSize)+"]);\n")
+        # close for loop
+        l_sourceFile.write("  }\n")
 
 
         # (3) rhs(:,i,j,:,l) = rhs(:,i,j,:,l) + PRODUCT(aux(1:nDim))*dt/dx(3)*MATMUL( lFh(:,i,j,:,l,3), Kxi )
@@ -467,19 +487,26 @@ class SpaceTimePredictorGenerator:
                                     "nopf",                                            \
                                     # type
                                     "gemm")
-        if(self.m_config['nDim'] >= 3):
+
+        if(self.m_config['nDim']>=3):
             l_matmulList.append(l_matmul)
 
             # write the function calls to the driver file
-            for i in range(0, self.m_config['nDof']**self.m_config['nDim']):
-                l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::weights3["+str(i)+"]",
+            l_matrixSize = self.m_config['nVar']*self.m_config['nDof']**3
+            l_paddedMatrixSize = Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**3
+            # merge i and j into one loop
+            l_sourceFile.write("for(int i=0;i<"+str(self.m_config['nDof']**2)+";i++) {\n")
+            # unroll outer loop (l -> nDOFt)
+            for l in range(0, self.m_config['nDof']):
+                l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::weights2[i]*kernels::weights1["+str(l)+"]",
                                                        "kernels::Kxi",
                                                        "s_m", self.m_config['nDof']*Backend.getSizeWithPadding(self.m_config['nDof'])))
-                l_sourceFile.write("  "+l_matmul.baseroutinename
-                                       +"(&lFh["+str(i*Backend.getSizeWithPadding(self.m_config['nVar']))+"]," \
-                                        " &kernels::s_m[0],"  \
-                                        " &rhs["+str(i*self.m_config['nVar'])+"]);\n\n")
-
+                l_sourceFile.write("    "+l_matmul.baseroutinename
+                                        +"(&lFh["+str(l_startAddr_lFh_z)+"+i*"+str(Backend.getSizeWithPadding(self.m_config['nVar']))+"+"+str(l*l_paddedMatrixSize)+"],"\
+                                         " &kernels::s_m[0],"\
+                                         " &rhs[i*"+str(self.m_config['nVar'])+"+"+str(l*l_matrixSize)+"]);\n")
+            # close for loop
+            l_sourceFile.write("  }\n")
 
 
         # loop over time DOFs done

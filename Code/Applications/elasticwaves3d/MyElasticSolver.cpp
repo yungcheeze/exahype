@@ -2,23 +2,11 @@
 
 #include <memory>
 
-elasticwaves3d::MyElasticSolver::MyElasticSolver( int kernelNumber, std::unique_ptr<exahype::profilers::Profiler> profiler):
-  exahype::solvers::Solver("MyElasticSolver",exahype::solvers::Solver::ADER_DG,kernelNumber,9,3+1,exahype::solvers::Solver::GlobalTimeStepping, std::move(profiler)) {
+elasticwaves3d::MyElasticSolver::MyElasticSolver(const std::string& identifier, exahype::solvers::Solver::Type type, int kernelNumber, int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
+  : exahype::solvers::Solver(
+            identifier, type, kernelNumber, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
   // @todo Please implement/augment if required
 }
-
-
-
-int elasticwaves3d::MyElasticSolver::getMinimumTreeDepth() const {
-  // @todo Please implement
-#if defined(Asserts)
-  return 2;
-#else
-  return 4;
-#endif
-}
-
-
 
 void elasticwaves3d::MyElasticSolver::flux(const double* const Q, double** F) {
   // Dimensions             = 3
@@ -134,7 +122,7 @@ void elasticwaves3d::MyElasticSolver::adjustedSolutionValues(const double* const
 
 exahype::solvers::Solver::RefinementControl elasticwaves3d::MyElasticSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
   // @todo Please implement
-  return exahype::solvers::Solver::Keep;
+  return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
 

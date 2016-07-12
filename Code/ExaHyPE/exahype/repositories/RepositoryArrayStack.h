@@ -1,16 +1,5 @@
-/**
- * This file is part of the ExaHyPE project.
- * Copyright (c) 2016  http://exahype.eu
- * All rights reserved.
- *
- * The project has received funding from the European Union's Horizon 
- * 2020 research and innovation programme under grant agreement
- * No 671698. For copyrights and licensing, please consult the webpage.
- *
- * Released under the BSD 3 Open Source License.
- * For the full license text, see LICENSE.txt
- **/
- 
+// This file is part of the Peano project. For conditions of distribution and 
+// use, please see the copyright notice at www.peano-framework.org
 #ifndef _EXAHYPE_REPOSITORIES_REPOSITORY_ARRAY_STACK_H_ 
 #define _EXAHYPE_REPOSITORIES_REPOSITORY_ARRAY_STACK_H_ 
 
@@ -27,14 +16,16 @@
 #include "peano/stacks/VertexArrayStack.h"
 
 
+ #include "exahype/adapters/RegularMesh.h" 
  #include "exahype/adapters/AugmentedAMRGrid.h" 
  #include "exahype/adapters/PlotAugmentedAMRGrid.h" 
  #include "exahype/adapters/SolutionUpdateAndGlobalTimeStepComputation.h" 
+ #include "exahype/adapters/PredictorAndPlotAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/ADERDGTimeStep.h" 
  #include "exahype/adapters/ADERDGTimeStepAndPlot.h" 
  #include "exahype/adapters/GlobalTimeStepComputation.h" 
- #include "exahype/adapters/GlobalTimeStepComputationAndPlot.h" 
+ #include "exahype/adapters/PlotAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/FaceDataExchange.h" 
  #include "exahype/adapters/Predictor.h" 
  #include "exahype/adapters/PredictorRerun.h" 
@@ -64,14 +55,16 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     peano::grid::RegularGridContainer<exahype::Vertex,exahype::Cell>  _regularGridContainer;
     peano::grid::TraversalOrderOnTopLevel                                         _traversalOrderOnTopLevel;
 
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::RegularMesh> _gridWithRegularMesh;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::AugmentedAMRGrid> _gridWithAugmentedAMRGrid;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAugmentedAMRGrid> _gridWithPlotAugmentedAMRGrid;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionUpdateAndGlobalTimeStepComputation> _gridWithSolutionUpdateAndGlobalTimeStepComputation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictorAndPlotAndGlobalTimeStepComputation> _gridWithPredictorAndPlotAndGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictorAndGlobalTimeStepComputation> _gridWithPredictorAndGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::ADERDGTimeStep> _gridWithADERDGTimeStep;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::ADERDGTimeStepAndPlot> _gridWithADERDGTimeStepAndPlot;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GlobalTimeStepComputation> _gridWithGlobalTimeStepComputation;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GlobalTimeStepComputationAndPlot> _gridWithGlobalTimeStepComputationAndPlot;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAndGlobalTimeStepComputation> _gridWithPlotAndGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::FaceDataExchange> _gridWithFaceDataExchange;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Predictor> _gridWithPredictor;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictorRerun> _gridWithPredictorRerun;
@@ -80,27 +73,31 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
   
    exahype::records::RepositoryState               _repositoryState;
    
+    tarch::timing::Measurement _measureRegularMeshCPUTime;
     tarch::timing::Measurement _measureAugmentedAMRGridCPUTime;
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCPUTime;
     tarch::timing::Measurement _measureSolutionUpdateAndGlobalTimeStepComputationCPUTime;
+    tarch::timing::Measurement _measurePredictorAndPlotAndGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measurePredictorAndGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measureADERDGTimeStepCPUTime;
     tarch::timing::Measurement _measureADERDGTimeStepAndPlotCPUTime;
     tarch::timing::Measurement _measureGlobalTimeStepComputationCPUTime;
-    tarch::timing::Measurement _measureGlobalTimeStepComputationAndPlotCPUTime;
+    tarch::timing::Measurement _measurePlotAndGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measureFaceDataExchangeCPUTime;
     tarch::timing::Measurement _measurePredictorCPUTime;
     tarch::timing::Measurement _measurePredictorRerunCPUTime;
     tarch::timing::Measurement _measureCorrectorCPUTime;
 
+    tarch::timing::Measurement _measureRegularMeshCalendarTime;
     tarch::timing::Measurement _measureAugmentedAMRGridCalendarTime;
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCalendarTime;
     tarch::timing::Measurement _measureSolutionUpdateAndGlobalTimeStepComputationCalendarTime;
+    tarch::timing::Measurement _measurePredictorAndPlotAndGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measurePredictorAndGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measureADERDGTimeStepCalendarTime;
     tarch::timing::Measurement _measureADERDGTimeStepAndPlotCalendarTime;
     tarch::timing::Measurement _measureGlobalTimeStepComputationCalendarTime;
-    tarch::timing::Measurement _measureGlobalTimeStepComputationAndPlotCalendarTime;
+    tarch::timing::Measurement _measurePlotAndGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measureFaceDataExchangeCalendarTime;
     tarch::timing::Measurement _measurePredictorCalendarTime;
     tarch::timing::Measurement _measurePredictorRerunCalendarTime;
@@ -150,27 +147,31 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
     virtual void readCheckpoint( peano::grid::Checkpoint<exahype::Vertex, exahype::Cell> const * const checkpoint );
     virtual peano::grid::Checkpoint<exahype::Vertex, exahype::Cell>* createEmptyCheckpoint(); 
 
+    virtual void switchToRegularMesh();    
     virtual void switchToAugmentedAMRGrid();    
     virtual void switchToPlotAugmentedAMRGrid();    
     virtual void switchToSolutionUpdateAndGlobalTimeStepComputation();    
+    virtual void switchToPredictorAndPlotAndGlobalTimeStepComputation();    
     virtual void switchToPredictorAndGlobalTimeStepComputation();    
     virtual void switchToADERDGTimeStep();    
     virtual void switchToADERDGTimeStepAndPlot();    
     virtual void switchToGlobalTimeStepComputation();    
-    virtual void switchToGlobalTimeStepComputationAndPlot();    
+    virtual void switchToPlotAndGlobalTimeStepComputation();    
     virtual void switchToFaceDataExchange();    
     virtual void switchToPredictor();    
     virtual void switchToPredictorRerun();    
     virtual void switchToCorrector();    
 
+    virtual bool isActiveAdapterRegularMesh() const;
     virtual bool isActiveAdapterAugmentedAMRGrid() const;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const;
     virtual bool isActiveAdapterSolutionUpdateAndGlobalTimeStepComputation() const;
+    virtual bool isActiveAdapterPredictorAndPlotAndGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterPredictorAndGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterADERDGTimeStep() const;
     virtual bool isActiveAdapterADERDGTimeStepAndPlot() const;
     virtual bool isActiveAdapterGlobalTimeStepComputation() const;
-    virtual bool isActiveAdapterGlobalTimeStepComputationAndPlot() const;
+    virtual bool isActiveAdapterPlotAndGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterFaceDataExchange() const;
     virtual bool isActiveAdapterPredictor() const;
     virtual bool isActiveAdapterPredictorRerun() const;

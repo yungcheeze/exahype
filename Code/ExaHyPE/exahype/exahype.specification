@@ -64,32 +64,24 @@ event-mapping:
   name: Augmentation
 
 event-mapping:
-  name: VolumeUnknownsProjection  
-
-event-mapping:
-  name: InitialisationAndCleaning  
-
-event-mapping:
-  name: DropIncomingMPIMessages  
-
-event-mapping:
-  name: Erasing    
+  name: DropIncomingMPIMessages
 // 
 
 event-mapping:
   name: AugmentedAMRTreePlot2d
 
 adapter:
+  name: RegularMesh
+  merge-with-user-defined-mapping: RegularMesh // (createInner/BoundaryVertex,enterCell,serial)
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
+
+adapter:
   name: AugmentedAMRGrid
   merge-with-user-defined-mapping: MarkingForRefinement      // (enterCell,runconcurrently)
-  merge-with-user-defined-mapping: MarkingForAugmentation    // (enterCell,runconcurrently)    
-  merge-with-user-defined-mapping: RegularMesh               // (createInner/BoundaryVertex,enterCell,serial)
   merge-with-user-defined-mapping: Refinement                // (touchVertexLastTime,enterCell,serial)
+  merge-with-user-defined-mapping: SolutionUpdate            // (enterCell,runconcurrently)             
+  merge-with-user-defined-mapping: MarkingForAugmentation    // (enterCell,runconcurrently)
   merge-with-user-defined-mapping: Augmentation              // (touchVertexLastTime,enterCell,serial)
-  merge-with-user-defined-mapping: InitialisationAndCleaning // (touchVertexLastTime,enterCell,serial)
-  merge-with-user-defined-mapping: VolumeUnknownsProjection  // (enterCell,runconcurrently)
-  merge-with-user-defined-mapping: SolutionUpdate            // (enterCell,runconcurrently)
-  merge-with-user-defined-mapping: Erasing                   // (touchVertexLastTime,enterCell,serial)
   merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)       
   
 adapter:
@@ -103,6 +95,17 @@ adapter:
   merge-with-user-defined-mapping: SolutionUpdate
   // needs current time step size
   merge-with-user-defined-mapping: GlobalTimeStepComputation
+
+adapter:
+  name: PredictorAndPlotAndGlobalTimeStepComputation
+  merge-with-user-defined-mapping: NewTimeStep
+  merge-with-user-defined-mapping: RiemannSolverReset
+  // needs current time step size
+  merge-with-user-defined-mapping: SpaceTimePredictor // DEC: after predictor we can start the face data exchange
+  merge-with-user-defined-mapping: VolumeIntegral
+  merge-with-user-defined-mapping: Plot
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
+  merge-with-user-defined-mapping: FaceUnknownsProjection
 
 adapter:
   name: PredictorAndGlobalTimeStepComputation
@@ -136,11 +139,11 @@ adapter:
   merge-with-user-defined-mapping: RiemannSolverReset
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
+  merge-with-user-defined-mapping: Plot
   // needs predictor time step size
   merge-with-user-defined-mapping: SpaceTimePredictor  // DEC: after predictor we can start the face data exchange 
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: GlobalTimeStepComputation
-  merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: FaceUnknownsProjection
  
 // Additional adapters for 4 phase time stepping
@@ -150,9 +153,9 @@ adapter:
   
   
 adapter:
-  name: GlobalTimeStepComputationAndPlot
-  merge-with-user-defined-mapping: GlobalTimeStepComputation
+  name: PlotAndGlobalTimeStepComputation
   merge-with-user-defined-mapping: Plot
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
   
 
 adapter: 

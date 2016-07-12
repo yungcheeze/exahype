@@ -25,8 +25,7 @@
 namespace exahype {
 class Cell;
 
-typedef peano::heap::PlainHeap<exahype::records::ADERDGCellDescription>
-    ADERDGCellDescriptionHeap;
+typedef peano::heap::PlainHeap<exahype::records::ADERDGCellDescription> ADERDGCellDescriptionHeap;
 typedef peano::heap::PlainDoubleHeap DataHeap;
 }
 
@@ -41,6 +40,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
 
  public:
   static const int InvalidCellDescriptionsIndex;
+  static const int ErasedCellDescriptionsIndex;
 
   typedef struct {
     int parentIndex;

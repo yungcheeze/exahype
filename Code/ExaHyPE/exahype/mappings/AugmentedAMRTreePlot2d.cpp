@@ -18,6 +18,8 @@
 #include "peano/grid/CellFlags.h"
 #include "peano/utils/Loop.h"
 
+#include "tarch/la/VectorScalarOperations.h"
+
 #include "exahype/solvers/Solver.h"
 
 #ifdef Parallel
@@ -83,6 +85,8 @@ std::map<tarch::la::Vector<DIMENSIONS + 1, double>, int,
          tarch::la::VectorCompare<DIMENSIONS + 1> >
     exahype::mappings::AugmentedAMRTreePlot2d::_cellCenter2IndexMap;
 
+std::map<int,double> exahype::mappings::AugmentedAMRTreePlot2d::_level2OffsetMap;
+
 exahype::mappings::AugmentedAMRTreePlot2d::AugmentedAMRTreePlot2d()
     : _vtkWriter(0),
       _vertexWriter(0),
@@ -141,16 +145,23 @@ void exahype::mappings::AugmentedAMRTreePlot2d::createHangingVertex(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  int minLevel = std::numeric_limits<int>::max();
+#if DIMENSIONS == 2
+  bool needToPlotVertex = false;
+
+  tarch::la::Vector<DIMENSIONS,double> fineGridCellSize = coarseGridVerticesEnumerator.getCellSize();
+  fineGridCellSize /= 3.0;
+
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    // @todo replace by parloops?
-    minLevel = std::min(minLevel, p->getMinimumTreeDepth() + 1);
+      needToPlotVertex = tarch::la::allSmallerEquals(fineGridCellSize,p->getMaximumMeshSize());
   }
 
-#if DIMENSIONS == 2
-  if (coarseGridVerticesEnumerator.getLevel() + 1 >= minLevel) {
-    plotVertex(fineGridVertex, fineGridX,
-               coarseGridVerticesEnumerator.getLevel() + 1 - minLevel + 1);
+  if (needToPlotVertex) {
+    int mapEntries = _level2OffsetMap.size();
+    _level2OffsetMap.insert( std::pair<int,double>(coarseGridVerticesEnumerator.getLevel()+1,mapEntries) ); // Checks for duplicate keys. Does not insert if key exists.
+
+    double offsetZ = _level2OffsetMap.at(coarseGridVerticesEnumerator.getLevel()+1);
+
+    plotVertex(fineGridVertex, fineGridX, offsetZ);
   }
 #else
   logError("createHangingVertex",
@@ -307,16 +318,23 @@ void exahype::mappings::AugmentedAMRTreePlot2d::touchVertexFirstTime(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  int minLevel = std::numeric_limits<int>::max();
+#if DIMENSIONS == 2
+  bool needToPlotVertex = false;
+
+  tarch::la::Vector<DIMENSIONS,double> fineGridCellSize = coarseGridVerticesEnumerator.getCellSize();
+  fineGridCellSize /= 3.0;
+
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    // @todo replace by parloops?
-    minLevel = std::min(minLevel, p->getMinimumTreeDepth() + 1);
+      needToPlotVertex = tarch::la::allSmallerEquals(fineGridCellSize,p->getMaximumMeshSize());
   }
 
-#if DIMENSIONS == 2
-  if (coarseGridVerticesEnumerator.getLevel() + 1 >= minLevel) {
-    plotVertex(fineGridVertex, fineGridX,
-               coarseGridVerticesEnumerator.getLevel() + 1 - minLevel + 1);
+  if (needToPlotVertex) {
+    int mapEntries = _level2OffsetMap.size();
+    _level2OffsetMap.insert( std::pair<int,double>(coarseGridVerticesEnumerator.getLevel()+1,mapEntries) ); // Checks for duplicate keys. Does not insert if key exists.
+
+    double offsetZ = _level2OffsetMap.at(coarseGridVerticesEnumerator.getLevel()+1);
+
+    plotVertex(fineGridVertex, fineGridX, offsetZ);
   }
 #else
   logError("touchVertexFirstTime",
@@ -341,21 +359,16 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  int minLevel = std::numeric_limits<int>::max();
-  for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    // @todo replace by parloops?
-    minLevel = std::min(minLevel, p->getMinimumTreeDepth() + 1);
-  }
+#if DIMENSIONS == 2
+  if (_level2OffsetMap.find(coarseGridVerticesEnumerator.getLevel()+1)!=_level2OffsetMap.end()) {
+    double offsetZ = _level2OffsetMap.at(coarseGridVerticesEnumerator.getLevel()+1);
 
-  if (coarseGridVerticesEnumerator.getLevel() + 1 >= minLevel) {
     int vertexIndex[TWO_POWER_D];
     tarch::la::Vector<DIMENSIONS + 1, double> currentVertexPosition;
-    currentVertexPosition(DIMENSIONS) =
-        fineGridVerticesEnumerator.getLevel() - minLevel + 1;
+    currentVertexPosition(DIMENSIONS) = offsetZ;
 
     dfor2(i) for (int d = 0; d < DIMENSIONS; d++) {
-      currentVertexPosition(d) =
-          fineGridVerticesEnumerator.getVertexPosition(i)(d);
+      currentVertexPosition(d) = fineGridVerticesEnumerator.getVertexPosition(i)(d);
     }
     assertion2(
         _vertex2IndexMap.find(currentVertexPosition) != _vertex2IndexMap.end(),
@@ -413,6 +426,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
 
     _cellCounter++;
   }
+#endif
 }
 
 void exahype::mappings::AugmentedAMRTreePlot2d::leaveCell(
@@ -432,17 +446,17 @@ void exahype::mappings::AugmentedAMRTreePlot2d::beginIteration(
   _vtkWriter = new UsedWriter();
 
   _vertexWriter = _vtkWriter->createVertexWriter();
-  _cellWriter = _vtkWriter->createCellWriter();
+  _cellWriter   = _vtkWriter->createCellWriter();
 
   _cellNumberWriter = _vtkWriter->createCellDataWriter("cell-number", 1);
-  _cellTypeWriter = _vtkWriter->createCellDataWriter(
+  _cellTypeWriter   = _vtkWriter->createCellDataWriter(
       "cell-type(NoPatch=-1,Erased=0,Ancestor=1,EmptyAncestor=2,Cell=3,"
       "Descendant=4,EmptyDescendant=5)",
       1);
   _cellDescriptionIndexWriter =
       _vtkWriter->createCellDataWriter("NoPatch=-1,ValidPatch>=0", 1);
   _cellRefinementEventWriter = _vtkWriter->createCellDataWriter(
-      "None=0,ErasingRequested=1,Restricting=2,Erasing=3,AllocatingMemory=4,"
+      "NoPatch=-1,None=0,ErasingRequested=1,Restricting=2,Erasing=3,AllocatingMemory=4,"
       "ErasingChildren=5,RefiningRequested=6,Refining=7,Prolongating=8,"
       "DeaugmentingRequested=9,AugmentingRequested=10,Augmenting=11)",
       1);

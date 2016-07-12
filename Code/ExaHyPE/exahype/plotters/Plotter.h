@@ -24,41 +24,75 @@
 #include "tarch/logging/Log.h"
 
 namespace exahype {
-namespace plotters {
-class Plotter;
+  namespace plotters {
+    class Plotter;
 
-extern std::vector<Plotter*> RegisteredPlotters;
+    extern std::vector<Plotter*> RegisteredPlotters;
 
-bool isAPlotterActive(double currentTimeStep);
-void finishedPlotting();
+    bool isAPlotterActive(double currentTimeStep);
+    void finishedPlotting();
+  }
 }
-}
 
+
+/**
+ * Central plotter class
+ *
+ * The ExaHyPE kernel holds one plotter instance per plotter specified in the
+ * config file.
+ *
+ * @author Tobias Weinzierl
+ */
 class exahype::plotters::Plotter {
  public:
+
+  /**
+   * Actual device chosen by a plotter in the config file. If you implement
+   * your own device, please also add a
+   *
+   * static std::string getIdentifier();
+   *
+   * routine that returns the device's identifier.
+   */
   class Device {
    public:
     virtual ~Device() {}
 
+    /**
+     * Configure the plotter. Is invoked directly after the constructor is
+     * called.
+     */
+    virtual void init(const std::string& filename, int order, int unknowns, const std::string& select) = 0;
+
+    /**
+     * Hand a patch over to the plotter. Feel free to ignore the passed data if
+     * you don't want to plot it.
+     */
     virtual void plotPatch(
         const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
         const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
         double timeStamp) = 0;
+
+    virtual void startPlotting( double time ) = 0;
+    virtual void finishPlotting() = 0;
   };
 
  private:
   static tarch::logging::Log _log;
 
-  const int _solver;
-  const std::string _identifier;
-  double _time;
-  const double _repeat;
-  const std::string _filename;
+  const int              _solver;
+  const std::string      _identifier;
+  double                 _time;
+  const double           _repeat;
+  const std::string      _filename;
+  const std::string      _select;
+  bool                   _isActive;
 
-  Device* _device;
+  Device*                _device;
 
  public:
   Plotter(int solver, int plotterCount, const exahype::Parser& parser);
+  ~Plotter();
 
   // Disallow copy and assignment
   Plotter(const Plotter& other) = delete;

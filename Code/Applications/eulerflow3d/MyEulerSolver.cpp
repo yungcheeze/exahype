@@ -1,13 +1,9 @@
 #include "MyEulerSolver.h"
 
-Euler3d::MyEulerSolver::MyEulerSolver( int kernelNumber, std::unique_ptr<exahype::profilers::Profiler> profiler):
-  exahype::solvers::Solver("MyEulerSolver",exahype::solvers::Solver::ADER_DG,kernelNumber,5,3+1,exahype::solvers::Solver::GlobalTimeStepping,std::move(profiler)) {
+Euler3d::MyEulerSolver::MyEulerSolver(const std::string& identifier, exahype::solvers::Solver::Type type, int kernelNumber, int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
+  : exahype::solvers::Solver(
+            identifier, type, kernelNumber, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
   // @todo Please implement/augment if required
-}
-
-int Euler3d::MyEulerSolver::getMinimumTreeDepth() const {
-  // @todo Please implement
-  return 3;
 }
 
 bool Euler3d::MyEulerSolver::hasToAdjustSolution(
@@ -48,7 +44,7 @@ void Euler3d::MyEulerSolver::adjustedSolutionValues(const double* const x,
 
 exahype::solvers::Solver::RefinementControl Euler3d::MyEulerSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
   // @todo Please implement
-  return exahype::solvers::Solver::Keep;
+  return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
 

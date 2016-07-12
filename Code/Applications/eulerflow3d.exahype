@@ -17,13 +17,14 @@ exahype-project  Euler3d
 
   computational-domain
     dimension                = 3
-    width                    = 1.0
+    width                    = 1.0, 1.0, 1.0
     offset                   = 0.0, 0.0, 0.0
     end-time                 = 0.02
   end computational-domain
 
   optimisation
-    fuse-algorithmic-steps   = on
+    fuse-algorithmic-steps        = on
+    fuse-algorithmic-steps-factor = 0.99
   end optimisation
 
   profiling
@@ -32,16 +33,19 @@ exahype-project  Euler3d
   end profiling
 
   solver ADER-DG MyEulerSolver
-    unknowns  = 5
-    parameters= 0
-    order     = 3
-    kernel    = generic::fluxes::nonlinear
-    language  = Fortran
+    variables          = 5
+    parameters         = 0
+    order              = 3
+    maximum-mesh-size  = 0.05
+    time-stepping      = global
+    kernel             = generic::fluxes::nonlinear
+    language           = Fortran
 
     plot vtk::ascii
       time     = 0.0
       repeat   = 0.005
-      filename = ./solution
+      output = ./solution
+      select   = {all}
     end plot
   end solver
 

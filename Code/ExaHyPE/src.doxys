@@ -39,7 +39,13 @@ cd Applications/eulerflow2d && make -j
  \endcode
  within the root directory of ExaHyPE.
 
-
+ <h2> Regenerate ExaHyPE's kernel gluecode </h2>
+ 
+ <pre>
+ java -jar ~/workspace/peano/pdt/pdt.jar --generate-gluecode exahype/exahype.specification exahype ~/workspace/peano/pdt/usrtemplates:../Peano/multiscalelinkedcell
+ </pre>
+ 
+ 
  */
  
  

@@ -20,8 +20,6 @@ Helpers
     filename_element     =  digit | nondigit | '-' | '/' | dot;
 
     identifier           = nondigit ( digit | nondigit ) *;
-    identifier_list_tail = ',' identifier;
-    identifier_list      = '{' identifier? identifier_list_tail* '}';
 
     cr                   =   13;
     lf                   =   10;
@@ -31,75 +29,88 @@ Helpers
 
 
 Tokens
-  token_end                       = 'end';
+  token_end                         = 'end';
 
-  token_project                   = 'exahype-project';
+  token_project                     = 'exahype-project';
 
-  token_peano_path                = 'peano-path';
-  token_tarch_path                = 'tarch-path';
-  token_exahype_path              = 'exahype-path';
-  token_multiscalelinkedcell_path = 'multiscalelinkedcell-path';
-  token_sharedmemoryoracles_path  = 'sharedmemoryoracles-path';
-  token_libxsmm_path              = 'libxsmm-path';
-  token_output_directory          = 'output-directory';
-  token_architecture              = 'architecture';
+  token_peano_path                  = 'peano-path';
+  token_tarch_path                  = 'tarch-path';
+  token_exahype_path                = 'exahype-path';
+  token_multiscalelinkedcell_path   = 'multiscalelinkedcell-path';
+  token_sharedmemoryoracles_path    = 'sharedmemoryoracles-path';
+  token_libxsmm_path                = 'libxsmm-path';
+  token_output_directory            = 'output-directory';
+  token_architecture                = 'architecture';
 
 
-  token_computational_domain      = 'computational-domain';
-  token_dimension                 = 'dimension';
-  token_width                     = 'width';
-  token_offset                    = 'offset';
-  token_end_time                  = 'end-time';
+  token_computational_domain        = 'computational-domain';
+  token_dimension                   = 'dimension';
+  token_width                       = 'width';
+  token_offset                      = 'offset';
+  token_maximum_mesh_size           = 'maximum-mesh-size';
+  token_time_stepping               = 'time-stepping';
+  token_end_time                    = 'end-time';
 
-  token_solver                    = 'solver';
-  token_aderdg                    = 'ADER-DG';
-  token_unknowns                  = 'unknowns';
-  token_parameters                = 'parameters';
-  token_order                     = 'order';
-  token_kernel                    = 'kernel';
-  token_language                  = 'language';
+  token_solver                      = 'solver';
+  token_aderdg                      = 'ADER-DG';
+  token_variables                   = 'variables';
+  token_parameters                  = 'parameters';
+  token_order                       = 'order';
+  token_kernel                      = 'kernel';
+  token_language                    = 'language';
 
-  token_plot                      = 'plot';
-  token_variable                  = 'variable';
-  token_time                      = 'time';
-  token_repeat                    = 'repeat';
-  token_filename                  = 'filename';
+  token_plot                        = 'plot';
+  token_variable                    = 'variable';
+  token_time                        = 'time';
+  token_repeat                      = 'repeat';
+  token_output                      = 'output';
+  token_select                      = 'select';
 
-  token_shared_memory             = 'shared-memory';
-  token_cores                     = 'cores';
-  token_properties_file           = 'properties-file';
-  token_identifier                = 'identifier';
+  token_shared_memory               = 'shared-memory';
+  token_cores                       = 'cores';
+  token_properties_file             = 'properties-file';
+  token_identifier                  = 'identifier';
 
-  token_distributed_memory        = 'distributed-memory';
+  token_distributed_memory          = 'distributed-memory';
+  token_configure                   = 'configure';
+  token_buffer_size                 = 'buffer-size';
+  token_timeout                     = 'timeout';
 
-  token_optimisation              = 'optimisation';
-  token_fuse_algorithm_steps      = 'fuse-algorithmic-steps';
+  token_optimisation                = 'optimisation';
+  token_fuse_algorithm_steps        = 'fuse-algorithmic-steps';
+  token_fuse_algorithm_steps_factor = 'fuse-algorithmic-steps-factor';
 
-  token_profiling                 = 'profiling';
-  token_profiler                  = 'profiler';
-  token_metrics                   = 'metrics';
-  token_likwid_inc                = 'likwid_inc';
-  token_likwid_lib                = 'likwid_lib';
-  token_ipcm_inc                  = 'ipcm_inc';
-  token_ipcm_lib                  = 'ipcm_lib';
+  token_profiling                   = 'profiling';
+  token_profiler                    = 'profiler';
+  token_metrics                     = 'metrics';
+  token_likwid_inc                  = 'likwid_inc';
+  token_likwid_lib                  = 'likwid_lib';
+  token_ipcm_inc                    = 'ipcm_inc';
+  token_ipcm_lib                    = 'ipcm_lib';
 
-  token_on_off                    = 'on' | 'off';
+  token_on_off                      = 'on' | 'off';
 
-  token_equals                = '=';
-  token_comma                 = ',';
+  token_equals                      = '=';
+  token_comma                       = ',';
 
-  blank                       = ( cr | lf | tab | ' ' ) +;
-  identifier                  = identifier;
-  identifier_list             = identifier_list;
-  typename                    = nondigit ( digit | nondigit | '::' ) *;
+  blank                             = ( cr | lf | tab | ' ' ) +;
+  identifier                        = identifier;
+  typename                          = nondigit ( digit | nondigit | '::' ) *;
 
-  int_number                  = digit+;
-  float_number                = (digit+ | digit+ '.' digit+);
+  parameter_list                    = '{'
+                                      ((identifier ( ':' (digit+ | digit+ '.' digit+) )? )
+                                      (','
+                                        (identifier ( ':' (digit+ | digit+ '.' digit+) )? )
+                                      )*)?
+                                      '}';
 
-  filename                    = '/' ? (filename_element + '/') * filename_element +;
+  int_number                        = digit+;
+  float_number                      = (digit+ | digit+ '.' digit+);
 
-  traditional_comment         = '/*' not_star+ '*'+ (not_star_not_slash not_star* '*'+)* '/';
-  documentation_comment       = '/**' '*'* (not_star_not_slash not_star* '*'+)* '/';
+  filename                          = '/' ? (filename_element + '/') * filename_element +;
+
+  traditional_comment               = '/*' not_star+ '*'+ (not_star_not_slash not_star* '*'+)* '/';
+  documentation_comment             = '/**' '*'* (not_star_not_slash not_star* '*'+)* '/';
 
 
 Ignored Tokens
@@ -149,9 +160,15 @@ Productions
 
   distributed_memory {->distributed_memory} =
     [begin_token]:token_distributed_memory
-      token_identifier [identifier_equals]:token_equals [identifier]:identifier
+      token_identifier   [identifier_equals]:token_equals [identifier]:identifier
+      token_configure    [configure_equals]:token_equals  [configure]:parameter_list
+      token_buffer_size  [buffersize_equals]:token_equals [buffersize]:int_number
+      token_timeout      [timeout_equals]:token_equals    [timeout]:int_number
     token_end [end_token]:token_distributed_memory
-      { -> New distributed_memory( identifier ) };
+      { -> New distributed_memory( identifier,configure,buffersize,timeout ) };
+
+
+
 
   shared_memory {->shared_memory} =
     [begin_token]:token_shared_memory
@@ -164,33 +181,35 @@ Productions
   computational_domain {->computational_domain} =
      {two_dimensional}
       [begin_token]:token_computational_domain
-       token_dimension  [dimension_equals]:token_equals    [dimension]:int_number
-       token_width      [width_equals]:token_equals        [width]:float_number
-       token_offset     [offset_equals]:token_equals       [offset_x]:float_number [comma_xy]:token_comma [offset_y]:float_number
-       token_end_time   [end_time_equals]:token_equals     [end_time]:float_number
+       token_dimension          [dimension_equals]:token_equals          [dimension]:int_number
+       token_width              [width_equals]:token_equals              [width_x]:float_number [width_comma_xy]:token_comma [width_y]:float_number
+       token_offset             [offset_equals]:token_equals             [offset_x]:float_number [offset_comma_xy]:token_comma [offset_y]:float_number
+       token_end_time           [end_time_equals]:token_equals           [end_time]:float_number
       token_end [end_token]:token_computational_domain
-       { -> New computational_domain.two_dimensional( dimension, width,offset_x,offset_y,end_time ) } |
+       { -> New computational_domain( dimension, width_x, width_y, Null, offset_x, offset_y, Null, end_time ) }
+       |
      {three_dimensional}
       [begin_token]:token_computational_domain
-       token_dimension  [dimension_equals]:token_equals    [dimension]:int_number
-       token_width      [width_equals]:token_equals        [width]:float_number
-       token_offset     [offset_equals]:token_equals       [offset_x]:float_number [comma_xy]:token_comma [offset_y]:float_number [comma_yz]:token_comma [offset_z]:float_number
-       token_end_time   [end_time_equals]:token_equals     [end_time]:float_number
+       token_dimension          [dimension_equals]:token_equals          [dimension]:int_number
+       token_width              [width_equals]:token_equals              [width_x]:float_number [width_comma_xy]:token_comma [width_y]:float_number [width_comma_yz]:token_comma [width_z]:float_number
+       token_offset             [offset_equals]:token_equals             [offset_x]:float_number  [offset_comma_xy]:token_comma [offset_y]:float_number [offset_comma_yz]:token_comma [offset_z]:float_number
+       token_end_time           [end_time_equals]:token_equals           [end_time]:float_number
       token_end [end_token]:token_computational_domain
-       { -> New computational_domain.three_dimensional( dimension, width,offset_x,offset_y,offset_z,end_time ) };
+       { -> New computational_domain( dimension, width_x, width_y, width_z, offset_x, offset_y, offset_z, end_time ) };
 
    optimisation {->optimisation} =
       [begin_token]:token_optimisation
-        token_fuse_algorithm_steps [token_fuse_algorithm_steps_equals]:token_equals [fuse_algorithm_steps]:token_on_off
+        token_fuse_algorithm_steps        [token_fuse_algorithm_steps_equals]:token_equals [fuse_algorithm_steps]:token_on_off
+        token_fuse_algorithm_steps_factor [token_fuse_algorithm_steps_factor_equals]:token_equals [fuse_algorithm_steps_factor]:float_number
       token_end [end_token]:token_optimisation
-        { -> New optimisation(fuse_algorithm_steps) }
+        { -> New optimisation(fuse_algorithm_steps, fuse_algorithm_steps_factor) }
       ;
 
    profiling {->profiling} =
       {with_likwid}
        [begin_token]:token_profiling
          token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
-         token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
+         token_metrics [token_metrics_equals]:token_equals [metrics]:parameter_list
          token_likwid_inc [token_likwid_inc_equals]:token_equals [likwid_inc]:filename
          token_likwid_lib [token_likwid_lib_equals]:token_equals [likwid_lib]:filename
        token_end [end_token]:token_profiling
@@ -199,7 +218,7 @@ Productions
       {with_ipcm}
        [begin_token]:token_profiling
          token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
-         token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
+         token_metrics [token_metrics_equals]:token_equals [metrics]:parameter_list
          token_ipcm_inc [token_ipcm_inc_equals]:token_equals [ipcm_inc]:filename
          token_ipcm_lib [token_ipcm_lib_equals]:token_equals [ipcm_lib]:filename
        token_end [end_token]:token_profiling
@@ -208,7 +227,7 @@ Productions
       {default}
        [begin_token]:token_profiling
          token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
-         token_metrics [token_metrics_equals]:token_equals [metrics]:identifier_list
+         token_metrics [token_metrics_equals]:token_equals [metrics]:parameter_list
        token_end [end_token]:token_profiling
         { -> New profiling(profiler,metrics,Null,Null,Null,Null) }
       ;
@@ -217,26 +236,28 @@ Productions
      [begin_token]:token_plot [plotter_type]:typename
        token_time      [time_equals]:token_equals     [time]:float_number
        token_repeat    [repeat_equals]:token_equals   [repeat]:float_number
-       token_filename  [filename_equals]:token_equals filename
+       token_output    [output_equals]:token_equals   [output]:filename
+       token_select    [select_equals]:token_equals   [select]:parameter_list
      token_end [end_token]:token_plot
      plot_solution_list?
-       { -> [New plot_solution(plotter_type,time,repeat,filename),plot_solution_list.plot_solution] }
+       { -> [New plot_solution(plotter_type,time,repeat,output,select),plot_solution_list.plot_solution] }
      ;
 
    solver_list {->solver*} =
      {aderdg}
        [begin_token]:token_solver token_aderdg [name]:identifier
-         token_unknowns    [unknowns_equals]:token_equals   [unknowns]:int_number
-         token_parameters  [parameters_equals]:token_equals [parameters]:int_number
-         token_order       [order_equals]:token_equals      [order]:int_number
-         token_kernel      [kernel_equals]:token_equals     [kernel]:typename
-         token_language    [language_equals]:token_equals   [language]:identifier
+         token_variables          [variables_equals]:token_equals          [variables]:int_number
+         token_parameters         [parameters_equals]:token_equals         [parameters]:int_number
+         token_order              [order_equals]:token_equals              [order]:int_number
+         token_maximum_mesh_size  [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
+         token_time_stepping      [time_stepping_equals]:token_equals      [time_stepping]:identifier
+         token_kernel             [kernel_equals]:token_equals             [kernel]:typename
+         token_language           [language_equals]:token_equals           [language]:identifier
          plot_solution_list?
        token_end [end_token]:token_solver
        solver_list?
-       { -> [New solver.aderdg(name,unknowns,parameters,order,kernel,language,[plot_solution_list.plot_solution]),solver_list.solver] }
-     ;
-
+       { -> [New solver.aderdg(name,variables,parameters,order,maximum_mesh_size,time_stepping,kernel,language,[plot_solution_list.plot_solution]),solver_list.solver] }
+       ;
 
 Abstract Syntax Tree
    project =
@@ -258,23 +279,23 @@ Abstract Syntax Tree
      [identifier]:identifier [cores]:int_number [properties_file]:filename;
 
    distributed_memory =
-     [identifier]:identifier;
+     [identifier]:identifier
+     [configure]:parameter_list
+     [buffersize]:int_number
+     [timeout]:int_number;
 
    computational_domain =
-     {two_dimensional}   [dimension]:int_number [width]:float_number [offset_x]:float_number [offset_y]:float_number [end_time]:float_number |
-     {three_dimensional} [dimension]:int_number [width]:float_number [offset_x]:float_number [offset_y]:float_number [offset_z]:float_number [end_time]:float_number
-     ;
+     [dimension]:int_number [width_x]:float_number [width_y]:float_number [width_z]:float_number? [offset_x]:float_number [offset_y]:float_number [offset_z]:float_number? [end_time]:float_number;
 
    optimisation =
-     [fuse_algorithm_steps]:token_on_off;
+     [fuse_algorithm_steps]:token_on_off [fuse_algorithm_steps_factor]:float_number;
 
    profiling =
-     [profiler]:identifier [metrics]:identifier_list [likwid_inc]:filename? [likwid_lib]:filename? [ipcm_inc]:filename? [ipcm_lib]:filename?;
+     [profiler]:identifier [metrics]:parameter_list [likwid_inc]:filename? [likwid_lib]:filename? [ipcm_inc]:filename? [ipcm_lib]:filename?;
 
    solver =
-     {aderdg} [name]:identifier [unknowns]:int_number  [parameters]:int_number [order]:int_number [kernel]:typename [language]:identifier plot_solution*
-     ;
+      {aderdg} [name]:identifier [variables]:int_number [parameters]:int_number [order]:int_number [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier plot_solution*
+    ;
 
    plot_solution =
-     [plotter_type]:typename [time]:float_number [repeat]:float_number [filename]:filename;
-
+     [plotter_type]:typename [time]:float_number [repeat]:float_number [output]:filename [select]:parameter_list;
