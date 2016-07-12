@@ -637,10 +637,10 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
     }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
         .parallelSectionHasTerminated(methodTrace);
-  } else if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-                 cellDescriptionIndexOfLeftCell) !=
-             ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-                 cellDescriptionIndexOfRightCell)) {  // XOR
+  } else if ((ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionIndexOfLeftCell) &&
+             cellDescriptionIndexOfRightCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) ||
+             (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionIndexOfRightCell) &&
+             cellDescriptionIndexOfLeftCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex)) {
     const int cellDescriptionsIndex =
         (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
             cellDescriptionIndexOfLeftCell))
