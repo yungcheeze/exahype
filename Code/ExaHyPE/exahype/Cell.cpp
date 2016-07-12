@@ -180,6 +180,8 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(const int solverNumber) {
                 const int fluxUnknownsPerCell =
                     solver->getFluxUnknownsPerCell();
 
+                const int dataPerCell = solver->getDataPerCell();
+
                 // Allocate space-time DoF
                 p.setSpaceTimePredictor(DataHeap::getInstance().createData(
                     spaceTimeUnknownsPerCell, spaceTimeUnknownsPerCell));
@@ -195,7 +197,7 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(const int solverNumber) {
                 p.setUpdate(DataHeap::getInstance().createData(
                     unknownsPerCell, unknownsPerCell));
                 p.setSolution(DataHeap::getInstance().createData(
-                    unknownsPerCell, unknownsPerCell));
+                    dataPerCell, dataPerCell));
               }
               break;
             default:

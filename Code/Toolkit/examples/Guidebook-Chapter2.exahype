@@ -39,8 +39,8 @@ exahype-project MyEuler
   end optimisation
 
   solver ADER-DG MyEulerSolver
-    variables          = 0 
-    parameters         = 5 
+    variables          = 5 
+    parameters         = 0 
     order              = 3
     maximum-mesh-size  = 0.05
     time-stepping      = global
