@@ -54,37 +54,34 @@ void exahype::plotters::ADERDG2ProbeAscii::init(const std::string& filename, int
 
 
 void exahype::plotters::ADERDG2ProbeAscii::openOutputStream() {
-  if (
-    _out == nullptr
-    &&
-    !tarch::la::oneEquals(_x,std::numeric_limits<double>::quiet_NaN())
-  ) {
-    _out = new std::ofstream;
+  if (_out == nullptr) {
+    if (tarch::la::oneEquals(_x,std::numeric_limits<double>::quiet_NaN())) {
+      logError( "init(...)", "probe requires valid x, y (and z) coordinates in select statement. No plot written as plot location has been " << _x );
+    }
+    else {
+      _out = new std::ofstream;
 
-    std::ostringstream outputFilename;
-    outputFilename << _filename
+      std::ostringstream outputFilename;
+      outputFilename << _filename
                    #ifdef Parallel
 	           << "-rank-" << tarch::parallel::Node::getInstance().getRank()
                    #endif
-	           << ".probe";
-    // @todo Parallel
-    _out->open( outputFilename.str() );
+		           << ".probe";
+      _out->open( outputFilename.str() );
 
-    if (*_out) {
-      (*_out) << "# plot-time, real-time";
-      for (int unknown=0; unknown < _unknowns; unknown++) {
-        std::ostringstream identifier;
-        identifier << "Q" << unknown;
+      if (*_out) {
+        (*_out) << "# plot-time, real-time";
+        for (int unknown=0; unknown < _unknowns; unknown++) {
+          std::ostringstream identifier;
+          identifier << "Q" << unknown;
 
-        if ( _select.find(identifier.str())!=std::string::npos || _select.find("all")!=std::string::npos ) {
-          (*_out) << "," << identifier.str();
+          if ( _select.find(identifier.str())!=std::string::npos || _select.find("all")!=std::string::npos ) {
+            (*_out) << "," << identifier.str();
+          }
         }
+        (*_out) << std::endl;
       }
-      (*_out) << std::endl;
     }
-  }
-  else {
-    logError( "init(...)", "probe requires valid x, y (and z) coordinates in select statement. No plot written as plot location has been " << _x );
   }
 
   if (_out!=nullptr && *_out  ) {
