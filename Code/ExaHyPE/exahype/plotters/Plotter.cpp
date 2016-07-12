@@ -12,11 +12,12 @@
  **/
  
 #include "exahype/plotters/Plotter.h"
+
+#include "ADERDG2ProbeAscii.h"
+#include "ADERDG2VTKAscii.h"
+#include "ADERDG2VTKBinary.h"
 #include "exahype/solvers/Solver.h"
 
-#include "exahype/plotters/ADERDG2AsciiVTK.h"
-#include "exahype/plotters/ADERDG2BinaryVTK.h"
-#include "exahype/plotters/ADERDG2AsciiSeismogram.h"
 
 std::vector<exahype::plotters::Plotter*> exahype::plotters::RegisteredPlotters;
 
@@ -55,14 +56,14 @@ exahype::plotters::Plotter::Plotter(int solver, int plotterCount,
        * This is actually some kind of switch expression though switches do
        * not work for strings, so we map it onto an if-then-else cascade.
        */
-      if (_identifier.compare( ADERDG2AsciiVTK::getIdentifier() ) == 0) {
-        _device = new ADERDG2AsciiVTK();
+      if (_identifier.compare( ADERDG2VTKAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2VTKAscii();
       }
-      else if (_identifier.compare( ADERDG2BinaryVTK::getIdentifier() ) == 0) {
-        _device = new ADERDG2BinaryVTK();
+      else if (_identifier.compare( ADERDG2VTKBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2VTKBinary();
       }
-      else if (_identifier.compare( ADERDG2AsciiSeismogram::getIdentifier() ) == 0) {
-        _device = new ADERDG2AsciiSeismogram();
+      else if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2ProbeAscii();
       }
 
 

@@ -1,15 +1,15 @@
-#include "exahype/plotters/ADERDG2AsciiSeismogram.h"
+#include "exahype/plotters/ADERDG2ProbeAscii.h"
 
 
-tarch::logging::Log exahype::plotters::ADERDG2AsciiSeismogram::_log( "exahype::plotters::ADERDG2AsciiSeismogram" );
+tarch::logging::Log exahype::plotters::ADERDG2ProbeAscii::_log( "exahype::plotters::ADERDG2ProbeAscii" );
 
 
-exahype::plotters::ADERDG2AsciiSeismogram::ADERDG2AsciiSeismogram():
+exahype::plotters::ADERDG2ProbeAscii::ADERDG2ProbeAscii():
   _out(nullptr) {
 }
 
 
-exahype::plotters::ADERDG2AsciiSeismogram::~ADERDG2AsciiSeismogram() {
+exahype::plotters::ADERDG2ProbeAscii::~ADERDG2ProbeAscii() {
   if (_out!=nullptr) {
     _out->close();
     _out=nullptr;
@@ -17,21 +17,21 @@ exahype::plotters::ADERDG2AsciiSeismogram::~ADERDG2AsciiSeismogram() {
 }
 
 
-void exahype::plotters::ADERDG2AsciiSeismogram::startPlotting( double time ) {
+void exahype::plotters::ADERDG2ProbeAscii::startPlotting( double time ) {
   if (_out!=nullptr && *_out) {
     (*_out) << time;
   }
 }
 
 
-void exahype::plotters::ADERDG2AsciiSeismogram::finishPlotting() {
+void exahype::plotters::ADERDG2ProbeAscii::finishPlotting() {
   if (_out!=nullptr && *_out) {
     (*_out) << std::endl;
   }
 }
 
 
-void exahype::plotters::ADERDG2AsciiSeismogram::init(const std::string& filename, int order, int unknowns, const std::string& select) {
+void exahype::plotters::ADERDG2ProbeAscii::init(const std::string& filename, int order, int unknowns, const std::string& select) {
   _order    = order;
   _unknowns = unknowns;
   _select   = select;
@@ -47,6 +47,9 @@ void exahype::plotters::ADERDG2AsciiSeismogram::init(const std::string& filename
   if ( !tarch::la::oneEquals(_x,std::numeric_limits<double>::quiet_NaN()) ) {
     _out = new std::ofstream;
     _out->open( filename );
+  }
+  else {
+    logError( "init(...)", "probe requires valid x, y (and z) coordinates in select statement. No plot written" );
   }
 
   if (_out!=nullptr && *_out) {
@@ -64,12 +67,12 @@ void exahype::plotters::ADERDG2AsciiSeismogram::init(const std::string& filename
 }
 
 
-std::string exahype::plotters::ADERDG2AsciiSeismogram::getIdentifier() {
-  return "seismogram::ascii";
+std::string exahype::plotters::ADERDG2ProbeAscii::getIdentifier() {
+  return "probe::ascii";
 }
 
 
-void exahype::plotters::ADERDG2AsciiSeismogram::plotPatch(
+void exahype::plotters::ADERDG2ProbeAscii::plotPatch(
   const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
   const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
   double timeStamp
