@@ -1,5 +1,10 @@
 #include "exahype/plotters/ADERDG2ProbeAscii.h"
+
 #include <fstream>
+
+#include "peano/utils/Loop.h"
+
+#include "kernels/DGBasisFunctions.h"
 
 
 tarch::logging::Log exahype::plotters::ADERDG2ProbeAscii::_log( "exahype::plotters::ADERDG2ProbeAscii" );
@@ -112,6 +117,12 @@ void exahype::plotters::ADERDG2ProbeAscii::plotPatch(
       (*_out) << ", " << timeStamp;
     }
 
+    // Map coordinate vector x onto reference element.
+    tarch::la::Vector<DIMENSIONS,double> xRef = _x - offsetOfPatch;
+    xRef(0) /=  sizeOfPatch(0);
+    xRef(1) /=  sizeOfPatch(1);
+    xRef(2) /=  sizeOfPatch(2);
+
     for (int unknown=0; unknown < _unknowns; unknown++) {
       std::ostringstream identifier;
       identifier << "Q" << unknown;
@@ -119,19 +130,18 @@ void exahype::plotters::ADERDG2ProbeAscii::plotPatch(
       if ( _select.find(identifier.str())!=std::string::npos || _select.find("all")!=std::string::npos ) {
         double value = 0.0;
 
-        value += u[unknown]; // @tdodo Dominic perhaps already has programmed the right interpolation for this AMR
-/*
-          dfor(ii,_order+1) { // Gauss-Legendre node indices
-            int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
-            value += kernels::equidistantGridProjector1d[_order][ii(1)][i(1)] *
-                     kernels::equidistantGridProjector1d[_order][ii(0)][i(0)] *
-                     #ifdef Dim3
-                     kernels::equidistantGridProjector1d[_order][ii(2)][i(2)] *
-                     #endif
-                     u[iGauss * _unknowns + unknown];
-            assertion3(value == value, offsetOfPatch, sizeOfPatch, iGauss);
-          }
-*/
+        // The code below evaluates the basis functions at the reference coordinates.
+        dfor(ii,_order+1) { // Gauss-Legendre node indices
+          int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
+          value += kernels::basisFunctions[_order][ii(0)](xRef(0)) *
+                   kernels::basisFunctions[_order][ii(1)](xRef(1)) *
+                   #ifdef Dim3
+                   kernels::basisFunctions[_order][ii(2)](xRef(2)) *
+                   #endif
+                   u[iGauss * _unknowns + unknown];
+          assertion3(value == value, offsetOfPatch, sizeOfPatch, iGauss);
+        }
+
         (*_out) << ", " << value;
       }
     }
