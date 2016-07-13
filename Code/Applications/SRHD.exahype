@@ -55,7 +55,7 @@ exahype-project  SRHD
       time     = 0.0
       repeat   = 0.004
       output   = ./output/solution
-      select   = {Q4}
+      select   = {all}
     end plot
   end solver
 

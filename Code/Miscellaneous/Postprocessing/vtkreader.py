@@ -71,10 +71,12 @@ def vtkreader(fname, log=log):
 	datasets = point_list.transpose()
 	column_names = ['x','y','z']
 
-	for i in range(0, num_scalars-1):
+	for i in range(0, num_scalars):
 		scalar_field = numpy_support.vtk_to_numpy( scalars.GetArray(i) )
 		datasets = np.vstack((datasets,scalar_field))
 		column_names.append(scalars.GetArrayName(i))
+
+	log("Exporting scalar fields "+str(column_names))
 
 	ret = datasets.transpose()
 	#numpy.float32

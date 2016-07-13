@@ -28,7 +28,7 @@ dim = 3 if len(z) > 1 else 2
 print "vtkplayer: Having loaded %d timesteps in the range (%f,%f) in a %d-dimensional problem" % (len(times), min(times), max(times), dim)
 
 # Quantities: name of conserved variable in ExaHypE -[mappedTo]-> human readable name
-quantities = ["Q0", "Q1", "Q3"]
+quantities = ["Q0", "Q1", "Q4"]
 quantities_readable = ["d", "sx", "e"]
 yslice = y[int(len(y)/2)]
 zslice = z[0]
