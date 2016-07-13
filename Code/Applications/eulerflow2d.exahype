@@ -30,6 +30,9 @@ exahype-project  Euler2d
 /*
   distributed-memory
     identifier               = static_load_balancing
+    configure                = {greedy,FCFS}
+    buffer-size              = 64
+    timeout                  = 120
   end distributed-memory
 */
   optimisation
