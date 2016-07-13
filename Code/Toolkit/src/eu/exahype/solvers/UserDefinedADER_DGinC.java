@@ -3,12 +3,12 @@ package eu.exahype.solvers;
 public class UserDefinedADER_DGinC implements Solver {
   public static final String Identifier = "user::defined";
 
-  private int _numberOfUnknowns;
+  private int _numberOfVariables;
   private int _numberOfParameters;
   private int _order;
 
-  public UserDefinedADER_DGinC(int numberOfUnknowns, int numberOfParameters, int order) {
-    _numberOfUnknowns = numberOfUnknowns;
+  public UserDefinedADER_DGinC(int numberOfVariables, int numberOfParameters, int order) {
+    _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
     _order = order;
   }
@@ -36,9 +36,9 @@ public class UserDefinedADER_DGinC implements Solver {
       String projectName) throws java.io.IOException {
     writer.write("#include \"" + solverName + ".h\"\n");
     writer.write("\n\n\n");
-    writer.write(projectName + "::" + solverName + "::" + solverName + "(const std::string& identifier, exahype::solvers::Solver::Type type, int kernelNumber, int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
+    writer.write(projectName + "::" + solverName + "::" + solverName + "(int kernelNumber, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
     writer.write("  exahype::solvers::Solver("
-        + " identifier, type, kernelNumber, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {\n");
+            + " "+solverName+", exahype::solvers::Solver::Type::ADER_DG, kernelNumber, "+_numberOfVariables+", "+_numberOfParameters+", "+(_order+1)+", maximumMeshSize, timeStepping, std::move(profiler)) {\n");
     writer.write("  // @todo Please implement/augment if required\n");
     writer.write("}\n");
     writer.write("\n\n\n");

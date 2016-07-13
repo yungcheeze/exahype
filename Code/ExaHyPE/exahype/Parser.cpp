@@ -26,7 +26,7 @@ tarch::logging::Log exahype::Parser::_log("exahype::Parser");
 
 double exahype::Parser::getValueFromPropertyString( const std::string& parameterString, const std::string& key ) {
   std::size_t startIndex      = parameterString.find(key);
-              startIndex      = parameterString.find(":",startIndex);
+  startIndex      = parameterString.find(":",startIndex);
   std::size_t endIndexBracket = parameterString.find("}",startIndex+1);
   std::size_t endIndexComma   = parameterString.find(",",startIndex+1);
 
@@ -85,7 +85,7 @@ void exahype::Parser::readFile(const std::string& filename) {
       if (currentlyReadsComment && newToken.find("*/") != std::string::npos) {
         currentlyReadsComment = false;
       } else if (!currentlyReadsComment &&
-                 newToken.find("/*") != std::string::npos) {
+          newToken.find("/*") != std::string::npos) {
         currentlyReadsComment = true;
       } else if (!currentlyReadsComment) {
         logDebug("readFile(String)", "got token " << newToken);
@@ -106,7 +106,7 @@ std::string exahype::Parser::getTokenAfter(std::string token,
   assertion(isValid());
   int currentToken = 0;
   while (currentToken < static_cast<int>(_tokenStream.size()) &&
-         _tokenStream[currentToken] != token) {
+      _tokenStream[currentToken] != token) {
     currentToken++;
   }
   currentToken += (additionalTokensToSkip + 1);
@@ -123,11 +123,11 @@ std::string exahype::Parser::getTokenAfter(std::string token0,
   assertion(isValid());
   int currentToken = 0;
   while (currentToken < static_cast<int>(_tokenStream.size()) &&
-         _tokenStream[currentToken] != token0) {
+      _tokenStream[currentToken] != token0) {
     currentToken++;
   }
   while (currentToken < static_cast<int>(_tokenStream.size()) &&
-         _tokenStream[currentToken] != token1) {
+      _tokenStream[currentToken] != token1) {
     currentToken++;
   }
   currentToken += (additionalTokensToSkip + 1);
@@ -143,7 +143,7 @@ std::string exahype::Parser::getTokenAfter(std::string token0, int occurance0,
   assertion(occurance0 > 0);
   int currentToken = 0;
   while (currentToken < static_cast<int>(_tokenStream.size()) &&
-         (_tokenStream[currentToken] != token0 || occurance0 > 1)) {
+      (_tokenStream[currentToken] != token0 || occurance0 > 1)) {
     if (_tokenStream[currentToken] == token0) occurance0--;
     currentToken++;
   }
@@ -162,12 +162,12 @@ std::string exahype::Parser::getTokenAfter(std::string token0, int occurance0,
   assertion(occurance1 > 0);
   int currentToken = 0;
   while (currentToken < static_cast<int>(_tokenStream.size()) &&
-         (_tokenStream[currentToken] != token0 || occurance0 > 1)) {
+      (_tokenStream[currentToken] != token0 || occurance0 > 1)) {
     if (_tokenStream[currentToken] == token0) occurance0--;
     currentToken++;
   }
   while (currentToken < static_cast<int>(_tokenStream.size()) &&
-         (_tokenStream[currentToken] != token1 || occurance1 > 1)) {
+      (_tokenStream[currentToken] != token1 || occurance1 > 1)) {
     if (_tokenStream[currentToken] == token1) occurance1--;
     currentToken++;
   }
@@ -186,7 +186,7 @@ int exahype::Parser::getNumberOfThreads() const {
   if (result == 0) {
     logError("getNumberOfThreads()",
              "Invalid number of cores set: "
-                 << token << ". Use one core, i.e. switch off multithreading");
+             << token << ". Use one core, i.e. switch off multithreading");
     result = 1;
   }
   return result;
@@ -200,10 +200,10 @@ tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getDomainSize() const {
   result(0) = atof(token.c_str());
   token = getTokenAfter("computational-domain", "width", 1);
   result(1) = atof(token.c_str());
-  #if DIMENSIONS == 3
+#if DIMENSIONS == 3
   token = getTokenAfter("computational-domain", "width", 2);
   result(2) = atof(token.c_str());
-  #endif
+#endif
   return result;
 }
 
@@ -223,10 +223,10 @@ tarch::la::Vector<DIMENSIONS, double> exahype::Parser::getOffset() const {
   result(0) = atof(token.c_str());
   token = getTokenAfter("computational-domain", "offset", 1);
   result(1) = atof(token.c_str());
-  #if DIMENSIONS == 3
+#if DIMENSIONS == 3
   token = getTokenAfter("computational-domain", "offset", 2);
   result(2) = atof(token.c_str());
-  #endif
+#endif
   logDebug("getSize()", "found offset " << result);
   return result;
 }
@@ -279,7 +279,7 @@ int exahype::Parser::getMPITimeOut() const {
 
 
 exahype::Parser::MulticoreOracleType exahype::Parser::getMulticoreOracleType()
-    const {
+const {
   std::string token = getTokenAfter("shared-memory", "identifier");
   exahype::Parser::MulticoreOracleType result = MulticoreOracleType::Dummy;
   if (token.compare("dummy") == 0) {
@@ -291,7 +291,7 @@ exahype::Parser::MulticoreOracleType exahype::Parser::getMulticoreOracleType()
   } else {
     logError("getMulticoreOracleType()",
              "Invalid shared memory identifier "
-                 << token << ". Use dummy, autotuning, sampling. Set to dummy");
+             << token << ". Use dummy, autotuning, sampling. Set to dummy");
     result = MulticoreOracleType::Dummy;
   }
   return result;
@@ -521,10 +521,66 @@ std::string exahype::Parser::getMetricsIdentifierList() const {
 }
 
 void exahype::Parser::logSolverDetails(int solverNumber) const {
-    logInfo("logSolverDetails()", "Solver "               << getTokenAfter("solver", solverNumber * 2 + 1, 0) << " " << getIdentifier(solverNumber) << ":");
-    logInfo("logSolverDetails()", "variables:\t\t"        << getVariables(solverNumber));
-    logInfo("logSolverDetails()", "parameters:\t"         << getParameters(solverNumber));
-    logInfo("logSolverDetails()", "order:\t\t"            << getOrder(solverNumber));
-    logInfo("logSolverDetails()", "maximum-mesh-size:\t"  << getMaximumMeshSize(solverNumber));
-    logInfo("logSolverDetails()", "time-stepping:\t"      << getTokenAfter("solver", solverNumber * 2 + 1, "time-stepping", 1));
+  logInfo("logSolverDetails()", "Solver "               << getTokenAfter("solver", solverNumber * 2 + 1, 0) << " " << getIdentifier(solverNumber) << ":");
+  logInfo("logSolverDetails()", "variables:\t\t"        << getVariables(solverNumber));
+  logInfo("logSolverDetails()", "parameters:\t"         << getParameters(solverNumber));
+  logInfo("logSolverDetails()", "order:\t\t"            << getOrder(solverNumber));
+  logInfo("logSolverDetails()", "maximum-mesh-size:\t"  << getMaximumMeshSize(solverNumber));
+  logInfo("logSolverDetails()", "time-stepping:\t"      << getTokenAfter("solver", solverNumber * 2 + 1, "time-stepping", 1));
+}
+
+
+void exahype::Parser::checkSolverConsistency(int solverNumber) const {
+  assertion1(solverNumber < static_cast<int>(exahype::solvers::RegisteredSolvers.size()),solverNumber);
+  exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+  bool recompile       = false;
+  bool runToolkitAgain = false;
+  if (solver->getType() != getType(solverNumber)) {
+    logError("checkIfSolverIsConsistent","'" << getIdentifier(solverNumber) <<
+             "': Solver type in specification file" <<
+             "differs from implementation solver type.");
+    recompile = true;
+  }
+
+  if (solver->getIdentifier().compare(getIdentifier(solverNumber))) {
+    logError("checkSolverConsistency","'" << getIdentifier(solverNumber) <<
+             "': Identifier in specification file " <<
+             "('" << getIdentifier(solverNumber) << "') differs from identifier used in implementation ('" << solver->getIdentifier() << "').");
+    recompile = true;
+  }
+
+  if (solver->getNumberOfVariables() != getVariables(solverNumber)) {
+    logError("checkSolverConsistency","'" << getIdentifier(solverNumber) <<
+             "': Value for 'variables' in specification file" <<
+             "('" << getVariables(solverNumber) << "') differs from number of variables used in implementation file ('" << solver->getNumberOfVariables() << "').");
+    runToolkitAgain = true;
+  }
+
+  if (solver->getNumberOfParameters() != getParameters(solverNumber)) {
+    logError("checkSolverConsistency","'" << getIdentifier(solverNumber) <<
+             "': Value for field 'parameters' in specification file" <<
+             "('" << getParameters(solverNumber) << "') differs from  number of parameters used in implementation file ('" << solver->getNumberOfParameters() << "').");
+    runToolkitAgain = true;
+  }
+
+  if (solver->getNodesPerCoordinateAxis() != getOrder(solverNumber)+1) {
+    logError("checkSolverConsistency","'" << getIdentifier(solverNumber) <<
+             "': Value for field 'order' in specification file " <<
+             "('" << getOrder(solverNumber) << "') differs from value used in implementation file ('" << solver->getNodesPerCoordinateAxis()-1 << "'). " <<
+                 "Note that we specify the order as nodes per coordinate axis (order + 1) in the implementation file.");
+    recompile = true;
+  }
+
+  if (runToolkitAgain) {
+    logError("checkSolverConsistency","Please (1) adjust the specification file (*.exahype) or the file '" << solver->getIdentifier() << ".cpp' accordingly, (2) run the Toolkit again, and (3) recompile!");
+    std::cerr.flush();
+    exit(1);
+  }
+
+  if (recompile) {
+    logError("checkSolverConsistency","Please (1) adjust the specification file (*.exahype) or the file '" << solver->getIdentifier() << ".cpp' accordingly, and (2) recompile!");
+    std::cerr.flush();
+    exit(1);
+  }
 }

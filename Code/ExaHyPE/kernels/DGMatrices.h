@@ -10,14 +10,6 @@
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
-///////////////////////////////////////////////////////////////////////////////
-//                    HEADER FILE FOR ExaHyPE CODE                           //
-///////////////////////////////////////////////////////////////////////////////
-// Authors:   D.E. Charrier                                                  //
-// Code:      ExaHyPE                                                        //
-// File:      DGMatrices.h                                                   //
-///////////////////////////////////////////////////////////////////////////////
 #ifndef EXAHYPE_KERNELS_DGMATRICES_H
 #define EXAHYPE_KERNELS_DGMATRICES_H
 

@@ -44,8 +44,8 @@ void kernels::initSolvers(const exahype::Parser& parser) {
     profiler_identifier, metrics_vector);
 
   // Create and register solver
-  parser.logSolverDetails(0);
-  exahype::solvers::RegisteredSolvers.push_back( new SRHD::SRHDSolver(parser.getIdentifier(0), parser.getType(0), 0, parser.getVariables(0), parser.getParameters(0), parser.getOrder(0)+1, parser.getMaximumMeshSize(0), parser.getTimeStepping(0), std::move(profiler)));
+  exahype::solvers::RegisteredSolvers.push_back( new SRHD::SRHDSolver(0, parser.getMaximumMeshSize(0), parser.getTimeStepping(0), std::move(profiler)));
+  parser.checkSolverConsistency(0);
 
   
   exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter(0,0,parser));

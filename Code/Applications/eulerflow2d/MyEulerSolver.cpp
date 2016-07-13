@@ -1,8 +1,8 @@
 #include "MyEulerSolver.h"
 
-Euler2d::MyEulerSolver::MyEulerSolver(const std::string& identifier, exahype::solvers::Solver::Type type, int kernelNumber, int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
+Euler2d::MyEulerSolver::MyEulerSolver(int kernelNumber, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
   : exahype::solvers::Solver(
-            identifier, type, kernelNumber, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
+            "MyEulerSolver", exahype::solvers::Solver::Type::ADER_DG, kernelNumber, 5, 0, 3+1, maximumMeshSize, timeStepping, std::move(profiler)) {
 }
 
 bool Euler2d::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {

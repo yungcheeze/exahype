@@ -161,6 +161,16 @@ class exahype::Parser {
   void logSolverDetails(int solverNumber) const;
 
   /**
+   * Checks for inconsistencies between the ExaHyPE specification file
+   * and the build. Stops the program with an error
+   * if both are inconsistent.
+   *
+   * The fields type, identifier, variables, parameters, and order
+   * are considered in the inconsistency check.
+   */
+  void checkSolverConsistency(int solverNumber) const;
+
+  /**
    * \return The time stepping mode of a solver.
    */
   exahype::solvers::Solver::TimeStepping getTimeStepping(int solverNumber) const;

@@ -10,23 +10,6 @@
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
-///////////////////////////////////////////////////////////////////////////////
-//                    HEADER FILE FOR ExaHyPE CODE                           //
-///////////////////////////////////////////////////////////////////////////////
-// Authors:   D.E. Charrier                                                  //
-// Code:      ExaHyPE                                                        //
-// File:      gausslegendre.h                                                //
-///////////////////////////////////////////////////////////////////////////////
-
-/** \file gausslegendre.h
- *  \brief Header including Gauss-Legendre quadrature weights and abscissas
- *
- *  A Gauss-Legendre quadrature with \f$n\f$ nodes integrates a polynomial
- *  of order \f$2\,n-1\f$ exactly.
- */
-
-///////////////////////////////////////////////////////////////////////////////
 #ifndef GAUSSLEGENDRE_H_
 #define GAUSSLEGENDRE_H_
 
