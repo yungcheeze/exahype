@@ -245,8 +245,10 @@ class SpaceTimePredictorGenerator:
 
 
         # (2) rhs0(iVar,i,j,k,l) = weights3(i,j,k) * F0 * luh(iVar,i,j,k)
-        rhs0_length = self.m_config['nVar']*(self.m_config['nDof']**(self.m_config['nDim']+1))
-        l_sourceFile.write('  double* rhs0 = (double*) _mm_malloc('+str(rhs0_length)+'*sizeof(double),ALIGNMENT);\n')
+        rhs_length = self.m_config['nVar']*(self.m_config['nDof']**(self.m_config['nDim']+1))
+        l_sourceFile.write('  double* rhs0 = (double*) _mm_malloc('+str(rhs_length)+'*sizeof(double),ALIGNMENT);\n')
+        l_sourceFile.write('  double* rhs  = (double*) _mm_malloc('+str(rhs_length)+'*sizeof(double),ALIGNMENT);\n')
+
         if(self.m_config['nDim']==2):
             l_sourceFile.write('  for(int j=0;j<'+str(self.m_config['nDof'])+';j++) {\n'\
                                '    for(int i=0;i<'+str(self.m_config['nDof'])+';i++) {\n'\
@@ -303,9 +305,8 @@ class SpaceTimePredictorGenerator:
         # define a sequence of matmul configs
         l_matmulList = []
 
-        # TODO: comment in the picard loop
         # discrete Picard iterations
-        #l_sourceFile.write("  for(int iter=0;iter<"+str(self.m_config['nDof'])+";iter++) {\n")
+        l_sourceFile.write("  for(int iter=0;iter<"+str(self.m_config['nDof'])+";iter++) {\n")
 
         # distance in terms of memory addresses between flux in x,y,z direction
         fluxOffset = Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**(self.m_config['nDim']+1)
@@ -518,7 +519,7 @@ class SpaceTimePredictorGenerator:
                                     # K
                                     self.m_config['nDof'],                             \
                                     # LDA
-                                    Backend.getSizeWithPadding(self.m_config['nVar']) * self.m_config['nDof']**self.m_config['nDim'], \
+                                    self.m_config['nVar']*(self.m_config['nDof']**self.m_config['nDim']), \
                                     # LDB
                                     Backend.getSizeWithPadding(self.m_config['nDof']), \
                                     # LDC
@@ -554,7 +555,10 @@ class SpaceTimePredictorGenerator:
 
 
         # close picard iterations loop
-        #l_sourceFile.write('  } // for iter\n')
+        l_sourceFile.write('  } // for iter\n')
+
+        l_sourceFile.write('  _mm_free(rhs0);\n')
+        l_sourceFile.write('  _mm_free(rhs);\n')
 
         # write missing closing bracket
         l_sourceFile.write('}')
