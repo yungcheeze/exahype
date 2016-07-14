@@ -427,97 +427,90 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-        records::ADERDGCellDescription& p =
-            fineGridCell.getADERDGCellDescription(i);
+      auto& p = fineGridCell.getADERDGCellDescription(i);
 
-    exahype::solvers::Solver* solver =
-        exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+      exahype::solvers::Solver* solver =
+          exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
-    // space-time DoF (basisSize**(DIMENSIONS+1))
-    double* lQi = 0;
-    double* lFi = 0;
+      // space-time DoF (basisSize**(DIMENSIONS+1))
+      double* lQi = 0;
+      double* lFi = 0;
 
-    // volume DoF (basisSize**(DIMENSIONS))
-    double* luh = 0;
-    double* lQhi = 0;
-    double* lFhi = 0;
+      // volume DoF (basisSize**(DIMENSIONS))
+      double* luh = 0;
+      double* lQhi = 0;
+      double* lFhi = 0;
 
-    // face DoF (basisSize**(DIMENSIONS-1))
-    double* lQhbnd = 0;
-    double* lFhbnd = 0;
+      // face DoF (basisSize**(DIMENSIONS-1))
+      double* lQhbnd = 0;
+      double* lFhbnd = 0;
 
-    switch (p.getType()) {
-      case exahype::records::ADERDGCellDescription::Cell:
-        switch (p.getRefinementEvent()) {
-          case exahype::records::ADERDGCellDescription::None:
-          case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
-            lQi = DataHeap::getInstance()
-                      .getData(p.getSpaceTimePredictor())
-                      .data();
-            lFi = DataHeap::getInstance()
-                      .getData(p.getSpaceTimeVolumeFlux())
-                      .data();
+      switch (p.getType()) {
+        case exahype::records::ADERDGCellDescription::Cell:
+          assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
+          lQi = DataHeap::getInstance()
+                    .getData(p.getSpaceTimePredictor())
+                    .data();
+          lFi = DataHeap::getInstance()
+                    .getData(p.getSpaceTimeVolumeFlux())
+                    .data();
 
-            luh = DataHeap::getInstance().getData(p.getSolution()).data();
-            lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
-            lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
+          luh = DataHeap::getInstance().getData(p.getSolution()).data();
+          lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
+          lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
 
-            lQhbnd = DataHeap::getInstance()
-                         .getData(p.getExtrapolatedPredictor())
-                         .data();
-            lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
+          lQhbnd = DataHeap::getInstance()
+                       .getData(p.getExtrapolatedPredictor())
+                       .data();
+          lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
-            solver->spaceTimePredictor(
-                lQi, lFi, lQhi, lFhi,
-                lQhbnd,  // da kommt was drauf todo what does this mean?
-                lFhbnd,  // da kommt was drauf todo what does this mean?
-                luh, fineGridVerticesEnumerator.getCellSize(),
-                p.getPredictorTimeStepSize());
+          solver->spaceTimePredictor(
+              lQi, lFi, lQhi, lFhi,
+              lQhbnd,  // da kommt was drauf todo what does this mean?
+              lFhbnd,  // da kommt was drauf todo what does this mean?
+              luh, fineGridVerticesEnumerator.getCellSize(),
+              p.getPredictorTimeStepSize());
 
-            assertionEquals2(luh[0], luh[0],
-                             fineGridVerticesEnumerator.toString(),
-                             fineGridVerticesEnumerator
-                                 .getVertexPosition());  // check if nan
-            assertionEquals2(lQi[0], lQi[0],
-                             fineGridVerticesEnumerator.toString(),
-                             fineGridVerticesEnumerator
-                                 .getVertexPosition());  // check if nan
-            assertionEquals2(lFi[0], lFi[0],
-                             fineGridVerticesEnumerator.toString(),
-                             fineGridVerticesEnumerator
-                                 .getVertexPosition());  // check if nan
-            assertionEquals2(lQhi[0], lQhi[0],
-                             fineGridVerticesEnumerator.toString(),
-                             fineGridVerticesEnumerator
-                                 .getVertexPosition());  // check if nan
-            assertionEquals2(luh[0], luh[0],
-                             fineGridVerticesEnumerator.toString(),
-                             fineGridVerticesEnumerator
-                                 .getVertexPosition());  // check if nan
-            assertionEquals2(lFhi[0], lFhi[0],
-                             fineGridVerticesEnumerator.toString(),
-                             fineGridVerticesEnumerator
-                                 .getVertexPosition());  // check if nan
-            assertionEquals2(luh[0], luh[0],
-                             fineGridVerticesEnumerator.toString(),
-                             fineGridVerticesEnumerator
-                                 .getVertexPosition());  // check if nan
-            assertionEquals2(lQhbnd[0], lQhbnd[0],
-                             fineGridVerticesEnumerator.toString(),
-                             fineGridVerticesEnumerator
-                                 .getVertexPosition());  // check if nan
-            assertionEquals2(lFhbnd[0], lFhbnd[0],
-                             fineGridVerticesEnumerator.toString(),
-                             fineGridVerticesEnumerator
-                                 .getVertexPosition());  // check if nan
-            break;
-          default:
-            break;
-        }
-        break;
-      default:
-        break;
-    }
+          assertionEquals2(luh[0], luh[0],
+                           fineGridVerticesEnumerator.toString(),
+                           fineGridVerticesEnumerator
+                               .getVertexPosition());  // check if nan
+          assertionEquals2(lQi[0], lQi[0],
+                           fineGridVerticesEnumerator.toString(),
+                           fineGridVerticesEnumerator
+                               .getVertexPosition());  // check if nan
+          assertionEquals2(lFi[0], lFi[0],
+                           fineGridVerticesEnumerator.toString(),
+                           fineGridVerticesEnumerator
+                               .getVertexPosition());  // check if nan
+          assertionEquals2(lQhi[0], lQhi[0],
+                           fineGridVerticesEnumerator.toString(),
+                           fineGridVerticesEnumerator
+                               .getVertexPosition());  // check if nan
+          assertionEquals2(luh[0], luh[0],
+                           fineGridVerticesEnumerator.toString(),
+                           fineGridVerticesEnumerator
+                               .getVertexPosition());  // check if nan
+          assertionEquals2(lFhi[0], lFhi[0],
+                           fineGridVerticesEnumerator.toString(),
+                           fineGridVerticesEnumerator
+                               .getVertexPosition());  // check if nan
+          assertionEquals2(luh[0], luh[0],
+                           fineGridVerticesEnumerator.toString(),
+                           fineGridVerticesEnumerator
+                               .getVertexPosition());  // check if nan
+          assertionEquals2(lQhbnd[0], lQhbnd[0],
+                           fineGridVerticesEnumerator.toString(),
+                           fineGridVerticesEnumerator
+                               .getVertexPosition());  // check if nan
+          assertionEquals2(lFhbnd[0], lFhbnd[0],
+                           fineGridVerticesEnumerator.toString(),
+                           fineGridVerticesEnumerator
+                               .getVertexPosition());  // check if nan
+          break;
+        default:
+          break;
+      }
     endpfor
 
     peano::datatraversal::autotuning::Oracle::getInstance()

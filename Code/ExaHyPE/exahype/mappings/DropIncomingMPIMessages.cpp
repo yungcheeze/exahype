@@ -170,30 +170,20 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
     const int destCellDescriptionIndex =
         adjacentADERDGCellDescriptionsIndices(destScalar);
 
-    if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-            destCellDescriptionIndex)) {
+    if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex)) {
       std::vector<records::ADERDGCellDescription>& cellDescriptions =
-          ADERDGCellDescriptionHeap::getInstance().getData(
-              destCellDescriptionIndex);
+          ADERDGCellDescriptionHeap::getInstance().getData(destCellDescriptionIndex);
 
-      for (int currentSolver = 0;
-           currentSolver < static_cast<int>(cellDescriptions.size());
-           currentSolver++) {
-        if (cellDescriptions[currentSolver].getType() ==
-            exahype::records::ADERDGCellDescription::Cell) {
-          const int normalOfExchangedFace =
-              tarch::la::equalsReturnIndex(src, dest);
-          assertion(normalOfExchangedFace >= 0 &&
-                    normalOfExchangedFace < DIMENSIONS);
+      for (int currentSolver = 0; currentSolver < static_cast<int>(cellDescriptions.size()); currentSolver++) {
+        if (cellDescriptions[currentSolver].getType() == exahype::records::ADERDGCellDescription::Cell) {
+          const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
+          assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
 
-          assertion(DataHeap::getInstance().isValidIndex(
-              cellDescriptions[currentSolver].getExtrapolatedPredictor()));
-          assertion(DataHeap::getInstance().isValidIndex(
-              cellDescriptions[currentSolver].getFluctuation()));
+          assertion(DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getExtrapolatedPredictor()));
+          assertion(DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getFluctuation()));
 
           if (adjacentADERDGCellDescriptionsIndices(destScalar) ==
-              multiscalelinkedcell::HangingVertexBookkeeper::
-                  DomainBoundaryAdjacencyIndex) {
+              multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
 #if defined(PeriodicBC)
             assertionMsg(false, "Vasco, we have to implement this");
 #else

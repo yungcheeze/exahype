@@ -356,25 +356,17 @@ void exahype::mappings::VolumeIntegral::enterCell(
 
     switch (p.getType()) {
       case exahype::records::ADERDGCellDescription::Cell:
-        switch (p.getRefinementEvent()) {
-          case exahype::records::ADERDGCellDescription::None:
-          case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
-            lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
-            lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
+        assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
+        lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
+        lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
 
-            assertionEquals(lduh[0], lduh[0]);  // assert no nan
-            assertionEquals(lFhi[0], lFhi[0]);  // assert no nan
+        assertionEquals(lduh[0], lduh[0]);  // assert no nan
+        assertionEquals(lFhi[0], lFhi[0]);  // assert no nan
 
-            solver->volumeIntegral(lduh, lFhi,
-                                   fineGridVerticesEnumerator.getCellSize());
+        solver->volumeIntegral(lduh, lFhi,
+                               fineGridVerticesEnumerator.getCellSize());
 
-            assertionEquals(lduh[0], lduh[0]);  // assert no nan
-
-            logDebug("enterCell(...)::debug::after::lduh[0]", lduh[0]);
-            break;
-          default:
-            break;
-        }
+        assertionEquals(lduh[0], lduh[0]);  // assert no nan
         break;
       default:
         break;

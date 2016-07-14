@@ -351,26 +351,18 @@ void exahype::mappings::NewTimeStep::enterCell(
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-        records::ADERDGCellDescription& p =
-            ADERDGCellDescriptionHeap::getInstance().getData(
-                fineGridCell.getADERDGCellDescriptionsIndex())[i];
-
-    exahype::solvers::Solver* solver =
-        exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
-    switch (p.getType()) {
-      case exahype::records::ADERDGCellDescription::Cell:
-        switch (p.getRefinementEvent()) {
-          case exahype::records::ADERDGCellDescription::None:
-          case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
-            solver->synchroniseTimeStepping(p);
-            break;
-          default:
-            break;
-        }
-        break;
-      default:
-        break;
-    }
+      records::ADERDGCellDescription& p =
+          ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i];
+      exahype::solvers::Solver* solver =
+          exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+      switch (p.getType()) {
+        case exahype::records::ADERDGCellDescription::Cell:
+          assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
+          solver->synchroniseTimeStepping(p);
+          break;
+        default:
+          break;
+      }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
         .parallelSectionHasTerminated(methodTrace);
   }

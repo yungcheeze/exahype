@@ -303,27 +303,20 @@ void exahype::mappings::Plot::enterCell(
       for (const auto& pPatch :
            ADERDGCellDescriptionHeap::getInstance().getData(
                fineGridCell.getADERDGCellDescriptionsIndex())) {
-        double* u;
+        double* u = 0;
 
         switch (pPatch.getType()) {
           case exahype::records::ADERDGCellDescription::Cell:
-            switch (pPatch.getRefinementEvent()) {
-              case exahype::records::ADERDGCellDescription::None:
-              case exahype::records::ADERDGCellDescription::
-                  DeaugmentingRequested:
-                u = DataHeap::getInstance()
-                        .getData(pPatch.getSolution())
-                        .data();
+            assertion1(pPatch.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pPatch.toString());
+            u = DataHeap::getInstance()
+                    .getData(pPatch.getSolution())
+                    .data();
 
-                if (pPlotter->plotDataFromSolver(pPatch.getSolverNumber())) {
-                  pPlotter->plotPatch(
-                      fineGridVerticesEnumerator.getVertexPosition(),
-                      fineGridVerticesEnumerator.getCellSize(), u,
-                      pPatch.getCorrectorTimeStamp());
-                }
-                break;
-              default:
-                break;
+            if (pPlotter->plotDataFromSolver(pPatch.getSolverNumber())) {
+              pPlotter->plotPatch(
+                  fineGridVerticesEnumerator.getVertexPosition(),
+                  fineGridVerticesEnumerator.getCellSize(), u,
+                  pPatch.getCorrectorTimeStamp());
             }
             break;
           default:

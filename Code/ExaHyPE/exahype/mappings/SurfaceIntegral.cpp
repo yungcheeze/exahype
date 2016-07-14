@@ -347,32 +347,24 @@ void exahype::mappings::SurfaceIntegral::enterCell(
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-        records::ADERDGCellDescription& p =
-            ADERDGCellDescriptionHeap::getInstance().getData(
-                fineGridCell.getADERDGCellDescriptionsIndex())[i];
-    exahype::solvers::Solver* solver =
-        exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
-    double* lduh = 0;
-    double* lFhbnd = 0;
+      auto& p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i];
+      exahype::solvers::Solver* solver =
+          exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+      double* lduh = 0;
+      double* lFhbnd = 0;
 
-    switch (p.getType()) {
-      case exahype::records::ADERDGCellDescription::Cell:
-        switch (p.getRefinementEvent()) {
-          case exahype::records::ADERDGCellDescription::None:
-          case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
-            lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
-            lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
+      switch (p.getType()) {
+        case exahype::records::ADERDGCellDescription::Cell:
+          assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
+          lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
+          lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
-            solver->surfaceIntegral(lduh, lFhbnd,
-                                    fineGridVerticesEnumerator.getCellSize());
-            break;
-          default:
-            break;
-        }
-        break;
-      default:
-        break;
-    }
+          solver->surfaceIntegral(lduh, lFhbnd,
+                                  fineGridVerticesEnumerator.getCellSize());
+          break;
+        default:
+          break;
+      }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
         .parallelSectionHasTerminated(methodTrace);
   }

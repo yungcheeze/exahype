@@ -550,67 +550,43 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
 
-    pfor(i, 0, numberOfADERDGCellDescriptions,
-         grainSize) if (cellDescriptionsOfLeftCell[i].getType() ==
-                            exahype::records::ADERDGCellDescription::Cell ||
-                        cellDescriptionsOfRightCell[i].getType() ==
-                            exahype::records::ADERDGCellDescription::Cell) {
-      assertion1(cellDescriptionsOfLeftCell[i].getType() ==
-                         exahype::records::ADERDGCellDescription::Cell ||
-                     cellDescriptionsOfLeftCell[i].getType() ==
-                         exahype::records::ADERDGCellDescription::Ancestor ||
-                     cellDescriptionsOfLeftCell[i].getType() ==
-                         exahype::records::ADERDGCellDescription::Descendant,
+    pfor(i, 0, numberOfADERDGCellDescriptions,grainSize)
+      if (cellDescriptionsOfLeftCell [i].getType() == exahype::records::ADERDGCellDescription::Cell ||
+          cellDescriptionsOfRightCell[i].getType() == exahype::records::ADERDGCellDescription::Cell) {
+      assertion1(cellDescriptionsOfLeftCell[i].getType() == exahype::records::ADERDGCellDescription::Cell ||
+                 cellDescriptionsOfLeftCell[i].getType() == exahype::records::ADERDGCellDescription::Ancestor ||
+                 cellDescriptionsOfLeftCell[i].getType() == exahype::records::ADERDGCellDescription::Descendant,
                  cellDescriptionsOfLeftCell[i].toString());
-      assertion1(cellDescriptionsOfRightCell[i].getType() ==
-                         exahype::records::ADERDGCellDescription::Cell ||
-                     cellDescriptionsOfRightCell[i].getType() ==
-                         exahype::records::ADERDGCellDescription::Ancestor ||
-                     cellDescriptionsOfRightCell[i].getType() ==
-                         exahype::records::ADERDGCellDescription::Descendant,
+      assertion1(cellDescriptionsOfRightCell[i].getType() == exahype::records::ADERDGCellDescription::Cell ||
+                 cellDescriptionsOfRightCell[i].getType() == exahype::records::ADERDGCellDescription::Ancestor ||
+                 cellDescriptionsOfRightCell[i].getType() == exahype::records::ADERDGCellDescription::Descendant,
                  cellDescriptionsOfRightCell[i].toString());
-
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[cellDescriptionsOfLeftCell[i]
-                                                  .getSolverNumber()];
-      assertionEquals4(cellDescriptionsOfLeftCell[i].getRiemannSolvePerformed(
-                           faceIndexForLeftCell),
-                       cellDescriptionsOfRightCell[i].getRiemannSolvePerformed(
-                           faceIndexForRightCell),
+      assertion1(cellDescriptionsOfLeftCell [i].getRefinementEvent()==exahype::records::ADERDGCellDescription::None,
+                 cellDescriptionsOfLeftCell [i].toString());
+      assertion1(cellDescriptionsOfRightCell[i].getRefinementEvent()==exahype::records::ADERDGCellDescription::None,
+                 cellDescriptionsOfRightCell[i].toString());
+      assertionEquals4(cellDescriptionsOfLeftCell[i].getRiemannSolvePerformed(faceIndexForLeftCell),
+                       cellDescriptionsOfRightCell[i].getRiemannSolvePerformed(faceIndexForRightCell),
                        faceIndexForLeftCell, faceIndexForRightCell,
                        cellDescriptionsOfLeftCell[i].toString(),
                        cellDescriptionsOfRightCell[i].toString());
+      auto* solver =
+          exahype::solvers::RegisteredSolvers[cellDescriptionsOfLeftCell[i].getSolverNumber()];
 
-      if (!cellDescriptionsOfLeftCell[i].getRiemannSolvePerformed(
-              faceIndexForLeftCell)) {
-        cellDescriptionsOfLeftCell[i].setRiemannSolvePerformed(
-            faceIndexForLeftCell, true);
-        cellDescriptionsOfRightCell[i].setRiemannSolvePerformed(
-            faceIndexForRightCell, true);
+
+      if (!cellDescriptionsOfLeftCell[i].getRiemannSolvePerformed(faceIndexForLeftCell)) {
+        cellDescriptionsOfLeftCell[i].setRiemannSolvePerformed(faceIndexForLeftCell, true);
+        cellDescriptionsOfRightCell[i].setRiemannSolvePerformed(faceIndexForRightCell, true);
 
         const int numberOfFaceDof = solver->getUnknownsPerFace();
 
-        double* QL =
-            DataHeap::getInstance()
-                .getData(
-                    cellDescriptionsOfLeftCell[i].getExtrapolatedPredictor())
-                .data() +
+        double* QL = DataHeap::getInstance() .getData(cellDescriptionsOfLeftCell[i].getExtrapolatedPredictor()).data() +
             (faceIndexForLeftCell * numberOfFaceDof);
-        double* QR =
-            DataHeap::getInstance()
-                .getData(
-                    cellDescriptionsOfRightCell[i].getExtrapolatedPredictor())
-                .data() +
+        double* QR = DataHeap::getInstance().getData(cellDescriptionsOfRightCell[i].getExtrapolatedPredictor()).data() +
             (faceIndexForRightCell * numberOfFaceDof);
-        double* FL =
-            DataHeap::getInstance()
-                .getData(cellDescriptionsOfLeftCell[i].getFluctuation())
-                .data() +
+        double* FL = DataHeap::getInstance().getData(cellDescriptionsOfLeftCell[i].getFluctuation()).data() +
             (faceIndexForLeftCell * numberOfFaceDof);
-        double* FR =
-            DataHeap::getInstance()
-                .getData(cellDescriptionsOfRightCell[i].getFluctuation())
-                .data() +
+        double* FR = DataHeap::getInstance().getData(cellDescriptionsOfRightCell[i].getFluctuation()).data() +
             (faceIndexForRightCell * numberOfFaceDof);
 
         solver->synchroniseTimeStepping(cellDescriptionsOfLeftCell[i]);
@@ -622,7 +598,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
         logDebug("touchVertexLastTime(...)::debug::before::FR[0]", FR[0]);
 
         // todo Time step must be interpolated in local time stepping case
-
+        // both time step sizes are the same, so the min has no effect here.
         solver->riemannSolver(
             FL, FR, QL, QR,
             std::min(cellDescriptionsOfLeftCell[i].getCorrectorTimeStepSize(),
@@ -665,21 +641,12 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
 
-    pfor(i, 0, numberOfADERDGCellDescriptions,
-         grainSize) if (!cellDescriptions[i]
-                             .getRiemannSolvePerformed(faceIndex)) {
+    pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
+    if (!cellDescriptions[i].getRiemannSolvePerformed(faceIndex)) {
       cellDescriptions[i].setRiemannSolvePerformed(faceIndex, true);
       switch (cellDescriptions[i].getType()) {
         case exahype::records::ADERDGCellDescription::Cell:
-          switch (cellDescriptions[i].getRefinementEvent()) {
-            case exahype::records::ADERDGCellDescription::None:
-            case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
-              applyBoundaryConditions(cellDescriptions[i], faceIndex,
-                                      normalNonZero);
-              break;
-            default:
-              break;
-          }
+          applyBoundaryConditions(cellDescriptions[i], faceIndex, normalNonZero);
           break;
         default:
           break;
@@ -693,7 +660,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
     records::ADERDGCellDescription& cellDescription, const int faceIndexForCell,
     const int normalNonZero, const int indexOfQValues,
     const int indexOfFValues) {
-  exahype::solvers::Solver* solver =
+  auto* solver =
       exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
 
   cellDescription.setRiemannSolvePerformed(faceIndexForCell, true);
@@ -763,6 +730,8 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
 void exahype::mappings::RiemannSolver::applyBoundaryConditions(
     records::ADERDGCellDescription& cellDescription, const int faceIndex,
     const int normalNonZero) {
+  assertion1(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,cellDescription.toString());
+
   exahype::solvers::Solver* solver =
       exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
 
@@ -770,12 +739,9 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
 
   const int numberOfFaceDof = solver->getUnknownsPerFace();
 
-  double* lQhbnd = DataHeap::getInstance()
-                       .getData(cellDescription.getExtrapolatedPredictor())
-                       .data() +
-                   (faceIndex * numberOfFaceDof);
-  double* lFhbnd =
-      DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
+  double* lQhbnd = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data() +
+      (faceIndex * numberOfFaceDof);
+  double* lFhbnd = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
       (faceIndex * numberOfFaceDof);
 
   solver->synchroniseTimeStepping(cellDescription);

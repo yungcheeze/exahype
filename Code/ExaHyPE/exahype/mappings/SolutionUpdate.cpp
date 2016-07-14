@@ -333,6 +333,9 @@ void exahype::mappings::SolutionUpdate::enterCell(
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
           fineGridCell.getADERDGCellDescriptionsIndex())) {
+    assertionEquals(ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size(),
+                    exahype::solvers::RegisteredSolvers.size());
+
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
             .getData(fineGridCell.getADERDGCellDescriptionsIndex())
@@ -347,10 +350,10 @@ void exahype::mappings::SolutionUpdate::enterCell(
 
     // clang-format off
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-        records::ADERDGCellDescription& pFine =
-            ADERDGCellDescriptionHeap::getInstance().getData(
-                fineGridCell.getADERDGCellDescriptionsIndex())[i];
-      exahype::solvers::Solver* solver =
+      auto& pFine =
+          ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i];
+
+      auto* solver =
           exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
 
       double* luh;
@@ -359,8 +362,11 @@ void exahype::mappings::SolutionUpdate::enterCell(
       switch (pFine.getType()) {
         case exahype::records::ADERDGCellDescription::Cell:
           switch (pFine.getRefinementEvent()) {
+            // Unlike the other ADERDG mappings, this mapping is used
+            // in the adaptive mesh refinement routine.
+            // We thus make sure here that only cells with stable
+            // refinement status are updated.
             case exahype::records::ADERDGCellDescription::None:
-            case exahype::records::ADERDGCellDescription::DeaugmentingRequested:
               luh = DataHeap::getInstance().getData(pFine.getSolution()).data();
               lduh = DataHeap::getInstance().getData(pFine.getUpdate()).data();
 
@@ -370,9 +376,9 @@ void exahype::mappings::SolutionUpdate::enterCell(
               solver->solutionUpdate(luh, lduh, pFine.getCorrectorTimeStepSize());
 
               if (solver->hasToAdjustSolution(
-                      fineGridVerticesEnumerator.getCellCenter(),
-                      fineGridVerticesEnumerator.getCellSize(),
-                      pFine.getCorrectorTimeStamp())) {
+                  fineGridVerticesEnumerator.getCellCenter(),
+                  fineGridVerticesEnumerator.getCellSize(),
+                  pFine.getCorrectorTimeStamp())) {
                 solver->solutionAdjustment(
                     luh, fineGridVerticesEnumerator.getCellCenter(),
                     fineGridVerticesEnumerator.getCellSize(),
@@ -381,7 +387,6 @@ void exahype::mappings::SolutionUpdate::enterCell(
 
               assertionEquals(luh[0],luh[0]); // assert no nan
               assertionEquals(lduh[0],lduh[0]); // assert no nan
-
               break;
             default:
               break;
