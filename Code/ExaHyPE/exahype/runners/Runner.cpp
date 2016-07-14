@@ -241,6 +241,7 @@ int exahype::runners::Runner::runAsMaster(
     repository.iterate();
     gridSetupIterations++;
   } while (!repository.getState().isGridBalanced());
+  repository.iterate();
 
   repository.switchToAugmentedAMRGrid();
   do {
@@ -250,8 +251,8 @@ int exahype::runners::Runner::runAsMaster(
   repository.iterate();
 
 //    NOTE: Only plot the tree in 2d. Otherwise the program will crash.
-//    repository.switchToPlotAugmentedAMRGrid();
-//    repository.iterate();
+//  repository.switchToPlotAugmentedAMRGrid();
+//  repository.iterate();
 
   logInfo("runAsMaster()",
           "grid setup iterations=" << gridSetupIterations << ", max-level="
