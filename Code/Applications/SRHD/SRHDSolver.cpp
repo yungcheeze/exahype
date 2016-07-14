@@ -13,9 +13,9 @@ void pdeflux_(double* F, const double* const Q);
 void pdeeigenvalues_(double* lambda, const double* const Q, const int* normalNonZeroIndex);
 }
 
-SRHD::SRHDSolver::SRHDSolver(int kernelNumber, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
+SRHD::SRHDSolver::SRHDSolver(int kernelNumber, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
   : exahype::solvers::Solver(
-      "SRHDSolver", exahype::solvers::Solver::Type::ADER_DG, kernelNumber, 5, 0, 1+1, maximumMeshSize, timeStepping, std::move(profiler)) {
+      "SRHDSolver", exahype::solvers::Solver::Type::ADER_DG, kernelNumber, 5, 0, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
 }
 
 void SRHD::SRHDSolver::flux(const double* const Q, double** F) {
@@ -61,7 +61,12 @@ void SRHD::SRHDSolver::adjustedSolutionValues(const double* const x,const double
 
 
 exahype::solvers::Solver::RefinementControl SRHD::SRHDSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
-
+  
+  if (dx[0] > getMaximumMeshSize()/3.) {
+    if (center[0] > 0.49 && center[0] < 0.51) {
+      return exahype::solvers::Solver::RefinementControl::Refine;
+    }
+  }  
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 

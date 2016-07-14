@@ -3,7 +3,7 @@
 // the script generate-buildinfo.sh. Recompile all depending
 // make targets afterwards.
 /////////////////////////////////////////////////////////////////
-#define EXAHYPE_GIT_BRANCH          ""
-#define EXAHYPE_GIT_COMMIT_REVISION "1a694ccdd7c49bb2eb46a251efe6b97527363c30"
-#define EXAHYPE_GIT_COMMIT_DATE     "Thu Jun 23 16:03:47 2016 +0200"
-#define EXAHYPE_BUILD_DATE          "Thu Jun 23 17:39:00 CEST 2016"
+#define EXAHYPE_GIT_BRANCH          "master"
+#define EXAHYPE_GIT_COMMIT_REVISION "58f983a8a5e2cf32b33f0e78515d894c56289048"
+#define EXAHYPE_GIT_COMMIT_DATE     "Wed Jul 13 21:10:03 2016 +0100"
+#define EXAHYPE_BUILD_DATE          "Wed Jul 13 21:58:06 BST 2016"

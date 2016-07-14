@@ -130,7 +130,8 @@ void exahype::plotters::ADERDG2ProbeAscii::plotPatch(
       if ( _select.find(identifier.str())!=std::string::npos || _select.find("all")!=std::string::npos ) {
         double value = 0.0;
 
-        // The code below evaluates the basis functions at the reference coordinates.
+        // The code below evaluates the basis functions at the reference coordinates
+        // and multiplies them with their respective coefficient.
         dfor(ii,_order+1) { // Gauss-Legendre node indices
           int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
           value += kernels::basisFunctions[_order][ii(0)](xRef(0)) *

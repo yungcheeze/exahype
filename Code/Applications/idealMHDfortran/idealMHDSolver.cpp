@@ -2,9 +2,9 @@
 
 #include <memory>
 
-srhd3dfortran::idealMHDSolver::idealMHDSolver(int kernelNumber, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
+srhd3dfortran::idealMHDSolver::idealMHDSolver(int kernelNumber, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
   : exahype::solvers::Solver(
-            "idealMHDSolver", exahype::solvers::Solver::Type::ADER_DG, kernelNumber, 9, 0, 3+1, maximumMeshSize, timeStepping, std::move(profiler)) {
+            "idealMHDSolver", exahype::solvers::Solver::Type::ADER_DG, kernelNumber, 9, 0, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
   // @todo Please implement/augment if required
 }
 

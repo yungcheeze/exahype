@@ -48,7 +48,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"kernels/KernelCalls.h\"\n\n");
 
       _writer.write("#include \"kernels/GaussLegendreQuadrature.h\"\n");
-      _writer.write("#include \"kernels/DGMatrices.h\"\n\n");
+      _writer.write("#include \"kernels/DGMatrices.h\"\n");
+      _writer.write("#include \"kernels/DGBasisFunctions.h\"\n\n");
 
       _methodBodyWriter.write("void kernels::initSolvers(const exahype::Parser& parser) {\n");
       if (node.getSolver().size() == 0) {
@@ -96,7 +97,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _methodBodyWriter.write("  // Create and register solver\n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
-    		                  "::" + solverName + "("+_kernelNumber+", parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)));\n");
+    		                  "::" + solverName + "("+_kernelNumber+", parser.getOrder("+_kernelNumber+")+1, parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)));\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
       _kernelNumber++;
@@ -133,7 +134,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "    orders.insert(p->getNodesPerCoordinateAxis()-1);\n"+
           "  }\n"+
           "  kernels::initGaussLegendreNodesAndWeights(orders);\n"+
-          "  kernels::initDGMatrices(orders);\n");
+          "  kernels::initDGMatrices(orders);\n" +
+          "  kernels::initBasisFunctions(orders);\n");
       _methodBodyWriter.write("}\n"); // close initSolvers(...)
       _methodBodyWriter.write("\n");
       _methodBodyWriter.write("\n");
@@ -144,7 +146,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "    orders.insert(p->getNodesPerCoordinateAxis()-1);\n" +
           "  }\n" +
           "  kernels::freeGaussLegendreNodesAndWeights(orders);\n"+
-          "  kernels::freeDGMatrices(orders);\n\n"+
+          "  kernels::freeDGMatrices(orders);\n"+
+          "  kernels::freeBasisFunctions(orders);\n\n"+
           "  for (auto solver : exahype::solvers::RegisteredSolvers) {\n"+
           "    delete solver;\n"+
           "  }\n"+

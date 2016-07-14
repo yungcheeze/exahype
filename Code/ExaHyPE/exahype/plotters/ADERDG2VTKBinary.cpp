@@ -138,8 +138,6 @@ void exahype::plotters::ADERDG2VTKBinary::plotPatch(
       _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _order).first;
 
 // @todo 16/05/03:Dominic Etienne Charrier
-// This is the dirty way to perform the projection
-// Feel free to modify.
 // This is depending on the choice of basis/implementation.
 // The equidistant grid projection should therefore be moved into the solver.
   dfor(i,_order+1) {

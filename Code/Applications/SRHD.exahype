@@ -33,7 +33,7 @@ exahype-project  SRHD
   
   shared-memory
     identifier               = dummy
-    cores                    = 30
+    cores                    = 2
     properties-file          = sharedmemory.properties
   end shared-memory
   
@@ -53,7 +53,7 @@ exahype-project  SRHD
 
     plot vtk::binary
       time     = 0.0
-      repeat   = 0.004
+      repeat   = 0.05
       output   = ./output/solution
       select   = {all}
     end plot
