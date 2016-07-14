@@ -65,7 +65,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   public void inAAderdgSolver(eu.exahype.node.AAderdgSolver node) {
     try {
       String solverName = node.getName().toString().trim();
-
+      int order         = Integer.parseInt(node.getOrder().getText());
+      
       _writer.write("#include \"" + solverName + ".h\"\n");
 
       _methodBodyWriter.write("  std::string profiler_identifier = parser.getProfilerIdentifier();\n");
@@ -97,7 +98,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _methodBodyWriter.write("  // Create and register solver\n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
-    		                  "::" + solverName + "("+_kernelNumber+", parser.getOrder("+_kernelNumber+")+1, parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)));\n");
+    		                  "::" + solverName + "("+_kernelNumber+", "+order+"+1, parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)));\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
       _kernelNumber++;

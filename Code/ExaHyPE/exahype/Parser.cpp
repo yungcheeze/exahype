@@ -554,26 +554,25 @@ void exahype::Parser::checkSolverConsistency(int solverNumber) const {
     logError("checkSolverConsistency","'" << getIdentifier(solverNumber) <<
              "': Value for 'variables' in specification file" <<
              "('" << getVariables(solverNumber) << "') differs from number of variables used in implementation file ('" << solver->getNumberOfVariables() << "').");
-    runToolkitAgain = true;
+    recompile = true;
   }
 
   if (solver->getNumberOfParameters() != getParameters(solverNumber)) {
     logError("checkSolverConsistency","'" << getIdentifier(solverNumber) <<
              "': Value for field 'parameters' in specification file" <<
              "('" << getParameters(solverNumber) << "') differs from  number of parameters used in implementation file ('" << solver->getNumberOfParameters() << "').");
+    recompile = true;
+  }
+
+  if (solver->getNodesPerCoordinateAxis() != getOrder(solverNumber)+1) {
+    logError("checkSolverConsistency","'" << getIdentifier(solverNumber) <<
+             "': Value for field 'order' in specification file " <<
+             "('" << getOrder(solverNumber) << "') differs from value used in implementation file ('" << solver->getNodesPerCoordinateAxis()-1 << "'). ");
     runToolkitAgain = true;
   }
 
-//  if (solver->getNodesPerCoordinateAxis() != getOrder(solverNumber)+1) {
-//    logError("checkSolverConsistency","'" << getIdentifier(solverNumber) <<
-//             "': Value for field 'order' in specification file " <<
-//             "('" << getOrder(solverNumber) << "') differs from value used in implementation file ('" << solver->getNodesPerCoordinateAxis()-1 << "'). " <<
-//                 "Note that we specify the order as nodes per coordinate axis (order + 1) in the implementation file.");
-//    recompile = true;
-//  }
-
   if (runToolkitAgain) {
-    logError("checkSolverConsistency","Please (1) adjust the specification file (*.exahype) or the file '" << solver->getIdentifier() << ".cpp' accordingly, (2) run the Toolkit again, and (3) recompile!");
+    logError("checkSolverConsistency","Please (1) run the Toolkit again, and (2) recompile!");
     std::cerr.flush();
     exit(1);
   }
