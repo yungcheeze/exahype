@@ -4,7 +4,8 @@
 peano::CommunicationSpecification   exahype::adapters::RegularMesh::communicationSpecification() {
   return peano::CommunicationSpecification::getMinimalSpecification()
    & exahype::mappings::RegularMesh::communicationSpecification()
-   & exahype::adapters::RegularMesh2MultiscaleLinkedCell_1::communicationSpecification()
+   & exahype::mappings::SolutionUpdate::communicationSpecification()
+   & exahype::adapters::RegularMesh2MultiscaleLinkedCell_2::communicationSpecification()
 
   ;
 }
@@ -13,7 +14,8 @@ peano::CommunicationSpecification   exahype::adapters::RegularMesh::communicatio
 peano::MappingSpecification   exahype::adapters::RegularMesh::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::RegularMesh::touchVertexLastTimeSpecification()
-   & exahype::adapters::RegularMesh2MultiscaleLinkedCell_1::touchVertexLastTimeSpecification()
+   & exahype::mappings::SolutionUpdate::touchVertexLastTimeSpecification()
+   & exahype::adapters::RegularMesh2MultiscaleLinkedCell_2::touchVertexLastTimeSpecification()
 
   ;
 }
@@ -22,7 +24,8 @@ peano::MappingSpecification   exahype::adapters::RegularMesh::touchVertexLastTim
 peano::MappingSpecification   exahype::adapters::RegularMesh::touchVertexFirstTimeSpecification() { 
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::RegularMesh::touchVertexFirstTimeSpecification()
-   & exahype::adapters::RegularMesh2MultiscaleLinkedCell_1::touchVertexFirstTimeSpecification()
+   & exahype::mappings::SolutionUpdate::touchVertexFirstTimeSpecification()
+   & exahype::adapters::RegularMesh2MultiscaleLinkedCell_2::touchVertexFirstTimeSpecification()
 
   ;
 }
@@ -31,7 +34,8 @@ peano::MappingSpecification   exahype::adapters::RegularMesh::touchVertexFirstTi
 peano::MappingSpecification   exahype::adapters::RegularMesh::enterCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::RegularMesh::enterCellSpecification()
-   & exahype::adapters::RegularMesh2MultiscaleLinkedCell_1::enterCellSpecification()
+   & exahype::mappings::SolutionUpdate::enterCellSpecification()
+   & exahype::adapters::RegularMesh2MultiscaleLinkedCell_2::enterCellSpecification()
 
   ;
 }
@@ -40,7 +44,8 @@ peano::MappingSpecification   exahype::adapters::RegularMesh::enterCellSpecifica
 peano::MappingSpecification   exahype::adapters::RegularMesh::leaveCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::RegularMesh::leaveCellSpecification()
-   & exahype::adapters::RegularMesh2MultiscaleLinkedCell_1::leaveCellSpecification()
+   & exahype::mappings::SolutionUpdate::leaveCellSpecification()
+   & exahype::adapters::RegularMesh2MultiscaleLinkedCell_2::leaveCellSpecification()
 
   ;
 }
@@ -49,7 +54,8 @@ peano::MappingSpecification   exahype::adapters::RegularMesh::leaveCellSpecifica
 peano::MappingSpecification   exahype::adapters::RegularMesh::ascendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::RegularMesh::ascendSpecification()
-   & exahype::adapters::RegularMesh2MultiscaleLinkedCell_1::ascendSpecification()
+   & exahype::mappings::SolutionUpdate::ascendSpecification()
+   & exahype::adapters::RegularMesh2MultiscaleLinkedCell_2::ascendSpecification()
 
   ;
 }
@@ -58,7 +64,8 @@ peano::MappingSpecification   exahype::adapters::RegularMesh::ascendSpecificatio
 peano::MappingSpecification   exahype::adapters::RegularMesh::descendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::RegularMesh::descendSpecification()
-   & exahype::adapters::RegularMesh2MultiscaleLinkedCell_1::descendSpecification()
+   & exahype::mappings::SolutionUpdate::descendSpecification()
+   & exahype::adapters::RegularMesh2MultiscaleLinkedCell_2::descendSpecification()
 
   ;
 }
@@ -75,7 +82,8 @@ exahype::adapters::RegularMesh::~RegularMesh() {
 #if defined(SharedMemoryParallelisation)
 exahype::adapters::RegularMesh::RegularMesh(const RegularMesh&  masterThread):
   _map2RegularMesh(masterThread._map2RegularMesh) , 
-  _map2RegularMesh2MultiscaleLinkedCell_1(masterThread._map2RegularMesh2MultiscaleLinkedCell_1) 
+  _map2SolutionUpdate(masterThread._map2SolutionUpdate) , 
+  _map2RegularMesh2MultiscaleLinkedCell_2(masterThread._map2RegularMesh2MultiscaleLinkedCell_2) 
 
 {
 }
@@ -83,7 +91,8 @@ exahype::adapters::RegularMesh::RegularMesh(const RegularMesh&  masterThread):
 
 void exahype::adapters::RegularMesh::mergeWithWorkerThread(const RegularMesh& workerThread) {
   _map2RegularMesh.mergeWithWorkerThread(workerThread._map2RegularMesh);
-  _map2RegularMesh2MultiscaleLinkedCell_1.mergeWithWorkerThread(workerThread._map2RegularMesh2MultiscaleLinkedCell_1);
+  _map2SolutionUpdate.mergeWithWorkerThread(workerThread._map2SolutionUpdate);
+  _map2RegularMesh2MultiscaleLinkedCell_2.mergeWithWorkerThread(workerThread._map2RegularMesh2MultiscaleLinkedCell_2);
 
 }
 #endif
@@ -99,7 +108,8 @@ void exahype::adapters::RegularMesh::createHangingVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
   _map2RegularMesh.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2RegularMesh2MultiscaleLinkedCell_1.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2SolutionUpdate.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2RegularMesh2MultiscaleLinkedCell_2.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 
 }
@@ -115,7 +125,8 @@ void exahype::adapters::RegularMesh::destroyHangingVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
   _map2RegularMesh.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2RegularMesh2MultiscaleLinkedCell_1.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2SolutionUpdate.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2RegularMesh2MultiscaleLinkedCell_2.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -130,7 +141,8 @@ void exahype::adapters::RegularMesh::createInnerVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   _map2RegularMesh.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2RegularMesh2MultiscaleLinkedCell_1.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2SolutionUpdate.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2RegularMesh2MultiscaleLinkedCell_2.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -145,7 +157,8 @@ void exahype::adapters::RegularMesh::createBoundaryVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   _map2RegularMesh.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2RegularMesh2MultiscaleLinkedCell_1.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2SolutionUpdate.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2RegularMesh2MultiscaleLinkedCell_2.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -160,7 +173,8 @@ void exahype::adapters::RegularMesh::destroyVertex(
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
   _map2RegularMesh.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2RegularMesh2MultiscaleLinkedCell_1.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2SolutionUpdate.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2RegularMesh2MultiscaleLinkedCell_2.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -175,7 +189,8 @@ void exahype::adapters::RegularMesh::createCell(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   _map2RegularMesh.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2RegularMesh2MultiscaleLinkedCell_1.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2SolutionUpdate.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2RegularMesh2MultiscaleLinkedCell_2.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -190,7 +205,8 @@ void exahype::adapters::RegularMesh::destroyCell(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   _map2RegularMesh.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2RegularMesh2MultiscaleLinkedCell_1.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2SolutionUpdate.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2RegularMesh2MultiscaleLinkedCell_2.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -205,7 +221,8 @@ void exahype::adapters::RegularMesh::mergeWithNeighbour(
   int                                           level
 ) {
    _map2RegularMesh.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
-   _map2RegularMesh2MultiscaleLinkedCell_1.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
+   _map2SolutionUpdate.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
+   _map2RegularMesh2MultiscaleLinkedCell_2.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
 
 }
 
@@ -218,7 +235,8 @@ void exahype::adapters::RegularMesh::prepareSendToNeighbour(
   int                                           level
 ) {
    _map2RegularMesh.prepareSendToNeighbour( vertex, toRank, x, h, level );
-   _map2RegularMesh2MultiscaleLinkedCell_1.prepareSendToNeighbour( vertex, toRank, x, h, level );
+   _map2SolutionUpdate.prepareSendToNeighbour( vertex, toRank, x, h, level );
+   _map2RegularMesh2MultiscaleLinkedCell_2.prepareSendToNeighbour( vertex, toRank, x, h, level );
 
 }
 
@@ -231,7 +249,8 @@ void exahype::adapters::RegularMesh::prepareCopyToRemoteNode(
   int                                           level
 ) {
    _map2RegularMesh.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
-   _map2RegularMesh2MultiscaleLinkedCell_1.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
+   _map2SolutionUpdate.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
+   _map2RegularMesh2MultiscaleLinkedCell_2.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
 
 }
 
@@ -244,7 +263,8 @@ void exahype::adapters::RegularMesh::prepareCopyToRemoteNode(
       int                                           level
 ) {
    _map2RegularMesh.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
-   _map2RegularMesh2MultiscaleLinkedCell_1.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
+   _map2SolutionUpdate.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
+   _map2RegularMesh2MultiscaleLinkedCell_2.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
 
 }
 
@@ -258,7 +278,8 @@ void exahype::adapters::RegularMesh::mergeWithRemoteDataDueToForkOrJoin(
   int                                       level
 ) {
    _map2RegularMesh.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
-   _map2RegularMesh2MultiscaleLinkedCell_1.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
+   _map2SolutionUpdate.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
+   _map2RegularMesh2MultiscaleLinkedCell_2.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
 
 }
 
@@ -272,7 +293,8 @@ void exahype::adapters::RegularMesh::mergeWithRemoteDataDueToForkOrJoin(
   int                                       level
 ) {
    _map2RegularMesh.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
-   _map2RegularMesh2MultiscaleLinkedCell_1.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
+   _map2SolutionUpdate.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
+   _map2RegularMesh2MultiscaleLinkedCell_2.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
 
 }
 
@@ -289,7 +311,8 @@ bool exahype::adapters::RegularMesh::prepareSendToWorker(
 ) {
   bool result = false;
    result |= _map2RegularMesh.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
-   result |= _map2RegularMesh2MultiscaleLinkedCell_1.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
+   result |= _map2SolutionUpdate.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
+   result |= _map2RegularMesh2MultiscaleLinkedCell_2.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
 
   return result;
 }
@@ -305,7 +328,8 @@ void exahype::adapters::RegularMesh::prepareSendToMaster(
   const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
    _map2RegularMesh.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-   _map2RegularMesh2MultiscaleLinkedCell_1.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+   _map2SolutionUpdate.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+   _map2RegularMesh2MultiscaleLinkedCell_2.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -326,7 +350,8 @@ void exahype::adapters::RegularMesh::mergeWithMaster(
   exahype::State&                masterState
 ) {
    _map2RegularMesh.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
-   _map2RegularMesh2MultiscaleLinkedCell_1.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
+   _map2SolutionUpdate.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
+   _map2RegularMesh2MultiscaleLinkedCell_2.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
 
 }
 
@@ -344,7 +369,8 @@ void exahype::adapters::RegularMesh::receiveDataFromMaster(
       const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
    _map2RegularMesh.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
-   _map2RegularMesh2MultiscaleLinkedCell_1.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
+   _map2SolutionUpdate.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
+   _map2RegularMesh2MultiscaleLinkedCell_2.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -357,7 +383,8 @@ void exahype::adapters::RegularMesh::mergeWithWorker(
   int                                          level
 ) {
    _map2RegularMesh.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
-   _map2RegularMesh2MultiscaleLinkedCell_1.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
+   _map2SolutionUpdate.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
+   _map2RegularMesh2MultiscaleLinkedCell_2.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
 
 }
 
@@ -370,7 +397,8 @@ void exahype::adapters::RegularMesh::mergeWithWorker(
   int                                           level
 ) {
    _map2RegularMesh.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
-   _map2RegularMesh2MultiscaleLinkedCell_1.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
+   _map2SolutionUpdate.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
+   _map2RegularMesh2MultiscaleLinkedCell_2.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
 
 }
 #endif
@@ -386,7 +414,8 @@ void exahype::adapters::RegularMesh::touchVertexFirstTime(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
   _map2RegularMesh.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2RegularMesh2MultiscaleLinkedCell_1.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2SolutionUpdate.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2RegularMesh2MultiscaleLinkedCell_2.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -401,7 +430,8 @@ void exahype::adapters::RegularMesh::touchVertexLastTime(
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
   _map2RegularMesh.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2RegularMesh2MultiscaleLinkedCell_1.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2SolutionUpdate.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2RegularMesh2MultiscaleLinkedCell_2.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -416,7 +446,8 @@ void exahype::adapters::RegularMesh::enterCell(
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
   _map2RegularMesh.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2RegularMesh2MultiscaleLinkedCell_1.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2SolutionUpdate.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2RegularMesh2MultiscaleLinkedCell_2.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -431,7 +462,8 @@ void exahype::adapters::RegularMesh::leaveCell(
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
   _map2RegularMesh.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2RegularMesh2MultiscaleLinkedCell_1.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2SolutionUpdate.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2RegularMesh2MultiscaleLinkedCell_2.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -440,7 +472,8 @@ void exahype::adapters::RegularMesh::beginIteration(
   exahype::State&  solverState
 ) {
   _map2RegularMesh.beginIteration( solverState );
-  _map2RegularMesh2MultiscaleLinkedCell_1.beginIteration( solverState );
+  _map2SolutionUpdate.beginIteration( solverState );
+  _map2RegularMesh2MultiscaleLinkedCell_2.beginIteration( solverState );
 
 }
 
@@ -449,7 +482,8 @@ void exahype::adapters::RegularMesh::endIteration(
   exahype::State&  solverState
 ) {
   _map2RegularMesh.endIteration( solverState );
-  _map2RegularMesh2MultiscaleLinkedCell_1.endIteration( solverState );
+  _map2SolutionUpdate.endIteration( solverState );
+  _map2RegularMesh2MultiscaleLinkedCell_2.endIteration( solverState );
 
 }
 
@@ -465,7 +499,8 @@ void exahype::adapters::RegularMesh::descend(
   exahype::Cell&                 coarseGridCell
 ) {
   _map2RegularMesh.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
-  _map2RegularMesh2MultiscaleLinkedCell_1.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2SolutionUpdate.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2RegularMesh2MultiscaleLinkedCell_2.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
 }
 
@@ -479,6 +514,7 @@ void exahype::adapters::RegularMesh::ascend(
   exahype::Cell&           coarseGridCell
 ) {
   _map2RegularMesh.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
-  _map2RegularMesh2MultiscaleLinkedCell_1.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2SolutionUpdate.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2RegularMesh2MultiscaleLinkedCell_2.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
 }
