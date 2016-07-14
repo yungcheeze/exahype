@@ -312,32 +312,27 @@ void exahype::mappings::MarkingForRefinement::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getADERDGCellDescriptionsIndex())) {
-    for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(
-             fineGridCell.getADERDGCellDescriptionsIndex())) {
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
-      double* solution;
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
+    for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())) {
+      auto* solver = exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
       exahype::solvers::Solver::RefinementControl refinementControl;
+      double* solution;
 
-      switch (pFine.getRefinementEvent()) {
-        case exahype::records::ADERDGCellDescription::None:
-          switch (pFine.getType()) {
-            case exahype::records::ADERDGCellDescription::Cell:
-              solution =
-                  DataHeap::getInstance().getData(pFine.getSolution()).data();
+      switch (pFine.getType()) {
+        case exahype::records::ADERDGCellDescription::Cell:
+        switch (pFine.getRefinementEvent()) {
+          case exahype::records::ADERDGCellDescription::None:
+              solution = DataHeap::getInstance().getData(pFine.getSolution()).data();
 
               refinementControl = solver->refinementCriterion(
                   solution, fineGridVerticesEnumerator.getCellCenter(),
                   fineGridVerticesEnumerator.getCellSize(),
-                  pFine.getCorrectorTimeStamp(),  // todo careful with the time
-                  // stamps
-                  pFine.getLevel());
+                  pFine.getCorrectorTimeStamp(), pFine.getLevel());
 
               switch (refinementControl) {
                 case exahype::solvers::Solver::RefinementControl::Refine:
                   pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::RefiningRequested);
+
                   dfor2(v)
                     if ((fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
                         exahype::Vertex::Records::RefinementControl::Unrefined)

@@ -312,10 +312,8 @@ void exahype::mappings::Refinement::enterCell(
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-      coarseGridCell.getADERDGCellDescriptionsIndex())) {
-    for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(
-        coarseGridCell.getADERDGCellDescriptionsIndex())) {
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(coarseGridCell.getADERDGCellDescriptionsIndex())) {
+    for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(coarseGridCell.getADERDGCellDescriptionsIndex())) {
       switch (pCoarse.getType()) {
         case exahype::records::ADERDGCellDescription::Cell:
           switch (pCoarse.getRefinementEvent()) {
@@ -376,14 +374,6 @@ void exahype::mappings::Refinement::enterCell(
                 pCoarse.setRefinementEvent(exahype::records::ADERDGCellDescription::Refining);
               }
               break;
-            case exahype::records::ADERDGCellDescription::None:
-              if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-                  fineGridCell.getADERDGCellDescriptionsIndex())) {
-                /**
-                 * In this case the parent did not trigger refinement.
-                 */
-
-              }
             default:
               break;
           }
