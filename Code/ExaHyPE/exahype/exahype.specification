@@ -73,6 +73,7 @@ event-mapping:
 adapter:
   name: RegularMesh
   merge-with-user-defined-mapping: RegularMesh // (createInner/BoundaryVertex,enterCell,serial)
+  merge-with-user-defined-mapping: SolutionUpdate            // (enterCell,runconcurrently)
   merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
 
 adapter:
