@@ -361,8 +361,10 @@ void exahype::mappings::Augmentation::enterCell(
                 fineGridVerticesEnumerator.getCellSize(),
                 // We pass the lower left corner of the cell as offset.
                 fineGridVerticesEnumerator.getVertexPosition());
+            pCoarse.setRefinementEvent(exahype::records::ADERDGCellDescription::Augmenting);
+          } else {
+            pCoarse.setRefinementEvent(exahype::records::ADERDGCellDescription::None);
           }
-          pCoarse.setRefinementEvent(exahype::records::ADERDGCellDescription::Augmenting);
           break;
         default:
           break;
