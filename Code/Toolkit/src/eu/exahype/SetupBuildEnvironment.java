@@ -109,18 +109,20 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
 
       String architecture = node.getArchitecture().toString().trim().toLowerCase();
 
-      if (architecture == "wsm")
+      if (architecture.equals("wsm")) {
         _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=16");
-      if (architecture == "snb")
+      } else if (architecture.equals("snb")) {
         _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=32");
-      if (architecture == "hsw")
+      } else if (architecture.equals("hsw")) {
         _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=32");
-      if (architecture == "knc")
+      } else if (architecture.equals("knc")) {
         _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=64");
-      if (architecture == "knl")
+      } else if (architecture.equals("knl")) {
         _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=64");
-      if (architecture == "noarch")
+      } else {
+        // noarch or unsupported architecture or undefined
         _writer.write("PROJECT_CFLAGS+=-DALIGNMENT=16");
+      }
 
       _writer.write("\n");
       _writer.write("PROJECT_CFLAGS+=-DnoMultipleThreadsMayTriggerMPICalls\n");
