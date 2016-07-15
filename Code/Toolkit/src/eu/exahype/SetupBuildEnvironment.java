@@ -94,6 +94,23 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
           _directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/Makefile");
 
       _writer = new java.io.BufferedWriter(new java.io.FileWriter(logFile));
+
+      _writer.write("# *********************************************************************************************"      + "\n");
+      _writer.write("# README"                                                                                             + "\n");
+      _writer.write("# *********************************************************************************************"      + "\n");
+      _writer.write("#"                                                                                                    + "\n");
+      _writer.write("# Available configuration Parameters for ExaHyPE"                                                     + "\n");
+      _writer.write("#"                                                                                                    + "\n");
+      _writer.write("# export variable  |  default-value  |  further values         |  description"                        + "\n");
+      _writer.write("#--------------------------------------------------------------------------------------------------"  + "\n");
+      _writer.write("# ARCHITECTURE        CPU               Phi                       Hardware-plattfrom"                 + "\n");
+      _writer.write("# COMPILER            Intel             GNU                       Used compiler (and linker)"         + "\n");
+      _writer.write("# MODE                Release           Debug, Profile, Asserts   Verbosity and Debug level"          + "\n");
+      _writer.write("# SHAREDMEM           None              OMP, TBB                  Shared-memory parallelisation"      + "\n");
+      _writer.write("# DISTRIBUTEDMEM      None              MPI                       Distributed-memory parallelisation" + "\n");
+      _writer.write("# BOUNDARYCONDITIONS  None              Periodic                  Type of boundary conditions"        + "\n");
+      _writer.write("# *********************************************************************************************"      + "\n");
+
       _writer.write("PEANO_PATH=" + _directoryAndPathChecker.peanoPath.getAbsolutePath() + "\n");
       _writer.write("TARCH_PATH=" + _directoryAndPathChecker.tarchPath.getAbsolutePath() + "\n");
       _writer.write("MULTISCALELINKEDCELL_PATH="
@@ -201,8 +218,8 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       System.out.print("please change into directory "
           + _directoryAndPathChecker.outputDirectory.getAbsolutePath() + " and type make \n");
       System.out.print("ensure that you set all environment variables before:\n");
-      System.out.print("  export CC=gcc  \t\t\tSelect GNU compiler\n");
-      System.out.print("  export CC=Intel\t\t\tSelect Intel compiler (default)\n");
+      System.out.print("  export COMPILER=GNU  \t\t\tSelect GNU compiler\n");
+      System.out.print("  export COMPILER=Intel\t\t\tSelect Intel compiler (default)\n");
       System.out.print("\n");
       System.out.print("  export MODE=Debug\t\t\tBuild debug version of code\n");
       System.out.print(
