@@ -218,7 +218,7 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       System.out.print("please change into directory "
           + _directoryAndPathChecker.outputDirectory.getAbsolutePath() + " and type make \n");
       System.out.print("ensure that you set all environment variables before:\n");
-      System.out.print("  export COMPILER=gcc  \t\t\tSelect GNU compiler\n");
+      System.out.print("  export COMPILER=GNU  \t\t\tSelect GNU compiler\n");
       System.out.print("  export COMPILER=Intel\t\t\tSelect Intel compiler (default)\n");
       System.out.print("\n");
       System.out.print("  export MODE=Debug\t\t\tBuild debug version of code\n");
