@@ -183,7 +183,10 @@ def generateCommonHeader():
     # include template functions
     l_sourceFile.write('#include "kernels/aderdg/optimised/solutionAdjustment.cpph"\n\n')
     l_sourceFile.write('#include "kernels/aderdg/optimised/stableTimeStepSize.cpph"\n\n')
-    l_sourceFile.write('#include "kernels/aderdg/optimised/spaceTimePredictor.cpph"\n\n')
+    if(m_numerics == 'nonlinear'):
+        l_sourceFile.write('#include "kernels/aderdg/optimised/picard.cpph"\n\n')
+    else:
+        l_sourceFile.write('#include "kernels/aderdg/optimised/cauchyKovalewski.cpph"\n\n')
     l_sourceFile.write('#include "kernels/aderdg/optimised/riemannSolver.cpph"\n\n')
 
     # close include guard

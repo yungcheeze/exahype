@@ -146,7 +146,7 @@ class SpaceTimePredictorGenerator:
 
 
     def __generatePicardLoop(self):
-        l_filename = "picard.cpp"
+        l_filename = "picard.cpph"
 
         # write #include's and function signature
         self.__writeHeaderForPicardLoop(l_filename)
@@ -567,7 +567,11 @@ class SpaceTimePredictorGenerator:
 
 
     def __generateCauchyKovalewski(self):
-        l_filename = "cauchyKovalewski.cpp"
+        l_filename = "cauchyKovalewski.cpph"
+
+        # write #include's and function signature
+        self.__writeHeaderForCauchyKovalewski(l_filename)
+
         l_sourceFile = open(l_filename, 'a')
         # TODO
         l_sourceFile.close()
