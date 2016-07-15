@@ -11,10 +11,10 @@
 # export variable  |  default-value  |  further values         |  description
 #--------------------------------------------------------------------------------------------------
 # ARCHITECTURE        CPU               Phi                       Hardware-plattfrom
-# CC                  Intel             gcc                       Used compiler (and linker)
+# COMPILER            Intel             GNU                       Used compiler (and linker)
 # MODE                Release           Debug, Profile, Asserts   Verbosity and Debug level
-# SHAREDMEM           None              OMP, TBB                  Shared-memory parallelization
-# DISTRIBUTEDMEM      None              MPI                       Distributed-memory parallelization
+# SHAREDMEM           None              OMP, TBB                  Shared-memory parallelisation
+# DISTRIBUTEDMEM      None              MPI                       Distributed-memory parallelisation
 # BOUNDARYCONDITIONS  None              Periodic                  Type of boundary conditions
 # *********************************************************************************************
 
@@ -27,8 +27,8 @@ tolower = $(shell echo $(1) | tr '[:upper:]' '[:lower:]')
 ifeq ($(ARCHITECTURE),)
 	ARCHITECTURE=CPU
 endif
-ifeq ($(CC),)
-	CC=Intel
+ifeq ($(COMPILER),)
+	COMPILER=Intel
 endif
 ifeq ($(MODE),)
 	MODE=Release
@@ -86,7 +86,7 @@ endif
 # ************************************************
 #
 #Set compiler and linker flags for the different conmpilers
-ifeq ($(call tolower,$(CC)),intel)
+ifeq ($(call tolower,$(COMPILER)),intel)
   # Settings for the Intel Compiler
   # ----------------------------------------------
   FC=ifort
@@ -97,8 +97,8 @@ ifeq ($(call tolower,$(CC)),intel)
   COMPILER_CFLAGS   +=  -restrict
   COMPILER_LFLAGS   +=
 
-else ifeq ($(call tolower,$(CC)),gcc)
-  # Settings for the GCC Compiler
+else ifeq ($(call tolower,$(COMPILER)),gnu)
+  # Settings for the GNU Compiler
   # --------------------------------------------
   CC=g++
   FC=gfortran
@@ -111,7 +111,7 @@ else ifeq ($(call tolower,$(CC)),gcc)
 else
   # Option not recognized
   # ----------------------------------------------
-  $(error Unknown option for variable [CC])
+  $(error Unknown option for variable [COMPILER])
 endif
 
 
@@ -143,7 +143,7 @@ endif
 # Special options for all "non-Debug" builds
 ifneq ($(call tolower,$(MODE)),debug)
 
-  ifeq ($(call tolower,$(CC)),intel)
+  ifeq ($(call tolower,$(COMPILER)),intel)
     # Settings for the Intel compiler
     # ----------------------------------------------
     COMPILER_CFLAGS += -fast -fno-rtti -no-ipo -ip
@@ -155,7 +155,7 @@ ifneq ($(call tolower,$(MODE)),debug)
       COMPILER_LFLAGS +=
     endif
 
-  else ifeq ($(call tolower,$(CC)),gcc)
+  else ifeq ($(call tolower,$(COMPILER)),gnu)
     # Settings for the GNU compiler
     # --------------------------------------------
     COMPILER_CFLAGS += -O3 -fno-rtti -fno-exceptions -march=native
@@ -170,7 +170,7 @@ endif
 #Very special options
 # -----------------------
 ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
-	ifeq ($(call tolower,$(CC)),gcc)
+	ifeq ($(call tolower,$(COMPILER)),gnu)
 		ifeq ($(call tolower,$(MODE)),debug)
 			COMPILER_CFLAGS += -Wstrict-aliasing -ggdb
 		endif
@@ -225,7 +225,7 @@ endif
 # -----------------------
 ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 	COMPILER_CFLAGS += -DParallel -DMPICH_IGNORE_CXX_SEEK
-	ifeq ($(call tolower,$(CC)),g++)
+	ifeq ($(call tolower,$(COMPILER)),g++)
 		CC = mpiCC
 	else
 		CC = mpiicpc
