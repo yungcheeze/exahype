@@ -17,39 +17,15 @@
 # -- Public Domain, May, 10. 2016, Sven K.
 
 from __future__ import print_function
-from vtkreader import vtkreader, log
+from exaiohelpers import argio
 import numpy as np
 
 # Python built in batteries
 import argparse, sys # Python 2.7
 import gzip
 
-output_formats = {}
-def register_format(command_name):
-	def decorator(func):
-		output_formats[command_name] = func	
-		return func
-	return decorator
-
-@register_format("np")
-def output_npy(npdata, outputfname, args=None):
-	np.save(outputfname, npdata)
-
-@register_format("csv")
-def output_ascii(npdata, outputfname, args):
-	log("This may take a while. Have a coffee. Or watch your output growing.")
-	# TODO: I inserted a bug here. Doesn't work any more with ASCII here. Dunno why.
-	np.savetxt(
-		fname=outputfname,
-		X=npdata,
-		fmt=args.nformat,
-		header=','.join(['"%s"' % s for s in npdata.dtype.names]),
-		comments=''
-	)
-
-
 programname = sys.argv[0]
-parser = argparse.ArgumentParser(description='ExaHyPE VTK to plain ASCII converter',
+parser = argparse.ArgumentParser(description='ExaHyPE simulation data converter, ie. VTK to plain ASCII converter',
 	epilog="\n".join(["Example invocations:",
 		"   %s -o solution-0.txt.gz -c solution-0.vtk" % programname,
 		"   %s solution-*.vtk | gzip > foobar.csv.gz" % programname,
@@ -60,50 +36,13 @@ parser = argparse.ArgumentParser(description='ExaHyPE VTK to plain ASCII convert
 	]),
 	formatter_class=argparse.RawDescriptionHelpFormatter)
 
-parser.add_argument('fnames', metavar='solution-0.vtk', nargs='+',
-                   help='The VTK file(s) to convert. Multiple input files are simply attached in output.')
-parser.add_argument('-c', '--compress', dest='compress', action='store_true', default=False,
-                   help='Compress the output, creates a gzip file')
-parser.add_argument('-q', '--quiet', dest='quiet', action='store_true', default=False,
-                   help='Quiet, no informal output on stderr')
-parser.add_argument('-o', '--output', dest='output', default=False,
-                   help='Output filename (default: stdout)')
-parser.add_argument('-f', '--format', dest='format', choices=output_formats.keys(), type=str, default='csv',
-		   help='Output file formats. CSV (ASCII) takes long, binary formats are rather quick.')
-parser.add_argument('-n', '--numberformat', dest='nformat', default='%.5e',
-		   help='Number format string, cf. numpys savetxt() documentation. Applies only for CSV.')
 
-
+argio.add_io_group(parser)
 args = parser.parse_args()
-use_stdout = not args.output
+log = argio.logger_for(args)
 
-if args.quiet:
-	def log(text, newline=True, force=True):
-		pass
-
-opener = gzip.open if args.compress else open
-if args.compress and use_stdout:
-	log("Gzip output for stdout currently not supported. Just use pipes: %s ... | gzip" % programname, force=True)
-	sys.exit(1)
-outputfh = sys.stdout if not args.output else opener(args.output, 'w')
-
-npdata = vtkreader(args.fnames, log)
-log("Printing output to %s" % str(outputfh))
-
-try:
-	output_formats[args.format](npdata, outputfh, args)
-except IOError:
-	if use_stdout:
-		# eg. when using this command | head
-		# stdout is closed, no point in continuing
-		# Attempt to close them explicitly to prevent cleanup problems:
-		try:
-			sys.stdout.close()
-		except IOError:
-			pass
-		try:
-			sys.stderr.close()
-		except IOError:
-			pass
+data = argio.get_input(args)
+log("Have read a %s-shaped numpy array", data.shape)
+argio.write_output(data, args)
 log("Finished")
 
