@@ -459,18 +459,18 @@ void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(
   repository.switchToCorrector();  // Face to cell
   repository.iterate();
 
-  int gridSetupIterations = 0;
-  repository.switchToAugmentedAMRGrid();
-  do {
-    repository.iterate();
-    gridSetupIterations++;
-  } while (!repository.getState().isGridBalanced());
-  repository.iterate();
-  gridSetupIterations++;
-
-  logInfo("runAsMaster()",
-          "grid setup iterations=" << gridSetupIterations << ", max-level="
-          << repository.getState().getMaxLevel());
+//  int gridSetupIterations = 0;
+//  repository.switchToAugmentedAMRGrid();
+//  do {
+//    repository.iterate();
+//    gridSetupIterations++;
+//  } while (!repository.getState().isGridBalanced());
+//  repository.iterate();
+//  gridSetupIterations++;
+//
+//  logInfo("runAsMaster()",
+//          "grid setup iterations=" << gridSetupIterations << ", max-level="
+//          << repository.getState().getMaxLevel());
 
   if (plot) {
     repository.switchToPlotAndGlobalTimeStepComputation();  // Inside cell
