@@ -44,8 +44,8 @@ def processMeasurement(adapter):
       if isRightAdapter and re.search("still searching for optimal grain size",line):
         htmlOverview.write( "<tr>" );
         htmlOverview.write( "<td>" + line.split( "method=")[1].split(":")[0] + "</td>" );
-        htmlOverview.write( "<td bgcolor=\"yellow\">searching</td>" );
-        htmlOverview.write( "<td>" + line.split( "currentGrainSize=" )[1].split(",")[0] + "</td>" );
+        htmlOverview.write( "<td bgcolor=\"yellow\">searching (current grain size " );
+        htmlOverview.write( line.split( "currentGrainSize=" )[1].split(",")[0] + "</td>" );
         htmlOverview.write( "<td>" + line.split( "biggestProblemSize=" )[1].split(",")[0] + "</td>" );
         htmlOverview.write( "<td>" + line.split( "std-deviation=")[1].split(")")[0] + "</td>" );
         htmlOverview.write( "</tr>" );
