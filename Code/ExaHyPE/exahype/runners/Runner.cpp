@@ -190,7 +190,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
     _parser.getDomainSize(),
     tarch::la::Vector<DIMENSIONS, double>(_parser.getOffset()));
 
-  logInfo(
+  logDebug(
     "run(...)",
     "create computational domain at " << _parser.getOffset() <<
     " of width/size " << _parser.getDomainSize() <<
@@ -240,6 +240,13 @@ int exahype::runners::Runner::runAsMaster(
   do {
     repository.iterate();
     gridSetupIterations++;
+    logInfo("runAsMaster()",
+      "grid setup iteration #"     << gridSetupIterations <<
+      ", max-level="               << repository.getState().getMaxLevel() <<
+      ", number of working ranks=" << tarch::parallel::NodePool::getInstance().getNumberOfWorkingNodes() <<
+      ", number of idle ranks="    << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+    );
+
   } while (!repository.getState().isGridBalanced());
   repository.iterate();
   gridSetupIterations++;

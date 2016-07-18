@@ -124,7 +124,7 @@ for process in processes:
           file.write("echo \"  end distributed-memory                                            \" >> myUserSpec.exahype"                 + "\n")
           file.write("echo \"                                                                    \" >> myUserSpec.exahype"                 + "\n")
         file.write("echo \"  optimisation                                                      \" >> myUserSpec.exahype"                 + "\n")
-        file.write("echo \"    fuse-algorithmic-steps        = off                             \" >> myUserSpec.exahype"                 + "\n")
+        file.write("echo \"    fuse-algorithmic-steps        = on                              \" >> myUserSpec.exahype"                 + "\n")
         file.write("echo \"    fuse-algorithmic-steps-factor = 0.99                            \" >> myUserSpec.exahype"                 + "\n")
         file.write("echo \"  end optimisation                                                  \" >> myUserSpec.exahype"                 + "\n")
         file.write("echo \"                                                                    \" >> myUserSpec.exahype"                 + "\n")

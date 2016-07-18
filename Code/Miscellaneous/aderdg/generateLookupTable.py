@@ -1,3 +1,4 @@
+#!/usr/bin/python
 """
 .. module:: generateLookupTable
   :platform: Unix, Windows, Mac
@@ -167,7 +168,7 @@ while (order <= maxOrder):
 #            print (subOutputMatrix[i][j] - subOutputMatrix2[i][j])
 
 #    writeMatrixLookupTableInitToFile(out, "", subOutputMatrix, (order+1)**dim, (order+1)**dim, "subOutputMatrix[%d]" % order)
-    equidistantGridProjector1d = assembleEquidistantGridProjector2d(xGPN, order, dim)
+    equidistantGridProjector1d = assembleEquidistantGridProjector1d(xGPN, order, dim)
     writeMatrixLookupTableInitToFile(out, "", equidistantGridProjector1d, (order+1), (order+1), "equidistantGridProjector1d[%d]" % order)
 
 ###############################################################################
@@ -176,9 +177,9 @@ while (order <= maxOrder):
     fineGridProjector1d0 = assembleFineGridProjector1d(xGPN, 0, order, dim)
     fineGridProjector1d1 = assembleFineGridProjector1d(xGPN, 1, order, dim)
     fineGridProjector1d2 = assembleFineGridProjector1d(xGPN, 2, order, dim)
-    writeMatrixLookupTableInitToFile(out, "", fineGridProjector1d0, (order+1), (order+1), "fineGridProjector[%d][0]" % order)
-    writeMatrixLookupTableInitToFile(out, "", fineGridProjector1d1, (order+1), (order+1), "fineGridProjector[%d][1]" % order)
-    writeMatrixLookupTableInitToFile(out, "", fineGridProjector1d2, (order+1), (order+1), "fineGridProjector[%d][2]" % order)
+    writeMatrixLookupTableInitToFile(out, "", fineGridProjector1d0, (order+1), (order+1), "fineGridProjector1d[%d][0]" % order)
+    writeMatrixLookupTableInitToFile(out, "", fineGridProjector1d1, (order+1), (order+1), "fineGridProjector1d[%d][1]" % order)
+    writeMatrixLookupTableInitToFile(out, "", fineGridProjector1d2, (order+1), (order+1), "fineGridProjector1d[%d][2]" % order)
 
     print("Done with order "+ str(order))
     order+=1
