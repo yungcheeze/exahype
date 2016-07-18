@@ -6,7 +6,6 @@ using std::endl;
 using std::cout;
 
 extern "C" {
-void minimumtreedepth_(int* depth);
 void hastoadjustsolution_(double* time, bool* refine);
 void adjustedsolutionvalues_(const double* const x,const double* w,const double* t,const double* dt,double* Q);
 void pdeflux_(double* F, const double* const Q);

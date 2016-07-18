@@ -11,16 +11,6 @@
  ! For the full license text, see LICENSE.txt
  !  
  
- SUBROUTINE MinimumTreeDepth(depth)
-    USE, INTRINSIC :: ISO_C_BINDING
-    IMPLICIT NONE 
-    ! Argument list 
-    INTEGER, INTENT(OUT)              :: depth        ! maximal depth of tree recursion
-    
-    depth = 4
-    
-END SUBROUTINE MinimumTreeDepth 
-
 SUBROUTINE HasToAdjustSolution(time, refine)
     USE, INTRINSIC :: ISO_C_BINDING
     IMPLICIT NONE 
