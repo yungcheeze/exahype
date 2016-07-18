@@ -22,6 +22,9 @@ event-mapping:
   
 event-mapping:
   name: SolutionUpdate
+  
+event-mapping:
+  name: SolutionAdjustment
 
 event-mapping: // -DEC: consider to move the computation of boundary extrapolated values out of the space-time predictor mapping
   name: SpaceTimePredictor
@@ -72,15 +75,15 @@ event-mapping:
 
 adapter:
   name: RegularMesh
-  merge-with-user-defined-mapping: RegularMesh // (createInner/BoundaryVertex,enterCell,serial)
-  merge-with-user-defined-mapping: SolutionUpdate            // (enterCell,runconcurrently)
+  merge-with-user-defined-mapping: RegularMesh        // (createInner/BoundaryVertex,enterCell,serial)
+  merge-with-user-defined-mapping: SolutionAdjustment // (enterCell,runconcurrently)
   merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
 
 adapter:
   name: AugmentedAMRGrid
   merge-with-user-defined-mapping: MarkingForRefinement      // (enterCell,runconcurrently)
   merge-with-user-defined-mapping: Refinement                // (touchVertexLastTime,enterCell,serial)
-  merge-with-user-defined-mapping: SolutionUpdate            // (enterCell,runconcurrently)             
+  merge-with-user-defined-mapping: SolutionAdjustment        // (enterCell,runconcurrently)             
   merge-with-user-defined-mapping: MarkingForAugmentation    // (enterCell,runconcurrently)
   merge-with-user-defined-mapping: Augmentation              // (touchVertexLastTime,enterCell,serial)
   merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)       
@@ -92,8 +95,8 @@ adapter:
 
 // Adapters for initialisation of time stepping
 adapter:
-  name: SolutionUpdateAndGlobalTimeStepComputation
-  merge-with-user-defined-mapping: SolutionUpdate
+  name: SolutionAdjustmentAndGlobalTimeStepComputation
+  merge-with-user-defined-mapping: SolutionAdjustment
   // needs current time step size
   merge-with-user-defined-mapping: GlobalTimeStepComputation
 

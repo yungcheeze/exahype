@@ -42,6 +42,7 @@ class GenericEulerKernelTest : public tarch::tests::TestCase {
   void testSolutionUpdate();
   void testVolumeUnknownsProjection();
   void testFaceUnknownsProjection();
+  void testEquidistantGridProjection();
 
   static void testFlux(const double* const Q, double** F);
 
