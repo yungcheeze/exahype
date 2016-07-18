@@ -240,6 +240,13 @@ int exahype::runners::Runner::runAsMaster(
   do {
     repository.iterate();
     gridSetupIterations++;
+    logInfo("runAsMaster()",
+      "grid setup iteration #"     << gridSetupIterations <<
+      ", max-level="               << repository.getState().getMaxLevel() <<
+      ", number of working ranks=" << tarch::parallel::NodePool::getInstance().getNumberOfWorkingNodes() <<
+      ", number of idle ranks="    << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+    );
+
   } while (!repository.getState().isGridBalanced());
   repository.iterate();
 
@@ -253,19 +260,6 @@ int exahype::runners::Runner::runAsMaster(
 //    NOTE: Only plot the tree in 2d. Otherwise the program will crash.
 //  repository.switchToPlotAugmentedAMRGrid();
 //  repository.iterate();
-
-  logInfo("runAsMaster()",
-          "grid setup iterations=" << gridSetupIterations << ", max-level="
-                                   << repository.getState().getMaxLevel());
-#ifdef Parallel
-  logInfo("runAsMaster()",
-          "number of working ranks=" << tarch::parallel::NodePool::getInstance()
-                                            .getNumberOfWorkingNodes());
-  logInfo(
-      "runAsMaster()",
-      "number of idle ranks="
-          << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes());
-#endif
   repository.switchToSolutionUpdateAndGlobalTimeStepComputation();
   repository.iterate();
 #if defined(Debug) || defined(Asserts)
