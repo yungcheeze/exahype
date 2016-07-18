@@ -17,6 +17,8 @@
 
 #include "peano/utils/Loop.h"
 
+#include "tarch/la/VectorScalarOperations.h"
+
 #include "exahype/solvers/Solver.h"
 #include "kernels/KernelCalls.h"
 
@@ -318,42 +320,44 @@ void exahype::mappings::MarkingForRefinement::enterCell(
       exahype::solvers::Solver::RefinementControl refinementControl;
       double* solution;
 
-      switch (pFine.getType()) {
-        case exahype::records::ADERDGCellDescription::Cell:
-        switch (pFine.getRefinementEvent()) {
-          case exahype::records::ADERDGCellDescription::None:
-              solution = DataHeap::getInstance().getData(pFine.getSolution()).data();
+      if (tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),solver->getMaximumMeshSize())) {
+        switch (pFine.getType()) {
+          case exahype::records::ADERDGCellDescription::Cell:
+            switch (pFine.getRefinementEvent()) {
+              case exahype::records::ADERDGCellDescription::None:
+                solution = DataHeap::getInstance().getData(pFine.getSolution()).data();
 
-              refinementControl = solver->refinementCriterion(
-                  solution, fineGridVerticesEnumerator.getCellCenter(),
-                  fineGridVerticesEnumerator.getCellSize(),
-                  pFine.getCorrectorTimeStamp(), pFine.getLevel());
+                refinementControl = solver->refinementCriterion(
+                    solution, fineGridVerticesEnumerator.getCellCenter(),
+                    fineGridVerticesEnumerator.getCellSize(),
+                    pFine.getCorrectorTimeStamp(), pFine.getLevel());
 
-              switch (refinementControl) {
-                case exahype::solvers::Solver::RefinementControl::Refine:
-                  pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::RefiningRequested);
+                switch (refinementControl) {
+                  case exahype::solvers::Solver::RefinementControl::Refine:
+                    pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::RefiningRequested);
 
-                  dfor2(v)
+                    dfor2(v)
                     if ((fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
                         exahype::Vertex::Records::RefinementControl::Unrefined)
                         && !fineGridVertices[ fineGridVerticesEnumerator(v) ].isRefinedOrRefining()) {
                       fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
                     }
-                  enddforx
-                  break;
-                case exahype::solvers::Solver::RefinementControl::Erase:
-                  pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::ErasingRequested);
-                  break;
-                default:
-                  break;
-              }
-              break;
-            default:
-              break;
-          }
-          break;
-        default:
-          break;
+                    enddforx
+                    break;
+                  case exahype::solvers::Solver::RefinementControl::Erase:
+                    pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::ErasingRequested);
+                    break;
+                  default:
+                    break;
+                }
+                break;
+                  default:
+                    break;
+            }
+            break;
+              default:
+                break;
+        }
       }
     }
   }
