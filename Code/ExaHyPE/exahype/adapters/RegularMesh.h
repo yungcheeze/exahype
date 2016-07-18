@@ -19,7 +19,7 @@
 
 
  #include "exahype/mappings/RegularMesh.h"
- #include "exahype/mappings/SolutionUpdate.h"
+ #include "exahype/mappings/SolutionAdjustment.h"
  #include "exahype/adapters/RegularMesh2MultiscaleLinkedCell_2.h"
 
 
@@ -41,11 +41,11 @@ namespace exahype {
 class exahype::adapters::RegularMesh {
   private:
     typedef mappings::RegularMesh Mapping0;
-    typedef mappings::SolutionUpdate Mapping1;
+    typedef mappings::SolutionAdjustment Mapping1;
     typedef adapters::RegularMesh2MultiscaleLinkedCell_2 Mapping2;
 
      Mapping0  _map2RegularMesh;
-     Mapping1  _map2SolutionUpdate;
+     Mapping1  _map2SolutionAdjustment;
      Mapping2  _map2RegularMesh2MultiscaleLinkedCell_2;
 
 
