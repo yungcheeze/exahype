@@ -18,8 +18,8 @@ def processMeasurement(adapter):
   searchPattern = "adapter=" + str(adapter) + ","
   
   htmlOverview.write( "<h3 id=\"adapter-" + str(adapter) + "\">Adapter " + str(adapter) + "</h3>" );
-  htmlOverview.write( "<table>" );
-  htmlOverview.write( "<tr><td><b>Method</b></td><td><b>Grain Size</b></td><td><b>Maximum problem size</b></td></tr>" );
+  htmlOverview.write( "<table border=\"1\">" );
+  htmlOverview.write( "<tr><td><b>Method</b></td><td><b>Grain Size</b></td><td><b>Maximum problem size</b></td><td><b>Standard deviation</b></td><td><b>Remarks</b></td></tr>" );
 
   inputFile = open(sys.argv[1], "r" )
   for line in inputFile:
@@ -29,11 +29,17 @@ def processMeasurement(adapter):
         htmlOverview.write( "<tr>" );
         htmlOverview.write( "<td>" + line.split( "method=")[1].split(":")[0] + "</td>" );
         htmlOverview.write( "<td bgcolor=\"red\">still searching for serial runtime, no meaningful data available</td>" );
+        htmlOverview.write( "<td />" );
+        htmlOverview.write( "<td>" + line.split( "std-deviation=")[1].split(")")[0] + "</td>" );
+        htmlOverview.write( "<td>Accurate value is value where new measurements do not change std deviation anymore by more  " + line.split( "eps=")[1].split(",")[0] + "</td>" );
         htmlOverview.write( "</tr>" );
       if isRightAdapter and re.search("does not scale, oracle is not searching anymore",line):
         htmlOverview.write( "<tr>" );
         htmlOverview.write( "<td>" + line.split( "method=")[1].split(":")[0] + "</td>" );
         htmlOverview.write( "<td bgcolor=\"white\">does not scale, oracle is not searching anymore</td>" );
+        htmlOverview.write( "<td />" );
+        htmlOverview.write( "<td>" + line.split( "std-deviation=")[1].split(")")[0] + "</td>" );
+        htmlOverview.write( "<td>Accurate value is value where new measurements do not change std deviation anymore by more  " + line.split( "eps=")[1].split(",")[0] + "</td>" );
         htmlOverview.write( "</tr>" );
       if isRightAdapter and re.search("still searching for optimal grain size",line):
         htmlOverview.write( "<tr>" );
@@ -41,6 +47,7 @@ def processMeasurement(adapter):
         htmlOverview.write( "<td bgcolor=\"yellow\">searching</td>" );
         htmlOverview.write( "<td>" + line.split( "currentGrainSize=" )[1].split(",")[0] + "</td>" );
         htmlOverview.write( "<td>" + line.split( "biggestProblemSize=" )[1].split(",")[0] + "</td>" );
+        htmlOverview.write( "<td>" + line.split( "std-deviation=")[1].split(")")[0] + "</td>" );
         htmlOverview.write( "</tr>" );
       if isRightAdapter and re.search("scales, oracle is not searching anymore",line):
         htmlOverview.write( "<tr>" );
@@ -48,6 +55,7 @@ def processMeasurement(adapter):
         htmlOverview.write( "<td bgcolor=\"green\">does scale</td>" );
         htmlOverview.write( "<td>" + line.split( "currentGrainSize=" )[1].split(",")[0] + "</td>" );
         htmlOverview.write( "<td>" + line.split( "biggestProblemSize=" )[1].split(",")[0] + "</td>" );
+        htmlOverview.write( "<td>" + line.split( "std-deviation=")[1].split(")")[0] + "</td>" );
         htmlOverview.write( "</tr>" );
         
     except:
