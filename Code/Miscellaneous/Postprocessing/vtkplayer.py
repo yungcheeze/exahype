@@ -3,6 +3,9 @@
 # A very simple Python2 tool to introspect 1D slices from 2D (3D)
 # ExaHyPE simulation data. Used so far for the shocktube.
 #
+# Actually, this does not even play VTK files but expects a numpy file.
+# You can generate these files from VTK using vtkextractor.py.
+#
 # -- Sven K, 2016
 
 import sys
@@ -68,3 +71,22 @@ timeslider.on_changed(draw_update)
 
 draw()
 
+# for the time begin, call this function interactively instead of a nice
+# command line argument.
+# Use it like this:
+#
+# (1) Call program like ipython -i vtkplayer.py path/to/simulationdata.np
+# (2) Fix the window size, set titles, etc.
+# (3) type createMovie("/home/you/movie.mp4")
+# (4) done.
+
+def createMotive(output_filename, fps=15):
+	import matplotlib.animation as manimation
+	FFMpegWriter = manimation.writers['ffmpeg']
+	metadata = dict(title='Slice of %s' % quantities_readable, artist='ExaHyPE/vtkplayer')
+	writer = FFMpegWriter(fps=fps, metadata=metadata)
+	with writer.saving(gcf(), output_filename, 100):
+		for t in times:
+			timeslider.set_val(t)
+			writer.grab_frame()
+	print "Done. Movie at " + output_filename
