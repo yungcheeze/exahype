@@ -190,7 +190,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
     _parser.getDomainSize(),
     tarch::la::Vector<DIMENSIONS, double>(_parser.getOffset()));
 
-  logInfo(
+  logDebug(
     "run(...)",
     "create computational domain at " << _parser.getOffset() <<
     " of width/size " << _parser.getDomainSize() <<
