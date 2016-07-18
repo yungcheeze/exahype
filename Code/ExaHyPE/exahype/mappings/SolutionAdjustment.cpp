@@ -357,7 +357,6 @@ void exahype::mappings::SolutionAdjustment::enterCell(
           exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
 
       double* luh;
-      double* lduh;
 
       switch (pFine.getType()) {
         case exahype::records::ADERDGCellDescription::Cell:
