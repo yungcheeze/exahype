@@ -249,6 +249,7 @@ int exahype::runners::Runner::runAsMaster(
 
   } while (!repository.getState().isGridBalanced());
   repository.iterate();
+  gridSetupIterations++;
 
   repository.switchToAugmentedAMRGrid();
   do {
@@ -256,11 +257,26 @@ int exahype::runners::Runner::runAsMaster(
     gridSetupIterations++;
   } while (!repository.getState().isGridBalanced());
   repository.iterate();
+  gridSetupIterations++;
 
-//    NOTE: Only plot the tree in 2d. Otherwise the program will crash.
-//  repository.switchToPlotAugmentedAMRGrid();
-//  repository.iterate();
-  repository.switchToSolutionUpdateAndGlobalTimeStepComputation();
+  logInfo("runAsMaster()",
+          "grid setup iterations=" << gridSetupIterations << ", max-level="
+                                   << repository.getState().getMaxLevel());
+
+  //    NOTE: Only plot the tree in 2d. Otherwise the program will crash.
+  //  repository.switchToPlotAugmentedAMRGrid();
+  //  repository.iterate();
+
+#ifdef Parallel
+  logInfo("runAsMaster()",
+          "number of working ranks=" << tarch::parallel::NodePool::getInstance()
+                                            .getNumberOfWorkingNodes());
+  logInfo(
+      "runAsMaster()",
+      "number of idle ranks="
+          << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes());
+#endif
+  repository.switchToSolutionAdjustmentAndGlobalTimeStepComputation();
   repository.iterate();
 #if defined(Debug) || defined(Asserts)
   startNewTimeStep(-1,true);
@@ -442,6 +458,19 @@ void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(
   repository.iterate();
   repository.switchToCorrector();  // Face to cell
   repository.iterate();
+
+//  int gridSetupIterations = 0;
+//  repository.switchToAugmentedAMRGrid();
+//  do {
+//    repository.iterate();
+//    gridSetupIterations++;
+//  } while (!repository.getState().isGridBalanced());
+//  repository.iterate();
+//  gridSetupIterations++;
+//
+//  logInfo("runAsMaster()",
+//          "grid setup iterations=" << gridSetupIterations << ", max-level="
+//          << repository.getState().getMaxLevel());
 
   if (plot) {
     repository.switchToPlotAndGlobalTimeStepComputation();  // Inside cell

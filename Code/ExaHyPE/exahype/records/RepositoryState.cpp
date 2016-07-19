@@ -40,7 +40,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case UseAdapterRegularMesh: return "UseAdapterRegularMesh";
       case UseAdapterAugmentedAMRGrid: return "UseAdapterAugmentedAMRGrid";
       case UseAdapterPlotAugmentedAMRGrid: return "UseAdapterPlotAugmentedAMRGrid";
-      case UseAdapterSolutionUpdateAndGlobalTimeStepComputation: return "UseAdapterSolutionUpdateAndGlobalTimeStepComputation";
+      case UseAdapterSolutionAdjustmentAndGlobalTimeStepComputation: return "UseAdapterSolutionAdjustmentAndGlobalTimeStepComputation";
       case UseAdapterPredictorAndPlotAndGlobalTimeStepComputation: return "UseAdapterPredictorAndPlotAndGlobalTimeStepComputation";
       case UseAdapterPredictorAndGlobalTimeStepComputation: return "UseAdapterPredictorAndGlobalTimeStepComputation";
       case UseAdapterADERDGTimeStep: return "UseAdapterADERDGTimeStep";
@@ -57,7 +57,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterRegularMesh=4,UseAdapterAugmentedAMRGrid=5,UseAdapterPlotAugmentedAMRGrid=6,UseAdapterSolutionUpdateAndGlobalTimeStepComputation=7,UseAdapterPredictorAndPlotAndGlobalTimeStepComputation=8,UseAdapterPredictorAndGlobalTimeStepComputation=9,UseAdapterADERDGTimeStep=10,UseAdapterADERDGTimeStepAndPlot=11,UseAdapterGlobalTimeStepComputation=12,UseAdapterPlotAndGlobalTimeStepComputation=13,UseAdapterFaceDataExchange=14,UseAdapterPredictor=15,UseAdapterPredictorRerun=16,UseAdapterCorrector=17,NumberOfAdapters=18)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterRegularMesh=4,UseAdapterAugmentedAMRGrid=5,UseAdapterPlotAugmentedAMRGrid=6,UseAdapterSolutionAdjustmentAndGlobalTimeStepComputation=7,UseAdapterPredictorAndPlotAndGlobalTimeStepComputation=8,UseAdapterPredictorAndGlobalTimeStepComputation=9,UseAdapterADERDGTimeStep=10,UseAdapterADERDGTimeStepAndPlot=11,UseAdapterGlobalTimeStepComputation=12,UseAdapterPlotAndGlobalTimeStepComputation=13,UseAdapterFaceDataExchange=14,UseAdapterPredictor=15,UseAdapterPredictorRerun=16,UseAdapterCorrector=17,NumberOfAdapters=18)";
 }
 
 

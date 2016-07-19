@@ -121,7 +121,9 @@ void exahype::plotters::ADERDG2ProbeAscii::plotPatch(
     tarch::la::Vector<DIMENSIONS,double> xRef = _x - offsetOfPatch;
     xRef(0) /=  sizeOfPatch(0);
     xRef(1) /=  sizeOfPatch(1);
+    #ifdef Dim3
     xRef(2) /=  sizeOfPatch(2);
+    #endif
 
     for (int unknown=0; unknown < _unknowns; unknown++) {
       std::ostringstream identifier;

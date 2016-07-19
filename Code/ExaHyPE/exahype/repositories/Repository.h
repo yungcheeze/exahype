@@ -65,7 +65,7 @@ class exahype::repositories::Repository {
     virtual void switchToRegularMesh() = 0;    
     virtual void switchToAugmentedAMRGrid() = 0;    
     virtual void switchToPlotAugmentedAMRGrid() = 0;    
-    virtual void switchToSolutionUpdateAndGlobalTimeStepComputation() = 0;    
+    virtual void switchToSolutionAdjustmentAndGlobalTimeStepComputation() = 0;    
     virtual void switchToPredictorAndPlotAndGlobalTimeStepComputation() = 0;    
     virtual void switchToPredictorAndGlobalTimeStepComputation() = 0;    
     virtual void switchToADERDGTimeStep() = 0;    
@@ -80,7 +80,7 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterRegularMesh() const = 0;
     virtual bool isActiveAdapterAugmentedAMRGrid() const = 0;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const = 0;
-    virtual bool isActiveAdapterSolutionUpdateAndGlobalTimeStepComputation() const = 0;
+    virtual bool isActiveAdapterSolutionAdjustmentAndGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterPredictorAndPlotAndGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterPredictorAndGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterADERDGTimeStep() const = 0;
