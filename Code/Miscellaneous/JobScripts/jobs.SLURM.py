@@ -5,9 +5,9 @@ from subprocess import call
 #hmaxs = ["0.4", "0.2", "0.04", "0.02", "0.005", "0.002", "0.0005"]
 #compilers = ["GNU", "Intel"]
 
-processes = [1, 2, 4, 8, 16, 32]
-pdegrees = [1, 2, 3, 4, 5, 6, 7, 8]
-hmaxs = ["0.4", "0.2", "0.04", "0.02"]
+processes = [4]
+pdegrees = [3]
+hmaxs = ["0.02"]
 compilers = ["GNU"]
 
 
@@ -56,6 +56,7 @@ for process in processes:
         # file.write("export"                                                                                                              + "\n")
 
         file.write(""                                                                                                                    + "\n")
+        file.write("ExaHyPEtempDir=$(dd if=/dev/random bs=16 count=1 2>/dev/null | od -An -tx1 | tr -d ' \t\n')"                         + "\n")
         file.write("echo \"*2**********************\""                                                                                   + "\n")
         file.write("cd $SCRATCH/jobs"                                                                                                    + "\n")
 
@@ -157,6 +158,7 @@ for process in processes:
         file.write(""                                                                                                                    + "\n")
         file.write("echo \"*8**********************\""                                                                                   + "\n")
         file.write("export COMPILER=" + compiler                                                                                         + "\n")
+        file.write("export MODE=Profile"                                                                                                 + "\n")
         file.write("make clean"                                                                                                          + "\n")
         file.write("make -j56"                                                                                                           + "\n")
         if process == 1:
@@ -165,6 +167,12 @@ for process in processes:
           file.write("mpiexec -np " + `process` + " ./ExaHyPE-Euler ../myUserSpec.exahype > " + name + ".$SLURM_JOBID.out"               + "\n")
           
         file.write("cat " + name + ".$SLURM_JOBID.out"                                                                                   + "\n")
+        file.write(""                                                                                                                    + "\n")
+        file.write("python ../../../Code/Peano/peano/performanceanalysis/merge-log-files.py exahype.log-file " + `process`             + "\n")
+        file.write("module unload gcc"                                                                                                                    + "\n")
+        file.write("module load python"                                                                                                                    + "\n")
+        file.write("python ../../../Code/Peano/peano/performanceanalysis/performanceanalysis.py merged-exahype.log-file " + `process` + " 0 "  + "\n")
+        file.write(""                                                                                                                    + "\n")
         file.write("cd ../.."                                                                                                            + "\n")
 
         file.write(""                                                                                                                    + "\n")

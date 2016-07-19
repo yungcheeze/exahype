@@ -10,7 +10,8 @@
 tarch::logging::Log  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_log( "sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize" );
 
 
-int  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_activeMethodTrace(0);
+int           sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_activeMethodTrace(0);
+const double  sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::_InitialAccuracy(1e-4);
 
 
 sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseWithShrinkingGrainSize(
@@ -22,7 +23,7 @@ sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::OracleForOnePhaseW
   _currentSearchDelta(1),
   _biggestProblemSize(0),
   _currentGrainSize(std::numeric_limits<int>::max()),
-  _currentMeasurement(1.0e-0), 
+  _currentMeasurement(_InitialAccuracy),
   _previousMeasuredTime(-1.0),
   _lastProblemSize(0.0) {
 }
@@ -45,10 +46,10 @@ std::pair<int,bool> sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize
 
 
 void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::changeMeasuredMethodTrace() {
-  _activeMethodTrace++;
-  if (_activeMethodTrace>=peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling) {
-    _activeMethodTrace = 0;
-  }
+  _activeMethodTrace = rand() % peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling;
+
+  assertion1(_activeMethodTrace>=0,_activeMethodTrace);
+  assertion1(_activeMethodTrace<peano::datatraversal::autotuning::NumberOfDifferentMethodsCalling,_activeMethodTrace);
 }
 
 
@@ -62,7 +63,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::makeAttribute
     _previousMeasuredTime = -1.0;
     _lastProblemSize      = 0.0;
 
-    _currentMeasurement   = tarch::timing::Measurement(1.0);
+    _currentMeasurement   = tarch::timing::Measurement(_InitialAccuracy);
 
     logInfo(
       "makeAttributesLearn()",
@@ -261,7 +262,7 @@ void sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize::informAboutEl
   }
 
   if (
-    _methodTrace==0 && _adapterNumber==0
+    peano::datatraversal::autotuning::toMethodTrace( _activeMethodTrace ) == _methodTrace
   ) {
     changeMeasuredMethodTrace();
 

@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_SolutionUpdateAndGlobalTimeStepComputation_H_
-#define EXAHYPE_ADAPTERS_SolutionUpdateAndGlobalTimeStepComputation_H_
+#ifndef EXAHYPE_ADAPTERS_SolutionAdjustmentAndGlobalTimeStepComputation_H_
+#define EXAHYPE_ADAPTERS_SolutionAdjustmentAndGlobalTimeStepComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,14 +18,14 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/SolutionUpdate.h"
+ #include "exahype/mappings/SolutionAdjustment.h"
  #include "exahype/mappings/GlobalTimeStepComputation.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class SolutionUpdateAndGlobalTimeStepComputation;
+        class SolutionAdjustmentAndGlobalTimeStepComputation;
       } 
 }
 
@@ -37,12 +37,12 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::SolutionUpdateAndGlobalTimeStepComputation {
+class exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation {
   private:
-    typedef mappings::SolutionUpdate Mapping0;
+    typedef mappings::SolutionAdjustment Mapping0;
     typedef mappings::GlobalTimeStepComputation Mapping1;
 
-     Mapping0  _map2SolutionUpdate;
+     Mapping0  _map2SolutionAdjustment;
      Mapping1  _map2GlobalTimeStepComputation;
 
 
@@ -55,16 +55,16 @@ class exahype::adapters::SolutionUpdateAndGlobalTimeStepComputation {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    SolutionUpdateAndGlobalTimeStepComputation();
+    SolutionAdjustmentAndGlobalTimeStepComputation();
 
     #if defined(SharedMemoryParallelisation)
-    SolutionUpdateAndGlobalTimeStepComputation(const SolutionUpdateAndGlobalTimeStepComputation& masterThread);
+    SolutionAdjustmentAndGlobalTimeStepComputation(const SolutionAdjustmentAndGlobalTimeStepComputation& masterThread);
     #endif
 
-    virtual ~SolutionUpdateAndGlobalTimeStepComputation();
+    virtual ~SolutionAdjustmentAndGlobalTimeStepComputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const SolutionUpdateAndGlobalTimeStepComputation& workerThread);
+    void mergeWithWorkerThread(const SolutionAdjustmentAndGlobalTimeStepComputation& workerThread);
     #endif
 
     void createInnerVertex(

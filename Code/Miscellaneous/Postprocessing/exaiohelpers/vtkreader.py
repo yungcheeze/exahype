@@ -29,16 +29,13 @@ import numpy as np
 # Python built in batteries
 import argparse, sys # Python 2.7
 from collections import namedtuple # Python 2.4
-from functools import wraps
 import gzip
 
-verbose = False
+# same module
+from . import vectorize_concatenate, log
 
-def log(text, newline=True, force=True):
-	if not force and not verbose: return
-	print(text, file=sys.stderr, end="\n" if newline else '')
-	sys.stderr.flush()
 
+@vectorize_concatenate
 def vtkreader(fname, log=log):
 	"""
 	Transforms a single VTK files to a recorded numpy array.
@@ -46,13 +43,6 @@ def vtkreader(fname, log=log):
 	For a 200MB input file, this function needs around 1-2sec.
 	"""
 
-	# "vectorize" this function for list of fnames
-	if not isinstance(fname ,basestring):
-		# works but not nice output
-		#genlogwrap = lambda i: lambda text,*a,**kw: log("[%02d/%02d] "% (i,len(fname))+text,*a,**kw)
-		outputs = [vtkreader(f, log) for i,f in enumerate(fname)]
-		return np.vstack(tuple(outputs))
-	
 	log("Reading %s... " % fname, newline=False)
 	reader = vtkUnstructuredGridReader()
 	reader.SetFileName(fname)

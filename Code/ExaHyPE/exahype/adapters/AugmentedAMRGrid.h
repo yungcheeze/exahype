@@ -20,7 +20,7 @@
 
  #include "exahype/mappings/MarkingForRefinement.h"
  #include "exahype/mappings/Refinement.h"
- #include "exahype/mappings/SolutionUpdate.h"
+ #include "exahype/mappings/SolutionAdjustment.h"
  #include "exahype/mappings/MarkingForAugmentation.h"
  #include "exahype/mappings/Augmentation.h"
  #include "exahype/adapters/AugmentedAMRGrid2MultiscaleLinkedCell_5.h"
@@ -45,14 +45,14 @@ class exahype::adapters::AugmentedAMRGrid {
   private:
     typedef mappings::MarkingForRefinement Mapping0;
     typedef mappings::Refinement Mapping1;
-    typedef mappings::SolutionUpdate Mapping2;
+    typedef mappings::SolutionAdjustment Mapping2;
     typedef mappings::MarkingForAugmentation Mapping3;
     typedef mappings::Augmentation Mapping4;
     typedef adapters::AugmentedAMRGrid2MultiscaleLinkedCell_5 Mapping5;
 
      Mapping0  _map2MarkingForRefinement;
      Mapping1  _map2Refinement;
-     Mapping2  _map2SolutionUpdate;
+     Mapping2  _map2SolutionAdjustment;
      Mapping3  _map2MarkingForAugmentation;
      Mapping4  _map2Augmentation;
      Mapping5  _map2AugmentedAMRGrid2MultiscaleLinkedCell_5;

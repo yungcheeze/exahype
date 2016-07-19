@@ -48,6 +48,7 @@ namespace sharedmemoryoracles {
 class sharedmemoryoracles::OracleForOnePhaseWithShrinkingGrainSize: public peano::datatraversal::autotuning::OracleForOnePhase {
   private:
     static tarch::logging::Log                           _log;
+    static const double                                  _InitialAccuracy;
 
     /**
      * We never do optimise all traces. We only do it with one trace at a time.

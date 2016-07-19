@@ -340,7 +340,8 @@ exahype::solvers::Solver::Type exahype::Parser::getType(int solverNumber) const 
   token = getTokenAfter("solver", solverNumber * 2 + 1, 0);
   if (_identifier2Type.find(token)!=_identifier2Type.end()) {
     result = _identifier2Type.at(token);
-    logDebug("getType()", "found type " << result);
+    // logDebug("getType()", "found type " << result);
+    logDebug("getType()", "found type ");
     return result;
   } else {
     logError("getType()","'" << getIdentifier(solverNumber) << "': 'type': Value '" << token << "' is invalid. See the ExaHyPE documentation for valid values.");
@@ -436,7 +437,8 @@ exahype::solvers::Solver::TimeStepping exahype::Parser::getTimeStepping(int solv
   token = getTokenAfter("solver", solverNumber * 2 + 1, "time-stepping", 1);
   if (_identifier2TimeStepping.find(token)!=_identifier2TimeStepping.end()) {
     result = _identifier2TimeStepping.at(token);
-    logDebug("getTimeStepping()", "found TimeStepping " << result);
+    // logDebug("getTimeStepping()", "found TimeStepping " << result);
+    logDebug("getTimeStepping()", "found TimeStepping ");
     return result;
   } else {
     logError("getTimeStepping()","'" << getIdentifier(solverNumber) << "': 'time-stepping': Value '" << token << "' is invalid. See the ExaHyPE documentation for valid values.");

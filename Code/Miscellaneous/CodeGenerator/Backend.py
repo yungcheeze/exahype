@@ -37,6 +37,7 @@ import VolumeIntegralGenerator
 import SurfaceIntegralGenerator
 import RiemannGenerator
 import SolutionUpdateGenerator
+import SolutionAdjustmentGenerator
 import StableTimeStepSizeGenerator
 import WeightsGenerator
 import DGMatrixGenerator
@@ -113,7 +114,7 @@ def prepareOutputDirectory(i_outputDirectory):
         if exception.errno != errno.EEXIST:
             raise
 
-    # remove all .cpp, .cpph and .h files (we are in append mode!)
+    # remove all .cpp, .cpph, .c and .h files (we are in append mode!)
     for l_fileName in os.listdir(i_outputDirectory):
         _ , l_ext = os.path.splitext(l_fileName)
         if(l_ext in ['.cpp', '.cpph', '.c', '.h']):
@@ -206,6 +207,8 @@ def generateComputeKernels():
     riemannGenerator.generateCode()
     solutionUpdateGenerator = SolutionUpdateGenerator.SolutionUpdateGenerator(m_config)
     solutionUpdateGenerator.generateCode()
+    solutionAdjustmentGenerator = SolutionAdjustmentGenerator.SolutionAdjustmentGenerator(m_config)
+    solutionAdjustmentGenerator.generateCode()
     stableTimeStepSizeGenerator = StableTimeStepSizeGenerator.StableTimeStepSizeGenerator(m_config)
     stableTimeStepSizeGenerator.generateCode()
     weightsGenerator = WeightsGenerator.WeightsGenerator(m_config)

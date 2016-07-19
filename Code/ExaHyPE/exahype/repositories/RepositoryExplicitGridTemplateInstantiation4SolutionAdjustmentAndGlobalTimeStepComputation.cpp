@@ -16,7 +16,7 @@
  #include "exahype/adapters/RegularMesh.h" 
  #include "exahype/adapters/AugmentedAMRGrid.h" 
  #include "exahype/adapters/PlotAugmentedAMRGrid.h" 
- #include "exahype/adapters/SolutionUpdateAndGlobalTimeStepComputation.h" 
+ #include "exahype/adapters/SolutionAdjustmentAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndPlotAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/ADERDGTimeStep.h" 
@@ -31,8 +31,8 @@
 
 namespace peano {
   namespace grid {
-    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexArrayStack<exahype::Vertex> ,peano::stacks::CellArrayStack<exahype::Cell> ,exahype::adapters::SolutionUpdateAndGlobalTimeStepComputation>;
-    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexSTDStack<  exahype::Vertex> ,peano::stacks::CellSTDStack<  exahype::Cell> ,exahype::adapters::SolutionUpdateAndGlobalTimeStepComputation>;
+    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexArrayStack<exahype::Vertex> ,peano::stacks::CellArrayStack<exahype::Cell> ,exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation>;
+    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexSTDStack<  exahype::Vertex> ,peano::stacks::CellSTDStack<  exahype::Cell> ,exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation>;
   }
 }
 
