@@ -64,7 +64,7 @@ else ifeq ($(call tolower,$(MODE)),debug)
   COMPILER_CFLAGS += -DDebug -DAsserts
   COMPILER_LFLAGS +=
 
-else ifeq ($(call tolower $(MODE)),profile)
+else ifeq ($(call tolower,$(MODE)),profile)
   # Settings for the Profile mode
   # --------------------------------------------
   COMPILER_CFLAGS += -DPerformanceAnalysis -p -pg
@@ -79,7 +79,7 @@ else ifeq ($(call tolower,$(MODE)),asserts)
 else
   # Option not recognized
   # ----------------------------------------------
-  $(error Unknown option for variable [MODE])
+  $(error Unknown option '$(MODE)' for variable [MODE])
 endif
 
 

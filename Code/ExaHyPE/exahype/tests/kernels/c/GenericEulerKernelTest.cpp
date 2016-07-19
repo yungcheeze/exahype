@@ -16,6 +16,9 @@
 #include "tarch/compiler/CompilerSpecificSettings.h"
 #include "tarch/tests/TestCaseFactory.h"
 
+#include "peano/utils/Loop.h"
+#include "kernels/DGBasisFunctions.h"
+
 #include "kernels/aderdg/generic/Kernels.h"
 
 using std::cout;
@@ -52,8 +55,63 @@ void GenericEulerKernelTest::run() {
   testMethod(testSurfaceIntegralNonlinear);
   testMethod(testFaceUnknownsProjection);
   testMethod(testVolumeUnknownsProjection);
+  testMethod(testEquidistantGridProjection);
 
   testMethod(testSolutionUpdate);
+}
+
+void GenericEulerKernelTest::testEquidistantGridProjection() {
+  cout << "Test equidistant grid projection, ORDER=2, DIM=2" << endl;
+
+  const int numberOfVariables = 5;
+  const int order             = 3;
+  const int basisSize         = order+1;
+
+  double * u = new double[basisSize * basisSize * numberOfVariables];
+
+  for (int i=0; i < basisSize * basisSize * numberOfVariables; ++i) {
+    u[i] = 1.0;
+  }
+
+  // via basis functions
+  dfor(i,order+1) {
+    for (int unknown=0; unknown < numberOfVariables; unknown++) {
+      std::ostringstream identifier;
+      identifier << "Q" << unknown;
+
+      double value = 0.0;
+      dfor(ii,order+1) { // Gauss-Legendre node indices
+        int iGauss = peano::utils::dLinearisedWithoutLookup(ii,order + 1);
+            value +=  kernels::basisFunctions[order][ii(0)](i(0)/order) *
+                      kernels::basisFunctions[order][ii(1)](i(1)/order) *
+                      #ifdef Dim3
+                      kernels::basisFunctions[order][ii(2)](i(2)/order) *
+                      #endif
+                      u[iGauss * numberOfVariables + unknown];
+      }
+      assertion(tarch::la::equals(value,1.0,1e-11)); // todo precision issues
+    }
+  }
+
+  // via equidistant grid projection
+  dfor(i,order+1) {
+      for (int unknown=0; unknown < numberOfVariables; unknown++) {
+        std::ostringstream identifier;
+        identifier << "Q" << unknown;
+
+        double value = 0.0;
+        dfor(ii,order+1) { // Gauss-Legendre node indices
+          int iGauss = peano::utils::dLinearisedWithoutLookup(ii,order + 1);
+          value +=  kernels::equidistantGridProjector1d[order][ii(0)][i(0)] *
+                    kernels::equidistantGridProjector1d[order][ii(1)][i(1)] *
+                    #ifdef Dim3
+                    kernels::equidistantGridProjector1d[order][ii(2)][i(2)] *
+                    #endif
+                    u[iGauss * numberOfVariables + unknown];
+        }
+        assertion(tarch::la::equals(value,1.0,1e-11)); // todo precision issues
+      }
+    }
 }
 
 }  // namespace c
