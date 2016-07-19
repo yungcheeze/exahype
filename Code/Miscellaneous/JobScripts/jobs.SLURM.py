@@ -5,7 +5,7 @@ from subprocess import call
 #hmaxs = ["0.4", "0.2", "0.04", "0.02", "0.005", "0.002", "0.0005"]
 #compilers = ["GNU", "Intel"]
 
-processes = [64]
+processes = [4]
 pdegrees = [3]
 hmaxs = ["0.02"]
 compilers = ["GNU"]
@@ -167,6 +167,12 @@ for process in processes:
           file.write("mpiexec -np " + `process` + " ./ExaHyPE-Euler ../myUserSpec.exahype > " + name + ".$SLURM_JOBID.out"               + "\n")
           
         file.write("cat " + name + ".$SLURM_JOBID.out"                                                                                   + "\n")
+        file.write(""                                                                                                                    + "\n")
+        file.write("python ../../../Code/Peano/peano/performanceanalysis/merge-log-files.py exahype.log-file " + `process`             + "\n")
+        file.write("module unload gcc"                                                                                                                    + "\n")
+        file.write("module load python"                                                                                                                    + "\n")
+        file.write("python ../../../Code/Peano/peano/performanceanalysis/performanceanalysis.py merged-exahype.log-file " + `process` + " 0 "  + "\n")
+        file.write(""                                                                                                                    + "\n")
         file.write("cd ../.."                                                                                                            + "\n")
 
         file.write(""                                                                                                                    + "\n")
