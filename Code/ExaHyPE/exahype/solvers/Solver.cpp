@@ -42,13 +42,13 @@ exahype::solvers::Solver::Solver(const std::string& identifier,
       _numberOfParameters(numberOfParameters),
       _nodesPerCoordinateAxis(nodesPerCoordinateAxis),
       _maximumMeshSize(maximumMeshSize),
-      _unknownsPerFace(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
+      _unknownsPerFace(numberOfVariables * addPadding(power(nodesPerCoordinateAxis, DIMENSIONS - 1))),
       _unknownsPerCellBoundary(DIMENSIONS_TIMES_TWO * _unknownsPerFace),
       _unknownsPerCell(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
-      _fluxUnknownsPerCell(_unknownsPerCell * DIMENSIONS),
-      _spaceTimeUnknownsPerCell(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
+      _fluxUnknownsPerCell(addPadding(numberOfVariables) * addPadding(power(nodesPerCoordinateAxis, DIMENSIONS + 0)) * DIMENSIONS),
+      _spaceTimeUnknownsPerCell(addPadding(numberOfVariables) * power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
       _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell * DIMENSIONS),
-      _dataPerCell((numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
+      _dataPerCell(addPadding(numberOfVariables)*power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
       _timeStepping(timeStepping),
       _profiler(std::move(profiler)),
       _minCorrectorTimeStamp(std::numeric_limits<double>::max()),
@@ -56,6 +56,7 @@ exahype::solvers::Solver::Solver(const std::string& identifier,
       _minCorrectorTimeStepSize(std::numeric_limits<double>::max()),
       _minPredictorTimeStepSize(std::numeric_limits<double>::max()),
       _minNextPredictorTimeStepSize(std::numeric_limits<double>::max()) {
+  assertion(numberOfParameters==0);
   // register tags with profiler
   for (const char* tag : tags) {
     _profiler->registerTag(tag);
