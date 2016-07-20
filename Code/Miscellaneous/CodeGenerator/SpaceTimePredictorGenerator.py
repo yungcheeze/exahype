@@ -252,7 +252,7 @@ class SpaceTimePredictorGenerator:
         if(self.m_config['nDim']==2):
             l_sourceFile.write('  for(int j=0;j<'+str(self.m_config['nDof'])+';j++) {\n'\
                                '    for(int i=0;i<'+str(self.m_config['nDof'])+';i++) {\n'\
-                               '      double w=kernels::weights1[i]*kernels::weights1[j];\n'\
+                               '      double w=kernels::aderdg::optimised::weights1[i]*kernels::aderdg::optimised::weights1[j];\n'\
                                '      for(int iVar=0;iVar<'+str(self.m_config['nVar'])+';iVar++) {\n')
             l_sourceFile.write('        int addr = j*'+str(self.m_config['nVar']*self.m_config['nDof'])+\
                                                  '+i*'+str(self.m_config['nVar'])+\
@@ -277,7 +277,7 @@ class SpaceTimePredictorGenerator:
             l_sourceFile.write('  for(int k=0;k<'+str(self.m_config['nDof'])+';k++) {\n'\
                                '    for(int j=0;j<'+str(self.m_config['nDof'])+';j++) {\n'\
                                '      for(int i=0;i<'+str(self.m_config['nDof'])+';i++) {\n'\
-                               '        double w=kernels::weights1[i]*kernels::weights1[j]*kernels::weights1[k];\n'\
+                               '        double w=kernels::aderdg::optimised::weights1[i]*kernels::aderdg::optimised::weights1[j]*kernels::aderdg::optimised::weights1[k];\n'\
                                '        for(int iVar=0;iVar<'+str(self.m_config['nVar'])+';iVar++) {\n')
             l_sourceFile.write('          int addr = k*'+str(self.m_config['nVar']*(self.m_config['nDof']**2))+\
                                                    '+j*'+str(self.m_config['nVar']*self.m_config['nDof'])+\
@@ -399,7 +399,7 @@ class SpaceTimePredictorGenerator:
 
         # write the function calls to the driver file
         l_sourceFile.write("  for(int i=0;i<"+str(self.m_config['nDof']**self.m_config['nDim'])+";i++) {\n")
-        l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::weights3[i]",
+        l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::aderdg::optimised::weights3[i]",
                                                "kernels::Kxi",
                                                "s_m", self.m_config['nDof']*Backend.getSizeWithPadding(self.m_config['nDof'])))
         l_matrixSize = self.m_config['nVar']*self.m_config['nDof']
@@ -449,7 +449,7 @@ class SpaceTimePredictorGenerator:
         l_paddedMatrixSize = Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']**2
         # unroll inner loop (i -> nDOFx)
         for i in range(0, self.m_config['nDof']):
-            l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::weights2[i]*kernels::weights1["+str(i)+"]",
+            l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::aderdg::optimised::weights2[i]*kernels::aderdg::optimised::weights1["+str(i)+"]",
                                                    "kernels::Kxi",
                                                    "s_m", self.m_config['nDof']*Backend.getSizeWithPadding(self.m_config['nDof'])))
             l_sourceFile.write("    "+l_matmul.baseroutinename
@@ -499,7 +499,7 @@ class SpaceTimePredictorGenerator:
             l_sourceFile.write("for(int i=0;i<"+str(self.m_config['nDof']**2)+";i++) {\n")
             # unroll outer loop (l -> nDOFt)
             for l in range(0, self.m_config['nDof']):
-                l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::weights2[i]*kernels::weights1["+str(l)+"]",
+                l_sourceFile.write(Utils.generateDSCAL("dtdx*kernels::aderdg::optimised::weights2[i]*kernels::aderdg::optimised::weights1["+str(l)+"]",
                                                        "kernels::Kxi",
                                                        "s_m", self.m_config['nDof']*Backend.getSizeWithPadding(self.m_config['nDof'])))
                 l_sourceFile.write("    "+l_matmul.baseroutinename
@@ -543,7 +543,7 @@ class SpaceTimePredictorGenerator:
         # write the function call to the driver file
         # note that the DGmatrices.cpp already stores the transpose of iK1
         for i in range(0, self.m_config['nDof']**self.m_config['nDim']):
-            l_sourceFile.write(Utils.generateDSCAL("1./kernels::weights3["+str(i)+"]",
+            l_sourceFile.write(Utils.generateDSCAL("1./kernels::aderdg::optimised::weights3["+str(i)+"]",
                                                    "kernels::iK1",
                                                    "s_m", self.m_config['nDof']*Backend.getSizeWithPadding(self.m_config['nDof'])))
             l_sourceFile.write("  "+l_matmul.baseroutinename
@@ -636,7 +636,7 @@ class SpaceTimePredictorGenerator:
         l_sourceFile.write("  for(int ijk=0;ijk<"+str(l_iters)+";ijk++)\n")
         l_sourceFile.write("    "+l_matmul.baseroutinename\
                           +'(&lqh[ijk*'+str(l_matrixSize)+'],'+  \
-                            '&kernels::weights1[0],'+ \
+                            '&kernels::aderdg::optimised::weights1[0],'+ \
                             '&lqhi[ijk*'+str(Backend.getSizeWithPadding(self.m_config['nVar']))+']);\n')
 
         # variant 2: loop unrolled
@@ -707,7 +707,7 @@ class SpaceTimePredictorGenerator:
         l_baseAddrC = 0
         for it in range(0, l_iters):
             l_sourceFile.write("  "+l_matmul.baseroutinename+'(&lFh['+str(l_baseAddrA)+'],'+  \
-                                                             '&kernels::weights1[0],'+\
+                                                             '&kernels::aderdg::optimised::weights1[0],'+\
                                                              '&lFhi['+str(l_baseAddr_lFhi_x+l_baseAddrC)+']);\n')
             l_baseAddrA = l_baseAddrA + Backend.getSizeWithPadding(self.m_config['nVar'])
             l_baseAddrC = l_baseAddrC + Backend.getSizeWithPadding(self.m_config['nVar'])
@@ -734,7 +734,7 @@ class SpaceTimePredictorGenerator:
                                   + Backend.getSizeWithPadding(self.m_config['nVar'])*(self.m_config['nDof']**2)*k
                     l_sourceFile.write("  "+l_matmul.baseroutinename\
                                            +'(&lFh['+str(l_baseAddrA)+'],'+  \
-                                            '&kernels::weights1[0],'+\
+                                            '&kernels::aderdg::optimised::weights1[0],'+\
                                             '&lFhi['+str(l_baseAddr_lFhi_y+l_baseAddrC)+']);\n')
 
 
@@ -753,7 +753,7 @@ class SpaceTimePredictorGenerator:
                                   + Backend.getSizeWithPadding(self.m_config['nVar'])*(self.m_config['nDof']**2)*i
                         l_sourceFile.write("  "+l_matmul.baseroutinename\
                                            +'(&lFh['+str(l_baseAddrA)+'],'+  \
-                                            '&kernels::weights1[0],'+\
+                                            '&kernels::aderdg::optimised::weights1[0],'+\
                                             '&lFhi['+str(l_baseAddr_lFhi_z+l_baseAddrC)+']);\n')
 
 

@@ -229,7 +229,7 @@ class VolumeIntegralGenerator:
         # unroll outer loop
         for k in range(0, kmax):
             for j in range(0, self.m_config['nDof']):
-                l_dscalCode = Utils.generateDSCAL("kernels::weights2["+str(i)+"]/dx[0]", 
+                l_dscalCode = Utils.generateDSCAL("kernels::aderdg::optimised::weights2["+str(i)+"]/dx[0]", 
                                                 "kernels::Kxi_T", 
                                                 "s_m", 
                                                 l_nElems)

@@ -120,8 +120,8 @@ class SurfaceIntegralGenerator:
                            '  __assume_aligned(kernels::s_m, ALIGNMENT);\n'\
                            '  __assume_aligned(kernels::FRCoeff, ALIGNMENT);\n'\
                            '  __assume_aligned(kernels::FLCoeff, ALIGNMENT);\n'\
-                           '  __assume_aligned(kernels::weights1, ALIGNMENT);\n'\
-                           '  __assume_aligned(kernels::weights2, ALIGNMENT);\n'
+                           '  __assume_aligned(kernels::aderdg::optimised::weights1, ALIGNMENT);\n'\
+                           '  __assume_aligned(kernels::aderdg::optimised::weights2, ALIGNMENT);\n'
                            '#endif\n')
 
         # temporary memory for scaled versions
@@ -155,7 +155,7 @@ class SurfaceIntegralGenerator:
         # note loop length with padding
         l_sourceFile.write('#pragma simd\n'\
                            '    for(int it=0;it<'+str(paddedDof)+';it++)\n'\
-                           '      kernels::s_m[it] = kernels::weights2[jk]/dx[0]*(FRCoeff_s[it]-FLCoeff_s[it]);\n')
+                           '      kernels::s_m[it] = kernels::aderdg::optimised::weights2[jk]/dx[0]*(FRCoeff_s[it]-FLCoeff_s[it]);\n')
         # lduh(iVar,:,j,k) -= s_m(:)
         # scatter...is it worth to use my scatter operation?
         l_stride = self.m_config['nVar']
@@ -191,7 +191,7 @@ class SurfaceIntegralGenerator:
                                     self.m_config['nDof']))
 
             # (weight(i)*weight(k))/dx(2) * (FRCoeff_s - FLCoeff_s)
-            l_sourceFile.write('        double s = kernels::weights1[k]*kernels::weights1[i]/dx[1];\n')
+            l_sourceFile.write('        double s = kernels::aderdg::optimised::weights1[k]*kernels::aderdg::optimised::weights1[i]/dx[1];\n')
             l_sourceFile.write('#pragma simd\n'\
                                '        for(int it=0;it<'+str(paddedDof)+';it++)\n'\
                                '          kernels::s_m[it] = s*(FRCoeff_s[it]-FLCoeff_s[it]);\n')
@@ -226,7 +226,7 @@ class SurfaceIntegralGenerator:
                                     self.m_config['nDof']))
 
             # weight(i)/dx(2) * (FRCoeff_s - FLCoeff_s)
-            l_sourceFile.write('        double s = kernels::weights1[i]/dx[1];\n')
+            l_sourceFile.write('        double s = kernels::aderdg::optimised::weights1[i]/dx[1];\n')
             l_sourceFile.write('#pragma simd\n'\
                                '        for(int it=0;it<'+str(paddedDof)+';it++)\n'\
                                '          kernels::s_m[it] = s*(FRCoeff_s[it]-FLCoeff_s[it]);\n')
@@ -266,7 +266,7 @@ class SurfaceIntegralGenerator:
                                     self.m_config['nDof']))
 
             # (weight(i)*weight(j))/dx(3) * (FRCoeff_s - FLCoeff_s)
-            l_sourceFile.write('        double s = kernels::weights1[i]*kernels::weights1[j]/dx[2];\n')
+            l_sourceFile.write('        double s = kernels::aderdg::optimised::weights1[i]*kernels::aderdg::optimised::weights1[j]/dx[2];\n')
             l_sourceFile.write('#pragma simd\n'\
                                '        for(int it=0;it<'+str(paddedDof)+';it++)\n'\
                                '          kernels::s_m[it] = s*(FRCoeff_s[it]-FLCoeff_s[it]);\n')

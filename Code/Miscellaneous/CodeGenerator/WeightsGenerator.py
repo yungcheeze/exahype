@@ -140,14 +140,16 @@ class WeightsGenerator:
                          '#define _EXAHYPE_KERNELS_ADERDG_OPTIMISED_WEIGHTS_H_\n\n'
         l_sourceFile.write(l_includeGuard)
         l_sourceFile.write('#include <set>\n\n')
-        l_sourceFile.write('namespace kernels { \n\n'                                                \
+        l_sourceFile.write('namespace kernels { \n'                                                  \
+                           'namespace aderdg {\n'                                                    \
+                           'namespace optimised {\n\n'                                               \
                            'void initGaussLegendreNodesAndWeights(const std::set<int>& orders);\n'   \
                            'void freeGaussLegendreNodesAndWeights(const std::set<int>& orders);\n\n' \
                            'extern double **gaussLegendreNodes;\n'                                   \
                            'extern double **gaussLegendreWeights;\n'                                 \
                            'extern double *weights1;\n'                                              \
                            'extern double *weights2;\n'                                              \
-                           'extern double *weights3;\n}\n')
+                           'extern double *weights3;\n}\n}\n}\n')
         # close include guard
         l_sourceFile.write('#endif /* _EXAHYPE_KERNELS_ADERDG_OPTIMISED_WEIGHTS_H_ */')
         l_sourceFile.close()
@@ -157,13 +159,13 @@ class WeightsGenerator:
         l_sourceFile = open(self.m_sourceName, 'a')
         l_sourceFile.write('#include "kernels/aderdg/optimised/'+self.m_headerName+'"\n' \
                            '#include <mm_malloc.h> //g++\n\n')
-        l_sourceFile.write('double** kernels::gaussLegendreWeights;\n'  \
-                           'double** kernels::gaussLegendreNodes;\n'    \
-                           'double* kernels::weights1;\n'               \
-                           'double* kernels::weights2;\n'               \
-                           'double* kernels::weights3;\n\n')
+        l_sourceFile.write('double** kernels::aderdg::optimised::gaussLegendreWeights;\n'  \
+                           'double** kernels::aderdg::optimised::gaussLegendreNodes;\n'    \
+                           'double* kernels::aderdg::optimised::weights1;\n'               \
+                           'double* kernels::aderdg::optimised::weights2;\n'               \
+                           'double* kernels::aderdg::optimised::weights3;\n\n')
 
-        l_sourceFile.write('void kernels::freeGaussLegendreNodesAndWeights(const std::set<int>& orders) {\n')
+        l_sourceFile.write('void kernels::aderdg::optimised::freeGaussLegendreNodesAndWeights(const std::set<int>& orders) {\n')
         for weightsVector in self.m_vectors:
             l_sourceFile.write('  _mm_free('+str(weightsVector)+');\n')
         l_sourceFile.write('  constexpr int MAX_ORDER=9;\n\n'              \
@@ -175,7 +177,7 @@ class WeightsGenerator:
                            '  delete [] gaussLegendreWeights;\n')
         l_sourceFile.write('}\n\n')
 
-        l_sourceFile.write('void kernels::initGaussLegendreNodesAndWeights(const std::set<int>& orders) {\n')
+        l_sourceFile.write('void kernels::aderdg::optimised::initGaussLegendreNodesAndWeights(const std::set<int>& orders) {\n')
         for weightsVector in self.m_vectors:
             l_elemCount = self.m_vectors[weightsVector].size
             l_sourceFile.write('  '+str(weightsVector)+' = (double *) _mm_malloc(sizeof(double)*'+ \

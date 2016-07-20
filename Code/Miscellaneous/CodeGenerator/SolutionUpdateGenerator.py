@@ -89,7 +89,7 @@ class SolutionUpdateGenerator:
         l_sourceFile.write('#pragma simd\n'\
                            '  for(int i=0;i<'+str(self.m_nDof)+';i++) {\n')
         for iVar in range(0, self.m_config['nVar']):
-            l_sourceFile.write('    tmp[i*'+str(self.m_config['nVar'])+'+'+str(iVar)+'] = lduh[i*'+str(self.m_config['nVar'])+'+'+str(iVar)+']/kernels::weights3[i];\n')
+            l_sourceFile.write('    tmp[i*'+str(self.m_config['nVar'])+'+'+str(iVar)+'] = lduh[i*'+str(self.m_config['nVar'])+'+'+str(iVar)+']/kernels::aderdg::optimised::weights3[i];\n')
         l_sourceFile.write('  }\n\n')
 
         # sum the contribution to lduh
