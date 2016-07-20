@@ -12,6 +12,12 @@ hmaxs = ["0.04"]
 compilers = ["GNU"]
 dimensions = ["2D", "3D"]
 
+# processes = [2]
+# pdegrees = [3]
+# hmaxs = ["0.4"]
+# compilers = ["GNU"]
+# dimensions = ["2D"]
+
 for dimension in dimensions:
   for process in processes:
     for pdegree in pdegrees:
@@ -24,7 +30,7 @@ for dimension in dimensions:
           
           file.write("#!/bin/bash"                                                                                                         + "\n")
           file.write("#SBATCH -o %j." + name + ".out "                                                                                     + "\n")
-          file.write("#SBATCH -D /home/hpc/pr63so/gu89tik2/scratch/logs"                                                                   + "\n")
+          file.write("#SBATCH -D /home/hpc/pr63so/gu89tik2/jobs/logs"                                                                   + "\n")
           file.write("#SBATCH -J " + name                                                                                                  + "\n")
           file.write("#SBATCH --get-user-env "                                                                                             + "\n")
           file.write("#SBATCH --clusters=mpp2"                                                                                             + "\n")
@@ -190,6 +196,8 @@ for dimension in dimensions:
           file.write("scp " + name + ".merged-exahype.log-file* varduhnv@atsccs60.informatik.tu-muenchen.de:~/www-exahype/performance.analysis/" + "\n")
           file.write("ssh varduhnv@atsccs60.informatik.tu-muenchen.de \"chmod -R a+rx ~/www-exahype/performance.analysis\""                + "\n")
           file.write(""                                                                                                                    + "\n")
+          file.write("cp " + name + ".merged-exahype.log-file ~/jobs/results/$SLURM_JOBID." + name + ".merged-exahype.log-file "           + "\n")
+          file.write(""                                                                                                                    + "\n")
           file.write("cd ../.."                                                                                                            + "\n")
 
           file.write(""                                                                                                                    + "\n")
@@ -200,5 +208,5 @@ for dimension in dimensions:
           
           call(["sbatch", filename])
           #print "sbatch " + filename
-          call(["rm", filename])
+          call("cp " + filename + " ~/jobs/scripts/" + filename, shell=True)
         
