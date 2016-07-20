@@ -235,43 +235,20 @@ int exahype::runners::Runner::runAsMaster(
   /*
    * Build up the initial space tree.
    */
-  repository.switchToRegularMesh();
-  #ifdef Parallel
-  bool SetupGridInOneSweep = tarch::parallel::Node::getInstance().getNumberOfNodes()==1;
-  #else
-  bool SetupGridInOneSweep = true;
-  #endif
-
   int gridSetupIterations = 0;
-  do {
-    repository.iterate();
-    gridSetupIterations++;
-    logInfo("runAsMaster()",
-      "regular grid setup iteration #"     << gridSetupIterations <<
-      ", max-level="               << repository.getState().getMaxLevel() <<
-      ", number of working ranks=" << tarch::parallel::NodePool::getInstance().getNumberOfWorkingNodes() <<
-      ", number of idle ranks="    << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
-    );
-  } while (!repository.getState().isGridBalanced() && !SetupGridInOneSweep);
-
   repository.switchToAugmentedAMRGrid();
   do {
     repository.iterate();
     gridSetupIterations++;
-    logInfo("runAsMaster()",
-      "adaptive grid setup iteration #"     << gridSetupIterations <<
-      ", max-level="               << repository.getState().getMaxLevel() <<
-      ", number of working ranks=" << tarch::parallel::NodePool::getInstance().getNumberOfWorkingNodes() <<
-      ", number of idle ranks="    << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
-    );
-  } while (!repository.getState().isGridBalanced() && !SetupGridInOneSweep);
+  } while (!repository.getState().isGridBalanced());
+  repository.iterate();
+  gridSetupIterations++;
 
   logInfo("runAsMaster()",
-    "total grid setup iterations=" << gridSetupIterations << ", max-level="
-    << repository.getState().getMaxLevel()
-  );
+          "grid setup iterations=" << gridSetupIterations << ", max-level="
+                                   << repository.getState().getMaxLevel());
 
-  //    NOTE: Only plot the tree in 2d. Otherwise the program will crash.
+  //  NOTE: Only plot the tree in 2d. Otherwise the program will crash.
   //  repository.switchToPlotAugmentedAMRGrid();
   //  repository.iterate();
 

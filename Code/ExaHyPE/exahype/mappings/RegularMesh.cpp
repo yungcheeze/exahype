@@ -342,7 +342,10 @@ void exahype::mappings::RegularMesh::enterCell(
   int solverNumber = 0;
   if (fineGridCell.getADERDGCellDescriptionsIndex() == exahype::Cell::InvalidCellDescriptionsIndex) {
     for (const auto& p : exahype::solvers::RegisteredSolvers) {
-      if (tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),p->getMaximumMeshSize())) {
+      if (tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),p->getMaximumMeshSize())
+          &&
+          tarch::la::allGreater(coarseGridVerticesEnumerator.getCellSize(),p->getMaximumMeshSize())
+      ) {
         fineGridCell.addNewCellDescription(
             solverNumber, exahype::records::ADERDGCellDescription::Cell,
             exahype::records::ADERDGCellDescription::None,
