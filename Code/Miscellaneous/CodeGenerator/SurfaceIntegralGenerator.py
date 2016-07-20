@@ -117,9 +117,11 @@ class SurfaceIntegralGenerator:
         # => we skip gcc here
         # do not query __GNUC__ - icc also defines this
         l_sourceFile.write('#ifdef __INTEL_COMPILER\n'\
-                           '  __assume_aligned(kernels::s_m, ALIGNMENT)\n'\
-                           '  __assume_aligned(kernels::FRCoeff, ALIGNMENT)\n'\
-                           '  __assume_aligned(kernels::FLCoeff, ALIGNMENT)\n'
+                           '  __assume_aligned(kernels::s_m, ALIGNMENT);\n'\
+                           '  __assume_aligned(kernels::FRCoeff, ALIGNMENT);\n'\
+                           '  __assume_aligned(kernels::FLCoeff, ALIGNMENT);\n'\
+                           '  __assume_aligned(kernels::weights1, ALIGNMENT);\n'\
+                           '  __assume_aligned(kernels::weights2, ALIGNMENT);\n'
                            '#endif\n')
 
         # temporary memory for scaled versions

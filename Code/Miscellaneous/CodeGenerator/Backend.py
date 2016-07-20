@@ -145,6 +145,9 @@ def generateCommonHeader():
                        '#include "peano/utils/Globals.h"\n\n'
                        )
 
+    # disable libxsmm counter
+    l_sourceFile.write('#define NDEBUG')
+
     # nested namespaces
     l_sourceFile.write('namespace kernels {\n'        )
     l_sourceFile.write('  namespace aderdg {\n'       )

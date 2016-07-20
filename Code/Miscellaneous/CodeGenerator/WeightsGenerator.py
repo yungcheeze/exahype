@@ -155,7 +155,7 @@ class WeightsGenerator:
 
     def __writeToFile(self):
         l_sourceFile = open(self.m_sourceName, 'a')
-        l_sourceFile.write('#include "kernels/'+self.m_headerName+'"\n' \
+        l_sourceFile.write('#include "kernels/aderdg/optimised/'+self.m_headerName+'"\n' \
                            '#include <mm_malloc.h> //g++\n\n')
         l_sourceFile.write('double** kernels::gaussLegendreWeights;\n'  \
                            'double** kernels::gaussLegendreNodes;\n'    \
