@@ -110,6 +110,13 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     int numberOfParameters = Integer.parseInt(node.getParameters().toString().trim());
     int order = Integer.parseInt(node.getOrder().toString().trim());
 
+    if (numberOfParameters != 0) {
+      System.err.println("ERROR: At the moment, parameters are not yet supported. " + 
+          " Please add the parameters as additional quantities to your PDE formulation.");
+      valid = false;
+      return;
+    }
+    
     eu.exahype.solvers.Solver solver = null;
 
     if (isFortran) {
