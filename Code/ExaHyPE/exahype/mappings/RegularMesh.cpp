@@ -35,7 +35,11 @@ exahype::mappings::RegularMesh::communicationSpecification() {
 peano::MappingSpecification
 exahype::mappings::RegularMesh::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
+      #ifdef Parallel
+      peano::MappingSpecification::WholeTree,
+      #else
       peano::MappingSpecification::Nop,
+      #endif
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 peano::MappingSpecification
@@ -68,9 +72,100 @@ exahype::mappings::RegularMesh::descendSpecification() {
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
-tarch::logging::Log exahype::mappings::RegularMesh::_log(
-    "exahype::mappings::RegularMesh");
 
+tarch::logging::Log exahype::mappings::RegularMesh::_log("exahype::mappings::RegularMesh");
+int                 exahype::mappings::RegularMesh::_traversalCounter(0);
+
+
+void exahype::mappings::RegularMesh::refineVertexIfNecessary(
+  exahype::Vertex&                              fineGridVertex,
+  const tarch::la::Vector<DIMENSIONS, double>&  fineGridH) const {
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    if (
+      fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined
+      &&
+      tarch::la::allGreater(fineGridH,p->getMaximumMeshSize())
+      &&
+      !_vetoRefinement
+    ) {
+      fineGridVertex.refine();
+    }
+  }
+}
+
+
+void exahype::mappings::RegularMesh::touchVertexLastTime(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  refineVertexIfNecessary(fineGridVertex,fineGridH);
+}
+
+
+void exahype::mappings::RegularMesh::createBoundaryVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  logTraceInWith6Arguments("createBoundaryVertex(...)", fineGridVertex,
+                           fineGridX, fineGridH,
+                           coarseGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfVertex);
+  #if !defined(Parallel)
+  refineVertexIfNecessary(fineGridVertex,fineGridH);
+  #endif
+
+  logTraceOutWith1Argument("createBoundaryVertex(...)", fineGridVertex);
+}
+
+
+void exahype::mappings::RegularMesh::createInnerVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  logTraceInWith6Arguments("createInnerVertex(...)", fineGridVertex, fineGridX,
+                           fineGridH, coarseGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfVertex);
+
+  #if !defined(Parallel)
+  refineVertexIfNecessary(fineGridVertex,fineGridH);
+  #endif
+
+  logTraceOutWith1Argument("createInnerVertex(...)", fineGridVertex);
+}
+
+
+void exahype::mappings::RegularMesh::beginIteration(
+  exahype::State& solverState
+) {
+  ADERDGCellDescriptionHeap::getInstance().setName("ADERDGCellDescriptionHeap");
+  DataHeap::getInstance().setName("DataHeap");
+  _vetoRefinement = _traversalCounter%5!=0 && tarch::parallel::Node::getInstance().getNumberOfNodes()>1;
+  _traversalCounter++;
+}
+
+
+#if defined(SharedMemoryParallelisation)
+exahype::mappings::RegularMesh::RegularMesh(const RegularMesh& masterThread):
+  _vetoRefinement(masterThread._vetoRefinement) {
+}
+#endif
+
+//
+// All routines below are nop
+// ==========================
+//
 exahype::mappings::RegularMesh::RegularMesh() {
   // do nothing
 }
@@ -80,10 +175,6 @@ exahype::mappings::RegularMesh::~RegularMesh() {
 }
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::RegularMesh::RegularMesh(const RegularMesh& masterThread) {
-  // do nothing
-}
-
 void exahype::mappings::RegularMesh::mergeWithWorkerThread(
     const RegularMesh& workerThread) {
   // do nothing
@@ -112,54 +203,6 @@ void exahype::mappings::RegularMesh::destroyHangingVertex(
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::createInnerVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  logTraceInWith6Arguments("createInnerVertex(...)", fineGridVertex, fineGridX,
-                           fineGridH, coarseGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfVertex);
-  tarch::la::Vector<DIMENSIONS,double> fineGridCellSize = coarseGridVerticesEnumerator.getCellSize();
-  fineGridCellSize /= 3.0;
-
-  for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    if (fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined &&
-        tarch::la::allGreater(fineGridCellSize,p->getMaximumMeshSize())) {
-      fineGridVertex.refine();
-    }
-  }
-
-  logTraceOutWith1Argument("createInnerVertex(...)", fineGridVertex);
-}
-
-void exahype::mappings::RegularMesh::createBoundaryVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  logTraceInWith6Arguments("createBoundaryVertex(...)", fineGridVertex,
-                           fineGridX, fineGridH,
-                           coarseGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfVertex);
-  tarch::la::Vector<DIMENSIONS,double> fineGridCellSize = coarseGridVerticesEnumerator.getCellSize();
-  fineGridCellSize /= 3.0;
-
-  for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    if (fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined &&
-        tarch::la::allGreater(fineGridCellSize,p->getMaximumMeshSize())) {
-      fineGridVertex.refine();
-    }
-  }
-
-  logTraceOutWith1Argument("createBoundaryVertex(...)", fineGridVertex);
-}
 
 void exahype::mappings::RegularMesh::destroyVertex(
     const exahype::Vertex& fineGridVertex,
@@ -317,16 +360,6 @@ void exahype::mappings::RegularMesh::touchVertexFirstTime(
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::touchVertexLastTime(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
 
 void exahype::mappings::RegularMesh::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -370,12 +403,6 @@ void exahype::mappings::RegularMesh::leaveCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   // do nothing
-}
-
-void exahype::mappings::RegularMesh::beginIteration(
-    exahype::State& solverState) {
-  ADERDGCellDescriptionHeap::getInstance().setName("ADERDGCellDescriptionHeap");
-  DataHeap::getInstance().setName("DataHeap");
 }
 
 void exahype::mappings::RegularMesh::endIteration(exahype::State& solverState) {

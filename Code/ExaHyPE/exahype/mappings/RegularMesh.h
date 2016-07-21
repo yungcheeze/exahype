@@ -32,17 +32,20 @@
 // ! End of code for DG method
 
 namespace exahype {
-namespace mappings {
-class RegularMesh;
-}
+  namespace mappings {
+    class RegularMesh;
+  }
 }
 
 /**
- * This is a mapping from the spacetree traversal events to your user-defined
- *activities.
- * The latter are realised within the mappings.
+ * This mapping builds up the regular base mesh used by all simulations.
+ * The regular mesh is determined by the minimal mesh size of all involved
+ * solvers. Basically, the only routine that does something in this mapping
+ * is the private one. The only thing this private routine does is to call
+ * refine().
  *
- * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
+ *
+ * @author Dominic E. Charrier, Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
 class exahype::mappings::RegularMesh {
@@ -52,17 +55,29 @@ class exahype::mappings::RegularMesh {
    */
   static tarch::logging::Log _log;
 
+  static int                 _traversalCounter;
+
+  /**
+   * In the serial case, this flag has to be false always. We never veto any
+   * refinement. In the parallel code, we use it to delay the grid construction
+   * and thus to allow the load balancing to follow up.
+   */
+  bool _vetoRefinement;
+
+  void refineVertexIfNecessary(
+    exahype::Vertex&                              fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>&  fineGridH) const;
+
  public:
   /**
-   * These flags are used to inform Peano about your operation. It tells the
-   * framework whether the operation is empty, whether it works only on the
-   * spacetree leaves, whether the operation can restart if the thread
-   * crashes (resiliency), and so forth. This information allows Peano to
-   * optimise the code.
-   *
-   * @see peano::MappingSpecification for information on thread safety.
+   * Switched off in serial mode where everything is done in the creational
+   * routines. Switched on in parallel mode.
    */
   static peano::MappingSpecification touchVertexLastTimeSpecification();
+
+  /**
+   * Switched off
+   */
   static peano::MappingSpecification touchVertexFirstTimeSpecification();
   static peano::MappingSpecification enterCellSpecification();
   static peano::MappingSpecification leaveCellSpecification();
@@ -72,87 +87,28 @@ class exahype::mappings::RegularMesh {
   static peano::CommunicationSpecification communicationSpecification();
 
   /**
-   * Mapping constructor.
-   *
-   * Mappings have to have a standard constructor and, typically, no other
-   * constructor does exist. While the constructor may initialise a mapping,
-   * Peano's concept requires the mapping to be semi-stateless:
-   *
-   * - At construction time the mapping has no well-defined state, i.e. the
-   *   values set by the constructor are meaningless.
-   * - Whenever the mapping's beginIteration() operation is called, the
-   *   mapping has to initialise itself. To do this, it has to analyse the
-   *   passed state object. The beginIteration() operation may set attributes
-   *   of the mapping and these attributes now have a valid state.
-   * - All the subsequent calls on the mapping can rely on valid mapping
-   *   attributes until
-   * - The operation endIteration() is invoked. Afterwards, all the mapping's
-   *   attributes have an undefined state.
-   *
-   * With this concept, you cannot ensure a consistent mapping state
-   * in-between two iterations: While the first iteration might set some
-   * mapping attributes, the attributes become invalid after the first
-   * endIteration() call and might be changed from outside before the next
-   * beginIteration() is invoked.
-   *
-   * To implement persistent attributes, you have to write back all these
-   * attributes at endIteration() and reload them at the next beginIteration()
-   * call. With this sometimes confusing persistency concept, we can ensure
-   * that your code works on a parallel machine and for any mapping/algorithm
-   * modification.
+   * Nop
    */
   RegularMesh();
 
 #if defined(SharedMemoryParallelisation)
   /**
-   * Copy constructor for multithreaded code
-   *
-   * If Peano uses several cores, the mappings are duplicated due to this
-   * copy constructor.
-   *
-   * This operation is thread-safe, i.e. you need no semaphores here.
-   *
-   * @see mergeWithWorkerThread()
+   * We copy over the veto flag from the master thread
    */
   RegularMesh(const RegularMesh& masterThread);
 #endif
 
   /**
-   * Destructor. Typically does not implement any operation.
+   * Nop
    */
   virtual ~RegularMesh();
 
-#if defined(SharedMemoryParallelisation)
+  #if defined(SharedMemoryParallelisation)
   /**
-   * Merge with worker thread
-   *
-   * In Peano's multithreaded mode, each mapping is duplicated among the
-   * threads. This duplication is done via the copy constructor. At the end
-   * of a parallel section, the individual copies of the mappings are
-   * merged together into one the global state instance again.
-   *
-   * If there are t threads, Peano takes the original mapping and makes t
-   * copies. Then, the t copies are ran in parallel. In the end, the t copies
-   * are merged into the original step by step. If your mapping holds
-   * variables, also these variables are copied per thread. If you have
-   * pointers, be sure that those are copied in the constructor as well or
-   * handled correctly. This place then is the place to merge all the copies
-   * back into one mapping instance.
-   *
-   * This operation is thread-safe, i.e. you need no semaphores here.
-   *
-   * While this is the right place to merge parallel data, and while you
-   * do not need any semaphores at all here, there are also cases where this
-   * implementation pattern doesn't work. The best example is a plotter:
-   * You may not copy a plotter, and it does not make sense to merge a plotter.
-   * So, in this case, I recommend to hold a pointer to the plotter in the
-   * original mapping and to create the plotter on the heap. This pointer then
-   * is copied to all thread-local mappings and all threads use the same object
-   * on the heap. However, you should protect this object by a BooleanSemaphore
-   * and a lock to serialise all accesses to the plotter.
+   * Nothing to be done here.
    */
   void mergeWithWorkerThread(const RegularMesh& workerThread);
-#endif
+  #endif
 
   /**
    * Create an inner vertex.
