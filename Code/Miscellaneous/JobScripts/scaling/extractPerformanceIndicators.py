@@ -75,7 +75,7 @@ def getSimulationRuntime(filename):
 
   return result
 
-  
-print "A = [A; [" , getOptimisticADERDGSteps(sys.argv[1]), ", ", getAverageTimestepCostOfSingleADERDGStep(sys.argv[1]), ", ", getNumberOfSteps(sys.argv[1]), ", ", getSimulationRuntime(sys.argv[1]), ", ", getCostOfADERDGSteps(sys.argv[1]), "]]"
+print "%optimisticADERDGSteps, averageTimestepCostOfSingleADERDGStep, numberOfSteps, simulationRuntime, costOfADERDGSteps"  
+print "A=[A;[" , getOptimisticADERDGSteps(sys.argv[1]), ", ", getAverageTimestepCostOfSingleADERDGStep(sys.argv[1]), ", ", getNumberOfSteps(sys.argv[1]), ", ", getSimulationRuntime(sys.argv[1]), ", ", getCostOfADERDGSteps(sys.argv[1]), "]]"
 
 
