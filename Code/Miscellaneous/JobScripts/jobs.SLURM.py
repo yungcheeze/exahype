@@ -15,12 +15,12 @@ compilers = ["GNU"]
 dimensions = ["2D", "3D"]
 modes = ["Profile"]
 
-processes = [2]
-pdegrees = [3]
-hmaxs = ["0.4"]
-compilers = ["GNU"]
-dimensions = ["2D"]
-modes = ["Release"]
+# processes = [2]
+# pdegrees = [3]
+# hmaxs = ["0.4"]
+# compilers = ["GNU"]
+# dimensions = ["2D"]
+# modes = ["Release"]
 
 for dimension in dimensions:
   for process in processes:
