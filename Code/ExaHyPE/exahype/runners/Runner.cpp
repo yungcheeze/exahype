@@ -228,46 +228,51 @@ int exahype::runners::Runner::run() {
   return result;
 }
 
-int exahype::runners::Runner::runAsMaster(
-    exahype::repositories::Repository& repository) {
-  peano::utils::UserInterface::writeHeader();
+void exahype::runners::Runner::createGrid(exahype::repositories::Repository& repository) {
+  #ifdef Parallel
+  const bool UseStationaryCriterion = tarch::parallel::Node::getInstance().getNumberOfNodes()==1;
+  #else
+  const bool UseStationaryCriterion = true;
+  #endif
 
-  /*
-   * Build up the initial space tree.
-   */
   int gridSetupIterations = 0;
   repository.switchToAugmentedAMRGrid();
+
   do {
     repository.iterate();
     gridSetupIterations++;
-  } while (!repository.getState().isGridBalanced());
-  repository.iterate();
-  gridSetupIterations++;
+    logInfo("runAsMaster()",
+      "grid setup iteration #" << gridSetupIterations <<
+      ", max-level=" << repository.getState().getMaxLevel() <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+    );
+  }
+  while (
+   ( UseStationaryCriterion && !repository.getState().isGridStationary())
+   ||
+   (!UseStationaryCriterion && !repository.getState().isGridBalanced())
+  );
 
-  logInfo("runAsMaster()",
-          "grid setup iterations=" << gridSetupIterations << ", max-level="
-                                   << repository.getState().getMaxLevel());
+  logInfo("runAsMaster()", "finished grid setup after " << gridSetupIterations << " iterations" );
+}
+
+
+int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& repository) {
+  peano::utils::UserInterface::writeHeader();
+
+  createGrid(repository);
 
   //  NOTE: Only plot the tree in 2d. Otherwise the program will crash.
   //  repository.switchToPlotAugmentedAMRGrid();
   //  repository.iterate();
-
-#ifdef Parallel
-  logInfo("runAsMaster()",
-          "number of working ranks=" << tarch::parallel::NodePool::getInstance()
-                                            .getNumberOfWorkingNodes());
-  logInfo(
-      "runAsMaster()",
-      "number of idle ranks="
-          << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes());
-#endif
   repository.switchToSolutionAdjustmentAndGlobalTimeStepComputation();
   repository.iterate();
-#if defined(Debug) || defined(Asserts)
+  #if defined(Debug) || defined(Asserts)
   startNewTimeStep(-1,true);
-#else
+  #else
   startNewTimeStep(-1,false);
-#endif
+  #endif
+
   /*
    * Set the time stamps of the solvers to the initial value again.
    *
