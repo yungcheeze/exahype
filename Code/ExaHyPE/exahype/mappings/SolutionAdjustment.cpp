@@ -343,7 +343,7 @@ void exahype::mappings::SolutionAdjustment::enterCell(
 
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
-        peano::datatraversal::autotuning::UserDefined6;
+        peano::datatraversal::autotuning::UserDefined11;
     const int grainSize =
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
