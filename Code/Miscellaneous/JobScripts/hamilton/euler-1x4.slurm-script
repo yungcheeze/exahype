@@ -12,5 +12,5 @@ module unload gcc/4.9.1
 module load gcc/4.9.1
 
 
-mpirun /panfs/panasas1.hpc.dur.ac.uk/frmh84/ExaHyPE/Code/ApplicationExamples/EulerFlow/ExaHyPE-Euler /panfs/panasas1.hpc.dur.ac.uk/frmh84/ExaHyPE/Code/ApplicationExamples/eulerflow.exahype
+mpirun /panfs/panasas1.hpc.dur.ac.uk/frmh84/ExaHyPE/Code/ApplicationExamples/EulerFlow/ExaHyPE-Euler /panfs/panasas1.hpc.dur.ac.uk/frmh84/ExaHyPE/Code/ApplicationExamples/eulerflow.exahype > results-1x4.results
 
