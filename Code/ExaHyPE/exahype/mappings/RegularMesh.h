@@ -55,18 +55,22 @@ class exahype::mappings::RegularMesh {
    */
   static tarch::logging::Log _log;
 
+  /**
+   * The traversal counter is used (only on the global master) to decide
+   * how aggressive we may refine. See State::updateRegularInitialGridRefinementStrategy().
+   */
   static int                 _traversalCounter;
 
   /**
-   * In the serial case, this flag has to be false always. We never veto any
-   * refinement. In the parallel code, we use it to delay the grid construction
-   * and thus to allow the load balancing to follow up.
+   * I use a copy of the state to determine whether I'm allowed to refine or not.
    */
-  bool _vetoRefinement;
+  State _localState;
 
   void refineVertexIfNecessary(
     exahype::Vertex&                              fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>&  fineGridH) const;
+    const tarch::la::Vector<DIMENSIONS, double>&  fineGridH,
+    bool                                          isCalledByCreationalEvent
+  ) const;
 
  public:
   /**

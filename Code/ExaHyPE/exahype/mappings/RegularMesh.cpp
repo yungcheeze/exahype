@@ -79,16 +79,25 @@ int                 exahype::mappings::RegularMesh::_traversalCounter(0);
 
 void exahype::mappings::RegularMesh::refineVertexIfNecessary(
   exahype::Vertex&                              fineGridVertex,
-  const tarch::la::Vector<DIMENSIONS, double>&  fineGridH) const {
+  const tarch::la::Vector<DIMENSIONS, double>&  fineGridH,
+  bool                                          isCalledByCreationalEvent
+) const {
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
     if (
       fineGridVertex.getRefinementControl() == Vertex::Records::Unrefined
       &&
       tarch::la::allGreater(fineGridH,p->getMaximumMeshSize())
-      &&
-      !_vetoRefinement
     ) {
+      #ifdef Parallel
+      if (isCalledByCreationalEvent) {
+        fineGridVertex.enforceRefine();
+      }
+      else {
+        fineGridVertex.refine();
+      }
+      #else
       fineGridVertex.refine();
+      #endif
     }
   }
 }
@@ -102,7 +111,9 @@ void exahype::mappings::RegularMesh::touchVertexLastTime(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  refineVertexIfNecessary(fineGridVertex,fineGridH);
+  if (_localState.refineInitialGridInTouchVertexLastTime()) {
+    refineVertexIfNecessary(fineGridVertex,fineGridH,false);
+  }
 }
 
 
@@ -118,9 +129,9 @@ void exahype::mappings::RegularMesh::createBoundaryVertex(
                            fineGridX, fineGridH,
                            coarseGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfVertex);
-  #if !defined(Parallel)
-  refineVertexIfNecessary(fineGridVertex,fineGridH);
-  #endif
+  if (_localState.refineInitialGridInCreationalEvents()) {
+    refineVertexIfNecessary(fineGridVertex,fineGridH,true);
+  }
 
   logTraceOutWith1Argument("createBoundaryVertex(...)", fineGridVertex);
 }
@@ -138,9 +149,9 @@ void exahype::mappings::RegularMesh::createInnerVertex(
                            fineGridH, coarseGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfVertex);
 
-  #if !defined(Parallel)
-  refineVertexIfNecessary(fineGridVertex,fineGridH);
-  #endif
+  if (_localState.refineInitialGridInCreationalEvents()) {
+    refineVertexIfNecessary(fineGridVertex,fineGridH,true);
+  }
 
   logTraceOutWith1Argument("createInnerVertex(...)", fineGridVertex);
 }
@@ -151,14 +162,19 @@ void exahype::mappings::RegularMesh::beginIteration(
 ) {
   ADERDGCellDescriptionHeap::getInstance().setName("ADERDGCellDescriptionHeap");
   DataHeap::getInstance().setName("DataHeap");
-  _vetoRefinement = _traversalCounter%5!=0 && tarch::parallel::Node::getInstance().getNumberOfNodes()>1;
+
+  if ( tarch::parallel::Node::getInstance().isGlobalMaster() ) {
+    solverState.updateRegularInitialGridRefinementStrategy(_traversalCounter%5==0);
+  }
+  _localState = solverState;
+
   _traversalCounter++;
 }
 
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::RegularMesh::RegularMesh(const RegularMesh& masterThread):
-  _vetoRefinement(masterThread._vetoRefinement) {
+  _localState(masterThread._localState) {
 }
 #endif
 
