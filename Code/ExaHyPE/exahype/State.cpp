@@ -67,13 +67,6 @@ void exahype::State::updateRegularInitialGridRefinementStrategy(bool isFifthIter
   #endif
 }
 
-/**
- * In the serial version of the code, this predicate always holds. In the
- * parallel case, it holds if and only if all ranks are already busy. As the
- * routine only may be used by the setup of the regular initial grid, it
- * thus is reasonable to invoke enforceRefine in the parallel case if the
- * result it true.
- */
 bool exahype::State::refineInitialGridInCreationalEvents() const {
   #ifdef Parallel
   return _stateData.getGridConstructionState() == exahype::records::State::Aggressive;
