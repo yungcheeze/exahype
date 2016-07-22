@@ -110,7 +110,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    *   anymore, we switch into aggressive and make all ranks build up the
    *   whole grid in one sweep.
    */
-  void updateRegularInitialGridRefinementStrategy(bool isFifthIteration);
+  void updateRegularInitialGridRefinementStrategy();
 
   /**
    * In the serial version of the code, this predicate always holds. In the
