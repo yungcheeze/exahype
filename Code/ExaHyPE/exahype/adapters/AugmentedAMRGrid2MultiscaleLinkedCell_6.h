@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_AugmentedAMRGrid2MultiscaleLinkedCell_5_H_
-#define EXAHYPE_ADAPTERS_AugmentedAMRGrid2MultiscaleLinkedCell_5_H_
+#ifndef EXAHYPE_ADAPTERS_AugmentedAMRGrid2MultiscaleLinkedCell_6_H_
+#define EXAHYPE_ADAPTERS_AugmentedAMRGrid2MultiscaleLinkedCell_6_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,7 +18,7 @@
 
 namespace exahype {
       namespace adapters {
-        class AugmentedAMRGrid2MultiscaleLinkedCell_5;
+        class AugmentedAMRGrid2MultiscaleLinkedCell_6;
       } 
 }
 
@@ -32,7 +32,7 @@ namespace exahype {
  * @author Tobias Weinzierl
  * @version $Revision: 1.1 $
  */
-class exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_5 {
+class exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_6 {
   public:
     static peano::MappingSpecification   touchVertexLastTimeSpecification();
     static peano::MappingSpecification   touchVertexFirstTimeSpecification();
@@ -42,16 +42,16 @@ class exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_5 {
     static peano::MappingSpecification   descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    AugmentedAMRGrid2MultiscaleLinkedCell_5();
+    AugmentedAMRGrid2MultiscaleLinkedCell_6();
 
     #if defined(SharedMemoryParallelisation)
-    AugmentedAMRGrid2MultiscaleLinkedCell_5(const AugmentedAMRGrid2MultiscaleLinkedCell_5& masterThread);
+    AugmentedAMRGrid2MultiscaleLinkedCell_6(const AugmentedAMRGrid2MultiscaleLinkedCell_6& masterThread);
     #endif
 
-    virtual ~AugmentedAMRGrid2MultiscaleLinkedCell_5();
+    virtual ~AugmentedAMRGrid2MultiscaleLinkedCell_6();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const AugmentedAMRGrid2MultiscaleLinkedCell_5& workerThread);
+    void mergeWithWorkerThread(const AugmentedAMRGrid2MultiscaleLinkedCell_6& workerThread);
     #endif
 
     void createInnerVertex(

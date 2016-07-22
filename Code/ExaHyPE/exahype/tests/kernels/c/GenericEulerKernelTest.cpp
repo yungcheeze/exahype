@@ -89,7 +89,7 @@ void GenericEulerKernelTest::testEquidistantGridProjection() {
                       #endif
                       u[iGauss * numberOfVariables + unknown];
       }
-      assertion(tarch::la::equals(value,1.0,1e-11)); // todo precision issues
+      assertion(tarch::la::equals(value,1.0,1e-6)); // todo precision issues
     }
   }
 
@@ -109,7 +109,7 @@ void GenericEulerKernelTest::testEquidistantGridProjection() {
                     #endif
                     u[iGauss * numberOfVariables + unknown];
         }
-        assertion(tarch::la::equals(value,1.0,1e-11)); // todo precision issues
+        assertion(tarch::la::equals(value,1.0,1e-6)); // todo precision issues
       }
     }
 }
