@@ -188,7 +188,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
   // Geometry is static as we need it survive the whole simulation time.
   static peano::geometry::Hexahedron geometry(
     _parser.getDomainSize(),
-    tarch::la::Vector<DIMENSIONS, double>(_parser.getOffset()));
+    _parser.getOffset());
 
   logDebug(
     "run(...)",
@@ -196,10 +196,19 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
     " of width/size " << _parser.getDomainSize() <<
     ". bounding box has size " << _parser.getBoundingBoxSize() );
 
+  #ifdef Parallel
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
     geometry,
-    tarch::la::Vector<DIMENSIONS, double>(_parser.getBoundingBoxSize()),
-    tarch::la::Vector<DIMENSIONS, double>(_parser.getOffset()));
+    _parser.getBoundingBoxSize()*9.0/7.0,
+    _parser.getOffset()-1.0/7.0
+  );
+  #else
+  return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
+    geometry,
+    _parser.getBoundingBoxSize(),
+    _parser.getOffset()
+  );
+  #endif
 }
 
 
