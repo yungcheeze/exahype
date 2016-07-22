@@ -151,7 +151,9 @@ class DGMatrixGenerator:
                          '#define _EXAHYPE_KERNELS_ADERDG_OPTIMISED_DGMATRICES_H_\n\n'
         l_sourceFile.write(l_includeGuard)
         l_sourceFile.write('#include <set>\n\n')
-        l_sourceFile.write('namespace kernels { \n\n'     \
+        l_sourceFile.write('namespace kernels { \n'\
+                           'namespace aderdg {\n'\
+                           'namespace optimised {\n\n'\
                            'void initDGMatrices(const std::set<int>& orders);\n' \
                            'void freeDGMatrices(const std::set<int>& orders);\n\n' \
                            'extern double *Kxi;\n'      \
@@ -165,7 +167,7 @@ class DGMatrixGenerator:
                            'extern double *FLCoeff;\n'  \
                            'extern double *FRCoeff;\n'  \
                            'extern double ***equidistantGridProjector1d;\n' \
-                           'extern double **** fineGridProjector1d;\n\n}\n')
+                           'extern double **** fineGridProjector1d;\n\n}\n}\n}\n')
         # close include guard
         l_sourceFile.write('#endif /* _EXAHYPE_KERNELS_ADERDG_OPTIMISED_DGMATRICES_H_ */')
         l_sourceFile.close()
@@ -175,21 +177,21 @@ class DGMatrixGenerator:
         l_sourceFile = open(self.m_sourceName, 'a')
         l_sourceFile.write('#include "kernels/aderdg/optimised/'+self.m_headerName+'"\n' \
                            '#include <mm_malloc.h> //g++\n\n')
-        l_sourceFile.write('double* kernels::Kxi;\n'     \
-                           'double* kernels::Kxi_T;\n'   \
-                           'double* kernels::iK1;\n'     \
-                           'double* kernels::dudx;\n'    \
-                           'double* kernels::s_m;\n'     \
-                           'double* kernels::s_v;\n'     \
-                           'double* kernels::tmp_bnd;\n' \
-                           'double* kernels::F0;\n'      \
-                           'double* kernels::FLCoeff;\n' \
-                           'double* kernels::FRCoeff;\n' \
-                           'double*** kernels::equidistantGridProjector1d;\n' \
-                           'double**** kernels::fineGridProjector1d;\n\n')
+        l_sourceFile.write('double* kernels::aderdg::optimised::Kxi;\n'     \
+                           'double* kernels::aderdg::optimised::Kxi_T;\n'   \
+                           'double* kernels::aderdg::optimised::iK1;\n'     \
+                           'double* kernels::aderdg::optimised::dudx;\n'    \
+                           'double* kernels::aderdg::optimised::s_m;\n'     \
+                           'double* kernels::aderdg::optimised::s_v;\n'     \
+                           'double* kernels::aderdg::optimised::tmp_bnd;\n' \
+                           'double* kernels::aderdg::optimised::F0;\n'      \
+                           'double* kernels::aderdg::optimised::FLCoeff;\n' \
+                           'double* kernels::aderdg::optimised::FRCoeff;\n' \
+                           'double*** kernels::aderdg::optimised::equidistantGridProjector1d;\n' \
+                           'double**** kernels::aderdg::optimised::fineGridProjector1d;\n\n')
 
 
-        l_sourceFile.write('void kernels::freeDGMatrices(const std::set<int>& orders) {\n')
+        l_sourceFile.write('void kernels::aderdg::optimised::freeDGMatrices(const std::set<int>& orders) {\n')
         for matrix in i_matrices:
             l_sourceFile.write('_mm_free('+str(matrix)+');\n')
         l_sourceFile.write('  // copied from generic DGMatrices.cpp\n'\
@@ -211,7 +213,7 @@ class DGMatrixGenerator:
                            '  delete [] fineGridProjector1d;\n')
         l_sourceFile.write('}\n\n')
 
-        l_sourceFile.write('void kernels::initDGMatrices(const std::set<int>& orders) {\n')
+        l_sourceFile.write('void kernels::aderdg::optimised::initDGMatrices(const std::set<int>& orders) {\n')
 
         for matrix in i_matrices:
             l_elemCount = i_matrices[matrix].size

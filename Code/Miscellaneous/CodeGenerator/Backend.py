@@ -146,7 +146,7 @@ def generateCommonHeader():
                        )
 
     # disable libxsmm counter
-    l_sourceFile.write('#define NDEBUG')
+    l_sourceFile.write('#define NDEBUG\n')
 
     # nested namespaces
     l_sourceFile.write('namespace kernels {\n'        )
