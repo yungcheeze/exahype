@@ -74,7 +74,6 @@ exahype::mappings::RegularMesh::descendSpecification() {
 
 
 tarch::logging::Log exahype::mappings::RegularMesh::_log("exahype::mappings::RegularMesh");
-int                 exahype::mappings::RegularMesh::_traversalCounter(0);
 
 
 void exahype::mappings::RegularMesh::refineVertexIfNecessary(
@@ -163,12 +162,16 @@ void exahype::mappings::RegularMesh::beginIteration(
   ADERDGCellDescriptionHeap::getInstance().setName("ADERDGCellDescriptionHeap");
   DataHeap::getInstance().setName("DataHeap");
 
-  if ( tarch::parallel::Node::getInstance().isGlobalMaster() ) {
-    solverState.updateRegularInitialGridRefinementStrategy(_traversalCounter%5==0);
-  }
   _localState = solverState;
+}
 
-  _traversalCounter++;
+
+
+void exahype::mappings::RegularMesh::endIteration(exahype::State& solverState) {
+  // do nothing
+  if ( tarch::parallel::Node::getInstance().isGlobalMaster() ) {
+    solverState.updateRegularInitialGridRefinementStrategy();
+  }
 }
 
 
@@ -421,9 +424,6 @@ void exahype::mappings::RegularMesh::leaveCell(
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::endIteration(exahype::State& solverState) {
-  // do nothing
-}
 
 void exahype::mappings::RegularMesh::descend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,

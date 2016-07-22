@@ -45,20 +45,31 @@ void exahype::State::readFromCheckpoint(
   // do nothing
 }
 
-void exahype::State::updateRegularInitialGridRefinementStrategy(bool isFifthIteration) {
+void exahype::State::updateRegularInitialGridRefinementStrategy() {
   assertion( tarch::parallel::Node::getInstance().isGlobalMaster() );
 
   #ifdef Parallel
   if (
-    tarch::parallel::Node::getInstance().getNumberOfNodes()>1
-    &&
-    tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()==0
-    &&
-    isGridBalanced()
+    tarch::parallel::Node::getInstance().getNumberOfNodes()==1
+    ||
+    _stateData.getGridConstructionState()==exahype::records::State::Aggressive
   ) {
     _stateData.setGridConstructionState( exahype::records::State::Aggressive );
   }
-  else if (!isFifthIteration && tarch::parallel::Node::getInstance().getNumberOfNodes()>1) {
+  else if (
+    tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()==0
+    &&
+    isGridStationary()
+  ) {
+    _stateData.setGridConstructionState( exahype::records::State::Aggressive );
+  }
+  else if (
+    isInvolvedInJoinOrFork()
+    ||
+    !isTraversalInverted()
+    ||
+    !isGridStationary()
+  ) {
     _stateData.setGridConstructionState( exahype::records::State::Veto );
   }
   else {
