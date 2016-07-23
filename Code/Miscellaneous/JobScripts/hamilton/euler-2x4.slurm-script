@@ -2,7 +2,7 @@
 #SBATCH -p par6.q
 #SBATCH -N 2
 #SBATCH --ntasks-per-node=4
-#SBATCH -t 00:20:00
+#SBATCH -t 04:00:00
 #SBATCH --exclusive
 module purge
 module load slurm
@@ -12,5 +12,5 @@ module unload gcc/4.9.1
 module load gcc/4.9.1
 
 
-mpirun /panfs/panasas1.hpc.dur.ac.uk/frmh84/ExaHyPE/Code/ApplicationExamples/EulerFlow/ExaHyPE-Euler /panfs/panasas1.hpc.dur.ac.uk/frmh84/ExaHyPE/Code/ApplicationExamples/eulerflow.exahype
+mpirun /panfs/panasas1.hpc.dur.ac.uk/frmh84/ExaHyPE/Code/ApplicationExamples/EulerFlow/ExaHyPE-Euler /panfs/panasas1.hpc.dur.ac.uk/frmh84/ExaHyPE/Code/ApplicationExamples/eulerflow.exahype > 2x4.results
 
