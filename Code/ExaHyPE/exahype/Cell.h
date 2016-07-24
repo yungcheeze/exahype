@@ -39,9 +39,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   static tarch::logging::Log _log;
 
  public:
-  static const int InvalidCellDescriptionsIndex;
-  static const int ErasedCellDescriptionsIndex;
-
   typedef struct {
     int parentIndex;
     tarch::la::Vector<DIMENSIONS, int> subcellIndex;

@@ -19,6 +19,8 @@
 
 #include "tarch/la/VectorScalarOperations.h"
 
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
@@ -193,7 +195,7 @@ void exahype::mappings::RegularMesh::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   int solverNumber = 0;
-  if (fineGridCell.getADERDGCellDescriptionsIndex() == exahype::Cell::InvalidCellDescriptionsIndex) {
+  if (!ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
     for (const auto& p : exahype::solvers::RegisteredSolvers) {
       if (tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),p->getMaximumMeshSize())
           &&
@@ -203,7 +205,7 @@ void exahype::mappings::RegularMesh::enterCell(
             solverNumber, exahype::records::ADERDGCellDescription::Cell,
             exahype::records::ADERDGCellDescription::None,
             fineGridVerticesEnumerator.getLevel(),
-            exahype::Cell::InvalidCellDescriptionsIndex,
+            multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
             fineGridVerticesEnumerator.getCellSize(),
             // We pass the lower left corner of the cell as offset.
             fineGridVerticesEnumerator.getVertexPosition());
@@ -279,7 +281,7 @@ void exahype::mappings::RegularMesh::createCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
   fineGridCell.getCellData().setADERDGCellDescriptionsIndex(
-      exahype::Cell::InvalidCellDescriptionsIndex);
+      multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 
   logTraceOutWith1Argument("createCell(...)", fineGridCell);
 }
