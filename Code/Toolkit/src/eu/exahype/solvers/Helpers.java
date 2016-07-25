@@ -16,9 +16,9 @@ public class Helpers {
   private static void writeHeaderMinimalADERDGClassSignature(
       java.io.BufferedWriter writer, String solverName, String projectName) throws IOException {
     writer.write(
-        "class " + projectName + "::" + solverName + ": public exahype::solvers::Solver {\n");
+        "class " + projectName + "::" + solverName + ": public exahype::solvers::ADERDGSolver {\n");
     writer.write("  public:\n");
-    writer.write("    " + solverName + "(int kernelNumber, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler);\n");
+    writer.write("    " + solverName + "(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler);\n");
 
     writer.write(
         "    void spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) override; \n");
@@ -71,7 +71,7 @@ public class Helpers {
     writer.write("\n\n");
     writer.write("#include <memory>\n\n");
     writer.write("#include \"exahype/profilers/Profiler.h\"\n");
-    writer.write("#include \"exahype/solvers/Solver.h\"");
+    writer.write("#include \"exahype/solvers/ADERDGSolver.h\"");
     writer.write("\n\n\n");
 
     writer.write("namespace " + projectName + "{\n");
@@ -84,9 +84,9 @@ public class Helpers {
       throws IOException {
     writer.write("#include \"" + solverName + ".h\"\n\n");
     writer.write("#include <memory>\n\n");
-    writer.write(projectName + "::" + solverName + "::" + solverName + "(int kernelNumber, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
-    writer.write("  exahype::solvers::Solver("
-        + "\""+solverName+"\", exahype::solvers::Solver::Type::ADER_DG, kernelNumber, "+numberOfVariables+", "+numberOfParameters+", nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {\n");
+    writer.write(projectName + "::" + solverName + "::" + solverName + "(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
+    writer.write("  exahype::solvers::ADERDGSolver("
+        + "\""+solverName+"\", "+numberOfVariables+", "+numberOfParameters+", nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {\n");
     writer.write("  // @todo Please implement/augment if required\n");
     writer.write("}\n");
     writer.write("\n\n\n");

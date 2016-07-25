@@ -311,6 +311,12 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     if (!isFortran && kernel.equals( eu.exahype.solvers.UserDefinedFiniteVolumesinC.Identifier )) {
       solver = new eu.exahype.solvers.UserDefinedFiniteVolumesinC(numberOfVariables, numberOfParameters, patchSize);
     }
+    if (isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesMUSCLinFortran.Identifier )) {
+      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinFortran(numberOfVariables, numberOfParameters, patchSize);
+    }
+    if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesMUSCLinC.Identifier )) {
+      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinC(numberOfVariables, numberOfParameters, patchSize);
+    }
 
     if (solver == null) {
       System.err.println("creation solver " + solverName + " ... failed as kernel " + kernel
