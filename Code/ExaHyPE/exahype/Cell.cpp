@@ -26,18 +26,15 @@
 
 tarch::logging::Log exahype::Cell::_log("exahype::Cell");
 
-const int exahype::Cell::InvalidCellDescriptionsIndex = -4;
-const int exahype::Cell::ErasedCellDescriptionsIndex  = -5;
-
 exahype::Cell::Cell() : Base() {
   _cellData.setADERDGCellDescriptionsIndex(
-      exahype::Cell::InvalidCellDescriptionsIndex);
+      multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 }
 
 exahype::Cell::Cell(const Base::DoNotCallStandardConstructor& value)
     : Base(value) {
   _cellData.setADERDGCellDescriptionsIndex(
-      exahype::Cell::InvalidCellDescriptionsIndex);
+      multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 }
 
 exahype::Cell::Cell(const Base::PersistentCell& argument) : Base(argument) {
@@ -65,7 +62,7 @@ void exahype::Cell::shutdownMetaData() {
 
   ADERDGCellDescriptionHeap::getInstance().deleteData(
       _cellData.getADERDGCellDescriptionsIndex());
-  _cellData.setADERDGCellDescriptionsIndex(ErasedCellDescriptionsIndex);
+  _cellData.setADERDGCellDescriptionsIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 }
 
 void exahype::Cell::addNewCellDescription(
@@ -76,8 +73,7 @@ void exahype::Cell::addNewCellDescription(
     const int level, const int parentIndex,
     const tarch::la::Vector<DIMENSIONS, double>& size,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre) {
-  if (_cellData.getADERDGCellDescriptionsIndex() ==
-      exahype::Cell::InvalidCellDescriptionsIndex) {
+  if (_cellData.getADERDGCellDescriptionsIndex() == multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
     setupMetaData();
   }
 
