@@ -11,136 +11,110 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#ifndef _EXAHYPE_SOLVERS_SOLVER_H_
-#define _EXAHYPE_SOLVERS_SOLVER_H_
+#ifndef _EXAHYPE_SOLVERS_ADERDG_SOLVER_H_
+#define _EXAHYPE_SOLVERS_ADERDG_SOLVER_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "peano/utils/Globals.h"
-
-#include "tarch/la/Vector.h"
-
-#include "exahype/profilers/Profiler.h"
-#include "exahype/profilers/simple/NoOpProfiler.h"
-#include "exahype/records/ADERDGCellDescription.h"
-
-#define EXAHYPE_FACE_LEFT 0
-#define EXAHYPE_FACE_RIGHT 1
-#define EXAHYPE_FACE_FRONT 2
-#define EXAHYPE_FACE_BACK 3
-#define EXAHYPE_FACE_BOTTOM 4
-#define EXAHYPE_FACE_TOP 5
-
-// todo 08/02/16:Dominic Etienne Charrier
-// move somewhere else
-// is evaluated at compile time
-constexpr int power(int basis, int exp) {
-  return (exp == 0) ? 1 : basis * power(basis, exp - 1);
-}
-
-constexpr int addPadding(const int originalSize) {
-  return ALIGNMENT/8 * static_cast<int>((originalSize+(ALIGNMENT/8-1))/(ALIGNMENT/8));
-}
+#include "exahype/solvers/Solver.h"
 
 namespace exahype {
   namespace solvers {
-    class Solver;
-
-/**
- * All the registered solvers. Has to be declared extern in C++ standard as
- * it is instantiated in the corresponding cpp file.
- */
-// TODO: std::vector<std::unique_ptr<Solver>> ?!
-extern std::vector<Solver*> RegisteredSolvers;
-}  // namespace solvers
+    class ADERDGSolver;
+  }  // namespace solvers
 }  // namespace exahype
 
 /**
  * Describes one solver.
  */
-class exahype::solvers::Solver {
- public:
-  /**
-   * The type of this solver.
-   */
-  enum class Type { ADER_DG };
-
-  /**
-   * The time stepping modus.
-   */
-  enum class TimeStepping {
-    /**
-     * In the global time stepping mode, every cells works with the same time step.
-     */
-    Global,
-    // Local, Anarchic
-  };
-
-  /**
-   * The refinement controls a solver can use.
-   */
-  enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
-
+class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
  protected:
   /**
-   * Each solver has an identifier/name. It is used for debug purposes only.
+   * The number of unknowns/basis functions associated with each face of an element.
+   * This number includes the unknowns of all state variables.
    */
-  const std::string _identifier;
-
-  const Type _type;
-
-  /**
-   * The number of state variables of the conservation or balance law.
-   */
-  const int _numberOfVariables;
+  const int _unknownsPerFace;
 
   /**
-   * The number of parameters, e.g, material parameters.
+   * The total number of unknowns/basis functions associated with the 2^d faces of an element.
+   * This number includes the unknowns of all state variables.
    */
-  const int _numberOfParameters;
+  const int _unknownsPerCellBoundary;
 
   /**
-   * The number of nodal basis functions that are employed in each
-   * coordinate direction.
+   * The total number of unknowns/basis functions associated with the volume of a cell.
+   * This number includes the unknowns of all state variables.
    */
-  const int _nodesPerCoordinateAxis;
+  const int _unknownsPerCell;
 
   /**
-   * The maximum extent a cell is allowed to have in each coordinate direction.
+   * The total number of volume flux unknowns/basis functions associated with the volume of a cell.
+   * This number includes the unknowns of all state variables.
    */
-  const double _maximumMeshSize;
+  const int _fluxUnknownsPerCell;
 
   /**
-   * The time stepping mode of this solver.
+   * The total number of space-time unknowns/basis functions associated with the
+   * space-time volume of a cell and its time stepping interval.
+   * This number includes the unknowns of all state variables.
    */
-  const TimeStepping _timeStepping;
+  const int _spaceTimeUnknownsPerCell;
 
   /**
-   * A profiler for this solver.
+   * The total number of space-time volume flux unknowns/basis functions associated with the
+   * space-time volume of a cell and its time stepping interval.
+   * This number includes the unknowns of all state variables.
    */
-  std::unique_ptr<profilers::Profiler> _profiler;
+  const int _spaceTimeFluxUnknownsPerCell;
+
+  /**
+    * The size of data required to store cell volume based unknowns and associated parameters.
+    */
+  const int _dataPerCell;
+
+  /**
+   * Minimum corrector time stamp.
+   */
+  double _minCorrectorTimeStamp;
+
+  /**
+   * Minimum predictor time stamp. Always equal or larger
+   * than the minimum corrector time stamp.
+   */
+  double _minPredictorTimeStamp;
+
+  /**
+   * Corrector time step size.
+   */
+  double _minCorrectorTimeStepSize;
+
+  /**
+   * Predictor time step size.
+   */
+  double _minPredictorTimeStepSize;
+
+  /**
+   * Predictor time step size.
+   */
+  double _minNextPredictorTimeStepSize;
 
  public:
-  Solver(
+  ADERDGSolver(
     const std::string& identifier,
-    exahype::solvers::Solver::Type type,
-    int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis,
-    double maximumMeshSize,
-    exahype::solvers::Solver::TimeStepping timeStepping,
-    std::unique_ptr<profilers::Profiler> profiler =
-      std::unique_ptr<profilers::Profiler>(
-        new profilers::simple::NoOpProfiler));
+         int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis,
+         double maximumMeshSize,
+         exahype::solvers::Solver::TimeStepping timeStepping,
+         std::unique_ptr<profilers::Profiler> profiler =
+             std::unique_ptr<profilers::Profiler>(
+                 new profilers::simple::NoOpProfiler));
 
-  virtual ~Solver() {
-    // TODO(guera): Remove?!
-    _profiler->writeToCout();
-  }
+  virtual ~ADERDGSolver() {}
 
   // Disallow copy and assignment
-  Solver(const Solver& other) = delete;
-  Solver& operator=(const Solver& other) = delete;
+  ADERDGSolver(const ADERDGSolver& other) = delete;
+  ADERDGSolver& operator=(const ADERDGSolver& other) = delete;
 
   /**
    * Returns the maximum extent a mesh cell is allowed to have
@@ -179,11 +153,59 @@ class exahype::solvers::Solver {
   int getNumberOfParameters() const;
 
   /**
+   * This operation returns the number of space time
+   * unknowns per cell.
+   *
+   * Note that this operation might only have a meaning for space-time type
+   * discretisation methods.
+   */
+  int getSpaceTimeUnknownsPerCell() const;
+
+  /**
+   * This operation returns the number of space time
+   * flux unknowns per cell.
+   *
+   * Note that this operation might only have a meaning for space-time type
+   * discretisation methods.
+   */
+  int getSpaceTimeFluxUnknownsPerCell() const;
+
+  /**
+   * This operation returns the number of unknowns per cell located in
+   * the interior of a cell.
+   */
+  int getUnknownsPerCell() const;
+
+  /**
+   * This operation returns the number of flux unknowns per cell
+   * located in the interior of a cell.
+   */
+  int getFluxUnknownsPerCell() const;
+
+  /**
+   * This operation returns the number of unknowns that are located
+   * on or in the vicinity of the boundary of a cell.
+   */
+  int getUnknownsPerCellBoundary() const;
+
+  /**
+   * This operation returns the number of unknowns that are located
+   * on or in the vicinity of each face of a cell.
+   */
+  int getUnknownsPerFace() const;
+
+  /**
    * If you use a higher order method, then this operation returns the
    * polynomial degree plus one. If you use a Finite Volume method, it
    * returns the number of cells within a patch per coordinate axis.
    */
   int getNodesPerCoordinateAxis() const;
+
+  /**
+   * This operation returns the size of data required
+   * to store cell volume based unknowns and associated parameters.
+   */
+  int getDataPerCell() const;
 
   /**
    * @brief Adds the solution update to the solution.
@@ -361,10 +383,51 @@ class exahype::solvers::Solver {
   /**
    * @todo Dominic, please add a description what this routine does.
    */
-/*
   void synchroniseTimeStepping(
       exahype::records::ADERDGCellDescription& p) const;
-*/
+
+  void startNewTimeStep() override;
+
+  void updateMinNextPredictorTimeStepSize(
+      const double& nextPredictorTimeStepSize);
+
+  double getMinNextPredictorTimeStepSize() const;
+
+  // todo 16/02/25:Dominic Etienne Charrier: It follows stuff that must be
+  // revised:
+
+  // todo 25/02/16:Dominic Etienne Charrier
+  // Remove the time stamps that are not used in ExaHype.
+  void setMinCorrectorTimeStamp(double minCorectorTimeStamp);
+
+  double getMinCorrectorTimeStamp() const;
+
+  void setMinPredictorTimeStamp(double minPredictorTimeStamp);
+
+  double getMinPredictorTimeStamp() const;
+
+  // @todo 25/02/16:Dominic Etienne Charrier
+  // @Tobias: The time step size getters are only used for
+  // debugging/assertion purposes at the moment and will
+  // be removed if the time stepping works robust again.
+  double getMinCorrectorTimeStepSize() const;
+
+  void setMinPredictorTimeStepSize(double minPredictorTimeStepSize);
+
+  double getMinPredictorTimeStepSize() const;
+  /**
+   * Update predictor time step size
+   *
+   * This operation takes the minimum of the current predictor time step size
+   * and the argument handed in. The routine is used in
+   * GlobalTimeStepComputation to determine the subsequent time step size.
+   *
+   * <h1>Thread-safety</h1>
+   *
+   * This operation is not thread safe.
+   *
+   */
+  void updateNextPredictorTimeStepSize(double nextPredictorTimeStepSize);
 
   /**
    * This operation has to different branches: one for the master and one for
@@ -377,33 +440,26 @@ class exahype::solvers::Solver {
 
   void toString();
 
-  /**
-   * Run over all solvers and identify the minimal time stamp.
-   */
-  virtual double getMinTimeStamp() const = 0;
+  virtual double getMinTimeStamp() const {
+    return getMinCorrectorTimeStamp();
+  }
 
-  /**
-   * Run over all solvers and identify the minimal time step size.
-   */
-  virtual double getMinTimeStepSize() const = 0;
+  virtual double getMinTimeStepSize() const {
+    return getMinCorrectorTimeStepSize();
+  }
 
-  virtual void updateNextTimeStepSize( double value ) = 0;
+  virtual double getNextMinTimeStepSize() const {
+    return getMinPredictorTimeStepSize();
+  }
 
-  virtual void initInitialTimeStamp(double value) = 0;
+  void updateNextTimeStepSize( double value ) override {
+    updateMinNextPredictorTimeStepSize(value);
+  }
 
-  virtual void startNewTimeStep() = 0;
-
-  virtual double getNextMinTimeStepSize() const =0;
-
-  /**
-   * Run over all solvers and identify the minimal time stamp.
-   */
-  static double getMinSolverTimeStampOfAllSolvers();
-
-  /**
-   * Run over all solvers and identify the minimal time step size.
-   */
-  static double getMinSolverTimeStepSizeOfAllSolvers();
+  void initInitialTimeStamp(double value) override {
+    setMinPredictorTimeStamp(0.0);
+    setMinCorrectorTimeStamp(0.0);
+  }
 };
 
 #endif
