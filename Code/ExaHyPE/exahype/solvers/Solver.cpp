@@ -45,9 +45,9 @@ exahype::solvers::Solver::Solver(const std::string& identifier,
       _unknownsPerFace(numberOfVariables * addPadding(power(nodesPerCoordinateAxis, DIMENSIONS - 1))),
       _unknownsPerCellBoundary(DIMENSIONS_TIMES_TWO * _unknownsPerFace),
       _unknownsPerCell(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
-      _fluxUnknownsPerCell(addPadding(numberOfVariables) * addPadding(power(nodesPerCoordinateAxis, DIMENSIONS + 0)) * DIMENSIONS),
+      _fluxUnknownsPerCell(addPadding(numberOfVariables) * addPadding(power(nodesPerCoordinateAxis, DIMENSIONS + 0)) * (DIMENSIONS+1)), // todo Angelika
       _spaceTimeUnknownsPerCell(addPadding(numberOfVariables) * power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
-      _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell * DIMENSIONS),
+      _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell * (DIMENSIONS+1)), // todo Angelika
       _dataPerCell(addPadding(numberOfVariables)*power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
       _timeStepping(timeStepping),
       _profiler(std::move(profiler)),
