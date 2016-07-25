@@ -368,9 +368,9 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getCellDescriptionsIndex())) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(ADERDGCellDescriptionHeap::getInstance()
-            .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+            .getData(fineGridCell.getCellDescriptionsIndex())
             .size());
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined2;
@@ -378,7 +378,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
             numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
       records::ADERDGCellDescription& p =
-          ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i];
+          ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
       exahype::solvers::Solver* solver =
           exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
 
@@ -451,7 +451,7 @@ void exahype::mappings::GlobalTimeStepComputation::endIteration(
     logDebug("mergeLocalTimeStepDataIntoSolvers()",
              "solver " << i << " is updated with time step size "
                        << _minTimeStepSizes[i]);
-    solver->updateMinNextPredictorTimeStepSize(_minTimeStepSizes[i]);
+    solver->updateNextTimeStepSize(_minTimeStepSizes[i]);
   }
 }
 

@@ -426,9 +426,9 @@
 //
 //  for (
 //      ADERDGCellDescriptionHeap::HeapEntries::const_iterator p =
-//      ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).begin();
+//      ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).begin();
 //      p !=
-//      ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).end();
+//      ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).end();
 //      p++
 //  ) {
 //    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[
@@ -454,7 +454,7 @@
 //      assertion( DIMENSIONS==2);
 //
 //      records::ADERDGCellDescription& cellDescription =
-//          ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[0];
+//          ADERDGADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[0];
 //
 //      double* luh =
 //      &(DataHeap::getInstance().getData(p->getSolution())[0]._persistentRecords._u);

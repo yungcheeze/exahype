@@ -330,10 +330,10 @@ void exahype::mappings::RiemannSolverReset::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getADERDGCellDescriptionsIndex())) {
+          fineGridCell.getCellDescriptionsIndex())) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
-            .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+            .getData(fineGridCell.getCellDescriptionsIndex())
             .size());
 
     // please use a different UserDefined per mapping/event
@@ -344,7 +344,7 @@ void exahype::mappings::RiemannSolverReset::enterCell(
             numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
       auto& p =
-          ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i];
+          ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
 
       // all bits are initialised to 'off'
       std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed;

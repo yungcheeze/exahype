@@ -319,17 +319,17 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex()) &&
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getCellDescriptionsIndex()) &&
       multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
-          VertexOperations::readADERDGCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices))) {
+          VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices))) {
     const tarch::la::Vector<THREE_POWER_D, int>
         neighbourCellDescriptionIndices =
             multiscalelinkedcell::getIndicesAroundCell(
-                VertexOperations::readADERDGCellDescriptionsIndex(
+                VertexOperations::readCellDescriptionsIndex(
                     fineGridVerticesEnumerator, fineGridVertices));
 
     for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(
-             fineGridCell.getADERDGCellDescriptionsIndex())) {
+             fineGridCell.getCellDescriptionsIndex())) {
       const AugmentationControl augmentationControl =
           augmentationCriterion(pFine.getSolverNumber(), pFine.getType(),
                                 pFine.getLevel(),

@@ -299,10 +299,10 @@ void exahype::mappings::Plot::enterCell(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   for (auto& pPlotter : exahype::plotters::RegisteredPlotters) {
     if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-            fineGridCell.getADERDGCellDescriptionsIndex())) {
+            fineGridCell.getCellDescriptionsIndex())) {
       for (const auto& pPatch :
            ADERDGCellDescriptionHeap::getInstance().getData(
-               fineGridCell.getADERDGCellDescriptionsIndex())) {
+               fineGridCell.getCellDescriptionsIndex())) {
         double* u = 0;
 
         switch (pPatch.getType()) {
@@ -350,11 +350,11 @@ void exahype::mappings::Plot::beginIteration(exahype::State& solverState) {
   //       should be possible exactly here.
   if (!tarch::parallel::Node::getInstance().isGlobalMaster()) {
     if (!exahype::plotters::isAPlotterActive(
-            solvers::Solver::getMinSolverTimeStamp())) {
+            solvers::Solver::getMinSolverTimeStampOfAllSolvers())) {
       logWarning("beginIteration(State)",
                  "plot invoked though no plotter is active at all at min "
                  "solver time stamp "
-                     << solvers::Solver::getMinSolverTimeStamp());
+                     << solvers::Solver::getMinSolverTimeStampOfAllSolvers());
     }
   }
 }

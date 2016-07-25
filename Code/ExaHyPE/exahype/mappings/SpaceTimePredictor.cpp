@@ -414,10 +414,10 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getADERDGCellDescriptionsIndex())) {
+          fineGridCell.getCellDescriptionsIndex())) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
-            .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+            .getData(fineGridCell.getCellDescriptionsIndex())
             .size());
 
     // please use a different UserDefined per mapping/event

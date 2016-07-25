@@ -332,13 +332,13 @@ void exahype::mappings::SolutionAdjustment::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getADERDGCellDescriptionsIndex())) {
-    assertionEquals(ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size(),
+          fineGridCell.getCellDescriptionsIndex())) {
+    assertionEquals(ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size(),
                     exahype::solvers::RegisteredSolvers.size());
 
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
-            .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+            .getData(fineGridCell.getCellDescriptionsIndex())
             .size());
 
     // please use a different UserDefined per mapping/event
@@ -351,7 +351,7 @@ void exahype::mappings::SolutionAdjustment::enterCell(
     // clang-format off
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
       auto& pFine =
-          ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i];
+          ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
 
       auto* solver =
           exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];

@@ -314,8 +314,8 @@ void exahype::mappings::MarkingForRefinement::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
-    for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())) {
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getCellDescriptionsIndex())) {
+    for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())) {
       auto* solver = exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
       exahype::solvers::Solver::RefinementControl refinementControl;
       double* solution;

@@ -334,10 +334,10 @@ void exahype::mappings::SurfaceIntegral::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getADERDGCellDescriptionsIndex())) {
+          fineGridCell.getCellDescriptionsIndex())) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
-            .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+            .getData(fineGridCell.getCellDescriptionsIndex())
             .size());
 
     // please use a different UserDefined per mapping/event
@@ -347,7 +347,7 @@ void exahype::mappings::SurfaceIntegral::enterCell(
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      auto& p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i];
+      auto& p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
       exahype::solvers::Solver* solver =
           exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
       double* lduh = 0;

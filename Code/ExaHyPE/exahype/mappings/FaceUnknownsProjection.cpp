@@ -17,7 +17,7 @@
 
 #include "peano/utils/Loop.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
 #include "kernels/KernelCalls.h"
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
@@ -327,10 +327,10 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
   // todo docu: Assumes top-down processing of the grid.
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getADERDGCellDescriptionsIndex())) {
+          fineGridCell.getCellDescriptionsIndex())) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
-            .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+            .getData(fineGridCell.getCellDescriptionsIndex())
             .size());
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
@@ -341,8 +341,8 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
         records::ADERDGCellDescription& pFine =
             fineGridCell.getADERDGCellDescription(i);
-    exahype::solvers::Solver* solver =
-        exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
+    exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+      exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()]);
     switch (pFine.getType()) {
       case exahype::records::ADERDGCellDescription::Ancestor:
         memset(DataHeap::getInstance().getData(pFine.getExtrapolatedPredictor()).data(), 0,
@@ -412,7 +412,8 @@ void exahype::mappings::FaceUnknownsProjection::prolongateFaceData(
     if (subcellIndex[d] == 0) {
       const int faceIndex = 2 * d;
 
-      exahype::solvers::Solver* solver =exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+        exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
 
       const int numberOfFaceDof = solver->getUnknownsPerFace();
 
@@ -432,9 +433,8 @@ void exahype::mappings::FaceUnknownsProjection::prolongateFaceData(
     } else if (subcellIndex[d] == tarch::la::aPowI(levelDelta, 3) - 1) {
       const int faceIndex = 2 * d + 1;
 
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[cellDescription
-                                                  .getSolverNumber()];
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+          exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
 
       const int numberOfFaceDof = solver->getUnknownsPerFace();
 
@@ -484,9 +484,9 @@ void exahype::mappings::FaceUnknownsProjection::leaveCell(
   // todo docu: Assumes bottom-up processing of the grid.
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getADERDGCellDescriptionsIndex())) {
+          fineGridCell.getCellDescriptionsIndex())) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
-        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size());
+        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size());
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined10;
     const int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions, methodTrace);
@@ -546,7 +546,8 @@ void exahype::mappings::FaceUnknownsProjection::restrictFaceData(
       if (subcellIndex[d] == 0) {
         const int faceIndex = 2 * d;
 
-        exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
+        exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+          exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
 
         const int numberOfFaceDof = solver->getUnknownsPerFace();
 
@@ -567,7 +568,8 @@ void exahype::mappings::FaceUnknownsProjection::restrictFaceData(
       } else if (subcellIndex[d] == tarch::la::aPowI(levelDelta, 3) - 1) {
         const int faceIndex = 2 * d + 1;
 
-        exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
+        exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+          exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
 
         const int numberOfFaceDof = solver->getUnknownsPerFace();
 

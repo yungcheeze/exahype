@@ -331,10 +331,10 @@ void exahype::mappings::VolumeIntegral::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getADERDGCellDescriptionsIndex())) {
+          fineGridCell.getCellDescriptionsIndex())) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
-            .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+            .getData(fineGridCell.getCellDescriptionsIndex())
             .size());
 
     // please use a different UserDefined per mapping/event
@@ -346,7 +346,7 @@ void exahype::mappings::VolumeIntegral::enterCell(
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
         records::ADERDGCellDescription& p =
             ADERDGCellDescriptionHeap::getInstance().getData(
-                fineGridCell.getADERDGCellDescriptionsIndex())[i];
+                fineGridCell.getCellDescriptionsIndex())[i];
 
     exahype::solvers::Solver* solver =
         exahype::solvers::RegisteredSolvers[p.getSolverNumber()];

@@ -195,7 +195,7 @@ void exahype::mappings::RegularMesh::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   int solverNumber = 0;
-  if (!ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
+  if (!ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getCellDescriptionsIndex())) {
     for (const auto& p : exahype::solvers::RegisteredSolvers) {
       if (tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),p->getMaximumMeshSize())
           &&
@@ -280,7 +280,7 @@ void exahype::mappings::RegularMesh::createCell(
   logTraceInWith4Arguments("createCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
-  fineGridCell.getCellData().setADERDGCellDescriptionsIndex(
+  fineGridCell.getCellData().setCellDescriptionsIndex(
       multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 
   logTraceOutWith1Argument("createCell(...)", fineGridCell);
