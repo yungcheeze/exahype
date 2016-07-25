@@ -72,13 +72,13 @@ void exahype::Cell::shutdownMetaData() {
 }
 
 void exahype::Cell::addNewCellDescription(
-    const int solverNumber,
-    const exahype::records::ADERDGCellDescription::Type cellType,
-    const exahype::records::ADERDGCellDescription::RefinementEvent
-        refinementEvent,
-    const int level, const int parentIndex,
-    const tarch::la::Vector<DIMENSIONS, double>& size,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre) {
+  const int                                     solverNumber,
+  const exahype::records::ADERDGCellDescription::Type cellType,
+  const exahype::records::ADERDGCellDescription::RefinementEvent refinementEvent,
+  const int                                     level,
+  const int                                     parentIndex,
+  const tarch::la::Vector<DIMENSIONS, double>&  size,
+  const tarch::la::Vector<DIMENSIONS, double>&  cellCentre) {
   if (_cellData.getCellDescriptionsIndex() == multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
     setupMetaData();
   }
@@ -134,7 +134,42 @@ void exahype::Cell::addNewCellDescription(
           .getData(_cellData.getCellDescriptionsIndex())
           .push_back(newCellDescription);
 
-    } break;
+    }
+    break;
+    case exahype::solvers::Solver::Type::Fini: {
+      exahype::records::ADERDGCellDescription newCellDescription;
+      newCellDescription.setSolverNumber(solverNumber);
+
+      // Default AMR settings
+      newCellDescription.setType(cellType);
+      newCellDescription.setParentIndex(parentIndex);
+      newCellDescription.setLevel(level);
+      newCellDescription.setRefinementEvent(refinementEvent);
+
+      std::bitset<DIMENSIONS_TIMES_TWO>
+          riemannSolvePerformed;  // default construction: no bit set
+      newCellDescription.setRiemannSolvePerformed(riemannSolvePerformed);
+
+      // Pass geometry information to the cellDescription description
+      newCellDescription.setSize(size);
+      newCellDescription.setOffset(cellCentre);
+
+      // Default field data indices
+      newCellDescription.setSpaceTimePredictor(-1);
+      newCellDescription.setSpaceTimeVolumeFlux(-1);
+      newCellDescription.setPredictor(-1);
+      newCellDescription.setVolumeFlux(-1);
+      newCellDescription.setSolution(-1);
+      newCellDescription.setUpdate(-1);
+      newCellDescription.setExtrapolatedPredictor(-1);
+      newCellDescription.setFluctuation(-1);
+
+      ADERDGCellDescriptionHeap::getInstance()
+          .getData(_cellData.getCellDescriptionsIndex())
+          .push_back(newCellDescription);
+
+    }
+    break;
     default: {
       logDebug("addNewCellDescription(...)",
                "could not add a cell descriptions for this solver. cell="

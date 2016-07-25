@@ -40,6 +40,20 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
 
   static tarch::logging::Log _log;
 
+  /**
+   * Each cell points to a series of cell descriptions. The array holding the
+   * series has to be stored on the heap and, consequently, initialised
+   * properly. This is done by create() while destroy() cleans up. Please note
+   * that you have to invoke create() once before you do anything with the cell
+   * at all. You should destroy() in return in the very end.
+   *
+   * The operation shows that each cell in the tree can theoretically hold a
+   * solver though only few do.
+   *
+   * This operation is used by addNewCellDescription().
+   */
+  void setupMetaData();
+
  public:
   typedef struct {
     int parentIndex;
@@ -104,18 +118,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
     return FiniteVolumesCellDescriptionHeap::getInstance().getData(
         getCellDescriptionsIndex())[index];
   }
-
-  /**
-   * Each cell points to a series of cell descriptions. The array holding the
-   * series has to be stored on the heap and, consequently, initialised
-   * properly. This is done by create() while destroy() cleans up. Please note
-   * that you have to invoke create() once before you do anything with the cell
-   * at all. You should destroy() in return in the very end.
-   *
-   * The operation shows that each cell in the tree can theoretically hold a
-   * solver though only few do.
-   */
-  void setupMetaData();
 
   /**
    * @see setupMetaData()
