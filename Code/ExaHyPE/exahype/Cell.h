@@ -20,13 +20,15 @@
 #include "peano/grid/Cell.h"
 
 #include "exahype/records/ADERDGCellDescription.h"
+#include "exahype/records/FiniteVolumesCellDescription.h"
 #include "peano/heap/DoubleHeap.h"
 
 namespace exahype {
-class Cell;
+  class Cell;
 
-typedef peano::heap::PlainHeap<exahype::records::ADERDGCellDescription> ADERDGCellDescriptionHeap;
-typedef peano::heap::PlainDoubleHeap DataHeap;
+  typedef peano::heap::PlainHeap<exahype::records::ADERDGCellDescription>         ADERDGCellDescriptionHeap;
+  typedef peano::heap::PlainHeap<exahype::records::FiniteVolumesCellDescription>  FiniteVolumesCellDescriptionHeap;
+  typedef peano::heap::PlainDoubleHeap DataHeap;
 }
 
 /**
@@ -81,7 +83,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * routine is notably used by the automated adapters to derive adjacency
    * information on the cell level.
    */
-  int getADERDGCellDescriptionsIndex() const;
+  int getCellDescriptionsIndex() const;
 
   /**
    * Loads a ADERDGCellDescription associated
@@ -90,7 +92,17 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   inline exahype::records::ADERDGCellDescription& getADERDGCellDescription(
       int index) {
     return ADERDGCellDescriptionHeap::getInstance().getData(
-        getADERDGCellDescriptionsIndex())[index];
+        getCellDescriptionsIndex())[index];
+  }
+
+  /**
+   * Loads a ADERDGCellDescription associated
+   * with this cell.
+   */
+  inline exahype::records::FiniteVolumesCellDescription& getFiniteVolumesCellDescription(
+      int index) {
+    return FiniteVolumesCellDescriptionHeap::getInstance().getData(
+        getCellDescriptionsIndex())[index];
   }
 
   /**
