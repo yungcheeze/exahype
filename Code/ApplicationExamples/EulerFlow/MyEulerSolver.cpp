@@ -15,8 +15,8 @@
 
 #include <memory>
 
-Euler::MyEulerSolver::MyEulerSolver(int kernelNumber, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
-  : exahype::solvers::ADERDGSolver(
+Euler::MyEulerSolver::MyEulerSolver(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
+: exahype::solvers::ADERDGSolver(
       "MyEulerSolver", 5, 0, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
   // @todo Please implement/augment if required
 }
