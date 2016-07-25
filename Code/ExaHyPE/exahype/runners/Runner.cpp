@@ -43,7 +43,7 @@
 
 #include "exahype/plotters/Plotter.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
 
 tarch::logging::Log exahype::runners::Runner::_log("exahype::runners::Runner");
 
@@ -300,7 +300,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    * Compute the current time step size of the next iteration.
    */
   bool plot = exahype::plotters::isAPlotterActive(
-      solvers::Solver::getMinSolverTimeStamp());
+      solvers::Solver::getMinSolverTimeStampOfAllSolvers());
   if (plot) {
     repository.switchToPredictorAndPlotAndGlobalTimeStepComputation();
   }
@@ -313,10 +313,10 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n = 1;
 
-  while ((solvers::Solver::getMinSolverTimeStamp() < simulationEndTime) &&
-         tarch::la::greater(solvers::Solver::getMinSolverTimeStepSize(), 0.0)) {
+  while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
+         tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
     bool plot = exahype::plotters::isAPlotterActive(
-        solvers::Solver::getMinSolverTimeStamp());
+        solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
     if (_parser.getFuseAlgorithmicSteps()) {
       runOneTimeStampWithFusedAlgorithmicSteps(repository, plot);
@@ -339,10 +339,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
 void exahype::runners::Runner::initSolverTimeStamps() {
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    p->setMinPredictorTimeStamp(
-        0.0);
-    p->setMinCorrectorTimeStamp(
-        0.0);
+    p->initInitialTimeStamp(0.0);
   }
 }
 
@@ -355,11 +352,11 @@ void exahype::runners::Runner::startNewTimeStep(int n,bool printInfo) {
     p->startNewTimeStep();
 
     currentMinTimeStamp =
-        std::min(currentMinTimeStamp, p->getMinCorrectorTimeStamp());
+        std::min(currentMinTimeStamp, p->getMinTimeStamp());
     currentMinTimeStepSize =
-        std::min(currentMinTimeStepSize, p->getMinCorrectorTimeStepSize());
+        std::min(currentMinTimeStepSize, p->getMinTimeStepSize());
     nextMinTimeStepSize =
-        std::min(nextMinTimeStepSize, p->getMinPredictorTimeStepSize());
+        std::min(nextMinTimeStepSize, p->getNextMinTimeStepSize());
   }
 
   if (printInfo) {
@@ -412,22 +409,26 @@ bool exahype::runners::Runner::
   bool cflConditionWasViolated = false;
 
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    bool solverTimeStepSizeIsInstable = (p->getMinPredictorTimeStepSize() >
-                                         p->getMinNextPredictorTimeStepSize());
+    if (p->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+        bool solverTimeStepSizeIsInstable =
+          static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinPredictorTimeStepSize()
+          >
+          static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinNextPredictorTimeStepSize();
 
-    if (solverTimeStepSizeIsInstable) {
-      p->updateMinNextPredictorTimeStepSize(
-          factor * p->getMinNextPredictorTimeStepSize());
-      p->setMinPredictorTimeStepSize(
-          factor * p->getMinPredictorTimeStepSize());
-    } else {
-      p->updateMinNextPredictorTimeStepSize(
-          .5 * (p->getMinPredictorTimeStepSize() +
-                p->getMinNextPredictorTimeStepSize()));
+        if (solverTimeStepSizeIsInstable) {
+          static_cast<exahype::solvers::ADERDGSolver*>(p)->updateMinNextPredictorTimeStepSize(
+              factor * static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinNextPredictorTimeStepSize());
+          static_cast<exahype::solvers::ADERDGSolver*>(p)->setMinPredictorTimeStepSize(
+              factor * static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinPredictorTimeStepSize());
+        } else {
+          static_cast<exahype::solvers::ADERDGSolver*>(p)->updateMinNextPredictorTimeStepSize(
+              .5 * (static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinPredictorTimeStepSize() +
+                  static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinNextPredictorTimeStepSize()));
+        }
+
+        cflConditionWasViolated =
+            cflConditionWasViolated | solverTimeStepSizeIsInstable;
     }
-
-    cflConditionWasViolated =
-        cflConditionWasViolated | solverTimeStepSizeIsInstable;
   }
 
   return cflConditionWasViolated;  // | tooDiffusive;
