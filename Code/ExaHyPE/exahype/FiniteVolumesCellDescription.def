@@ -1,0 +1,56 @@
+/////////////////////////////////////////////////
+/// ExaHyPE
+/// ... text ...
+/// Version: 13/11/15
+/////////////////////////////////////////////////
+#include "peano/utils/Globals.h"
+
+Packed-Type: int;
+
+Constant: DIMENSIONS;
+Constant: DIMENSIONS_TIMES_TWO;
+
+class exahype::records::FiniteVolumesCellDescription {
+  /**
+   * Points to a solver in the solver registry.
+   */
+  parallelise persistent int solverNumber;
+
+  /**
+  * The time step size correction phase is working with.
+  */
+  parallelise persistent double timeStepSize;
+
+  /**
+   * The time stamp the correction phase is working with.
+   */
+  parallelise persistent double timeStamp;
+
+  /**
+   *  Index pointing to the solution DoF belonging to this cell.
+   *  Resembles also the state of the previous time step during update
+   * calculations.
+   *  Symbol: \f$ u_h \f$.
+   */
+  parallelise persistent int solution;
+
+  /**
+   * Type of a cell description.
+   * Cell descriptions of type \p Cell hold cell and face data,
+   * while the ones of type \p Shell hold only face data.
+   * Both belong to the original spacetree that
+   * is constructed according to solver-based refinement criteria.
+   * Virtual shells hold also only face data but belong to
+   * the virtual part of the augmented spacetree that
+   * is created to store prolongated face data.
+   */
+  enum Type {
+    Cell
+  };
+
+  /**
+   * The type of this ADERDGCellDescription. See the documentation of Cell for
+   * more details.
+   */
+  parallelise persistent Type type;
+};

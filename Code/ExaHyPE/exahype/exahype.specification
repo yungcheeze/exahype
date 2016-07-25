@@ -3,13 +3,12 @@ component: ExaHyPE
 namespace: ::exahype
 
 heap-dastgen-file: ADERDGCellDescription.def
-//heap-dastgen-file: FVCellDescription.def
-// heap-dastgen-file: FusedADERDGCellDescription.def
+heap-dastgen-file: FiniteVolumesCellDescription.def
 
 vertex:
   dastgen-file: Vertex.def
-  read vector2PowD(int): ADERDGCellDescriptionsIndex
-  write vector2PowD(int): ADERDGCellDescriptionsIndex
+  read vector2PowD(int): CellDescriptionsIndex
+  write vector2PowD(int): CellDescriptionsIndex
   
 cell:
   dastgen-file: Cell.def
@@ -81,7 +80,7 @@ adapter:
   merge-with-user-defined-mapping: SolutionAdjustment        // (enterCell,runconcurrently)             
   merge-with-user-defined-mapping: MarkingForAugmentation    // (enterCell,runconcurrently)
   merge-with-user-defined-mapping: Augmentation              // (touchVertexLastTime,enterCell,serial)
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)       
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)       
   
 adapter:
   name: PlotAugmentedAMRGrid
