@@ -42,11 +42,12 @@ constexpr int power(int basis, int exp) {
 
 #ifdef ALIGNMENT
 constexpr int addPadding(const int originalSize) {
+  assertion1( ALIGNMENT%8==0, ALIGNMENT );
   return ALIGNMENT/8 * static_cast<int>((originalSize+(ALIGNMENT/8-1))/(ALIGNMENT/8));
 }
 #else
 constexpr int addPadding(const int originalSize) {
-  return 1;
+  return originalSize;
 }
 #endif
 
