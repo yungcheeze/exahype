@@ -286,7 +286,7 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
                 tmp[ivar + numberOfVariables * ll];
             assertion4(
               lQi[spaceTimeDofStartIndex + ivar]==lQi[spaceTimeDofStartIndex + ivar],
-              spaceTimeDofStartIndex, iVar, numberOfVariables, ll
+              spaceTimeDofStartIndex, ivar, numberOfVariables, ll
             );
           }
         }
