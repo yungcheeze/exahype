@@ -52,6 +52,7 @@ exahype::runners::Runner::Runner(const Parser& parser) : _parser(parser) {}
 exahype::runners::Runner::~Runner() {}
 
 void exahype::runners::Runner::initDistributedMemoryConfiguration() {
+  #ifdef Parallel
   std::string configuration = _parser.getMPIConfiguration();
   if (_parser.getMPILoadBalancingType()==Parser::MPILoadBalancingType::Static) {
     if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
@@ -104,13 +105,15 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
   peano::parallel::SendReceiveBufferPool::getInstance().setBufferSize(bufferSize);
   peano::parallel::JoinDataBufferPool::getInstance().setBufferSize(bufferSize);
   logInfo("initDistributedMemoryConfiguration()", "use MPI buffer size of " << bufferSize);
+  #endif
 }
 
 
 void exahype::runners::Runner::shutdownDistributedMemoryConfiguration() {
+  #ifdef Parallel
   tarch::parallel::NodePool::getInstance().terminate();
-  exahype::repositories::RepositoryFactory::getInstance()
-      .shutdownAllParallelDatatypes();
+  exahype::repositories::RepositoryFactory::getInstance().shutdownAllParallelDatatypes();
+  #endif
 }
 
 void exahype::runners::Runner::initSharedMemoryConfiguration() {
