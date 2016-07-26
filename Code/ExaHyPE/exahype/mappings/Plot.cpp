@@ -297,30 +297,32 @@ void exahype::mappings::Plot::enterCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  for (auto& pPlotter : exahype::plotters::RegisteredPlotters) {
-    if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-            fineGridCell.getCellDescriptionsIndex())) {
-      for (const auto& pPatch :
-           ADERDGCellDescriptionHeap::getInstance().getData(
-               fineGridCell.getCellDescriptionsIndex())) {
-        double* u = 0;
-
-        switch (pPatch.getType()) {
-          case exahype::records::ADERDGCellDescription::Cell:
-            assertion1(pPatch.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pPatch.toString());
-            u = DataHeap::getInstance()
-                    .getData(pPatch.getSolution())
-                    .data();
-
-            if (pPlotter->plotDataFromSolver(pPatch.getSolverNumber())) {
-              pPlotter->plotPatch(
-                  fineGridVerticesEnumerator.getVertexPosition(),
-                  fineGridVerticesEnumerator.getCellSize(), u,
-                  pPatch.getCorrectorTimeStamp());
-            }
-            break;
-          default:
-            break;
+  if ( fineGridCell.isInitialised() ) {
+    for (auto& pPlotter : exahype::plotters::RegisteredPlotters) {
+      for (int i=0; i<fineGridCell.getNumberOfADERDGCellDescriptions(); i++) {
+        double*  u = DataHeap::getInstance().getData(fineGridCell.getADERDGCellDescription(i).getSolution()).data();
+        if (
+          fineGridCell.getADERDGCellDescription(i).getType()==exahype::records::ADERDGCellDescription::Cell
+          &&
+          pPlotter->plotDataFromSolver( fineGridCell.getADERDGCellDescription(i).getSolverNumber() )
+        ) {
+          pPlotter->plotPatch(
+              fineGridVerticesEnumerator.getVertexPosition(),
+              fineGridVerticesEnumerator.getCellSize(), u,
+              fineGridCell.getADERDGCellDescription(i).getCorrectorTimeStamp());
+        }
+      }
+      for (int i=0; i<fineGridCell.getNumberOfFiniteVolumeCellDescriptions(); i++) {
+        double*  u = DataHeap::getInstance().getData(fineGridCell.getFiniteVolumesCellDescription(i).getSolution()).data();
+        if (
+          fineGridCell.getFiniteVolumesCellDescription(i).getType()==exahype::records::FiniteVolumesCellDescription::Cell
+          &&
+          pPlotter->plotDataFromSolver( fineGridCell.getFiniteVolumesCellDescription(i).getSolverNumber() )
+        ) {
+          pPlotter->plotPatch(
+              fineGridVerticesEnumerator.getVertexPosition(),
+              fineGridVerticesEnumerator.getCellSize(), u,
+              fineGridCell.getFiniteVolumesCellDescription(i).getTimeStamp());
         }
       }
     }
