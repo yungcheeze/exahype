@@ -10,6 +10,13 @@ public class Helpers {
     writeHeaderMinimalADERDGClassSignature(writer, solverName, projectName);
   }
 
+  public static void writeMinimalFiniteVolumesSolverHeader(
+	      String solverName, java.io.BufferedWriter writer, String projectName) throws IOException {
+    writeHeaderCopyright(writer);
+    writeHeaderIncludesAndDefines(writer, solverName, projectName);
+    writeHeaderMinimalFiniteVolumesClassSignature(writer, solverName, projectName);
+  }
+
   /**
    * Creates all the public operations that are mandatory for any solver.
    */
@@ -18,12 +25,12 @@ public class Helpers {
     writer.write(
         "class " + projectName + "::" + solverName + ": public exahype::solvers::ADERDGSolver {\n");
     writer.write("  public:\n");
-    writer.write("    " + solverName + "(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler);\n");
+    writer.write("    " + solverName + "(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler);\n\n");
 
     writer.write(
         "    void spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) override; \n");
     writer.write(
-        "    void solutionUpdate(double* luh, const double* const lduh, const double dt) override;\n");
+            "    void solutionUpdate(double* luh, const double* const lduh, const double dt) override;\n");
     writer.write(
         "    void volumeIntegral(double* lduh, const double* const lFhi, const tarch::la::Vector<DIMENSIONS,double>& dx) override;\n");
     writer.write(
@@ -49,6 +56,23 @@ public class Helpers {
   }
 
   /**
+   * Creates all the public operations that are mandatory for any solver.
+   */
+  private static void writeHeaderMinimalFiniteVolumesClassSignature(
+      java.io.BufferedWriter writer, String solverName, String projectName) throws IOException {
+    writer.write(
+        "class " + projectName + "::" + solverName + ": public exahype::solvers::FiniteVolumesSolver {\n");
+    writer.write("  public:\n");
+    writer.write("    " + solverName + "(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler);\n\n");
+
+    writer.write("    double stableTimeStepSize( const double* const luh, const tarch::la::Vector<DIMENSIONS, double>& dx) override; \n\n" );
+    writer.write("    void   solutionAdjustment( double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt, double& maxAdmissibleDt) override; \n\n");
+    writer.write("    bool   hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t) override; \n\n" );
+    writer.write("    exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) override; \n\n" );
+    writer.write("    void solutionUpdate(double** luh, const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt) override; \n\n" );
+  }
+
+  /**
    * Write header with ExaHyPE copyright. Should be inserted for any solver's
    * header.
    */
@@ -71,7 +95,8 @@ public class Helpers {
     writer.write("\n\n");
     writer.write("#include <memory>\n\n");
     writer.write("#include \"exahype/profilers/Profiler.h\"\n");
-    writer.write("#include \"exahype/solvers/ADERDGSolver.h\"");
+    writer.write("#include \"exahype/solvers/ADERDGSolver.h\"\n");
+    writer.write("#include \"exahype/solvers/FiniteVolumesSolver.h\"\n");
     writer.write("\n\n\n");
 
     writer.write("namespace " + projectName + "{\n");

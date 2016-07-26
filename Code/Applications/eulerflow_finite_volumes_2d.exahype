@@ -27,6 +27,7 @@ exahype-project  Euler2d
     fuse-algorithmic-steps-factor = 0.99
   end optimisation
 
+/*
   solver ADER-DG MyADERDGSolver
     variables          = 5
     parameters         = 0
@@ -44,6 +45,25 @@ exahype-project  Euler2d
     end plot
   end solver
 
+  solver ADER-DG MyADERDGSolver2
+    variables          = 5
+    parameters         = 0
+    order              = 3
+    maximum-mesh-size  = 0.1
+    time-stepping      = global
+    kernel             = generic::fluxes::nonlinear
+    language           = C
+
+    plot vtk::ascii
+      time     = 0.0
+      repeat   = 0.05
+      output   = ./solution2
+      select   = {all}
+    end plot
+  end solver
+*/
+
+ 
   solver Finite-Volumes MyFiniteVolumesSolver
     variables          = 5
     parameters         = 0
@@ -56,7 +76,7 @@ exahype-project  Euler2d
     plot vtk::ascii
       time     = 0.0
       repeat   = 0.05
-      output   = ./solution
+      output   = ./fv
       select   = {all}
     end plot
   end solver
