@@ -462,6 +462,55 @@ exahype::Cell::computeSubcellPositionOfCellOrAncestor(
   return subcellPosition;
 }
 
+
+void exahype::Cell::validateNoNansInADERDGSolver(
+  int                                  number,
+  exahype::Cell&                       fineGridCell,
+  const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+  const std::string&                   methodTraceOfCaller
+) {
+  auto& p = fineGridCell.getADERDGCellDescription(number);
+  assertionEquals4(p.getPredictorTimeStepSize(),p.getPredictorTimeStepSize(),
+                   fineGridVerticesEnumerator.toString(),
+                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
+
+  double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
+  assertionEquals4(luh[0], luh[0],
+                   fineGridVerticesEnumerator.toString(),
+                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
+
+  double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
+  assertionEquals4(lQi[0], lQi[0],
+                   fineGridVerticesEnumerator.toString(),
+                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
+
+  double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
+  assertionEquals4(lFi[0], lFi[0],
+                   fineGridVerticesEnumerator.toString(),
+                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
+
+  double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
+  assertionEquals4(lQhi[0], lQhi[0],
+                   fineGridVerticesEnumerator.toString(),
+                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
+
+  double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
+  assertionEquals4(lFhi[0], lFhi[0],
+                   fineGridVerticesEnumerator.toString(),
+                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
+
+  double* lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
+  assertionEquals4(lQhbnd[0], lQhbnd[0],
+                   fineGridVerticesEnumerator.toString(),
+                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
+
+  double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
+  assertionEquals4(lFhbnd[0], lFhbnd[0],
+                   fineGridVerticesEnumerator.toString(),
+                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
+}
+
+
 exahype::Cell::SubcellPosition
 exahype::Cell::computeSubcellPositionOfDescendant(
     const exahype::records::ADERDGCellDescription& pChild) const {

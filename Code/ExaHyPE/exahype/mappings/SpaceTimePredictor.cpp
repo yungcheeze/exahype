@@ -462,9 +462,7 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
           lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
           lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
-          assertionEquals2(luh[0], luh[0],
-                           fineGridVerticesEnumerator.toString(),
-                           p.toString());  // check if nan
+          fineGridCell.validateNoNansInADERDGSolver(i,fineGridCell,fineGridVerticesEnumerator,"exahype::mappings::SpaceTimePredictor::enterCell[pre]");
 
           solver->spaceTimePredictor(
               lQi, lFi, lQhi, lFhi,
@@ -472,36 +470,9 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
               lFhbnd,
               luh, fineGridVerticesEnumerator.getCellSize(),
               p.getPredictorTimeStepSize());
-          assertionEquals2(p.getPredictorTimeStepSize(),p.getPredictorTimeStepSize(),
-                           fineGridVerticesEnumerator.toString(),
-                           p.toString());  // check if nan
-          assertionEquals2(luh[0], luh[0],
-                           fineGridVerticesEnumerator.toString(),
-                           p.toString());  // check if nan
-          assertionEquals2(lQi[0], lQi[0],
-                           fineGridVerticesEnumerator.toString(),
-                           p.toString());  // check if nan
-          assertionEquals2(lFi[0], lFi[0],
-                           fineGridVerticesEnumerator.toString(),
-                           p.toString());  // check if nan
-          assertionEquals2(lQhi[0], lQhi[0],
-                           fineGridVerticesEnumerator.toString(),
-                           p.toString());  // check if nan
-          assertionEquals2(luh[0], luh[0],
-                           fineGridVerticesEnumerator.toString(),
-                           p.toString());  // check if nan
-          assertionEquals2(lFhi[0], lFhi[0],
-                           fineGridVerticesEnumerator.toString(),
-                           p.toString());  // check if nan
-          assertionEquals2(luh[0], luh[0],
-                           fineGridVerticesEnumerator.toString(),
-                           p.toString());  // check if nan
-          assertionEquals2(lQhbnd[0], lQhbnd[0],
-                           fineGridVerticesEnumerator.toString(),
-                           p.toString());  // check if nan
-          assertionEquals2(lFhbnd[0], lFhbnd[0],
-                           fineGridVerticesEnumerator.toString(),
-                           p.toString());  // check if nan
+
+          fineGridCell.validateNoNansInADERDGSolver(i,fineGridCell,fineGridVerticesEnumerator,"exahype::mappings::SpaceTimePredictor::enterCell[post]");
+
           break;
         default:
           break;

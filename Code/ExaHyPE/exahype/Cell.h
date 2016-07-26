@@ -18,6 +18,7 @@
 
 #include "exahype/records/Cell.h"
 #include "peano/grid/Cell.h"
+#include "peano/grid/VertexEnumerator.h"
 
 #include "exahype/records/ADERDGCellDescription.h"
 #include "exahype/records/FiniteVolumesCellDescription.h"
@@ -190,6 +191,17 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
       const exahype::records::ADERDGCellDescription& pChild) const;
 
   bool isInitialised() const;
+
+  /**
+   * This operation runs a dozen of assertions. It becomes nop if assertions
+   * are switched off.
+   */
+  void validateNoNansInADERDGSolver(
+    int                                  number,
+    exahype::Cell&                       fineGridCell,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    const std::string&                   methodTraceOfCaller
+  );
 };
 
 #endif
