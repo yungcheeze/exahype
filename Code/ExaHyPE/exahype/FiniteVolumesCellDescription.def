@@ -33,7 +33,23 @@ class exahype::records::FiniteVolumesCellDescription {
    *  Symbol: \f$ u_h \f$.
    */
   parallelise persistent int solution;
-
+  
+  /**
+   * Space-tree level of the cell this ADERDGCellDescription is associated
+   * with.
+   */
+  parallelise persistent int level;
+  /**
+   * Offset of the "lower left" node of the lower left ghost cell from the
+   * lower left node of the cell.
+   */
+  parallelise persistent double offset[DIMENSIONS];
+  /**
+   * Dimension of the cell associated with this ADERDGCellDescription in the
+   * respective dimension.
+   */
+  parallelise persistent double size[DIMENSIONS];
+  
   /**
    * Type of a cell description.
    * Cell descriptions of type \p Cell hold cell and face data,
