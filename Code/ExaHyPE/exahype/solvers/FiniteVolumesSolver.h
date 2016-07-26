@@ -26,6 +26,11 @@ namespace exahype {
 
 
 class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
+  private:
+    /**
+     * Total number of unknowns in a cell.
+     */
+    int _unknownsPerCell;
   public:
     FiniteVolumesSolver(
       const std::string& identifier,
@@ -43,6 +48,44 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
     // Disallow copy and assignment
     FiniteVolumesSolver(const FiniteVolumesSolver& other) = delete;
     FiniteVolumesSolver& operator=(const FiniteVolumesSolver& other) = delete;
+
+    virtual double stableTimeStepSize(
+        const double* const luh,
+        const tarch::la::Vector<DIMENSIONS, double>& dx) override;
+
+    virtual void solutionAdjustment(
+        double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
+        const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) override;
+
+    virtual bool hasToAdjustSolution(
+        const tarch::la::Vector<DIMENSIONS, double>& center,
+        const tarch::la::Vector<DIMENSIONS, double>& dx, double t) override;
+
+    virtual exahype::solvers::Solver::RefinementControl refinementCriterion(
+        const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
+        const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
+        const int level) override;
+
+    virtual double getMinTimeStamp() const override;
+
+    /**
+     * This operation returns the number of unknowns per cell located in
+     * the interior of a cell.
+     */
+    int getUnknownsPerCell() const;
+
+    /**
+     * Run over all solvers and identify the minimal time step size.
+     */
+    virtual double getMinTimeStepSize() const override;
+
+    virtual void updateNextTimeStepSize( double value ) override;
+
+    virtual void initInitialTimeStamp(double value) override;
+
+    virtual void startNewTimeStep() override;
+
+    virtual double getNextMinTimeStepSize() const override;
 };
 
 

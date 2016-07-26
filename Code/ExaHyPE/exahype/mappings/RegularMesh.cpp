@@ -211,6 +211,16 @@ void exahype::mappings::RegularMesh::enterCell(
             // We pass the lower left corner of the cell as offset.
             fineGridVerticesEnumerator.getVertexPosition());
         }
+        else if (p->getType()==exahype::solvers::Solver::Type::FiniteVolumes) {
+          fineGridCell.addNewCellDescription(
+            solverNumber, exahype::records::FiniteVolumesCellDescription::Cell,
+            //exahype::records::FiniteVolumesCellDescription::None,
+            fineGridVerticesEnumerator.getLevel(),
+            multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
+            fineGridVerticesEnumerator.getCellSize(),
+            // We pass the lower left corner of the cell as offset.
+            fineGridVerticesEnumerator.getVertexPosition());
+        }
         else {
           assertionMsg(false,"not implemented yet");
         }

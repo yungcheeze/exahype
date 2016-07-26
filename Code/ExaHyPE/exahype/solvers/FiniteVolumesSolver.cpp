@@ -31,6 +31,73 @@ exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
     maximumMeshSize,
     timeStepping,
     std::move(profiler)
-  ) {
+  ),
+  _unknownsPerCell( (numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis, DIMENSIONS + 0))
+  {
+  assertion3(_unknownsPerCell>0, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis);
+
+}
+
+
+double exahype::solvers::FiniteVolumesSolver::stableTimeStepSize(
+    const double* const luh,
+    const tarch::la::Vector<DIMENSIONS, double>& dx)  {
+
+}
+
+
+void exahype::solvers::FiniteVolumesSolver::solutionAdjustment(
+    double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
+    const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt)  {
+
+}
+
+
+bool exahype::solvers::FiniteVolumesSolver::hasToAdjustSolution(
+    const tarch::la::Vector<DIMENSIONS, double>& center,
+    const tarch::la::Vector<DIMENSIONS, double>& dx, double t)  {
+
+}
+
+
+exahype::solvers::Solver::RefinementControl exahype::solvers::FiniteVolumesSolver::refinementCriterion(
+    const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
+    const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
+    const int level)  {
+
+}
+
+
+int exahype::solvers::FiniteVolumesSolver::getUnknownsPerCell() const {
+  return _unknownsPerCell;
+}
+
+
+double exahype::solvers::FiniteVolumesSolver::getMinTimeStamp() const {
+
+}
+
+
+double exahype::solvers::FiniteVolumesSolver::getMinTimeStepSize() const {
+
+}
+
+
+void exahype::solvers::FiniteVolumesSolver::updateNextTimeStepSize( double value ) {
+
+}
+
+
+void exahype::solvers::FiniteVolumesSolver::initInitialTimeStamp(double value) {
+
+}
+
+
+void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
+
+}
+
+
+double exahype::solvers::FiniteVolumesSolver::getNextMinTimeStepSize() const {
 
 }

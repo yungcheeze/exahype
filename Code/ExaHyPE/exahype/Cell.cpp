@@ -21,6 +21,7 @@
 #include "kernels/KernelCalls.h"
 
 #include "exahype/solvers/ADERDGSolver.h"
+#include "exahype/solvers/FiniteVolumesSolver.h"
 
 #include "exahype/records/ADERDGCellDescription.h"
 
@@ -97,6 +98,31 @@ void exahype::Cell::addNewCellDescription(
     ),
     toString());
 
+  assertion2(static_cast<unsigned int>(solverNumber) <
+                 solvers::RegisteredSolvers.size(),
+             solverNumber, exahype::solvers::RegisteredSolvers.size());
+
+  const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
+  assertion(solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes);
+
+  exahype::records::FiniteVolumesCellDescription newCellDescription;
+  newCellDescription.setSolverNumber(solverNumber);
+
+  // Default AMR settings
+  newCellDescription.setType(cellType);
+  newCellDescription.setLevel(level);
+  //newCellDescription.setRefinementEvent(refinementEvent);
+
+  // Pass geometry information to the cellDescription description
+  newCellDescription.setSize(size);
+  newCellDescription.setOffset(cellCentre);
+
+  // Default field data indices
+  newCellDescription.setSolution(-1);
+
+  FiniteVolumesCellDescriptionHeap::getInstance()
+      .getData(_cellData.getCellDescriptionsIndex())
+      .push_back(newCellDescription);
 }
 
 
@@ -254,6 +280,21 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(const int solverNumber) {
         }
       }
       break;
+    case exahype::solvers::Solver::Type::FiniteVolumes:
+      for (auto& p : FiniteVolumesCellDescriptionHeap::getInstance().getData(_cellData.getCellDescriptionsIndex())) {
+        if (solverNumber == p.getSolverNumber()) {
+          switch (p.getType()) {
+            case exahype::records::FiniteVolumesCellDescription::Cell:
+              const int unknownsPerCell =
+                  static_cast<const exahype::solvers::FiniteVolumesSolver*>(solver)->getUnknownsPerCell();
+              assertion(unknownsPerCell>0);
+              p.setSolution(DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
+              logDebug( "initialiseCellDescription(...)", "allocated " << unknownsPerCell << " records for a cell" );
+              break;
+          }
+        }
+      }
+      break;
     default:
       logDebug("initialiseCellDescription(...)",
                "solver is not associated with any cell descriptions of this "
@@ -263,8 +304,9 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(const int solverNumber) {
   }
 }
 
-void exahype::Cell::ensureNoUnnecessaryMemoryIsAllocated(
-    const int solverNumber) {
+
+
+void exahype::Cell::ensureNoUnnecessaryMemoryIsAllocated(const int solverNumber) {
   // Ensure that -1 value is invalid index (cf. addNewCellDescription)
   assertion(!DataHeap::getInstance().isValidIndex(-1));
 
