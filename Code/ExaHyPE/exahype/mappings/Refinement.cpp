@@ -17,7 +17,7 @@
 
 #include "peano/utils/Loop.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
 #include "kernels/KernelCalls.h"
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
@@ -526,9 +526,9 @@ void exahype::mappings::Refinement::descend(
 }
 
 void exahype::mappings::Refinement::prolongateVolumeData(
-    exahype::records::ADERDGCellDescription& p,
-    const exahype::records::ADERDGCellDescription& pCoarse,
-    const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const {
+  exahype::records::ADERDGCellDescription&       p,
+  const exahype::records::ADERDGCellDescription& pCoarse,
+  const tarch::la::Vector<DIMENSIONS, int>&      subcellIndex) const {
   const int levelFine = p.getLevel();
   const int levelCoarse = pCoarse.getLevel();
   assertion(levelCoarse < levelFine);
@@ -536,7 +536,7 @@ void exahype::mappings::Refinement::prolongateVolumeData(
   double* luhFine   = DataHeap::getInstance().getData(p.getSolution()).data();
   double* luhCoarse = DataHeap::getInstance().getData(pCoarse.getSolution()).data();
 
-  exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+  exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
   solver->volumeUnknownsProlongation(luhFine, luhCoarse, levelCoarse, levelFine,
                                      subcellIndex);
 }
@@ -552,7 +552,7 @@ void exahype::mappings::Refinement::restrictVolumeData(
   double* luhFine   = DataHeap::getInstance().getData(p.getSolution()).data();
   double* luhCoarse = DataHeap::getInstance().getData(pCoarse.getSolution()).data();
 
-  exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+  exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
   solver->volumeUnknownsRestriction(luhCoarse, luhFine, levelCoarse, levelFine,
                                     subcellIndex);
 }

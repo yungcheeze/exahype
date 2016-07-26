@@ -30,7 +30,7 @@ namespace exahype {
  * Describes one solver.
  */
 class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
- protected:
+ private:
   /**
    * The number of unknowns/basis functions associated with each face of an element.
    * This number includes the unknowns of all state variables.

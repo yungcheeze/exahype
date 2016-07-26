@@ -136,7 +136,9 @@ void exahype::Cell::addNewCellDescription(
 
     }
     break;
-    case exahype::solvers::Solver::Type::Fini: {
+    case exahype::solvers::Solver::Type::FiniteVolumes: {
+      assertionMsg( false, "not implemented yet" );
+/*
       exahype::records::ADERDGCellDescription newCellDescription;
       newCellDescription.setSolverNumber(solverNumber);
 
@@ -168,6 +170,7 @@ void exahype::Cell::addNewCellDescription(
           .getData(_cellData.getCellDescriptionsIndex())
           .push_back(newCellDescription);
 
+*/
     }
     break;
     default: {

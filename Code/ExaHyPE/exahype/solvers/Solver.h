@@ -65,7 +65,7 @@ class exahype::solvers::Solver {
   /**
    * The type of this solver.
    */
-  enum class Type { ADER_DG };
+  enum class Type { ADER_DG, FiniteVolumes };
 
   /**
    * The time stepping modus.
@@ -186,79 +186,6 @@ class exahype::solvers::Solver {
   int getNodesPerCoordinateAxis() const;
 
   /**
-   * @brief Adds the solution update to the solution.
-   *
-   * @param[inout] luh  Cell-local solution DoF.
-   * @param[in]    lduh Cell-local update DoF.
-   * @param[dt]    dt   Time step size.
-   */
-  virtual void solutionUpdate(double* luh, const double* const lduh,
-                              const double dt) = 0;
-
-  /**
-   * @brief Computes the volume flux contribution to the cell update.
-   *
-   * @param[inout] lduh Cell-local update DoF.
-   * @param[in]    dx   Extent of the cell in each coordinate direction.
-   * @param[dt]    dt   Time step size.
-   */
-  virtual void volumeIntegral(
-      double* lduh, const double* const lFhi,
-      const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
-
-  /**
-   * @brief Computes the surface integral contributions
-   * to the cell update.
-   *
-   * @param[inout] lduh   Cell-local update DoF.
-   * @param[in]    lFhbnd Cell-local DoF of the boundary extrapolated fluxes.
-   * @param[in]    dx     Extent of the cell in each coordinate direction.
-   */
-  virtual void surfaceIntegral(
-      double* lduh, const double* const lFhbnd,
-      const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
-
-  /**
-   * @brief Computes the normal fluxes (or fluctuations) at the interface of two
-   *cells.
-   *
-   * @param[inout] FL             Flux DoF belonging to the left cell.
-   * @param[inout] FR             Flux DoF belonging the right cell.
-   * @param[in]    QL             DoF of the boundary extrapolated predictor
-   *belonging to the left cell.
-   * @param[in]    QR             DoF of the boundary extrapolated predictor
-   *belonging to the right cell.
-   * @param[in]    normalNonZero  Index of the nonzero normal vector component,
-   *i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
-   */
-  virtual void riemannSolver(double* FL, double* FR, const double* const QL,
-                             const double* const QR, const double dt,
-                             const int normalNonZero) = 0;
-
-  /**
-   * @brief Computes cell-local predictor space-time, volume, and face DoF.
-   *
-   * Computes the cell-local space-time predictor lQi, the space-time volume
-   *flux lFi,
-   * the predictor lQhi, the volume flux lFhi, the boundary
-   * extrapolated predictor lQhbnd and normal flux lFhbnd.
-   *
-   * @param[inout] lQi    Space-time predictor DoF.
-   * @param[inout] lFi    Space-time flux DoF.
-   * @param[inout] lQhi   Predictor DoF
-   * @param[inout] lFhi   Volume flux DoF.
-   * @param[inout] lQhbnd Boundary extrapolated predictor DoF.
-   * @param[inout] lFhbnd Boundary extrapolated normal fluxes (or fluctuations).
-   * @param[out]   luh    Solution DoF.
-   * @param[in]    dx     Extent of the cell in each coordinate direction.
-   * @param[in]    dt     Time step size.
-   */
-  virtual void spaceTimePredictor(
-      double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
-      double* lFhbnd, const double* const luh,
-      const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt) = 0;
-
-  /**
    * @brief Returns a stable time step size.
    *
    * @param[in] luh       Cell-local solution DoF.
@@ -298,73 +225,6 @@ class exahype::solvers::Solver {
       const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
       const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
       const int level) = 0;  // @todo make abstract
-
-  /**
-   * Project coarse grid face unknowns
-   * on level \p coarseGridLevel down to level \p fineGridLevel
-   * and writes them to the fine grid unknowns
-   *
-   * \note For the considered AMR concept, the difference in levels can
-   * be larger than one. Let \f$l\f$ be the level difference. The
-   * vector \p subfaceIndex does contain values in the range
-   * \f$0,1,\ldots,3^l-1\f$.
-   */
-  virtual void faceUnknownsProlongation(
-      double* lQhbndFine, double* lFhbndFine, const double* lQhbndCoarse,
-      const double* lFhbndCoarse, const int coarseGridLevel,
-      const int fineGridLevel,
-      const tarch::la::Vector<DIMENSIONS - 1, int>& subfaceIndex) = 0;
-
-  /**
-   * Restricts fine grid face unknowns on level \p fineGridLevel
-   * up to level \p coarseGridLevel and adds them to the coarse grid unknowns.
-   *
-   * \note For the considered AMR concept, the difference in levels can
-   * be larger than one. Let \f$l\f$ be the level difference. The
-   * vector \p subfaceIndex does contain values in the range
-   * \f$0,1,\ldots,3^l-1\f$.
-   */
-  virtual void faceUnknownsRestriction(
-      double* lQhbndCoarse, double* lFhbndCoarse, const double* lQhbndFine,
-      const double* lFhbndFine, const int coarseGridLevel,
-      const int fineGridLevel,
-      const tarch::la::Vector<DIMENSIONS - 1, int>& subfaceIndex) = 0;
-
-  /**
-   * Project coarse grid face unknowns
-   * on level \p coarseGridLevel down to level \p fineGridLevel
-   * and writes them to the fine grid unknowns
-   *
-   * \note For the considered AMR concept, the difference in levels is always
-   * equal to one. The vector \p subcellIndex does contain values in the range
-   * \f$0,1,2\f$.
-   */
-  virtual void volumeUnknownsProlongation(
-      double* luhFine, const double* luhCoarse, const int coarseGridLevel,
-      const int fineGridLevel,
-      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) = 0;
-
-  /**
-   * Restricts fine grid volume unknowns on level \p fineGridLevel
-   * up to level \p coarseGridLevel and adds them to the coarse grid unknowns.
-   *
-   * \note For the considered AMR concept, the difference in levels is always
-   * equal to one. The vector \p subcellIndex does contain values in the range
-   * \f$0,1,2\f$.
-   */
-  virtual void volumeUnknownsRestriction(
-      double* luhCoarse, const double* luhFine, const int coarseGridLevel,
-      const int fineGridLevel,
-      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) = 0;
-  ///@}
-
-  /**
-   * @todo Dominic, please add a description what this routine does.
-   */
-/*
-  void synchroniseTimeStepping(
-      exahype::records::ADERDGCellDescription& p) const;
-*/
 
   /**
    * This operation has to different branches: one for the master and one for

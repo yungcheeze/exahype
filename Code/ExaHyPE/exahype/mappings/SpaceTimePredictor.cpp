@@ -12,7 +12,7 @@
  **/
  
 #include "exahype/mappings/SpaceTimePredictor.h"
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
 
 #include "peano/datatraversal/autotuning/Oracle.h"
 #include "peano/utils/Globals.h"
@@ -429,8 +429,8 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
       auto& p = fineGridCell.getADERDGCellDescription(i);
 
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+          exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
 
       // space-time DoF (basisSize**(DIMENSIONS+1))
       double* lQi = 0;

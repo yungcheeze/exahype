@@ -18,7 +18,7 @@
 #include "peano/datatraversal/autotuning/Oracle.h"
 #include "tarch/multicore/Loop.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -331,10 +331,8 @@ void exahype::mappings::SolutionUpdate::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getCellDescriptionsIndex())) {
-    assertionEquals(ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size(),
-                    exahype::solvers::RegisteredSolvers.size());
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getCellDescriptionsIndex())) {
+    assertion( FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getCellDescriptionsIndex()) );
 
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
@@ -350,11 +348,9 @@ void exahype::mappings::SolutionUpdate::enterCell(
 
     // clang-format off
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      auto& pFine =
-          ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
+      auto& pFine  = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
 
-      auto* solver =
-          exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()]);
 
       double* luh;
       double* lduh;
@@ -399,8 +395,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
         default:
           break;
       }
-    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-        .parallelSectionHasTerminated(methodTrace);
+    endpfor peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
     // clang-format on
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);

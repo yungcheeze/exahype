@@ -18,7 +18,7 @@
 #include "peano/datatraversal/autotuning/Oracle.h"
 #include "tarch/multicore/Loop.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -348,8 +348,8 @@ void exahype::mappings::VolumeIntegral::enterCell(
             ADERDGCellDescriptionHeap::getInstance().getData(
                 fineGridCell.getCellDescriptionsIndex())[i];
 
-    exahype::solvers::Solver* solver =
-        exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+    exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+        exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
 
     double* lduh = 0;
     double* lFhi = 0;
