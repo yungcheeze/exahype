@@ -46,28 +46,6 @@ double exahype::solvers::FiniteVolumesSolver::stableTimeStepSize(
 }
 
 
-void exahype::solvers::FiniteVolumesSolver::solutionAdjustment(
-    double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
-    const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt)  {
-
-}
-
-
-bool exahype::solvers::FiniteVolumesSolver::hasToAdjustSolution(
-    const tarch::la::Vector<DIMENSIONS, double>& center,
-    const tarch::la::Vector<DIMENSIONS, double>& dx, double t)  {
-
-}
-
-
-exahype::solvers::Solver::RefinementControl exahype::solvers::FiniteVolumesSolver::refinementCriterion(
-    const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
-    const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
-    const int level)  {
-
-}
-
-
 int exahype::solvers::FiniteVolumesSolver::getUnknownsPerCell() const {
   return _unknownsPerCell;
 }

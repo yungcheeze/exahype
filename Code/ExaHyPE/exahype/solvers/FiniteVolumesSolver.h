@@ -51,20 +51,30 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
 
     virtual double stableTimeStepSize(
         const double* const luh,
-        const tarch::la::Vector<DIMENSIONS, double>& dx) override;
+        const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
 
-    virtual void solutionAdjustment(
-        double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
-        const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) override;
+    /**
+     *
+     */
+    virtual void solutionAdjustment( double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) = 0;
 
     virtual bool hasToAdjustSolution(
         const tarch::la::Vector<DIMENSIONS, double>& center,
-        const tarch::la::Vector<DIMENSIONS, double>& dx, double t) override;
+        const tarch::la::Vector<DIMENSIONS, double>& dx, double t) = 0;
 
     virtual exahype::solvers::Solver::RefinementControl refinementCriterion(
         const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
         const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
-        const int level) override;
+        const int level) = 0;
+
+    /**
+     * @param luh is a pointer to 3^d pointers to doubles
+     * @param dt Time step size that is to be used.
+     * @param maxAdmissibleDt Maximum time step size that would have been
+     *        possible. If maxAdmissibleDt<dt, then we know that no time
+     *        step has been done.
+     */
+    virtual void solutionUpdate(double** luh, const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt, double& maxAdmissibleDt) = 0;
 
     virtual double getMinTimeStamp() const override;
 
