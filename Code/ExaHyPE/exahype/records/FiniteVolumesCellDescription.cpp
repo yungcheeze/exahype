@@ -5,11 +5,14 @@ exahype::records::FiniteVolumesCellDescription::PersistentRecords::PersistentRec
 }
 
 
-exahype::records::FiniteVolumesCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const Type& type):
+exahype::records::FiniteVolumesCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type):
 _solverNumber(solverNumber),
 _timeStepSize(timeStepSize),
 _timeStamp(timeStamp),
 _solution(solution),
+_level(level),
+_offset(offset),
+_size(size),
 _type(type) {
    
 }
@@ -20,13 +23,13 @@ exahype::records::FiniteVolumesCellDescription::FiniteVolumesCellDescription() {
 
 
 exahype::records::FiniteVolumesCellDescription::FiniteVolumesCellDescription(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._solverNumber, persistentRecords._timeStepSize, persistentRecords._timeStamp, persistentRecords._solution, persistentRecords._type) {
+_persistentRecords(persistentRecords._solverNumber, persistentRecords._timeStepSize, persistentRecords._timeStamp, persistentRecords._solution, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._type) {
    
 }
 
 
-exahype::records::FiniteVolumesCellDescription::FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const Type& type):
-_persistentRecords(solverNumber, timeStepSize, timeStamp, solution, type) {
+exahype::records::FiniteVolumesCellDescription::FiniteVolumesCellDescription(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type):
+_persistentRecords(solverNumber, timeStepSize, timeStamp, solution, level, offset, size, type) {
    
 }
 
@@ -61,6 +64,20 @@ void exahype::records::FiniteVolumesCellDescription::toString (std::ostream& out
    out << ",";
    out << "solution:" << getSolution();
    out << ",";
+   out << "level:" << getLevel();
+   out << ",";
+   out << "offset:[";
+   for (int i = 0; i < DIMENSIONS-1; i++) {
+      out << getOffset(i) << ",";
+   }
+   out << getOffset(DIMENSIONS-1) << "]";
+   out << ",";
+   out << "size:[";
+   for (int i = 0; i < DIMENSIONS-1; i++) {
+      out << getSize(i) << ",";
+   }
+   out << getSize(DIMENSIONS-1) << "]";
+   out << ",";
    out << "type:" << toString(getType());
    out <<  ")";
 }
@@ -76,6 +93,9 @@ exahype::records::FiniteVolumesCellDescriptionPacked exahype::records::FiniteVol
       getTimeStepSize(),
       getTimeStamp(),
       getSolution(),
+      getLevel(),
+      getOffset(),
+      getSize(),
       getType()
    );
 }
@@ -91,12 +111,15 @@ exahype::records::FiniteVolumesCellDescriptionPacked exahype::records::FiniteVol
       {
          FiniteVolumesCellDescription dummyFiniteVolumesCellDescription[2];
          
-         const int Attributes = 6;
+         const int Attributes = 9;
          MPI_Datatype subtypes[Attributes] = {
             MPI_INT,		 //solverNumber
             MPI_DOUBLE,		 //timeStepSize
             MPI_DOUBLE,		 //timeStamp
             MPI_INT,		 //solution
+            MPI_INT,		 //level
+            MPI_DOUBLE,		 //offset
+            MPI_DOUBLE,		 //size
             MPI_INT,		 //type
             MPI_UB		 // end/displacement flag
          };
@@ -106,6 +129,9 @@ exahype::records::FiniteVolumesCellDescriptionPacked exahype::records::FiniteVol
             1,		 //timeStepSize
             1,		 //timeStamp
             1,		 //solution
+            1,		 //level
+            DIMENSIONS,		 //offset
+            DIMENSIONS,		 //size
             1,		 //type
             1		 // end/displacement flag
          };
@@ -118,8 +144,11 @@ exahype::records::FiniteVolumesCellDescriptionPacked exahype::records::FiniteVol
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._timeStepSize))), 		&disp[1] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._timeStamp))), 		&disp[2] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._solution))), 		&disp[3] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[4] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._level))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._offset[0]))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._size[0]))), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[7] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[8] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -134,12 +163,15 @@ exahype::records::FiniteVolumesCellDescriptionPacked exahype::records::FiniteVol
       {
          FiniteVolumesCellDescription dummyFiniteVolumesCellDescription[2];
          
-         const int Attributes = 6;
+         const int Attributes = 9;
          MPI_Datatype subtypes[Attributes] = {
             MPI_INT,		 //solverNumber
             MPI_DOUBLE,		 //timeStepSize
             MPI_DOUBLE,		 //timeStamp
             MPI_INT,		 //solution
+            MPI_INT,		 //level
+            MPI_DOUBLE,		 //offset
+            MPI_DOUBLE,		 //size
             MPI_INT,		 //type
             MPI_UB		 // end/displacement flag
          };
@@ -149,6 +181,9 @@ exahype::records::FiniteVolumesCellDescriptionPacked exahype::records::FiniteVol
             1,		 //timeStepSize
             1,		 //timeStamp
             1,		 //solution
+            1,		 //level
+            DIMENSIONS,		 //offset
+            DIMENSIONS,		 //size
             1,		 //type
             1		 // end/displacement flag
          };
@@ -161,8 +196,11 @@ exahype::records::FiniteVolumesCellDescriptionPacked exahype::records::FiniteVol
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._timeStepSize))), 		&disp[1] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._timeStamp))), 		&disp[2] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._solution))), 		&disp[3] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[4] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._level))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._offset[0]))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._size[0]))), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[0]._persistentRecords._type))), 		&disp[7] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescription[1]._persistentRecords._solverNumber))), 		&disp[8] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -409,11 +447,14 @@ exahype::records::FiniteVolumesCellDescriptionPacked::PersistentRecords::Persist
 }
 
 
-exahype::records::FiniteVolumesCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const Type& type):
+exahype::records::FiniteVolumesCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type):
 _solverNumber(solverNumber),
 _timeStepSize(timeStepSize),
 _timeStamp(timeStamp),
 _solution(solution),
+_level(level),
+_offset(offset),
+_size(size),
 _type(type) {
    
 }
@@ -424,13 +465,13 @@ exahype::records::FiniteVolumesCellDescriptionPacked::FiniteVolumesCellDescripti
 
 
 exahype::records::FiniteVolumesCellDescriptionPacked::FiniteVolumesCellDescriptionPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._solverNumber, persistentRecords._timeStepSize, persistentRecords._timeStamp, persistentRecords._solution, persistentRecords._type) {
+_persistentRecords(persistentRecords._solverNumber, persistentRecords._timeStepSize, persistentRecords._timeStamp, persistentRecords._solution, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._type) {
    
 }
 
 
-exahype::records::FiniteVolumesCellDescriptionPacked::FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const Type& type):
-_persistentRecords(solverNumber, timeStepSize, timeStamp, solution, type) {
+exahype::records::FiniteVolumesCellDescriptionPacked::FiniteVolumesCellDescriptionPacked(const int& solverNumber, const double& timeStepSize, const double& timeStamp, const int& solution, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type):
+_persistentRecords(solverNumber, timeStepSize, timeStamp, solution, level, offset, size, type) {
    
 }
 
@@ -463,6 +504,20 @@ void exahype::records::FiniteVolumesCellDescriptionPacked::toString (std::ostrea
    out << ",";
    out << "solution:" << getSolution();
    out << ",";
+   out << "level:" << getLevel();
+   out << ",";
+   out << "offset:[";
+   for (int i = 0; i < DIMENSIONS-1; i++) {
+      out << getOffset(i) << ",";
+   }
+   out << getOffset(DIMENSIONS-1) << "]";
+   out << ",";
+   out << "size:[";
+   for (int i = 0; i < DIMENSIONS-1; i++) {
+      out << getSize(i) << ",";
+   }
+   out << getSize(DIMENSIONS-1) << "]";
+   out << ",";
    out << "type:" << toString(getType());
    out <<  ")";
 }
@@ -478,6 +533,9 @@ exahype::records::FiniteVolumesCellDescription exahype::records::FiniteVolumesCe
       getTimeStepSize(),
       getTimeStamp(),
       getSolution(),
+      getLevel(),
+      getOffset(),
+      getSize(),
       getType()
    );
 }
@@ -493,12 +551,15 @@ exahype::records::FiniteVolumesCellDescription exahype::records::FiniteVolumesCe
       {
          FiniteVolumesCellDescriptionPacked dummyFiniteVolumesCellDescriptionPacked[2];
          
-         const int Attributes = 6;
+         const int Attributes = 9;
          MPI_Datatype subtypes[Attributes] = {
             MPI_INT,		 //solverNumber
             MPI_DOUBLE,		 //timeStepSize
             MPI_DOUBLE,		 //timeStamp
             MPI_INT,		 //solution
+            MPI_INT,		 //level
+            MPI_DOUBLE,		 //offset
+            MPI_DOUBLE,		 //size
             MPI_INT,		 //type
             MPI_UB		 // end/displacement flag
          };
@@ -508,6 +569,9 @@ exahype::records::FiniteVolumesCellDescription exahype::records::FiniteVolumesCe
             1,		 //timeStepSize
             1,		 //timeStamp
             1,		 //solution
+            1,		 //level
+            DIMENSIONS,		 //offset
+            DIMENSIONS,		 //size
             1,		 //type
             1		 // end/displacement flag
          };
@@ -520,8 +584,11 @@ exahype::records::FiniteVolumesCellDescription exahype::records::FiniteVolumesCe
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._timeStepSize))), 		&disp[1] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._timeStamp))), 		&disp[2] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._solution))), 		&disp[3] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[4] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._level))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._offset[0]))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[7] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[8] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -536,12 +603,15 @@ exahype::records::FiniteVolumesCellDescription exahype::records::FiniteVolumesCe
       {
          FiniteVolumesCellDescriptionPacked dummyFiniteVolumesCellDescriptionPacked[2];
          
-         const int Attributes = 6;
+         const int Attributes = 9;
          MPI_Datatype subtypes[Attributes] = {
             MPI_INT,		 //solverNumber
             MPI_DOUBLE,		 //timeStepSize
             MPI_DOUBLE,		 //timeStamp
             MPI_INT,		 //solution
+            MPI_INT,		 //level
+            MPI_DOUBLE,		 //offset
+            MPI_DOUBLE,		 //size
             MPI_INT,		 //type
             MPI_UB		 // end/displacement flag
          };
@@ -551,6 +621,9 @@ exahype::records::FiniteVolumesCellDescription exahype::records::FiniteVolumesCe
             1,		 //timeStepSize
             1,		 //timeStamp
             1,		 //solution
+            1,		 //level
+            DIMENSIONS,		 //offset
+            DIMENSIONS,		 //size
             1,		 //type
             1		 // end/displacement flag
          };
@@ -563,8 +636,11 @@ exahype::records::FiniteVolumesCellDescription exahype::records::FiniteVolumesCe
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._timeStepSize))), 		&disp[1] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._timeStamp))), 		&disp[2] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._solution))), 		&disp[3] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[4] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._level))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._offset[0]))), 		&disp[5] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._size[0]))), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[0]._persistentRecords._type))), 		&disp[7] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyFiniteVolumesCellDescriptionPacked[1]._persistentRecords._solverNumber))), 		&disp[8] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );

@@ -100,6 +100,9 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    */
   int getCellDescriptionsIndex() const;
 
+  int getNumberOfADERDGCellDescriptions() const;
+  int getNumberOfFiniteVolumeCellDescriptions() const;
+
   /**
    * Loads a ADERDGCellDescription associated
    * with this cell.

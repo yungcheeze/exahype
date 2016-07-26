@@ -36,13 +36,8 @@ class SolutionAdjustment;
 /**
  * Update the solution
  *
- * We run over all cells of the local spacetree
- *
- * - take the predicted data within each cell
- * - add the contribution from the Riemann solve to the predicted data
- * - mark the cell with the new time stamp
- *
- * All this is done in enterCell(). As the
+ * We run over all cells of the local spacetree and ask the solver whether there
+ * is prescribed data in this point (replace values by user-defined values).
  *
  * @author Dominic Charrier Tobias Weinzierl
  */

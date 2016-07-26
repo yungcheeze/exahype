@@ -613,3 +613,15 @@ exahype::Cell::computeSubcellPositionOfDescendant(
 
   return subcellPosition;
 }
+
+
+int exahype::Cell::getNumberOfADERDGCellDescriptions() const {
+  return ADERDGCellDescriptionHeap::getInstance().getData(
+      getCellDescriptionsIndex()).size();
+}
+
+
+int exahype::Cell::getNumberOfFiniteVolumeCellDescriptions() const {
+  return FiniteVolumesCellDescriptionHeap::getInstance().getData(
+      getCellDescriptionsIndex()).size();
+}

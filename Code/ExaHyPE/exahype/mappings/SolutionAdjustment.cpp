@@ -331,11 +331,7 @@ void exahype::mappings::SolutionAdjustment::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getCellDescriptionsIndex())) {
-    assertionEquals(ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size(),
-                    exahype::solvers::RegisteredSolvers.size());
-
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getCellDescriptionsIndex())) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
             .getData(fineGridCell.getCellDescriptionsIndex())
@@ -344,7 +340,7 @@ void exahype::mappings::SolutionAdjustment::enterCell(
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
         peano::datatraversal::autotuning::UserDefined11;
-    const int grainSize =
+    int grainSize =
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
 
@@ -396,6 +392,47 @@ void exahype::mappings::SolutionAdjustment::enterCell(
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
         .parallelSectionHasTerminated(methodTrace);
     // clang-format on
+
+
+    const int numberOfFiniteVolumesCellDescriptions = static_cast<int>(
+        FiniteVolumesCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size());
+
+    grainSize =
+        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+            numberOfFiniteVolumesCellDescriptions, methodTrace);
+
+    // clang-format off
+    pfor(i, 0, numberOfFiniteVolumesCellDescriptions, grainSize)
+      auto& pFine = FiniteVolumesCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
+
+      auto* solver = exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
+
+      double* luh;
+
+
+      switch (pFine.getType()) {
+        case exahype::records::FiniteVolumesCellDescription::Cell:
+          luh = DataHeap::getInstance().getData(pFine.getSolution()).data();
+
+          assertionEquals(luh[0],luh[0]); // assert no nan
+
+          if (solver->hasToAdjustSolution(
+              fineGridVerticesEnumerator.getCellCenter(),
+              fineGridVerticesEnumerator.getCellSize(),
+              pFine.getTimeStamp())) {
+            solver->solutionAdjustment(
+                luh, fineGridVerticesEnumerator.getCellCenter(),
+                fineGridVerticesEnumerator.getCellSize(),
+                pFine.getTimeStamp(),pFine.getTimeStepSize());
+          }
+
+          assertionEquals(luh[0],luh[0]); // assert no nan
+          break;
+        default:
+          break;
+      }
+    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
+        .parallelSectionHasTerminated(methodTrace);
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
