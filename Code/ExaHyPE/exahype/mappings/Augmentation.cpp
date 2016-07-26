@@ -338,8 +338,8 @@ void exahype::mappings::Augmentation::enterCell(
                      pCoarse.getType()==exahype::records::ADERDGCellDescription::Descendant,pCoarse.toString());
 
           solverNotFound = true;
-          if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-              fineGridCell.getCellDescriptionsIndex())) {
+          if (fineGridCell.isInitialised()) {
+            assertion( ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getCellDescriptionsIndex()) );
             for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.
                                                                                 getCellDescriptionsIndex())) {
               if (pCoarse.getSolverNumber() == pFine.getSolverNumber()) {

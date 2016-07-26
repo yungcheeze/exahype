@@ -462,6 +462,10 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
           lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
           lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
+          assertionEquals2(luh[0], luh[0],
+                           fineGridVerticesEnumerator.toString(),
+                           p.toString());  // check if nan
+
           solver->spaceTimePredictor(
               lQi, lFi, lQhi, lFhi,
               lQhbnd,
@@ -471,7 +475,6 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
           assertionEquals2(p.getPredictorTimeStepSize(),p.getPredictorTimeStepSize(),
                            fineGridVerticesEnumerator.toString(),
                            p.toString());  // check if nan
-
           assertionEquals2(luh[0], luh[0],
                            fineGridVerticesEnumerator.toString(),
                            p.toString());  // check if nan

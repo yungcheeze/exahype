@@ -71,6 +71,35 @@ void exahype::Cell::shutdownMetaData() {
   _cellData.setCellDescriptionsIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 }
 
+
+bool exahype::Cell::isInitialised() const {
+  return _cellData.getCellDescriptionsIndex() != multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex;
+}
+
+
+void exahype::Cell::addNewCellDescription(
+    const int solverNumber,
+    const exahype::records::FiniteVolumesCellDescription::Type cellType,
+/*
+    const exahype::records::FiniteVolumesCellDescription::RefinementEvent
+        refinementEvent,
+*/
+    const int level, const int parentIndex,
+    const tarch::la::Vector<DIMENSIONS, double>& size,
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre) {
+  if (_cellData.getCellDescriptionsIndex() == multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
+    setupMetaData();
+  }
+
+  assertion1(
+    FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(
+      _cellData.getCellDescriptionsIndex()
+    ),
+    toString());
+
+}
+
+
 void exahype::Cell::addNewCellDescription(
   const int                                     solverNumber,
   const exahype::records::ADERDGCellDescription::Type cellType,

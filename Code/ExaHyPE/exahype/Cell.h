@@ -127,13 +127,22 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   /**
    * todo docu
    *
-   * @pre setupMetaData() has to be called before.
+   * setupMetaData() is called if cell hasn't been properly initialised before.
    */
   void addNewCellDescription(
       const int solverNumber,
       const exahype::records::ADERDGCellDescription::Type cellType,
       const exahype::records::ADERDGCellDescription::RefinementEvent
           refinementEvent,
+      const int level, const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& size,
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
+
+  void addNewCellDescription(
+      const int solverNumber,
+      const exahype::records::FiniteVolumesCellDescription::Type cellType,
+//      const exahype::records::FiniteVolumesCellDescription::RefinementEvent
+//          refinementEvent,    @todo Dominic
       const int level, const int parentIndex,
       const tarch::la::Vector<DIMENSIONS, double>& size,
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
@@ -179,6 +188,8 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    */
   SubcellPosition computeSubcellPositionOfDescendant(
       const exahype::records::ADERDGCellDescription& pChild) const;
+
+  bool isInitialised() const;
 };
 
 #endif

@@ -312,7 +312,8 @@ void exahype::mappings::Refinement::enterCell(
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(coarseGridCell.getCellDescriptionsIndex())) {
+  if (coarseGridCell.isInitialised()) {
+    assertion( ADERDGCellDescriptionHeap::getInstance().isValidIndex(coarseGridCell.getCellDescriptionsIndex()) );
     for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(coarseGridCell.getCellDescriptionsIndex())) {
       switch (pCoarse.getType()) {
         case exahype::records::ADERDGCellDescription::Cell:

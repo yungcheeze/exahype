@@ -195,13 +195,14 @@ void exahype::mappings::RegularMesh::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   int solverNumber = 0;
-  if (!ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getCellDescriptionsIndex())) {
+  if ( !fineGridCell.isInitialised() ) {
     for (const auto& p : exahype::solvers::RegisteredSolvers) {
       if (tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),p->getMaximumMeshSize())
           &&
           tarch::la::allGreater(coarseGridVerticesEnumerator.getCellSize(),p->getMaximumMeshSize())
       ) {
-        fineGridCell.addNewCellDescription(
+        if (p->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+          fineGridCell.addNewCellDescription(
             solverNumber, exahype::records::ADERDGCellDescription::Cell,
             exahype::records::ADERDGCellDescription::None,
             fineGridVerticesEnumerator.getLevel(),
@@ -209,6 +210,10 @@ void exahype::mappings::RegularMesh::enterCell(
             fineGridVerticesEnumerator.getCellSize(),
             // We pass the lower left corner of the cell as offset.
             fineGridVerticesEnumerator.getVertexPosition());
+        }
+        else {
+          assertionMsg(false,"not implemented yet");
+        }
         fineGridCell.ensureNecessaryMemoryIsAllocated(solverNumber);
       }
       solverNumber++;

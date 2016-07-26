@@ -40,9 +40,15 @@ constexpr int power(int basis, int exp) {
   return (exp == 0) ? 1 : basis * power(basis, exp - 1);
 }
 
+#ifdef ALIGNMENT
 constexpr int addPadding(const int originalSize) {
   return ALIGNMENT/8 * static_cast<int>((originalSize+(ALIGNMENT/8-1))/(ALIGNMENT/8));
 }
+#else
+constexpr int addPadding(const int originalSize) {
+  return 1;
+}
+#endif
 
 namespace exahype {
   namespace solvers {
