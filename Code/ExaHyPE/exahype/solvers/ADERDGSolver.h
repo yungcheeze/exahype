@@ -319,7 +319,7 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
   virtual exahype::solvers::Solver::RefinementControl refinementCriterion(
       const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
       const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
-      const int level) = 0;  // @todo make abstract
+      const int level) = 0;
 
   /**
    * Project coarse grid face unknowns
