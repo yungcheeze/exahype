@@ -94,6 +94,7 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
         for (int ivar = 0; ivar < numberOfVariables; ivar++) {
           // Trivial initial guess (can be significantly improved)
           lQi[spaceTimeDofStartIndex + ivar] = luh[dofStartIndex + ivar];
+          assertion(lQi[spaceTimeDofStartIndex + ivar]==lQi[spaceTimeDofStartIndex + ivar]);
 
           // Compute the contribution of the initial condition uh to the time
           // update. I prefer to compute it once
@@ -142,6 +143,7 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
           // @todo Angelika's old code
           // exahype::problem::PDEFlux(Q,f,g);
           PDEFlux(Q, F);
+          assertion(lQi[spaceTimeDofStartIndex]==lQi[spaceTimeDofStartIndex]);
         }
       }
       // Above seems okay!
@@ -282,6 +284,10 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
           for (int ivar = 0; ivar < numberOfVariables; ivar++) {
             lQi[spaceTimeDofStartIndex + ivar] =
                 tmp[ivar + numberOfVariables * ll];
+            assertion4(
+              lQi[spaceTimeDofStartIndex + ivar]==lQi[spaceTimeDofStartIndex + ivar],
+              spaceTimeDofStartIndex, iVar, numberOfVariables, ll
+            );
           }
         }
 

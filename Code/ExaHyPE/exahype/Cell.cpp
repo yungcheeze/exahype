@@ -130,86 +130,40 @@ void exahype::Cell::addNewCellDescription(
              solverNumber, exahype::solvers::RegisteredSolvers.size());
 
   const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
-  switch (solver->getType()) {
-    case exahype::solvers::Solver::Type::ADER_DG: {
-      exahype::records::ADERDGCellDescription newCellDescription;
-      newCellDescription.setSolverNumber(solverNumber);
+  assertion(solver->getType()==exahype::solvers::Solver::Type::ADER_DG);
 
-      // Default AMR settings
-      newCellDescription.setType(cellType);
-      newCellDescription.setParentIndex(parentIndex);
-      newCellDescription.setLevel(level);
-      newCellDescription.setRefinementEvent(refinementEvent);
+  exahype::records::ADERDGCellDescription newCellDescription;
+  newCellDescription.setSolverNumber(solverNumber);
 
-      std::bitset<DIMENSIONS_TIMES_TWO>
-          riemannSolvePerformed;  // default construction: no bit set
-      newCellDescription.setRiemannSolvePerformed(riemannSolvePerformed);
+  // Default AMR settings
+  newCellDescription.setType(cellType);
+  newCellDescription.setParentIndex(parentIndex);
+  newCellDescription.setLevel(level);
+  newCellDescription.setRefinementEvent(refinementEvent);
 
-      // Pass geometry information to the cellDescription description
-      newCellDescription.setSize(size);
-      newCellDescription.setOffset(cellCentre);
+  std::bitset<DIMENSIONS_TIMES_TWO>
+      riemannSolvePerformed;  // default construction: no bit set
+  newCellDescription.setRiemannSolvePerformed(riemannSolvePerformed);
 
-      // Default field data indices
-      newCellDescription.setSpaceTimePredictor(-1);
-      newCellDescription.setSpaceTimeVolumeFlux(-1);
-      newCellDescription.setPredictor(-1);
-      newCellDescription.setVolumeFlux(-1);
-      newCellDescription.setSolution(-1);
-      newCellDescription.setUpdate(-1);
-      newCellDescription.setExtrapolatedPredictor(-1);
-      newCellDescription.setFluctuation(-1);
+  // Pass geometry information to the cellDescription description
+  newCellDescription.setSize(size);
+  newCellDescription.setOffset(cellCentre);
 
-      ADERDGCellDescriptionHeap::getInstance()
-          .getData(_cellData.getCellDescriptionsIndex())
-          .push_back(newCellDescription);
+  // Default field data indices
+  newCellDescription.setSpaceTimePredictor(-1);
+  newCellDescription.setSpaceTimeVolumeFlux(-1);
+  newCellDescription.setPredictor(-1);
+  newCellDescription.setVolumeFlux(-1);
+  newCellDescription.setSolution(-1);
+  newCellDescription.setUpdate(-1);
+  newCellDescription.setExtrapolatedPredictor(-1);
+  newCellDescription.setFluctuation(-1);
 
-    }
-    break;
-    case exahype::solvers::Solver::Type::FiniteVolumes: {
-      assertionMsg( false, "not implemented yet" );
-/*
-      exahype::records::ADERDGCellDescription newCellDescription;
-      newCellDescription.setSolverNumber(solverNumber);
-
-      // Default AMR settings
-      newCellDescription.setType(cellType);
-      newCellDescription.setParentIndex(parentIndex);
-      newCellDescription.setLevel(level);
-      newCellDescription.setRefinementEvent(refinementEvent);
-
-      std::bitset<DIMENSIONS_TIMES_TWO>
-          riemannSolvePerformed;  // default construction: no bit set
-      newCellDescription.setRiemannSolvePerformed(riemannSolvePerformed);
-
-      // Pass geometry information to the cellDescription description
-      newCellDescription.setSize(size);
-      newCellDescription.setOffset(cellCentre);
-
-      // Default field data indices
-      newCellDescription.setSpaceTimePredictor(-1);
-      newCellDescription.setSpaceTimeVolumeFlux(-1);
-      newCellDescription.setPredictor(-1);
-      newCellDescription.setVolumeFlux(-1);
-      newCellDescription.setSolution(-1);
-      newCellDescription.setUpdate(-1);
-      newCellDescription.setExtrapolatedPredictor(-1);
-      newCellDescription.setFluctuation(-1);
-
-      ADERDGCellDescriptionHeap::getInstance()
-          .getData(_cellData.getCellDescriptionsIndex())
-          .push_back(newCellDescription);
-
-*/
-    }
-    break;
-    default: {
-      logDebug("addNewCellDescription(...)",
-               "could not add a cell descriptions for this solver. cell="
-                   << toString() << ", level=" << level << ", size=" << size
-                   << ",offset=" << cellCentre);
-    } break;
-  }
+  ADERDGCellDescriptionHeap::getInstance()
+      .getData(_cellData.getCellDescriptionsIndex())
+      .push_back(newCellDescription);
 }
+
 
 void exahype::Cell::ensureNecessaryMemoryIsAllocated(const int solverNumber) {
   // Ensure that -1 value is invalid index (cf. addNewCellDescription)
@@ -474,37 +428,73 @@ void exahype::Cell::validateNoNansInADERDGSolver(
                    fineGridVerticesEnumerator.toString(),
                    p.toString(),fineGridCell.toString(),methodTraceOfCaller);
 
+  exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+      exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
+  #ifdef Dim2
+  const int numberOfVolumeEntries = solver->getNodesPerCoordinateAxis() * solver->getNodesPerCoordinateAxis()
+  #else
+  const int numberOfVolumeEntries = solver->getNodesPerCoordinateAxis() * solver->getNodesPerCoordinateAxis() * solver->getNodesPerCoordinateAxis()
+  #endif
+  * (solver->getNumberOfParameters()+solver->getNumberOfVariables());
+
   double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
-  assertionEquals4(luh[0], luh[0],
+  for (int i=0; i<numberOfVolumeEntries; i++)
+    assertionEquals5(luh[i], luh[i],
                    fineGridVerticesEnumerator.toString(),
-                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
+                   p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+
+
+/*
+  // Allocate space-time DoF
+  p.setSpaceTimePredictor(DataHeap::getInstance().createData(
+      spaceTimeUnknownsPerCell, spaceTimeUnknownsPerCell));
+  p.setSpaceTimeVolumeFlux(DataHeap::getInstance().createData(
+      spaceTimeFluxUnknownsPerCell,
+      spaceTimeFluxUnknownsPerCell));
+
+  // Allocate volume DoF
+  p.setPredictor(DataHeap::getInstance().createData(
+      dataPerCell, dataPerCell));
+  p.setVolumeFlux(DataHeap::getInstance().createData(
+      fluxUnknownsPerCell, fluxUnknownsPerCell));
+  p.setUpdate(DataHeap::getInstance().createData(
+      unknownsPerCell, unknownsPerCell));
+  p.setSolution(DataHeap::getInstance().createData(
+      unknownsPerCell, unknownsPerCell));
+*/
+
 
   double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
-  assertionEquals4(lQi[0], lQi[0],
-                   fineGridVerticesEnumerator.toString(),
-                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
-
   double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
+  double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
+  double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
+  double* lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
+  double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
+
+
+  for (int i=0; i<numberOfVolumeEntries; i++) {
+    assertionEquals11(lQi[i], lQi[i],
+     fineGridVerticesEnumerator.toString(),
+     p.toString(),fineGridCell.toString(),methodTraceOfCaller,i,
+     (long int)(lQi), (long int)(lFi), (long int)(lQhi), (long int)(lFhi), (long int)(lQhbnd), (long int)(lFhbnd) );
+  }
+
   assertionEquals4(lFi[0], lFi[0],
                    fineGridVerticesEnumerator.toString(),
                    p.toString(),fineGridCell.toString(),methodTraceOfCaller);
 
-  double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
   assertionEquals4(lQhi[0], lQhi[0],
                    fineGridVerticesEnumerator.toString(),
                    p.toString(),fineGridCell.toString(),methodTraceOfCaller);
 
-  double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
   assertionEquals4(lFhi[0], lFhi[0],
                    fineGridVerticesEnumerator.toString(),
                    p.toString(),fineGridCell.toString(),methodTraceOfCaller);
 
-  double* lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
   assertionEquals4(lQhbnd[0], lQhbnd[0],
                    fineGridVerticesEnumerator.toString(),
                    p.toString(),fineGridCell.toString(),methodTraceOfCaller);
 
-  double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
   assertionEquals4(lFhbnd[0], lFhbnd[0],
                    fineGridVerticesEnumerator.toString(),
                    p.toString(),fineGridCell.toString(),methodTraceOfCaller);
