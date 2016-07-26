@@ -448,12 +448,8 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
       switch (p.getType()) {
         case exahype::records::ADERDGCellDescription::Cell:
           assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
-          lQi = DataHeap::getInstance()
-                    .getData(p.getSpaceTimePredictor())
-                    .data();
-          lFi = DataHeap::getInstance()
-                    .getData(p.getSpaceTimeVolumeFlux())
-                    .data();
+          lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
+          lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
 
           luh = DataHeap::getInstance().getData(p.getSolution()).data();
           lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
