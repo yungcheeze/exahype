@@ -36,7 +36,7 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
     writer.write("  assertionMsg( false, \"not yet inserted in GenericFiniteVolumesMUSCLinC\");\n" );
     writer.write("}\n\n\n" );
     
-    writer.write("void " + projectName + "::" + solverName + "::solutionUpdate(double** luh, const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt) {\n" );
+    writer.write("void " + projectName + "::" + solverName + "::solutionUpdate(double** luh, const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt, double& maxAdmissibleDt) {\n" );
     writer.write("  assertionMsg( false, \"not yet inserted in GenericFiniteVolumesMUSCLinC\");\n" );
     writer.write("}\n\n\n" );
     
@@ -54,7 +54,7 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
     writer.write("}\n");
     writer.write("\n\n\n");
 
-    writer.write("void " + projectName + "::" + solverName + "::solutionAdjustment( double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt, double& maxAdmissibleDt) {\n" );
+    writer.write("void " + projectName + "::" + solverName + "::solutionAdjustment( double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) {\n" );
     writer.write("  // @todo Please implement\n");
     writer.write("}\n\n\n" );
 
