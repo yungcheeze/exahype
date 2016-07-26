@@ -47,9 +47,9 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
       String projectName) throws java.io.IOException {
     writer.write("#include \"" + solverName + ".h\"\n");
     writer.write("\n\n\n");
-    writer.write(projectName + "::" + solverName + "::" + solverName + "(int cellPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
+    writer.write(projectName + "::" + solverName + "::" + solverName + "(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
     writer.write("  exahype::solvers::FiniteVolumesSolver("
-            + "\""+solverName+"\", exahype::solvers::Solver::Type::FiniteVolumes, "+_numberOfVariables+", "+_numberOfParameters+", cellsPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {\n");
+            + "\""+solverName+"\", "+_numberOfVariables+", "+_numberOfParameters+", cellsPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {\n");
     writer.write("  // @todo Please implement/augment if required\n");
     writer.write("}\n");
     writer.write("\n\n\n");
