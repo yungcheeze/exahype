@@ -50,6 +50,8 @@ double exahype::Parser::getValueFromPropertyString( const std::string& parameter
 exahype::Parser::Parser() {
   _identifier2Type.insert (
       std::pair<std::string,exahype::solvers::Solver::Type> ("ADER-DG", exahype::solvers::Solver::Type::ADER_DG) );
+  _identifier2Type.insert (
+      std::pair<std::string,exahype::solvers::Solver::Type> ("Finite-Volumes", exahype::solvers::Solver::Type::FiniteVolumes) );
 
   _identifier2TimeStepping.insert (
       std::pair<std::string,exahype::solvers::Solver::TimeStepping> ("global", exahype::solvers::Solver::TimeStepping::Global) );
@@ -566,12 +568,14 @@ void exahype::Parser::checkSolverConsistency(int solverNumber) const {
     recompile = true;
   }
 
-  if (solver->getNodesPerCoordinateAxis() != getOrder(solverNumber)+1) {
+  if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG && solver->getNodesPerCoordinateAxis() != getOrder(solverNumber)+1) {
     logError("checkSolverConsistency","'" << getIdentifier(solverNumber) <<
              "': Value for field 'order' in specification file " <<
              "('" << getOrder(solverNumber) << "') differs from value used in implementation file ('" << solver->getNodesPerCoordinateAxis()-1 << "'). ");
     runToolkitAgain = true;
   }
+
+  // @todo We should add checks for FV as well
 
   if (runToolkitAgain) {
     logError("checkSolverConsistency","Please (1) run the Toolkit again, and (2) recompile!");
