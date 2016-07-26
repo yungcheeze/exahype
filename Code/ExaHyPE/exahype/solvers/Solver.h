@@ -42,7 +42,6 @@ constexpr int power(int basis, int exp) {
 
 #ifdef ALIGNMENT
 constexpr int addPadding(const int originalSize) {
-  assertion1( ALIGNMENT%8==0, ALIGNMENT );
   return ALIGNMENT/8 * static_cast<int>((originalSize+(ALIGNMENT/8-1))/(ALIGNMENT/8));
 }
 #else
@@ -231,7 +230,7 @@ class exahype::solvers::Solver {
   virtual exahype::solvers::Solver::RefinementControl refinementCriterion(
       const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
       const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
-      const int level) = 0;  // @todo make abstract
+      const int level) = 0;
 
   /**
    * This operation has to different branches: one for the master and one for
