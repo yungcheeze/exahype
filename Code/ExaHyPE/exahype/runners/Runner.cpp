@@ -271,9 +271,11 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
   createGrid(repository);
 
-  //  NOTE: Only plot the tree in 2d. Otherwise the program will crash.
-  //  repository.switchToPlotAugmentedAMRGrid();
-  //  repository.iterate();
+  #if defined(Dim2) && defined(Asserts)
+  repository.switchToPlotAugmentedAMRGrid();
+  repository.iterate();
+  #endif
+
   repository.switchToSolutionAdjustmentAndGlobalTimeStepComputation();
   repository.iterate();
   #if defined(Debug) || defined(Asserts)
