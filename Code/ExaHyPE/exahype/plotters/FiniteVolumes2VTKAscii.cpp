@@ -11,8 +11,10 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#include "ADERDG2VTKBinary.h"
+#include "FiniteVolumes2VTKAscii.h"
+#include "ADERDG2VTKAscii.h"
 #include "tarch/parallel/Node.h"
+
 // @todo 16/05/03:Dominic Etienne Charreir Plotter depends now on kernels.
 // Should thus be placed in kernel module or the solver
 // should provide a function that computes solution values
@@ -21,28 +23,27 @@
 #include "peano/utils/Loop.h"
 
 
-exahype::plotters::ADERDG2VTKBinary::ADERDG2VTKBinary():
+exahype::plotters::FiniteVolumes2VTKAscii::FiniteVolumes2VTKAscii():
   _fileCounter(-1) {
 }
 
 
-std::string exahype::plotters::ADERDG2VTKBinary::getIdentifier() {
-  return "vtk::binary";
+std::string exahype::plotters::FiniteVolumes2VTKAscii::getIdentifier() {
+  return ADERDG2VTKAscii::getIdentifier();
 }
 
 
-void exahype::plotters::ADERDG2VTKBinary::init(
+void exahype::plotters::FiniteVolumes2VTKAscii::init(
   const std::string& filename,
-  int                orderPlusOne,
+  int                numberOfCellsPerAxis,
   int                unknowns,
   const std::string& select
-) {
-  _patchWriter = nullptr;
-  _filename    = filename;
-  _order       = orderPlusOne-1;
-  _unknowns    = unknowns;
-  _select      = select;
-
+){
+  _filename             = filename;
+  _numberOfCellsPerAxis = numberOfCellsPerAxis;
+  _unknowns             = unknowns;
+  _select               = select;
+  _patchWriter          = nullptr;
 
   double x;
   x = Parser::getValueFromPropertyString( select, "left" );
@@ -66,34 +67,40 @@ void exahype::plotters::ADERDG2VTKBinary::init(
 }
 
 
-void exahype::plotters::ADERDG2VTKBinary::startPlotting( double time ) {
+void exahype::plotters::FiniteVolumes2VTKAscii::startPlotting( double time ) {
   _fileCounter++;
 
   assertion( _patchWriter==nullptr );
 
   _patchWriter =
       new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
-          new tarch::plotter::griddata::unstructured::vtk::
-              VTKBinaryFileWriter());
+          new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter());
 
   _gridWriter = _patchWriter->createSinglePatchWriter();
-  _timeStampDataWriter = _patchWriter->createVertexDataWriter("time", 1);
+  _timeStampDataWriter = _patchWriter->createCellDataWriter("time", 1);
 
   for (int i = 0; i < _unknowns; i++) {
     std::ostringstream identifier;
     identifier << "Q" << i;
     if ( _select.find(identifier.str())!=std::string::npos || _select=="{all}" ) {
-      _vertexDataWriter.push_back(
-        _patchWriter->createVertexDataWriter(identifier.str(), 1));
+      _cellDataWriter.push_back(_patchWriter->createCellDataWriter(identifier.str(), 1));
     }
   }
+
+  assertion( _patchWriter!=nullptr );
+  assertion( _gridWriter!=nullptr );
+  assertion( _timeStampDataWriter!=nullptr );
 }
 
 
-void exahype::plotters::ADERDG2VTKBinary::finishPlotting() {
+void exahype::plotters::FiniteVolumes2VTKAscii::finishPlotting() {
+  assertion( _patchWriter!=nullptr );
+  assertion( _gridWriter!=nullptr );
+  assertion( _timeStampDataWriter!=nullptr );
+
   _gridWriter->close();
   _timeStampDataWriter->close();
-  for (auto& p : _vertexDataWriter) {
+  for (auto& p : _cellDataWriter) {
     p->close();
   }
 
@@ -106,66 +113,57 @@ void exahype::plotters::ADERDG2VTKBinary::finishPlotting() {
 
   _patchWriter->writeToFile(snapshotFileName.str());
 
-  for (auto& p : _vertexDataWriter) {
+  for (auto& p : _cellDataWriter) {
     delete p;
   }
-  _vertexDataWriter.clear();
+  _cellDataWriter.clear();
 
   delete _timeStampDataWriter;
   delete _gridWriter;
   delete _patchWriter;
+
   _patchWriter = nullptr;
   _timeStampDataWriter = nullptr;
   _gridWriter = nullptr;
 }
 
 
-exahype::plotters::ADERDG2VTKBinary::~ADERDG2VTKBinary() {
+exahype::plotters::FiniteVolumes2VTKAscii::~FiniteVolumes2VTKAscii() {
 }
 
-void exahype::plotters::ADERDG2VTKBinary::plotPatch(
-    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
-    double timeStamp) {
+
+void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(
+  const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+  const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
+  double timeStamp) {
   if (
     tarch::la::allSmaller(_regionOfInterestLeftBottomFront,offsetOfPatch+sizeOfPatch)
     &&
     tarch::la::allGreater(_regionOfInterestRightTopBack,offsetOfPatch)
   ) {
+    assertion( _patchWriter!=nullptr );
+    assertion( _gridWriter!=nullptr );
+    assertion( _timeStampDataWriter!=nullptr );
 
+    int cellIndex = _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _numberOfCellsPerAxis).second;
 
-  int vertexIndex =
-      _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _order).first;
+    // @todo 16/05/03:Dominic Etienne Charrier
+    // This is depending on the choice of basis/implementation.
+    // The equidistant grid projection should therefore be moved into the solver.
+    dfor(i,_numberOfCellsPerAxis) {
+      _timeStampDataWriter->plotCell(cellIndex, timeStamp);
 
-// @todo 16/05/03:Dominic Etienne Charrier
-// This is depending on the choice of basis/implementation.
-// The equidistant grid projection should therefore be moved into the solver.
-  dfor(i,_order+1) {
-    _timeStampDataWriter->plotVertex(vertexIndex, timeStamp);
+      int unknownPlotter = 0;
+      for (int unknown=0; unknown < _unknowns; unknown++) {
+        std::ostringstream identifier;
+        identifier << "Q" << unknown;
 
-    int unknownPlotter = 0;
-    for (int unknown=0; unknown < _unknowns; unknown++) {
-      std::ostringstream identifier;
-      identifier << "Q" << unknown;
-
-      if ( _select.find(identifier.str())!=std::string::npos || _select.find("all")!=std::string::npos ) {
-        double value = 0.0;
-        dfor(ii,_order+1) { // Gauss-Legendre node indices
-          int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
-          value += kernels::equidistantGridProjector1d[_order][ii(1)][i(1)] *
-                   kernels::equidistantGridProjector1d[_order][ii(0)][i(0)] *
-                   #ifdef Dim3
-                   kernels::equidistantGridProjector1d[_order][ii(2)][i(2)] *
-                   #endif
-                   u[iGauss * _unknowns + unknown];
-          assertion3(value == value, offsetOfPatch, sizeOfPatch, iGauss);
+        if ( _select.find(identifier.str())!=std::string::npos || _select.find("all")!=std::string::npos ) {
+          double value = u[cellIndex];
+          _cellDataWriter[unknownPlotter]->plotCell(cellIndex, value);
+          cellIndex++;
         }
-
-        _vertexDataWriter[unknownPlotter]->plotVertex(vertexIndex, value);
-        unknownPlotter++;
       }
     }
-    vertexIndex++;
-  }
   }
 }

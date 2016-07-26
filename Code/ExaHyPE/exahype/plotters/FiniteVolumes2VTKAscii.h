@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#ifndef _EXAHYPE_PLOTTERS_ADERDG_2_VTK_ASCII_H_
-#define _EXAHYPE_PLOTTERS_ADERDG_2_VTK_ASCII_H_
+#ifndef _EXAHYPE_PLOTTERS_FINITE_VOLUMES_2_VTK_ASCII_H_
+#define _EXAHYPE_PLOTTERS_FINITE_VOLUMES_2_VTK_ASCII_H_
 
 #include "exahype/plotters/Plotter.h"
 
@@ -21,15 +21,15 @@
 
 namespace exahype {
   namespace plotters {
-    class ADERDG2VTKAscii;
+    class FiniteVolumes2VTKAscii;
   }
 }
 
-class exahype::plotters::ADERDG2VTKAscii: public exahype::plotters::Plotter::Device {
+class exahype::plotters::FiniteVolumes2VTKAscii: public exahype::plotters::Plotter::Device {
  private:
   int           _fileCounter;
   std::string   _filename;
-  int           _order;
+  int           _numberOfCellsPerAxis;
   int           _unknowns;
   std::string   _select;
 
@@ -41,15 +41,14 @@ class exahype::plotters::ADERDG2VTKAscii: public exahype::plotters::Plotter::Dev
   tarch::plotter::griddata::blockstructured::PatchWriter::SinglePatchWriter*
       _gridWriter;
 
-  tarch::plotter::griddata::Writer::VertexDataWriter* _timeStampDataWriter;
-  std::vector<tarch::plotter::griddata::Writer::VertexDataWriter*>
-      _vertexDataWriter;
+  tarch::plotter::griddata::Writer::CellDataWriter*                _timeStampDataWriter;
+  std::vector<tarch::plotter::griddata::Writer::CellDataWriter*>   _cellDataWriter;
 
  public:
-  ADERDG2VTKAscii();
-  virtual ~ADERDG2VTKAscii();
+  FiniteVolumes2VTKAscii();
+  virtual ~FiniteVolumes2VTKAscii();
 
-  virtual void init(const std::string& filename, int orderPlusOne, int unknowns, const std::string& select);
+  virtual void init(const std::string& filename, int numberOfCellsPerAxis, int unknowns, const std::string& select);
 
   static std::string getIdentifier();
 
