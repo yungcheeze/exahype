@@ -272,6 +272,11 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
               tmp[ivar + numberOfVariables * ll] +=
                   iWeight * kernels::iK1[basisSize - 1][ll][nn] *
                   rhs[nnSpaceTimeDofStartIndex + ivar];
+              assertion8(
+                tmp[ivar + numberOfVariables * ll]==tmp[ivar + numberOfVariables * ll],
+                ivar, numberOfVariables, ll, iWeight, kernels::iK1[basisSize - 1][ll][nn],
+                rhs[nnSpaceTimeDofStartIndex + ivar], nnSpaceTimeDofStartIndex, nn
+              );
             }
           }
         }
