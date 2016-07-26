@@ -65,6 +65,7 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
 
     writer.write("exahype::solvers::Solver::RefinementControl " + projectName + "::" + solverName + "::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {\n" );
     writer.write("  // @todo Please implement\n");
+    writer.write("  return exahype::solvers::Solver::RefinementControl::Keep;\n" );
     writer.write("}\n\n\n" );
 
     writer.write("void " + projectName + "::" + solverName + "::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {\n" );
