@@ -55,12 +55,22 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
     writer.write("\n\n\n");
 
     writer.write("void " + projectName + "::" + solverName + "::solutionAdjustment( double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) {\n" );
-    writer.write("  // @todo Please implement\n");
+    writer.write("  if ( tarch::la::equals(t,0.0) ) {\n");
+    writer.write("  // @todo Please implement and set initial conditions\n");
+    writer.write("  }\n");
+    writer.write("  // @todo Feel free to add further conditions\n");
     writer.write("}\n\n\n" );
 
     writer.write("bool " + projectName + "::" + solverName + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t) {\n" );
     writer.write("  // @todo Please implement\n");
-    writer.write("  return false; \n");
+    writer.write("  if ( tarch::la::equals(t,0.0) ) {\n");
+    writer.write("    // Tell kernel that you want to set initial conditions \n");
+    writer.write("    return true;\n");
+    writer.write("  }\n");
+    writer.write("  else {\n");
+    writer.write("    // @todo Please implement\n");
+    writer.write("    return false; \n");
+    writer.write("  }\n");
     writer.write("}\n\n\n" );
 
     writer.write("exahype::solvers::Solver::RefinementControl " + projectName + "::" + solverName + "::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {\n" );
