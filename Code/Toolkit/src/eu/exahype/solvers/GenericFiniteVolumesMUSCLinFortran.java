@@ -7,7 +7,7 @@ public class GenericFiniteVolumesMUSCLinFortran implements Solver {
   private int _numberOfParameters;
   private int _patchSize;
 
-  public GenericFiniteVolumesMUSCLinFortran(int numberOfVariables, int numberOfParameters, int patchSize) {
+  public GenericFiniteVolumesMUSCLinFortran(int numberOfVariables, int numberOfParameters, int patchSize, boolean enableProfiler) {
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
     _patchSize = patchSize;

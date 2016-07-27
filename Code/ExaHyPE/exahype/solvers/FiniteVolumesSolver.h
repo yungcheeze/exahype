@@ -75,8 +75,11 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
     FiniteVolumesSolver(const FiniteVolumesSolver& other) = delete;
     FiniteVolumesSolver& operator=(const FiniteVolumesSolver& other) = delete;
 
+    /**
+     * @param luh is a pointer to 3^d pointers to doubles
+     */
     virtual double stableTimeStepSize(
-        const double* const luh,
+        double** luh,
         const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
 
     /**
