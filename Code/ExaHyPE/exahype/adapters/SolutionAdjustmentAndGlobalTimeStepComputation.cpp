@@ -3,6 +3,7 @@
 
 peano::CommunicationSpecification   exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::communicationSpecification() {
   return peano::CommunicationSpecification::getMinimalSpecification()
+   & exahype::mappings::NewTimeStep::communicationSpecification()
    & exahype::mappings::SolutionAdjustment::communicationSpecification()
    & exahype::mappings::GlobalTimeStepComputation::communicationSpecification()
 
@@ -12,6 +13,7 @@ peano::CommunicationSpecification   exahype::adapters::SolutionAdjustmentAndGlob
 
 peano::MappingSpecification   exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::NewTimeStep::touchVertexLastTimeSpecification()
    & exahype::mappings::SolutionAdjustment::touchVertexLastTimeSpecification()
    & exahype::mappings::GlobalTimeStepComputation::touchVertexLastTimeSpecification()
 
@@ -21,6 +23,7 @@ peano::MappingSpecification   exahype::adapters::SolutionAdjustmentAndGlobalTime
 
 peano::MappingSpecification   exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::touchVertexFirstTimeSpecification() { 
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::NewTimeStep::touchVertexFirstTimeSpecification()
    & exahype::mappings::SolutionAdjustment::touchVertexFirstTimeSpecification()
    & exahype::mappings::GlobalTimeStepComputation::touchVertexFirstTimeSpecification()
 
@@ -30,6 +33,7 @@ peano::MappingSpecification   exahype::adapters::SolutionAdjustmentAndGlobalTime
 
 peano::MappingSpecification   exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::enterCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::NewTimeStep::enterCellSpecification()
    & exahype::mappings::SolutionAdjustment::enterCellSpecification()
    & exahype::mappings::GlobalTimeStepComputation::enterCellSpecification()
 
@@ -39,6 +43,7 @@ peano::MappingSpecification   exahype::adapters::SolutionAdjustmentAndGlobalTime
 
 peano::MappingSpecification   exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::leaveCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::NewTimeStep::leaveCellSpecification()
    & exahype::mappings::SolutionAdjustment::leaveCellSpecification()
    & exahype::mappings::GlobalTimeStepComputation::leaveCellSpecification()
 
@@ -48,6 +53,7 @@ peano::MappingSpecification   exahype::adapters::SolutionAdjustmentAndGlobalTime
 
 peano::MappingSpecification   exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::ascendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::NewTimeStep::ascendSpecification()
    & exahype::mappings::SolutionAdjustment::ascendSpecification()
    & exahype::mappings::GlobalTimeStepComputation::ascendSpecification()
 
@@ -57,6 +63,7 @@ peano::MappingSpecification   exahype::adapters::SolutionAdjustmentAndGlobalTime
 
 peano::MappingSpecification   exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::descendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::NewTimeStep::descendSpecification()
    & exahype::mappings::SolutionAdjustment::descendSpecification()
    & exahype::mappings::GlobalTimeStepComputation::descendSpecification()
 
@@ -74,6 +81,7 @@ exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::~SolutionAdju
 
 #if defined(SharedMemoryParallelisation)
 exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::SolutionAdjustmentAndGlobalTimeStepComputation(const SolutionAdjustmentAndGlobalTimeStepComputation&  masterThread):
+  _map2NewTimeStep(masterThread._map2NewTimeStep) , 
   _map2SolutionAdjustment(masterThread._map2SolutionAdjustment) , 
   _map2GlobalTimeStepComputation(masterThread._map2GlobalTimeStepComputation) 
 
@@ -82,6 +90,7 @@ exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::SolutionAdjus
 
 
 void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::mergeWithWorkerThread(const SolutionAdjustmentAndGlobalTimeStepComputation& workerThread) {
+  _map2NewTimeStep.mergeWithWorkerThread(workerThread._map2NewTimeStep);
   _map2SolutionAdjustment.mergeWithWorkerThread(workerThread._map2SolutionAdjustment);
   _map2GlobalTimeStepComputation.mergeWithWorkerThread(workerThread._map2GlobalTimeStepComputation);
 
@@ -98,6 +107,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::createHa
       exahype::Cell&       coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
+  _map2NewTimeStep.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2SolutionAdjustment.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
@@ -114,6 +124,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::destroyH
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
+  _map2NewTimeStep.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2SolutionAdjustment.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
@@ -129,6 +140,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::createIn
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
+  _map2NewTimeStep.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2SolutionAdjustment.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
@@ -144,6 +156,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::createBo
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
+  _map2NewTimeStep.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2SolutionAdjustment.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
@@ -159,6 +172,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::destroyV
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
+  _map2NewTimeStep.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2SolutionAdjustment.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
@@ -174,6 +188,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::createCe
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
+  _map2NewTimeStep.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2SolutionAdjustment.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GlobalTimeStepComputation.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
@@ -189,6 +204,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::destroyC
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
+  _map2NewTimeStep.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2SolutionAdjustment.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GlobalTimeStepComputation.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
@@ -204,6 +220,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::mergeWit
   const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
   int                                           level
 ) {
+   _map2NewTimeStep.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2SolutionAdjustment.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2GlobalTimeStepComputation.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
 
@@ -217,6 +234,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::prepareS
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
+   _map2NewTimeStep.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2SolutionAdjustment.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2GlobalTimeStepComputation.prepareSendToNeighbour( vertex, toRank, x, h, level );
 
@@ -230,6 +248,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::prepareC
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
+   _map2NewTimeStep.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2SolutionAdjustment.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2GlobalTimeStepComputation.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
 
@@ -243,6 +262,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::prepareC
       const tarch::la::Vector<DIMENSIONS,double>&   h,
       int                                           level
 ) {
+   _map2NewTimeStep.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2SolutionAdjustment.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2GlobalTimeStepComputation.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
 
@@ -257,6 +277,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::mergeWit
   const tarch::la::Vector<DIMENSIONS,double>&  h,
   int                                       level
 ) {
+   _map2NewTimeStep.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2SolutionAdjustment.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2GlobalTimeStepComputation.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
 
@@ -271,6 +292,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::mergeWit
   const tarch::la::Vector<DIMENSIONS,double>&  h,
   int                                       level
 ) {
+   _map2NewTimeStep.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2SolutionAdjustment.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2GlobalTimeStepComputation.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
 
@@ -288,6 +310,7 @@ bool exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::prepareS
   int                                                                  worker
 ) {
   bool result = false;
+   result |= _map2NewTimeStep.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2SolutionAdjustment.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2GlobalTimeStepComputation.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
 
@@ -304,6 +327,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::prepareS
   const exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
+   _map2NewTimeStep.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2SolutionAdjustment.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2GlobalTimeStepComputation.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
@@ -325,6 +349,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::mergeWit
     const exahype::State&          workerState,
   exahype::State&                masterState
 ) {
+   _map2NewTimeStep.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2SolutionAdjustment.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2GlobalTimeStepComputation.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
 
@@ -343,6 +368,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::receiveD
       exahype::Cell&                        workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
+   _map2NewTimeStep.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2SolutionAdjustment.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2GlobalTimeStepComputation.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
 
@@ -356,6 +382,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::mergeWit
   const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
   int                                          level
 ) {
+   _map2NewTimeStep.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2SolutionAdjustment.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2GlobalTimeStepComputation.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
 
@@ -369,6 +396,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::mergeWit
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
+   _map2NewTimeStep.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2SolutionAdjustment.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2GlobalTimeStepComputation.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
 
@@ -385,6 +413,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::touchVer
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
+  _map2NewTimeStep.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2SolutionAdjustment.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
@@ -400,6 +429,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::touchVer
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
+  _map2NewTimeStep.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2SolutionAdjustment.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
@@ -415,6 +445,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::enterCel
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
+  _map2NewTimeStep.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2SolutionAdjustment.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GlobalTimeStepComputation.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
@@ -430,6 +461,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::leaveCel
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
+  _map2NewTimeStep.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2SolutionAdjustment.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GlobalTimeStepComputation.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
@@ -439,6 +471,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::leaveCel
 void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::beginIteration(
   exahype::State&  solverState
 ) {
+  _map2NewTimeStep.beginIteration( solverState );
   _map2SolutionAdjustment.beginIteration( solverState );
   _map2GlobalTimeStepComputation.beginIteration( solverState );
 
@@ -448,6 +481,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::beginIte
 void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::endIteration(
   exahype::State&  solverState
 ) {
+  _map2NewTimeStep.endIteration( solverState );
   _map2SolutionAdjustment.endIteration( solverState );
   _map2GlobalTimeStepComputation.endIteration( solverState );
 
@@ -464,6 +498,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::descend(
   const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
   exahype::Cell&                 coarseGridCell
 ) {
+  _map2NewTimeStep.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2SolutionAdjustment.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2GlobalTimeStepComputation.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
@@ -478,6 +513,7 @@ void exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation::ascend(
   const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
   exahype::Cell&           coarseGridCell
 ) {
+  _map2NewTimeStep.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2SolutionAdjustment.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2GlobalTimeStepComputation.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 

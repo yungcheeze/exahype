@@ -91,6 +91,7 @@ adapter:
 // Adapters for initialisation of time stepping
 adapter:
   name: SolutionAdjustmentAndGlobalTimeStepComputation
+  merge-with-user-defined-mapping: NewTimeStep
   merge-with-user-defined-mapping: SolutionAdjustment
   // needs current time step size
   merge-with-user-defined-mapping: GlobalTimeStepComputation
