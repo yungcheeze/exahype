@@ -44,6 +44,8 @@ class exahype::plotters::FiniteVolumes2VTKAscii: public exahype::plotters::Plott
   tarch::plotter::griddata::Writer::CellDataWriter*                _timeStampDataWriter;
   std::vector<tarch::plotter::griddata::Writer::CellDataWriter*>   _cellDataWriter;
 
+  static tarch::logging::Log _log;
+
  public:
   FiniteVolumes2VTKAscii();
   virtual ~FiniteVolumes2VTKAscii();

@@ -381,34 +381,34 @@ void exahype::mappings::SolutionAdjustment::enterCell(
     grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfFiniteVolumesCellDescriptions, methodTrace);
     // clang-format off
     pfor(i, 0, numberOfFiniteVolumesCellDescriptions, grainSize)
-    auto& pFine = fineGridCell.getFiniteVolumesCellDescription(i);
+      auto& pFine = fineGridCell.getFiniteVolumesCellDescription(i);
 
-    auto* solver = exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
+      auto* solver = exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
 
-    // Unlike the other FiniteVolumes mappings, this mapping is used
-    // in the adaptive mesh refinement routine.
-    // We thus make sure here that only cells with stable
-    // refinement status are updated.
-    if (
-        pFine.getType()==exahype::records::FiniteVolumesCellDescription::Cell
-//        &&
-//        pFine.getRefinementEvent()==exahype::records::FiniteVolumesCellDescription::None // todo do we have refinement events ??
-    ) {
-      double* luh = DataHeap::getInstance().getData(pFine.getSolution()).data();
+      // Unlike the other FiniteVolumes mappings, this mapping is used
+      // in the adaptive mesh refinement routine.
+      // We thus make sure here that only cells with stable
+      // refinement status are updated.
+      if (
+          pFine.getType()==exahype::records::FiniteVolumesCellDescription::Cell
+  //        &&
+  //        pFine.getRefinementEvent()==exahype::records::FiniteVolumesCellDescription::None // todo do we have refinement events ??
+      ) {
+        double* luh = DataHeap::getInstance().getData(pFine.getSolution()).data();
 
-      assertionEquals(luh[0],luh[0]); // assert no nan
-      if (solver->hasToAdjustSolution(
-          fineGridVerticesEnumerator.getCellCenter(),
-          fineGridVerticesEnumerator.getCellSize(),
-          pFine.getTimeStamp())) {
-        solver->solutionAdjustment(
-            luh, fineGridVerticesEnumerator.getCellCenter(),
+        assertionEquals(luh[0],luh[0]); // assert no nan
+        if (solver->hasToAdjustSolution(
+            fineGridVerticesEnumerator.getCellCenter(),
             fineGridVerticesEnumerator.getCellSize(),
-            pFine.getTimeStamp(),pFine.getTimeStepSize());
-      }
+            pFine.getTimeStamp())) {
+          solver->solutionAdjustment(
+              luh, fineGridVerticesEnumerator.getCellCenter(),
+              fineGridVerticesEnumerator.getCellSize(),
+              pFine.getTimeStamp(),pFine.getTimeStepSize());
+        }
 
-      assertion(!std::isnan(luh[0])); // assert no nan
-    }
+        assertion(!std::isnan(luh[0])); // assert no nan
+      }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
     .parallelSectionHasTerminated(methodTrace);
   }

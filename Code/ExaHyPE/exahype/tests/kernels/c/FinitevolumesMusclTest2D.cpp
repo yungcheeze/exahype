@@ -13,34 +13,24 @@
 
 #include "exahype/tests/kernels/c/FinitevolumesMusclTest.h"
 
-#include "tarch/tests/TestCaseFactory.h"
+#include <algorithm>
+#include <cassert>
+#include <iomanip>
+#include <iostream>
 
-// clang-format off
-// registerTest(exahype::tests::c::FinitevolumesMusclTest)
+#include "kernels/finitevolumes/muscl/c/2d/solutionUpdate.cpph"
 
-#ifdef UseTestSpecificCompilerSettings
-#pragma optimize("", off)
-#endif
+#if DIMENSIONS == 2
 
 namespace exahype {
 namespace tests {
 namespace c {
 
-FinitevolumesMusclTest::FinitevolumesMusclTest()
-    : tarch::tests::TestCase("exahype::tests::c::FinitevolumesMusclTest") {}
-
-FinitevolumesMusclTest::~FinitevolumesMusclTest() {}
-
-void FinitevolumesMusclTest::run() {
-//  testMethod(testSolutionUpdate);
-}
+// TODO(guera): Implement
+void FinitevolumesMusclTest::testSolutionUpdate() {}
 
 }  // namepsace c
 }  // namespace tests
 }  // namespace exahype
 
-#ifdef UseTestSpecificCompilerSettings
-#pragma optimize("", on)
-#endif
-
-// clang-format on
+#endif  // DIMENSIONS == 2
