@@ -390,8 +390,8 @@ void exahype::runners::Runner::startNewTimeStep(int n,bool printInfo) {
     logInfo("startNewTimeStep(...)",
             "\t\t dt_min         =" << currentMinTimeStepSize);
 
-    logInfo("startNewTimeStep(...)",
-            "\t\t next dt_min    =" << nextMinTimeStepSize);
+    logDebug("startNewTimeStep(...)",
+            "\t\t next dt_min    =" << nextMinTimeStepSize); // only interesting for ADER-DG. Prints MAX_DOUBLE for finite volumes.
   }
 #if defined(Debug) || defined(Asserts)
   tarch::logging::CommandLineLogger::getInstance()
