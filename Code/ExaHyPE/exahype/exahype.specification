@@ -184,3 +184,8 @@ adapter:
   merge-with-user-defined-mapping: RiemannSolverReset
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
+
+adapter:
+  name: Plot
+  merge-with-user-defined-mapping: Plot
+  

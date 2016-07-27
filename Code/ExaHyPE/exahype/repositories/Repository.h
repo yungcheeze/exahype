@@ -75,6 +75,7 @@ class exahype::repositories::Repository {
     virtual void switchToPredictor() = 0;    
     virtual void switchToPredictorRerun() = 0;    
     virtual void switchToCorrector() = 0;    
+    virtual void switchToPlot() = 0;    
 
     virtual bool isActiveAdapterAugmentedAMRGrid() const = 0;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const = 0;
@@ -89,6 +90,7 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterPredictor() const = 0;
     virtual bool isActiveAdapterPredictorRerun() const = 0;
     virtual bool isActiveAdapterCorrector() const = 0;
+    virtual bool isActiveAdapterPlot() const = 0;
 
 
     /**
