@@ -22,6 +22,7 @@
 #include "kernels/DGMatrices.h"
 #include "peano/utils/Loop.h"
 
+tarch::logging::Log exahype::plotters::FiniteVolumes2VTKAscii::_log("exahype::plotters::FiniteVolumes2VTKAscii");
 
 exahype::plotters::FiniteVolumes2VTKAscii::FiniteVolumes2VTKAscii():
   _fileCounter(-1) {
@@ -141,6 +142,10 @@ void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(
     &&
     tarch::la::allGreater(_regionOfInterestRightTopBack,offsetOfPatch)
   ) {
+    logInfo("plotPatch(...)","offset of patch: "<<offsetOfPatch
+    <<", size of patch: "<<sizeOfPatch
+    <<", time stamp: "<<timeStamp);
+
     assertion( _patchWriter!=nullptr );
     assertion( _gridWriter!=nullptr );
     assertion( _timeStampDataWriter!=nullptr );
@@ -159,11 +164,13 @@ void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(
         identifier << "Q" << unknown;
 
         if ( _select.find(identifier.str())!=std::string::npos || _select.find("all")!=std::string::npos ) {
-          double value = u[cellIndex];
+          double value = u[peano::utils::dLinearisedWithoutLookup(i,_numberOfCellsPerAxis)];
+          assertion3(!std::isnan(value),unknown,_unknowns,_numberOfCellsPerAxis);
           _cellDataWriter[unknownPlotter]->plotCell(cellIndex, value);
-          cellIndex++;
+          unknownPlotter++;
         }
       }
+      cellIndex++;
     }
   }
 }
