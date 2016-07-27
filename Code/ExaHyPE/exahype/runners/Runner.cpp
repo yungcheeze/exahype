@@ -272,6 +272,7 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
 int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& repository) {
   peano::utils::UserInterface::writeHeader();
 
+  initSolverTimeStamps();
   createGrid(repository);
 
   #if defined(Dim2) && defined(Asserts)
