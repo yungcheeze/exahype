@@ -316,7 +316,7 @@ void exahype::mappings::MarkingForRefinement::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if ( fineGridCell.isInitialised() ) {
-    logInfo( "enterCell(...)", "enter with " << fineGridCell.getNumberOfADERDGCellDescriptions() << " ADER-DG solver(s) and " << fineGridCell.getNumberOfFiniteVolumeCellDescriptions() << " FV solver(s)")
+    logDebug( "enterCell(...)", "enter with " << fineGridCell.getNumberOfADERDGCellDescriptions() << " ADER-DG solver(s) and " << fineGridCell.getNumberOfFiniteVolumeCellDescriptions() << " FV solver(s)")
 
     for (int i=0; i<fineGridCell.getNumberOfADERDGCellDescriptions(); i++) {
       auto* uncastedSolver = exahype::solvers::RegisteredSolvers[ fineGridCell.getADERDGCellDescription(i).getSolverNumber() ];
@@ -356,7 +356,7 @@ void exahype::mappings::MarkingForRefinement::enterCell(
       }
     }
 
-    logInfo( "enterCell(...)", "continue  with " << fineGridCell.getNumberOfFiniteVolumeCellDescriptions() << " FV solver(s)")
+    logDebug( "enterCell(...)", "continue  with " << fineGridCell.getNumberOfFiniteVolumeCellDescriptions() << " FV solver(s)")
     for (int i=0; i<fineGridCell.getNumberOfFiniteVolumeCellDescriptions(); i++) {
       auto* uncastedSolver = exahype::solvers::RegisteredSolvers[ fineGridCell.getFiniteVolumesCellDescription(i).getSolverNumber() ];
       assertion( uncastedSolver->getType()==exahype::solvers::Solver::Type::FiniteVolumes );
@@ -399,7 +399,7 @@ void exahype::mappings::MarkingForRefinement::enterCell(
       }
     }
 
-    logInfo( "enterCell(...)", "left with " << fineGridCell.getNumberOfADERDGCellDescriptions() << " ADER-DG solver(s) and " << fineGridCell.getNumberOfFiniteVolumeCellDescriptions() << " FV solver(s)")
+    logDebug( "enterCell(...)", "left with " << fineGridCell.getNumberOfADERDGCellDescriptions() << " ADER-DG solver(s) and " << fineGridCell.getNumberOfFiniteVolumeCellDescriptions() << " FV solver(s)")
   }
 
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
