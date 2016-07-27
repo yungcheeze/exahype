@@ -79,7 +79,7 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
      * @param luh is a pointer to 3^d pointers to doubles
      */
     virtual double stableTimeStepSize(
-        const double* const luh[THREE_POWER_D],
+        double* luh[THREE_POWER_D],
         const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
 
     /**
