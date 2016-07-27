@@ -212,7 +212,7 @@ void exahype::mappings::SolutionUpdate::enterCell(
         }
 
         double* finiteVolumeSolution  = DataHeap::getInstance().getData(pFine.getSolution()).data();
-        assertion(!std::isnan(finiteVolumeSolutions[0][0]));
+        assertion(!std::isnan(finiteVolumeSolution[0]));
 
         double admissibleTimeStepSize=0;
         solver->solutionUpdate(finiteVolumeSolutions,fineGridVerticesEnumerator.getCellSize(),pFine.getTimeStepSize(),admissibleTimeStepSize);

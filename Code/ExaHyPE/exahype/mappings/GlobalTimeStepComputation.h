@@ -75,15 +75,17 @@ class exahype::mappings::GlobalTimeStepComputation {
   static int _mpiTag;
 
   /**
-   * We could directly compute the minimal time step sizes and the minimum time
-   * stamp: Run per cell through all patch descriptions and update the global
-   * solver objects immediately. This is not very clever in a multicore
-   * environment as we then have to protect the global data access with a
-   * semaphore which serialises the computation (that, in the worst case, is
-   * done in each time step). So we do compute the time step size and the stamp
-   * locally in a vector, and we project it back to the global data in
-   * endIteration().
-   */
+     * A minimum solver time step size for each thread in a multicore run.
+     *
+     * We could directly compute the minimal time step sizes and the minimum time
+     * stamp: Run per cell through all patch descriptions and update the global
+     * solver objects immediately. This is not very clever in a multicore
+     * environment as we then have to protect the global data access with a
+     * semaphore which serialises the computation (that, in the worst case, is
+     * done in each time step). So we do compute the time step size and the stamp
+     * locally in a vector, and we project it back to the global data in
+     * endIteration().
+     */
   std::vector<double> _minTimeStepSizes;
 
   void prepareEmptyLocalTimeStepData();

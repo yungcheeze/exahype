@@ -32,7 +32,9 @@ exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
     timeStepping,
     std::move(profiler)
   ),
-  _unknownsPerCell( (numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis, DIMENSIONS + 0))
+  _unknownsPerCell( (numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
+  _minTimeStamp(std::numeric_limits<double>::max()),
+  _minTimeStepSize(std::numeric_limits<double>::max())
   {
   assertion3(_unknownsPerCell>0, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis);
 
@@ -52,30 +54,32 @@ int exahype::solvers::FiniteVolumesSolver::getUnknownsPerCell() const {
 
 
 double exahype::solvers::FiniteVolumesSolver::getMinTimeStamp() const {
-
+  return _minTimeStamp;
 }
 
 
 double exahype::solvers::FiniteVolumesSolver::getMinTimeStepSize() const {
-
+  return _minTimeStepSize;
 }
 
 
 void exahype::solvers::FiniteVolumesSolver::updateNextTimeStepSize( double value ) {
-
+  _nextMinTimeStepSize = std::min(_nextMinTimeStepSize,value);
 }
 
 
 void exahype::solvers::FiniteVolumesSolver::initInitialTimeStamp(double value) {
-
+  _minTimeStamp = value;
 }
 
 
 void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
-
+  _minTimeStamp       += _minTimeStepSize;
+  _minTimeStepSize     = _nextMinTimeStepSize;
+  _nextMinTimeStepSize = std::numeric_limits<double>::max();
 }
 
 
 double exahype::solvers::FiniteVolumesSolver::getNextMinTimeStepSize() const {
-
+  return _nextMinTimeStepSize;
 }
