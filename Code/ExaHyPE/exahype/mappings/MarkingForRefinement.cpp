@@ -376,7 +376,8 @@ void exahype::mappings::MarkingForRefinement::enterCell(
         exahype::solvers::Solver::RefinementControl refinementControl = solver->refinementCriterion(
             solution, fineGridVerticesEnumerator.getCellCenter(),
             fineGridVerticesEnumerator.getCellSize(),
-            fineGridCell.getADERDGCellDescription(i).getCorrectorTimeStamp(), fineGridCell.getADERDGCellDescription(i).getLevel());
+            fineGridCell.getFiniteVolumesCellDescription(i).getTimeStamp(),
+            fineGridCell.getFiniteVolumesCellDescription(i).getTimeStepSize());
 
         switch (refinementControl) {
           case exahype::solvers::Solver::RefinementControl::Refine:
