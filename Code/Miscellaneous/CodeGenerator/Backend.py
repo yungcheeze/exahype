@@ -43,6 +43,7 @@ import WeightsGenerator
 import DGMatrixGenerator
 import string
 import re
+import Utils
 
 
 m_architecture           = ''
