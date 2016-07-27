@@ -43,14 +43,14 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
     int _unknownsPerCellBoundary;
 
     /**
-     * Minimum time step size of all patches.
-     */
-    double _minTimeStepSize;
-
-    /**
      * Minimum time stamps of all patches.
      */
     double _minTimeStamp;
+
+    /**
+     * Minimum time step size of all patches.
+     */
+    double _minTimeStepSize;
 
     /**
      * Next minimum step size of all patches.
