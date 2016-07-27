@@ -355,8 +355,8 @@ void exahype::mappings::SolutionUpdate::enterCell(
         double* luh  = DataHeap::getInstance().getData(pFine.getSolution()).data();
         double* lduh = DataHeap::getInstance().getData(pFine.getUpdate()).data();
 
-        assertionEquals(luh[0],luh[0]);   // assert no nan
-        assertionEquals(lduh[0],lduh[0]); // assert no nan
+        assertion(!std::isnan(luh[0]));
+        assertion(!std::isnan(lduh[0]));
 
         solver->solutionUpdate(luh, lduh, pFine.getCorrectorTimeStepSize());
 
@@ -370,8 +370,8 @@ void exahype::mappings::SolutionUpdate::enterCell(
               pFine.getCorrectorTimeStamp(), pFine.getCorrectorTimeStepSize());
         }
 
-        assertionEquals(luh[0],luh[0]); // assert no nan
-        assertionEquals(lduh[0],lduh[0]); // assert no nan
+        assertion(!std::isnan(luh[0]));
+        assertion(!std::isnan(lduh[0]));
       }
       assertion(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None);
     endpfor peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
@@ -392,24 +392,27 @@ void exahype::mappings::SolutionUpdate::enterCell(
 //          &&
 //          pFine.getRefinementEvent()==exahype::records::FiniteVolumesCellDescription::None // todo do we have refinement events ??
       ) {
-        double* luh  = DataHeap::getInstance().getData(pFine.getSolution()).data();
-        assertionEquals(luh[0],luh[0]);   // assert no nan
-//        exahype::solvers::ADERDGSolver& solverADERDG = static_cast<exahype::solvers::ADERDGSolver>(solverR); /// todo
+        auto& pFineADERDG = fineGridCell.getADERDGCellDescription(pFine.getSolverNumber());
 
-//        solver->solutionUpdate(luh,fineGridVerticesEnumerator.getCellSize(),pFine.getTimeStepSize(),pFine.getTimeStepSize()); //todo
-        // todo not sure about that!!!
+        double* finiteVolumeSolution  = DataHeap::getInstance().getData(pFine.getSolution()).data();
+        assertion(!std::isnan(finiteVolumeSolution[0]));
+
+
+//        solver->solutionUpdate(finiteVolumeSolution,fineGridVerticesEnumerator.getCellSize(),pFine.getTimeStepSize(),pFineADERDG.getCorrectorTimeStepSize());
+        // todo is finiteVolumeSolution double pointer or single pointer???
+        // todo What is the admissible time step size ???
 
         if (solver->hasToAdjustSolution(
             fineGridVerticesEnumerator.getCellCenter(),
             fineGridVerticesEnumerator.getCellSize(),
             pFine.getTimeStamp())) {
           solver->solutionAdjustment(
-              luh, fineGridVerticesEnumerator.getCellCenter(),
+              finiteVolumeSolution, fineGridVerticesEnumerator.getCellCenter(),
               fineGridVerticesEnumerator.getCellSize(),
               pFine.getTimeStamp(), pFine.getTimeStepSize());
         }
 
-        assertionEquals(luh[0],luh[0]); // assert no nan
+        assertion(!std::isnan(finiteVolumeSolution[0]));
       }
 //      assertion(pFine.getRefinementEvent()==exahype::records::FiniteVolumesCellDescription::None); // tododo we have refinement events ??
     endpfor peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
