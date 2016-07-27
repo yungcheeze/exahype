@@ -191,15 +191,6 @@ class exahype::solvers::Solver {
    */
   int getNodesPerCoordinateAxis() const;
 
-  /**
-   * @brief Returns a stable time step size.
-   *
-   * @param[in] luh       Cell-local solution DoF.
-   * @param[in] dx        Extent of the cell in each coordinate direction.
-   */
-  virtual double stableTimeStepSize(
-      const double* const luh,
-      const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
 
   /**
    * This operation allows you to impose time-dependent solution values

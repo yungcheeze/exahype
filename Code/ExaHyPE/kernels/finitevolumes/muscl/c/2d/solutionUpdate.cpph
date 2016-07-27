@@ -26,13 +26,16 @@ namespace finitevolumes {
 namespace muscl {
 namespace c {
 
+/**
+ *
+ */
 template <void PDEFlux2d(const double* const Q, double** F),
           // void PDESource3d(const double* const Q, double* S),
           void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda)>
 void solutionUpdate(double** luh,
                     const tarch::la::Vector<DIMENSIONS, double>& dx, double dt,
-                    int numberOfVariables, int basisSize) {}
+                    int numberOfVariables, int numberOfCellsPerAxis, double maxAdmissibleDt) {}
 
 }  // namespace c
 }  // namespace muscl

@@ -41,13 +41,6 @@ exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
 }
 
 
-double exahype::solvers::FiniteVolumesSolver::stableTimeStepSize(
-    const double* const luh,
-    const tarch::la::Vector<DIMENSIONS, double>& dx)  {
-
-}
-
-
 int exahype::solvers::FiniteVolumesSolver::getUnknownsPerCell() const {
   return _unknownsPerCell;
 }
