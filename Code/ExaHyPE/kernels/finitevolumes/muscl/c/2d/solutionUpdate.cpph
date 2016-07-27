@@ -1,0 +1,42 @@
+/**
+ * This file is part of the ExaHyPE project.
+ * Copyright (c) 2016  http://exahype.eu
+ * All rights reserved.
+ *
+ * The project has received funding from the European Union's Horizon
+ * 2020 research and innovation programme under grant agreement
+ * No 671698. For copyrights and licensing, please consult the webpage.
+ *
+ * Released under the BSD 3 Open Source License.
+ * For the full license text, see LICENSE.txt
+ **/
+
+#include <cassert>
+#include <cmath>
+#include <utility>
+
+#include "../../../../../../Peano/tarch/la/Vector.h"
+
+#include "../../../../aderdg/generic/Kernels.h"
+
+#if DIMENSIONS == 2
+
+namespace kernels {
+namespace finitevolumes {
+namespace muscl {
+namespace c {
+
+template <void PDEFlux2d(const double* const Q, double** F),
+          // void PDESource3d(const double* const Q, double* S),
+          void PDEEigenvalues(const double* const Q, const int normalNonZero,
+                              double* lambda)>
+void solutionUpdate(double** luh,
+                    const tarch::la::Vector<DIMENSIONS, double>& dx, double dt,
+                    int numberOfVariables, int basisSize) {}
+
+}  // namespace c
+}  // namespace muscl
+}  // namespace finitevolumes
+}  // namespace kernels
+
+#endif  // DIMENSIONS == 2
