@@ -31,6 +31,22 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
      * Total number of unknowns in a cell.
      */
     int _unknownsPerCell;
+
+    /**
+     * Next min step size of all patches.
+     */
+    double _nextMinTimeStepSize;
+
+    /**
+     * Minimum time step size of all patches.
+     */
+    double _minTimeStepSize;
+
+    /**
+     * Minimum time stamps of all patches.
+     */
+    double _minTimeStamp;
+
   public:
     FiniteVolumesSolver(
       const std::string& identifier,

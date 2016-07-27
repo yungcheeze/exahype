@@ -81,6 +81,7 @@ class exahype::runners::Runner {
 #endif
 
   void initSolverTimeStamps();
+  void initFiniteVolumesSolverTimeStamps();
   void startNewTimeStep(int n,bool printInfo);
 
   /**
