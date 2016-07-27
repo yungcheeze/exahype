@@ -13,6 +13,8 @@
 
 #include "exahype/mappings/SolutionAdjustment.h"
 
+#include <cmath>
+
 #include "peano/utils/Globals.h"
 
 #include "peano/datatraversal/autotuning/Oracle.h"
@@ -366,7 +368,7 @@ void exahype::mappings::SolutionAdjustment::enterCell(
               pFine.getCorrectorTimeStamp(), pFine.getCorrectorTimeStepSize());
         }
 
-        assertion(!isnan(luh[0])); // assert no nan
+        assertion(!std::isnan(luh[0])); // assert no nan
       }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
         .parallelSectionHasTerminated(methodTrace);
@@ -405,7 +407,7 @@ void exahype::mappings::SolutionAdjustment::enterCell(
             pFine.getTimeStamp(),pFine.getTimeStepSize());
       }
 
-      assertion(!isnan(luh[0])); // assert no nan
+      assertion(!std::isnan(luh[0])); // assert no nan
     }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
     .parallelSectionHasTerminated(methodTrace);
