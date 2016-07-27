@@ -13,7 +13,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <iomanip>
 #include <iostream>
 
 #include "exahype/tests/kernels/c/FinitevolumesMusclTest.h"
@@ -75,6 +74,8 @@ void FinitevolumesMusclTest::testEigenvalues(const double *const Q,
 }
 
 void FinitevolumesMusclTest::testSolutionUpdate() {
+  std::cout << "Test FVM MUSCL solutionUpdate" << std::endl;
+
   // linear advection x
   {
     a = 1.23;
@@ -135,46 +136,106 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
       }
     }
 
-    std::cout << std::setprecision(5);
-    for (int i = 0; i < basisSize; i++) {
-      for (int j = 0; j < basisSize; j++) {
-        for (int k = 0; k < basisSize; k++) {
-          std::cout << i << " " << j << " " << k << ":";
-          for (int l = 0; l < numberOfVariables; l++) {
-            std::cout << luh[1 * 3 * 3 + 1 * 3 + 1]
-                            [i * basisSize2 * numberOfVariables +
-                             j * basisSize * numberOfVariables +
-                             k * numberOfVariables + l]
-                      << ", ";
-          }
-          std::cout << std::endl;
-        }
-      }
-    }
-
-    std::cout << "---------------------------------------" << std::endl;
-
     // do time step
     kernels::finitevolumes::muscl::c::solutionUpdate<testFlux, testEigenvalues>(
         luh, dx, dt, numberOfVariables, basisSize);
 
-    for (int i = 0; i < basisSize; i++) {
-      for (int j = 0; j < basisSize; j++) {
-        for (int k = 0; k < basisSize; k++) {
-          std::cout << i << " " << j << " " << k << ":";
-          for (int l = 0; l < numberOfVariables; l++) {
-            std::cout << luh[1 * 3 * 3 + 1 * 3 + 1]
-                            [i * basisSize2 * numberOfVariables +
-                             j * basisSize * numberOfVariables +
-                             k * numberOfVariables + l]
-                      << ", ";
+    // compute reference solution (shift by one in x direction)
+    double *luh_expected[3 * 3 * 3];  // 9 cells
+    for (int i = 0; i < 3 * 3 * 3; i++) {
+      luh_expected[i] = new double[basisSize3 * numberOfVariables];
+    }
+    // initialize (lower half -1.0, upper half +1.0)
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        for (int k = 0; k < 3; k++) {
+          if (k == 0) {
+            // set complete cell to -1.0
+            std::fill(luh_expected[i * 3 * 3 + j * 3 + k],
+                      luh_expected[i * 3 * 3 + j * 3 + k] +
+                          basisSize3 * numberOfVariables,
+                      -1.0);
+          } else if (k == 2) {
+            // set complete cell to +1.0
+            std::fill(luh_expected[i * 3 * 3 + j * 3 + k],
+                      luh_expected[i * 3 * 3 + j * 3 + k] +
+                          basisSize3 * numberOfVariables,
+                      +1.0);
+          } else {                   // k == 1 (middle)
+            if (i == 1 && j == 1) {  // center cell (evolved cell)
+              for (int ii = 0; ii < basisSize; ii++) {
+                for (int jj = 0; jj < basisSize; jj++) {
+                  for (int kk = 0; kk < basisSize; kk++) {
+                    double value;
+                    if (kk < 2) {
+                      value = -1.0;
+                    } else {
+                      value = +1.0;
+                    }
+                    for (int l = 0; l < numberOfVariables; l++) {
+                      luh_expected[i * 3 * 3 + j * 3 + k]
+                                  [ii * basisSize2 * numberOfVariables +
+                                   jj * basisSize * numberOfVariables +
+                                   kk * numberOfVariables + l] = value;
+                    }
+                  }
+                }
+              }
+            } else {
+              for (int ii = 0; ii < basisSize; ii++) {
+                for (int jj = 0; jj < basisSize; jj++) {
+                  for (int kk = 0; kk < basisSize; kk++) {
+                    double value;
+                    if (kk < 1) {
+                      value = -1.0;
+                    } else {
+                      value = +1.0;
+                    }
+                    for (int l = 0; l < numberOfVariables; l++) {
+                      luh_expected[i * 3 * 3 + j * 3 + k]
+                                  [ii * basisSize2 * numberOfVariables +
+                                   jj * basisSize * numberOfVariables +
+                                   kk * numberOfVariables + l] = value;
+                    }
+                  }
+                }
+              }
+            }
           }
-          std::cout << std::endl;
         }
       }
     }
 
-    // check
+    // compare
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        for (int k = 0; k < 3; k++) {
+          for (int ii = 0; ii < basisSize; ii++) {
+            for (int jj = 0; jj < basisSize; jj++) {
+              for (int kk = 0; kk < basisSize; kk++) {
+                for (int l = 0; l < numberOfVariables; l++) {
+                  validateNumericalEqualsWithParams5(
+                      luh[i * 9 + j * 3 + k]
+                         [ii * basisSize2 * numberOfVariables +
+                          jj * basisSize * numberOfVariables +
+                          kk * numberOfVariables + l],
+                      luh_expected[i * 9 + j * 3 + k]
+                                  [ii * basisSize2 * numberOfVariables +
+                                   jj * basisSize * numberOfVariables +
+                                   kk * numberOfVariables + l],
+                      i * 9 + j * 3 + k, ii, jj, kk, l);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // cleanup
+    for (int i = 0; i < 3 * 3 * 3; i++) {
+      delete[] luh_expected[i];
+    }
 
     for (int i = 0; i < 3 * 3 * 3; i++) {
       delete[] luh[i];
@@ -183,13 +244,335 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
 
   // linear advection y
   {
+    a = 0.0;
+    b = 5.43;
+    c = 0.0;
+    const double dt = 0.345;
+    const double cfl = 1.0;
+    const double dx_scalar = b * dt / cfl;
+    const tarch::la::Vector<DIMENSIONS, double> dx(dx_scalar, dx_scalar,
+                                                   dx_scalar);
 
+    const int basisSize = 4;  // 4 points per dimension in cell
+    const int basisSize2 = basisSize * basisSize;
+    const int basisSize3 = basisSize2 * basisSize;
+    const int numberOfVariables = 5;
+    double *luh[3 * 3 * 3];  // 9 cells
+    for (int i = 0; i < 3 * 3 * 3; i++) {
+      luh[i] = new double[basisSize3 * numberOfVariables];
+    }
+
+    // initialize (left half -1.0, right half +1.0)
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        for (int k = 0; k < 3; k++) {
+          if (j == 0) {
+            // set complete cell to -1.0
+            std::fill(
+                luh[i * 3 * 3 + j * 3 + k],
+                luh[i * 3 * 3 + j * 3 + k] + basisSize3 * numberOfVariables,
+                -1.0);
+          } else if (j == 2) {
+            // set complete cell to +1.0
+            std::fill(
+                luh[i * 3 * 3 + j * 3 + k],
+                luh[i * 3 * 3 + j * 3 + k] + basisSize3 * numberOfVariables,
+                +1.0);
+          } else {  // j == 1 (middle)
+            for (int ii = 0; ii < basisSize; ii++) {
+              for (int jj = 0; jj < basisSize; jj++) {
+                for (int kk = 0; kk < basisSize; kk++) {
+                  double value;
+                  if (jj < 1) {
+                    value = -1.0;
+                  } else {
+                    value = +1.0;
+                  }
+                  for (int l = 0; l < numberOfVariables; l++) {
+                    luh[i * 3 * 3 + j * 3 + k]
+                       [ii * basisSize2 * numberOfVariables +
+                        jj * basisSize * numberOfVariables +
+                        kk * numberOfVariables + l] = value;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // do time step
+    kernels::finitevolumes::muscl::c::solutionUpdate<testFlux, testEigenvalues>(
+        luh, dx, dt, numberOfVariables, basisSize);
+
+    // check
+    double *luh_expected[3 * 3 * 3];  // 9 cells
+    for (int i = 0; i < 3 * 3 * 3; i++) {
+      luh_expected[i] = new double[basisSize3 * numberOfVariables];
+    }
+    // initialize (lower half -1.0, upper half +1.0)
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        for (int k = 0; k < 3; k++) {
+          if (j == 0) {
+            // set complete cell to -1.0
+            std::fill(luh_expected[i * 3 * 3 + j * 3 + k],
+                      luh_expected[i * 3 * 3 + j * 3 + k] +
+                          basisSize3 * numberOfVariables,
+                      -1.0);
+          } else if (j == 2) {
+            // set complete cell to +1.0
+            std::fill(luh_expected[i * 3 * 3 + j * 3 + k],
+                      luh_expected[i * 3 * 3 + j * 3 + k] +
+                          basisSize3 * numberOfVariables,
+                      +1.0);
+          } else {                   // j == 1 (middle)
+            if (i == 1 && k == 1) {  // center cell (evolved cell)
+              for (int ii = 0; ii < basisSize; ii++) {
+                for (int jj = 0; jj < basisSize; jj++) {
+                  for (int kk = 0; kk < basisSize; kk++) {
+                    double value;
+                    if (jj < 2) {
+                      value = -1.0;
+                    } else {
+                      value = +1.0;
+                    }
+                    for (int l = 0; l < numberOfVariables; l++) {
+                      luh_expected[i * 3 * 3 + j * 3 + k]
+                                  [ii * basisSize2 * numberOfVariables +
+                                   jj * basisSize * numberOfVariables +
+                                   kk * numberOfVariables + l] = value;
+                    }
+                  }
+                }
+              }
+            } else {
+              for (int ii = 0; ii < basisSize; ii++) {
+                for (int jj = 0; jj < basisSize; jj++) {
+                  for (int kk = 0; kk < basisSize; kk++) {
+                    double value;
+                    if (jj < 1) {
+                      value = -1.0;
+                    } else {
+                      value = +1.0;
+                    }
+                    for (int l = 0; l < numberOfVariables; l++) {
+                      luh_expected[i * 3 * 3 + j * 3 + k]
+                                  [ii * basisSize2 * numberOfVariables +
+                                   jj * basisSize * numberOfVariables +
+                                   kk * numberOfVariables + l] = value;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // compare
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        for (int k = 0; k < 3; k++) {
+          for (int ii = 0; ii < basisSize; ii++) {
+            for (int jj = 0; jj < basisSize; jj++) {
+              for (int kk = 0; kk < basisSize; kk++) {
+                for (int l = 0; l < numberOfVariables; l++) {
+                  validateNumericalEqualsWithParams5(
+                      luh[i * 9 + j * 3 + k]
+                         [ii * basisSize2 * numberOfVariables +
+                          jj * basisSize * numberOfVariables +
+                          kk * numberOfVariables + l],
+                      luh_expected[i * 9 + j * 3 + k]
+                                  [ii * basisSize2 * numberOfVariables +
+                                   jj * basisSize * numberOfVariables +
+                                   kk * numberOfVariables + l],
+                      i * 9 + j * 3 + k, ii, jj, kk, l);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // cleanup
+    for (int i = 0; i < 3 * 3 * 3; i++) {
+      delete[] luh_expected[i];
+    }
+
+    for (int i = 0; i < 3 * 3 * 3; i++) {
+      delete[] luh[i];
+    }
   }
 
   // linear advection z
-  {}
+  {
+    a = 0.0;
+    b = 0.0;
+    c = 0.987;
+    const double dt = 0.432;
+    const double cfl = 1.0;
+    const double dx_scalar = c * dt / cfl;
+    const tarch::la::Vector<DIMENSIONS, double> dx(dx_scalar, dx_scalar,
+                                                   dx_scalar);
 
-  // assert("Test done" && false);
+    const int basisSize = 4;  // 4 points per dimension in cell
+    const int basisSize2 = basisSize * basisSize;
+    const int basisSize3 = basisSize2 * basisSize;
+    const int numberOfVariables = 5;
+    double *luh[3 * 3 * 3];  // 9 cells
+    for (int i = 0; i < 3 * 3 * 3; i++) {
+      luh[i] = new double[basisSize3 * numberOfVariables];
+    }
+
+    // initialize (front half -1.0, back half +1.0)
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        for (int k = 0; k < 3; k++) {
+          if (i == 0) {
+            // set complete cell to -1.0
+            std::fill(
+                luh[i * 3 * 3 + j * 3 + k],
+                luh[i * 3 * 3 + j * 3 + k] + basisSize3 * numberOfVariables,
+                -1.0);
+          } else if (i == 2) {
+            // set complete cell to +1.0
+            std::fill(
+                luh[i * 3 * 3 + j * 3 + k],
+                luh[i * 3 * 3 + j * 3 + k] + basisSize3 * numberOfVariables,
+                +1.0);
+          } else {  // i == 1 (middle)
+            for (int ii = 0; ii < basisSize; ii++) {
+              for (int jj = 0; jj < basisSize; jj++) {
+                for (int kk = 0; kk < basisSize; kk++) {
+                  double value;
+                  if (ii < 1) {
+                    value = -1.0;
+                  } else {
+                    value = +1.0;
+                  }
+                  for (int l = 0; l < numberOfVariables; l++) {
+                    luh[i * 3 * 3 + j * 3 + k]
+                       [ii * basisSize2 * numberOfVariables +
+                        jj * basisSize * numberOfVariables +
+                        kk * numberOfVariables + l] = value;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // do time step
+    kernels::finitevolumes::muscl::c::solutionUpdate<testFlux, testEigenvalues>(
+        luh, dx, dt, numberOfVariables, basisSize);
+
+    // check
+    double *luh_expected[3 * 3 * 3];  // 9 cells
+    for (int i = 0; i < 3 * 3 * 3; i++) {
+      luh_expected[i] = new double[basisSize3 * numberOfVariables];
+    }
+    // initialize (front half -1.0, back half +1.0)
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        for (int k = 0; k < 3; k++) {
+          if (i == 0) {
+            // set complete cell to -1.0
+            std::fill(luh_expected[i * 3 * 3 + j * 3 + k],
+                      luh_expected[i * 3 * 3 + j * 3 + k] +
+                          basisSize3 * numberOfVariables,
+                      -1.0);
+          } else if (i == 2) {
+            // set complete cell to +1.0
+            std::fill(luh_expected[i * 3 * 3 + j * 3 + k],
+                      luh_expected[i * 3 * 3 + j * 3 + k] +
+                          basisSize3 * numberOfVariables,
+                      +1.0);
+          } else {                   // i == 1 (middle)
+            if (i == j && k == 1) {  // center cell (evolved cell)
+              for (int ii = 0; ii < basisSize; ii++) {
+                for (int jj = 0; jj < basisSize; jj++) {
+                  for (int kk = 0; kk < basisSize; kk++) {
+                    double value;
+                    if (ii < 2) {
+                      value = -1.0;
+                    } else {
+                      value = +1.0;
+                    }
+                    for (int l = 0; l < numberOfVariables; l++) {
+                      luh_expected[i * 3 * 3 + j * 3 + k]
+                                  [ii * basisSize2 * numberOfVariables +
+                                   jj * basisSize * numberOfVariables +
+                                   kk * numberOfVariables + l] = value;
+                    }
+                  }
+                }
+              }
+            } else {
+              for (int ii = 0; ii < basisSize; ii++) {
+                for (int jj = 0; jj < basisSize; jj++) {
+                  for (int kk = 0; kk < basisSize; kk++) {
+                    double value;
+                    if (ii < 1) {
+                      value = -1.0;
+                    } else {
+                      value = +1.0;
+                    }
+                    for (int l = 0; l < numberOfVariables; l++) {
+                      luh_expected[i * 3 * 3 + j * 3 + k]
+                                  [ii * basisSize2 * numberOfVariables +
+                                   jj * basisSize * numberOfVariables +
+                                   kk * numberOfVariables + l] = value;
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // compare
+    for (int i = 0; i < 3; i++) {
+      for (int j = 0; j < 3; j++) {
+        for (int k = 0; k < 3; k++) {
+          for (int ii = 0; ii < basisSize; ii++) {
+            for (int jj = 0; jj < basisSize; jj++) {
+              for (int kk = 0; kk < basisSize; kk++) {
+                for (int l = 0; l < numberOfVariables; l++) {
+                  validateNumericalEqualsWithParams5(
+                      luh[i * 9 + j * 3 + k]
+                         [ii * basisSize2 * numberOfVariables +
+                          jj * basisSize * numberOfVariables +
+                          kk * numberOfVariables + l],
+                      luh_expected[i * 9 + j * 3 + k]
+                                  [ii * basisSize2 * numberOfVariables +
+                                   jj * basisSize * numberOfVariables +
+                                   kk * numberOfVariables + l],
+                      i * 9 + j * 3 + k, ii, jj, kk, l);
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // cleanup
+    for (int i = 0; i < 3 * 3 * 3; i++) {
+      delete[] luh_expected[i];
+    }
+
+    for (int i = 0; i < 3 * 3 * 3; i++) {
+      delete[] luh[i];
+    }
+  }
 }
 
 }  // namepsace c

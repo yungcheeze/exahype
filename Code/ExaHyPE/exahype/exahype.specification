@@ -74,6 +74,7 @@ event-mapping:
   
 adapter:
   name: AugmentedAMRGrid
+  merge-with-user-defined-mapping: NewTimeStep        // (createInner/BoundaryVertex,enterCell,serial)
   merge-with-user-defined-mapping: RegularMesh        // (createInner/BoundaryVertex,enterCell,serial)
   merge-with-user-defined-mapping: MarkingForRefinement      // (enterCell,runconcurrently)
   merge-with-user-defined-mapping: Refinement                // (touchVertexLastTime,enterCell,serial)

@@ -18,8 +18,6 @@
 
 #include "../../../../../../Peano/tarch/la/Vector.h"
 
-#include "../../../../aderdg/generic/Kernels.h"
-
 #if DIMENSIONS == 3
 
 namespace {
@@ -38,7 +36,7 @@ struct idx4 {
     assertion3(j < J_, j, J_, line_);
     assertion3(k < K_, k, K_, line_);
     assertion3(l < L_, l, L_, line_);
-    return i * (J_ * K_ * L_) + j * (K_ * L_) + k * L_;
+    return i * (J_ * K_ * L_) + j * (K_ * L_) + k * L_ + l;
   }
 
  private:
@@ -79,6 +77,41 @@ double minmod(double a, double b) {
   }
 }
 
+template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
+                              double* lambda)>
+void riemannSolver(double* FL, double* FR, const double* qL, const double* qR,
+                   int numberOfVariables, int normalNonZero) {
+  // TODO(guera): Make this function return dt = dx * CFL / s_max ?!
+
+  double* sL = new double[numberOfVariables];
+  double* sR = new double[numberOfVariables];
+
+  PDEEigenvalues(qL, normalNonZero, sL);
+  PDEEigenvalues(qR, normalNonZero, sR);
+
+  double s_max = -1.0;
+  for (int i = 0; i < numberOfVariables; i++) {
+    const double abs_sL_i = std::abs(sL[i]);
+    if (abs_sL_i > s_max) {
+      s_max = abs_sL_i;
+    }
+  }
+  for (int i = 0; i < numberOfVariables; i++) {
+    const double abs_sR_i = std::abs(sR[i]);
+    if (abs_sR_i > s_max) {
+      s_max = abs_sR_i;
+    }
+  }
+
+  for (int i = 0; i < numberOfVariables; i++) {
+    FL[i] = 0.5 * (FL[i] + FR[i]) + 0.5 * s_max * (qL[i] - qR[i]);
+    FR[i] = FL[i];
+  }
+
+  delete[] sL;
+  delete[] sR;
+}
+
 }  // namespace
 
 namespace kernels {
@@ -100,7 +133,6 @@ void solutionUpdate(double** luh,
 
   const int basisSize2 = basisSize * basisSize;
 
-  // allocate slopes (nvar * bs2 * (bs + 3))
   // [z][y][x][v]
   double* delta_mid_x =
       new double[numberOfVariables * basisSize2 * (basisSize + 3)];
@@ -245,7 +277,7 @@ void solutionUpdate(double** luh,
     for (int i = 0; i < basisSize; i++) {
       const int j = basisSize + 2;
       for (int k = 0; k < basisSize; k++) {
-        for (int l = 0; l < basisSize; l++) {
+        for (int l = 0; l < numberOfVariables; l++) {
           delta_mid_y[idx_delta_mid_y(i, j, k, l)] =
               luh_right[idx_luh(i, 1, k, l)] - luh_right[idx_luh(i, 0, k, l)];
         }
@@ -417,6 +449,14 @@ void solutionUpdate(double** luh,
     }
   }
 
+  /*
+  std::cout << "++++++++++++++" << std::endl;
+  for (int i = 0; i < basisSize2 * (basisSize + 2) * numberOfVariables; i++) {
+    std::cout << delta_z[i] << " ";
+  }
+  std::cout << std::endl << "++++++++++++++++" << std::endl;
+  */
+
   // extrapolate
   double* u_l_x = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
   double* u_r_x = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
@@ -587,6 +627,14 @@ void solutionUpdate(double** luh,
     }
   }
 
+  /*
+  std::cout << "+++++++++++" << std::endl;
+  for (int i = 0; i < numberOfVariables * basisSize2 * (basisSize + 2); i++) {
+    std::cout << u_r_z[i] << " ";
+  }
+  std::cout << std::endl << "+++++++++++++" << std::endl;
+  */
+
   // evaluate flux
   double* F_l_x = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
   double* F_r_x = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
@@ -637,16 +685,16 @@ void solutionUpdate(double** luh,
     double* unused = new double[(DIMENSIONS - 1) * numberOfVariables];
 
     double* f_y[3];
-    f_y[1] = unused;
+    f_y[0] = unused;
     f_y[2] = unused + numberOfVariables;
 
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize + 2; j++) {
         for (int k = 0; k < basisSize; k++) {
-          f_y[0] = F_l_y + idx_y(i, j, k, 0);
+          f_y[1] = F_l_y + idx_y(i, j, k, 0);
           PDEFlux3d(u_l_y + idx_y(i, j, k, 0), f_y);
 
-          f_y[0] = F_r_y + idx_y(i, j, k, 0);
+          f_y[1] = F_r_y + idx_y(i, j, k, 0);
           PDEFlux3d(u_r_y + idx_y(i, j, k, 0), f_y);
         }
       }
@@ -667,16 +715,16 @@ void solutionUpdate(double** luh,
     double* unused = new double[(DIMENSIONS - 1) * numberOfVariables];
 
     double* f_z[3];
-    f_z[1] = unused;
-    f_z[2] = unused + numberOfVariables;
+    f_z[0] = unused;
+    f_z[1] = unused + numberOfVariables;
 
     for (int i = 0; i < basisSize + 2; i++) {
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize; k++) {
-          f_z[0] = F_l_z + idx_z(i, j, k, 0);
+          f_z[2] = F_l_z + idx_z(i, j, k, 0);
           PDEFlux3d(u_l_z + idx_z(i, j, k, 0), f_z);
 
-          f_z[0] = F_r_z + idx_z(i, j, k, 0);
+          f_z[2] = F_r_z + idx_z(i, j, k, 0);
           PDEFlux3d(u_r_z + idx_z(i, j, k, 0), f_z);
         }
       }
@@ -684,6 +732,14 @@ void solutionUpdate(double** luh,
 
     delete[] unused;
   }
+
+  /*
+  std::cout << "+++++++++++++" << std::endl;
+  for (int i = 0; i < basisSize2 * (basisSize + 2) * numberOfVariables; i++) {
+    std::cout << F_r_y[i] << " ";
+  }
+  std::cout << std::endl << "+++++++++++" << std::endl;
+  */
 
   // evolve
   // x
@@ -703,6 +759,7 @@ void solutionUpdate(double** luh,
                 ((F_l_x[idx_x(i, j, k, l)] - F_r_x[idx_x(i, j, k, l)]) / dx[0] +
                  (F_l_y[idx_x(i, j, k, l)] - F_r_y[idx_x(i, j, k, l)]) / dx[1] +
                  (F_l_z[idx_x(i, j, k, l)] - F_r_z[idx_x(i, j, k, l)]) / dx[2]);
+            assert(std::isfinite(Q));
             u_l_x[idx_x(i, j, k, l)] += Q;
             u_r_x[idx_x(i, j, k, l)] += Q;
           }
@@ -761,8 +818,15 @@ void solutionUpdate(double** luh,
     }
   }
 
-  // riemann
+  /*
+  std::cout << "+++++++++" << std::endl;
+  for (int i = 0; i < basisSize2 * (basisSize + 2) * numberOfVariables; i++) {
+    std::cout << u_l_x[i] << " ";
+  }
+  std::cout << std::endl << "+++++++" << std::endl;
+  */
 
+  // riemann
   // x
   {
     // using idx_x = idx4<basisSize, basisSize, basisSize + 2,
@@ -774,10 +838,20 @@ void solutionUpdate(double** luh,
     for (int i = 0; i < basisSize; i++) {          // z
       for (int j = 0; j < basisSize; j++) {        // y
         for (int k = 0; k < basisSize + 1; k++) {  // x
-          kernels::aderdg::generic::c::riemannSolverNonlinear<PDEEigenvalues>(
+          /*
+          std::cout << (u_r_x + idx_x(i, j, k, 0))[0] << " "
+                    << (u_l_x + idx_x(i, j, k + 1, 0))[0] << " "
+                    << (F_r_x + idx_x(i, j, k, 0))[0] << " "
+                    << (F_l_x + idx_x(i, j, k + 1, 0))[0] << ":";
+                    */
+          riemannSolver<PDEEigenvalues>(
               F_r_x + idx_x(i, j, k, 0), F_l_x + idx_x(i, j, k + 1, 0),
-              u_r_x + idx_x(i, j, k, 0), u_l_x + idx_x(i, j, k + 1, 0), dt, 0,
-              numberOfVariables, basisSize);
+              u_r_x + idx_x(i, j, k, 0), u_l_x + idx_x(i, j, k + 1, 0),
+              numberOfVariables, 0 /* normalNonZero */);
+          /*
+          std::cout << (F_r_x + idx_x(i, j, k, 0))[0] << " "
+                    << (F_l_x + idx_x(i, j, k + 1, 0))[0] << std::endl;
+                    */
         }
       }
     }
@@ -794,10 +868,19 @@ void solutionUpdate(double** luh,
     for (int i = 0; i < basisSize; i++) {        // z
       for (int j = 0; j < basisSize + 1; j++) {  // y
         for (int k = 0; k < basisSize; k++) {    // x
-          kernels::aderdg::generic::c::riemannSolverNonlinear<PDEEigenvalues>(
+          /*
+          std::cout << (u_r_y + idx_y(i, j, k, 0))[0] << " "
+                    << (u_l_y + idx_y(i, j + 1, k, 0))[0] << " "
+                    << (F_r_y + idx_y(i, j, k, 0))[0] << " "
+                    << ":";
+                    */
+          riemannSolver<PDEEigenvalues>(
               F_r_y + idx_y(i, j, k, 0), F_l_y + idx_y(i, j + 1, k, 0),
-              u_r_y + idx_y(i, j, k, 0), u_l_y + idx_y(i, j + 1, k, 0), dt, 1,
-              numberOfVariables, basisSize);
+              u_r_y + idx_y(i, j, k, 0), u_l_y + idx_y(i, j + 1, k, 0),
+              numberOfVariables, 1 /* normalNonZero */);
+          /*
+          std::cout << (F_r_y + idx_y(i, j, k, 0))[0] << " " << std::endl;
+          */
         }
       }
     }
@@ -814,14 +897,34 @@ void solutionUpdate(double** luh,
     for (int i = 0; i < basisSize + 1; i++) {  // z
       for (int j = 0; j < basisSize; j++) {    // y
         for (int k = 0; k < basisSize; k++) {  // x
-          kernels::aderdg::generic::c::riemannSolverNonlinear<PDEEigenvalues>(
+          riemannSolver<PDEEigenvalues>(
               F_r_z + idx_z(i, j, k, 0), F_l_z + idx_z(i + 1, j, k, 0),
-              u_r_z + idx_z(i, j, k, 0), u_l_z + idx_z(i + 1, j, k, 0), dt, 2,
-              numberOfVariables, basisSize);
+              u_r_z + idx_z(i, j, k, 0), u_l_z + idx_z(i + 1, j, k, 0),
+              numberOfVariables, 2 /*  normalNonZero */);
         }
       }
     }
   }
+
+  /*
+  std::cout << "xxxxxxxxxxxxxxx" << std::endl;
+  for (int i = 0; i < basisSize; i++) {
+    for (int j = 0; j < basisSize + 2; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        std::cout << i << " " << j << " " << k << ":";
+        for (int l = 0; l < numberOfVariables; l++) {
+          std::cout
+              << F_l_y[i * basisSize * (basisSize + 2) * numberOfVariables +
+                       j * basisSize * numberOfVariables +
+                       k * numberOfVariables + l]
+              << " ";
+        }
+        std::cout << std::endl;
+      }
+    }
+  }
+  std::cout << std::endl << "xxxxxxxxxxxxxxxxxx" << std::endl;
+  */
 
   // Overwrite left and right value, have the same value, flow from left to
   // right
@@ -861,10 +964,6 @@ void solutionUpdate(double** luh,
   }
 
   // delete
-
-  // TODO(guera): Fix memory corruption
-
-  /*
   delete[] delta_mid_x;
   delete[] delta_mid_y;
   delete[] delta_mid_z;
@@ -883,7 +982,6 @@ void solutionUpdate(double** luh,
   delete[] F_r_y;
   delete[] F_l_z;
   delete[] F_r_z;
-  */
 }
 
 }  // namespace c
