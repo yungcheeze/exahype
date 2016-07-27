@@ -35,11 +35,11 @@ exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
   _unknownsPerCell        (                        (numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
   _unknownsPerFace        (                        (numberOfVariables)                    * power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
   _unknownsPerCellBoundary( DIMENSIONS_TIMES_TWO * (numberOfVariables)                    * power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
-  _minTimeStamp   (std::numeric_limits<double>::max()),
-  _minTimeStepSize(std::numeric_limits<double>::max())
+  _minTimeStamp       (std::numeric_limits<double>::max()),
+  _minTimeStepSize    (std::numeric_limits<double>::max()),
+  _nextMinTimeStepSize(std::numeric_limits<double>::max())
   {
   assertion3(_unknownsPerCell>0, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis);
-
 }
 
 

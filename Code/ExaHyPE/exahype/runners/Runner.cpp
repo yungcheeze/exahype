@@ -320,8 +320,8 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n = 1;
 
-  logInfo("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers()); // change to log debug
-  logInfo("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
+  logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers()); // change to log debug
+  logDebug("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
 
   // todo discuss with Tobias; Finite volume time step size/stamp shifting does not go
   // well with double shifting for ADER-DG scheme

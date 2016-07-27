@@ -43,11 +43,6 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
     int _unknownsPerCellBoundary;
 
     /**
-     * Next min step size of all patches.
-     */
-    double _nextMinTimeStepSize;
-
-    /**
      * Minimum time step size of all patches.
      */
     double _minTimeStepSize;
@@ -56,6 +51,11 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
      * Minimum time stamps of all patches.
      */
     double _minTimeStamp;
+
+    /**
+     * Next minimum step size of all patches.
+     */
+    double _nextMinTimeStepSize;
 
   public:
     FiniteVolumesSolver(
@@ -79,7 +79,7 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
      * @param luh is a pointer to 3^d pointers to doubles
      */
     virtual double stableTimeStepSize(
-        double** luh,
+        const double* const luh[THREE_POWER_D],
         const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
 
     /**
@@ -103,7 +103,7 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
      *        possible. If maxAdmissibleDt<dt, then we know that no time
      *        step has been done.
      */
-    virtual void solutionUpdate(double** luh, const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt, double& maxAdmissibleDt) = 0;
+    virtual void solutionUpdate(double* luh[THREE_POWER_D], const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt, double& maxAdmissibleDt) = 0;
 
     virtual double getMinTimeStamp() const override;
 

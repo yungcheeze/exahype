@@ -23,6 +23,10 @@
 #include "exahype/solvers/ADERDGSolver.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
+#include "exahype/VertexOperations.h"
+
 #include <limits>
 
 /**
@@ -214,11 +218,25 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
 
       if (p.getType()==exahype::records::FiniteVolumesCellDescription::Cell) {
 //         assertion1(p.getRefinementEvent()==exahype::records::FiniteVolumesCellDescription::None,p.toString()); // todo refine
-        double* finiteVolumesSolution = DataHeap::getInstance().getData(p.getSolution()).data();
+        assertion1(multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
+            VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices)),fineGridVerticesEnumerator.toString());
+
+        const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices = multiscalelinkedcell::getIndicesAroundCell(
+            VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices));
+
+        double* finiteVolumesSolutions[THREE_POWER_D];
+        for (int nScalar=0; nScalar<THREE_POWER_D; ++nScalar) {
+          if (FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[nScalar])) {
+            exahype::records::FiniteVolumesCellDescription& pNeighbour =
+                FiniteVolumesCellDescriptionHeap::getInstance().getData(neighbourCellDescriptionsIndices[nScalar])[p.getSolverNumber()]; // todo assumes same number of patches per cell
+            finiteVolumesSolutions[nScalar] = DataHeap::getInstance().getData(pNeighbour.getSolution()).data();
+          } else {
+            finiteVolumesSolutions[nScalar] = DataHeap::getInstance().getData(p.getSolution()).data();
+          }
+        }
 
         double admissibleTimeStepSize = solver->stableTimeStepSize(
-           finiteVolumesSolution, fineGridVerticesEnumerator.getCellSize());
-
+           finiteVolumesSolutions, fineGridVerticesEnumerator.getCellSize());
 
         assertion(!std::isnan(admissibleTimeStepSize));
 
