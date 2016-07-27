@@ -33,6 +33,16 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
     int _unknownsPerCell;
 
     /**
+     * Total number of unknowns per cell face.
+     */
+    int _unknownsPerFace;
+
+    /**
+     * Total number of unknowns per cell boundary.
+     */
+    int _unknownsPerCellBoundary;
+
+    /**
      * Next min step size of all patches.
      */
     double _nextMinTimeStepSize;
@@ -56,7 +66,7 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
       double maximumMeshSize,
       exahype::solvers::Solver::TimeStepping timeStepping,
       std::unique_ptr<profilers::Profiler> profiler =
-        std::unique_ptr<profilers::Profiler>( new profilers::simple::NoOpProfiler)
+      std::unique_ptr<profilers::Profiler>( new profilers::simple::NoOpProfiler)
     );
 
     virtual ~FiniteVolumesSolver() {}
