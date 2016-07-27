@@ -6,11 +6,13 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
   private int _numberOfVariables;
   private int _numberOfParameters;
   private int _patchSize;
+  private boolean _enableProfiler;
 
-  public GenericFiniteVolumesMUSCLinC(int numberOfVariables, int numberOfParameters, int patchSize) {
+  public GenericFiniteVolumesMUSCLinC(int numberOfVariables, int numberOfParameters, int patchSize, boolean enableProfiler) {
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
-    _patchSize = patchSize;
+    _patchSize          = patchSize;
+    _enableProfiler     = enableProfiler;
   }
 
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
@@ -30,14 +32,38 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
     writer.write("// Please do not change the implementations below\n");
     writer.write("// =============================---==============\n");
     writer.write("#include \"" + solverName + ".h\"\n");
+    writer.write("#include \"kernels/finitevolumes/muscl/c/2d/solutionUpdate.cpph\"\n");
+    writer.write("#include \"kernels/finitevolumes/muscl/c/3d/solutionUpdate.cpph\"\n");
     writer.write("\n\n\n");
 
-    writer.write("double " + projectName + "::" + solverName + "::stableTimeStepSize( const double* const luh, const tarch::la::Vector<DIMENSIONS, double>& dx) {\n" );
-    writer.write("  assertionMsg( false, \"not yet inserted in GenericFiniteVolumesMUSCLinC\");\n" );
+    writer.write("double " + projectName + "::" + solverName + "::stableTimeStepSize( double** luh, const tarch::la::Vector<DIMENSIONS, double>& dx) {\n" );
+    if (_enableProfiler) {
+        writer.write("  _profiler->start(\"solutionUpdate\");\n");
+      }
+      writer.write( 
+        "  double maxAdmissibleDt;\n"
+      );
+      writer.write(
+        "  kernels::finitevolumes::muscl::c::solutionUpdate<flux,eigenvalues>( luh, dx, std::numeric_limits<double>::max(), getNumberOfVariables(), getNodesPerCoordinateAxis(), maxAdmissibleDt );\n"
+      );
+      if (_enableProfiler) {
+        writer.write("  _profiler->stop(\"solutionUpdate\");\n");
+      }
+      writer.write( 
+        "  return maxAdmissibleDt;\n"
+      );
     writer.write("}\n\n\n" );
-    
+
     writer.write("void " + projectName + "::" + solverName + "::solutionUpdate(double** luh, const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt, double& maxAdmissibleDt) {\n" );
-    writer.write("  assertionMsg( false, \"not yet inserted in GenericFiniteVolumesMUSCLinC\");\n" );
+    if (_enableProfiler) {
+      writer.write("  _profiler->start(\"solutionUpdate\");\n");
+    }
+    writer.write(
+      "  kernels::finitevolumes::muscl::c::solutionUpdate<flux,eigenvalues>( luh, dx, dt, getNumberOfVariables(), getNodesPerCoordinateAxis(), maxAdmissibleDt );\n"
+    );
+    if (_enableProfiler) {
+      writer.write("  _profiler->stop(\"solutionUpdate\");\n");
+    }
     writer.write("}\n\n\n" );
     
     writer.write("\n\n\n");
@@ -55,12 +81,22 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
     writer.write("\n\n\n");
 
     writer.write("void " + projectName + "::" + solverName + "::solutionAdjustment( double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) {\n" );
-    writer.write("  // @todo Please implement\n");
+    writer.write("  if ( tarch::la::equals(t,0.0) ) {\n");
+    writer.write("  // @todo Please implement and set initial conditions\n");
+    writer.write("  }\n");
+    writer.write("  // @todo Feel free to add further conditions\n");
     writer.write("}\n\n\n" );
 
     writer.write("bool " + projectName + "::" + solverName + "::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t) {\n" );
     writer.write("  // @todo Please implement\n");
-    writer.write("  return false; \n");
+    writer.write("  if ( tarch::la::equals(t,0.0) ) {\n");
+    writer.write("    // Tell kernel that you want to set initial conditions \n");
+    writer.write("    return true;\n");
+    writer.write("  }\n");
+    writer.write("  else {\n");
+    writer.write("    // @todo Please implement\n");
+    writer.write("    return false; \n");
+    writer.write("  }\n");
     writer.write("}\n\n\n" );
 
     writer.write("exahype::solvers::Solver::RefinementControl " + projectName + "::" + solverName + "::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) {\n" );

@@ -31,6 +31,22 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
      * Total number of unknowns in a cell.
      */
     int _unknownsPerCell;
+
+    /**
+     * Next min step size of all patches.
+     */
+    double _nextMinTimeStepSize;
+
+    /**
+     * Minimum time step size of all patches.
+     */
+    double _minTimeStepSize;
+
+    /**
+     * Minimum time stamps of all patches.
+     */
+    double _minTimeStamp;
+
   public:
     FiniteVolumesSolver(
       const std::string& identifier,
@@ -49,8 +65,11 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
     FiniteVolumesSolver(const FiniteVolumesSolver& other) = delete;
     FiniteVolumesSolver& operator=(const FiniteVolumesSolver& other) = delete;
 
+    /**
+     * @param luh is a pointer to 3^d pointers to doubles
+     */
     virtual double stableTimeStepSize(
-        const double* const luh,
+        double** luh,
         const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
 
     /**

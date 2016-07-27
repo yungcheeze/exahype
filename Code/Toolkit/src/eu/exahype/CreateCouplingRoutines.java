@@ -10,9 +10,17 @@ import eu.exahype.node.AProject;
 import eu.exahype.node.AComputationalDomain;
 
 
-public class CreateSolverClasses extends DepthFirstAdapter {
+public class CreateCouplingRoutines extends DepthFirstAdapter {
   public Boolean valid = true;
-
+  
+  //
+  // Wir brauchen bei ADERDG auch die Flussdaten nach unten.
+  // Sonst einfach from - to
+  // und alles auf Volumendaten
+  // theoretisch muessen wir auch mehrere Level unterstuetzen 
+  //
+  
+/*  
   private DirectoryAndPathChecker _directoryAndPathChecker;
 
   private String _projectName;
@@ -28,15 +36,15 @@ public class CreateSolverClasses extends DepthFirstAdapter {
   private int _dimensions;
   
   private boolean _enableProfiler;
-
-  public CreateSolverClasses(DirectoryAndPathChecker directoryAndPathChecker) {
-    _directoryAndPathChecker = directoryAndPathChecker;
+*/
+  public CreateCouplingRoutines(DirectoryAndPathChecker directoryAndPathChecker) {
+/*    _directoryAndPathChecker = directoryAndPathChecker;
     _supportedMicroarchitectures =
         java.util.Arrays.asList("wsm", "snb", "hsw", "knc", "knl", "noarch");
     _enableProfiler = false;
-  }
+*/  }
 
-  @Override
+/*  @Override
   public void inAProject(AProject node) {
     _projectName     = node.getName().toString().trim();
     _definedSolvers  = new java.util.HashSet<String>();
@@ -306,16 +314,16 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     eu.exahype.solvers.Solver solver = null;
 
     if (isFortran && kernel.equals( eu.exahype.solvers.UserDefinedFiniteVolumesinFortran.Identifier )) {
-      solver = new eu.exahype.solvers.UserDefinedFiniteVolumesinFortran(numberOfVariables, numberOfParameters, patchSize, _enableProfiler);
+      solver = new eu.exahype.solvers.UserDefinedFiniteVolumesinFortran(numberOfVariables, numberOfParameters, patchSize);
     }
     if (!isFortran && kernel.equals( eu.exahype.solvers.UserDefinedFiniteVolumesinC.Identifier )) {
-      solver = new eu.exahype.solvers.UserDefinedFiniteVolumesinC(numberOfVariables, numberOfParameters, patchSize, _enableProfiler);
+      solver = new eu.exahype.solvers.UserDefinedFiniteVolumesinC(numberOfVariables, numberOfParameters, patchSize);
     }
     if (isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesMUSCLinFortran.Identifier )) {
-      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinFortran(numberOfVariables, numberOfParameters, patchSize, _enableProfiler);
+      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinFortran(numberOfVariables, numberOfParameters, patchSize);
     }
     if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesMUSCLinC.Identifier )) {
-      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinC(numberOfVariables, numberOfParameters, patchSize, _enableProfiler);
+      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinC(numberOfVariables, numberOfParameters, patchSize);
     }
 
     if (solver == null) {
@@ -391,4 +399,4 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       valid = false;
     }
   }
-}
+*/}

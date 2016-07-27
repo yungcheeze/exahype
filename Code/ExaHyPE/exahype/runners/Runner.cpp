@@ -272,6 +272,7 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
 int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& repository) {
   peano::utils::UserInterface::writeHeader();
 
+  initSolverTimeStamps();
   createGrid(repository);
 
   #if defined(Dim2) && defined(Asserts)
@@ -279,6 +280,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.iterate();
   #endif
 
+  initSolverTimeStamps();
   repository.switchToSolutionAdjustmentAndGlobalTimeStepComputation();
   repository.iterate();
   #if defined(Debug) || defined(Asserts)
@@ -318,6 +320,13 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n = 1;
 
+  logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers()); // change to log debug
+  logDebug("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
+
+  // todo discuss with Tobias; Finite volume time step size/stamp shifting does not go
+  // well with double shifting for ADER-DG scheme
+  initFiniteVolumesSolverTimeStamps();
+
   while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
          tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
     bool plot = exahype::plotters::isAPlotterActive(
@@ -335,6 +344,9 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     n++;
     logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
   }
+  if ( tarch::la::equals(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
+    logWarning("runAsMaster(...)","Minimum solver time step size is zero (up to machine precision).");
+  }
 
   repository.logIterationStatistics(true);
   repository.terminate();
@@ -345,6 +357,14 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 void exahype::runners::Runner::initSolverTimeStamps() {
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
     p->initInitialTimeStamp(0.0);
+  }
+}
+
+void exahype::runners::Runner::initFiniteVolumesSolverTimeStamps() {
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    if (p->getType()==exahype::solvers::Solver::Type::FiniteVolumes) {
+      p->initInitialTimeStamp(0.0);
+    }
   }
 }
 
@@ -371,8 +391,8 @@ void exahype::runners::Runner::startNewTimeStep(int n,bool printInfo) {
     logInfo("startNewTimeStep(...)",
             "\t\t dt_min         =" << currentMinTimeStepSize);
 
-    logInfo("startNewTimeStep(...)",
-            "\t\t next dt_min    =" << nextMinTimeStepSize);
+    logDebug("startNewTimeStep(...)",
+            "\t\t next dt_min    =" << nextMinTimeStepSize); // only interesting for ADER-DG. Prints MAX_DOUBLE for finite volumes.
   }
 #if defined(Debug) || defined(Asserts)
   tarch::logging::CommandLineLogger::getInstance()

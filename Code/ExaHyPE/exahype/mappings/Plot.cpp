@@ -299,6 +299,7 @@ void exahype::mappings::Plot::enterCell(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   if ( fineGridCell.isInitialised() ) {
     for (auto& pPlotter : exahype::plotters::RegisteredPlotters) {
+      // ADER-DG
       for (int i=0; i<fineGridCell.getNumberOfADERDGCellDescriptions(); i++) {
         double*  u = DataHeap::getInstance().getData(fineGridCell.getADERDGCellDescription(i).getSolution()).data();
         if (
@@ -312,6 +313,7 @@ void exahype::mappings::Plot::enterCell(
               fineGridCell.getADERDGCellDescription(i).getCorrectorTimeStamp());
         }
       }
+      // FINITE VOLUMES
       for (int i=0; i<fineGridCell.getNumberOfFiniteVolumeCellDescriptions(); i++) {
         double*  u = DataHeap::getInstance().getData(fineGridCell.getFiniteVolumesCellDescription(i).getSolution()).data();
         if (

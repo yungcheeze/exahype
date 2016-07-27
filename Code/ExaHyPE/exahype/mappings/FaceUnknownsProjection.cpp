@@ -26,7 +26,7 @@
 
 #include "exahype/VertexOperations.h"
 
-#include <string>
+#include <cstring>
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -326,58 +326,50 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
 
   // todo docu: Assumes top-down processing of the grid.
 
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getCellDescriptionsIndex())) {
-    const int numberOfADERDGCellDescriptions = static_cast<int>(
-        ADERDGCellDescriptionHeap::getInstance()
-            .getData(fineGridCell.getCellDescriptionsIndex())
-            .size());
+  if (fineGridCell.isInitialised()) {
+    const int numberOfADERDGCellDescriptions = fineGridCell.getNumberOfADERDGCellDescriptions();
     // please use a different UserDefined per mapping/event
-    const peano::datatraversal::autotuning::MethodTrace methodTrace =
-        peano::datatraversal::autotuning::UserDefined1;
-    const int grainSize =
-        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-            numberOfADERDGCellDescriptions, methodTrace);
+    const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined1;
+    const int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-        records::ADERDGCellDescription& pFine =
-            fineGridCell.getADERDGCellDescription(i);
-    exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
-      exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()]);
-    switch (pFine.getType()) {
-      case exahype::records::ADERDGCellDescription::Ancestor:
-        memset(DataHeap::getInstance().getData(pFine.getExtrapolatedPredictor()).data(), 0,
-               sizeof(double) * solver->getUnknownsPerCellBoundary());
-        memset(DataHeap::getInstance().getData(pFine.getFluctuation()).data(), 0,
-               sizeof(double) * solver->getUnknownsPerCellBoundary());
-        break;
-      default:
-        break;
-    }
+      records::ADERDGCellDescription& pFine = fineGridCell.getADERDGCellDescription(i);
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+        exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()]);
+      switch (pFine.getType()) {
+        case exahype::records::ADERDGCellDescription::Ancestor:
+          std::memset(DataHeap::getInstance().getData(pFine.getExtrapolatedPredictor()).data(), 0,
+                 sizeof(double) * solver->getUnknownsPerCellBoundary());
+          std::memset(DataHeap::getInstance().getData(pFine.getFluctuation()).data(), 0,
+                 sizeof(double) * solver->getUnknownsPerCellBoundary());
+          break;
+        default:
+          break;
+      }
 
-    // if we have at least one parent
-    if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(pFine.getParentIndex())) {
-      for (auto& pParent : ADERDGCellDescriptionHeap::getInstance().getData(pFine.getParentIndex())) {
-        exahype::Cell::SubcellPosition subcellPosition;
+      // if we have at least one parent
+      if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(pFine.getParentIndex())) {
+        for (auto& pParent : ADERDGCellDescriptionHeap::getInstance().getData(pFine.getParentIndex())) {
+          exahype::Cell::SubcellPosition subcellPosition;
 
-        if (pFine.getSolverNumber() == pParent.getSolverNumber()) {
-          switch (pFine.getType()) {
-            case exahype::records::ADERDGCellDescription::Descendant:
-              assertion1(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pFine.toString());
-              subcellPosition = fineGridCell.computeSubcellPositionOfDescendant(pFine);
+          if (pFine.getSolverNumber() == pParent.getSolverNumber()) {
+            switch (pFine.getType()) {
+              case exahype::records::ADERDGCellDescription::Descendant:
+                assertion1(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pFine.toString());
+                subcellPosition = fineGridCell.computeSubcellPositionOfDescendant(pFine);
 
-              prolongateFaceData(pFine, subcellPosition.parentIndex,
-                                 subcellPosition.subcellIndex);
+                prolongateFaceData(pFine, subcellPosition.parentIndex,
+                                   subcellPosition.subcellIndex);
 
-              break;
-            default:
-              break;
+                break;
+              default:
+                break;
+            }
           }
         }
       }
+      endpfor peano::datatraversal::autotuning::Oracle::getInstance()
+          .parallelSectionHasTerminated(methodTrace);
     }
-    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-        .parallelSectionHasTerminated(methodTrace);
-  }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 

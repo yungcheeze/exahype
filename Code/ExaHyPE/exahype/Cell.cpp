@@ -485,27 +485,6 @@ void exahype::Cell::validateNoNansInADERDGSolver(
                    fineGridVerticesEnumerator.toString(),
                    p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
 
-
-/*
-  // Allocate space-time DoF
-  p.setSpaceTimePredictor(DataHeap::getInstance().createData(
-      spaceTimeUnknownsPerCell, spaceTimeUnknownsPerCell));
-  p.setSpaceTimeVolumeFlux(DataHeap::getInstance().createData(
-      spaceTimeFluxUnknownsPerCell,
-      spaceTimeFluxUnknownsPerCell));
-
-  // Allocate volume DoF
-  p.setPredictor(DataHeap::getInstance().createData(
-      dataPerCell, dataPerCell));
-  p.setVolumeFlux(DataHeap::getInstance().createData(
-      fluxUnknownsPerCell, fluxUnknownsPerCell));
-  p.setUpdate(DataHeap::getInstance().createData(
-      unknownsPerCell, unknownsPerCell));
-  p.setSolution(DataHeap::getInstance().createData(
-      unknownsPerCell, unknownsPerCell));
-*/
-
-
   double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
   double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
   double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();

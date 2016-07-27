@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_AugmentedAMRGrid_H_
-#define EXAHYPE_ADAPTERS_AugmentedAMRGrid_H_
+#ifndef EXAHYPE_ADAPTERS_Plot_H_
+#define EXAHYPE_ADAPTERS_Plot_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,20 +18,13 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/NewTimeStep.h"
- #include "exahype/mappings/RegularMesh.h"
- #include "exahype/mappings/MarkingForRefinement.h"
- #include "exahype/mappings/Refinement.h"
- #include "exahype/mappings/SolutionAdjustment.h"
- #include "exahype/mappings/MarkingForAugmentation.h"
- #include "exahype/mappings/Augmentation.h"
- #include "exahype/adapters/AugmentedAMRGrid2MultiscaleLinkedCell_7.h"
+ #include "exahype/mappings/Plot.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class AugmentedAMRGrid;
+        class Plot;
       } 
 }
 
@@ -43,25 +36,11 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::AugmentedAMRGrid {
+class exahype::adapters::Plot {
   private:
-    typedef mappings::NewTimeStep Mapping0;
-    typedef mappings::RegularMesh Mapping1;
-    typedef mappings::MarkingForRefinement Mapping2;
-    typedef mappings::Refinement Mapping3;
-    typedef mappings::SolutionAdjustment Mapping4;
-    typedef mappings::MarkingForAugmentation Mapping5;
-    typedef mappings::Augmentation Mapping6;
-    typedef adapters::AugmentedAMRGrid2MultiscaleLinkedCell_7 Mapping7;
+    typedef mappings::Plot Mapping0;
 
-     Mapping0  _map2NewTimeStep;
-     Mapping1  _map2RegularMesh;
-     Mapping2  _map2MarkingForRefinement;
-     Mapping3  _map2Refinement;
-     Mapping4  _map2SolutionAdjustment;
-     Mapping5  _map2MarkingForAugmentation;
-     Mapping6  _map2Augmentation;
-     Mapping7  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7;
+     Mapping0  _map2Plot;
 
 
   public:
@@ -73,16 +52,16 @@ class exahype::adapters::AugmentedAMRGrid {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    AugmentedAMRGrid();
+    Plot();
 
     #if defined(SharedMemoryParallelisation)
-    AugmentedAMRGrid(const AugmentedAMRGrid& masterThread);
+    Plot(const Plot& masterThread);
     #endif
 
-    virtual ~AugmentedAMRGrid();
+    virtual ~Plot();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const AugmentedAMRGrid& workerThread);
+    void mergeWithWorkerThread(const Plot& workerThread);
     #endif
 
     void createInnerVertex(
