@@ -78,6 +78,8 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
   // linear advection x
   {
     a = 1.23;
+    b = 0.0;
+    c = 0.0;
     const double dt = 0.234;
     const double cfl = 1.0;
     const double dx_scalar = a * dt / cfl;
@@ -187,7 +189,7 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
   // linear advection z
   {}
 
-  assert("Test done" && false);
+  // assert("Test done" && false);
 }
 
 }  // namepsace c
