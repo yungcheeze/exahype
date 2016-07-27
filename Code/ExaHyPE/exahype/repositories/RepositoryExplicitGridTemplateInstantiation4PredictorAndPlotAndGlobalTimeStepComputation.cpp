@@ -26,6 +26,7 @@
  #include "exahype/adapters/Predictor.h" 
  #include "exahype/adapters/PredictorRerun.h" 
  #include "exahype/adapters/Corrector.h" 
+ #include "exahype/adapters/Plot.h" 
 
 
 namespace peano {
