@@ -142,7 +142,7 @@ void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(
     &&
     tarch::la::allGreater(_regionOfInterestRightTopBack,offsetOfPatch)
   ) {
-    logInfo("plotPatch(...)","offset of patch: "<<offsetOfPatch
+    logDebug("plotPatch(...)","offset of patch: "<<offsetOfPatch
     <<", size of patch: "<<sizeOfPatch
     <<", time stamp: "<<timeStamp);
 
