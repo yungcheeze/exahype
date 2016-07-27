@@ -32,7 +32,7 @@ FinitevolumesMusclTest::FinitevolumesMusclTest()
 FinitevolumesMusclTest::~FinitevolumesMusclTest() {}
 
 void FinitevolumesMusclTest::run() {
-//  testMethod(testSolutionUpdate);
+  testMethod(testSolutionUpdate);
 }
 
 }  // namepsace c
