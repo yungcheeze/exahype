@@ -20,7 +20,8 @@
 
 #include "peano/datatraversal/autotuning/Oracle.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
+#include "exahype/solvers/FiniteVolumesSolver.h"
 
 #include <limits>
 
@@ -159,8 +160,8 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
       records::ADERDGCellDescription& p =
           ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+          exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
 
       double* luh = 0;
       double admissibleTimeStepSize;
@@ -208,8 +209,8 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
     pfor(i, 0, numberOfFiniteVolumesCellDescriptions, grainSize)
       records::FiniteVolumesCellDescription& p =
           FiniteVolumesCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+      exahype::solvers::FiniteVolumesSolver* solver = static_cast<exahype::solvers::FiniteVolumesSolver*>(
+          exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
 
       if (p.getType()==exahype::records::FiniteVolumesCellDescription::Cell) {
 //         assertion1(p.getRefinementEvent()==exahype::records::FiniteVolumesCellDescription::None,p.toString()); // todo refine
@@ -217,6 +218,7 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
 
         double admissibleTimeStepSize = solver->stableTimeStepSize(
            finiteVolumesSolution, fineGridVerticesEnumerator.getCellSize());
+
 
         assertion(!std::isnan(admissibleTimeStepSize));
 
