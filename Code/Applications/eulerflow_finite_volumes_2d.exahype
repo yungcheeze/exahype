@@ -27,7 +27,8 @@ exahype-project  Euler2d
     fuse-algorithmic-steps-factor = 0.99
   end optimisation
 
-/*
+  /*
+  
   solver ADER-DG MyADERDGSolver
     variables          = 5
     parameters         = 0
@@ -61,8 +62,8 @@ exahype-project  Euler2d
       select   = {all}
     end plot
   end solver
-*/
-
+  
+  */
  
   solver Finite-Volumes MyFiniteVolumesSolver
     variables          = 5

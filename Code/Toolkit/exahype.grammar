@@ -137,8 +137,9 @@ Productions
         optimisation?
         profiling?
         solver_list?
+        couple_solvers?
       token_end [end_token]:token_project
-        { -> New project( name, paths.paths, architecture, computational_domain.computational_domain, shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation, profiling.profiling, [solver_list.solver] ) }
+        { -> New project( name, paths.paths, architecture, computational_domain.computational_domain, shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation, profiling.profiling, couple_solvers.couple_solvers, [solver_list.solver] ) }
     ;
 
   paths {->paths} =
@@ -170,9 +171,6 @@ Productions
       token_timeout      [timeout_equals]:token_equals    [timeout]:int_number
     token_end [end_token]:token_distributed_memory
       { -> New distributed_memory( identifier,configure,buffersize,timeout ) };
-
-
-
 
   shared_memory {->shared_memory} =
     [begin_token]:token_shared_memory
@@ -236,6 +234,14 @@ Productions
         { -> New profiling(profiler,metrics,Null,Null,Null,Null) }
       ;
 
+   couple_solvers {->couple_solvers} = 
+     [begin_token]:token_couple_solvers
+       identifier
+       token_time      [time_equals]:token_equals     [time]:float_number
+       token_repeat    [repeat_equals]:token_equals   [repeat]:float_number
+     token_end [end_token]:token_couple_solvers
+     { -> New couple_solvers(identifier,time,repeat)};
+   
    plot_solution_list {->plot_solution*} =
      [begin_token]:token_plot [plotter_type]:typename
        token_time      [time_equals]:token_equals     [time]:float_number
@@ -286,6 +292,7 @@ Abstract Syntax Tree
      distributed_memory?
      optimisation?
      profiling?
+     couple_solvers?
      solver*
      ;
 
@@ -316,3 +323,7 @@ Abstract Syntax Tree
 
    plot_solution =
      [plotter_type]:typename [time]:float_number [repeat]:float_number [output]:filename [select]:parameter_list;
+
+   couple_solvers =
+     [identifier]:identifier [time]:float_number [repeat]:float_number;
+     
