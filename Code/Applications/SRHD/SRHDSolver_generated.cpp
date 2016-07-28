@@ -37,7 +37,8 @@ void SRHD::SRHDSolver::riemannSolver(double* FL, double* FR, const double* const
 
 
 double SRHD::SRHDSolver::stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx) {
-   return kernels::aderdg::generic::c::stableTimeStepSize<eigenvalues>( luh, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );
+  double d = kernels::aderdg::generic::c::stableTimeStepSize<eigenvalues>( luh, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );
+  return d;
 }
 
 

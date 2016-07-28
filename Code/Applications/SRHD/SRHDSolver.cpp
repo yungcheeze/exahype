@@ -13,9 +13,9 @@ void pdeflux_(double* F, const double* const Q);
 void pdeeigenvalues_(double* lambda, const double* const Q, const int* normalNonZeroIndex);
 }
 
-SRHD::SRHDSolver::SRHDSolver(int kernelNumber, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
-  : exahype::solvers::Solver(
-      "SRHDSolver", exahype::solvers::Solver::Type::ADER_DG, kernelNumber, 5, 0, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
+SRHD::SRHDSolver::SRHDSolver(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):
+  exahype::solvers::ADERDGSolver("SRHDSolver", 5 /* nVars */, 0 /* nParams */, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
+  // implement if wanted
 }
 
 void SRHD::SRHDSolver::flux(const double* const Q, double** F) {

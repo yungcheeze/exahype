@@ -4,6 +4,6 @@
 // make targets afterwards.
 /////////////////////////////////////////////////////////////////
 #define EXAHYPE_GIT_BRANCH          "master"
-#define EXAHYPE_GIT_COMMIT_REVISION "58f983a8a5e2cf32b33f0e78515d894c56289048"
-#define EXAHYPE_GIT_COMMIT_DATE     "Wed Jul 13 21:10:03 2016 +0100"
-#define EXAHYPE_BUILD_DATE          "Wed Jul 13 21:58:06 BST 2016"
+#define EXAHYPE_GIT_COMMIT_REVISION "5935e665525b49e87d2205a7f31924d00a414a70"
+#define EXAHYPE_GIT_COMMIT_DATE     "Author: WEINZIERL T <frmh84@hamilton2.dur.ac.uk>"
+#define EXAHYPE_BUILD_DATE          "Thu Jul 28 15:09:34 CEST 2016"
