@@ -46,7 +46,7 @@ exahype-project  elasticwaves2d
     order              = 3
     maximum-mesh-size  = 0.05
     time-stepping      = global
-    kernel             = generic::fluxes::nonlinear
+    kernel             = user::defined
     language           = C
 
     plot vtk::ascii

@@ -60,30 +60,68 @@ class exahype::mappings::FaceUnknownsProjection {
   static int _parentOfDescendantFound;
 
   /**
-   * Prolongates face data from a parent cell description to
+   * Prolongates face data from a parent ADERDGCellDescription to
    * \p cellDescription if the fine grid cell associated with
    * \p cellDescription is adjacent to a boundary of the
    * coarse grid cell associated with the parent cell description.
    *
-   * \note This method makes only sense for virtual shells
-   * in the current AMR concept.
+   * \note This function assumes a top-down traversal of the grid and must thus
+   * be included into a enterCell(...) or descend(...) event.
+   *
+   * \note This method makes only sense if \p cellDescription is of type
+   * Descendant and EmptyDescendant.
    */
-  void prolongateFaceData(
+  void prolongateADERDGFaceData(
       const exahype::records::ADERDGCellDescription& cellDescription,
       const int parentIndex,
       const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const;
 
   /**
-   * Restricts face data from \p cellDescriptio to
-   * a parent cell description if the fine grid cell associated with
+   * Prolongates the boundary layer (or the complete solution) from a parent FiniteVolumesCellDescription to
+   * \p cellDescription if the fine grid cell associated with
    * \p cellDescription is adjacent to a boundary of the
    * coarse grid cell associated with the parent cell description.
    *
-   * \note This method makes only sense for real cells.
-   * in the current AMR concept.
+   * \note This function assumes a top-down traversal of the grid and must thus
+   * be included into a enterCell(...) or descend(...) event.
+   *
+   * \note This method makes only sense if \p cellDescription is of type
+   * Descendant and EmptyDescendant.
    */
-  void restrictFaceData(
+  void prolongateFiniteVolumesFaceData(
+      const exahype::records::FiniteVolumesCellDescription& cellDescription,
+      const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const;
+
+  /**
+   * Restricts face data from \p cellDescription to
+   * a parent ADERDGCellDescription if the fine grid cell associated with
+   * \p cellDescription is adjacent to a boundary of the
+   * coarse grid cell associated with the parent cell description.
+   *
+   * \note This function assumes a bottom-up traversal of the grid and must thus
+   * be included into a leaveCell(...) or ascend(...) event.
+   *
+   * \note This method makes only sense if \p cellDescription is of type Cell.
+   */
+  void restrictADERDGFaceData(
       const exahype::records::ADERDGCellDescription& cellDescription,
+      const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const;
+
+  /**
+   * Restricts the finite volume solution values (volume data) from \p cellDescription to
+   * a parent FiniteVolumesCellDescription if the fine grid cell associated with
+   * \p cellDescription is adjacent to a boundary of the
+   * coarse grid cell associated with the parent cell description.
+   *
+   * \note This function assumes a bottom-up traversal of the grid and must thus
+   * be included into a leaveCell(...) or ascend(...) event.
+   *
+   * \note This method makes only sense if \p cellDescription is of type Cell.
+   */
+  void restrictFiniteVolumesSolution(
+      const exahype::records::FiniteVolumesCellDescription& cellDescription,
       const int parentIndex,
       const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const;
 

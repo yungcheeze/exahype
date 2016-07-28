@@ -32,10 +32,13 @@ exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
     timeStepping,
     std::move(profiler)
   ),
-  _unknownsPerCell( (numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
-  _nextMinTimeStepSize(0.0),
-  _minTimeStepSize(std::numeric_limits<double>::max()),
-  _minTimeStamp(std::numeric_limits<double>::max()) {
+  _unknownsPerCell        (                        (numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
+  _unknownsPerFace        (                        (numberOfVariables)                    * power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
+  _unknownsPerCellBoundary( DIMENSIONS_TIMES_TWO * (numberOfVariables)                    * power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
+  _minTimeStamp       (std::numeric_limits<double>::max()),
+  _minTimeStepSize    (std::numeric_limits<double>::max()),
+  _nextMinTimeStepSize(std::numeric_limits<double>::max())
+  {
   assertion3(_unknownsPerCell>0, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis);
 }
 

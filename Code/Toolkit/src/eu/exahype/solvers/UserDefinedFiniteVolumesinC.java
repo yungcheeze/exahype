@@ -32,6 +32,7 @@ public class UserDefinedFiniteVolumesinC implements Solver {
     writer.write("\n\n\n");
   }
 
+  // @todo THIS MUST BE REVSISED!!!
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
     writer.write("#include \"" + solverName + ".h\"\n");
@@ -69,7 +70,7 @@ public class UserDefinedFiniteVolumesinC implements Solver {
     writer.write("}\n");
     writer.write("\n\n\n");
     writer.write("double " + projectName + "::" + solverName
-        + "::stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx ) {\n");
+        + "::stableTimeStepSize(double* luh, const tarch::la::Vector<DIMENSIONS,double>& dx ) {\n");
     writer.write("  // @todo Please implement\n");
     writer.write("  return 1.0;\n");
     writer.write("}\n");

@@ -36,12 +36,12 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
     writer.write("#include \"kernels/finitevolumes/muscl/c/3d/solutionUpdate.cpph\"\n");
     writer.write("\n\n\n");
 
-    writer.write("double " + projectName + "::" + solverName + "::stableTimeStepSize( double** luh, const tarch::la::Vector<DIMENSIONS, double>& dx) {\n" );
+    writer.write("double " + projectName + "::" + solverName + "::stableTimeStepSize( double* luh[THREE_POWER_D], const tarch::la::Vector<DIMENSIONS, double>& dx) {\n" );
     if (_enableProfiler) {
         writer.write("  _profiler->start(\"solutionUpdate\");\n");
       }
       writer.write( 
-        "  double maxAdmissibleDt;\n"
+        "  double maxAdmissibleDt=0;\n"
       );
       writer.write(
         "  kernels::finitevolumes::muscl::c::solutionUpdate<flux,eigenvalues>( luh, dx, std::numeric_limits<double>::max(), getNumberOfVariables(), getNodesPerCoordinateAxis(), maxAdmissibleDt );\n"
@@ -54,7 +54,7 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
       );
     writer.write("}\n\n\n" );
 
-    writer.write("void " + projectName + "::" + solverName + "::solutionUpdate(double** luh, const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt, double& maxAdmissibleDt) {\n" );
+    writer.write("void " + projectName + "::" + solverName + "::solutionUpdate(double* luh[THREE_POWER_D], const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt, double& maxAdmissibleDt) {\n" );
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"solutionUpdate\");\n");
     }

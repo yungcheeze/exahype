@@ -203,7 +203,7 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
 #endif
 
   tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
-      vertex.getADERDGCellDescriptionsIndex();
+      vertex.getCellDescriptionsIndex();
 
   dfor2(myDest) dfor2(mySrc)
       /*
@@ -237,8 +237,9 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
            currentSolver++) {
         if (cellDescriptions[currentSolver].getType() ==
             exahype::records::ADERDGCellDescription::Cell) {
-          exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers
-              [cellDescriptions[currentSolver].getSolverNumber()];
+          exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+              exahype::solvers::RegisteredSolvers
+              [cellDescriptions[currentSolver].getSolverNumber()]);
 
           const int numberOfFaceDof = solver->getUnknownsPerFace();
           const int normalOfExchangedFace =

@@ -33,9 +33,19 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
     int _unknownsPerCell;
 
     /**
-     * Next min step size of all patches.
+     * Total number of unknowns per cell face.
      */
-    double _nextMinTimeStepSize;
+    int _unknownsPerFace;
+
+    /**
+     * Total number of unknowns per cell boundary.
+     */
+    int _unknownsPerCellBoundary;
+
+    /**
+     * Minimum time stamps of all patches.
+     */
+    double _minTimeStamp;
 
     /**
      * Minimum time step size of all patches.
@@ -43,9 +53,9 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
     double _minTimeStepSize;
 
     /**
-     * Minimum time stamps of all patches.
+     * Next minimum step size of all patches.
      */
-    double _minTimeStamp;
+    double _nextMinTimeStepSize;
 
   public:
     FiniteVolumesSolver(
@@ -56,7 +66,7 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
       double maximumMeshSize,
       exahype::solvers::Solver::TimeStepping timeStepping,
       std::unique_ptr<profilers::Profiler> profiler =
-        std::unique_ptr<profilers::Profiler>( new profilers::simple::NoOpProfiler)
+      std::unique_ptr<profilers::Profiler>( new profilers::simple::NoOpProfiler)
     );
 
     virtual ~FiniteVolumesSolver() {}
@@ -69,7 +79,7 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
      * @param luh is a pointer to 3^d pointers to doubles
      */
     virtual double stableTimeStepSize(
-        double** luh,
+        double* luh[THREE_POWER_D],
         const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
 
     /**
@@ -93,7 +103,7 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
      *        possible. If maxAdmissibleDt<dt, then we know that no time
      *        step has been done.
      */
-    virtual void solutionUpdate(double** luh, const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt, double& maxAdmissibleDt) = 0;
+    virtual void solutionUpdate(double* luh[THREE_POWER_D], const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt, double& maxAdmissibleDt) = 0;
 
     virtual double getMinTimeStamp() const override;
 
@@ -115,6 +125,10 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
     virtual void startNewTimeStep() override;
 
     virtual double getNextMinTimeStepSize() const override;
+
+    virtual void sendToRank(int rank, int tag) override;
+
+    virtual void receiveFromRank(int rank, int tag) override;
 };
 
 

@@ -65,11 +65,11 @@ public class Helpers {
     writer.write("  public:\n");
     writer.write("    " + solverName + "(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler);\n\n");
 
-    writer.write("    double stableTimeStepSize( double** luh, const tarch::la::Vector<DIMENSIONS, double>& dx) override; \n\n" );
+    writer.write("    double stableTimeStepSize( double* luh[THREE_POWER_D], const tarch::la::Vector<DIMENSIONS, double>& dx) override; \n\n" );
     writer.write("    void   solutionAdjustment( double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) override; \n\n");
     writer.write("    bool   hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t) override; \n\n" );
     writer.write("    exahype::solvers::Solver::RefinementControl refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,const tarch::la::Vector<DIMENSIONS, double>& dx, double t,const int level) override; \n\n" );
-    writer.write("    void solutionUpdate(double** luh, const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt, double& maxAdmissibleDt) override; \n\n" );
+    writer.write("    void solutionUpdate(double* luh[THREE_POWER_D], const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt, double& maxAdmissibleDt) override; \n\n" );
   }
 
   /**
@@ -95,7 +95,6 @@ public class Helpers {
     writer.write("\n\n");
     writer.write("#include <memory>\n\n");
     writer.write("#include \"exahype/profilers/Profiler.h\"\n");
-    writer.write("#include \"exahype/solvers/ADERDGSolver.h\"\n");
     writer.write("#include \"exahype/solvers/FiniteVolumesSolver.h\"\n");
     writer.write("\n\n\n");
 
