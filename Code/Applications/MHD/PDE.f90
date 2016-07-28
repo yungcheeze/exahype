@@ -4,31 +4,27 @@
 !!! Based on srhd3dfortran/PDE.f90.
 !!!
 
-MODULE eos
-  ! Equation of State parameters.
-  ! Currently only an ideal EOS is implemented.
-  IMPLICIT NONE
-  PUBLIC
-  REAL, PARAMETER                :: gamma = 5.0/3.0
-ENDMODULE
-
 SUBROUTINE PDEEigenvalues(Lambda,Q,nv) 
-  USE typesDef, ONLY : nVar, d 
-  USE eos, ONLY : gamma
+  USE Parameters, ONLY : nVar, nDim , gamma
   USE, INTRINSIC :: ISO_C_BINDING 
   IMPLICIT NONE 
   ! Argument list  
-  REAL, INTENT(IN)  :: Q(nVar), nv(d)  
+  REAL, INTENT(IN)  :: Q(nVar), nv(nDim)  
   REAL, INTENT(OUT) :: Lambda(nVar)  
   ! Local variables  
   INTEGER :: iErr
   REAL :: rho,vx,vy,vz,p
   REAL :: cs2, cs, c0, v2, w, gamma1, vn, den, u, c
-  REAL :: ex, ey, ez, b2, e2, cs2, ca2, vf1, vf2
+  REAL :: ex, ey, ez, b2, e2, a2, ca2, vf1, vf2
+  REAL :: bx, by, bz
   REAL :: V(nVar)
 
   ! These are not the exact eigenvalues, instead of Lambda(1..9)
   ! we compute only two eigenvalues: Approximate magnetosonics
+  
+  ! Todo: What is ltime?
+  REAL :: ltime, xg
+
 
   CALL PDECons2Prim(V,Q,xg,ltime,iErr)
   rho    = V(1)
@@ -48,9 +44,9 @@ SUBROUTINE PDEEigenvalues(Lambda,Q,nv)
   v2     = vx*vx + vy*vy + vz*vz
   e2     = ex*ex + ey*ey + ez*ez
   w      = rho + gamma1*p
-  vn     = vx*n(1) + vy*n(2) + vz*n(3)
+  vn     = vx*nv(1) + vy*nv(2) + vz*nv(3)
 
-  cs2    = EQN%gamma * p / w
+  cs2    = gamma * p / w
   ca2    = (b2 - e2) / ( w + b2 - e2)
   a2     = cs2 + ca2 - cs2 * ca2
   den    = 1.0/( 1.0 - v2 * a2)
@@ -72,19 +68,22 @@ END SUBROUTINE PDEEigenvalues
 
 
 SUBROUTINE PDEFlux(F,Q) 
-  USE typesDef, ONLY : nVar, d 
+  USE Parameters, ONLY : nVar, nDim
   USE eos, ONLY : gamma
   USE, INTRINSIC :: ISO_C_BINDING 
   IMPLICIT NONE 
   ! Argument list  
   REAL, INTENT(IN)  :: Q(nVar) 
-  REAL, INTENT(OUT) :: F(nVar,d) 
+  REAL, INTENT(OUT) :: F(nVar,nDim) 
   ! Local variables  
   REAL :: rho,vx,vy,vz,p
   REAL :: v2,lf,w,ww,wwx,wwy,wwz,gamma1
-  REAL :: ex,ey,ez,v2,b2,e2,uem
+  REAL :: ex,ey,ez,b2,e2,uem,bx,by,bz
   REAL :: V(nVar)
   INTEGER :: iErr
+  
+  ! to be handled
+  REAL :: DivCleaning_a = 0.5
 
   CALL PDECons2Prim(V,Q,iErr)
   gamma1 = gamma/(gamma-1.0)
@@ -133,32 +132,17 @@ SUBROUTINE PDEFlux(F,Q)
   F(8, 2) = -ex   
   F(9, 2) = DivCleaning_a**2*by
   !
-  F(1, 3) = vz*rho*lf
-  F(2, 3) = wwz*vx - bz*bx - ez*ex 
-  F(3, 3) = wwz*vy - bz*by - ez*ey 
-  F(4, 3) = wwz*vz - bz*bz - ez*ez + p + uem
-  F(5, 3) = wwz + (ex*by - ey*bx) 
-  F(6, 3) = -ey  
-  F(7, 3) = ex   
-  F(8, 3) = V(9)   
-  F(9, 3) = DivCleaning_a**2*bz
+  IF ( nDim > 2 ) then
+    F(1, 3) = vz*rho*lf
+    F(2, 3) = wwz*vx - bz*bx - ez*ex 
+    F(3, 3) = wwz*vy - bz*by - ez*ey 
+    F(4, 3) = wwz*vz - bz*bz - ez*ez + p + uem
+    F(5, 3) = wwz + (ex*by - ey*bx) 
+    F(6, 3) = -ey  
+    F(7, 3) = ex   
+    F(8, 3) = V(9)   
+    F(9, 3) = DivCleaning_a**2*bz
+  ENDIF
   !
 END SUBROUTINE PDEFlux 
  
-
-
-SUBROUTINE PDENCP(BgradQ,Q,gradQ) 
-  ! not used  
-  PRINT *, 'PDENCP is not used for nonlinear-solvers' 
-  CALL EXIT  
-  !
-END SUBROUTINE PDENCP 
- 
-
-
-SUBROUTINE PDEMatrixB(Bn,Q,nv) 
-  ! not used  
-  PRINT *, 'PDEMatrixB is not used for nonlinear-solvers' 
-  CALL EXIT  
-  !
-END SUBROUTINE PDEMatrixB 
