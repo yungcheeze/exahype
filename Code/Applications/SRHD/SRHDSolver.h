@@ -13,6 +13,8 @@
 #include "exahype/solvers/ADERDGSolver.h"
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
+#include "GeneratedConstants.h"
+
 
 
 namespace SRHD{

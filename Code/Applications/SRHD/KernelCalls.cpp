@@ -18,6 +18,7 @@
 #include "kernels/DGBasisFunctions.h"
 
 #include "SRHDSolver.h"
+#include "GeneratedConstants.h"
 
 
 
@@ -46,7 +47,7 @@ void kernels::initSolvers(const exahype::Parser& parser) {
     profiler_identifier, metrics_vector);
 
   // Create and register solver
-  exahype::solvers::RegisteredSolvers.push_back( new SRHD::SRHDSolver(3+1, parser.getMaximumMeshSize(0), parser.getTimeStepping(0), std::move(profiler)));
+  exahype::solvers::RegisteredSolvers.push_back( new SRHD::SRHDSolver(MY_POLYNOMIAL_DEGREE+1, parser.getMaximumMeshSize(0), parser.getTimeStepping(0), std::move(profiler)));
   parser.checkSolverConsistency(0);
   
   }

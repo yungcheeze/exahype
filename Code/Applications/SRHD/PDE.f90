@@ -59,7 +59,7 @@ SUBROUTINE PDEEigenvalues(Lambda,Q,nv)
   USE, INTRINSIC :: ISO_C_BINDING 
   IMPLICIT NONE 
   ! Argument list  
-  REAL, INTENT(IN)  :: Q(nVar), nv(nDim)  
+  REAL, INTENT(IN)  :: Q(nVar), nv(nDim)
   REAL, INTENT(OUT) :: Lambda(nVar)  
   ! Local variables  
   INTEGER :: iErr

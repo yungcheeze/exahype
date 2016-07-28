@@ -11,6 +11,9 @@ export TBB_INC=/usr/include/tbb
 MPI_LDFLAGS="$(mpicc -showme:link)"
 export TBB_SHLIB="-L/usr/lib -ltbb $MPI_LDFLAGS"
 
+# Debugging mode
+export MODE="DEBUG"
+
 set -e
 
 cd ../../

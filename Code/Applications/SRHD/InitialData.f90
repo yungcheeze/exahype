@@ -16,27 +16,8 @@
     IMPLICIT NONE 
     ! Argument list 
     INTEGER, INTENT(OUT)              :: depth        ! maximal depth of tree recursion
-    
     depth = 4
-    
 END SUBROUTINE MinimumTreeDepth 
-
-SUBROUTINE HasToAdjustSolution(time, refine)
-    USE, INTRINSIC :: ISO_C_BINDING
-    IMPLICIT NONE 
-    ! Argument list 
-    REAL   , INTENT(IN)               :: time        ! 
-
-    LOGICAL, INTENT(OUT)              :: refine      ! 
-    
-    IF(time<0.000000001) THEN
-      refine = .TRUE.
-    ELSE
-      refine = .FALSE.
-    ENDiF
-    
-END SUBROUTINE HasToAdjustSolution
-
 
 SUBROUTINE AdjustedSolutionValues(x, w, t, dt, Q)
 	USE, INTRINSIC :: ISO_C_BINDING
