@@ -132,47 +132,46 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     eu.exahype.solvers.Solver solver = null;
 
     if (isFortran) {
-      switch (kernel) {
-        case eu.exahype.solvers.UserDefinedADER_DGinFortran.Identifier:
+      
+		if (eu.exahype.solvers.UserDefinedADER_DGinFortran.Identifier.equals(kernel)){
           solver = new eu.exahype.solvers.UserDefinedADER_DGinFortran();
-          break;
-        case eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran.Identifier:
-          solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran(_dimensions,
-              numberOfVariables, numberOfParameters, order, _enableProfiler);
-          break;
-        case eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran.Identifier:
-          solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran(_dimensions,
-              numberOfVariables, numberOfParameters, order, _enableProfiler);
-          break;
-      }
+        }
+
+		if (eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran.Identifier.equals(kernel)){
+			solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran(_dimensions,
+            numberOfVariables, numberOfParameters, order, _enableProfiler);        }
+
+		if (eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran.Identifier.equals(kernel)){
+			solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran(_dimensions,
+            numberOfVariables, numberOfParameters, order, _enableProfiler);
+        }
+		
     } else {
-      switch (kernel) {
-        case eu.exahype.solvers.UserDefinedADER_DGinC.Identifier:
+		if (eu.exahype.solvers.UserDefinedADER_DGinC.Identifier.equals(kernel)){
           solver = new eu.exahype.solvers.UserDefinedADER_DGinC(numberOfVariables,
               numberOfParameters, order);
-          break;
-        case eu.exahype.solvers.GenericFluxesLinearADER_DGinC.Identifier:
+        }
+		if (eu.exahype.solvers.GenericFluxesLinearADER_DGinC.Identifier.equals(kernel)){
           solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinC(_dimensions,
               numberOfVariables, numberOfParameters, order, _enableProfiler);
-          break;
-        case eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC.Identifier:
+        }
+		if (eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC.Identifier.equals(kernel)){
           solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC(_dimensions,
               numberOfVariables, numberOfParameters, order, _enableProfiler);
-          break;
-        case eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier:
+        }
+		if (eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier.equals(kernel)){
           solver = new eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC(_dimensions,
               numberOfVariables, numberOfParameters, order, _microarchitecture, _pathToLibxsmm,
               _enableProfiler);
-          break;
-        case eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier:
+        }
+		if (eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier.equals(kernel)){
           solver = new eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC(_dimensions,
               numberOfVariables, numberOfParameters, order, _microarchitecture, _pathToLibxsmm,
               _enableProfiler);
-          break;
-        case eu.exahype.solvers.KernelEuler2d.Identifier:
+        }
+		if (eu.exahype.solvers.KernelEuler2d.Identifier.equals(kernel)){
           solver = new eu.exahype.solvers.KernelEuler2d();
-          break;
-      }
+        }
     }
 
     if (solver == null) {
