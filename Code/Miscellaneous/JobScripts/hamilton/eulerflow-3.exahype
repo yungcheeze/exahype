@@ -35,13 +35,11 @@ exahype-project  Euler
     end-time                 = 0.4
   end computational-domain
 
-/*
   shared-memory
     identifier               = autotuning
     cores                    = 2
     properties-file          = sharedmemory.properties
   end shared-memory
- */
  
   distributed-memory
     identifier               = static_load_balancing
@@ -54,44 +52,29 @@ exahype-project  Euler
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99    
   end optimisation
-  
+
   solver ADER-DG MyEulerSolver
     variables         = 5
     parameters        = 0
     order             = 3
-    maximum-mesh-size = 0.1
+    maximum-mesh-size = 0.01
     time-stepping     = global
     kernel            = generic::fluxes::nonlinear
     language          = C
 
     plot vtk::ascii
-      time     = 0.0
+      time     = 1.0
       repeat   = 0.05
       output   = ./solution
       select   = {all} 
     end plot
 
     plot probe::ascii
-      time     = 0.0
+      time     = 1.0
       repeat   = 0.05
       output   = ./seismogram
       select   = {all,x:0.2,y:0.2} 
     end plot
   end solver
-
-  solver Finite-Volumes MyFVEulerSolver
-    variables         = 5
-    parameters        = 0
-    patch-size        = 3
-    maximum-mesh-size = 0.1
-    time-stepping     = global
-    kernel            = generic::MUSCL
-    language          = C
-  end solver
-
-  couple-solvers cellwise
-    time     = 0.0
-    repeat   = 0.05
-  end couple-solvers
 
 end exahype-project

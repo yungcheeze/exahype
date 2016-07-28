@@ -44,7 +44,7 @@
 	</target>
 	
 	<target name="compile" depends="init" description="compiles the sources to ./bin">
-		<javac target="1.7" srcdir="${src.dir}"
+		<javac target="1.6" srcdir="${src.dir}"
 			destdir="${bin.dir}"
 			classpathref="lib.path"
               		includeantruntime="true" />

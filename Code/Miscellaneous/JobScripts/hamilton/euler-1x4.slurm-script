@@ -2,6 +2,7 @@
 #SBATCH -p par6.q
 #SBATCH -N 1
 #SBATCH --ntasks-per-node=4
+#SBATCH --array 1-5
 #SBATCH -t 08:00:00
 #SBATCH --exclusive
 module purge
@@ -11,6 +12,6 @@ module load intel_mpi/5.0.1
 module unload gcc/4.9.1
 module load gcc/4.9.1
 
-
-mpirun /panfs/panasas1.hpc.dur.ac.uk/frmh84/ExaHyPE/Code/ApplicationExamples/EulerFlow/ExaHyPE-Euler /panfs/panasas1.hpc.dur.ac.uk/frmh84/ExaHyPE/Code/ApplicationExamples/eulerflow.exahype > 1x4.results
+set output=$SLURM_NTASKS"x4-"$SLURM_ARRAY_TASK_ID".results"
+mpirun ./ExaHyPE-Euler eulerflow-$SLURM_ARRAY_TASK_ID.exahype > $output
 

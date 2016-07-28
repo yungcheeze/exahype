@@ -17,7 +17,7 @@
 #include "kernels/DGMatrices.h"
 #include "kernels/DGBasisFunctions.h"
 
-#include "SRHDSolver.h"
+#include "MHDSolver.h"
 
 
 
@@ -46,8 +46,9 @@ void kernels::initSolvers(const exahype::Parser& parser) {
     profiler_identifier, metrics_vector);
 
   // Create and register solver
-  exahype::solvers::RegisteredSolvers.push_back( new SRHD::SRHDSolver(3+1, parser.getMaximumMeshSize(0), parser.getTimeStepping(0), std::move(profiler)));
+  exahype::solvers::RegisteredSolvers.push_back( new MHDSolver::MHDSolver(3+1, parser.getMaximumMeshSize(0), parser.getTimeStepping(0), std::move(profiler)));
   parser.checkSolverConsistency(0);
+
   
   }
   exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter(0,0,parser));
