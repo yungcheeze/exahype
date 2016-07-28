@@ -193,6 +193,8 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
   tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
       vertex.getADERDGCellDescriptionsIndex();
 
+  // @todo Hier stimmen die Abfolgen nicht!
+
   dfor2(dest)
       dfor2(src) if (vertex.getAdjacentRanks()(destScalar) == toRank &&
                      vertex.getAdjacentRanks()(srcScalar) ==
@@ -213,8 +215,9 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
            currentSolver++) {
         if (cellDescriptions[currentSolver].getType() ==
             exahype::records::ADERDGCellDescription::Cell) {
-          exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers
-              [cellDescriptions[currentSolver].getSolverNumber()];
+          exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+              exahype::solvers::RegisteredSolvers
+              [cellDescriptions[currentSolver].getSolverNumber()]);
 
           const int numberOfFaceDof = solver->getUnknownsPerFace();
           const int normalOfExchangedFace =

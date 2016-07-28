@@ -237,8 +237,9 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
            currentSolver++) {
         if (cellDescriptions[currentSolver].getType() ==
             exahype::records::ADERDGCellDescription::Cell) {
-          exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers
-              [cellDescriptions[currentSolver].getSolverNumber()];
+          exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+              exahype::solvers::RegisteredSolvers
+              [cellDescriptions[currentSolver].getSolverNumber()]);
 
           const int numberOfFaceDof = solver->getUnknownsPerFace();
           const int normalOfExchangedFace =
