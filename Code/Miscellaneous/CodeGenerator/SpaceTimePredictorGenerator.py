@@ -795,6 +795,11 @@ class SpaceTimePredictorGenerator:
         l_startAddr_face5 = 4 * l_vectorLength
         l_startAddr_face6 = 5 * l_vectorLength
 
+        # generate intrinsics code for scatter
+        Utils.generateScatter(self.m_config['nVar'], \
+                              self.m_config['nDof']**(self.m_config['nDim']-1), \
+                              l_chunkSize)
+
         # 2D/3D compatibility
         if(self.m_config['nDim'] >= 3):
             kmax = self.m_config['nDof']
