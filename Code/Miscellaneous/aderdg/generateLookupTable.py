@@ -137,7 +137,7 @@ while (order <= maxOrder):
 # Derivative Matrix
 ###############################################################################
     dudx = assembleDiscreteDerivativeOperator(MM, Kxi)
-    writeMatrixLookupTableInitToFile(out,"",iK1,order+1,order+1,"dudx[%d]" % order)
+    writeMatrixLookupTableInitToFile(out,"",dudx,order+1,order+1,"dudx[%d]" % order)
 
 ###############################################################################
 # Equidistant grid projectors
