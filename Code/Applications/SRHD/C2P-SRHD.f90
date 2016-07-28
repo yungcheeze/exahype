@@ -2,8 +2,7 @@
 ! Should be merged with MHD's.
 
 SUBROUTINE PDECons2Prim(V,Q,iErr)
-  USE typesDef, ONLY : nVar
-  USE eos, ONLY : gamma
+  USE parameters, ONLY : nVar, gamma
   IMPLICIT NONE
   !--------------------------------------------!
   ! Argument list declaration
@@ -217,8 +216,7 @@ END SUBROUTINE PDECons2Prim
 ! This subroutine is not used in this fortran code but only by the initial conditions,
 ! which are given in C++ code. We need an interface for that.
 SUBROUTINE PDEPrim2Cons(Q,V)
-  USE typesDef, ONLY : nVar
-  USE eos, ONLY : gamma
+  USE parameters, ONLY : nVar, gamma
   USE, INTRINSIC :: ISO_C_BINDING 
   IMPLICIT NONE
   ! Argument list declaration

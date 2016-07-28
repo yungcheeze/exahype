@@ -1,4 +1,7 @@
-  MODULE typesDef 
+! SRHD application: Shocktube parameters
+
+  MODULE Parameters 
+    use iso_c_binding
     IMPLICIT NONE  
     PUBLIC  
 
@@ -14,4 +17,10 @@
 
     INTEGER, PARAMETER             :: nDim = 2                            ! The number of space dimensions that we actually want to simulate  
     INTEGER, PARAMETER             :: nVar = 5                            ! The number of variables of the PDE system  
-  END MODULE typesDef  
+    
+    ! This was moved from TYPE(tEquation) :: EQN from the MainVariables.f90 module by Olindo
+    REAL, PARAMETER                :: gamma = 5.0/3.0
+    
+    ! Add further parameters as from 
+    !REAL(C_FLOAT), BIND(C)  :: foobar
+  END MODULE Parameters  

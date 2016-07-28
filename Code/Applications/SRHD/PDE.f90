@@ -5,16 +5,8 @@
 !!!
 !!!
 
-MODULE eos
-  IMPLICIT NONE
-  PUBLIC
-  ! This was moved from TYPE(tEquation) :: EQN from the MainVariables.f90 module by Olindo
-  REAL, PARAMETER                :: gamma = 5.0/3.0
-ENDMODULE
-
 SUBROUTINE PDEFlux(F,Q) 
-  USE typesDef, ONLY : nVar, nDim
-  USE eos, ONLY : gamma
+  USE Parameters, ONLY : nVar, nDim, gamma
   USE, INTRINSIC :: ISO_C_BINDING 
   IMPLICIT NONE 
   REAL, PARAMETER :: epsilon = 1e-14
@@ -68,8 +60,7 @@ END SUBROUTINE PDEFlux
 
 
 SUBROUTINE PDEEigenvalues(Lambda,Q,nv) 
-  USE typesDef, ONLY : nVar, nDim
-  USE eos, ONLY : gamma
+  USE Parameters, ONLY : nVar, nDim, gamma
   USE, INTRINSIC :: ISO_C_BINDING 
   IMPLICIT NONE 
   ! Argument list  
