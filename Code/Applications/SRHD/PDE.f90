@@ -1,9 +1,4 @@
-!!!
-!!! A Special Relativistic Hydrodynamics ExaHype Kernel.
-!!! Based on files provided by Olindo.
-!!! Adopted for ExaHyPE by Sven.
-!!!
-!!!
+! Special Relativistic Hydrodynamics Conservative Formulation
 
 SUBROUTINE PDEFlux(F,Q) 
   USE Parameters, ONLY : nVar, nDim, gamma

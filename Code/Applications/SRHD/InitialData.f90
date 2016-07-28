@@ -49,19 +49,7 @@ SUBROUTINE AdjustedSolutionValues(x, w, t, dt, Q)
 	REAL, INTENT(IN)               :: dt          ! 
 
 	REAL, INTENT(OUT)              :: Q(5)        ! 
-
-	!PRINT *, ' ---------------------------------------- ' 
-	!PRINT *, x
-	!PRINT *, ' ---------------------------------------- ' 
-	!PRINT *, w
-	!PRINT *, ' ---------------------------------------- ' 
-	!PRINT *, t
-	!PRINT *, ' ---------------------------------------- ' 
-	!PRINT *, dt
-	!PRINT *, ' ---------------------------------------- ' 
-	!PRINT *, Q
-	!PRINT *, ' ---------------------------------------- ' 
-
+	
 	IF ( t < 1e-15 ) THEN
 		CALL InitialData(x, Q)
 	ENDIF
