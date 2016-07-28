@@ -43,7 +43,6 @@ import WeightsGenerator
 import DGMatrixGenerator
 import string
 import re
-import Utils
 
 
 m_architecture           = ''
@@ -75,6 +74,7 @@ def generateAssemblerCode(i_pathToOutputFile,
                           i_matmulConfigList):
     l_pathToAsmFile = os.path.splitext(i_pathToOutputFile)[0]+'.c'
     for l_matmul in i_matmulConfigList:
+        # for plain assembly code (rather than inline assembly) choose dense_asm
         l_commandLineArguments =       "dense"  + \
                                  ' ' + m_pathToLibxsmmGenerator+"/"+l_pathToAsmFile + \
                                  ' ' + l_matmul.baseroutinename + \
