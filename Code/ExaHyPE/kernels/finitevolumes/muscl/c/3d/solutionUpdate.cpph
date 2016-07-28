@@ -25,8 +25,6 @@ namespace {
 // TODO(guera): Make basisSize and numberOfVariables template arguments
 // template <int I, int J, int K, int L>
 
-// TODO(guera): Remove line
-
 struct idx4 {
   idx4(int I, int J, int K, int L, int line)
       : I_(I), J_(J), K_(K), L_(L), line_(line) {}
@@ -81,7 +79,7 @@ template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda)>
 void riemannSolver(double* FL, double* FR, const double* qL, const double* qR,
                    int numberOfVariables, int normalNonZero) {
-  // TODO(guera): Make this function return dt = dx * CFL / s_max ?!
+  // TODO(guera): Make this function return s_max
 
   double* sL = new double[numberOfVariables];
   double* sR = new double[numberOfVariables];
@@ -128,12 +126,13 @@ void solutionUpdate(double** luh,
                     int numberOfVariables, int basisSize) {
   // using idx_luh = idx4<basisSize, basisSize, basisSize, numberOfVariables>;
   idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables, __LINE__);
+  // TODO(guera): pull all idx objects to the top
 
-  // TODO(guera): pull all index functions to the top
+  // Data layout (C): [z][y][x][v]
 
   const int basisSize2 = basisSize * basisSize;
 
-  // [z][y][x][v]
+  // 1. Compute up- and downwind gradients
   double* delta_mid_x =
       new double[numberOfVariables * basisSize2 * (basisSize + 3)];
   double* delta_mid_y =
@@ -365,8 +364,7 @@ void solutionUpdate(double** luh,
     }
   }
 
-  // compute slope
-  // [x][y][z][v]
+  // 2. Compute minmod slopes
   double* delta_x =
       new double[numberOfVariables * basisSize2 * (basisSize + 2)];
   double* delta_y =
@@ -449,15 +447,7 @@ void solutionUpdate(double** luh,
     }
   }
 
-  /*
-  std::cout << "++++++++++++++" << std::endl;
-  for (int i = 0; i < basisSize2 * (basisSize + 2) * numberOfVariables; i++) {
-    std::cout << delta_z[i] << " ";
-  }
-  std::cout << std::endl << "++++++++++++++++" << std::endl;
-  */
-
-  // extrapolate
+  // 3. Extrapolate
   double* u_l_x = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
   double* u_r_x = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
   double* u_l_y = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
@@ -627,15 +617,7 @@ void solutionUpdate(double** luh,
     }
   }
 
-  /*
-  std::cout << "+++++++++++" << std::endl;
-  for (int i = 0; i < numberOfVariables * basisSize2 * (basisSize + 2); i++) {
-    std::cout << u_r_z[i] << " ";
-  }
-  std::cout << std::endl << "+++++++++++++" << std::endl;
-  */
-
-  // evaluate flux
+  // 4. Evaluate flux
   double* F_l_x = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
   double* F_r_x = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
   double* F_l_y = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
@@ -733,15 +715,7 @@ void solutionUpdate(double** luh,
     delete[] unused;
   }
 
-  /*
-  std::cout << "+++++++++++++" << std::endl;
-  for (int i = 0; i < basisSize2 * (basisSize + 2) * numberOfVariables; i++) {
-    std::cout << F_r_y[i] << " ";
-  }
-  std::cout << std::endl << "+++++++++++" << std::endl;
-  */
-
-  // evolve
+  // 5. Evolve (dt / 2)
   // x
   {
     // using idx_x = idx4<basisSize, basisSize, basisSize + 2,
@@ -753,13 +727,12 @@ void solutionUpdate(double** luh,
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize + 2; k++) {
-          for (int l = 0; l < basisSize; l++) {
+          for (int l = 0; l < numberOfVariables; l++) {
             double Q =
                 0.5 * dt *
                 ((F_l_x[idx_x(i, j, k, l)] - F_r_x[idx_x(i, j, k, l)]) / dx[0] +
                  (F_l_y[idx_x(i, j, k, l)] - F_r_y[idx_x(i, j, k, l)]) / dx[1] +
                  (F_l_z[idx_x(i, j, k, l)] - F_r_z[idx_x(i, j, k, l)]) / dx[2]);
-            assert(std::isfinite(Q));
             u_l_x[idx_x(i, j, k, l)] += Q;
             u_r_x[idx_x(i, j, k, l)] += Q;
           }
@@ -779,7 +752,7 @@ void solutionUpdate(double** luh,
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize + 2; j++) {
         for (int k = 0; k < basisSize; k++) {
-          for (int l = 0; l < basisSize; l++) {
+          for (int l = 0; l < numberOfVariables; l++) {
             double Q =
                 0.5 * dt *
                 ((F_l_x[idx_y(i, j, k, l)] - F_r_x[idx_y(i, j, k, l)]) / dx[0] +
@@ -804,7 +777,7 @@ void solutionUpdate(double** luh,
     for (int i = 0; i < basisSize + 2; i++) {
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize; k++) {
-          for (int l = 0; l < basisSize; l++) {
+          for (int l = 0; l < numberOfVariables; l++) {
             double Q =
                 0.5 * dt *
                 ((F_l_x[idx_z(i, j, k, l)] - F_r_x[idx_z(i, j, k, l)]) / dx[0] +
@@ -818,15 +791,98 @@ void solutionUpdate(double** luh,
     }
   }
 
-  /*
-  std::cout << "+++++++++" << std::endl;
-  for (int i = 0; i < basisSize2 * (basisSize + 2) * numberOfVariables; i++) {
-    std::cout << u_l_x[i] << " ";
-  }
-  std::cout << std::endl << "+++++++" << std::endl;
-  */
+  // 6. Update fluxes once again
+  // x
+  {
+    // using idx_x = idx4<basisSize, basisSize, basisSize + 2,
+    // numberOfVariables>;
 
-  // riemann
+    idx4 idx_x(basisSize, basisSize, basisSize + 2, numberOfVariables,
+               __LINE__);
+
+    // We only want f from (f, g, h). g and h need to be stored in "unused"
+    double* unused = new double[(DIMENSIONS - 1) * numberOfVariables];
+
+    double* f_x[3];
+    f_x[1] = unused;
+    f_x[2] = unused + numberOfVariables;
+
+    for (int i = 0; i < basisSize; i++) {          // z
+      for (int j = 0; j < basisSize; j++) {        // y
+        for (int k = 0; k < basisSize + 2; k++) {  // x
+          f_x[0] = F_l_x + idx_x(i, j, k, 0);
+          PDEFlux3d(u_l_x + idx_x(i, j, k, 0), f_x);
+
+          f_x[0] = F_r_x + idx_x(i, j, k, 0);
+          PDEFlux3d(u_r_x + idx_x(i, j, k, 0), f_x);
+        }
+      }
+    }
+
+    delete[] unused;
+  }
+
+  // y
+  {
+    // using idx_y = idx4<basisSize, basisSize + 2, basisSize,
+    // numberOfVariables>;
+
+    idx4 idx_y(basisSize, basisSize + 2, basisSize, numberOfVariables,
+               __LINE__);
+
+    // See above. We only want g from (f, g, h)
+    double* unused = new double[(DIMENSIONS - 1) * numberOfVariables];
+
+    double* f_y[3];
+    f_y[0] = unused;
+    f_y[2] = unused + numberOfVariables;
+
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize + 2; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          f_y[1] = F_l_y + idx_y(i, j, k, 0);
+          PDEFlux3d(u_l_y + idx_y(i, j, k, 0), f_y);
+
+          f_y[1] = F_r_y + idx_y(i, j, k, 0);
+          PDEFlux3d(u_r_y + idx_y(i, j, k, 0), f_y);
+        }
+      }
+    }
+
+    delete[] unused;
+  }
+
+  // z
+  {
+    // using idx_z = idx4<basisSize + 2, basisSize, basisSize,
+    // numberOfVariables>;
+
+    idx4 idx_z(basisSize + 2, basisSize, basisSize, numberOfVariables,
+               __LINE__);
+
+    // See above. We only want h from (f, g, h)
+    double* unused = new double[(DIMENSIONS - 1) * numberOfVariables];
+
+    double* f_z[3];
+    f_z[0] = unused;
+    f_z[1] = unused + numberOfVariables;
+
+    for (int i = 0; i < basisSize + 2; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          f_z[2] = F_l_z + idx_z(i, j, k, 0);
+          PDEFlux3d(u_l_z + idx_z(i, j, k, 0), f_z);
+
+          f_z[2] = F_r_z + idx_z(i, j, k, 0);
+          PDEFlux3d(u_r_z + idx_z(i, j, k, 0), f_z);
+        }
+      }
+    }
+
+    delete[] unused;
+  }
+
+  // 7. Solve Riemann problems
   // x
   {
     // using idx_x = idx4<basisSize, basisSize, basisSize + 2,
@@ -838,20 +894,10 @@ void solutionUpdate(double** luh,
     for (int i = 0; i < basisSize; i++) {          // z
       for (int j = 0; j < basisSize; j++) {        // y
         for (int k = 0; k < basisSize + 1; k++) {  // x
-          /*
-          std::cout << (u_r_x + idx_x(i, j, k, 0))[0] << " "
-                    << (u_l_x + idx_x(i, j, k + 1, 0))[0] << " "
-                    << (F_r_x + idx_x(i, j, k, 0))[0] << " "
-                    << (F_l_x + idx_x(i, j, k + 1, 0))[0] << ":";
-                    */
           riemannSolver<PDEEigenvalues>(
               F_r_x + idx_x(i, j, k, 0), F_l_x + idx_x(i, j, k + 1, 0),
               u_r_x + idx_x(i, j, k, 0), u_l_x + idx_x(i, j, k + 1, 0),
               numberOfVariables, 0 /* normalNonZero */);
-          /*
-          std::cout << (F_r_x + idx_x(i, j, k, 0))[0] << " "
-                    << (F_l_x + idx_x(i, j, k + 1, 0))[0] << std::endl;
-                    */
         }
       }
     }
@@ -868,19 +914,10 @@ void solutionUpdate(double** luh,
     for (int i = 0; i < basisSize; i++) {        // z
       for (int j = 0; j < basisSize + 1; j++) {  // y
         for (int k = 0; k < basisSize; k++) {    // x
-          /*
-          std::cout << (u_r_y + idx_y(i, j, k, 0))[0] << " "
-                    << (u_l_y + idx_y(i, j + 1, k, 0))[0] << " "
-                    << (F_r_y + idx_y(i, j, k, 0))[0] << " "
-                    << ":";
-                    */
           riemannSolver<PDEEigenvalues>(
               F_r_y + idx_y(i, j, k, 0), F_l_y + idx_y(i, j + 1, k, 0),
               u_r_y + idx_y(i, j, k, 0), u_l_y + idx_y(i, j + 1, k, 0),
               numberOfVariables, 1 /* normalNonZero */);
-          /*
-          std::cout << (F_r_y + idx_y(i, j, k, 0))[0] << " " << std::endl;
-          */
         }
       }
     }
@@ -906,30 +943,10 @@ void solutionUpdate(double** luh,
     }
   }
 
-  /*
-  std::cout << "xxxxxxxxxxxxxxx" << std::endl;
-  for (int i = 0; i < basisSize; i++) {
-    for (int j = 0; j < basisSize + 2; j++) {
-      for (int k = 0; k < basisSize; k++) {
-        std::cout << i << " " << j << " " << k << ":";
-        for (int l = 0; l < numberOfVariables; l++) {
-          std::cout
-              << F_l_y[i * basisSize * (basisSize + 2) * numberOfVariables +
-                       j * basisSize * numberOfVariables +
-                       k * numberOfVariables + l]
-              << " ";
-        }
-        std::cout << std::endl;
-      }
-    }
-  }
-  std::cout << std::endl << "xxxxxxxxxxxxxxxxxx" << std::endl;
-  */
-
   // Overwrite left and right value, have the same value, flow from left to
   // right
 
-  // update
+  // 8. Update DOFs
   {
     // using idx_x = idx4<basisSize, basisSize, basisSize + 2,
     // numberOfVariables>;
@@ -951,11 +968,11 @@ void solutionUpdate(double** luh,
           for (int l = 0; l < numberOfVariables; l++) {
             luh[13][idx_luh(i, j, k, l)] +=
                 dt *
-                ((F_l_x[idx_x(i, j, k + 1, l)] - F_r_x[idx_x(i, j, k + 1, l)]) /
+                ((F_r_x[idx_x(i, j, k, l)] - F_r_x[idx_x(i, j, k + 1, l)]) /
                      dx[0] +
-                 (F_l_y[idx_y(i, j + 1, k, l)] - F_r_y[idx_y(i, j + 1, k, l)]) /
+                 (F_r_y[idx_y(i, j, k, l)] - F_r_y[idx_y(i, j + 1, k, l)]) /
                      dx[1] +
-                 (F_l_z[idx_z(i + 1, j, k, l)] - F_r_z[idx_z(i + 1, j, k, l)]) /
+                 (F_r_z[idx_z(i, j, k, l)] - F_r_z[idx_z(i + 1, j, k, l)]) /
                      dx[2]);
           }
         }
