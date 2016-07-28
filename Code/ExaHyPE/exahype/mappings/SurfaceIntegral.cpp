@@ -21,7 +21,7 @@
 #include "peano/datatraversal/autotuning/Oracle.h"
 #include "tarch/multicore/Loop.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -334,10 +334,10 @@ void exahype::mappings::SurfaceIntegral::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getADERDGCellDescriptionsIndex())) {
+          fineGridCell.getCellDescriptionsIndex())) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
-            .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+            .getData(fineGridCell.getCellDescriptionsIndex())
             .size());
 
     // please use a different UserDefined per mapping/event
@@ -347,9 +347,9 @@ void exahype::mappings::SurfaceIntegral::enterCell(
         peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
             numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      auto& p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())[i];
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[p.getSolverNumber()];
+      auto& p = ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+          exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
       double* lduh = 0;
       double* lFhbnd = 0;
 

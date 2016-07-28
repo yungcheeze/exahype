@@ -34,12 +34,12 @@ std::string exahype::plotters::ADERDG2VTKAscii::getIdentifier() {
 
 void exahype::plotters::ADERDG2VTKAscii::init(
   const std::string& filename,
-  int                order,
+  int                orderPlusOne,
   int                unknowns,
   const std::string& select
 ){
   _filename    = filename;
-  _order       = order;
+  _order       = orderPlusOne-1;
   _unknowns    = unknowns;
   _select      = select;
   _patchWriter = nullptr;

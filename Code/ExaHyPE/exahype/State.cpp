@@ -21,7 +21,11 @@
 
 #include <limits>
 
-exahype::State::State() : Base() {}
+exahype::State::State() : Base() {
+  #ifdef Parallel
+  _stateData.setGridConstructionState( exahype::records::State::Default );
+  #endif
+}
 
 exahype::State::State(const Base::PersistentState& argument) : Base(argument) {
   // do nothing
@@ -39,4 +43,53 @@ void exahype::State::writeToCheckpoint(
 void exahype::State::readFromCheckpoint(
     const peano::grid::Checkpoint<exahype::Vertex, exahype::Cell>& checkpoint) {
   // do nothing
+}
+
+void exahype::State::updateRegularInitialGridRefinementStrategy() {
+  assertion( tarch::parallel::Node::getInstance().isGlobalMaster() );
+
+  #ifdef Parallel
+  if (
+    tarch::parallel::Node::getInstance().getNumberOfNodes()==1
+    ||
+    _stateData.getGridConstructionState()==exahype::records::State::Aggressive
+  ) {
+    _stateData.setGridConstructionState( exahype::records::State::Aggressive );
+  }
+  else if (
+    tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()==0
+    &&
+    isGridStationary()
+  ) {
+    _stateData.setGridConstructionState( exahype::records::State::Aggressive );
+  }
+  else if (
+    isInvolvedInJoinOrFork()
+    ||
+    !isTraversalInverted()
+    ||
+    !isGridStationary()
+  ) {
+    _stateData.setGridConstructionState( exahype::records::State::Veto );
+  }
+  else {
+    _stateData.setGridConstructionState( exahype::records::State::Default );
+  }
+  #endif
+}
+
+bool exahype::State::refineInitialGridInCreationalEvents() const {
+  #ifdef Parallel
+  return _stateData.getGridConstructionState() == exahype::records::State::Aggressive;
+  #else
+  return true;
+  #endif
+}
+
+bool exahype::State::refineInitialGridInTouchVertexLastTime() const {
+  #ifdef Parallel
+  return _stateData.getGridConstructionState() != exahype::records::State::Veto;
+  #else
+  return false;
+  #endif
 }

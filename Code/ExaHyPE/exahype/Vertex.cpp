@@ -18,7 +18,7 @@
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
 exahype::Vertex::Vertex() : Base() {
-  _vertexData._persistentRecords._ADERDGCellDescriptionsIndex =
+  _vertexData._persistentRecords._CellDescriptionsIndex =
       multiscalelinkedcell::HangingVertexBookkeeper::getInstance()
           .createVertexLinkMapForNewVertex();
 }
@@ -34,6 +34,6 @@ exahype::Vertex::Vertex(const Base::PersistentVertex& argument)
 }
 
 tarch::la::Vector<TWO_POWER_D, int>&
-exahype::Vertex::getADERDGCellDescriptionsIndex() {
-  return _vertexData._persistentRecords._ADERDGCellDescriptionsIndex;
+exahype::Vertex::getCellDescriptionsIndex() {
+  return _vertexData._persistentRecords._CellDescriptionsIndex;
 }

@@ -117,9 +117,11 @@ class SurfaceIntegralGenerator:
         # => we skip gcc here
         # do not query __GNUC__ - icc also defines this
         l_sourceFile.write('#ifdef __INTEL_COMPILER\n'\
-                           '  __assume_aligned(kernels::s_m, ALIGNMENT)\n'\
-                           '  __assume_aligned(kernels::FRCoeff, ALIGNMENT)\n'\
-                           '  __assume_aligned(kernels::FLCoeff, ALIGNMENT)\n'
+                           '  __assume_aligned(s_m, ALIGNMENT);\n'\
+                           '  __assume_aligned(FRCoeff, ALIGNMENT);\n'\
+                           '  __assume_aligned(FLCoeff, ALIGNMENT);\n'\
+                           '  __assume_aligned(weights1, ALIGNMENT);\n'\
+                           '  __assume_aligned(weights2, ALIGNMENT);\n'
                            '#endif\n')
 
         # temporary memory for scaled versions
@@ -138,14 +140,14 @@ class SurfaceIntegralGenerator:
         # FRCoeff_s = lFbnd(j,k,iVar,2)*FRCoeff
         # copy unpadded length
         l_dscal = Utils.generateDSCAL('lFbnd['+str(self.m_startAddr_face2)+'+iVar*'+str(self.m_chunkSize)+'+jk]',\
-                                      'kernels::FRCoeff',\
+                                      'FRCoeff',\
                                       'FRCoeff_s',\
                                       self.m_config['nDof'])
         l_sourceFile.write(l_dscal)
         # FLCoeff_s = lFbnd(j,k,iVar,1)*FLCoeff
         # copy unpadded length
         l_dscal = Utils.generateDSCAL('lFbnd['+str(self.m_startAddr_face1)+'+iVar*'+str(self.m_chunkSize)+'+jk]',\
-                                      'kernels::FLCoeff',\
+                                      'FLCoeff',\
                                       'FLCoeff_s',\
                                       self.m_config['nDof'])
         l_sourceFile.write(l_dscal)
@@ -153,14 +155,14 @@ class SurfaceIntegralGenerator:
         # note loop length with padding
         l_sourceFile.write('#pragma simd\n'\
                            '    for(int it=0;it<'+str(paddedDof)+';it++)\n'\
-                           '      kernels::s_m[it] = kernels::weights2[jk]/dx[0]*(FRCoeff_s[it]-FLCoeff_s[it]);\n')
+                           '      s_m[it] = weights2[jk]/dx[0]*(FRCoeff_s[it]-FLCoeff_s[it]);\n')
         # lduh(iVar,:,j,k) -= s_m(:)
         # scatter...is it worth to use my scatter operation?
         l_stride = self.m_config['nVar']
         for i in range(0, self.m_config['nDof']):
             l_sourceFile.write('  lduh[jk*'+str(self.m_config['nVar']*self.m_config['nDof'])+\
                                        '+'+str(i*l_stride)+\
-                                       '+iVar] -= kernels::s_m['+str(i)+'];\n')
+                                       '+iVar] -= s_m['+str(i)+'];\n')
             #l_sourceFile.write('  lduh[jk*20+iVar+0*nVar] = kernels::s_m[0]')
         # close for loops
         l_sourceFile.write('    }\n'\
@@ -178,21 +180,21 @@ class SurfaceIntegralGenerator:
             # FRCoeff_s = lFbnd(i,k,iVar,4)*FRCoeff
             l_sourceFile.write(
                 Utils.generateDSCAL('lFbnd['+str(self.m_startAddr_face4)+'+iVar*'+str(self.m_chunkSize)+'+k*'+str(self.m_config['nDof'])+'+i]',\
-                                    'kernels::FRCoeff',\
+                                    'FRCoeff',\
                                     'FRCoeff_s',\
                                     self.m_config['nDof']))
             # FLCoeff_s = lFbnd(i,k,iVar,3)*FLCoeff
             l_sourceFile.write(
                 Utils.generateDSCAL('lFbnd['+str(self.m_startAddr_face3)+'+iVar*'+str(self.m_chunkSize)+'+k*'+str(self.m_config['nDof'])+'+i]',\
-                                    'kernels::FLCoeff',\
+                                    'FLCoeff',\
                                     'FLCoeff_s',\
                                     self.m_config['nDof']))
 
             # (weight(i)*weight(k))/dx(2) * (FRCoeff_s - FLCoeff_s)
-            l_sourceFile.write('        double s = kernels::weights1[k]*kernels::weights1[i]/dx[1];\n')
+            l_sourceFile.write('        double s = weights1[k]*weights1[i]/dx[1];\n')
             l_sourceFile.write('#pragma simd\n'\
                                '        for(int it=0;it<'+str(paddedDof)+';it++)\n'\
-                               '          kernels::s_m[it] = s*(FRCoeff_s[it]-FLCoeff_s[it]);\n')
+                               '          s_m[it] = s*(FRCoeff_s[it]-FLCoeff_s[it]);\n')
             # lduh(iVar,i,:,k) -= s_m(:)
             l_stride = self.m_config['nVar']*self.m_config['nDof']
             for j in range(0, self.m_config['nDof']):
@@ -200,7 +202,7 @@ class SurfaceIntegralGenerator:
                                          '+'+str(j*l_stride)+\
                                          '+i*'+str(self.m_config['nVar'])+\
                                          '+iVar] '\
-                                   '-= kernels::s_m['+str(j)+'];\n')
+                                   '-= s_m['+str(j)+'];\n')
 
             # close for loops
             l_sourceFile.write('      }\n'\
@@ -213,21 +215,21 @@ class SurfaceIntegralGenerator:
             # FRCoeff_s = lFbnd(i,iVar,4)*FRCoeff
             l_sourceFile.write(
                 Utils.generateDSCAL('lFbnd['+str(self.m_startAddr_face4)+'+iVar*'+str(self.m_chunkSize)+'+i]',\
-                                    'kernels::FRCoeff',\
+                                    'FRCoeff',\
                                     'FRCoeff_s',\
                                     self.m_config['nDof']))
             # FLCoeff_s = lFbnd(i,iVar,3)*FLCoeff
             l_sourceFile.write(
                 Utils.generateDSCAL('lFbnd['+str(self.m_startAddr_face3)+'+iVar*'+str(self.m_chunkSize)+'+i]',\
-                                    'kernels::FLCoeff',\
+                                    'FLCoeff',\
                                     'FLCoeff_s',\
                                     self.m_config['nDof']))
 
             # weight(i)/dx(2) * (FRCoeff_s - FLCoeff_s)
-            l_sourceFile.write('        double s = kernels::weights1[i]/dx[1];\n')
+            l_sourceFile.write('        double s = weights1[i]/dx[1];\n')
             l_sourceFile.write('#pragma simd\n'\
                                '        for(int it=0;it<'+str(paddedDof)+';it++)\n'\
-                               '          kernels::s_m[it] = s*(FRCoeff_s[it]-FLCoeff_s[it]);\n')
+                               '          s_m[it] = s*(FRCoeff_s[it]-FLCoeff_s[it]);\n')
 
             # lduh(iVar,i,:) -= s_m(:)
             l_stride = self.m_config['nVar']*self.m_config['nDof']
@@ -235,7 +237,7 @@ class SurfaceIntegralGenerator:
                 l_sourceFile.write('  lduh['+str(j*l_stride)+\
                                            '+i*'+str(self.m_config['nVar'])+\
                                            '+iVar] '\
-                                   '-= kernels::s_m['+str(j)+'];\n')
+                                   '-= s_m['+str(j)+'];\n')
 
             # close for loops
             l_sourceFile.write('    }\n'\
@@ -253,21 +255,21 @@ class SurfaceIntegralGenerator:
             # FRCoeff_s = lFbnd(i,j,iVar,6)*FRCoeff
             l_sourceFile.write(
                 Utils.generateDSCAL('lFbnd['+str(self.m_startAddr_face6)+'+iVar*'+str(self.m_chunkSize)+'+j*'+str(self.m_config['nDof'])+'+i]',\
-                                    'kernels::FRCoeff',\
+                                    'FRCoeff',\
                                     'FRCoeff_s',\
                                     self.m_config['nDof']))
             # FLCoeff_s = lFbnd(i,j,iVar,5)*FLCoeff
             l_sourceFile.write(
                 Utils.generateDSCAL('lFbnd['+str(self.m_startAddr_face5)+'+iVar*'+str(self.m_chunkSize)+'+j*'+str(self.m_config['nDof'])+'+i]',\
-                                    'kernels::FLCoeff',\
+                                    'FLCoeff',\
                                     'FLCoeff_s',\
                                     self.m_config['nDof']))
 
             # (weight(i)*weight(j))/dx(3) * (FRCoeff_s - FLCoeff_s)
-            l_sourceFile.write('        double s = kernels::weights1[i]*kernels::weights1[j]/dx[2];\n')
+            l_sourceFile.write('        double s = weights1[i]*weights1[j]/dx[2];\n')
             l_sourceFile.write('#pragma simd\n'\
                                '        for(int it=0;it<'+str(paddedDof)+';it++)\n'\
-                               '          kernels::s_m[it] = s*(FRCoeff_s[it]-FLCoeff_s[it]);\n')
+                               '          s_m[it] = s*(FRCoeff_s[it]-FLCoeff_s[it]);\n')
             # lduh(iVar,i,j,:) -= s_m(:)
             l_stride = self.m_config['nVar']*(self.m_config['nDof']**2)
             for k in range(0, self.m_config['nDof']):
@@ -275,7 +277,7 @@ class SurfaceIntegralGenerator:
                                          '+j*'+str(self.m_config['nVar']*self.m_config['nDof'])+\
                                          '+i*'+str(self.m_config['nVar'])+\
                                          '+iVar] '\
-                                   '-= kernels::s_m['+str(k)+'];\n')
+                                   '-= s_m['+str(k)+'];\n')
 
             # close for loops
             l_sourceFile.write('      }\n'\

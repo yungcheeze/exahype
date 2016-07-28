@@ -63,27 +63,27 @@ class SolutionAdjustmentGenerator:
         # aos format
         if(self.m_config['nDim'] == 2):
             l_sourceFile.write('  for(int ii=0;ii<'+str(self.m_config['nDof'])+';ii++) {\n'\
-                               '    const double qr = kernels::gaussLegendreNodes['+str(self.m_order)+'][ii];\n'\
+                               '    const double qr = kernels::aderdg::optimised::gaussLegendreNodes['+str(self.m_order)+'][ii];\n'\
                                '    for(int jj=0;jj<'+str(self.m_config['nDof'])+';jj++) {\n'\
-                               '      const double qs = kernels::gaussLegendreNodes['+str(self.m_order)+'][jj];\n'\
+                               '      const double qs = kernels::aderdg::optimised::gaussLegendreNodes['+str(self.m_order)+'][jj];\n'\
                                '      x[0] = center[0] + dx[0] * (qr - 0.5);\n'\
                                '      x[1] = center[1] + dx[1] * (qs - 0.5);\n'\
-                               '      const double weight = kernels::weights1[ii] * kernels::weights1[jj];\n'\
+                               '      const double weight = kernels::aderdg::optimised::weights1[ii] * kernels::aderdg::optimised::weights1[jj];\n'\
                                '      const int startIndex = (ii+'+str(self.m_config['nDof'])+'*jj)*'+str(self.m_config['nVar'])+';\n'\
                                '      PDESolutionAdjustment(x, weight, t, dt, &luh[startIndex]);\n'\
                                '    }\n'\
                                '  }\n')
         elif(self.m_config['nDim'] == 3):
             l_sourceFile.write('  for(int ii=0;ii<'+str(self.m_config['nDof'])+';ii++) {\n'\
-                               '    const double qr = kernels::gaussLegendreNodes['+str(self.m_order)+'][ii];\n'\
+                               '    const double qr = kernels::aderdg::optimised::gaussLegendreNodes['+str(self.m_order)+'][ii];\n'\
                                '    for(int jj=0;jj<'+str(self.m_config['nDof'])+';jj++) {\n'\
-                               '      const double qs = kernels::gaussLegendreNodes['+str(self.m_order)+'][jj];\n'\
+                               '      const double qs = kernels::aderdg::optimised::gaussLegendreNodes['+str(self.m_order)+'][jj];\n'\
                                '      for(int kk=0;kk<'+str(self.m_config['nDof'])+';kk++) {\n'\
-                               '        const double qt = kernels::gaussLegendreNodes['+str(self.m_order)+'][kk];\n'\
+                               '        const double qt = kernels::aderdg::optimised::gaussLegendreNodes['+str(self.m_order)+'][kk];\n'\
                                '        x[0] = center[0] + dx[0] * (qr - 0.5);\n'\
                                '        x[1] = center[1] + dx[1] * (qs - 0.5);\n'\
                                '        x[2] = center[2] + dx[2] * (qt - 0.5);\n'\
-                               '        const double weight = kernels::weights1[ii] * kernels::weights1[jj] * kernels::weights1[kk];\n'\
+                               '        const double weight = kernels::aderdg::optimised::weights1[ii] * kernels::aderdg::optimised::weights1[jj] * kernels::aderdg::optimised::weights1[kk];\n'\
                                '        const int startIndex = (ii+'+str(self.m_config['nDof'])+'*jj+'+str(self.m_config['nDof']**2)+'*kk)*'+str(self.m_config['nVar'])+';\n'\
                                '        PDESolutionAdjustment(x, weight, t, dt, &luh[startIndex]);\n'\
                                '      }\n'\

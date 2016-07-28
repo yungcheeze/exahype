@@ -49,7 +49,7 @@ class exahype::plotters::ADERDG2VTKBinary: public exahype::plotters::Plotter::De
   ADERDG2VTKBinary();
   virtual ~ADERDG2VTKBinary();
 
-  virtual void init(const std::string& filename, int order, int unknowns, const std::string& select);
+  virtual void init(const std::string& filename, int orderPlusOne, int unknowns, const std::string& select);
 
   static std::string getIdentifier();
 

@@ -18,6 +18,7 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/mappings/NewTimeStep.h"
  #include "exahype/mappings/SolutionAdjustment.h"
  #include "exahype/mappings/GlobalTimeStepComputation.h"
 
@@ -39,11 +40,13 @@ namespace exahype {
  */
 class exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation {
   private:
-    typedef mappings::SolutionAdjustment Mapping0;
-    typedef mappings::GlobalTimeStepComputation Mapping1;
+    typedef mappings::NewTimeStep Mapping0;
+    typedef mappings::SolutionAdjustment Mapping1;
+    typedef mappings::GlobalTimeStepComputation Mapping2;
 
-     Mapping0  _map2SolutionAdjustment;
-     Mapping1  _map2GlobalTimeStepComputation;
+     Mapping0  _map2NewTimeStep;
+     Mapping1  _map2SolutionAdjustment;
+     Mapping2  _map2GlobalTimeStepComputation;
 
 
   public:

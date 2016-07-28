@@ -81,7 +81,17 @@ class exahype::runners::Runner {
 #endif
 
   void initSolverTimeStamps();
-  void startNewTimeStep(int n,bool printInfo);
+  void initFiniteVolumesSolverTimeStamps();
+
+
+  /**
+   * Starts a new time step for all registered solvers.
+   *
+   * \param n                             The time step.
+   * \param startNewFiniteVolumesTimeStep Update the finite volumes time stamp and time step size.
+   * \param printInfo                     Print information on minimum solver time step size and minimum solver time stamp.
+   */
+  void startNewTimeStep(int n,bool startNewFiniteVolumesTimeStep,bool printInfo);
 
   /**
    * Do one time step where all phases are actually fused into one traversal
@@ -110,6 +120,27 @@ class exahype::runners::Runner {
    * and returns the repository.
    */
   exahype::repositories::Repository* createRepository() const;
+
+  /**
+   * Constructs the initial computational grid
+   *
+   * The grid generation is an iterative process as it may happen that a grid
+   * is refined by a cell initialisation. Cell-based refinements however never
+   * are realised in the exactly same iteration, so we always have to wait yet
+   * another iteration.
+   *
+   * This solves immediately another problem: ExaHyPE's adjacency management
+   * requires us to run once more over the grid at least once its completely
+   * built up to get all the adjacency information correct. If we rely on the
+   * grid to become stationary, this is always the case - as long as additional
+   * vertices are added, the grid remains instationary. When we've added the
+   * last grid entities and run the adapter once again, then it becomes
+   * stationary.
+   *
+   * For the parallel case, I've changed from stationary into balanced which is
+   * a slight generalisation. See Peano guidebook.
+   */
+  void createGrid(exahype::repositories::Repository& repository);
  public:
   explicit Runner(const Parser& parser);
   virtual ~Runner();

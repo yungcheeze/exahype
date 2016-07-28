@@ -118,13 +118,13 @@ class RiemannGenerator:
         for iVar in range(0, self.m_config['nVar']):
             l_file.write('#pragma simd\n')
             l_file.write('  for(int i=0;i<'+str(self.m_chunkSize)+';i++) {\n')
-            l_file.write('    QavL['+str(iVar)+'] += kernels::weights2[i] * lQbndL['+str(iVar*self.m_chunkSize)+'+i];\n')
+            l_file.write('    QavL['+str(iVar)+'] += kernels::aderdg::optimised::weights2[i] * lQbndL['+str(iVar*self.m_chunkSize)+'+i];\n')
             l_file.write('  }\n\n')
 
         for iVar in range(0, self.m_config['nVar']):
             l_file.write('#pragma simd\n')
             l_file.write('  for(int i=0;i<'+str(self.m_chunkSize)+';i++) {\n')
-            l_file.write('    QavR['+str(iVar)+'] += kernels::weights2[i] * lQbndR['+str(iVar*self.m_chunkSize)+'+i];\n')
+            l_file.write('    QavR['+str(iVar)+'] += kernels::aderdg::optimised::weights2[i] * lQbndR['+str(iVar*self.m_chunkSize)+'+i];\n')
             l_file.write('  }\n\n')
 
         l_file.close()

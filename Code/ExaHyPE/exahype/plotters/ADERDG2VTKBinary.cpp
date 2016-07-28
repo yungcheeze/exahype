@@ -33,13 +33,13 @@ std::string exahype::plotters::ADERDG2VTKBinary::getIdentifier() {
 
 void exahype::plotters::ADERDG2VTKBinary::init(
   const std::string& filename,
-  int                order,
+  int                orderPlusOne,
   int                unknowns,
   const std::string& select
 ) {
   _patchWriter = nullptr;
   _filename    = filename;
-  _order       = order;
+  _order       = orderPlusOne-1;
   _unknowns    = unknowns;
   _select      = select;
 

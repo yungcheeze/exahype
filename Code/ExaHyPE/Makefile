@@ -55,7 +55,7 @@ COMPILER_LFLAGS=
 ifeq ($(call tolower,$(MODE)),release)
   # Settings for the Release mode
   # ----------------------------------------------
-  COMPILER_CFLAGS += -O3
+  COMPILER_CFLAGS += 
   COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),debug)
@@ -73,8 +73,8 @@ else ifeq ($(call tolower,$(MODE)),profile)
 else ifeq ($(call tolower,$(MODE)),asserts)
   # Settings for the Adderst mode
   # --------------------------------------------
-  COMPILER_CFLAGS += -DAsserts -p -pg
-  COMPILER_LFLAGS += -p -pg
+  COMPILER_CFLAGS += -DAsserts -g
+  COMPILER_LFLAGS += -g
 
 else
   # Option not recognized
@@ -142,12 +142,16 @@ endif
 #
 # Special options for all "non-Debug" builds
 ifneq ($(call tolower,$(MODE)),debug)
-
   ifeq ($(call tolower,$(COMPILER)),intel)
     # Settings for the Intel compiler
     # ----------------------------------------------
+    ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+    COMPILER_CFLAGS += -O3 -fno-rtti -no-ipo -ip
+    COMPILER_LFLAGS +=
+    else
     COMPILER_CFLAGS += -fast -fno-rtti -no-ipo -ip
     COMPILER_LFLAGS +=
+    endif
 
     #Special options
     ifeq ($(call tolower,$(ARCHITECTURE)),cpu)

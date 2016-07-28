@@ -19,7 +19,7 @@
 #include "tarch/multicore/Lock.h"
 #include "tarch/multicore/Loop.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
@@ -203,7 +203,7 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
 #endif
 
   tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
-      vertex.getADERDGCellDescriptionsIndex();
+      vertex.getCellDescriptionsIndex();
 
   dfor2(myDest) dfor2(mySrc)
       /*
@@ -237,8 +237,9 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
            currentSolver++) {
         if (cellDescriptions[currentSolver].getType() ==
             exahype::records::ADERDGCellDescription::Cell) {
-          exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers
-              [cellDescriptions[currentSolver].getSolverNumber()];
+          exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+              exahype::solvers::RegisteredSolvers
+              [cellDescriptions[currentSolver].getSolverNumber()]);
 
           const int numberOfFaceDof = solver->getUnknownsPerFace();
           const int normalOfExchangedFace =
@@ -458,7 +459,7 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
                            coarseGridCell, fineGridPositionOfVertex);
 
   tarch::la::Vector<TWO_POWER_D, int>& adjacentCellDescriptionsIndices =
-      fineGridVertex.getADERDGCellDescriptionsIndex();
+      fineGridVertex.getCellDescriptionsIndex();
   logDebug(
       "touchVertexFirstTime(...)",
       "cell descriptions around vertex. "
@@ -570,8 +571,8 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
                        faceIndexForLeftCell, faceIndexForRightCell,
                        cellDescriptionsOfLeftCell[i].toString(),
                        cellDescriptionsOfRightCell[i].toString());
-      auto* solver =
-          exahype::solvers::RegisteredSolvers[cellDescriptionsOfLeftCell[i].getSolverNumber()];
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*> (
+          exahype::solvers::RegisteredSolvers[cellDescriptionsOfLeftCell[i].getSolverNumber()] );
 
 
       if (!cellDescriptionsOfLeftCell[i].getRiemannSolvePerformed(faceIndexForLeftCell)) {
@@ -660,8 +661,8 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
     records::ADERDGCellDescription& cellDescription, const int faceIndexForCell,
     const int normalNonZero, const int indexOfQValues,
     const int indexOfFValues) {
-  auto* solver =
-      exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
+  exahype::solvers::ADERDGSolver* solver =  static_cast<exahype::solvers::ADERDGSolver*>(
+      exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
 
   cellDescription.setRiemannSolvePerformed(faceIndexForCell, true);
 
@@ -732,8 +733,8 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
     const int normalNonZero) {
   assertion1(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,cellDescription.toString());
 
-  exahype::solvers::Solver* solver =
-      exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
+  exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+      exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
 
   cellDescription.setRiemannSolvePerformed(faceIndex, true);
 

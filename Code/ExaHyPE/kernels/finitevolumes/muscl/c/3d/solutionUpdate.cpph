@@ -1,0 +1,1005 @@
+/**
+ * This file is part of the ExaHyPE project.
+ * Copyright (c) 2016  http://exahype.eu
+ * All rights reserved.
+ *
+ * The project has received funding from the European Union's Horizon
+ * 2020 research and innovation programme under grant agreement
+ * No 671698. For copyrights and licensing, please consult the webpage.
+ *
+ * Released under the BSD 3 Open Source License.
+ * For the full license text, see LICENSE.txt
+ **/
+
+#include <cassert>
+#include <cmath>
+#include <utility>
+#include <vector>
+
+#include "../../../../../../Peano/tarch/la/Vector.h"
+
+namespace {
+
+// TODO(guera): Make basisSize and numberOfVariables template arguments
+// template <int I, int J, int K, int L>
+
+struct idx4 {
+  idx4(int I, int J, int K, int L, int line)
+      : I_(I), J_(J), K_(K), L_(L), line_(line) {}
+
+  int operator()(int i, int j, int k, int l) {
+    assertion3(i < I_, i, I_, line_);
+    assertion3(j < J_, j, J_, line_);
+    assertion3(k < K_, k, K_, line_);
+    assertion3(l < L_, l, L_, line_);
+    return i * (J_ * K_ * L_) + j * (K_ * L_) + k * L_ + l;
+  }
+
+ private:
+  const int I_, J_, K_, L_, line_;
+};
+
+/*
+template <int I, int J, int K, int L>
+constexpr int idx4(int i, int j, int k, int l) {
+  assert(i < I);
+  assert(j < J);
+  assert(k < K);
+  assert(l < L);
+  return i * (J * K * L) + j * (K * L) + k * L;
+}
+*/
+
+/*
+template <typename... Args>
+auto idd(Args&&... args)
+    -> decltype(idx<1, 2, 3, 4>(std::forward<Args>(args)...)) {
+  return idx<1, 2, 3, 4>(std::forward<Args>(args)...);
+}
+*/
+
+double minmod(double a, double b) {
+  assert(std::isfinite(a));
+  assert(std::isfinite(b));
+
+  if (a * b < 0.0) {  // sign is different (alternative: std::signbit and xor)
+    return 0.0;
+  } else {
+    if (std::abs(a) < std::abs(b)) {
+      return a;
+    } else {
+      return b;
+    }
+  }
+}
+
+template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
+                              double* lambda)>
+void riemannSolver(double* FL, double* FR, const double* qL, const double* qR,
+                   int numberOfVariables, int normalNonZero) {
+  // TODO(guera): Make this function return s_max
+
+  double* sL = new double[numberOfVariables];
+  double* sR = new double[numberOfVariables];
+
+  PDEEigenvalues(qL, normalNonZero, sL);
+  PDEEigenvalues(qR, normalNonZero, sR);
+
+  double s_max = -1.0;
+  for (int i = 0; i < numberOfVariables; i++) {
+    const double abs_sL_i = std::abs(sL[i]);
+    if (abs_sL_i > s_max) {
+      s_max = abs_sL_i;
+    }
+  }
+  for (int i = 0; i < numberOfVariables; i++) {
+    const double abs_sR_i = std::abs(sR[i]);
+    if (abs_sR_i > s_max) {
+      s_max = abs_sR_i;
+    }
+  }
+
+  for (int i = 0; i < numberOfVariables; i++) {
+    FL[i] = 0.5 * (FL[i] + FR[i]) + 0.5 * s_max * (qL[i] - qR[i]);
+    FR[i] = FL[i];
+  }
+
+  delete[] sL;
+  delete[] sR;
+}
+
+}  // namespace
+
+namespace kernels {
+namespace finitevolumes {
+namespace muscl {
+namespace c {
+
+template <void PDEFlux3d(const double* const Q, double** F),
+          // void PDESource3d(const double* const Q, double* S),
+          void PDEEigenvalues(const double* const Q, const int normalNonZero,
+                              double* lambda)>
+void solutionUpdate(double** luh,
+                    const tarch::la::Vector<DIMENSIONS, double>& dx, double dt,
+                    int numberOfVariables, int basisSize) {
+  // using idx_luh = idx4<basisSize, basisSize, basisSize, numberOfVariables>;
+  idx4 idx_luh(basisSize, basisSize, basisSize, numberOfVariables, __LINE__);
+  // TODO(guera): pull all idx objects to the top
+
+  // Data layout (C): [z][y][x][v]
+
+  const int basisSize2 = basisSize * basisSize;
+
+  // 1. Compute up- and downwind gradients
+  double* delta_mid_x =
+      new double[numberOfVariables * basisSize2 * (basisSize + 3)];
+  double* delta_mid_y =
+      new double[numberOfVariables * basisSize2 * (basisSize + 3)];
+  double* delta_mid_z =
+      new double[numberOfVariables * basisSize2 * (basisSize + 3)];
+
+  // x
+  {
+    // using idx_delta_mid_x = idx4<basisSize, basisSize, basisSize + 3,
+    // numberOfVariables>;
+
+    idx4 idx_delta_mid_x(basisSize, basisSize, basisSize + 3, numberOfVariables,
+                         __LINE__);
+
+    double* luh_current = luh[13];
+    double* luh_left = luh[12];
+    double* luh_right = luh[14];
+
+    for (int i = 0; i < basisSize; i++) {                // z
+      for (int j = 0; j < basisSize; j++) {              // y
+        for (int k = 2; k < basisSize + 1; k++) {        // x, skip boundary
+          for (int l = 0; l < numberOfVariables; l++) {  // v
+            delta_mid_x[idx_delta_mid_x(i, j, k, l)] =
+                luh_current[idx_luh(i, j, k - 1, l)] -
+                luh_current[idx_luh(i, j, k - 2, l)];
+          }
+        }
+      }
+    }
+
+    // boundary (k = 1)
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        const int k = 1;
+        for (int l = 0; l < numberOfVariables; l++) {
+          delta_mid_x[idx_delta_mid_x(i, j, k, l)] =
+              luh_current[idx_luh(i, j, k - 1, l)] -
+              luh_left[idx_luh(i, j, (basisSize - 1), l)];
+        }
+      }
+    }
+
+    // boundary (k = 0)
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        const int k = 0;
+        for (int l = 0; l < numberOfVariables; l++) {
+          delta_mid_x[idx_delta_mid_x(i, j, k, l)] =
+              luh_left[idx_luh(i, j, (basisSize - 1), l)] -
+              luh_left[idx_luh(i, j, (basisSize - 2), l)];
+        }
+      }
+    }
+
+    // boundary (k = basisSize + 1)
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        const int k = basisSize + 1;
+        for (int l = 0; l < numberOfVariables; l++) {
+          delta_mid_x[idx_delta_mid_x(i, j, k, l)] =
+              luh_right[idx_luh(i, j, 0, l)] -
+              luh_current[idx_luh(i, j, k - 2, l)];
+        }
+      }
+    }
+
+    // boundary (k = basisSize + 2)
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        const int k = basisSize + 2;
+        for (int l = 0; l < numberOfVariables; l++) {
+          delta_mid_x[idx_delta_mid_x(i, j, k, l)] =
+              luh_right[idx_luh(i, j, 1, l)] - luh_right[idx_luh(i, j, 0, l)];
+        }
+      }
+    }
+  }
+
+  // y
+  {
+    // using idx_delta_mid_y =
+    //    idx4<basisSize, basisSize + 3, basisSize, numberOfVariables>;
+
+    idx4 idx_delta_mid_y(basisSize, basisSize + 3, basisSize, numberOfVariables,
+                         __LINE__);
+
+    double* luh_current = luh[13];
+    double* luh_left = luh[10];
+    double* luh_right = luh[16];
+
+    for (int i = 0; i < basisSize; i++) {                // z
+      for (int j = 2; j < basisSize + 1; j++) {          // y, skip boundary
+        for (int k = 0; k < basisSize; k++) {            // z
+          for (int l = 0; l < numberOfVariables; l++) {  // v
+            delta_mid_y[idx_delta_mid_y(i, j, k, l)] =
+                luh_current[idx_luh(i, j - 1, k, l)] -
+                luh_current[idx_luh(i, j - 2, k, l)];
+          }
+        }
+      }
+    }
+
+    // boundary (j = 1)
+    for (int i = 0; i < basisSize; i++) {
+      const int j = 1;
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < numberOfVariables; l++) {
+          delta_mid_y[idx_delta_mid_y(i, j, k, l)] =
+              luh_current[idx_luh(i, j - 1, k, l)] -
+              luh_left[idx_luh(i, basisSize - 1, k, l)];
+        }
+      }
+    }
+
+    // boundary (j = 0)
+    for (int i = 0; i < basisSize; i++) {
+      const int j = 0;
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < numberOfVariables; l++) {
+          delta_mid_y[idx_delta_mid_y(i, j, k, l)] =
+              luh_left[idx_luh(i, basisSize - 1, k, l)] -
+              luh_left[idx_luh(i, basisSize - 2, k, l)];
+        }
+      }
+    }
+
+    // boundary (j = basisSize + 1)
+    for (int i = 0; i < basisSize; i++) {
+      const int j = basisSize + 1;
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < numberOfVariables; l++) {
+          delta_mid_y[idx_delta_mid_y(i, j, k, l)] =
+              luh_right[idx_luh(i, 0, k, l)] -
+              luh_current[idx_luh(i, j - 2, k, l)];
+        }
+      }
+    }
+
+    // boundary (j = basisSize + 2)
+    for (int i = 0; i < basisSize; i++) {
+      const int j = basisSize + 2;
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < numberOfVariables; l++) {
+          delta_mid_y[idx_delta_mid_y(i, j, k, l)] =
+              luh_right[idx_luh(i, 1, k, l)] - luh_right[idx_luh(i, 0, k, l)];
+        }
+      }
+    }
+  }
+
+  // z
+  {
+    // using idx_delta_mid_z =
+    //    idx4<basisSize + 3, basisSize, basisSize, numberOfVariables>;
+
+    idx4 idx_delta_mid_z(basisSize + 3, basisSize, basisSize, numberOfVariables,
+                         __LINE__);
+
+    double* luh_current = luh[13];
+    double* luh_left = luh[4];
+    double* luh_right = luh[22];
+
+    for (int i = 2; i < basisSize + 1; i++) {            // z, skip boundary
+      for (int j = 0; j < basisSize; j++) {              // y
+        for (int k = 0; k < basisSize; k++) {            // z
+          for (int l = 0; l < numberOfVariables; l++) {  // v
+            delta_mid_z[idx_delta_mid_z(i, j, k, l)] =
+                luh_current[idx_luh(i - 1, j, k, l)] -
+                luh_current[idx_luh(i - 2, j, k, l)];
+          }
+        }
+      }
+    }
+
+    // boundary (i = 1)
+    {
+      const int i = 1;
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          for (int l = 0; l < numberOfVariables; l++) {
+            delta_mid_z[idx_delta_mid_z(i, j, k, l)] =
+                luh_current[idx_luh(i - 1, j, k, l)] -
+                luh_left[idx_luh(basisSize - 1, j, k, l)];
+          }
+        }
+      }
+    }
+
+    // boundary (i = 0)
+    {
+      const int i = 0;
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          for (int l = 0; l < numberOfVariables; l++) {
+            delta_mid_z[idx_delta_mid_z(i, j, k, l)] =
+                luh_left[idx_luh(basisSize - 1, j, k, l)] -
+                luh_left[idx_luh(basisSize - 2, j, k, l)];
+          }
+        }
+      }
+    }
+
+    // boundary (i = basisSize + 1)
+    {
+      const int i = basisSize + 1;
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          for (int l = 0; l < numberOfVariables; l++) {
+            delta_mid_z[idx_delta_mid_z(i, j, k, l)] =
+                luh_right[idx_luh(0, j, k, l)] -
+                luh_current[idx_luh(basisSize - 2, j, k, l)];
+          }
+        }
+      }
+    }
+
+    // boundary (i = basisSize + 2)
+    {
+      const int i = basisSize + 2;
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          for (int l = 0; l < numberOfVariables; l++) {
+            delta_mid_z[idx_delta_mid_z(i, j, k, l)] =
+                luh_right[idx_luh(1, j, k, l)] - luh_right[idx_luh(0, j, k, l)];
+          }
+        }
+      }
+    }
+  }
+
+  // 2. Compute minmod slopes
+  double* delta_x =
+      new double[numberOfVariables * basisSize2 * (basisSize + 2)];
+  double* delta_y =
+      new double[numberOfVariables * basisSize2 * (basisSize + 2)];
+  double* delta_z =
+      new double[numberOfVariables * basisSize2 * (basisSize + 2)];
+
+  // x
+  {
+    // using idx_delta_mid_x =
+    //    idx4<basisSize, basisSize, basisSize + 3, numberOfVariables>;
+    // using idx_delta_x =
+    //    idx4<basisSize, basisSize, basisSize + 2, numberOfVariables>;
+
+    idx4 idx_delta_mid_x(basisSize, basisSize, basisSize + 3, numberOfVariables,
+                         __LINE__);
+    idx4 idx_delta_x(basisSize, basisSize, basisSize + 2, numberOfVariables,
+                     __LINE__);
+
+    for (int i = 0; i < basisSize; i++) {          // z
+      for (int j = 0; j < basisSize; j++) {        // y
+        for (int k = 0; k < basisSize + 2; k++) {  // z
+          for (int l = 0; l < numberOfVariables; l++) {
+            delta_x[idx_delta_x(i, j, k, l)] =
+                minmod(delta_mid_x[idx_delta_mid_x(i, j, k, l)],
+                       delta_mid_x[idx_delta_mid_x(i, j, k + 1, l)]);
+          }
+        }
+      }
+    }
+  }
+
+  // y
+  {
+    // using idx_delta_mid_y =
+    //    idx4<basisSize, basisSize + 3, basisSize, numberOfVariables>;
+    // using idx_delta_y =
+    //    idx4<basisSize, basisSize + 2, basisSize, numberOfVariables>;
+
+    idx4 idx_delta_mid_y(basisSize, basisSize + 3, basisSize, numberOfVariables,
+                         __LINE__);
+    idx4 idx_delta_y(basisSize, basisSize + 2, basisSize, numberOfVariables,
+                     __LINE__);
+
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize + 2; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          for (int l = 0; l < numberOfVariables; l++) {
+            delta_y[idx_delta_y(i, j, k, l)] =
+                minmod(delta_mid_y[idx_delta_mid_y(i, j, k, l)],
+                       delta_mid_y[idx_delta_mid_y(i, j + 1, k, l)]);
+          }
+        }
+      }
+    }
+  }
+
+  // z
+  {
+    // using idx_delta_mid_z =
+    //     idx4<basisSize + 3, basisSize, basisSize, numberOfVariables>;
+    // using idx_delta_z =
+    //    idx4<basisSize + 2, basisSize, basisSize, numberOfVariables>;
+
+    idx4 idx_delta_mid_z(basisSize + 3, basisSize, basisSize, numberOfVariables,
+                         __LINE__);
+    idx4 idx_delta_z(basisSize + 2, basisSize, basisSize, numberOfVariables,
+                     __LINE__);
+
+    for (int i = 0; i < basisSize + 2; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          for (int l = 0; l < numberOfVariables; l++) {
+            delta_z[idx_delta_z(i, j, k, l)] =
+                minmod(delta_mid_z[idx_delta_mid_z(i, j, k, l)],
+                       delta_mid_z[idx_delta_mid_z(i + 1, j, k, l)]);
+          }
+        }
+      }
+    }
+  }
+
+  // 3. Extrapolate
+  double* u_l_x = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
+  double* u_r_x = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
+  double* u_l_y = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
+  double* u_r_y = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
+  double* u_l_z = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
+  double* u_r_z = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
+
+  // x
+  {
+    // using idx_x = idx4<basisSize, basisSize, basisSize + 2,
+    // numberOfVariables>;
+
+    idx4 idx_x(basisSize, basisSize, basisSize + 2, numberOfVariables,
+               __LINE__);
+
+    double* luh_current = luh[13];
+    double* luh_left = luh[12];
+    double* luh_right = luh[14];
+
+    for (int i = 0; i < basisSize; i++) {          // z
+      for (int j = 0; j < basisSize; j++) {        // y
+        for (int k = 1; k < basisSize + 1; k++) {  // x, skip left and right
+          for (int l = 0; l < numberOfVariables; l++) {
+            u_r_x[idx_x(i, j, k, l)] = luh_current[idx_luh(i, j, k - 1, l)] +
+                                       0.5 * delta_x[idx_x(i, j, k, l)];
+            u_l_x[idx_x(i, j, k, l)] = luh_current[idx_luh(i, j, k - 1, l)] -
+                                       0.5 * delta_x[idx_x(i, j, k, l)];
+          }
+        }
+      }
+    }
+
+    // left boundary (k = 0)
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        const int k = 0;
+        for (int l = 0; l < numberOfVariables; l++) {
+          u_r_x[idx_x(i, j, k, l)] = luh_left[idx_luh(i, j, basisSize - 1, l)] +
+                                     0.5 * delta_x[idx_x(i, j, k, l)];
+          u_l_x[idx_x(i, j, k, l)] = luh_left[idx_luh(i, j, basisSize - 1, l)] -
+                                     0.5 * delta_x[idx_x(i, j, k, l)];
+        }
+      }
+    }
+
+    // right boundary (k = basisSize + 1)
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        const int k = basisSize + 1;
+        for (int l = 0; l < numberOfVariables; l++) {
+          u_r_x[idx_x(i, j, k, l)] =
+              luh_right[idx_luh(i, j, 0, l)] + 0.5 * delta_x[idx_x(i, j, k, l)];
+          u_l_x[idx_x(i, j, k, l)] =
+              luh_right[idx_luh(i, j, 0, l)] - 0.5 * delta_x[idx_x(i, j, k, l)];
+        }
+      }
+    }
+  }
+
+  // y
+  {
+    // using idx_y = idx4<basisSize, basisSize + 2, basisSize,
+    // numberOfVariables>;
+
+    idx4 idx_y(basisSize, basisSize + 2, basisSize, numberOfVariables,
+               __LINE__);
+
+    double* luh_current = luh[13];
+    double* luh_left = luh[10];
+    double* luh_right = luh[16];
+
+    for (int i = 0; i < basisSize; i++) {        // z
+      for (int j = 1; j < basisSize + 1; j++) {  // y, skip left and right
+        for (int k = 0; k < basisSize; k++) {    // x
+          for (int l = 0; l < numberOfVariables; l++) {
+            u_r_y[idx_y(i, j, k, l)] = luh_current[idx_luh(i, j - 1, k, l)] +
+                                       0.5 * delta_y[idx_y(i, j, k, l)];
+            u_l_y[idx_y(i, j, k, l)] = luh_current[idx_luh(i, j - 1, k, l)] -
+                                       0.5 * delta_y[idx_y(i, j, k, l)];
+          }
+        }
+      }
+    }
+
+    // left boundary (j = 0)
+    for (int i = 0; i < basisSize; i++) {
+      const int j = 0;
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < numberOfVariables; l++) {
+          u_r_y[idx_y(i, j, k, l)] = luh_left[idx_luh(i, basisSize - 1, k, l)] +
+                                     0.5 * delta_y[idx_y(i, j, k, l)];
+          u_l_y[idx_y(i, j, k, l)] = luh_left[idx_luh(i, basisSize - 1, k, l)] -
+                                     0.5 * delta_y[idx_y(i, j, k, l)];
+        }
+      }
+    }
+
+    // right boundary (j = basisSize + 1)
+    for (int i = 0; i < basisSize; i++) {
+      const int j = basisSize + 1;
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < numberOfVariables; l++) {
+          u_r_y[idx_y(i, j, k, l)] =
+              luh_right[idx_luh(i, 0, k, l)] + 0.5 * delta_y[idx_y(i, j, k, l)];
+          u_l_y[idx_y(i, j, k, l)] =
+              luh_right[idx_luh(i, 0, k, l)] - 0.5 * delta_y[idx_y(i, j, k, l)];
+        }
+      }
+    }
+  }
+
+  // z
+  {
+    // using idx_z = idx4<basisSize + 2, basisSize, basisSize,
+    // numberOfVariables>;
+
+    idx4 idx_z(basisSize + 2, basisSize, basisSize, numberOfVariables,
+               __LINE__);
+
+    double* luh_current = luh[13];
+    double* luh_left = luh[4];
+    double* luh_right = luh[22];
+
+    for (int i = 1; i < basisSize + 1; i++) {  // z, skip left and right
+      for (int j = 0; j < basisSize; j++) {    // y
+        for (int k = 0; k < basisSize; k++) {  // x
+          for (int l = 0; l < numberOfVariables; l++) {
+            u_r_z[idx_z(i, j, k, l)] = luh_current[idx_luh(i - 1, j, k, l)] +
+                                       0.5 * delta_z[idx_z(i, j, k, l)];
+            u_l_z[idx_z(i, j, k, l)] = luh_current[idx_luh(i - 1, j, k, l)] -
+                                       0.5 * delta_z[idx_z(i, j, k, l)];
+          }
+        }
+      }
+    }
+
+    // left boundary (i = 0)
+    {
+      const int i = 0;
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          for (int l = 0; l < numberOfVariables; l++) {
+            u_r_z[idx_z(i, j, k, l)] =
+                luh_left[idx_luh(basisSize - 1, j, k, l)] +
+                0.5 * delta_z[idx_z(i, j, k, l)];
+            u_l_z[idx_z(i, j, k, l)] =
+                luh_left[idx_luh(basisSize - 1, j, k, l)] -
+                0.5 * delta_z[idx_z(i, j, k, l)];
+          }
+        }
+      }
+    }
+
+    // right boundary (i = basisSize + 1)
+    {
+      const int i = basisSize + 1;
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          for (int l = 0; l < numberOfVariables; l++) {
+            u_r_z[idx_z(i, j, k, l)] = luh_right[idx_luh(0, j, k, l)] +
+                                       0.5 * delta_z[idx_z(i, j, k, l)];
+            u_l_z[idx_z(i, j, k, l)] = luh_right[idx_luh(0, j, k, l)] -
+                                       0.5 * delta_z[idx_z(i, j, k, l)];
+          }
+        }
+      }
+    }
+  }
+
+  // 4. Evaluate flux
+  double* F_l_x = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
+  double* F_r_x = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
+  double* F_l_y = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
+  double* F_r_y = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
+  double* F_l_z = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
+  double* F_r_z = new double[numberOfVariables * basisSize2 * (basisSize + 2)];
+
+  // x
+  {
+    // using idx_x = idx4<basisSize, basisSize, basisSize + 2,
+    // numberOfVariables>;
+
+    idx4 idx_x(basisSize, basisSize, basisSize + 2, numberOfVariables,
+               __LINE__);
+
+    // We only want f from (f, g, h). g and h need to be stored in "unused"
+    double* unused = new double[(DIMENSIONS - 1) * numberOfVariables];
+
+    double* f_x[3];
+    f_x[1] = unused;
+    f_x[2] = unused + numberOfVariables;
+
+    for (int i = 0; i < basisSize; i++) {          // z
+      for (int j = 0; j < basisSize; j++) {        // y
+        for (int k = 0; k < basisSize + 2; k++) {  // x
+          f_x[0] = F_l_x + idx_x(i, j, k, 0);
+          PDEFlux3d(u_l_x + idx_x(i, j, k, 0), f_x);
+
+          f_x[0] = F_r_x + idx_x(i, j, k, 0);
+          PDEFlux3d(u_r_x + idx_x(i, j, k, 0), f_x);
+        }
+      }
+    }
+
+    delete[] unused;
+  }
+
+  // y
+  {
+    // using idx_y = idx4<basisSize, basisSize + 2, basisSize,
+    // numberOfVariables>;
+
+    idx4 idx_y(basisSize, basisSize + 2, basisSize, numberOfVariables,
+               __LINE__);
+
+    // See above. We only want g from (f, g, h)
+    double* unused = new double[(DIMENSIONS - 1) * numberOfVariables];
+
+    double* f_y[3];
+    f_y[0] = unused;
+    f_y[2] = unused + numberOfVariables;
+
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize + 2; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          f_y[1] = F_l_y + idx_y(i, j, k, 0);
+          PDEFlux3d(u_l_y + idx_y(i, j, k, 0), f_y);
+
+          f_y[1] = F_r_y + idx_y(i, j, k, 0);
+          PDEFlux3d(u_r_y + idx_y(i, j, k, 0), f_y);
+        }
+      }
+    }
+
+    delete[] unused;
+  }
+
+  // z
+  {
+    // using idx_z = idx4<basisSize + 2, basisSize, basisSize,
+    // numberOfVariables>;
+
+    idx4 idx_z(basisSize + 2, basisSize, basisSize, numberOfVariables,
+               __LINE__);
+
+    // See above. We only want h from (f, g, h)
+    double* unused = new double[(DIMENSIONS - 1) * numberOfVariables];
+
+    double* f_z[3];
+    f_z[0] = unused;
+    f_z[1] = unused + numberOfVariables;
+
+    for (int i = 0; i < basisSize + 2; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          f_z[2] = F_l_z + idx_z(i, j, k, 0);
+          PDEFlux3d(u_l_z + idx_z(i, j, k, 0), f_z);
+
+          f_z[2] = F_r_z + idx_z(i, j, k, 0);
+          PDEFlux3d(u_r_z + idx_z(i, j, k, 0), f_z);
+        }
+      }
+    }
+
+    delete[] unused;
+  }
+
+  // 5. Evolve (dt / 2)
+  // x
+  {
+    // using idx_x = idx4<basisSize, basisSize, basisSize + 2,
+    // numberOfVariables>;
+
+    idx4 idx_x(basisSize, basisSize, basisSize + 2, numberOfVariables,
+               __LINE__);
+
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize + 2; k++) {
+          for (int l = 0; l < numberOfVariables; l++) {
+            double Q =
+                0.5 * dt *
+                ((F_l_x[idx_x(i, j, k, l)] - F_r_x[idx_x(i, j, k, l)]) / dx[0] +
+                 (F_l_y[idx_x(i, j, k, l)] - F_r_y[idx_x(i, j, k, l)]) / dx[1] +
+                 (F_l_z[idx_x(i, j, k, l)] - F_r_z[idx_x(i, j, k, l)]) / dx[2]);
+            u_l_x[idx_x(i, j, k, l)] += Q;
+            u_r_x[idx_x(i, j, k, l)] += Q;
+          }
+        }
+      }
+    }
+  }
+
+  // y
+  {
+    // using idx_y = idx4<basisSize, basisSize + 2, basisSize,
+    // numberOfVariables>;
+
+    idx4 idx_y(basisSize, basisSize + 2, basisSize, numberOfVariables,
+               __LINE__);
+
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize + 2; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          for (int l = 0; l < numberOfVariables; l++) {
+            double Q =
+                0.5 * dt *
+                ((F_l_x[idx_y(i, j, k, l)] - F_r_x[idx_y(i, j, k, l)]) / dx[0] +
+                 (F_l_y[idx_y(i, j, k, l)] - F_r_y[idx_y(i, j, k, l)]) / dx[1] +
+                 (F_l_z[idx_y(i, j, k, l)] - F_r_z[idx_y(i, j, k, l)]) / dx[2]);
+            u_l_y[idx_y(i, j, k, l)] += Q;
+            u_r_y[idx_y(i, j, k, l)] += Q;
+          }
+        }
+      }
+    }
+  }
+
+  // z
+  {
+    // using idx_z = idx4<basisSize + 2, basisSize, basisSize,
+    // numberOfVariables>;
+
+    idx4 idx_z(basisSize + 2, basisSize, basisSize, numberOfVariables,
+               __LINE__);
+
+    for (int i = 0; i < basisSize + 2; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          for (int l = 0; l < numberOfVariables; l++) {
+            double Q =
+                0.5 * dt *
+                ((F_l_x[idx_z(i, j, k, l)] - F_r_x[idx_z(i, j, k, l)]) / dx[0] +
+                 (F_l_y[idx_z(i, j, k, l)] - F_r_y[idx_z(i, j, k, l)]) / dx[1] +
+                 (F_l_z[idx_z(i, j, k, l)] - F_r_z[idx_z(i, j, k, l)]) / dx[2]);
+            u_l_z[idx_z(i, j, k, l)] += Q;
+            u_r_z[idx_z(i, j, k, l)] += Q;
+          }
+        }
+      }
+    }
+  }
+
+  // 6. Update fluxes once again
+  // x
+  {
+    // using idx_x = idx4<basisSize, basisSize, basisSize + 2,
+    // numberOfVariables>;
+
+    idx4 idx_x(basisSize, basisSize, basisSize + 2, numberOfVariables,
+               __LINE__);
+
+    // We only want f from (f, g, h). g and h need to be stored in "unused"
+    double* unused = new double[(DIMENSIONS - 1) * numberOfVariables];
+
+    double* f_x[3];
+    f_x[1] = unused;
+    f_x[2] = unused + numberOfVariables;
+
+    for (int i = 0; i < basisSize; i++) {          // z
+      for (int j = 0; j < basisSize; j++) {        // y
+        for (int k = 0; k < basisSize + 2; k++) {  // x
+          f_x[0] = F_l_x + idx_x(i, j, k, 0);
+          PDEFlux3d(u_l_x + idx_x(i, j, k, 0), f_x);
+
+          f_x[0] = F_r_x + idx_x(i, j, k, 0);
+          PDEFlux3d(u_r_x + idx_x(i, j, k, 0), f_x);
+        }
+      }
+    }
+
+    delete[] unused;
+  }
+
+  // y
+  {
+    // using idx_y = idx4<basisSize, basisSize + 2, basisSize,
+    // numberOfVariables>;
+
+    idx4 idx_y(basisSize, basisSize + 2, basisSize, numberOfVariables,
+               __LINE__);
+
+    // See above. We only want g from (f, g, h)
+    double* unused = new double[(DIMENSIONS - 1) * numberOfVariables];
+
+    double* f_y[3];
+    f_y[0] = unused;
+    f_y[2] = unused + numberOfVariables;
+
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize + 2; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          f_y[1] = F_l_y + idx_y(i, j, k, 0);
+          PDEFlux3d(u_l_y + idx_y(i, j, k, 0), f_y);
+
+          f_y[1] = F_r_y + idx_y(i, j, k, 0);
+          PDEFlux3d(u_r_y + idx_y(i, j, k, 0), f_y);
+        }
+      }
+    }
+
+    delete[] unused;
+  }
+
+  // z
+  {
+    // using idx_z = idx4<basisSize + 2, basisSize, basisSize,
+    // numberOfVariables>;
+
+    idx4 idx_z(basisSize + 2, basisSize, basisSize, numberOfVariables,
+               __LINE__);
+
+    // See above. We only want h from (f, g, h)
+    double* unused = new double[(DIMENSIONS - 1) * numberOfVariables];
+
+    double* f_z[3];
+    f_z[0] = unused;
+    f_z[1] = unused + numberOfVariables;
+
+    for (int i = 0; i < basisSize + 2; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          f_z[2] = F_l_z + idx_z(i, j, k, 0);
+          PDEFlux3d(u_l_z + idx_z(i, j, k, 0), f_z);
+
+          f_z[2] = F_r_z + idx_z(i, j, k, 0);
+          PDEFlux3d(u_r_z + idx_z(i, j, k, 0), f_z);
+        }
+      }
+    }
+
+    delete[] unused;
+  }
+
+  // 7. Solve Riemann problems
+  // x
+  {
+    // using idx_x = idx4<basisSize, basisSize, basisSize + 2,
+    // numberOfVariables>;
+
+    idx4 idx_x(basisSize, basisSize, basisSize + 2, numberOfVariables,
+               __LINE__);
+
+    for (int i = 0; i < basisSize; i++) {          // z
+      for (int j = 0; j < basisSize; j++) {        // y
+        for (int k = 0; k < basisSize + 1; k++) {  // x
+          riemannSolver<PDEEigenvalues>(
+              F_r_x + idx_x(i, j, k, 0), F_l_x + idx_x(i, j, k + 1, 0),
+              u_r_x + idx_x(i, j, k, 0), u_l_x + idx_x(i, j, k + 1, 0),
+              numberOfVariables, 0 /* normalNonZero */);
+        }
+      }
+    }
+  }
+
+  // y
+  {
+    // using idx_y = idx4<basisSize, basisSize + 2, basisSize,
+    // numberOfVariables>;
+
+    idx4 idx_y(basisSize, basisSize + 2, basisSize, numberOfVariables,
+               __LINE__);
+
+    for (int i = 0; i < basisSize; i++) {        // z
+      for (int j = 0; j < basisSize + 1; j++) {  // y
+        for (int k = 0; k < basisSize; k++) {    // x
+          riemannSolver<PDEEigenvalues>(
+              F_r_y + idx_y(i, j, k, 0), F_l_y + idx_y(i, j + 1, k, 0),
+              u_r_y + idx_y(i, j, k, 0), u_l_y + idx_y(i, j + 1, k, 0),
+              numberOfVariables, 1 /* normalNonZero */);
+        }
+      }
+    }
+  }
+
+  // z
+  {
+    // using idx_z = idx4<basisSize + 2, basisSize, basisSize,
+    // numberOfVariables>;
+
+    idx4 idx_z(basisSize + 2, basisSize, basisSize, numberOfVariables,
+               __LINE__);
+
+    for (int i = 0; i < basisSize + 1; i++) {  // z
+      for (int j = 0; j < basisSize; j++) {    // y
+        for (int k = 0; k < basisSize; k++) {  // x
+          riemannSolver<PDEEigenvalues>(
+              F_r_z + idx_z(i, j, k, 0), F_l_z + idx_z(i + 1, j, k, 0),
+              u_r_z + idx_z(i, j, k, 0), u_l_z + idx_z(i + 1, j, k, 0),
+              numberOfVariables, 2 /*  normalNonZero */);
+        }
+      }
+    }
+  }
+
+  // Overwrite left and right value, have the same value, flow from left to
+  // right
+
+  // 8. Update DOFs
+  {
+    // using idx_x = idx4<basisSize, basisSize, basisSize + 2,
+    // numberOfVariables>;
+    // using idx_y = idx4<basisSize, basisSize + 2, basisSize,
+    // numberOfVariables>;
+    // using idx_z = idx4<basisSize + 2, basisSize, basisSize,
+    // numberOfVariables>;
+
+    idx4 idx_x(basisSize, basisSize, basisSize + 2, numberOfVariables,
+               __LINE__);
+    idx4 idx_y(basisSize, basisSize + 2, basisSize, numberOfVariables,
+               __LINE__);
+    idx4 idx_z(basisSize + 2, basisSize, basisSize, numberOfVariables,
+               __LINE__);
+
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          for (int l = 0; l < numberOfVariables; l++) {
+            luh[13][idx_luh(i, j, k, l)] +=
+                dt *
+                ((F_r_x[idx_x(i, j, k, l)] - F_r_x[idx_x(i, j, k + 1, l)]) /
+                     dx[0] +
+                 (F_r_y[idx_y(i, j, k, l)] - F_r_y[idx_y(i, j + 1, k, l)]) /
+                     dx[1] +
+                 (F_r_z[idx_z(i, j, k, l)] - F_r_z[idx_z(i + 1, j, k, l)]) /
+                     dx[2]);
+          }
+        }
+      }
+    }
+  }
+
+  // delete
+  delete[] delta_mid_x;
+  delete[] delta_mid_y;
+  delete[] delta_mid_z;
+  delete[] delta_x;
+  delete[] delta_y;
+  delete[] delta_z;
+  delete[] u_l_x;
+  delete[] u_r_x;
+  delete[] u_l_y;
+  delete[] u_r_y;
+  delete[] u_l_z;
+  delete[] u_r_z;
+  delete[] F_l_x;
+  delete[] F_r_x;
+  delete[] F_l_y;
+  delete[] F_r_y;
+  delete[] F_l_z;
+  delete[] F_r_z;
+}
+
+}  // namespace c
+}  // namespace muscl
+}  // namespace finitevolumes
+}  // namespace kernels

@@ -60,15 +60,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       valid = false;
     }
   }
-
-  @Override
-  public void inAAderdgSolver(eu.exahype.node.AAderdgSolver node) {
-    try {
-      String solverName = node.getName().toString().trim();
-      int order         = Integer.parseInt(node.getOrder().getText());
-      
-      _writer.write("#include \"" + solverName + ".h\"\n");
-
+  
+  private void writeProfilerCreation() {
       _methodBodyWriter.write("  std::string profiler_identifier = parser.getProfilerIdentifier();\n");
       _methodBodyWriter.write("  std::string metrics_identifier_list = parser.getMetricsIdentifierList();\n\n");
 
@@ -95,12 +88,54 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write(
     		  "  auto profiler = exahype::profilers::ProfilerFactory::getInstance().create(\n"+
     		  "    profiler_identifier, metrics_vector);\n\n");
+  }
+
+  @Override
+  public void inAAderdgSolver(eu.exahype.node.AAderdgSolver node) {
+    try {
+      String solverName = node.getName().toString().trim();
+      int order         = Integer.parseInt(node.getOrder().getText());
+      
+      _writer.write("#include \"" + solverName + ".h\"\n");
+
+      _methodBodyWriter.write("  {\n");
+      
+      writeProfilerCreation();
 
       _methodBodyWriter.write("  // Create and register solver\n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
-    		                  "::" + solverName + "("+_kernelNumber+", "+order+"+1, parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)));\n");
+    		                  "::" + solverName + "("+order+"+1, parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)));\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
+      _methodBodyWriter.write("  }\n");
+      _kernelNumber++;
+      _plotterNumber = 0;
+
+      System.out.println("added creation of solver " + solverName + " ... ok");
+    } catch (Exception exc) {
+      System.err.println("ERROR: " + exc.toString());
+      valid = false;
+    }
+  };
+
+  @Override
+  public void inAFiniteVolumesSolver(eu.exahype.node.AFiniteVolumesSolver node) {
+    try {
+      String solverName = node.getName().toString().trim();
+      int patchSize     = Integer.parseInt(node.getPatchSize().getText());
+      
+      _writer.write("#include \"" + solverName + ".h\"\n");
+
+      _methodBodyWriter.write("  {\n");
+      
+      writeProfilerCreation();
+
+      _methodBodyWriter.write("  // Create and register solver\n");
+      _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
+    		                  "::" + solverName + "("+patchSize+", parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)));\n");
+      _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
+      _methodBodyWriter.write("  \n");
+      _methodBodyWriter.write("  }\n");
       _kernelNumber++;
       _plotterNumber = 0;
 

@@ -74,6 +74,7 @@ def generateAssemblerCode(i_pathToOutputFile,
                           i_matmulConfigList):
     l_pathToAsmFile = os.path.splitext(i_pathToOutputFile)[0]+'.c'
     for l_matmul in i_matmulConfigList:
+        # for plain assembly code (rather than inline assembly) choose dense_asm
         l_commandLineArguments =       "dense"  + \
                                  ' ' + m_pathToLibxsmmGenerator+"/"+l_pathToAsmFile + \
                                  ' ' + l_matmul.baseroutinename + \
@@ -144,6 +145,9 @@ def generateCommonHeader():
     l_sourceFile.write('#include "tarch/la/Vector.h"\n'                   \
                        '#include "peano/utils/Globals.h"\n\n'
                        )
+
+    # disable libxsmm counter
+    l_sourceFile.write('#define NDEBUG\n')
 
     # nested namespaces
     l_sourceFile.write('namespace kernels {\n'        )

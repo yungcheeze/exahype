@@ -68,7 +68,7 @@ exahype::VertexOperations::VertexOperations() {
 
 
 
- tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>  exahype::VertexOperations::readADERDGCellDescriptionsIndex(const peano::grid::VertexEnumerator& enumerator, const Vertex* const vertices)  { tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> result; dfor2(x) tarch::la::slice(result,vertices[ enumerator(x) ]._vertexData.getADERDGCellDescriptionsIndex(),xScalar*TWO_POWER_D); enddforx return result; }
+ tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>  exahype::VertexOperations::readCellDescriptionsIndex(const peano::grid::VertexEnumerator& enumerator, const Vertex* const vertices)  { tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int> result; dfor2(x) tarch::la::slice(result,vertices[ enumerator(x) ]._vertexData.getCellDescriptionsIndex(),xScalar*TWO_POWER_D); enddforx return result; }
 
 
 
@@ -80,7 +80,7 @@ exahype::VertexOperations::VertexOperations() {
 
 
 
- tarch::la::Vector<TWO_POWER_D,int>  exahype::VertexOperations::readADERDGCellDescriptionsIndex(const Vertex& vertex)  { return vertex._vertexData.getADERDGCellDescriptionsIndex(); }
+ tarch::la::Vector<TWO_POWER_D,int>  exahype::VertexOperations::readCellDescriptionsIndex(const Vertex& vertex)  { return vertex._vertexData.getCellDescriptionsIndex(); }
 
 
 
@@ -95,7 +95,7 @@ exahype::VertexOperations::VertexOperations() {
 
 
 
- void exahype::VertexOperations::writeADERDGCellDescriptionsIndex(const peano::grid::VertexEnumerator& enumerator, Vertex* const vertices, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& values) { dfor2(x) tarch::la::Vector<TWO_POWER_D,int> temp = tarch::la::slice<TWO_POWER_D>(values,xScalar*TWO_POWER_D); vertices[ enumerator(x) ]._vertexData.setADERDGCellDescriptionsIndex( temp ); enddforx }
+ void exahype::VertexOperations::writeCellDescriptionsIndex(const peano::grid::VertexEnumerator& enumerator, Vertex* const vertices, const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>& values) { dfor2(x) tarch::la::Vector<TWO_POWER_D,int> temp = tarch::la::slice<TWO_POWER_D>(values,xScalar*TWO_POWER_D); vertices[ enumerator(x) ]._vertexData.setCellDescriptionsIndex( temp ); enddforx }
 
 
 
@@ -107,7 +107,7 @@ exahype::VertexOperations::VertexOperations() {
 
 
 
- void exahype::VertexOperations::writeADERDGCellDescriptionsIndex(Vertex& vertex, const tarch::la::Vector<TWO_POWER_D,int>& values) { vertex._vertexData.setADERDGCellDescriptionsIndex(values ); }
+ void exahype::VertexOperations::writeCellDescriptionsIndex(Vertex& vertex, const tarch::la::Vector<TWO_POWER_D,int>& values) { vertex._vertexData.setCellDescriptionsIndex(values ); }
 
 
 

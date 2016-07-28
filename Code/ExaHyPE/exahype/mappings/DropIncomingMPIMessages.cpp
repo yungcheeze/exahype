@@ -158,7 +158,7 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
 #endif
 
   tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
-      vertex.getADERDGCellDescriptionsIndex();
+      vertex.getCellDescriptionsIndex();
 
   dfor2(dest)
       dfor2(src) if (vertex.getAdjacentRanks()(destScalar) ==

@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   14/07/2016 22:06
+    * @date   27/07/2016 17:56
     */
    class exahype::records::State { 
       
@@ -41,11 +41,16 @@ namespace exahype {
          
          typedef exahype::records::StatePacked Packed;
          
+         enum GridConstructionState {
+            Default = 0, Veto = 1, Aggressive = 2
+         };
+         
          struct PersistentRecords {
             double _previousMinTimeStepSize;
             double _currentMinTimeStepSize;
             double _nextMinTimeStepSize;
             double _currentMinTimeStamp;
+            GridConstructionState _gridConstructionState;
             #ifdef UseManualAlignment
             tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
             #else
@@ -85,7 +90,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+            PersistentRecords(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
             
             
             inline double getPreviousMinTimeStepSize() const 
@@ -164,6 +169,26 @@ namespace exahype {
  #endif 
  {
                _currentMinTimeStamp = currentMinTimeStamp;
+            }
+            
+            
+            
+            inline GridConstructionState getGridConstructionState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _gridConstructionState;
+            }
+            
+            
+            
+            inline void setGridConstructionState(const GridConstructionState& gridConstructionState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _gridConstructionState = gridConstructionState;
             }
             
             
@@ -723,7 +748,7 @@ namespace exahype {
          /**
           * Generated
           */
-         State(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+         State(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
          
          /**
           * Generated
@@ -807,6 +832,26 @@ namespace exahype {
  #endif 
  {
             _persistentRecords._currentMinTimeStamp = currentMinTimeStamp;
+         }
+         
+         
+         
+         inline GridConstructionState getGridConstructionState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._gridConstructionState;
+         }
+         
+         
+         
+         inline void setGridConstructionState(const GridConstructionState& gridConstructionState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._gridConstructionState = gridConstructionState;
          }
          
          
@@ -1401,6 +1446,16 @@ namespace exahype {
          /**
           * Generated
           */
+         static std::string toString(const GridConstructionState& param);
+         
+         /**
+          * Generated
+          */
+         static std::string getGridConstructionStateMapping();
+         
+         /**
+          * Generated
+          */
          std::string toString() const;
          
          /**
@@ -1475,17 +1530,20 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   14/07/2016 22:06
+       * @date   27/07/2016 17:56
        */
       class exahype::records::StatePacked { 
          
          public:
+            
+            typedef exahype::records::State::GridConstructionState GridConstructionState;
             
             struct PersistentRecords {
                double _previousMinTimeStepSize;
                double _currentMinTimeStepSize;
                double _nextMinTimeStepSize;
                double _currentMinTimeStamp;
+               GridConstructionState _gridConstructionState;
                tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
                tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
                double _numberOfInnerVertices;
@@ -1523,7 +1581,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               PersistentRecords(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                
                inline double getPreviousMinTimeStepSize() const 
@@ -1602,6 +1660,26 @@ namespace exahype {
  #endif 
  {
                   _currentMinTimeStamp = currentMinTimeStamp;
+               }
+               
+               
+               
+               inline GridConstructionState getGridConstructionState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _gridConstructionState;
+               }
+               
+               
+               
+               inline void setGridConstructionState(const GridConstructionState& gridConstructionState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _gridConstructionState = gridConstructionState;
                }
                
                
@@ -2188,7 +2266,7 @@ namespace exahype {
             /**
              * Generated
              */
-            StatePacked(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+            StatePacked(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
             
             /**
              * Generated
@@ -2272,6 +2350,26 @@ namespace exahype {
  #endif 
  {
                _persistentRecords._currentMinTimeStamp = currentMinTimeStamp;
+            }
+            
+            
+            
+            inline GridConstructionState getGridConstructionState() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._gridConstructionState;
+            }
+            
+            
+            
+            inline void setGridConstructionState(const GridConstructionState& gridConstructionState) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._gridConstructionState = gridConstructionState;
             }
             
             
@@ -2893,6 +2991,16 @@ namespace exahype {
             /**
              * Generated
              */
+            static std::string toString(const GridConstructionState& param);
+            
+            /**
+             * Generated
+             */
+            static std::string getGridConstructionStateMapping();
+            
+            /**
+             * Generated
+             */
             std::string toString() const;
             
             /**
@@ -2964,7 +3072,7 @@ namespace exahype {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   14/07/2016 22:06
+          * @date   27/07/2016 17:56
           */
          class exahype::records::State { 
             
@@ -4283,7 +4391,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   14/07/2016 22:06
+             * @date   27/07/2016 17:56
              */
             class exahype::records::StatePacked { 
                

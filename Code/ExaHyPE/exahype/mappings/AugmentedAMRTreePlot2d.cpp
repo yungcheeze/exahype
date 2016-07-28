@@ -385,18 +385,18 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
 
     _cellDescriptionIndexWriter->plotCell(
         cellIndex,
-        static_cast<int>(fineGridCell.getADERDGCellDescriptionsIndex()));
+        static_cast<int>(fineGridCell.getCellDescriptionsIndex()));
 
     if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-            fineGridCell.getADERDGCellDescriptionsIndex()) &&
+            fineGridCell.getCellDescriptionsIndex()) &&
         ADERDGCellDescriptionHeap::getInstance()
-                .getData(fineGridCell.getADERDGCellDescriptionsIndex())
+                .getData(fineGridCell.getCellDescriptionsIndex())
                 .size() > 0) {
       int solverNumber = 0;
       bool solverFound = false;
 
       for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(
-               fineGridCell.getADERDGCellDescriptionsIndex())) {
+               fineGridCell.getCellDescriptionsIndex())) {
         if (pFine.getSolverNumber() == solverNumber) {
           _cellTypeWriter->plotCell(cellIndex,
                                     static_cast<int>(pFine.getType()));
@@ -419,7 +419,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
     } else {
       _cellTypeWriter->plotCell(
           cellIndex,
-          static_cast<int>(fineGridCell.getADERDGCellDescriptionsIndex()));
+          static_cast<int>(fineGridCell.getCellDescriptionsIndex()));
       _cellRefinementEventWriter->plotCell(cellIndex, -1);
       _cellDataWriter->plotCell(cellIndex, 0);
     }

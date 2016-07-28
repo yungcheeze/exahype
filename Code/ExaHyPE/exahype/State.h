@@ -93,6 +93,35 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    */
   void merge(const State& anotherState);
   ///@}
+
+  /**
+   * Becomes nop in the serial case.
+   *
+   * In the parallel case, we have three different grid refinement strategies
+   * implemented in mappings::Refinement.
+   *
+   * - Default: Just refine the grid in vertexLastTime(). The touch last
+   *   convention (we always refine in touchVertexLastTime; see Peano
+   *   cookbook) ensure that the grid is built up iteration by iteration.
+   * - Veto: We do not refine though the refinement criterion would ask us
+   *   to do so. We set the veto four out of five traversals and thus delay
+   *   the setup and allow the load balancing to keep pace.
+   * - Aggressive: Once we see on the global master that no rank is idle
+   *   anymore, we switch into aggressive and make all ranks build up the
+   *   whole grid in one sweep.
+   */
+  void updateRegularInitialGridRefinementStrategy();
+
+  /**
+   * In the serial version of the code, this predicate always holds. In the
+   * parallel case, it holds if and only if all ranks are already busy. As the
+   * routine only may be used by the setup of the regular initial grid, it
+   * thus is reasonable to invoke enforceRefine in the parallel case if the
+   * result it true.
+   */
+  bool refineInitialGridInCreationalEvents() const;
+
+  bool refineInitialGridInTouchVertexLastTime() const;
 };
 
 #endif

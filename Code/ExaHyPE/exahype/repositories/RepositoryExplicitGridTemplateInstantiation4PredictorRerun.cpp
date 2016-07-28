@@ -13,7 +13,6 @@
 #include "peano/stacks/VertexArrayStack.h"
 #include "peano/stacks/VertexSTDStack.h"
 
- #include "exahype/adapters/RegularMesh.h" 
  #include "exahype/adapters/AugmentedAMRGrid.h" 
  #include "exahype/adapters/PlotAugmentedAMRGrid.h" 
  #include "exahype/adapters/SolutionAdjustmentAndGlobalTimeStepComputation.h" 
@@ -27,6 +26,7 @@
  #include "exahype/adapters/Predictor.h" 
  #include "exahype/adapters/PredictorRerun.h" 
  #include "exahype/adapters/Corrector.h" 
+ #include "exahype/adapters/Plot.h" 
 
 
 namespace peano {
