@@ -11,14 +11,15 @@
  * For the full license text, see LICENSE.txt
  **/
 
+#include "exahype/tests/kernels/c/FinitevolumesMusclTest.h"
+
 #include <algorithm>
 #include <cassert>
 #include <iostream>
 
-#include "exahype/tests/kernels/c/FinitevolumesMusclTest.h"
-#include "kernels/finitevolumes/muscl/c/3d/solutionUpdate.cpph"
-
 #if DIMENSIONS == 3
+
+#include "kernels/finitevolumes/muscl/c/3d/solutionUpdate.cpph"
 
 namespace exahype {
 namespace tests {
@@ -91,7 +92,7 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
     const int basisSize2 = basisSize * basisSize;
     const int basisSize3 = basisSize2 * basisSize;
     const int numberOfVariables = 5;
-    double *luh[3 * 3 * 3];  // 9 cells
+    double *luh[3 * 3 * 3];  // 27 cells
     for (int i = 0; i < 3 * 3 * 3; i++) {
       luh[i] = new double[basisSize3 * numberOfVariables];
     }
@@ -143,7 +144,7 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
         luh, dx, dt, numberOfVariables, basisSize);
 
     // compute reference solution (shift by one in x direction)
-    double *luh_expected[3 * 3 * 3];  // 9 cells
+    double *luh_expected[3 * 3 * 3];  // 27 cells
     for (int i = 0; i < 3 * 3 * 3; i++) {
       luh_expected[i] = new double[basisSize3 * numberOfVariables];
     }
@@ -356,7 +357,7 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
     const int basisSize2 = basisSize * basisSize;
     const int basisSize3 = basisSize2 * basisSize;
     const int numberOfVariables = 5;
-    double *luh[3 * 3 * 3];  // 9 cells
+    double *luh[3 * 3 * 3];  // 27 cells
     for (int i = 0; i < 3 * 3 * 3; i++) {
       luh[i] = new double[basisSize3 * numberOfVariables];
     }
@@ -408,7 +409,7 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
         luh, dx, dt, numberOfVariables, basisSize);
 
     // check
-    double *luh_expected[3 * 3 * 3];  // 9 cells
+    double *luh_expected[3 * 3 * 3];  // 27 cells
     for (int i = 0; i < 3 * 3 * 3; i++) {
       luh_expected[i] = new double[basisSize3 * numberOfVariables];
     }
@@ -620,7 +621,7 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
     const int basisSize2 = basisSize * basisSize;
     const int basisSize3 = basisSize2 * basisSize;
     const int numberOfVariables = 5;
-    double *luh[3 * 3 * 3];  // 9 cells
+    double *luh[3 * 3 * 3];  // 27 cells
     for (int i = 0; i < 3 * 3 * 3; i++) {
       luh[i] = new double[basisSize3 * numberOfVariables];
     }
@@ -672,7 +673,7 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
         luh, dx, dt, numberOfVariables, basisSize);
 
     // check
-    double *luh_expected[3 * 3 * 3];  // 9 cells
+    double *luh_expected[3 * 3 * 3];  // 27 cells
     for (int i = 0; i < 3 * 3 * 3; i++) {
       luh_expected[i] = new double[basisSize3 * numberOfVariables];
     }
@@ -872,7 +873,7 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
   }
 }
 
-}  // namepsace c
+}  // namespace c
 }  // namespace tests
 }  // namespace exahype
 
