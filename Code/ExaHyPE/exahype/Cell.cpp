@@ -243,13 +243,13 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(const int solverNumber) {
 
                 // Allocate volume DoF
                 p.setPredictor(DataHeap::getInstance().createData(
-                    dataPerCell, dataPerCell));
+                    unknownsPerCell, unknownsPerCell));
                 p.setVolumeFlux(DataHeap::getInstance().createData(
                     fluxUnknownsPerCell, fluxUnknownsPerCell));
                 p.setUpdate(DataHeap::getInstance().createData(
                     unknownsPerCell, unknownsPerCell));
                 p.setSolution(DataHeap::getInstance().createData(
-                    unknownsPerCell, unknownsPerCell));
+                    dataPerCell, dataPerCell));
               }
               break;
             default:
