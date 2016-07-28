@@ -2,15 +2,17 @@
 
 cd $(dirname "$0")
 
-# Vasco, 26. June by mail: No Sharedmem in this user-spec file.
+# note that this Application uses the MakefileFORTRAN which does not
+# yet use the COMPILER=GNU.
+
 export CC=gcc
 export SHAREDMEM="TBB" # None
 export TBB_INC=/usr/include/tbb
-
 MPI_LDFLAGS="$(mpicc -showme:link)"
-# at ubuntu 14: -pthread -L/usr//lib -L/usr/lib/openmpi/lib -lmpi -ldl -lhwloc
-
 export TBB_SHLIB="-L/usr/lib -ltbb $MPI_LDFLAGS"
+
+# Debugging mode
+export MODE="DEBUG"
 
 set -e
 
@@ -21,6 +23,11 @@ cd ../../
 #java -jar ExaHyPE.jar  --not-interactive Applications/srhd3dfortran.exahype
 
 cd -
+
 #make clean
+
+# broken build system, do this by hand:
+gfortran -c Parameters.f90 
+
 make -j $(nproc)
 

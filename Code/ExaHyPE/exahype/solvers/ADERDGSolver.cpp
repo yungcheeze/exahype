@@ -39,13 +39,13 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
     timeStepping,
     std::move(profiler)
   ),
-      _unknownsPerFace(numberOfVariables * addPadding(power(nodesPerCoordinateAxis, DIMENSIONS - 1))),
+      _unknownsPerFace(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
       _unknownsPerCellBoundary(DIMENSIONS_TIMES_TWO * _unknownsPerFace),
       _unknownsPerCell(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
-      _fluxUnknownsPerCell(addPadding(numberOfVariables) * addPadding(power(nodesPerCoordinateAxis, DIMENSIONS + 0)) * (DIMENSIONS+1)), // todo Angelika
-      _spaceTimeUnknownsPerCell(addPadding(numberOfVariables) * power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
+      _fluxUnknownsPerCell(_unknownsPerCell * DIMENSIONS), // todo Angelika
+      _spaceTimeUnknownsPerCell(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
       _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell * (DIMENSIONS+1)), // todo Angelika
-      _dataPerCell(addPadding(numberOfVariables)*power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
+      _dataPerCell(numberOfVariables*power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
       _minCorrectorTimeStamp(std::numeric_limits<double>::max()),
       _minPredictorTimeStamp(std::numeric_limits<double>::max()),
       _minCorrectorTimeStepSize(std::numeric_limits<double>::max()),

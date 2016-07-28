@@ -6,24 +6,21 @@ using std::endl;
 using std::cout;
 
 extern "C" {
-void minimumtreedepth_(int* depth);
 void hastoadjustsolution_(double* time, bool* refine);
 void adjustedsolutionvalues_(const double* const x,const double* w,const double* t,const double* dt,double* Q);
 void pdeflux_(double* F, const double* const Q);
-void pdeeigenvalues_(double* lambda, const double* const Q, const int* normalNonZeroIndex);
+void pdeeigenvalues_(double* lambda, const double* const Q, const double* nv);
 }
 
-SRHD::SRHDSolver::SRHDSolver(int kernelNumber, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
-  : exahype::solvers::Solver(
-      "SRHDSolver", exahype::solvers::Solver::Type::ADER_DG, kernelNumber, 5, 0, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
+SRHD::SRHDSolver::SRHDSolver(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):
+  exahype::solvers::ADERDGSolver("SRHDSolver", MY_NUMBER_OF_VARIABLES /* nVars */, MY_NUMBER_OF_PARAMETERS /* nParams */, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
+  // implement if wanted
 }
 
 void SRHD::SRHDSolver::flux(const double* const Q, double** F) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
-
   pdeflux_(F[0], Q);
-  
 }
 
 
@@ -31,22 +28,22 @@ void SRHD::SRHDSolver::flux(const double* const Q, double** F) {
 void SRHD::SRHDSolver::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
-  
-  const int nnzi = normalNonZeroIndex+1;
-  pdeeigenvalues_(lambda, Q, &nnzi);
-  
+  // normal vector: Allocate for 3 dimensions for convenience
+  double nv[3] = {0.};
+  nv[normalNonZeroIndex] = 1;
+  pdeeigenvalues_(lambda, Q, nv);
 }
 
 
 
 bool SRHD::SRHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
-  
+  return (t < 1e-10);
+
+  // This would be the alternative invocation via Fortran.
+  // However this crashes for some reason and is also unneccessary.
   bool refine;
-  
   hastoadjustsolution_(&t, &refine);
-  
   return refine;
-  
 }
 
 
@@ -54,7 +51,6 @@ bool SRHD::SRHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, d
 void SRHD::SRHDSolver::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
-  
   adjustedsolutionvalues_(x, &w, &t, &dt, Q);
 }
 

@@ -35,11 +35,13 @@ exahype-project  Euler
     end-time                 = 0.4
   end computational-domain
 
+/*
   shared-memory
     identifier               = autotuning
     cores                    = 2
     properties-file          = sharedmemory.properties
   end shared-memory
+ */
  
   distributed-memory
     identifier               = static_load_balancing
@@ -52,7 +54,7 @@ exahype-project  Euler
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99    
   end optimisation
-
+  
   solver ADER-DG MyEulerSolver
     variables         = 5
     parameters        = 0
@@ -76,5 +78,4 @@ exahype-project  Euler
       select   = {all,x:0.2,y:0.2} 
     end plot
   end solver
-
 end exahype-project

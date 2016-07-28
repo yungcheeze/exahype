@@ -1,7 +1,7 @@
 package eu.exahype.solvers;
 
 public class GenericFiniteVolumesMUSCLinFortran implements Solver {
-  public static final String Identifier = UserDefinedFiniteVolumesinC.Identifier;
+  public static final String Identifier = GenericFiniteVolumesMUSCLinC.Identifier;
 
   private int _numberOfVariables;
   private int _numberOfParameters;
