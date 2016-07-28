@@ -95,6 +95,7 @@ public class Helpers {
     writer.write("\n\n");
     writer.write("#include <memory>\n\n");
     writer.write("#include \"exahype/profilers/Profiler.h\"\n");
+    writer.write("#include \"exahype/solvers/ADERDGSolver.h\"\n");
     writer.write("#include \"exahype/solvers/FiniteVolumesSolver.h\"\n");
     writer.write("\n\n\n");
 

@@ -67,6 +67,8 @@ Tokens
   token_repeat                      = 'repeat';
   token_output                      = 'output';
   token_select                      = 'select';
+  
+  token_couple_solvers              = 'couple-solvers';
 
   token_shared_memory               = 'shared-memory';
   token_cores                       = 'cores';

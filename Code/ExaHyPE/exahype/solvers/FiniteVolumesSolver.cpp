@@ -78,3 +78,13 @@ void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
 double exahype::solvers::FiniteVolumesSolver::getNextMinTimeStepSize() const {
   return _nextMinTimeStepSize;
 }
+
+
+void exahype::solvers::FiniteVolumesSolver::sendToRank(int rank, int tag) {
+  assertionMsg( false, "not implemented yet" );
+}
+
+
+void exahype::solvers::FiniteVolumesSolver::receiveFromRank(int rank, int tag) {
+  assertionMsg( false, "not implemented yet" );
+}
