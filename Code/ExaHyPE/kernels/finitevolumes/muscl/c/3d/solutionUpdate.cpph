@@ -18,8 +18,6 @@
 
 #include "../../../../../../Peano/tarch/la/Vector.h"
 
-#if DIMENSIONS == 3
-
 namespace {
 
 // TODO(guera): Make basisSize and numberOfVariables template arguments
@@ -1005,5 +1003,3 @@ void solutionUpdate(double** luh,
 }  // namespace muscl
 }  // namespace finitevolumes
 }  // namespace kernels
-
-#endif  // DIMENSIONS == 3
