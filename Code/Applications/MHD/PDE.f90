@@ -68,8 +68,7 @@ END SUBROUTINE PDEEigenvalues
 
 
 SUBROUTINE PDEFlux(F,Q) 
-  USE Parameters, ONLY : nVar, nDim
-  USE eos, ONLY : gamma
+  USE Parameters, ONLY : nVar, nDim, gamma
   USE, INTRINSIC :: ISO_C_BINDING 
   IMPLICIT NONE 
   ! Argument list  
