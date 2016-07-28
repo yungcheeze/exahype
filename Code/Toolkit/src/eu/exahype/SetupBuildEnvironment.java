@@ -3,6 +3,7 @@ package eu.exahype;
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.AProject;
+import eu.exahype.node.ACoupleSolvers;
 import eu.exahype.node.ASharedMemory;
 import eu.exahype.node.AComputationalDomain;
 import eu.exahype.node.ADistributedMemory;
@@ -250,6 +251,17 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
           "  If you run CSH, please replace \"export ARG=VALUE\" with \"setenv ARG VALUE\".\n");
 
       _writer.close();
+    } catch (Exception exc) {
+      System.err.println("ERROR: " + exc.toString());
+      valid = false;
+    }
+  }
+
+  public void inACoupleSolvers(ACoupleSolvers node) {
+    try {
+      if (node.getIdentifier().getText().trim().equals( "cellwise" ) ) {
+        _writer.write("COUPLE_SOLVERS=CellWise\n");
+      }
     } catch (Exception exc) {
       System.err.println("ERROR: " + exc.toString());
       valid = false;

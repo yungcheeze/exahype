@@ -144,6 +144,14 @@ public class CreateSolverClasses extends DepthFirstAdapter {
           solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran(_dimensions,
               numberOfVariables, numberOfParameters, order, _enableProfiler);
           break;
+        default:
+          System.err.println( 
+            "ERROR: Supported kernels are " + 
+            eu.exahype.solvers.UserDefinedADER_DGinFortran.Identifier + ", " +
+            eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran.Identifier + ", " +
+            eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran.Identifier
+          );
+          break;
       }
     } else {
       switch (kernel) {
@@ -171,6 +179,17 @@ public class CreateSolverClasses extends DepthFirstAdapter {
           break;
         case eu.exahype.solvers.KernelEuler2d.Identifier:
           solver = new eu.exahype.solvers.KernelEuler2d();
+          break;
+        default:
+          System.err.println( 
+            "ERROR: Supported kernels are " + 
+       		eu.exahype.solvers.UserDefinedADER_DGinC.Identifier + ", " +
+       		eu.exahype.solvers.GenericFluxesLinearADER_DGinC.Identifier + ", " +
+       		eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC.Identifier + ", " +
+       		eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier + ", " +
+       		eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier + ", " +
+       		eu.exahype.solvers.KernelEuler2d.Identifier
+          );
           break;
       }
     }
@@ -321,6 +340,13 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     if (solver == null) {
       System.err.println("creation solver " + solverName + " ... failed as kernel " + kernel
           + " for language " + node.getLanguage().getText().trim() + " is not supported");
+      System.err.println(
+        "valid kernels are " + 
+  		eu.exahype.solvers.UserDefinedFiniteVolumesinFortran.Identifier + " (FORTRAN), " +
+  		eu.exahype.solvers.UserDefinedFiniteVolumesinC.Identifier + " (C), " +
+  		eu.exahype.solvers.GenericFiniteVolumesMUSCLinFortran.Identifier + " (FORTRAN), " +
+  		eu.exahype.solvers.GenericFiniteVolumesMUSCLinC.Identifier + " (C) " 
+      );
       valid = false;
       return;
     }
