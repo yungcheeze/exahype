@@ -121,9 +121,9 @@ public class Helpers {
       boolean isLinear, int dimensions, String microarchitecture, String pathToLibxsmm)
       throws IOException {
     String currentDirectory = System.getProperty("user.dir");
-    java.nio.file.Path pathToCodeGenerator =
-        java.nio.file.Paths.get(currentDirectory + "/Miscellaneous/CodeGenerator/Driver.py");
-    if (java.nio.file.Files.notExists(pathToCodeGenerator)) {
+    java.io.File pathToCodeGenerator =
+        new java.io.File(currentDirectory + "/Miscellaneous/CodeGenerator/Driver.py");
+    if (pathToCodeGenerator.exists()) {
       System.err.println("ERROR: Code generator not found. Can't generated optimised kernels.");
       return;
     }
