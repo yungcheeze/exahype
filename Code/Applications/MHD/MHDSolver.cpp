@@ -1,4 +1,5 @@
 #include "MHDSolver.h"
+//#include "fortran.h" _ltob
 
 #include <memory>
 
@@ -7,7 +8,7 @@
 // Fortran functions:
 extern "C" {
 void minimumtreedepth_(int* depth);
-void hastoadjustsolution_(double* time, bool* refine);
+void hastoadjustsolution_(double* t, bool* refine);
 void adjustedsolutionvalues_(const double* const x,const double* w,const double* t,const double* dt,double* Q);
 void pdeflux_(double* F, const double* const Q);
 void pdeeigenvalues_(double* lambda, const double* const Q, double* nv);
@@ -38,10 +39,12 @@ void MHDSolver::MHDSolver::eigenvalues(const double* const Q, const int normalNo
 
 
 bool MHDSolver::MHDSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
-  // Fortran call
+  return (t < 1e-10);
+
+  // Fixed the following.
   bool refine;
   hastoadjustsolution_(&t, &refine);
-  return refine;
+  //return _ltob(refine); // something like this is needed
 }
 
 

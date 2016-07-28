@@ -1,12 +1,11 @@
 ! The Con2Prim and Prim2Con routines for MHD.
 ! Should be merged with SRHD's.
 
-SUBROUTINE PDEPrim2Cons(Q,V,x,time)
+SUBROUTINE PDEPrim2Cons(Q,V)
   USE Parameters, ONLY: gamma, nVar, nDim 
   IMPLICIT NONE
   ! Argument list declaration
   REAL :: Q(nVar), V(nVar)
-  REAL :: x(nDim), time 
   INTENT(IN)  :: V
   INTENT(OUT) :: Q 
   ! Local variable declaration
@@ -22,7 +21,6 @@ SUBROUTINE PDEPrim2Cons(Q,V,x,time)
   INTEGER :: i
 
   !
-#ifdef EQNTYPE5     ! Special Relativistic MHD
   rho    = V(1)
   vx     = V(2)
   vy     = V(3)
@@ -61,26 +59,15 @@ SUBROUTINE PDEPrim2Cons(Q,V,x,time)
   Q(8)   = bz
   Q(9)   = V(9)  
 
-  !  CALL PDECons2Prim(Prim,Q)
-  !  Buf = abs(V - Prim)
-  !  DO i = 1, nVar
-  !    IF (Buf(i) > 1.0e-9) THEN
-  !        WRITE(*,*)'PROBLEM',Buf(i),i
-  !        STOP
-  !    ENDIF
-  !  ENDDO
-#endif
-
-
 END SUBROUTINE PDEPrim2Cons
 
-SUBROUTINE PDECons2Prim(V,Q,x,time,iErr)
+
+SUBROUTINE PDECons2Prim(V,Q,iErr)
   USE Parameters, ONLY: gamma, nVar, nDim
   IMPLICIT NONE
   !--------------------------------------------!
   ! Argument list declaration
   REAL :: Q(nVar), V(nVar)
-  REAL :: x(3), time
   INTEGER :: iErr
   INTENT(IN)  :: Q 
   INTENT(OUT) :: V 
@@ -118,7 +105,6 @@ SUBROUTINE PDECons2Prim(V,Q,x,time,iErr)
   !
   iErr = 0
   !
-#ifdef EQNTYPE5     ! Special Relativistic MHD
   ! First option [Del Zanna et al. (2007) A&A, 473, 11-30 (method 3)]
   FAILED = .FALSE.
   gamma1 = gamma/(gamma - 1.0)
@@ -260,8 +246,5 @@ SUBROUTINE PDECons2Prim(V,Q,x,time,iErr)
   !p=max(gam*(w*(1.-v2)-rho),1.e-15)
   !
   !V(1:9) = (/ rho, vx, vy, vz, p, bx, by, bz, Q(9) /)
-  !
-#endif
-  !
   !
 END SUBROUTINE PDECons2Prim

@@ -20,6 +20,13 @@
     
     ! And even more parameters
     
-      REAL, PARAMETER                :: gamma = 5.0/3.0
+    REAL, PARAMETER                :: gamma = 5.0/3.0
+      
+    ! Divergence cleaning.
+    ! Vasco: 0.5
+    ! Michael D: Dont use it!
+    ! We do not have made use of sources anyway 
+
+    REAL, PARAMETER :: DivCleaning_a = 0.0  ! Vasco: 0.5, Michael D: No.
 
   END MODULE Parameters  

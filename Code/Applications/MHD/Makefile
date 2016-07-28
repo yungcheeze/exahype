@@ -29,6 +29,6 @@ MIXEDLANG=Yes
 
 
 all: 
-	@echo SRHD 
+	@echo MHD
 	@echo =================
 	@echo An ExaHyPE solver

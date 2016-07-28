@@ -15,18 +15,14 @@ SUBROUTINE PDEEigenvalues(Lambda,Q,nv)
   INTEGER :: iErr
   REAL :: rho,vx,vy,vz,p
   REAL :: cs2, cs, c0, v2, w, gamma1, vn, den, u, c
-  REAL :: ex, ey, ez, b2, e2, a2, ca2, vf1, vf2
+  REAL :: ex, ey, ez, b2, e2, a2, ca2, vf1, vf2, vel(nDim)
   REAL :: bx, by, bz
   REAL :: V(nVar)
 
   ! These are not the exact eigenvalues, instead of Lambda(1..9)
   ! we compute only two eigenvalues: Approximate magnetosonics
-  
-  ! Todo: What is ltime?
-  REAL :: ltime, xg
 
-
-  CALL PDECons2Prim(V,Q,xg,ltime,iErr)
+  CALL PDECons2Prim(V,Q,iErr)
   rho    = V(1)
   vx     = V(2)
   vy     = V(3)
@@ -41,10 +37,15 @@ SUBROUTINE PDEEigenvalues(Lambda,Q,nv)
   ez     = - (vx*by - vy*bx)
   gamma1 = gamma/(gamma-1.0)
   b2     = bx*bx + by*by + bz*bz
-  v2     = vx*vx + vy*vy + vz*vz
+  !v2     = vx*vx + vy*vy + vz*vz
   e2     = ex*ex + ey*ey + ez*ez
   w      = rho + gamma1*p
-  vn     = vx*nv(1) + vy*nv(2) + vz*nv(3)
+  !vn     = vx*nv(1) + vy*nv(2) + vz*nv(3)
+
+  ! the velocity vector is dimension agnostic
+  vel    = V(2:2+nDim-1)
+  v2     = SUM(vel**2)
+  vn     = SUM(vel * nv)
 
   cs2    = gamma * p / w
   ca2    = (b2 - e2) / ( w + b2 - e2)
@@ -68,7 +69,7 @@ END SUBROUTINE PDEEigenvalues
 
 
 SUBROUTINE PDEFlux(F,Q) 
-  USE Parameters, ONLY : nVar, nDim, gamma
+  USE Parameters, ONLY : nVar, nDim, gamma, DivCleaning_a
   USE, INTRINSIC :: ISO_C_BINDING 
   IMPLICIT NONE 
   ! Argument list  
@@ -81,9 +82,6 @@ SUBROUTINE PDEFlux(F,Q)
   REAL :: V(nVar)
   INTEGER :: iErr
   
-  ! to be handled
-  REAL :: DivCleaning_a = 0.5
-
   CALL PDECons2Prim(V,Q,iErr)
   gamma1 = gamma/(gamma-1.0)
   rho    = V(1)
