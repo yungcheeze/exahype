@@ -191,7 +191,7 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
 #endif
 
   tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
-      vertex.getADERDGCellDescriptionsIndex();
+      vertex.getCellDescriptionsIndex();
 
   // @todo Hier stimmen die Abfolgen nicht!
 
