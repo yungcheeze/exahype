@@ -229,8 +229,8 @@ class exahype::solvers::Solver {
    * the solver data to the worker. If we are on the worker, we do overwrite
    * all solver data accordingly.
    */
-  void sendToRank(int rank, int tag);
-  void receiveFromRank(int rank, int tag);
+  virtual void sendToRank(int rank, int tag) = 0;
+  virtual void receiveFromRank(int rank, int tag) = 0;
 
   void toString();
 

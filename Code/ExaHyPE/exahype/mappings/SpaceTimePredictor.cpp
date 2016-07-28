@@ -191,9 +191,10 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
 #endif
 
   tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
-      vertex.getADERDGCellDescriptionsIndex();
+      vertex.getCellDescriptionsIndex();
 
   // @todo Hier stimmen die Abfolgen nicht!
+  // @todo Das alles funktioniert evtl. mit AMR und/oder FV nicht!
 
   dfor2(dest)
       dfor2(src) if (vertex.getAdjacentRanks()(destScalar) == toRank &&

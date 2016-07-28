@@ -203,7 +203,7 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
 #endif
 
   tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
-      vertex.getADERDGCellDescriptionsIndex();
+      vertex.getCellDescriptionsIndex();
 
   dfor2(myDest) dfor2(mySrc)
       /*
