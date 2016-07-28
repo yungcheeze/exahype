@@ -21,9 +21,10 @@ exahype-project  MHDSolver
 
   computational-domain
     dimension                = 2
-    width                    = 1.0, 1.0, 1.0
+/*    width                    = 6.283185307179586 */
+    width = 6.283185307179586, 6.283185307179586, 6.283185307179586
     offset                   = 0.0, 0.0, 0.0
-    end-time                 = 0.2
+    end-time                 = 0.8
   end computational-domain
 
 
@@ -50,7 +51,8 @@ exahype-project  MHDSolver
     variables          = 9
     parameters         = 0
     order              = 3
-    maximum-mesh-size  = 0.05
+    /* 27 grid points: 0.2327 */
+    maximum-mesh-size  = 0.24
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     /* we are using the new Fortran interface */

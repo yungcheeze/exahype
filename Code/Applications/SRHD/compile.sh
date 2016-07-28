@@ -23,6 +23,11 @@ cd ../../
 #java -jar ExaHyPE.jar  --not-interactive Applications/srhd3dfortran.exahype
 
 cd -
+
 #make clean
+
+# broken build system, do this by hand:
+gfortran -c Parameters.f90 
+
 make -j $(nproc)
 
