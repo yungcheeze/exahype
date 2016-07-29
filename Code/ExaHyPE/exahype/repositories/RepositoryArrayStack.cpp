@@ -121,7 +121,7 @@ void exahype::repositories::RepositoryArrayStack::restart(
   assertion( !tarch::parallel::Node::getInstance().isGlobalMaster());
   #endif
   
-  logInfo( "restart(...)", "start node for subdomain " << domainOffset << "x" << domainSize << " on level " << domainLevel );
+  logInfo( "restart(...)", "start node for subdomain " << domainOffset << "x" << domainSize << " on level " << domainLevel << " with master " << tarch::parallel::NodePool::getInstance().getMasterRank() );
   
   assertion( _repositoryState.getAction() == exahype::records::RepositoryState::Terminate );
 
