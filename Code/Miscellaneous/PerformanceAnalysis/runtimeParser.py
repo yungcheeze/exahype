@@ -7,7 +7,24 @@
 :synopsis: Provides functions to read the CPU and user times of a set of Peano output files.
 """
 
+import re
 
+
+def max_level(filename):
+  result = 0
+  try:
+    file = open(filename, "r" )
+  except:
+    print( "was not able to open file " + filename )
+    return -1.0
+
+  file.readline()
+  for line in file:
+    if re.search( "max-level=", line ):
+      currentLevel = int( line.split( "max-level=" )[1].split(",")[0] )
+      if currentLevel>result:
+        result = currentLevel
+  return result
 
 
 
@@ -34,6 +51,26 @@ def readColumnFromTable(filename,whichColumn):
     return []
 
 
+def getAdapterCountColumnFromTable(filename,adapterName):
+  result = [] 
+  try:
+    file = open(filename, "r" )
+  except:
+    print( "was not able to open file " + filename )
+    return -1.0
+
+  line = file.readline()
+  counter = 0
+  for col in line.split("&"):
+    #print "study " + col.strip() + "  " 
+    if col.strip()==adapterName.strip():
+      return 2*counter-2
+    counter = counter + 1
+  return -1
+
+
+def getAdapterRuntimeColumnFromTable(filename,adapterName):
+  return getAdapterCountColumnFromTable(filename,adapterName) + 1
 
 
 def parse_all_adapter_times(rootdir,prefix,process_counts,thread_counts,n_runs=1,cc='icpc',mode='TBB',per_iteration=False):

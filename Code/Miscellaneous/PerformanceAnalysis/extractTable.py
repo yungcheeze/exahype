@@ -12,21 +12,24 @@ MaxNodes        = 16
 
 def createTable(path,prefix,postfix):
   print "write table for prefix " + prefix + " and postfix " + postfix + ". Max count searched for is " + str(MaxNodes)
-  outFilename  = prefix + postfix + ".table"
-  outFile      = open( outFilename, "w" )
+  outFilename   = prefix + postfix + ".table"
+  outFile       = open( outFilename, "w" )
   headerWritten = False
+  adapters      = []
   for ranks in range(1,MaxNodes):
     inputFileName = path + "/" + prefix + str(ranks) + postfix
     print "- search for " + inputFileName + " ... ",
     if os.path.isfile(inputFileName):
       print "found "
 
-      times = runtimeParser.parse_adapter_times(inputFileName)
+      times    = runtimeParser.parse_adapter_times(inputFileName)
+      maxLevel = runtimeParser.max_level(inputFileName)
 
-      adapters = []
       if not headerWritten:
         headerWritten = True
         outFile.write( "ranks/threads/nodes " )
+        outFile.write( "& " )
+        outFile.write( "max level " )
         for t in times:
           outFile.write( " & " )
           outFile.write( t )
@@ -35,6 +38,8 @@ def createTable(path,prefix,postfix):
         outFile.write( "\n" )
         
       outFile.write( str(ranks) )
+      outFile.write( " & "  )
+      outFile.write( str(maxLevel) )
       totalIterationCount = 0
       totalRuntime        = 0
       for adapter in adapters:
