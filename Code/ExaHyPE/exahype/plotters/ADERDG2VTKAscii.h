@@ -49,7 +49,7 @@ class exahype::plotters::ADERDG2VTKAscii: public exahype::plotters::Plotter::Dev
   ADERDG2VTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
   virtual ~ADERDG2VTKAscii();
 
-  virtual void init(const std::string& filename, int orderPlusOne, int solverUnknowns, const std::string& select);
+  virtual void init(const std::string& filename, int orderPlusOne, int solverUnknowns, int writtenUnknowns, const std::string& select);
 
   static std::string getIdentifier();
 

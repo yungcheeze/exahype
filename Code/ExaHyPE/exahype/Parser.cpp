@@ -451,6 +451,20 @@ exahype::solvers::Solver::TimeStepping exahype::Parser::getTimeStepping(int solv
   return exahype::solvers::Solver::TimeStepping::Global;
 }
 
+
+int exahype::Parser::getUnknownsForPlotter(
+    int solverNumber, int plotterNumber) const {
+  assertion(isValid());
+  // We have to multiply with two as the token solver occurs twice (to open and
+  // close the section)
+  std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
+                                    plotterNumber * 2 + 1, 2);
+  logDebug("getFirstSnapshotTimeForPlotter()", "found token " << token);
+  assertion3(token.compare("notoken") != 0, token, solverNumber, plotterNumber);
+  return atoi(token.c_str());
+}
+
+
 double exahype::Parser::getFirstSnapshotTimeForPlotter(
     int solverNumber, int plotterNumber) const {
   assertion(isValid());

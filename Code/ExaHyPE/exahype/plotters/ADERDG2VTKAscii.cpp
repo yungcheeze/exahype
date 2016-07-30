@@ -37,6 +37,7 @@ void exahype::plotters::ADERDG2VTKAscii::init(
   const std::string& filename,
   int                orderPlusOne,
   int                unknowns,
+  int                writtenUnknowns,
   const std::string& select
 ){
   _filename          = filename;
@@ -44,8 +45,7 @@ void exahype::plotters::ADERDG2VTKAscii::init(
   _solverUnknowns    = unknowns;
   _select            = select;
   _patchWriter       = nullptr;
-  _writtenUnknowns   = _solverUnknowns;
-
+  _writtenUnknowns   = writtenUnknowns;
 
   double x;
   x = Parser::getValueFromPropertyString( select, "left" );

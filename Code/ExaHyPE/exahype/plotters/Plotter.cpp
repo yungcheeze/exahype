@@ -30,6 +30,7 @@ exahype::plotters::Plotter::Plotter(
   const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing)
     : _solver(solver),
       _identifier(parser.getIdentifierForPlotter(solver, plotterCount)),
+      _writtenUnknowns(parser.getUnknownsForPlotter(solver, plotterCount)),
       _time(parser.getFirstSnapshotTimeForPlotter(solver, plotterCount)),
       _repeat(parser.getRepeatTimeForPlotter(solver, plotterCount)),
       _filename(parser.getFilenameForPlotter(solver, plotterCount)),
@@ -92,6 +93,7 @@ exahype::plotters::Plotter::Plotter(
         _filename,
         solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis(),
         solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
+        _writtenUnknowns,
         _select
     );
   }

@@ -50,7 +50,7 @@ class exahype::plotters::FiniteVolumes2VTKAscii: public exahype::plotters::Plott
   FiniteVolumes2VTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
   virtual ~FiniteVolumes2VTKAscii();
 
-  virtual void init(const std::string& filename, int numberOfCellsPerAxis, int unknowns, const std::string& select);
+  virtual void init(const std::string& filename, int numberOfCellsPerAxis, int unknowns, int writtenUnknowns, const std::string& select);
 
   static std::string getIdentifier();
 

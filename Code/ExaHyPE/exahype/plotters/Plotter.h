@@ -82,7 +82,7 @@ class exahype::plotters::Plotter {
      * Configure the plotter. Is invoked directly after the constructor is
      * called.
      */
-    virtual void init(const std::string& filename, int order, int unknowns, const std::string& select) = 0;
+    virtual void init(const std::string& filename, int order, int unknowns, int writtenUnknowns, const std::string& select) = 0;
 
     /**
      * Hand a patch over to the plotter. Feel free to ignore the passed data if
@@ -102,6 +102,7 @@ class exahype::plotters::Plotter {
 
   const int              _solver;
   const std::string      _identifier;
+  int                    _writtenUnknowns;
   double                 _time;
   const double           _repeat;
   const std::string      _filename;

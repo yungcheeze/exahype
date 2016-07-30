@@ -42,7 +42,7 @@ void exahype::plotters::ADERDG2ProbeAscii::finishPlotting() {
 }
 
 
-void exahype::plotters::ADERDG2ProbeAscii::init(const std::string& filename, int orderPlusOne, int unknowns, const std::string& select) {
+void exahype::plotters::ADERDG2ProbeAscii::init(const std::string& filename, int orderPlusOne, int unknowns, int writtenUnknowns, const std::string& select) {
   _order    = orderPlusOne-1;
   _unknowns = unknowns;
   _select   = select;

@@ -36,6 +36,7 @@ void exahype::plotters::ADERDG2VTKBinary::init(
   const std::string& filename,
   int                orderPlusOne,
   int                unknowns,
+  int writtenUnknowns,
   const std::string& select
 ) {
   _patchWriter = nullptr;

@@ -39,6 +39,7 @@ void exahype::plotters::FiniteVolumes2VTKAscii::init(
   const std::string& filename,
   int                numberOfCellsPerAxis,
   int                unknowns,
+  int writtenUnknowns,
   const std::string& select
 ){
   _filename             = filename;
