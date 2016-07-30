@@ -457,7 +457,7 @@ double exahype::Parser::getFirstSnapshotTimeForPlotter(
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
-                                    plotterNumber * 2 + 1, 2);
+                                    plotterNumber * 2 + 1, 4);
   logDebug("getFirstSnapshotTimeForPlotter()", "found token " << token);
   assertion3(token.compare("notoken") != 0, token, solverNumber, plotterNumber);
   return atof(token.c_str());
@@ -469,7 +469,7 @@ double exahype::Parser::getRepeatTimeForPlotter(int solverNumber,
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
-                                    plotterNumber * 2 + 1, 4);
+                                    plotterNumber * 2 + 1, 6);
   logDebug("getRepeatTimeForPlotter()", "found token " << token);
   assertion3(token.compare("notoken") != 0, token, solverNumber, plotterNumber);
   return atof(token.c_str());
@@ -493,7 +493,7 @@ std::string exahype::Parser::getFilenameForPlotter(int solverNumber,
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
-                                    plotterNumber * 2 + 1, 6);
+                                    plotterNumber * 2 + 1, 8);
   logDebug("getFilenameForPlotter()", "found token " << token);
   assertion3(token.compare("notoken") != 0, token, solverNumber, plotterNumber);
   return token;
@@ -504,7 +504,7 @@ std::string exahype::Parser::getSelectorForPlotter(int solverNumber, int plotter
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
-                                    plotterNumber * 2 + 1, 8);
+                                    plotterNumber * 2 + 1, 10);
   logDebug("getSelectorForPlotter()", "found token " << token);
   assertion3(token.compare("notoken") != 0, token, solverNumber, plotterNumber);
   return (token != "notoken") ? token : "{}";
