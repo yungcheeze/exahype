@@ -42,13 +42,14 @@ exahype-project  Euler
     properties-file          = sharedmemory.properties
   end shared-memory
  */
- 
+ /*
   distributed-memory
     identifier               = static_load_balancing
     configure                = {greedy,FCFS}
     buffer-size              = 64
     timeout                  = 120
   end distributed-memory
+ */
  
   optimisation
     fuse-algorithmic-steps          = on
@@ -64,7 +65,7 @@ exahype-project  Euler
     kernel            = generic::fluxes::nonlinear
     language          = C
 
-    plot vtk::ascii
+    plot vtk::Cartesian::ascii
       variables = 5
       time      = 0.0
       repeat    = 0.05

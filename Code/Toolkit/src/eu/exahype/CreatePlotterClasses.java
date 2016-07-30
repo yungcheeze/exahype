@@ -46,13 +46,76 @@ public class CreatePlotterClasses extends DepthFirstAdapter {
     _solverName     = node.getName().toString().trim();
     _plotterCounter = -1;
   }
-
+  
+  private void writePlotterHeader( java.io.BufferedWriter writer, int unknowns, String plotterName ) throws java.io.IOException {
+	eu.exahype.solvers.Helpers.writeHeaderCopyright(writer);
+	writer.write( "#include \"exahype/plotters/Plotter.h\"\n" );
+    writer.write( "\n" );
+    writer.write( "\n" );
+    writer.write( "class " + plotterName + ": public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{\n" );
+    writer.write( "  public:\n" );
+    writer.write( "  " + plotterName + "();\n" );
+    writer.write( "  virtual ~" + plotterName + "();\n" );
+    writer.write( "  virtual void startPlotting(double time);\n");
+    writer.write( "  virtual void finishPlotting();\n");
+    writer.write( "  virtual void mapQuantities(\n" );
+    writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,\n" );
+    writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,\n" );
+    writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& x,\n" );
+    writer.write( "    double* Q,\n" );
+    writer.write( "    double* outputQuantities,\n" );
+    writer.write( "  double timeStamp);\n" );
+    writer.write( "};\n" );
+  }
+ 
+  private void writePlotterImplementation( java.io.BufferedWriter writer, int unknowns, String plotterName ) throws java.io.IOException {
+    writer.write( "#include \"" + plotterName + ".h\"\n" );
+    writer.write( "\n" );
+    writer.write( "\n" );
+    writer.write( plotterName + "::" + plotterName + "() {\n" );
+    writer.write( "  // @todo Please insert your code here\n" );
+    writer.write( "}\n" );
+    writer.write( "\n" );
+    writer.write( "\n" );
+    writer.write( plotterName + "::~" + plotterName + "() {\n" );
+    writer.write( "  // @todo Please insert your code here\n" );
+    writer.write( "}\n" );
+    writer.write( "\n" );
+    writer.write( "\n" );
+    writer.write( "void " + plotterName + "::startPlotting(double time) {\n" );
+    writer.write( "  // @todo Please insert your code here\n" );
+    writer.write( "}\n" );
+    writer.write( "\n" );
+    writer.write( "\n" );
+    writer.write( "void " + plotterName + "::finishPlotting() {\n" );
+    writer.write( "  // @todo Please insert your code here\n" );
+    writer.write( "}\n" );
+    writer.write( "\n" );
+    writer.write( "\n" );
+    writer.write( "void " + plotterName + "::mapQuantities(\n" );
+    writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,\n" );
+    writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,\n" );
+    writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& x,\n" );
+    writer.write( "    double* Q,\n" );
+    writer.write( "    double* outputQuantities,\n" );
+    writer.write( "    double timeStamp\n" );
+    writer.write( ") {\n" );
+    writer.write( "  for (int i=0; i<" + unknowns + "; i++){ \n" );
+    writer.write( "    outputQuantities[i] = Q[i];\n" );
+    writer.write( "  }\n" );
+    writer.write( "}\n" );
+    writer.write( "\n" );
+    writer.write( "\n" );
+  }
+ 
   @Override
   public void inAPlotSolution(APlotSolution node) {
     _plotterCounter++;
     try {
-      java.io.File header         = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + _solverName + "_Plotter" + Integer.toString(_plotterCounter) + ".h");
-      java.io.File implementation = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + _solverName + "_Plotter" + Integer.toString(_plotterCounter) + ".cpp");
+      String plotterName = _solverName + "_Plotter" + Integer.toString(_plotterCounter);
+     	
+      java.io.File header         = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + plotterName + ".h");
+      java.io.File implementation = new java.io.File(_directoryAndPathChecker.outputDirectory.getAbsolutePath() + "/" + plotterName + ".cpp");
 
       java.io.BufferedWriter headerWriter         = null;
       java.io.BufferedWriter implementationWriter = null;
@@ -70,15 +133,17 @@ public class CreatePlotterClasses extends DepthFirstAdapter {
       else {
         implementationWriter = new java.io.BufferedWriter(new java.io.FileWriter(implementation.getAbsoluteFile()));
       }
+      
+      int unknowns = java.lang.Integer.parseInt( node.getVariables().toString().trim() );
 
-/*          if (
-            node.getIdentifier().getText().trim().equals( "cellwise" )
-            &&
-            headerWriter!=null
-          ) {
-            writeCellWiseHeader(headerWriter,node);
-          }
-*/
+      if ( headerWriter!=null ) {
+    	writePlotterHeader( headerWriter, unknowns, plotterName );
+    	headerWriter.close();
+      }
+      if ( implementationWriter!=null ) {
+    	writePlotterImplementation( implementationWriter, unknowns, plotterName );
+    	implementationWriter.close();
+      }
     } catch (Exception exc) {
       System.err.println("ERROR: " + exc.toString());
       valid = false;

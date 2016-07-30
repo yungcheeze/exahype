@@ -10,7 +10,8 @@
 tarch::logging::Log exahype::plotters::ADERDG2ProbeAscii::_log( "exahype::plotters::ADERDG2ProbeAscii" );
 
 
-exahype::plotters::ADERDG2ProbeAscii::ADERDG2ProbeAscii():
+exahype::plotters::ADERDG2ProbeAscii::ADERDG2ProbeAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+  Device(postProcessing),
   _out(nullptr) {
 }
 

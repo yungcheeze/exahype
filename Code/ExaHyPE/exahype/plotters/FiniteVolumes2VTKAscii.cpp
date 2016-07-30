@@ -24,7 +24,8 @@
 
 tarch::logging::Log exahype::plotters::FiniteVolumes2VTKAscii::_log("exahype::plotters::FiniteVolumes2VTKAscii");
 
-exahype::plotters::FiniteVolumes2VTKAscii::FiniteVolumes2VTKAscii():
+exahype::plotters::FiniteVolumes2VTKAscii::FiniteVolumes2VTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+  Device(postProcessing),
   _fileCounter(-1) {
 }
 

@@ -21,13 +21,14 @@
 #include "peano/utils/Loop.h"
 
 
-exahype::plotters::ADERDG2VTKBinary::ADERDG2VTKBinary():
+exahype::plotters::ADERDG2VTKBinary::ADERDG2VTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+  Device(postProcessing),
   _fileCounter(-1) {
 }
 
 
 std::string exahype::plotters::ADERDG2VTKBinary::getIdentifier() {
-  return "vtk::binary";
+  return "vtk::Cartesian::binary";
 }
 
 

@@ -30,7 +30,8 @@ class exahype::plotters::ADERDG2VTKAscii: public exahype::plotters::Plotter::Dev
   int           _fileCounter;
   std::string   _filename;
   int           _order;
-  int           _unknowns;
+  int           _solverUnknowns;
+  int           _writtenUnknowns;
   std::string   _select;
 
   tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestLeftBottomFront;
@@ -41,15 +42,14 @@ class exahype::plotters::ADERDG2VTKAscii: public exahype::plotters::Plotter::Dev
   tarch::plotter::griddata::blockstructured::PatchWriter::SinglePatchWriter*
       _gridWriter;
 
-  tarch::plotter::griddata::Writer::VertexDataWriter* _timeStampDataWriter;
-  std::vector<tarch::plotter::griddata::Writer::VertexDataWriter*>
-      _vertexDataWriter;
+  tarch::plotter::griddata::Writer::VertexDataWriter*  _timeStampDataWriter;
+  tarch::plotter::griddata::Writer::VertexDataWriter*  _vertexDataWriter;
 
  public:
-  ADERDG2VTKAscii();
+  ADERDG2VTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
   virtual ~ADERDG2VTKAscii();
 
-  virtual void init(const std::string& filename, int orderPlusOne, int unknowns, const std::string& select);
+  virtual void init(const std::string& filename, int orderPlusOne, int solverUnknowns, const std::string& select);
 
   static std::string getIdentifier();
 

@@ -25,8 +25,9 @@ std::vector<exahype::plotters::Plotter*> exahype::plotters::RegisteredPlotters;
 tarch::logging::Log exahype::plotters::Plotter::_log( "exahype::solvers::Plotter" );
 
 
-exahype::plotters::Plotter::Plotter(int solver, int plotterCount,
-                                    const exahype::Parser& parser)
+exahype::plotters::Plotter::Plotter(
+  int solver, int plotterCount,
+  const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing)
     : _solver(solver),
       _identifier(parser.getIdentifierForPlotter(solver, plotterCount)),
       _time(parser.getFirstSnapshotTimeForPlotter(solver, plotterCount)),
@@ -57,13 +58,13 @@ exahype::plotters::Plotter::Plotter(int solver, int plotterCount,
        * not work for strings, so we map it onto an if-then-else cascade.
        */
       if (_identifier.compare( ADERDG2VTKAscii::getIdentifier() ) == 0) {
-        _device = new ADERDG2VTKAscii();
+        _device = new ADERDG2VTKAscii(postProcessing);
       }
       else if (_identifier.compare( ADERDG2VTKBinary::getIdentifier() ) == 0) {
-        _device = new ADERDG2VTKBinary();
+        _device = new ADERDG2VTKBinary(postProcessing);
       }
       else if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
-        _device = new ADERDG2ProbeAscii();
+        _device = new ADERDG2ProbeAscii(postProcessing);
       }
     break;
     case exahype::solvers::Solver::Type::FiniteVolumes:
@@ -72,7 +73,7 @@ exahype::plotters::Plotter::Plotter(int solver, int plotterCount,
        * not work for strings, so we map it onto an if-then-else cascade.
        */
       if (_identifier.compare( FiniteVolumes2VTKAscii::getIdentifier() ) == 0) {
-        _device = new FiniteVolumes2VTKAscii();
+        _device = new FiniteVolumes2VTKAscii(postProcessing);
       }
 /*
       else if (_identifier.compare( ADERDG2VTKBinary::getIdentifier() ) == 0) {

@@ -46,7 +46,7 @@ class exahype::plotters::ADERDG2VTKBinary: public exahype::plotters::Plotter::De
       _vertexDataWriter;
 
  public:
-  ADERDG2VTKBinary();
+  ADERDG2VTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
   virtual ~ADERDG2VTKBinary();
 
   virtual void init(const std::string& filename, int orderPlusOne, int unknowns, const std::string& select);
