@@ -30,7 +30,8 @@ class exahype::plotters::FiniteVolumes2VTKAscii: public exahype::plotters::Plott
   int           _fileCounter;
   std::string   _filename;
   int           _numberOfCellsPerAxis;
-  int           _unknowns;
+  int           _solverUnknowns;
+  int           _writtenUnknowns;
   std::string   _select;
 
   tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestLeftBottomFront;
@@ -41,8 +42,8 @@ class exahype::plotters::FiniteVolumes2VTKAscii: public exahype::plotters::Plott
   tarch::plotter::griddata::blockstructured::PatchWriter::SinglePatchWriter*
       _gridWriter;
 
-  tarch::plotter::griddata::Writer::CellDataWriter*                _timeStampDataWriter;
-  std::vector<tarch::plotter::griddata::Writer::CellDataWriter*>   _cellDataWriter;
+  tarch::plotter::griddata::Writer::CellDataWriter*  _timeStampDataWriter;
+  tarch::plotter::griddata::Writer::CellDataWriter*  _cellDataWriter;
 
   static tarch::logging::Log _log;
 

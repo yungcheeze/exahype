@@ -39,14 +39,15 @@ void exahype::plotters::FiniteVolumes2VTKAscii::init(
   const std::string& filename,
   int                numberOfCellsPerAxis,
   int                unknowns,
-  int writtenUnknowns,
+  int                writtenUnknowns,
   const std::string& select
 ){
   _filename             = filename;
   _numberOfCellsPerAxis = numberOfCellsPerAxis;
-  _unknowns             = unknowns;
+  _solverUnknowns       = unknowns;
   _select               = select;
   _patchWriter          = nullptr;
+  _writtenUnknowns      = writtenUnknowns;
 
   double x;
   x = Parser::getValueFromPropertyString( select, "left" );
@@ -75,59 +76,55 @@ void exahype::plotters::FiniteVolumes2VTKAscii::startPlotting( double time ) {
 
   assertion( _patchWriter==nullptr );
 
-  _patchWriter =
-      new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
-          new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter());
+  if (_writtenUnknowns>0) {
+    _patchWriter =
+        new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
+            new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter());
 
-  _gridWriter = _patchWriter->createSinglePatchWriter();
-  _timeStampDataWriter = _patchWriter->createCellDataWriter("time", 1);
+    _gridWriter          = _patchWriter->createSinglePatchWriter();
+    _timeStampDataWriter = _patchWriter->createCellDataWriter("time", 1);
+    _cellDataWriter      = _patchWriter->createCellDataWriter("Q", _writtenUnknowns);
 
-  for (int i = 0; i < _unknowns; i++) {
-    std::ostringstream identifier;
-    identifier << "Q" << i;
-    if ( _select.find(identifier.str())!=std::string::npos || _select=="{all}" ) {
-      _cellDataWriter.push_back(_patchWriter->createCellDataWriter(identifier.str(), 1));
-    }
+    assertion( _patchWriter!=nullptr );
+    assertion( _gridWriter!=nullptr );
+    assertion( _timeStampDataWriter!=nullptr );
   }
 
-  assertion( _patchWriter!=nullptr );
-  assertion( _gridWriter!=nullptr );
-  assertion( _timeStampDataWriter!=nullptr );
+  _postProcessing->startPlotting( time );
 }
 
 
 void exahype::plotters::FiniteVolumes2VTKAscii::finishPlotting() {
-  assertion( _patchWriter!=nullptr );
-  assertion( _gridWriter!=nullptr );
-  assertion( _timeStampDataWriter!=nullptr );
+  _postProcessing->finishPlotting();
 
-  _gridWriter->close();
-  _timeStampDataWriter->close();
-  for (auto& p : _cellDataWriter) {
-    p->close();
-  }
+  if (_writtenUnknowns>0) {
+    assertion( _patchWriter!=nullptr );
+    assertion( _gridWriter!=nullptr );
+    assertion( _timeStampDataWriter!=nullptr );
 
-  std::ostringstream snapshotFileName;
-  snapshotFileName << _filename
-#ifdef Parallel
+    _gridWriter->close();
+    _timeStampDataWriter->close();
+    _cellDataWriter->close();
+    
+    std::ostringstream snapshotFileName;
+    snapshotFileName << _filename
+    #ifdef Parallel
                    << "-rank-" << tarch::parallel::Node::getInstance().getRank()
-#endif
+    #endif
                    << "-" << _fileCounter << ".vtk";
 
-  _patchWriter->writeToFile(snapshotFileName.str());
+    _patchWriter->writeToFile(snapshotFileName.str());
 
-  for (auto& p : _cellDataWriter) {
-    delete p;
+    delete _cellDataWriter;
+    delete _timeStampDataWriter;
+    delete _gridWriter;
+    delete _patchWriter;
+
+    _cellDataWriter      = nullptr;
+    _patchWriter         = nullptr;
+    _timeStampDataWriter = nullptr;
+    _gridWriter          = nullptr;
   }
-  _cellDataWriter.clear();
-
-  delete _timeStampDataWriter;
-  delete _gridWriter;
-  delete _patchWriter;
-
-  _patchWriter = nullptr;
-  _timeStampDataWriter = nullptr;
-  _gridWriter = nullptr;
 }
 
 
@@ -148,31 +145,43 @@ void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(
     <<", size of patch: "<<sizeOfPatch
     <<", time stamp: "<<timeStamp);
 
-    assertion( _patchWriter!=nullptr );
-    assertion( _gridWriter!=nullptr );
-    assertion( _timeStampDataWriter!=nullptr );
+    assertion( _writtenUnknowns==0 || _patchWriter!=nullptr );
+    assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
+    assertion( _writtenUnknowns==0 || _timeStampDataWriter!=nullptr );
 
-    int cellIndex = _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _numberOfCellsPerAxis).second;
+    int cellIndex = _writtenUnknowns==0 ? -1 : _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _numberOfCellsPerAxis).second;
+
+    double* sourceValue = new double[_solverUnknowns];
+    double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
 
     // @todo 16/05/03:Dominic Etienne Charrier
     // This is depending on the choice of basis/implementation.
     // The equidistant grid projection should therefore be moved into the solver.
     dfor(i,_numberOfCellsPerAxis) {
-      _timeStampDataWriter->plotCell(cellIndex, timeStamp);
+      if (_writtenUnknowns>0) {
+        _timeStampDataWriter->plotCell(cellIndex, timeStamp);
+      }
 
-      int unknownPlotter = 0;
-      for (int unknown=0; unknown < _unknowns; unknown++) {
-        std::ostringstream identifier;
-        identifier << "Q" << unknown;
-
-        if ( _select.find(identifier.str())!=std::string::npos || _select.find("all")!=std::string::npos ) {
-          double value = u[peano::utils::dLinearisedWithoutLookup(i,_numberOfCellsPerAxis)];
-          assertion3(!std::isnan(value),unknown,_unknowns,_numberOfCellsPerAxis);
-          _cellDataWriter[unknownPlotter]->plotCell(cellIndex, value);
-          unknownPlotter++;
-        }
+      for (int unknown=0; unknown < _solverUnknowns; unknown++) {
+        sourceValue[unknown] = u[peano::utils::dLinearisedWithoutLookup(i,_numberOfCellsPerAxis)];
+      }
+        
+      _postProcessing->mapQuantities(
+        offsetOfPatch,
+        sizeOfPatch,
+        offsetOfPatch + i.convertScalar<double>()*sizeOfPatch/(_numberOfCellsPerAxis),
+        sourceValue,
+        value,
+        timeStamp
+      );
+        
+      if (_writtenUnknowns>0) {
+        _cellDataWriter->plotCell(cellIndex, value, _writtenUnknowns);
       }
       cellIndex++;
     }
+
+    delete[] sourceValue;
+    delete[] value;
   }
 }

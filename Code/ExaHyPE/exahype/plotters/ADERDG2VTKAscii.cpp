@@ -39,7 +39,7 @@ void exahype::plotters::ADERDG2VTKAscii::init(
   int                unknowns,
   int                writtenUnknowns,
   const std::string& select
-){
+) {
   _filename          = filename;
   _order             = orderPlusOne-1;
   _solverUnknowns    = unknowns;
