@@ -33,9 +33,6 @@ void kernels::aderdg::generic::c::boundaryConditions(double* fluxOut,
                         const int numberOfVariables, const int basisSize) {
   const int unknownsPerFace = numberOfVariables * tarch::la::aPowI(basisSize,DIMENSIONS-1);
 
-  std::fill(fluxOut,  fluxOut+unknownsPerFace, 0.0);
-  std::fill(stateOut, fluxOut+unknownsPerFace, 0.0);
-
   // Determine if face is "left" (0,2,4) or "right" face (1,2,3).
   const int f = faceIndex-2*normalNonZero;
 

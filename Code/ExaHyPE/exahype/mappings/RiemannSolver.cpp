@@ -430,19 +430,19 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
   cellCentre*=0.5;
   cellCentre += cellDescription.getOffset();
 
-  solver->boundaryConditions(fluxOut,stateOut,
-                             fluxIn,stateIn,
-                             cellCentre,cellDescription.getSize(),
-                             cellDescription.getCorrectorTimeStamp(),
-                             cellDescription.getCorrectorTimeStepSize(),
-                             faceIndex,normalNonZero);
+//  solver->boundaryConditions(fluxOut,stateOut,
+//                             fluxIn,stateIn,
+//                             cellCentre,cellDescription.getSize(),
+//                             cellDescription.getCorrectorTimeStamp(),
+//                             cellDescription.getCorrectorTimeStepSize(),
+//                             faceIndex,normalNonZero);
 
-  solver->riemannSolver(fluxIn, fluxOut, stateIn, stateOut,
+  solver->riemannSolver(fluxIn, fluxIn, stateIn, stateIn,
                         cellDescription.getCorrectorTimeStepSize(),
                         normalNonZero);
 
-  delete stateOut;
-  delete stateIn;
+  delete[] stateOut;
+  delete[] fluxOut;
 
   assertion(std::isfinite(fluxIn[0]));
 }
