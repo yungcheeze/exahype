@@ -50,10 +50,11 @@ exahype-project  Elasticity
     language          = C
 
     plot vtk::ascii
+      variables= 10
       time     = 0.0
       repeat   = 0.05
       output   = ./solution
-      select   = {all} 
+      select   = {} 
     end plot
   end solver
 

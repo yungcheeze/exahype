@@ -48,13 +48,12 @@ exahype-project  Euler2d
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     language           = C
-
-    plot vtk::ascii
-      time     = 0.0
-      repeat   = 0.05
-      output   = ./solution
-      select   = {all}
-    end plot
+/*    plot vtk::ascii*/
+/*      time     = 0.0*/
+/*      repeat   = 0.05*/
+/*      output   = ./solution*/
+/*      select   = {all}*/
+/*    end plot*/
   end solver
 
 end exahype-project
