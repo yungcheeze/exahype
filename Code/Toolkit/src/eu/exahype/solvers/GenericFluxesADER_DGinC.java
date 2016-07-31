@@ -50,7 +50,28 @@ public abstract class GenericFluxesADER_DGinC extends GenericFluxesADER_DG {
     }
     writer.write("}\n");
     writer.write("\n\n\n");
-
+    
+    // boundary conditions
+    writer.write("void " + projectName + "::" + solverName
+            + "::boundaryValues(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {\n");
+    writer.write("  // Dimensions             = " + _dimensions + "\n");
+    writer.write(
+            "  // Number of variables    = " + Integer.toString(_numberOfUnknowns + _numberOfParameters)
+            + " (#unknowns + #parameters)\n\n");
+    writer.write("\n");
+    writer.write("  // @todo Please implement\n");
+    writer.write("  // fluxOut\n");
+    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+        writer.write("  fluxOut[" + String.format("%" + digits + "d", i) + "] = fluxIn[" + String.format("%" + digits + "d", i) + "];\n");
+    }
+    writer.write("  // stateOut\n");
+    writer.write("  // @todo Please implement\n");
+    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+        writer.write("  stateOut[" + String.format("%" + digits + "d", i) + "] = stateIn[" + String.format("%" + digits + "d", i) + "];\n");
+    }
+    writer.write("}\n");
+    writer.write("\n\n\n");
+    
     // eigenvalues
     writer.write("void " + projectName + "::" + solverName
         + "::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {\n");
@@ -121,8 +142,7 @@ public abstract class GenericFluxesADER_DGinC extends GenericFluxesADER_DG {
   }
 
   @Override
-  public final void writeUserPDE(BufferedWriter writer, String solverName, String projectName)
-      throws IOException {
+  public final void writeUserPDE(BufferedWriter writer, String solverName, String projectName) throws IOException {
     System.err.println("C-style kernels do not have a PDF.f90.\n");
   }
 

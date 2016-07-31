@@ -68,6 +68,12 @@ public class UserDefinedADER_DGinC implements Solver {
     writer.write("  // @todo Please implement\n");
     writer.write("}\n");
     writer.write("\n\n\n");
+    // boundary conditions
+    writer.write("void " + projectName + "::" + solverName
+            + "::boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS, double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {\n");
+    writer.write("  // @todo Please implement\n");
+    writer.write("}\n");
+    writer.write("\n\n\n");
     writer.write("double " + projectName + "::" + solverName
         + "::stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx ) {\n");
     writer.write("  // @todo Please implement\n");

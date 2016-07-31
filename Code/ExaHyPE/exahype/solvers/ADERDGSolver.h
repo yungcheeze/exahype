@@ -221,12 +221,12 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    * @brief Computes the volume flux contribution to the cell update.
    *
    * @param[inout] lduh Cell-local update DoF.
-   * @param[in]    dx   Extent of the cell in each coordinate direction.
+   * @param[in]    cellSize   Extent of the cell in each coordinate direction.
    * @param[dt]    dt   Time step size.
    */
   virtual void volumeIntegral(
       double* lduh, const double* const lFhi,
-      const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize) = 0;
 
   /**
    * @brief Computes the surface integral contributions
@@ -234,11 +234,11 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    *
    * @param[inout] lduh   Cell-local update DoF.
    * @param[in]    lFhbnd Cell-local DoF of the boundary extrapolated fluxes.
-   * @param[in]    dx     Extent of the cell in each coordinate direction.
+   * @param[in]    cellSize     Extent of the cell in each coordinate direction.
    */
   virtual void surfaceIntegral(
       double* lduh, const double* const lFhbnd,
-      const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize) = 0;
 
   /**
    * @brief Computes the normal fluxes (or fluctuations) at the interface of two
@@ -258,6 +258,34 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
                              const int normalNonZero) = 0;
 
   /**
+   * Return the normal fluxes (or fluctuations) and state variables at the boundary.
+   *
+   * @param[inout] fluxOut       Flux DoF belonging to the left cell.
+   * @param[inout] stateOut      DoF of the boundary extrapolated predictor
+   *                             belonging to the left cell.
+     @param[in]    fluxIn        Flux DoF belonging to the left cell.
+   * @param[in]    stateIn       DoF of the boundary extrapolated predictor
+   *                             belonging to the left cell.
+   * @param[in]    cellCentre    Cell centre.
+   * @param[in]    cellSize      Cell size.
+   * @param[in]    t             The time.
+   * @param[in]    dt            A time step size.
+   * @param[in]    normalNonZero Index of the nonzero normal vector component,
+   *i.e., 0 for e_x, 1 for e_y, and 2 for e_z.
+   */
+  virtual void boundaryConditions(double* fluxOut,
+                                  double* stateOut,
+                                  const double* const fluxIn,
+                                  const double* const stateIn,
+                                  const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+                                  const tarch::la::Vector<DIMENSIONS,
+                                  double>& cellSize,
+                                  const double t,const double dt,
+                                  const int faceIndex,
+                                  const int normalNonZero) = 0;
+
+
+  /**
    * @brief Computes cell-local predictor space-time, volume, and face DoF.
    *
    * Computes the cell-local space-time predictor lQi, the space-time volume
@@ -272,23 +300,23 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    * @param[inout] lQhbnd Boundary extrapolated predictor DoF.
    * @param[inout] lFhbnd Boundary extrapolated normal fluxes (or fluctuations).
    * @param[out]   luh    Solution DoF.
-   * @param[in]    dx     Extent of the cell in each coordinate direction.
+   * @param[in]    cellSize     Extent of the cell in each coordinate direction.
    * @param[in]    dt     Time step size.
    */
   virtual void spaceTimePredictor(
       double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
       double* lFhbnd, const double* const luh,
-      const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt) = 0;
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize, const double dt) = 0;
 
   /**
    * @brief Returns a stable time step size.
    *
    * @param[in] luh       Cell-local solution DoF.
-   * @param[in] dx        Extent of the cell in each coordinate direction.
+   * @param[in] cellSize        Extent of the cell in each coordinate direction.
    */
   virtual double stableTimeStepSize(
       const double* const luh,
-      const tarch::la::Vector<DIMENSIONS, double>& dx) = 0;
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize) = 0;
 
   /**
    * This operation allows you to impose time-dependent solution values
@@ -298,12 +326,12 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    * region.
    */
   virtual void solutionAdjustment(
-      double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
-      const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) = 0;
+      double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize, double time, double dt) = 0;
 
   virtual bool hasToAdjustSolution(
-      const tarch::la::Vector<DIMENSIONS, double>& center,
-      const tarch::la::Vector<DIMENSIONS, double>& dx, double t) = 0;
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize, double t) = 0;
 
   /**
    * @defgroup AMR Solver routines for adaptive mesh refinement
@@ -317,8 +345,8 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
   // the invoking code, i.e., level-> level-1
   // since this is was the user expects.
   virtual exahype::solvers::Solver::RefinementControl refinementCriterion(
-      const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
-      const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
+      const double* luh, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize, double time,
       const int level) = 0;
 
   /**

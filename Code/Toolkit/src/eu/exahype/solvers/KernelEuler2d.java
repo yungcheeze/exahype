@@ -47,6 +47,8 @@ public class KernelEuler2d implements Solver {
         "   kernels::aderdg::optimised::riemannSolver<eigenvalues>( FL, FR, QL, QR, dt, normalNonZeroIndex );\n");
     writer.write("}\n");
     writer.write("\n\n\n");
+    // @todo boundary conditions are missing
+    //
     writer.write("double " + projectName + "::" + solverName
         + "::stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
     writer.write(

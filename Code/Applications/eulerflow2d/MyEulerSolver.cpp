@@ -4,10 +4,8 @@
 
 Euler2d::MyEulerSolver::MyEulerSolver(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):
   exahype::solvers::ADERDGSolver("MyEulerSolver", 5, 0, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
-  // do nothing
+  // @todo Please implement/augment if required
 }
-
-
 
 void Euler2d::MyEulerSolver::flux(const double* const Q, double** F) {
   // Dimensions             = 2
@@ -34,7 +32,26 @@ void Euler2d::MyEulerSolver::flux(const double* const Q, double** F) {
   g[4] = irho * Q[2] * (Q[4] + p);
 }
 
+void Euler2d::MyEulerSolver::boundaryValues(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
+  // Dimensions             = 2
+  // Number of variables    = 5 (#unknowns + #parameters)
 
+
+  // @todo Please implement
+  // fluxOut
+  fluxOut[0] = fluxIn[0];
+  fluxOut[1] = fluxIn[1];
+  fluxOut[2] = fluxIn[2];
+  fluxOut[3] = fluxIn[3];
+  fluxOut[4] = fluxIn[4];
+  // stateOut
+  // @todo Please implement
+  stateOut[0] = stateIn[0];
+  stateOut[1] = stateIn[1];
+  stateOut[2] = stateIn[2];
+  stateOut[3] = stateIn[3];
+  stateOut[4] = stateIn[4];
+}
 
 void Euler2d::MyEulerSolver::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
   // Dimensions             = 2
