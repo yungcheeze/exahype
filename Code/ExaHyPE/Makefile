@@ -304,7 +304,15 @@ header:
 	@echo Horizon 2020 research and innovation programme under grant
 	@echo agreement No 671698 \(ExaHyPE\). It is based upon the PDE
 	@echo framework Peano \(www.peano-framework.org\).
-
+	@echo 
+	@echo ================================
+	@echo "Building ExaHyPE with options:"
+	@echo ================================
+	@echo "COMPILER       | $(COMPILER)"
+	@echo "MODE           | $(MODE)"
+	@echo "SHAREDMEM      | $(SHAREDMEM)"
+	@echo "DISTRIBUTEDMEM | $(DISTRIBUTEDMEM)"
+	@echo ================================
 
 build: ffiles.mk $(FOBJECTS) cfiles.mk $(COBJECTS)
 	$(LL) $(COBJECTS) $(FOBJECTS) $(LINK_FORTRAN) -o $(EXECUTABLE) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
