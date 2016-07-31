@@ -306,7 +306,7 @@ header:
 	@echo framework Peano \(www.peano-framework.org\).
 
 
-build: buildinfo ffiles.mk $(FOBJECTS) cfiles.mk $(COBJECTS)
+build: ffiles.mk $(FOBJECTS) cfiles.mk $(COBJECTS)
 	$(LL) $(COBJECTS) $(FOBJECTS) $(LINK_FORTRAN) -o $(EXECUTABLE) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
 	@echo
 	@echo build of ExaHyPE successful
