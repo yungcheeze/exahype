@@ -49,7 +49,7 @@ exahype-project  elasticwaves3d
     kernel             = generic::fluxes::linear
     language           = C
 
-    plot vtk::ascii
+    plot vtk::Cartesian::ascii
       variables= 9
       time     = 0.0
       repeat   = 0.05

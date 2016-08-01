@@ -38,7 +38,7 @@ exahype-project  Euler2d
     kernel             = generic::fluxes::nonlinear
     language           = C
 
-    plot vtk::ascii
+    plot vtk::Cartesian::ascii
       variables= 5
       time     = 0.0
       repeat   = 0.05
@@ -56,7 +56,7 @@ exahype-project  Euler2d
     kernel             = generic::fluxes::nonlinear
     language           = C
 
-    plot vtk::ascii
+    plot vtk::Cartesian::ascii
       variables= 5
       time     = 0.0
       repeat   = 0.05
@@ -76,7 +76,7 @@ exahype-project  Euler2d
     kernel             = generic::MUSCL
     language           = C
 
-    plot vtk::ascii
+    plot vtk::Cartesian::ascii
       variables= 5
       time     = 0.0
       repeat   = 0.05
