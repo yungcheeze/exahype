@@ -10,7 +10,7 @@ from SLURM import runMultipleSlURMjobs
 processes = [2, 64, 128]
 pdegrees = [3, 8]
 hmaxs = ["0.04"]
-compilers = ["GNU"]
+compilers = ["GNU", "Intel"]
 dimensions = ["2D", "3D"]
 modes = ["Profile"]
 

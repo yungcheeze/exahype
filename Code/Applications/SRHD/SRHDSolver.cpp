@@ -1,4 +1,5 @@
 #include "SRHDSolver.h"
+#include "GeneratedConstants.h"
 
 #include <memory>
 
@@ -60,5 +61,25 @@ exahype::solvers::Solver::RefinementControl SRHD::SRHDSolver::refinementCriterio
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
+void SRHD::SRHDSolver::boundaryValues(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
+  // Dimensions             = 2
+  // Number of variables    = 5 (#unknowns + #parameters)
+
+
+  // @todo Please implement
+  // fluxOut
+  fluxOut[0] = fluxIn[0];
+  fluxOut[1] = fluxIn[1];
+  fluxOut[2] = fluxIn[2];
+  fluxOut[3] = fluxIn[3];
+  fluxOut[4] = fluxIn[4];
+  // stateOut
+  // @todo Please implement
+  stateOut[0] = stateIn[0];
+  stateOut[1] = stateIn[1];
+  stateOut[2] = stateIn[2];
+  stateOut[3] = stateIn[3];
+  stateOut[4] = stateIn[4];
+}
 
 

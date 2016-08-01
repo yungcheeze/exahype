@@ -20,10 +20,7 @@
  */
 exahype-project  Euler
 
-  peano-path                 = ./Peano/peano
-  tarch-path                 = ./Peano/tarch
-  multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
-  sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
+  peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
   output-directory           = ./ApplicationExamples/EulerFlow
   architecture               = noarch
@@ -64,6 +61,8 @@ exahype-project  Euler
     time-stepping     = global
     kernel            = generic::fluxes::nonlinear
     language          = C
+
+
 
     plot vtk::Cartesian::ascii
       variables = 5

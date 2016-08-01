@@ -6,15 +6,10 @@ import runtimeParser
 import hpclib 
 
 
-MaxNodes        = 16
-
-
-
-def createTable(path,prefix,postfix):
+def createTable(path,prefix,postfix,MaxNodes):
   print "write table for prefix " + prefix + " and postfix " + postfix + ". Max count searched for is " + str(MaxNodes)
   outFilename   = prefix + postfix + ".table"
   outFile       = open( outFilename, "w" )
-  headerWritten = False
   adapters      = []
   for ranks in range(1,MaxNodes):
     inputFileName = path + "/" + prefix + str(ranks) + postfix
@@ -24,9 +19,8 @@ def createTable(path,prefix,postfix):
 
       times    = runtimeParser.parse_adapter_times(inputFileName)
       maxLevel = runtimeParser.max_level(inputFileName)
-
-      if not headerWritten:
-        headerWritten = True
+      
+      if len(adapters)==0 and len(times)>0:
         outFile.write( "ranks/threads/nodes " )
         outFile.write( "& " )
         outFile.write( "max level " )
@@ -37,24 +31,25 @@ def createTable(path,prefix,postfix):
         outFile.write( "& Total " )
         outFile.write( "\n" )
         
-      outFile.write( str(ranks) )
-      outFile.write( " & "  )
-      outFile.write( str(maxLevel) )
-      totalIterationCount = 0
-      totalRuntime        = 0
-      for adapter in adapters:
-        outFile.write( " & " )
-        outFile.write( str(times[adapter]['n']) )
-        totalIterationCount = totalIterationCount + times[adapter]['n']
-        outFile.write( " & " )
-        outFile.write( str(times[adapter]['usertime']) )
-        totalRuntime = totalRuntime + times[adapter]['usertime']
+      if len(adapters)>0:
+        outFile.write( str(ranks) )
+        outFile.write( " & "  )
+        outFile.write( str(maxLevel) )
+        totalIterationCount = 0
+        totalRuntime        = 0
+        for adapter in adapters:
+          outFile.write( " & " )
+          outFile.write( str(times[adapter]['n']) )
+          totalIterationCount = totalIterationCount + times[adapter]['n']
+          outFile.write( " & " )
+          outFile.write( str(times[adapter]['usertime']) )
+          totalRuntime = totalRuntime + times[adapter]['usertime']
       
-      outFile.write( " & " )
-      outFile.write( str(totalIterationCount) )
-      outFile.write( " & " )
-      outFile.write( str(totalRuntime) )
-      outFile.write( "\n" )
+        outFile.write( " & " )
+        outFile.write( str(totalIterationCount) )
+        outFile.write( " & " )
+        outFile.write( str(totalRuntime) )
+        outFile.write( "\n" )
     else:
       print "not available "
 
@@ -77,8 +72,9 @@ parser = argparse.ArgumentParser(description=help,formatter_class=RawTextHelpFor
 parser.add_argument('-path',required=True,help="Directory containing the Peano output files.")
 parser.add_argument('-prefix',required=True,help="Prefix of the files to be parsed. You can add \"\" if no prefix is used.")
 parser.add_argument('-postfix',required=True,help="Postfix of the files to be parsed. You can add \"\" if no postfix is used. If you postfix starts with a minus, please embed it into \\\' quotes.")
+parser.add_argument('-maxnodes',required=True,help="Maximum number of nodes.")
 
-args           = parser.parse_args();
+args = parser.parse_args();
 
-createTable(args.path,args.prefix,args.postfix)
+createTable(args.path,args.prefix,args.postfix,int(args.maxnodes))
 

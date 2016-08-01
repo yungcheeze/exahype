@@ -112,12 +112,12 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       _writer.write("# BOUNDARYCONDITIONS  None              Periodic                  Type of boundary conditions"        + "\n");
       _writer.write("# *********************************************************************************************"      + "\n");
 
-      _writer.write("PEANO_PATH=" + _directoryAndPathChecker.peanoPath.getAbsolutePath() + "\n");
-      _writer.write("TARCH_PATH=" + _directoryAndPathChecker.tarchPath.getAbsolutePath() + "\n");
-      _writer.write("MULTISCALELINKEDCELL_PATH="
-          + _directoryAndPathChecker.multiscalelinkedcellPath.getAbsolutePath() + "\n");
-      _writer.write("SHAREDMEMORYORACLES_PATH="
-          + _directoryAndPathChecker.sharedMemoryOraclesPath.getAbsolutePath() + "\n");
+      _writer.write("PEANO_KERNEL_PEANO_PATH=" + _directoryAndPathChecker.peanoKernelPath.getAbsolutePath() + "/peano\n");
+      _writer.write("PEANO_KERNEL_TARCH_PATH=" + _directoryAndPathChecker.peanoKernelPath.getAbsolutePath() + "/tarch\n");
+      _writer.write("PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH=" + _directoryAndPathChecker.peanoToolboxPath.getAbsolutePath() + "/multiscalelinkedcell\n");
+      _writer.write("PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH=" + _directoryAndPathChecker.peanoToolboxPath.getAbsolutePath() + "/sharedmemoryoracles\n");
+      _writer.write("PEANO_TOOLBOX_MPI_BLANCING_PATH=" + _directoryAndPathChecker.peanoToolboxPath.getAbsolutePath() + "/mpibalancing\n");
+
       _writer.write(
           "EXAHYPE_PATH=" + _directoryAndPathChecker.exahypePath.getAbsolutePath() + "\n");
       _writer.write(

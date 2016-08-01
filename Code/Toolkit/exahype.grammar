@@ -33,11 +33,9 @@ Tokens
 
   token_project                     = 'exahype-project';
 
-  token_peano_path                  = 'peano-path';
-  token_tarch_path                  = 'tarch-path';
+  token_peano_kernel_path           = 'peano-kernel-path';
+  token_peano_toolbox_path          = 'peano-toolbox-path';
   token_exahype_path                = 'exahype-path';
-  token_multiscalelinkedcell_path   = 'multiscalelinkedcell-path';
-  token_sharedmemoryoracles_path    = 'sharedmemoryoracles-path';
   token_libxsmm_path                = 'libxsmm-path';
   token_output_directory            = 'output-directory';
   token_architecture                = 'architecture';
@@ -143,24 +141,26 @@ Productions
     ;
 
   paths {->paths} =
-     {without_libxsmm}
-        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename
-        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename
-        token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename
-        token_sharedmemoryoracles_path   [sharedmemoryoracles_path_equals]:token_equals         [sharedmemoryoracles_path]:filename
+     {without}
+        token_peano_kernel_path          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
         token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
         token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
-     { -> New paths(peano_path, tarch_path, multiscalelinkedcell_path, sharedmemoryoracles_path, exahype_path, Null, output_directory) }
+     { -> New paths(peano_kernel_path, Null, exahype_path, Null, output_directory) }
+     |
+     {with_toolbox}
+        token_peano_kernel_path          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
+        token_peano_toolbox_path         [peano_toolbox_path_equals]:token_equals               [peano_toolbox_path]:filename
+        token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
+        token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+     { -> New paths(peano_kernel_path, peano_toolbox_path, exahype_path, Null, output_directory) }
      |
      {with_libxsmm}
-        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename
-        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename
-        token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename
-        token_sharedmemoryoracles_path   [sharedmemoryoracles_path_equals]:token_equals         [sharedmemoryoracles_path]:filename
+        token_peano_kernel_path          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
+        token_peano_toolbox_path         [peano_toolbox_path_equals]:token_equals               [peano_toolbox_path]:filename
         token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
         token_libxsmm_path               [libxsmm_path_equals]:token_equals                     [libxsmm_path]:filename
         token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
-     { -> New paths(peano_path, tarch_path, multiscalelinkedcell_path, sharedmemoryoracles_path, exahype_path, libxsmm_path, output_directory) }
+     { -> New paths(peano_kernel_path, peano_toolbox_path, exahype_path, libxsmm_path, output_directory) }
     ;
 
   distributed_memory {->distributed_memory} =
@@ -298,7 +298,7 @@ Abstract Syntax Tree
      ;
 
    paths =
-     [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [sharedmemoryoracles_path]:filename [exahype_path]:filename [libxsmm_path]:filename? [output_directory]:filename;
+     [peano_kernel_path]:filename [peano_toolbox_path]:filename? [exahype_path]:filename [libxsmm_path]:filename? [output_directory]:filename;
 
    shared_memory =
      [identifier]:identifier [cores]:int_number [properties_file]:filename;
