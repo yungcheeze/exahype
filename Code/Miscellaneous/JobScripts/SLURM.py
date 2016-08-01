@@ -95,10 +95,7 @@ def runSingleSlURMjob(dimension, process, pdegree, hmax, compiler, mode):
   file.write("echo \" */                                                                 \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"exahype-project  Euler                                              \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"                                                                    \" >> myUserSpec.exahype"                 + "\n")
-  file.write("echo \"  peano-path                 = ./Peano/peano                        \" >> myUserSpec.exahype"                 + "\n")
-  file.write("echo \"  tarch-path                 = ./Peano/tarch                        \" >> myUserSpec.exahype"                 + "\n")
-  file.write("echo \"  multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell         \" >> myUserSpec.exahype"                 + "\n")
-  file.write("echo \"  sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles          \" >> myUserSpec.exahype"                 + "\n")
+  file.write("echo \"  peano-kernel-path          = ./Peano                              \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"  exahype-path               = ./ExaHyPE                            \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"  output-directory           = ./ApplicationExamples/EulerFlow      \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"  architecture               = noarch                               \" >> myUserSpec.exahype"                 + "\n")
@@ -180,7 +177,7 @@ def runSingleSlURMjob(dimension, process, pdegree, hmax, compiler, mode):
     file.write("python ../../../Code/Peano/peano/performanceanalysis/merge-log-files.py exahype.log-file " + `process`               + "\n")
   else:
     file.write("cp exahype.log-file " + name + ".merged-exahype.log-file"                                                          + "\n")
-  file.write("mv merged-exahype.log-file " + name + ".merged-exahype.log-file"                                                     + "\n")
+  file.write("cp merged-exahype.log-file " + name + ".merged-exahype.log-file"                                                     + "\n")
   if mode == "Profile":
     file.write("module unload gcc"                                                                                                   + "\n")
     file.write("module load python"                                                                                                  + "\n")
