@@ -16,7 +16,8 @@
 #include "peano/datatraversal/autotuning/Oracle.h"
 #include "peano/utils/Globals.h"
 
-#include "tarch/multicore/Lock.h"
+#include "tarch/la/VectorScalarOperations.h"
+
 #include "tarch/multicore/Loop.h"
 
 #include "exahype/solvers/ADERDGSolver.h"
@@ -114,333 +115,6 @@ exahype::mappings::RiemannSolver::RiemannSolver(
 
 void exahype::mappings::RiemannSolver::mergeWithWorkerThread(
     const RiemannSolver& workerThread) {
-  // do nothing
-}
-#endif
-
-void exahype::mappings::RiemannSolver::createHangingVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::RiemannSolver::destroyHangingVertex(
-    const exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::RiemannSolver::createInnerVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::RiemannSolver::createBoundaryVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::RiemannSolver::destroyVertex(
-    const exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::RiemannSolver::createCell(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
-}
-
-void exahype::mappings::RiemannSolver::destroyCell(
-    const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
-}
-
-#ifdef Parallel
-void exahype::mappings::RiemannSolver::mergeWithNeighbour(
-    exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
-#if !defined(PeriodicBC)
-  if (vertex.isBoundary()) return;
-#endif
-
-  tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
-      vertex.getCellDescriptionsIndex();
-
-  dfor2(myDest) dfor2(mySrc)
-      /*
-       * doku
-       */
-      tarch::la::Vector<DIMENSIONS, int>
-          dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
-  tarch::la::Vector<DIMENSIONS, int> src =
-      tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
-
-  int destScalar = TWO_POWER_D - myDestScalar - 1;
-  int srcScalar = TWO_POWER_D - mySrcScalar - 1;
-
-  if (vertex.getAdjacentRanks()(destScalar) ==
-          tarch::parallel::Node::getInstance().getRank() &&
-      vertex.getAdjacentRanks()(srcScalar) == fromRank &&
-      tarch::la::countEqualEntries(dest, src) ==
-          1  // we are solely exchanging faces
-      ) {
-    const int destCellDescriptionIndex =
-        adjacentADERDGCellDescriptionsIndices(destScalar);
-
-    if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-            destCellDescriptionIndex)) {
-      std::vector<records::ADERDGCellDescription>& cellDescriptions =
-          ADERDGCellDescriptionHeap::getInstance().getData(
-              destCellDescriptionIndex);
-
-      for (int currentSolver = 0;
-           currentSolver < static_cast<int>(cellDescriptions.size());
-           currentSolver++) {
-        if (cellDescriptions[currentSolver].getType() ==
-            exahype::records::ADERDGCellDescription::Cell) {
-          exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
-              exahype::solvers::RegisteredSolvers
-              [cellDescriptions[currentSolver].getSolverNumber()]);
-
-          const int numberOfFaceDof = solver->getUnknownsPerFace();
-          const int normalOfExchangedFace =
-              tarch::la::equalsReturnIndex(src, dest);
-          assertion(normalOfExchangedFace >= 0 &&
-                    normalOfExchangedFace < DIMENSIONS);
-
-          assertion(DataHeap::getInstance().isValidIndex(
-              cellDescriptions[currentSolver].getExtrapolatedPredictor()));
-          assertion(DataHeap::getInstance().isValidIndex(
-              cellDescriptions[currentSolver].getFluctuation()));
-
-          if (adjacentADERDGCellDescriptionsIndices(destScalar) ==
-              multiscalelinkedcell::HangingVertexBookkeeper::
-                  DomainBoundaryAdjacencyIndex) {
-#if defined(PeriodicBC)
-            assertionMsg(false, "Vasco, we have to implement this");
-#else
-            assertionMsg(false, "should never been entered");
-#endif
-          } else {
-            logDebug(
-                "mergeWithNeighbour(...)",
-                "receive two arrays from rank "
-                    << fromRank << " for vertex " << vertex.toString()
-                    << ", src type="
-                    << multiscalelinkedcell::indexToString(
-                           adjacentADERDGCellDescriptionsIndices(srcScalar))
-                    << ", src=" << src << ", dest=" << dest);
-
-            int receivedlQhbndIndex =
-                DataHeap::getInstance().createData(0, numberOfFaceDof);
-            int receivedlFhbndIndex =
-                DataHeap::getInstance().createData(0, numberOfFaceDof);
-
-            assertion(
-                DataHeap::getInstance().getData(receivedlQhbndIndex).empty());
-            assertion(
-                DataHeap::getInstance().getData(receivedlFhbndIndex).empty());
-
-            // @todo Reihenfolge dokumentieren! Auch umgedreht hier
-            DataHeap::getInstance().receiveData(
-                receivedlFhbndIndex, fromRank, fineGridX, level,
-                peano::heap::MessageType::NeighbourCommunication);
-            DataHeap::getInstance().receiveData(
-                receivedlQhbndIndex, fromRank, fineGridX, level,
-                peano::heap::MessageType::NeighbourCommunication);
-
-            int faceIndexForCell = -1;
-            if ((normalOfExchangedFace == 0) &
-                (src(normalOfExchangedFace) < dest(normalOfExchangedFace))) {
-              faceIndexForCell = 0;
-            } else if ((normalOfExchangedFace == 0) &
-                       (src(normalOfExchangedFace) >
-                        dest(normalOfExchangedFace))) {
-              faceIndexForCell = 1;
-            } else if ((normalOfExchangedFace == 1) &
-                       (src(normalOfExchangedFace) <
-                        dest(normalOfExchangedFace))) {
-              faceIndexForCell = 2;
-            } else if ((normalOfExchangedFace == 1) &
-                       (src(normalOfExchangedFace) >
-                        dest(normalOfExchangedFace))) {
-              faceIndexForCell = 3;
-            } else if ((normalOfExchangedFace == 2) &
-                       (src(normalOfExchangedFace) <
-                        dest(normalOfExchangedFace))) {
-              faceIndexForCell = 4;
-            } else if ((normalOfExchangedFace == 2) &
-                       (src(normalOfExchangedFace) >
-                        dest(normalOfExchangedFace))) {
-              faceIndexForCell = 5;
-            } else {
-              assertionMsg(false, "should not be entered");
-            }
-
-            if (!cellDescriptions[currentSolver].getRiemannSolvePerformed(
-                    faceIndexForCell)) {
-              logDebug("mergeWithNeighbour(...)",
-                       "solve Riemann problem with received data."
-                           << " cellDescription="
-                           << cellDescriptions[currentSolver].toString()
-                           << ",faceIndexForCell=" << faceIndexForCell
-                           << ",normalOfExchangedFac=" << normalOfExchangedFace
-                           << ",vertex=" << vertex.toString());
-
-              solveRiemannProblemAtInterface(
-                  cellDescriptions[currentSolver], faceIndexForCell,
-                  normalOfExchangedFace, receivedlQhbndIndex,
-                  receivedlFhbndIndex);
-            }
-
-            DataHeap::getInstance().deleteData(receivedlQhbndIndex);
-            DataHeap::getInstance().deleteData(receivedlFhbndIndex);
-          }
-        } else {
-          assertionMsg(false, "Dominic, please implement");
-        }
-      }
-    }
-  }
-  enddforx enddforx
-}
-
-void exahype::mappings::RiemannSolver::prepareSendToNeighbour(
-    exahype::Vertex& vertex, int toRank,
-    const tarch::la::Vector<DIMENSIONS, double>& x,
-    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // do nothing
-}
-
-void exahype::mappings::RiemannSolver::prepareCopyToRemoteNode(
-    exahype::Vertex& localVertex, int toRank,
-    const tarch::la::Vector<DIMENSIONS, double>& x,
-    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // do nothing
-}
-
-void exahype::mappings::RiemannSolver::prepareCopyToRemoteNode(
-    exahype::Cell& localCell, int toRank,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  // do nothing
-}
-
-void exahype::mappings::RiemannSolver::mergeWithRemoteDataDueToForkOrJoin(
-    exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
-    int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
-    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // do nothing
-}
-
-void exahype::mappings::RiemannSolver::mergeWithRemoteDataDueToForkOrJoin(
-    exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
-    int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  // do nothing
-}
-
-bool exahype::mappings::RiemannSolver::prepareSendToWorker(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    int worker) {
-  // do nothing but please consult header documentation.
-
-  return true;
-}
-
-void exahype::mappings::RiemannSolver::prepareSendToMaster(
-    exahype::Cell& localCell, exahype::Vertex* vertices,
-    const peano::grid::VertexEnumerator& verticesEnumerator,
-    const exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    const exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
-}
-
-void exahype::mappings::RiemannSolver::mergeWithMaster(
-    const exahype::Cell& workerGridCell,
-    exahype::Vertex* const workerGridVertices,
-    const peano::grid::VertexEnumerator& workerEnumerator,
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    int worker, const exahype::State& workerState,
-    exahype::State& masterState) {
-  // do nothing
-}
-
-void exahype::mappings::RiemannSolver::receiveDataFromMaster(
-    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
-    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
-    exahype::Vertex* const receivedCoarseGridVertices,
-    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
-    exahype::Cell& receivedCoarseGridCell,
-    exahype::Vertex* const workersCoarseGridVertices,
-    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
-    exahype::Cell& workersCoarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing but please consult header documentation
-}
-
-void exahype::mappings::RiemannSolver::mergeWithWorker(
-    exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  // do nothing
-}
-
-void exahype::mappings::RiemannSolver::mergeWithWorker(
-    exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& x,
-    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 #endif
@@ -711,18 +385,18 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
                         cellDescription.getCorrectorTimeStepSize(),
                         normalNonZero);
 
+  // Will be optimised out by dead code elemination.
   for (int i = 0; i < numberOfFaceDof; i++) {
-    // @todo Groessen raus nehmen vermutlich
-    assertion8(QR[i] == QR[i] && QR[i] < 1e10, cellDescription.toString(),
+    assertion8(std::isfinite(QR[i]), cellDescription.toString(),
                faceIndexForCell, normalNonZero, indexOfQValues, indexOfFValues,
                i, QR[i], QL[i]);
-    assertion8(QL[i] == QL[i] && QL[i] < 1e10, cellDescription.toString(),
+    assertion8(std::isfinite(QL[i]), cellDescription.toString(),
                faceIndexForCell, normalNonZero, indexOfQValues, indexOfFValues,
                i, QR[i], QL[i]);
-    assertion8(FR[i] == FR[i] && FR[i] < 1e10, cellDescription.toString(),
+    assertion8(std::isfinite(FR[i]), cellDescription.toString(),
                faceIndexForCell, normalNonZero, indexOfQValues, indexOfFValues,
                i, QR[i], QL[i]);
-    assertion8(FL[i] == FL[i] && FL[i] < 1e10, cellDescription.toString(),
+    assertion8(std::isfinite(FL[i]), cellDescription.toString(),
                faceIndexForCell, normalNonZero, indexOfQValues, indexOfFValues,
                i, QR[i], QL[i]);
   }
@@ -740,21 +414,286 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
 
   const int numberOfFaceDof = solver->getUnknownsPerFace();
 
-  double* lQhbnd = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data() +
+  double* stateIn = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data() +
       (faceIndex * numberOfFaceDof);
-  double* lFhbnd = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
+  double* fluxIn = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
       (faceIndex * numberOfFaceDof);
 
   solver->synchroniseTimeStepping(cellDescription);
-  assertionEquals(lQhbnd[0], lQhbnd[0]);  // assert no nan
-  assertionEquals(lFhbnd[0], lFhbnd[0]);  // assert no nan
+  assertionEquals(stateIn[0], stateIn[0]);  // assert no nan
+  assertionEquals(fluxIn[0], fluxIn[0]);  // assert no nan
 
-  solver->riemannSolver(lFhbnd, lFhbnd, lQhbnd, lQhbnd,
+  double* stateOut = new double[numberOfFaceDof];
+  double* fluxOut  = new double[numberOfFaceDof];
+
+  tarch::la::Vector<DIMENSIONS,double> cellCentre = cellDescription.getSize();
+  cellCentre*=0.5;
+  cellCentre += cellDescription.getOffset();
+
+//  solver->boundaryConditions(fluxOut,stateOut,
+//                             fluxIn,stateIn,
+//                             cellCentre,cellDescription.getSize(),
+//                             cellDescription.getCorrectorTimeStamp(),
+//                             cellDescription.getCorrectorTimeStepSize(),
+//                             faceIndex,normalNonZero);
+
+  solver->riemannSolver(fluxIn, fluxIn, stateIn, stateIn,
                         cellDescription.getCorrectorTimeStepSize(),
                         normalNonZero);
 
-  assertionEquals(lFhbnd[0], lFhbnd[0]);  // assert no nan
+  delete[] stateOut;
+  delete[] fluxOut;
+
+  assertion(std::isfinite(fluxIn[0]));
 }
+
+#ifdef Parallel
+void exahype::mappings::RiemannSolver::mergeWithNeighbour(
+    exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
+#if !defined(PeriodicBC)
+  if (vertex.isBoundary()) return;
+#endif
+
+  tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
+      vertex.getCellDescriptionsIndex();
+
+  dfor2(myDest) dfor2(mySrc)
+      /*
+       * doku
+       */
+      tarch::la::Vector<DIMENSIONS, int>
+          dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
+  tarch::la::Vector<DIMENSIONS, int> src =
+      tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
+
+  int destScalar = TWO_POWER_D - myDestScalar - 1;
+  int srcScalar = TWO_POWER_D - mySrcScalar - 1;
+
+  if (vertex.getAdjacentRanks()(destScalar) ==
+          tarch::parallel::Node::getInstance().getRank() &&
+      vertex.getAdjacentRanks()(srcScalar) == fromRank &&
+      tarch::la::countEqualEntries(dest, src) ==
+          1  // we are solely exchanging faces
+      ) {
+    const int destCellDescriptionIndex =
+        adjacentADERDGCellDescriptionsIndices(destScalar);
+
+    if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+            destCellDescriptionIndex)) {
+      std::vector<records::ADERDGCellDescription>& cellDescriptions =
+          ADERDGCellDescriptionHeap::getInstance().getData(
+              destCellDescriptionIndex);
+
+      for (int currentSolver = 0;
+           currentSolver < static_cast<int>(cellDescriptions.size());
+           currentSolver++) {
+        if (cellDescriptions[currentSolver].getType() ==
+            exahype::records::ADERDGCellDescription::Cell) {
+          exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+              exahype::solvers::RegisteredSolvers
+              [cellDescriptions[currentSolver].getSolverNumber()]);
+
+          const int numberOfFaceDof = solver->getUnknownsPerFace();
+          const int normalOfExchangedFace =
+              tarch::la::equalsReturnIndex(src, dest);
+          assertion(normalOfExchangedFace >= 0 &&
+                    normalOfExchangedFace < DIMENSIONS);
+
+          assertion(DataHeap::getInstance().isValidIndex(
+              cellDescriptions[currentSolver].getExtrapolatedPredictor()));
+          assertion(DataHeap::getInstance().isValidIndex(
+              cellDescriptions[currentSolver].getFluctuation()));
+
+          if (adjacentADERDGCellDescriptionsIndices(destScalar) ==
+              multiscalelinkedcell::HangingVertexBookkeeper::
+                  DomainBoundaryAdjacencyIndex) {
+#if defined(PeriodicBC)
+            assertionMsg(false, "Vasco, we have to implement this");
+#else
+            assertionMsg(false, "should never been entered");
+#endif
+          } else {
+            logDebug(
+                "mergeWithNeighbour(...)",
+                "receive two arrays from rank "
+                    << fromRank << " for vertex " << vertex.toString()
+                    << ", src type="
+                    << multiscalelinkedcell::indexToString(
+                           adjacentADERDGCellDescriptionsIndices(srcScalar))
+                    << ", src=" << src << ", dest=" << dest);
+
+            int receivedlQhbndIndex =
+                DataHeap::getInstance().createData(0, numberOfFaceDof);
+            int receivedlFhbndIndex =
+                DataHeap::getInstance().createData(0, numberOfFaceDof);
+
+            assertion(DataHeap::getInstance().getData(receivedlQhbndIndex).empty());
+            assertion(DataHeap::getInstance().getData(receivedlFhbndIndex).empty());
+
+            // @todo Reihenfolge dokumentieren! Auch umgedreht hier
+            DataHeap::getInstance().receiveData(receivedlFhbndIndex, fromRank, fineGridX, level,
+                peano::heap::MessageType::NeighbourCommunication);
+            DataHeap::getInstance().receiveData(receivedlQhbndIndex, fromRank, fineGridX, level,
+                peano::heap::MessageType::NeighbourCommunication);
+
+            int faceIndexForCell = -1;
+            if ((normalOfExchangedFace == 0) &
+                (src(normalOfExchangedFace) < dest(normalOfExchangedFace))) {
+              faceIndexForCell = 0;
+            } else if ((normalOfExchangedFace == 0) &
+                       (src(normalOfExchangedFace) >
+                        dest(normalOfExchangedFace))) {
+              faceIndexForCell = 1;
+            } else if ((normalOfExchangedFace == 1) &
+                       (src(normalOfExchangedFace) <
+                        dest(normalOfExchangedFace))) {
+              faceIndexForCell = 2;
+            } else if ((normalOfExchangedFace == 1) &
+                       (src(normalOfExchangedFace) >
+                        dest(normalOfExchangedFace))) {
+              faceIndexForCell = 3;
+            } else if ((normalOfExchangedFace == 2) &
+                       (src(normalOfExchangedFace) <
+                        dest(normalOfExchangedFace))) {
+              faceIndexForCell = 4;
+            } else if ((normalOfExchangedFace == 2) &
+                       (src(normalOfExchangedFace) >
+                        dest(normalOfExchangedFace))) {
+              faceIndexForCell = 5;
+            } else {
+              assertionMsg(false, "should not be entered");
+            }
+
+            if (!cellDescriptions[currentSolver].getRiemannSolvePerformed(
+                    faceIndexForCell)) {
+              logDebug("mergeWithNeighbour(...)",
+                       "solve Riemann problem with received data."
+                           << " cellDescription="
+                           << cellDescriptions[currentSolver].toString()
+                           << ",faceIndexForCell=" << faceIndexForCell
+                           << ",normalOfExchangedFac=" << normalOfExchangedFace
+                           << ",vertex=" << vertex.toString());
+
+              solveRiemannProblemAtInterface(
+                  cellDescriptions[currentSolver], faceIndexForCell,
+                  normalOfExchangedFace, receivedlQhbndIndex,
+                  receivedlFhbndIndex);
+            }
+
+            DataHeap::getInstance().deleteData(receivedlQhbndIndex);
+            DataHeap::getInstance().deleteData(receivedlFhbndIndex);
+          }
+        } else {
+          assertionMsg(false, "Dominic, please implement");
+        }
+      }
+    }
+  }
+  enddforx enddforx
+}
+
+void exahype::mappings::RiemannSolver::prepareSendToNeighbour(
+    exahype::Vertex& vertex, int toRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolver::prepareCopyToRemoteNode(
+    exahype::Vertex& localVertex, int toRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolver::prepareCopyToRemoteNode(
+    exahype::Cell& localCell, int toRank,
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolver::mergeWithRemoteDataDueToForkOrJoin(
+    exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
+    int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolver::mergeWithRemoteDataDueToForkOrJoin(
+    exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
+    int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
+  // do nothing
+}
+
+bool exahype::mappings::RiemannSolver::prepareSendToWorker(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker) {
+  // do nothing but please consult header documentation.
+
+  return true;
+}
+
+void exahype::mappings::RiemannSolver::prepareSendToMaster(
+    exahype::Cell& localCell, exahype::Vertex* vertices,
+    const peano::grid::VertexEnumerator& verticesEnumerator,
+    const exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    const exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolver::mergeWithMaster(
+    const exahype::Cell& workerGridCell,
+    exahype::Vertex* const workerGridVertices,
+    const peano::grid::VertexEnumerator& workerEnumerator,
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker, const exahype::State& workerState,
+    exahype::State& masterState) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolver::receiveDataFromMaster(
+    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
+    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
+    exahype::Vertex* const receivedCoarseGridVertices,
+    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
+    exahype::Cell& receivedCoarseGridCell,
+    exahype::Vertex* const workersCoarseGridVertices,
+    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
+    exahype::Cell& workersCoarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing but please consult header documentation
+}
+
+void exahype::mappings::RiemannSolver::mergeWithWorker(
+    exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolver::mergeWithWorker(
+    exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // do nothing
+}
+#endif
 
 void exahype::mappings::RiemannSolver::touchVertexLastTime(
     exahype::Vertex& fineGridVertex,
@@ -816,5 +755,80 @@ void exahype::mappings::RiemannSolver::ascend(
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolver::createHangingVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolver::destroyHangingVertex(
+    const exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolver::createInnerVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolver::createBoundaryVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolver::destroyVertex(
+    const exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolver::createCell(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolver::destroyCell(
+    const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   // do nothing
 }

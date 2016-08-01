@@ -43,6 +43,27 @@
   (face * MbasisSize * MbasisSize * Mvar + Mvar * a + Mvar * MbasisSize * b + \
    var)
 
+/** Computes a 1-d index.
+  * The brackets around \p ix allow to write
+  * idx1(ix+ox,...), where ox is some offset.
+  */
+#define idx1(ix, ivar) \
+  numberOfVariables * (ix) + (ivar)
+
+/** Computes a 2-d index.
+  * The brackets around \p ix and \p iy allow to write
+  * idx1(ix+ox, iy+oy,...), where ox and oy are some offsets.
+  */
+#define idx2(ix, iy, ivar) \
+  numberOfVariables * (basisSize * (iy) + ix) + ivar
+
+/** Computes a 3-d index.
+  * The brackets around \p ix, \p iy, and \p iz allow to write
+  * idx1(ix+ox, iy+oy, iz+oz,...), where ox, oy and oz are some offsets.
+  */
+#define idx3(ix, iy, iz, ivar) \
+  numberOfVariables * (basisSize2 * (iz) + basisSize * (iy) + ix) + ivar
+
 // todo Dominic Etienne Charrier
 // Possibly redundant definition of face indices
 // see exahype/solvers/Solver.h
@@ -204,6 +225,18 @@ void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
                             const int normalNonZero,
                             const int numberOfVariables, const int basisSize);
 
+template <void PDEBoundaryConditions(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut)>
+void boundaryConditions(double* fluxOut,
+                        double* stateOut,
+                        const double* const fluxIn,
+                        const double* const stateIn,
+                        const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+                        const tarch::la::Vector<DIMENSIONS,double>& cellSize,
+                        const double t,const double dt,
+                        const int faceIndex,
+                        const int normalNonZero,
+                        const int numberOfVariables, const int basisSize);
+
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
@@ -250,6 +283,7 @@ void volumeUnknownsRestriction(
 #include "kernels/aderdg/generic/c/2d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/c/2d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/2d/stableTimeStepSize.cpph"
+#include "kernels/aderdg/generic/c/2d/boundaryConditions.cpph"
 #elif DIMENSIONS == 3
 #include "kernels/aderdg/generic/c/3d/riemannSolverLinear.cpph"
 #include "kernels/aderdg/generic/c/3d/riemannSolverNonlinear.cpph"
@@ -257,6 +291,7 @@ void volumeUnknownsRestriction(
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/3d/stableTimeStepSize.cpph"
+#include "kernels/aderdg/generic/c/3d/boundaryConditions.cpph"
 #endif
 
 namespace kernels {
@@ -372,6 +407,18 @@ void riemannSolverLinear(double* FL, double* FR, const double* const QL,
                          const int normalNonZero, const int numberOfVariables,
                          const int basisSize);
 
+template <void PDEBoundaryConditions(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut)>
+void boundaryConditions(double* fluxOut,
+                        double* stateOut,
+                        const double* const fluxIn,
+                        const double* const stateIn,
+                        const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+                        const tarch::la::Vector<DIMENSIONS,double>& cellSize,
+                        const double t,const double dt,
+                        const int faceIndex,
+                        const int normalNonZero,
+                        const int numberOfVariables, const int basisSize);
+
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
@@ -419,6 +466,7 @@ void volumeUnknownsRestriction(
 #include "kernels/aderdg/generic/fortran/3d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/fortran/3d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/fortran/3d/stableTimeStepSize.cpph"
+// @todo(Dominic): Please implement the fortran boundary conditions
 // #elif DIMENSIONS == 2
 // //@todo
 // #include "kernels/aderdg/generic/fortran/2d/solutionAdjustment.cpph"

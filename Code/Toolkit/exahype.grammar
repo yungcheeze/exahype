@@ -244,13 +244,14 @@ Productions
    
    plot_solution_list {->plot_solution*} =
      [begin_token]:token_plot [plotter_type]:typename
-       token_time      [time_equals]:token_equals     [time]:float_number
-       token_repeat    [repeat_equals]:token_equals   [repeat]:float_number
-       token_output    [output_equals]:token_equals   [output]:filename
-       token_select    [select_equals]:token_equals   [select]:parameter_list
+       token_variables [variables_equals]:token_equals [variables]:int_number
+       token_time      [time_equals]:token_equals      [time]:float_number
+       token_repeat    [repeat_equals]:token_equals    [repeat]:float_number
+       token_output    [output_equals]:token_equals    [output]:filename
+       token_select    [select_equals]:token_equals    [select]:parameter_list
      token_end [end_token]:token_plot
      plot_solution_list?
-       { -> [New plot_solution(plotter_type,time,repeat,output,select),plot_solution_list.plot_solution] }
+       { -> [New plot_solution(plotter_type,variables,time,repeat,output,select),plot_solution_list.plot_solution] }
      ;
 
    solver_list {->solver*} =
@@ -322,7 +323,7 @@ Abstract Syntax Tree
      | {finite_volumes} [name]:identifier [variables]:int_number [parameters]:int_number [patch_size]:int_number [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier plot_solution*;
 
    plot_solution =
-     [plotter_type]:typename [time]:float_number [repeat]:float_number [output]:filename [select]:parameter_list;
+     [plotter_type]:typename [variables]:int_number [time]:float_number [repeat]:float_number [output]:filename [select]:parameter_list;
 
    couple_solvers =
      [identifier]:identifier [time]:float_number [repeat]:float_number;

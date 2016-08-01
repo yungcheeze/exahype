@@ -129,6 +129,26 @@ public class Main {
       return;
     }
 
+    // Create the plotters
+    try {
+      CreatePlotterClasses createPlotterClasses = new CreatePlotterClasses(directoryAndPathChecker);
+
+      document.apply(createPlotterClasses);
+
+      System.out.println("\n\n\n\n");
+      if (!createPlotterClasses.valid) {
+        System.err.println("ERROR: Could not create application's plotter classes");
+        System.err.println("ExaHyPE script failed ");
+        return;
+      }
+      System.out.println("generate application-specific plotter classes ... ok");
+      waitForInteraction(interactive);
+    } catch (Exception e) {
+      System.out.println("ERROR: " + e.toString());
+      System.err.println("ExaHyPE script failed ");
+      return;
+    }
+
     // Create the coupling layer
     try {
       CreateCouplingRoutines createCouplingRoutines =

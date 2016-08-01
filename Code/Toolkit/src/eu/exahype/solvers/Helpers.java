@@ -38,6 +38,8 @@ public class Helpers {
     writer.write(
         "    void riemannSolver(double* FL, double* FR, const double* const QL, const double* const QR, const double dt, const int normalNonZeroIndex) override;\n");
     writer.write(
+        "    void boundaryConditions(double* fluxOut, double* stateOut, const double* const fluxIn, const double* const stateIn, const tarch::la::Vector<DIMENSIONS, double>& cellCentre, const tarch::la::Vector<DIMENSIONS,double>& cellSize, const double t,const double dt, const int faceIndex, const int normalNonZero) override;\n");
+    writer.write(
         "    double stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx ) override;\n");
     writer.write(
         "    void solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) override;\n");

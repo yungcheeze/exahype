@@ -45,10 +45,10 @@ class exahype::plotters::ADERDG2ProbeAscii
 
   void openOutputStream();
  public:
-  ADERDG2ProbeAscii();
+  ADERDG2ProbeAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing);
   virtual ~ADERDG2ProbeAscii();
 
-  virtual void init(const std::string& filename, int orderPlusOne, int unknowns, const std::string& select);
+  virtual void init(const std::string& filename, int orderPlusOne, int unknowns, int writtenUnknowns, const std::string& select);
 
   static std::string getIdentifier();
 

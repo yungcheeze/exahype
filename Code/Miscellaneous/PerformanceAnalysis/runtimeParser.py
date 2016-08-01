@@ -7,6 +7,72 @@
 :synopsis: Provides functions to read the CPU and user times of a set of Peano output files.
 """
 
+import re
+
+
+def max_level(filename):
+  result = 0
+  try:
+    file = open(filename, "r" )
+  except:
+    print( "was not able to open file " + filename )
+    return -1.0
+
+  file.readline()
+  for line in file:
+    if re.search( "max-level=", line ):
+      currentLevel = int( line.split( "max-level=" )[1].split(",")[0] )
+      if currentLevel>result:
+        result = currentLevel
+  return result
+
+
+
+def readColumnFromTable(filename,whichColumn):
+  result = [] 
+  try:
+    file = open(filename, "r" )
+  except:
+    print( "was not able to open file " + filename )
+    return -1.0
+  try:
+    file.readline()
+    for line in file:
+      #if ( not re.search( "hline", line ) and ):
+      #  print "got " + line
+      try:
+        data = float( line.split( "&" )[whichColumn] )
+        result.append( data )
+      except:
+        result.append( 0.0 )
+    return result
+  except:
+    print( "was not able to parse file " + filename + " holding a table ")
+    return []
+
+
+def getAdapterCountColumnFromTable(filename,adapterName):
+  result = [] 
+  try:
+    file = open(filename, "r" )
+  except:
+    print( "was not able to open file " + filename )
+    return -1.0
+
+  line = file.readline()
+  counter = 0
+  for col in line.split("&"):
+    #print "study " + col.strip() + "  " 
+    if col.strip()==adapterName.strip():
+      return 2*counter-2
+    counter = counter + 1
+  return -1
+
+
+def getAdapterRuntimeColumnFromTable(filename,adapterName):
+  return getAdapterCountColumnFromTable(filename,adapterName) + 1
+
+
 def parse_all_adapter_times(rootdir,prefix,process_counts,thread_counts,n_runs=1,cc='icpc',mode='TBB',per_iteration=False):
     """
     Reads multiple Peano output files with the naming pattern
@@ -97,7 +163,7 @@ def parse_adapter_times(file_path,per_iteration=False):
           Specifies if the times per iteration should be read in instead of the total times.
 
     Returns:
-       A dict holding for each of the specified adapters a nested dict that holds the following key-value pairs:
+       A dict holding for each of the found adapters a nested dict that holds the following key-value pairs:
           * 'n'       : (int)    Number of times this adapter was used.
           * 'cputime' : (float) CPU time spent within the adapter.
           * 'usertime': (float) User time spent within the adapter.

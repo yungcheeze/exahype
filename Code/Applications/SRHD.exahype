@@ -52,10 +52,11 @@ exahype-project  SRHD
     language           = C
 
     plot vtk::binary
+      variables= 5
       time     = 0.0
       repeat   = 0.05
       output   = ./output/solution
-      select   = {all}
+      select   = {}
     end plot
   end solver
 

@@ -4,7 +4,7 @@ from argparse import RawTextHelpFormatter
 import matplotlib.pylab
 import matplotlib.pyplot as plt
 
-import runtimeparser as rp
+import runtimeParser as rp
 import hpclib as hpc
 from plotting import scalingplot as sp
 

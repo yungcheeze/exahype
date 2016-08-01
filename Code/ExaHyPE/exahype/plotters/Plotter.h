@@ -46,6 +46,22 @@ namespace exahype {
 class exahype::plotters::Plotter {
  public:
 
+  class UserOnTheFlyPostProcessing {
+    public:
+      virtual ~UserOnTheFlyPostProcessing() {}
+
+      virtual void startPlotting( double time ) = 0;
+      virtual void finishPlotting() = 0;
+
+      virtual void mapQuantities(
+        const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+        const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+        const tarch::la::Vector<DIMENSIONS, double>& x,
+        double* Q,
+        double* outputQuantities,
+        double timeStamp) = 0;
+  };
+
   /**
    * Actual device chosen by a plotter in the config file. If you implement
    * your own device, please also add a
@@ -55,14 +71,18 @@ class exahype::plotters::Plotter {
    * routine that returns the device's identifier.
    */
   class Device {
+   protected:
+    UserOnTheFlyPostProcessing*  _postProcessing;
    public:
+    Device(UserOnTheFlyPostProcessing* postProcessing):
+      _postProcessing(postProcessing) {}
     virtual ~Device() {}
 
     /**
      * Configure the plotter. Is invoked directly after the constructor is
      * called.
      */
-    virtual void init(const std::string& filename, int order, int unknowns, const std::string& select) = 0;
+    virtual void init(const std::string& filename, int order, int unknowns, int writtenUnknowns, const std::string& select) = 0;
 
     /**
      * Hand a patch over to the plotter. Feel free to ignore the passed data if
@@ -82,16 +102,24 @@ class exahype::plotters::Plotter {
 
   const int              _solver;
   const std::string      _identifier;
+  int                    _writtenUnknowns;
   double                 _time;
   const double           _repeat;
   const std::string      _filename;
   const std::string      _select;
   bool                   _isActive;
 
-  Device*                _device;
+  Device*                      _device;
 
  public:
-  Plotter(int solver, int plotterCount, const exahype::Parser& parser);
+  /**
+   * @param solver Number of the underlying solver. This number is important to
+   *               parse the file: the constructor asks parser for the solverth
+   *               solver section.
+   * @param plotterCount Same story: Required to tell the parser which tag in
+   *               the file is to be read.
+   */
+  Plotter(int solver, int plotterCount, const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing);
   ~Plotter();
 
   // Disallow copy and assignment

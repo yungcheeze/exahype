@@ -59,10 +59,11 @@ exahype-project  MHDSolver
     language           = C
 
     plot vtk::binary
+      variables= 9
       time     = 0.0
       repeat   = 0.005
       output   = ./solution
-      select   = {all}
+      select   = {}
     end plot
   end solver
 
