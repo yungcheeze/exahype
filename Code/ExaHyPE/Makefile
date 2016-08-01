@@ -272,24 +272,15 @@ cfiles.mk:
 	find -H $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 
 ffiles.mk:
-	# turn on MIXEDLANG if we find fortran files
-	MIXEDLANG=$(shell ls '*.f90' >/dev/null 2>&1 && echo 'Yes' || echo 'No')
-
-ifneq (,$(findstring Yes, $(MIXEDLANG) ))
 	touch ffiles.mk
 	echo -n FSOURCES= > ffiles.mk
 	find -H . -name '*.f90' | tr '\n' ' ' >> ffiles.mk
-
-	# do NO MORE include the generic Fortran kernel, as new Fortran user kernels use C ExaHyPE kernels
-	#find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.f90' | tr '\n' ' ' >> ffiles.mk
-
 	# instead, compile modules already a first time now to circumvent dependency problems.
 	FMODULES := $(shell find -H . -name '*.f90' | xargs awk 'BEGIN{IGNORECASE = 1}!/^\s+!/ && (/module/) {print FILENAME; nextfile}')
 
 	ifneq( $(FMODULES), )
 		$(FC) $(FCOMPILER_CFLAGS) -c $(FMODULES)
 	endif
-endif
 
 header:
 	@echo ================================
