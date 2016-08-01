@@ -256,12 +256,6 @@ LL=$(CC)
 COBJECTS=$(CSOURCES:.cpp=.o)
 FOBJECTS=$(FSOURCES:.f90=.o)
 
-ifneq (,$(findstring Yes, $(MIXEDLANG) ))
-	LINK_FORTRAN+=typesDef.o
-else
-	LINK_FORTRAN=
-endif
-
 all: header build
 
 buildinfo:
@@ -274,23 +268,27 @@ cfiles.mk:
 	find -H $(TARCH_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(MULTISCALELINKEDCELL_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(SHAREDMEMORYORACLES_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
-	find -H $(EXAHYPE_PATH) -name '*.cpp' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran/*'  | tr '\n' ' ' >> cfiles.mk
-ifneq (,$(findstring Yes, $(MIXEDLANG) ))
-	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.cpp'  | tr '\n' ' ' >> cfiles.mk
-endif
+	find -H $(EXAHYPE_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 
-doFortran:
-ifneq (,$(findstring Yes, $(MIXEDLANG) ))
-	$(FC) $(FCOMPILER_CFLAGS) -c typesDef.f90
-endif
+ffiles.mk:
+	# turn on MIXEDLANG if we find fortran files
+	MIXEDLANG=$(shell ls '*.f90' >/dev/null 2>&1 && echo 'Yes' || echo 'No')
 
-ffiles.mk: | doFortran
 ifneq (,$(findstring Yes, $(MIXEDLANG) ))
 	touch ffiles.mk
 	echo -n FSOURCES= > ffiles.mk
-	find -H . -name '*.f90'  -not -path './typesDef.f90' | tr '\n' ' ' >> ffiles.mk
-	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.f90' | tr '\n' ' ' >> ffiles.mk
+	find -H . -name '*.f90' | tr '\n' ' ' >> ffiles.mk
+
+	# do NO MORE include the generic Fortran kernel, as new Fortran user kernels use C ExaHyPE kernels
+	#find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.f90' | tr '\n' ' ' >> ffiles.mk
+
+	# instead, compile modules already a first time now to circumvent dependency problems.
+	FMODULES := $(shell find -H . -name '*.f90' | xargs awk 'BEGIN{IGNORECASE = 1}!/^\s+!/ && (/module/) {print FILENAME; nextfile}')
+
+	ifneq( $(FMODULES), )
+		$(FC) $(FCOMPILER_CFLAGS) -c $(FMODULES)
+	endif
 endif
 
 header:
