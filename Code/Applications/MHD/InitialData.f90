@@ -204,7 +204,7 @@ SUBROUTINE InitialRotor(x,Q)
     EPRadius = 0.3
     
     rho0 = 1.0
-    p0   = 1.0InitialOrsagTang
+    p0   = 1.0
     rho1 = 10.0
     p1   = 1.0
     B0   = 1.0
