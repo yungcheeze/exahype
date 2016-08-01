@@ -264,10 +264,11 @@ buildinfo:
 cfiles.mk:
 	touch cfiles.mk
 	echo -n CSOURCES= > cfiles.mk
-	find -H $(PEANO_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
-	find -H $(TARCH_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
-	find -H $(MULTISCALELINKEDCELL_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
-	find -H $(SHAREDMEMORYORACLES_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -H $(PEANO_KERNEL_PEANO_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -H $(PEANO_KERNEL_TARCH_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -H $(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -H $(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -H $(PEANO_TOOLBOX_MPI_BLANCING_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(EXAHYPE_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 
@@ -323,7 +324,8 @@ clean:
 
 
 $(COBJECTS): %.o : %.cpp
-	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH)  -I$(PEANO_PATH)/.. -I$(TARCH_PATH)/.. -I$(MULTISCALELINKEDCELL_PATH)/.. -I$(SHAREDMEMORYORACLES_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
+	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
+
 
 $(FOBJECTS): %.o : %.f90
 	$(FC) $(FCOMPILER_CFLAGS) -c $< -o $@
