@@ -21,6 +21,7 @@
 
 #include "tarch/parallel/Node.h"
 #include "tarch/parallel/NodePool.h"
+#include "tarch/parallel/FCFSNodePoolStrategy.h"
 
 #include "tarch/multicore/Core.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
@@ -30,9 +31,9 @@
 #include "peano/parallel/SendReceiveBufferPool.h"
 #include "peano/parallel/loadbalancing/Oracle.h"
 #include "peano/parallel/loadbalancing/OracleForOnePhaseWithGreedyPartitioning.h"
-#include "tarch/parallel/FCFSNodePoolStrategy.h"
 
 #include "peano/geometry/Hexahedron.h"
+
 #include "peano/utils/UserInterface.h"
 
 #include "peano/datatraversal/autotuning/Oracle.h"
@@ -40,6 +41,9 @@
 
 #include "sharedmemoryoracles/OracleForOnePhaseWithGrainSizeSampling.h"
 #include "sharedmemoryoracles/OracleForOnePhaseWithShrinkingGrainSize.h"
+
+#include "mpibalancing/GreedyBalancing.h"
+#include "mpibalancing/StaticBalancing.h"
 
 #include "exahype/plotters/Plotter.h"
 
@@ -83,6 +87,18 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
       logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
         new peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning(false)
+      );
+    }
+    else if ( configuration.find( "local_hotspot" )!=std::string::npos ) {
+      logInfo("initDistributedMemoryConfiguration()", "use local hotspot elimination without joins (mpibalancing/GreedyBalancing)");
+      peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
+        new mpibalancing::GreedyBalancing(1,false)
+      );
+    }
+    else if ( configuration.find( "global_hotspot" )!=std::string::npos ) {
+      logInfo("initDistributedMemoryConfiguration()", "use global hotspot elimination without joins (mpibalancing/StaticBalancing)");
+      peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
+        new mpibalancing::StaticBalancing(false)
       );
     }
     else {
