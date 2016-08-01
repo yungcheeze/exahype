@@ -59,19 +59,25 @@ void gauss(const double* const  x, double* Q) {
 }
 
 static bool wroteAboutInitialData(false);
-#define logInitialData(txt,...) { if(!wroteAboutInitialData) printf(txt); }
+#define logInitialData(txt...) { if(!wroteAboutInitialData) printf(txt); }
 
 void InitialData(const double* const  x, double* Q) {
+	const char* default_id = "Gaussian";
 	const char* id = getenv("EXAHYPE_INITIALDATA");
-	logInitialData("Have read '%s'\n", id);
-	if(strcmp(id, "ShuVortex")) {
+	if(!id) { logInitialData("Using default ID\n"); id = default_id; }
+	//logInitialData("Have read '%s'\n", id);
+	std::string sid(id);
+	if(sid == "ShuVortex") {
 		// ShuVortex
 		ShuVortex2D(x, Q);
 		logInitialData("Loading ShuVortex Initial Data\n");
-	} else {
+	} else if(sid == "Gaussian") {
 		// default:
 		gauss(x, Q);
 		logInitialData("Loading Gaussian Initial Data\n");
+	} else {
+		logInitialData("Do not understand requested Initial Data key\n");
+		exit(-42);
 	}
 	wroteAboutInitialData = true;
 }
