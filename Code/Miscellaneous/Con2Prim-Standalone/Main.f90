@@ -1,5 +1,5 @@
 Program StandaloneC2P
-	USE typesDef, ONLY : nVar
+	USE Parameters, ONLY : nVar
 	IMPLICIT NONE
 
 	REAL, PARAMETER :: gamma=5./3., t_f=0.4, xsep=0.5
