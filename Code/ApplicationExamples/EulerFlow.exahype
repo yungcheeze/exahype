@@ -15,7 +15,7 @@
 
  Euler Flow
 
- A simple project
+ A simple project. (well, it was simple, in the beginning).
 
  */
 exahype-project  Euler
@@ -29,7 +29,7 @@ exahype-project  Euler
     dimension                = 2
     width                    = 15.0, 15.0
     offset                   = 0.0, 0.0
-    end-time                 = 0.4
+    end-time                 = 0.5
   end computational-domain
 
 /*
@@ -57,17 +57,17 @@ exahype-project  Euler
     variables         = 5
     parameters        = 0
     order             = 3
-    maximum-mesh-size = 0.1
+    maximum-mesh-size = 1.5
     time-stepping     = global
     kernel            = generic::fluxes::nonlinear
     language          = C
 
-    plot vtk::Cartesian::binary
+    plot vtk::Cartesian::ascii
       variables = 5
       time      = 0.0
       repeat    = 0.05
       output    = ./output/solution
-      select    = {all} 
+      select    = {} 
     end plot
 
     /* this is the fake plotter used to compute global integrals */
