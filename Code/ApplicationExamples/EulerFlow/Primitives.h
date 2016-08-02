@@ -14,7 +14,9 @@ inline double SQ3(const double* const v, int start=1) {
 	return res;
 }
 
-void cons2prim(double* V, const double* Q) {
+/** The reason for this being in a header is pure lazyness and triviality of the C2P for Euler */
+
+inline void cons2prim(double* V, const double* Q) {
 	// Euler c2p
 	double p = (eos_gamma-1)*(Q[4] - 0.5/Q[0] * SQ3(Q) );
 	
@@ -25,7 +27,7 @@ void cons2prim(double* V, const double* Q) {
 	V[4] = p; // fluid pressure
 }
 
-void prim2con(double* Q, const double* V) {
+inline void prim2con(double* Q, const double* V) {
 	Q[0] = V[1]; // fluid density
 	Q[1] = V[1] * V[1]; // momentum
 	Q[2] = V[1] * V[2];

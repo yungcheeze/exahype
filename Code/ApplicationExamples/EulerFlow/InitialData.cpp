@@ -8,6 +8,7 @@
 
 #include "InitialData.h"
 #include "Primitives.h"
+#include "GeneratedConstants.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -62,15 +63,17 @@ static bool wroteAboutInitialData(false);
 #define logInitialData(txt...) { if(!wroteAboutInitialData) printf(txt); }
 
 void InitialData(const double* const  x, double* Q) {
-	const char* default_id = "Gaussian";
+	const char* default_id = "ShuVortex";
 	const char* id = getenv("EXAHYPE_INITIALDATA");
 	if(!id) { logInitialData("Using default ID\n"); id = default_id; }
 	//logInitialData("Have read '%s'\n", id);
 	std::string sid(id);
 	if(sid == "ShuVortex") {
-		// ShuVortex
-		ShuVortex2D(x, Q);
 		logInitialData("Loading ShuVortex Initial Data\n");
+		// ShuVortex gives us primitive data
+                double V[MY_NUMBER_OF_VARIABLES];
+		ShuVortex2D(x, V);
+                prim2con(Q, V);
 	} else if(sid == "Gaussian") {
 		// default:
 		gauss(x, Q);

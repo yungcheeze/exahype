@@ -14,4 +14,6 @@ inline const std::string& getEnvParameter(const char* key) {
 
 void InitialData(const double* const  x, double* Q);
 
+void ShuVortex2D(const double* const  x, double* Q, double t);
+
 #endif /* __INITIAL_DATA_EULERFLOW__ */
