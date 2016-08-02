@@ -503,28 +503,13 @@ void exahype::runners::Runner::recomputePredictorIfNecessary(
 void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(
     exahype::repositories::Repository& repository, bool plot) {
   // Only one time step (predictor vs. corrector) is used in this case.
-  repository.switchToFaceDataExchange();  // Riemann -> face2face
+  repository.switchToRiemannSolver();  // Riemann -> face2face
   repository.iterate();
-  repository.switchToCorrector();  // Face to cell
-  repository.iterate();
-
-//  int gridSetupIterations = 0;
-//  repository.switchToAugmentedAMRGrid();
-//  do {
-//    repository.iterate();
-//    gridSetupIterations++;
-//  } while (!repository.getState().isGridBalanced());
-//  repository.iterate();
-//  gridSetupIterations++;
-//
-//  logInfo("runAsMaster()",
-//          "grid setup iterations=" << gridSetupIterations << ", max-level="
-//          << repository.getState().getMaxLevel());
 
   if (plot) {
-    repository.switchToPlotAndGlobalTimeStepComputation();  // Inside cell
+    repository.switchToCorrectorAndPlot();  // Face to cell + Inside cell
   } else {
-    repository.switchToGlobalTimeStepComputation();  // Inside cell
+    repository.switchToCorrector();  // Face to cell + Inside cell
   }
   repository.iterate();
 

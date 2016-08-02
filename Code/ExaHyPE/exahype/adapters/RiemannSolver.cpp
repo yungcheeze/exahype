@@ -1,7 +1,7 @@
-#include "exahype/adapters/FaceDataExchange.h"
+#include "exahype/adapters/RiemannSolver.h"
 
 
-peano::CommunicationSpecification   exahype::adapters::FaceDataExchange::communicationSpecification() {
+peano::CommunicationSpecification   exahype::adapters::RiemannSolver::communicationSpecification() {
   return peano::CommunicationSpecification::getMinimalSpecification()
    & exahype::mappings::RiemannSolver::communicationSpecification()
 
@@ -9,7 +9,7 @@ peano::CommunicationSpecification   exahype::adapters::FaceDataExchange::communi
 }
 
 
-peano::MappingSpecification   exahype::adapters::FaceDataExchange::touchVertexLastTimeSpecification() {
+peano::MappingSpecification   exahype::adapters::RiemannSolver::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::RiemannSolver::touchVertexLastTimeSpecification()
 
@@ -17,7 +17,7 @@ peano::MappingSpecification   exahype::adapters::FaceDataExchange::touchVertexLa
 }
 
 
-peano::MappingSpecification   exahype::adapters::FaceDataExchange::touchVertexFirstTimeSpecification() { 
+peano::MappingSpecification   exahype::adapters::RiemannSolver::touchVertexFirstTimeSpecification() { 
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::RiemannSolver::touchVertexFirstTimeSpecification()
 
@@ -25,7 +25,7 @@ peano::MappingSpecification   exahype::adapters::FaceDataExchange::touchVertexFi
 }
 
 
-peano::MappingSpecification   exahype::adapters::FaceDataExchange::enterCellSpecification() {
+peano::MappingSpecification   exahype::adapters::RiemannSolver::enterCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::RiemannSolver::enterCellSpecification()
 
@@ -33,7 +33,7 @@ peano::MappingSpecification   exahype::adapters::FaceDataExchange::enterCellSpec
 }
 
 
-peano::MappingSpecification   exahype::adapters::FaceDataExchange::leaveCellSpecification() {
+peano::MappingSpecification   exahype::adapters::RiemannSolver::leaveCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::RiemannSolver::leaveCellSpecification()
 
@@ -41,7 +41,7 @@ peano::MappingSpecification   exahype::adapters::FaceDataExchange::leaveCellSpec
 }
 
 
-peano::MappingSpecification   exahype::adapters::FaceDataExchange::ascendSpecification() {
+peano::MappingSpecification   exahype::adapters::RiemannSolver::ascendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::RiemannSolver::ascendSpecification()
 
@@ -49,7 +49,7 @@ peano::MappingSpecification   exahype::adapters::FaceDataExchange::ascendSpecifi
 }
 
 
-peano::MappingSpecification   exahype::adapters::FaceDataExchange::descendSpecification() {
+peano::MappingSpecification   exahype::adapters::RiemannSolver::descendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::RiemannSolver::descendSpecification()
 
@@ -57,30 +57,30 @@ peano::MappingSpecification   exahype::adapters::FaceDataExchange::descendSpecif
 }
 
 
-exahype::adapters::FaceDataExchange::FaceDataExchange() {
+exahype::adapters::RiemannSolver::RiemannSolver() {
 }
 
 
-exahype::adapters::FaceDataExchange::~FaceDataExchange() {
+exahype::adapters::RiemannSolver::~RiemannSolver() {
 }
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::adapters::FaceDataExchange::FaceDataExchange(const FaceDataExchange&  masterThread):
+exahype::adapters::RiemannSolver::RiemannSolver(const RiemannSolver&  masterThread):
   _map2RiemannSolver(masterThread._map2RiemannSolver) 
 
 {
 }
 
 
-void exahype::adapters::FaceDataExchange::mergeWithWorkerThread(const FaceDataExchange& workerThread) {
+void exahype::adapters::RiemannSolver::mergeWithWorkerThread(const RiemannSolver& workerThread) {
   _map2RiemannSolver.mergeWithWorkerThread(workerThread._map2RiemannSolver);
 
 }
 #endif
 
 
-void exahype::adapters::FaceDataExchange::createHangingVertex(
+void exahype::adapters::RiemannSolver::createHangingVertex(
       exahype::Vertex&     fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                fineGridH,
@@ -95,7 +95,7 @@ void exahype::adapters::FaceDataExchange::createHangingVertex(
 }
 
 
-void exahype::adapters::FaceDataExchange::destroyHangingVertex(
+void exahype::adapters::RiemannSolver::destroyHangingVertex(
       const exahype::Vertex&   fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -109,7 +109,7 @@ void exahype::adapters::FaceDataExchange::destroyHangingVertex(
 }
 
 
-void exahype::adapters::FaceDataExchange::createInnerVertex(
+void exahype::adapters::RiemannSolver::createInnerVertex(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -123,7 +123,7 @@ void exahype::adapters::FaceDataExchange::createInnerVertex(
 }
 
 
-void exahype::adapters::FaceDataExchange::createBoundaryVertex(
+void exahype::adapters::RiemannSolver::createBoundaryVertex(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -137,7 +137,7 @@ void exahype::adapters::FaceDataExchange::createBoundaryVertex(
 }
 
 
-void exahype::adapters::FaceDataExchange::destroyVertex(
+void exahype::adapters::RiemannSolver::destroyVertex(
       const exahype::Vertex&   fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -151,7 +151,7 @@ void exahype::adapters::FaceDataExchange::destroyVertex(
 }
 
 
-void exahype::adapters::FaceDataExchange::createCell(
+void exahype::adapters::RiemannSolver::createCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -165,7 +165,7 @@ void exahype::adapters::FaceDataExchange::createCell(
 }
 
 
-void exahype::adapters::FaceDataExchange::destroyCell(
+void exahype::adapters::RiemannSolver::destroyCell(
       const exahype::Cell&           fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -180,7 +180,7 @@ void exahype::adapters::FaceDataExchange::destroyCell(
 
 
 #ifdef Parallel
-void exahype::adapters::FaceDataExchange::mergeWithNeighbour(
+void exahype::adapters::RiemannSolver::mergeWithNeighbour(
   exahype::Vertex&  vertex,
   const exahype::Vertex&  neighbour,
   int                                           fromRank,
@@ -193,7 +193,7 @@ void exahype::adapters::FaceDataExchange::mergeWithNeighbour(
 }
 
 
-void exahype::adapters::FaceDataExchange::prepareSendToNeighbour(
+void exahype::adapters::RiemannSolver::prepareSendToNeighbour(
   exahype::Vertex&  vertex,
   int                                           toRank,
   const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -205,7 +205,7 @@ void exahype::adapters::FaceDataExchange::prepareSendToNeighbour(
 }
 
 
-void exahype::adapters::FaceDataExchange::prepareCopyToRemoteNode(
+void exahype::adapters::RiemannSolver::prepareCopyToRemoteNode(
   exahype::Vertex&  localVertex,
   int                                           toRank,
   const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -217,7 +217,7 @@ void exahype::adapters::FaceDataExchange::prepareCopyToRemoteNode(
 }
 
 
-void exahype::adapters::FaceDataExchange::prepareCopyToRemoteNode(
+void exahype::adapters::RiemannSolver::prepareCopyToRemoteNode(
   exahype::Cell&  localCell,
       int                                           toRank,
       const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -229,7 +229,7 @@ void exahype::adapters::FaceDataExchange::prepareCopyToRemoteNode(
 }
 
 
-void exahype::adapters::FaceDataExchange::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::adapters::RiemannSolver::mergeWithRemoteDataDueToForkOrJoin(
   exahype::Vertex&  localVertex,
   const exahype::Vertex&  masterOrWorkerVertex,
   int                                       fromRank,
@@ -242,7 +242,7 @@ void exahype::adapters::FaceDataExchange::mergeWithRemoteDataDueToForkOrJoin(
 }
 
 
-void exahype::adapters::FaceDataExchange::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::adapters::RiemannSolver::mergeWithRemoteDataDueToForkOrJoin(
   exahype::Cell&  localCell,
   const exahype::Cell&  masterOrWorkerCell,
   int                                       fromRank,
@@ -255,7 +255,7 @@ void exahype::adapters::FaceDataExchange::mergeWithRemoteDataDueToForkOrJoin(
 }
 
 
-bool exahype::adapters::FaceDataExchange::prepareSendToWorker(
+bool exahype::adapters::RiemannSolver::prepareSendToWorker(
   exahype::Cell&                 fineGridCell,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -272,7 +272,7 @@ bool exahype::adapters::FaceDataExchange::prepareSendToWorker(
 }
 
 
-void exahype::adapters::FaceDataExchange::prepareSendToMaster(
+void exahype::adapters::RiemannSolver::prepareSendToMaster(
   exahype::Cell&                       localCell,
   exahype::Vertex *                    vertices,
   const peano::grid::VertexEnumerator&       verticesEnumerator, 
@@ -286,7 +286,7 @@ void exahype::adapters::FaceDataExchange::prepareSendToMaster(
 }
 
 
-void exahype::adapters::FaceDataExchange::mergeWithMaster(
+void exahype::adapters::RiemannSolver::mergeWithMaster(
   const exahype::Cell&           workerGridCell,
   exahype::Vertex * const        workerGridVertices,
   const peano::grid::VertexEnumerator& workerEnumerator,
@@ -306,7 +306,7 @@ void exahype::adapters::FaceDataExchange::mergeWithMaster(
 }
 
 
-void exahype::adapters::FaceDataExchange::receiveDataFromMaster(
+void exahype::adapters::RiemannSolver::receiveDataFromMaster(
       exahype::Cell&                        receivedCell, 
       exahype::Vertex *                     receivedVertices,
       const peano::grid::VertexEnumerator&        receivedVerticesEnumerator,
@@ -323,7 +323,7 @@ void exahype::adapters::FaceDataExchange::receiveDataFromMaster(
 }
 
 
-void exahype::adapters::FaceDataExchange::mergeWithWorker(
+void exahype::adapters::RiemannSolver::mergeWithWorker(
   exahype::Cell&           localCell, 
   const exahype::Cell&     receivedMasterCell,
   const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
@@ -335,7 +335,7 @@ void exahype::adapters::FaceDataExchange::mergeWithWorker(
 }
 
 
-void exahype::adapters::FaceDataExchange::mergeWithWorker(
+void exahype::adapters::RiemannSolver::mergeWithWorker(
   exahype::Vertex&        localVertex,
   const exahype::Vertex&  receivedMasterVertex,
   const tarch::la::Vector<DIMENSIONS,double>&   x,
@@ -348,7 +348,7 @@ void exahype::adapters::FaceDataExchange::mergeWithWorker(
 #endif
 
 
-void exahype::adapters::FaceDataExchange::touchVertexFirstTime(
+void exahype::adapters::RiemannSolver::touchVertexFirstTime(
       exahype::Vertex&               fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                          fineGridH,
@@ -362,7 +362,7 @@ void exahype::adapters::FaceDataExchange::touchVertexFirstTime(
 }
 
 
-void exahype::adapters::FaceDataExchange::touchVertexLastTime(
+void exahype::adapters::RiemannSolver::touchVertexLastTime(
       exahype::Vertex&         fineGridVertex,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridX,
       const tarch::la::Vector<DIMENSIONS,double>&                    fineGridH,
@@ -376,7 +376,7 @@ void exahype::adapters::FaceDataExchange::touchVertexLastTime(
 }
 
 
-void exahype::adapters::FaceDataExchange::enterCell(
+void exahype::adapters::RiemannSolver::enterCell(
       exahype::Cell&                 fineGridCell,
       exahype::Vertex * const        fineGridVertices,
       const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -390,7 +390,7 @@ void exahype::adapters::FaceDataExchange::enterCell(
 }
 
 
-void exahype::adapters::FaceDataExchange::leaveCell(
+void exahype::adapters::RiemannSolver::leaveCell(
       exahype::Cell&           fineGridCell,
       exahype::Vertex * const  fineGridVertices,
       const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
@@ -404,7 +404,7 @@ void exahype::adapters::FaceDataExchange::leaveCell(
 }
 
 
-void exahype::adapters::FaceDataExchange::beginIteration(
+void exahype::adapters::RiemannSolver::beginIteration(
   exahype::State&  solverState
 ) {
   _map2RiemannSolver.beginIteration( solverState );
@@ -412,7 +412,7 @@ void exahype::adapters::FaceDataExchange::beginIteration(
 }
 
 
-void exahype::adapters::FaceDataExchange::endIteration(
+void exahype::adapters::RiemannSolver::endIteration(
   exahype::State&  solverState
 ) {
   _map2RiemannSolver.endIteration( solverState );
@@ -422,7 +422,7 @@ void exahype::adapters::FaceDataExchange::endIteration(
 
 
 
-void exahype::adapters::FaceDataExchange::descend(
+void exahype::adapters::RiemannSolver::descend(
   exahype::Cell * const          fineGridCells,
   exahype::Vertex * const        fineGridVertices,
   const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
@@ -435,7 +435,7 @@ void exahype::adapters::FaceDataExchange::descend(
 }
 
 
-void exahype::adapters::FaceDataExchange::ascend(
+void exahype::adapters::RiemannSolver::ascend(
   exahype::Cell * const    fineGridCells,
   exahype::Vertex * const  fineGridVertices,
   const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,

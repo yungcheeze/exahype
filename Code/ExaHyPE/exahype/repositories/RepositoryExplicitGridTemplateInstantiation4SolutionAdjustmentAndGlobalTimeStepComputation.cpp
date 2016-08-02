@@ -20,12 +20,11 @@
  #include "exahype/adapters/PredictorAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/ADERDGTimeStep.h" 
  #include "exahype/adapters/ADERDGTimeStepAndPlot.h" 
- #include "exahype/adapters/GlobalTimeStepComputation.h" 
- #include "exahype/adapters/PlotAndGlobalTimeStepComputation.h" 
- #include "exahype/adapters/FaceDataExchange.h" 
- #include "exahype/adapters/Predictor.h" 
  #include "exahype/adapters/PredictorRerun.h" 
+ #include "exahype/adapters/RiemannSolver.h" 
+ #include "exahype/adapters/Predictor.h" 
  #include "exahype/adapters/Corrector.h" 
+ #include "exahype/adapters/CorrectorAndPlot.h" 
  #include "exahype/adapters/Plot.h" 
 
 

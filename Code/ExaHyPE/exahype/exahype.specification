@@ -139,28 +139,6 @@ adapter:
   merge-with-user-defined-mapping: GlobalTimeStepComputation
   merge-with-user-defined-mapping: FaceUnknownsProjection
  
-// Additional adapters for 4 phase time stepping
-adapter:
-  name: GlobalTimeStepComputation
-  merge-with-user-defined-mapping: GlobalTimeStepComputation
-  
-  
-adapter:
-  name: PlotAndGlobalTimeStepComputation
-  merge-with-user-defined-mapping: Plot
-  merge-with-user-defined-mapping: GlobalTimeStepComputation
-  
-
-adapter: 
-  name: FaceDataExchange
-  merge-with-user-defined-mapping: RiemannSolver
-
-adapter:
-  name: Predictor
-  merge-with-user-defined-mapping: SpaceTimePredictor 
-  merge-with-user-defined-mapping: VolumeIntegral
-  merge-with-user-defined-mapping: FaceUnknownsProjection
-
 /**
  * In a serial version, running the predictor is the same for optimistic time 
  * stepping and the non-fused algorithm. In the MPI case however a rerun in 
@@ -173,11 +151,30 @@ adapter:
   merge-with-user-defined-mapping: SpaceTimePredictor 
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: FaceUnknownsProjection
+ 
+// Additional adapters for 4 phase time stepping
+adapter: 
+  name: RiemannSolver
+  merge-with-user-defined-mapping: RiemannSolver
+
+adapter:
+  name: Predictor
+  merge-with-user-defined-mapping: SpaceTimePredictor 
+  merge-with-user-defined-mapping: VolumeIntegral
+  merge-with-user-defined-mapping: FaceUnknownsProjection
 
 adapter:
   name: Corrector
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
+
+adapter:
+  name: CorrectorAndPlot
+  merge-with-user-defined-mapping: SurfaceIntegral
+  merge-with-user-defined-mapping: SolutionUpdate
+  merge-with-user-defined-mapping: Plot
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
 
 adapter:
   name: Plot

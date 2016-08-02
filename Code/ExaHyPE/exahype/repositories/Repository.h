@@ -69,12 +69,11 @@ class exahype::repositories::Repository {
     virtual void switchToPredictorAndGlobalTimeStepComputation() = 0;    
     virtual void switchToADERDGTimeStep() = 0;    
     virtual void switchToADERDGTimeStepAndPlot() = 0;    
-    virtual void switchToGlobalTimeStepComputation() = 0;    
-    virtual void switchToPlotAndGlobalTimeStepComputation() = 0;    
-    virtual void switchToFaceDataExchange() = 0;    
-    virtual void switchToPredictor() = 0;    
     virtual void switchToPredictorRerun() = 0;    
+    virtual void switchToRiemannSolver() = 0;    
+    virtual void switchToPredictor() = 0;    
     virtual void switchToCorrector() = 0;    
+    virtual void switchToCorrectorAndPlot() = 0;    
     virtual void switchToPlot() = 0;    
 
     virtual bool isActiveAdapterAugmentedAMRGrid() const = 0;
@@ -84,12 +83,11 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterPredictorAndGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterADERDGTimeStep() const = 0;
     virtual bool isActiveAdapterADERDGTimeStepAndPlot() const = 0;
-    virtual bool isActiveAdapterGlobalTimeStepComputation() const = 0;
-    virtual bool isActiveAdapterPlotAndGlobalTimeStepComputation() const = 0;
-    virtual bool isActiveAdapterFaceDataExchange() const = 0;
-    virtual bool isActiveAdapterPredictor() const = 0;
     virtual bool isActiveAdapterPredictorRerun() const = 0;
+    virtual bool isActiveAdapterRiemannSolver() const = 0;
+    virtual bool isActiveAdapterPredictor() const = 0;
     virtual bool isActiveAdapterCorrector() const = 0;
+    virtual bool isActiveAdapterCorrectorAndPlot() const = 0;
     virtual bool isActiveAdapterPlot() const = 0;
 
 

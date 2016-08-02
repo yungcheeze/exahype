@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_GlobalTimeStepComputation_H_
-#define EXAHYPE_ADAPTERS_GlobalTimeStepComputation_H_
+#ifndef EXAHYPE_ADAPTERS_RiemannSolver_H_
+#define EXAHYPE_ADAPTERS_RiemannSolver_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,13 +18,13 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/GlobalTimeStepComputation.h"
+ #include "exahype/mappings/RiemannSolver.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class GlobalTimeStepComputation;
+        class RiemannSolver;
       } 
 }
 
@@ -36,11 +36,11 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::GlobalTimeStepComputation {
+class exahype::adapters::RiemannSolver {
   private:
-    typedef mappings::GlobalTimeStepComputation Mapping0;
+    typedef mappings::RiemannSolver Mapping0;
 
-     Mapping0  _map2GlobalTimeStepComputation;
+     Mapping0  _map2RiemannSolver;
 
 
   public:
@@ -52,16 +52,16 @@ class exahype::adapters::GlobalTimeStepComputation {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    GlobalTimeStepComputation();
+    RiemannSolver();
 
     #if defined(SharedMemoryParallelisation)
-    GlobalTimeStepComputation(const GlobalTimeStepComputation& masterThread);
+    RiemannSolver(const RiemannSolver& masterThread);
     #endif
 
-    virtual ~GlobalTimeStepComputation();
+    virtual ~RiemannSolver();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const GlobalTimeStepComputation& workerThread);
+    void mergeWithWorkerThread(const RiemannSolver& workerThread);
     #endif
 
     void createInnerVertex(
