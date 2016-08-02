@@ -54,7 +54,7 @@
   * The brackets around \p ix and \p iy allow to write
   * idx1(ix+ox, iy+oy,...), where ox and oy are some offsets.
   */
-#define nidx2(ix, iy, ivar) \
+#define nidx2(ix, iy) \
   numberOfVariables * (basisSize * (iy) + ix)
 
 /** Computes a 3-d node index.
