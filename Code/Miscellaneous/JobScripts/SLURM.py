@@ -1,15 +1,20 @@
 from subprocess import call
+import os,binascii,datetime
 
 def runMultipleSlURMjobs(dimensions, processes, pdegrees, hmaxs, compilers, modes):
+
+  #a tmp directory, where all logfiles go to
+  directory = str(datetime.date.today()) + binascii.b2a_hex(os.urandom(8))
+  
   for dimension in dimensions:
     for process in processes:
       for pdegree in pdegrees:
         for hmax in hmaxs:
           for compiler in compilers:
             for mode in modes:
-              runSingleSlURMjob(dimension, process, pdegree, hmax, compiler, mode)
+              runSingleSlURMjob(dimension, process, pdegree, hmax, compiler, mode, directory)
             
-def runSingleSlURMjob(dimension, process, pdegree, hmax, compiler, mode):
+def runSingleSlURMjob(dimension, process, pdegree, hmax, compiler, mode, directory):
             
   name = 'ExaHyPE_Euler__dimension_' + dimension + '__process_' + `process` + '__pdegree_' + `pdegree` + '__hmax_' + hmax + '__compiler_' + compiler + '__mode_' + mode
   filename = name + '.slurm'
@@ -88,7 +93,7 @@ def runSingleSlURMjob(dimension, process, pdegree, hmax, compiler, mode):
   file.write("echo \"\" > myUserSpec.exahype"                                                                                      + "\n")
   file.write("echo \"/**                                                                 \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"                                                                    \" >> myUserSpec.exahype"                 + "\n")
-  file.write("echo \" 2D Euler Flow                                                      \" >> myUserSpec.exahype"                 + "\n")
+  file.write("echo \" 2D/3D Euler Flow                                                   \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"                                                                    \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \" A simple project                                                   \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"                                                                    \" >> myUserSpec.exahype"                 + "\n")
@@ -178,6 +183,7 @@ def runSingleSlURMjob(dimension, process, pdegree, hmax, compiler, mode):
   else:
     file.write("cp exahype.log-file " + name + ".merged-exahype.log-file"                                                          + "\n")
   file.write("cp merged-exahype.log-file " + name + ".merged-exahype.log-file"                                                     + "\n")
+  
   if mode == "Profile":
     file.write("module unload gcc"                                                                                                   + "\n")
     file.write("module load python"                                                                                                  + "\n")
@@ -187,9 +193,11 @@ def runSingleSlURMjob(dimension, process, pdegree, hmax, compiler, mode):
     file.write("ssh varduhnv@atsccs60.informatik.tu-muenchen.de \"chmod -R a+rx ~/www-exahype/performance.analysis\""                + "\n")
   else:
     file.write("python ../../Miscellaneous/JobScripts/scaling/extractPerformanceIndicators.py " + name + ".merged-exahype.log-file > " + name + ".scaling "+ "\n")
-    file.write("cp " + name + ".scaling ~/jobs/scaling/$SLURM_JOBID." + name + ".scaling "           + "\n")
+    file.write("mkdir ~/jobs/scaling/" + directory                                                                                 + "\n")
+    file.write("cp " + name + ".scaling ~/jobs/scaling/" + directory + "/$SLURM_JOBID." + name + ".scaling "                       + "\n")
   file.write(""                                                                                                                    + "\n")
-  file.write("cp " + name + ".merged-exahype.log-file ~/jobs/results/$SLURM_JOBID." + name + ".merged-exahype.log-file "           + "\n")
+  file.write("mkdir ~/jobs/results/" + directory                                                                                 + "\n")
+  file.write("cp " + name + ".merged-exahype.log-file ~/jobs/results/" + directory + "/$SLURM_JOBID." + name + ".merged-exahype.log-file " + "\n")
   file.write(""                                                                                                                    + "\n")
   file.write("cd ../.."                                                                                                            + "\n")
 
