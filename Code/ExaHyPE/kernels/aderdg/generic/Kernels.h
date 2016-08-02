@@ -43,6 +43,27 @@
   (face * MbasisSize * MbasisSize * Mvar + Mvar * a + Mvar * MbasisSize * b + \
    var)
 
+/** Computes a 1-d node index.
+  * The brackets around \p ix allow to write
+  * idx1(ix+ox,...), where ox is some offset.
+  */
+#define nidx1(ix) \
+  numberOfVariables * (ix)
+
+/** Computes a 2-d node index.
+  * The brackets around \p ix and \p iy allow to write
+  * idx1(ix+ox, iy+oy,...), where ox and oy are some offsets.
+  */
+#define nidx2(ix, iy, ivar) \
+  numberOfVariables * (basisSize * (iy) + ix)
+
+/** Computes a 3-d node index.
+  * The brackets around \p ix, \p iy, and \p iz allow to write
+  * idx1(ix+ox, iy+oy, iz+oz,...), where ox, oy and oz are some offsets.
+  */
+#define nidx3(ix, iy, iz) \
+  numberOfVariables * (basisSize2 * (iz) + basisSize * (iy) + ix)
+
 /** Computes a 1-d index.
   * The brackets around \p ix allow to write
   * idx1(ix+ox,...), where ox is some offset.

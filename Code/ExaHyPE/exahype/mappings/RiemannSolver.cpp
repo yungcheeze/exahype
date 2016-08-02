@@ -430,14 +430,14 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
   cellCentre*=0.5;
   cellCentre += cellDescription.getOffset();
 
-//  solver->boundaryConditions(fluxOut,stateOut,
-//                             fluxIn,stateIn,
-//                             cellCentre,cellDescription.getSize(),
-//                             cellDescription.getCorrectorTimeStamp(),
-//                             cellDescription.getCorrectorTimeStepSize(),
-//                             faceIndex,normalNonZero);
+  solver->boundaryConditions(fluxOut,stateOut,
+                             fluxIn,stateIn,
+                             cellCentre,cellDescription.getSize(),
+                             cellDescription.getCorrectorTimeStamp(),
+                             cellDescription.getCorrectorTimeStepSize(),
+                             faceIndex,normalNonZero);
 
-  solver->riemannSolver(fluxIn, fluxIn, stateIn, stateIn,
+  solver->riemannSolver(fluxIn, fluxOut, stateIn, stateOut,
                         cellDescription.getCorrectorTimeStepSize(),
                         normalNonZero);
 
