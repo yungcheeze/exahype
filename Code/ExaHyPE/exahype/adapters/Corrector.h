@@ -18,7 +18,6 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/RiemannSolverReset.h"
  #include "exahype/mappings/SurfaceIntegral.h"
  #include "exahype/mappings/SolutionUpdate.h"
 
@@ -40,13 +39,11 @@ namespace exahype {
  */
 class exahype::adapters::Corrector {
   private:
-    typedef mappings::RiemannSolverReset Mapping0;
-    typedef mappings::SurfaceIntegral Mapping1;
-    typedef mappings::SolutionUpdate Mapping2;
+    typedef mappings::SurfaceIntegral Mapping0;
+    typedef mappings::SolutionUpdate Mapping1;
 
-     Mapping0  _map2RiemannSolverReset;
-     Mapping1  _map2SurfaceIntegral;
-     Mapping2  _map2SolutionUpdate;
+     Mapping0  _map2SurfaceIntegral;
+     Mapping1  _map2SolutionUpdate;
 
 
   public:

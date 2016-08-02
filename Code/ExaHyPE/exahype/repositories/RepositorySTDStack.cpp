@@ -5,9 +5,6 @@
 
 #include "tarch/compiler/CompilerSpecificSettings.h"
 
-#include "tarch/parallel/Node.h"
-#include "tarch/parallel/NodePool.h"
-
 #ifdef Parallel
 #include "tarch/parallel/Node.h"
 #include "tarch/parallel/NodePool.h"
@@ -117,7 +114,7 @@ void exahype::repositories::RepositorySTDStack::restart(
   assertion( !tarch::parallel::Node::getInstance().isGlobalMaster());
   #endif
   
-  logInfo( "restart(...)", "start node for subdomain " << domainOffset << "x" << domainSize << " on level " << domainLevel << " with master " << tarch::parallel::NodePool::getInstance().getMasterRank() );
+  logInfo( "restart(...)", "start node for subdomain " << domainOffset << "x" << domainSize << " on level " << domainLevel );
   
   assertion( _repositoryState.getAction() == exahype::records::RepositoryState::Terminate );
 

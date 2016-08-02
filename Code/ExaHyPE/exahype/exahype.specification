@@ -32,9 +32,6 @@ event-mapping:
   name: VolumeIntegral
 
 event-mapping:
-  name: RiemannSolverReset
-
-event-mapping:
   name: RiemannSolver
   
 event-mapping:
@@ -99,7 +96,6 @@ adapter:
 adapter:
   name: PredictorAndPlotAndGlobalTimeStepComputation
   merge-with-user-defined-mapping: NewTimeStep
-  merge-with-user-defined-mapping: RiemannSolverReset
   // needs current time step size
   merge-with-user-defined-mapping: SpaceTimePredictor // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: VolumeIntegral
@@ -110,7 +106,6 @@ adapter:
 adapter:
   name: PredictorAndGlobalTimeStepComputation
   merge-with-user-defined-mapping: NewTimeStep
-  merge-with-user-defined-mapping: RiemannSolverReset
   // needs current time step size
   merge-with-user-defined-mapping: SpaceTimePredictor // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: VolumeIntegral
@@ -122,7 +117,6 @@ adapter:
   name: ADERDGTimeStep
   // needs corrector time step size
   merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
-  merge-with-user-defined-mapping: RiemannSolverReset
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
   // needs predictor time step size
@@ -136,7 +130,6 @@ adapter:
   name: ADERDGTimeStepAndPlot
   // needs corrector time step size
   merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
-  merge-with-user-defined-mapping: RiemannSolverReset
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: Plot
@@ -183,7 +176,6 @@ adapter:
 
 adapter:
   name: Corrector
-  merge-with-user-defined-mapping: RiemannSolverReset
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
 

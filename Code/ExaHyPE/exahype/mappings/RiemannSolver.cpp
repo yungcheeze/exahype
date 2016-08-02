@@ -63,7 +63,7 @@ exahype::mappings::RiemannSolver::touchVertexFirstTimeSpecification() {
 peano::MappingSpecification
 exahype::mappings::RiemannSolver::enterCellSpecification() {
   return peano::MappingSpecification(
-      peano::MappingSpecification::Nop,
+      peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
@@ -249,9 +249,6 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
           double* FR = DataHeap::getInstance().getData(cellDescriptionOfRightCell.getFluctuation()).data() +
               (faceIndexForRightCell * numberOfFaceDof);
 
-          solver->synchroniseTimeStepping(cellDescriptionsOfLeftCell[i]);
-          solver->synchroniseTimeStepping(cellDescriptionOfRightCell);
-
           for(int ii=0; ii<faceIndexForRightCell; ++ii) {
             assertion(std::isfinite(QL[ii]));
             assertion(std::isfinite(QR[ii]));
@@ -330,7 +327,6 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
 
   const int numberOfFaceDof = solver->getUnknownsPerFace();
 
-  solver->synchroniseTimeStepping(cellDescription);
   logDebug("solveRiemannProblemAtInterface(...)",
            "cell-description=" << cellDescription.toString());
 
@@ -374,19 +370,19 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
                         normalNonZero);
 
   // Will be optimised out by dead code elemination.
-  for (int i = 0; i < numberOfFaceDof; i++) {
-    assertion8(std::isfinite(QR[i]), cellDescription.toString(),
+  for (int ii = 0; ii < numberOfFaceDof; ii++) {
+    assertion8(std::isfinite(QR[ii]), cellDescription.toString(),
                faceIndexForCell, normalNonZero, indexOfQValues, indexOfFValues,
-               i, QR[i], QL[i]);
-    assertion8(std::isfinite(QL[i]), cellDescription.toString(),
+               ii, QR[ii], QL[ii]);
+    assertion8(std::isfinite(QL[ii]), cellDescription.toString(),
                faceIndexForCell, normalNonZero, indexOfQValues, indexOfFValues,
-               i, QR[i], QL[i]);
-    assertion8(std::isfinite(FR[i]), cellDescription.toString(),
+               ii, QR[ii], QL[ii]);
+    assertion8(std::isfinite(FR[ii]), cellDescription.toString(),
                faceIndexForCell, normalNonZero, indexOfQValues, indexOfFValues,
-               i, QR[i], QL[i]);
-    assertion8(std::isfinite(FL[i]), cellDescription.toString(),
+               ii, QR[ii], QL[ii]);
+    assertion8(std::isfinite(FL[ii]), cellDescription.toString(),
                faceIndexForCell, normalNonZero, indexOfQValues, indexOfFValues,
-               i, QR[i], QL[i]);
+               ii, QR[ii], QL[ii]);
   }
 }
 
@@ -407,9 +403,12 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
   double* fluxIn = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
       (faceIndexForCell * numberOfFaceDof);
 
-  solver->synchroniseTimeStepping(cellDescription);
-  assertionEquals(stateIn[0], stateIn[0]);  // assert no nan
-  assertionEquals(fluxIn[0], fluxIn[0]);  // assert no nan
+  for(int ii=0; ii<faceIndexForCell; ++ii) {
+    assertion5(std::isfinite(stateIn[ii]), cellDescription.toString(),
+               faceIndexForCell, normalNonZero, ii, stateIn[ii]);
+    assertion5(std::isfinite(fluxIn[ii]), cellDescription.toString(),
+               faceIndexForCell, normalNonZero, ii, fluxIn[ii]);
+  }  // dead code elimination will get rid of this loop if Asserts flag is not set
 
   double* stateOut = new double[numberOfFaceDof];
   double* fluxOut  = new double[numberOfFaceDof];
@@ -425,6 +424,13 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
                              cellDescription.getCorrectorTimeStepSize(),
                              faceIndexForCell,normalNonZero);
 
+  for(int ii=0; ii<faceIndexForCell; ++ii) {
+    assertion5(std::isfinite(stateOut[ii]), cellDescription.toString(),
+               faceIndexForCell, normalNonZero, ii, stateOut[ii]);
+    assertion5(std::isfinite(fluxOut[ii]), cellDescription.toString(),
+               faceIndexForCell, normalNonZero, ii, fluxOut[ii]);
+  }  // dead code elimination will get rid of this loop if Asserts flag is not set
+
   // @todo(Dominic): Add to docu why we need this.
   if (faceIndexForCell % 2 == 0) {
     solver->riemannSolver(fluxOut, fluxIn, stateOut, stateIn,
@@ -435,6 +441,13 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
         cellDescription.getCorrectorTimeStepSize(),
         normalNonZero);
   }
+
+  for(int ii=0; ii<faceIndexForCell; ++ii) {
+    assertion5(std::isfinite(fluxIn[ii]), cellDescription.toString(),
+               faceIndexForCell, normalNonZero, ii, fluxIn[ii]);
+    assertion5(std::isfinite(fluxOut[ii]), cellDescription.toString(),
+               faceIndexForCell, normalNonZero, ii, fluxOut[ii]);
+  }  // dead code elimination will get rid of this loop if Asserts flag is not set
 
   delete[] stateOut;
   delete[] fluxOut;
@@ -708,7 +721,37 @@ void exahype::mappings::RiemannSolver::enterCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
+  logTraceInWith4Arguments("enterCell(...)", fineGridCell,
+      fineGridVerticesEnumerator.toString(),
+      coarseGridCell, fineGridPositionOfCell);
+
+  if (fineGridCell.isInitialised()) {
+    const int numberOfADERDGCellDescriptions = static_cast<int>(
+        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size());
+    // please use a different UserDefined per mapping/event
+    const peano::datatraversal::autotuning::MethodTrace methodTrace =
+        peano::datatraversal::autotuning::UserDefined3;
+    const int grainSize =
+        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+            numberOfADERDGCellDescriptions, methodTrace);
+    pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
+      records::ADERDGCellDescription& p =
+          ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
+      exahype::solvers::ADERDGSolver* solver =
+          static_cast<exahype::solvers::ADERDGSolver*>(exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
+
+      std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed; // all bits are initialised to 'off'
+      p.setRiemannSolvePerformed(riemannSolvePerformed);
+
+      if(p.getType()==exahype::records::ADERDGCellDescription::Cell) {
+        assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
+        solver->synchroniseTimeStepping(p);
+      }
+    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
+    .parallelSectionHasTerminated(methodTrace);
+  }
+
+  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
 void exahype::mappings::RiemannSolver::leaveCell(

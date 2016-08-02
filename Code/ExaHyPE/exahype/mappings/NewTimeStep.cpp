@@ -339,10 +339,7 @@ void exahype::mappings::NewTimeStep::enterCell(
 
   if (fineGridCell.isInitialised()) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
-        ADERDGCellDescriptionHeap::getInstance()
-            .getData(fineGridCell.getCellDescriptionsIndex())
-            .size());
-
+        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size());
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
         peano::datatraversal::autotuning::UserDefined3;
@@ -352,19 +349,20 @@ void exahype::mappings::NewTimeStep::enterCell(
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
       records::ADERDGCellDescription& p =
           ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
-      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
-        exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
-      switch (p.getType()) {
-        case exahype::records::ADERDGCellDescription::Cell:
-          assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
-          solver->synchroniseTimeStepping(p);
-          break;
-        default:
-          break;
+      exahype::solvers::ADERDGSolver* solver =
+          static_cast<exahype::solvers::ADERDGSolver*>(exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
+
+      std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed; // all bits are initialised to 'off'
+      p.setRiemannSolvePerformed(riemannSolvePerformed);
+
+      if(p.getType()==exahype::records::ADERDGCellDescription::Cell) {
+        assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
+        solver->synchroniseTimeStepping(p);
       }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
         .parallelSectionHasTerminated(methodTrace);
   }
+
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
