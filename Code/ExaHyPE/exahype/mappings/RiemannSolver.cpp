@@ -184,15 +184,14 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
 }
 
 void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
-    const int cellDescriptionIndexOfLeftCell,
-    const int cellDescriptionIndexOfRightCell, const int faceIndexForLeftCell,
+    const int cellDescriptionsIndexOfLeftCell,
+    const int cellDescriptionsIndexOfRightCell, const int faceIndexForLeftCell,
     const int faceIndexForRightCell, const int normalNonZero) {
   // Only continue if this is an internal face, i.e.,
   // both cell description indices are valid
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          cellDescriptionIndexOfLeftCell) &&
-      ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          cellDescriptionIndexOfRightCell)) {
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfLeftCell)
+      &&
+      ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfRightCell)) {
     logDebug("touchVertexLastTime(...)::solveRiemannProblemAtInterface(...)",
              "Performing Riemann solve. "
                  << "faceIndexForLeftCell:" << faceIndexForLeftCell
@@ -203,102 +202,91 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
                  // << adjacentADERDGCellDescriptionsIndices[indexOfRightCell]);
 
     std::vector<records::ADERDGCellDescription>& cellDescriptionsOfLeftCell =
-        ADERDGCellDescriptionHeap::getInstance().getData(
-            cellDescriptionIndexOfLeftCell);
-    std::vector<records::ADERDGCellDescription>& cellDescriptionsOfRightCell =
-        ADERDGCellDescriptionHeap::getInstance().getData(
-            cellDescriptionIndexOfRightCell);
+        ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndexOfLeftCell);
+    int numberOfADERDGCellDescriptionsLeft =
+        ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndexOfLeftCell).size();
+    const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined4;
+    const int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptionsLeft, methodTrace);
 
-    // @todo 08/02/16:Dominic Etienne Charrier
-    // Assumes that the both cells hold the same number of cell descriptions
-    assertion2(
-        cellDescriptionsOfLeftCell.size() == cellDescriptionsOfRightCell.size(),
-        cellDescriptionsOfLeftCell.size(), cellDescriptionsOfRightCell.size());
-
-    const int numberOfADERDGCellDescriptions =
-        static_cast<int>(ADERDGCellDescriptionHeap::getInstance()
-                             .getData(cellDescriptionIndexOfLeftCell)
-                             .size());
-    const peano::datatraversal::autotuning::MethodTrace methodTrace =
-        peano::datatraversal::autotuning::UserDefined4;
-    const int grainSize =
-        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-            numberOfADERDGCellDescriptions, methodTrace);
-
-    pfor(i, 0, numberOfADERDGCellDescriptions,grainSize)
-      if (cellDescriptionsOfLeftCell [i].getType() == exahype::records::ADERDGCellDescription::Cell ||
-          cellDescriptionsOfRightCell[i].getType() == exahype::records::ADERDGCellDescription::Cell) {
-      assertion1(cellDescriptionsOfLeftCell[i].getType() == exahype::records::ADERDGCellDescription::Cell ||
-                 cellDescriptionsOfLeftCell[i].getType() == exahype::records::ADERDGCellDescription::Ancestor ||
-                 cellDescriptionsOfLeftCell[i].getType() == exahype::records::ADERDGCellDescription::Descendant,
-                 cellDescriptionsOfLeftCell[i].toString());
-      assertion1(cellDescriptionsOfRightCell[i].getType() == exahype::records::ADERDGCellDescription::Cell ||
-                 cellDescriptionsOfRightCell[i].getType() == exahype::records::ADERDGCellDescription::Ancestor ||
-                 cellDescriptionsOfRightCell[i].getType() == exahype::records::ADERDGCellDescription::Descendant,
-                 cellDescriptionsOfRightCell[i].toString());
-      assertion1(cellDescriptionsOfLeftCell [i].getRefinementEvent()==exahype::records::ADERDGCellDescription::None,
-                 cellDescriptionsOfLeftCell [i].toString());
-      assertion1(cellDescriptionsOfRightCell[i].getRefinementEvent()==exahype::records::ADERDGCellDescription::None,
-                 cellDescriptionsOfRightCell[i].toString());
-      assertionEquals4(cellDescriptionsOfLeftCell[i].getRiemannSolvePerformed(faceIndexForLeftCell),
-                       cellDescriptionsOfRightCell[i].getRiemannSolvePerformed(faceIndexForRightCell),
-                       faceIndexForLeftCell, faceIndexForRightCell,
-                       cellDescriptionsOfLeftCell[i].toString(),
-                       cellDescriptionsOfRightCell[i].toString());
-      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*> (
-          exahype::solvers::RegisteredSolvers[cellDescriptionsOfLeftCell[i].getSolverNumber()] );
+    pfor(i, 0, numberOfADERDGCellDescriptionsLeft,grainSize)
+      for (auto& cellDescriptionOfRightCell :
+          ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndexOfRightCell)) {
+        if (cellDescriptionsOfLeftCell [i].getType() == exahype::records::ADERDGCellDescription::Cell ||
+            cellDescriptionOfRightCell.getType() == exahype::records::ADERDGCellDescription::Cell) {
+        assertion1(cellDescriptionsOfLeftCell[i].getType() == exahype::records::ADERDGCellDescription::Cell ||
+                   cellDescriptionsOfLeftCell[i].getType() == exahype::records::ADERDGCellDescription::Ancestor ||
+                   cellDescriptionsOfLeftCell[i].getType() == exahype::records::ADERDGCellDescription::Descendant,
+                   cellDescriptionsOfLeftCell[i].toString());
+        assertion1(cellDescriptionOfRightCell.getType() == exahype::records::ADERDGCellDescription::Cell ||
+                   cellDescriptionOfRightCell.getType() == exahype::records::ADERDGCellDescription::Ancestor ||
+                   cellDescriptionOfRightCell.getType() == exahype::records::ADERDGCellDescription::Descendant,
+                   cellDescriptionOfRightCell.toString());
+        assertion1(cellDescriptionsOfLeftCell[i].getRefinementEvent()==exahype::records::ADERDGCellDescription::None,
+                   cellDescriptionsOfLeftCell[i].toString());
+        assertion1(cellDescriptionOfRightCell.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,
+                   cellDescriptionOfRightCell.toString());
+        assertionEquals4(cellDescriptionsOfLeftCell[i].getRiemannSolvePerformed(faceIndexForLeftCell),
+                         cellDescriptionOfRightCell.getRiemannSolvePerformed(faceIndexForRightCell),
+                         faceIndexForLeftCell, faceIndexForRightCell,
+                         cellDescriptionsOfLeftCell[i].toString(),
+                         cellDescriptionOfRightCell.toString());
+        exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*> (
+            exahype::solvers::RegisteredSolvers[cellDescriptionsOfLeftCell[i].getSolverNumber()] );
 
 
-      if (!cellDescriptionsOfLeftCell[i].getRiemannSolvePerformed(faceIndexForLeftCell)) {
-        cellDescriptionsOfLeftCell[i].setRiemannSolvePerformed(faceIndexForLeftCell, true);
-        cellDescriptionsOfRightCell[i].setRiemannSolvePerformed(faceIndexForRightCell, true);
+        if (!cellDescriptionsOfLeftCell[i].getRiemannSolvePerformed(faceIndexForLeftCell)) {
+          cellDescriptionsOfLeftCell [i].setRiemannSolvePerformed(faceIndexForLeftCell,  true);
+          cellDescriptionOfRightCell.setRiemannSolvePerformed(faceIndexForRightCell, true);
 
-        const int numberOfFaceDof = solver->getUnknownsPerFace();
+          const int numberOfFaceDof = solver->getUnknownsPerFace();
 
-        double* QL = DataHeap::getInstance() .getData(cellDescriptionsOfLeftCell[i].getExtrapolatedPredictor()).data() +
-            (faceIndexForLeftCell * numberOfFaceDof);
-        double* QR = DataHeap::getInstance().getData(cellDescriptionsOfRightCell[i].getExtrapolatedPredictor()).data() +
-            (faceIndexForRightCell * numberOfFaceDof);
-        double* FL = DataHeap::getInstance().getData(cellDescriptionsOfLeftCell[i].getFluctuation()).data() +
-            (faceIndexForLeftCell * numberOfFaceDof);
-        double* FR = DataHeap::getInstance().getData(cellDescriptionsOfRightCell[i].getFluctuation()).data() +
-            (faceIndexForRightCell * numberOfFaceDof);
+          double* QL = DataHeap::getInstance() .getData(cellDescriptionsOfLeftCell[i].getExtrapolatedPredictor()).data() +
+              (faceIndexForLeftCell * numberOfFaceDof);
+          double* QR = DataHeap::getInstance().getData(cellDescriptionOfRightCell.getExtrapolatedPredictor()).data() +
+              (faceIndexForRightCell * numberOfFaceDof);
+          double* FL = DataHeap::getInstance().getData(cellDescriptionsOfLeftCell[i].getFluctuation()).data() +
+              (faceIndexForLeftCell * numberOfFaceDof);
+          double* FR = DataHeap::getInstance().getData(cellDescriptionOfRightCell.getFluctuation()).data() +
+              (faceIndexForRightCell * numberOfFaceDof);
 
-        solver->synchroniseTimeStepping(cellDescriptionsOfLeftCell[i]);
-        solver->synchroniseTimeStepping(cellDescriptionsOfRightCell[i]);
+          solver->synchroniseTimeStepping(cellDescriptionsOfLeftCell[i]);
+          solver->synchroniseTimeStepping(cellDescriptionOfRightCell);
 
-        logDebug("touchVertexLastTime(...)::debug::before::QL[0]*", QL[0]);
-        logDebug("touchVertexLastTime(...)::debug::before::QR[0]*", QR[0]);
-        logDebug("touchVertexLastTime(...)::debug::before::FL[0]", FL[0]);
-        logDebug("touchVertexLastTime(...)::debug::before::FR[0]", FR[0]);
+          for(int ii=0; ii<faceIndexForRightCell; ++ii) {
+            assertion(std::isfinite(QL[ii]));
+            assertion(std::isfinite(QR[ii]));
+            assertion(std::isfinite(FL[ii]));
+            assertion(std::isfinite(FR[ii]));
+          }  // dead code elimination will get rid of this loop if Asserts flag is not set
 
-        // todo Time step must be interpolated in local time stepping case
-        // both time step sizes are the same, so the min has no effect here.
-        solver->riemannSolver(
-            FL, FR, QL, QR,
-            std::min(cellDescriptionsOfLeftCell[i].getCorrectorTimeStepSize(),
-                     cellDescriptionsOfRightCell[i].getCorrectorTimeStepSize()),
-            normalNonZero);
+          // todo Time step must be interpolated in local time stepping case
+          // both time step sizes are the same, so the min has no effect here.
+          solver->riemannSolver(
+              FL, FR, QL, QR,
+              std::min(cellDescriptionsOfLeftCell[i].getCorrectorTimeStepSize(),
+                       cellDescriptionOfRightCell.getCorrectorTimeStepSize()),
+              normalNonZero);
 
-        logDebug("touchVertexLastTime(...)::debug::after::QL[0]*", QL[0]);
-        logDebug("touchVertexLastTime(...)::debug::after::QR[0]*", QR[0]);
-        logDebug("touchVertexLastTime(...)::debug::after::FL[0]", FL[0]);
-        logDebug("touchVertexLastTime(...)::debug::after::FR[0]", FR[0]);
+          for(int ii=0; ii<faceIndexForRightCell; ++ii) {
+            assertion(std::isfinite(FL[ii]));
+            assertion(std::isfinite(FR[ii]));
+          }  // dead code elimination will get rid of this loop if Asserts flag is not set
+        }
       }
     }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
         .parallelSectionHasTerminated(methodTrace);
-  } else if ((ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionIndexOfLeftCell) &&
-             cellDescriptionIndexOfRightCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) ||
-             (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionIndexOfRightCell) &&
-             cellDescriptionIndexOfLeftCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex)) {
+  } else if ((ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfLeftCell) &&
+             cellDescriptionsIndexOfRightCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) ||
+             (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfRightCell) &&
+             cellDescriptionsIndexOfLeftCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex)) {
     const int cellDescriptionsIndex =
         (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-            cellDescriptionIndexOfLeftCell))
-            ? cellDescriptionIndexOfLeftCell
-            : cellDescriptionIndexOfRightCell;
+            cellDescriptionsIndexOfLeftCell))
+            ? cellDescriptionsIndexOfLeftCell
+            : cellDescriptionsIndexOfRightCell;
     const int faceIndex =
-        (cellDescriptionsIndex == cellDescriptionIndexOfLeftCell)
+        (cellDescriptionsIndex == cellDescriptionsIndexOfLeftCell)
             ? faceIndexForLeftCell
             : faceIndexForRightCell;
 
