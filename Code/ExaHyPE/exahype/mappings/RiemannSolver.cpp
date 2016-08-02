@@ -403,21 +403,21 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
 }
 
 void exahype::mappings::RiemannSolver::applyBoundaryConditions(
-    records::ADERDGCellDescription& cellDescription, const int faceIndex,
+    records::ADERDGCellDescription& cellDescription, const int faceIndexForCell,
     const int normalNonZero) {
   assertion1(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,cellDescription.toString());
 
   exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
       exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
 
-  cellDescription.setRiemannSolvePerformed(faceIndex, true);
+  cellDescription.setRiemannSolvePerformed(faceIndexForCell, true);
 
   const int numberOfFaceDof = solver->getUnknownsPerFace();
 
   double* stateIn = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data() +
-      (faceIndex * numberOfFaceDof);
+      (faceIndexForCell * numberOfFaceDof);
   double* fluxIn = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
-      (faceIndex * numberOfFaceDof);
+      (faceIndexForCell * numberOfFaceDof);
 
   solver->synchroniseTimeStepping(cellDescription);
   assertionEquals(stateIn[0], stateIn[0]);  // assert no nan
@@ -435,11 +435,18 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
                              cellCentre,cellDescription.getSize(),
                              cellDescription.getCorrectorTimeStamp(),
                              cellDescription.getCorrectorTimeStepSize(),
-                             faceIndex,normalNonZero);
+                             faceIndexForCell,normalNonZero);
 
-  solver->riemannSolver(fluxIn, fluxOut, stateIn, stateOut,
-                        cellDescription.getCorrectorTimeStepSize(),
-                        normalNonZero);
+  // @todo(Dominic): Add to docu why we need this.
+  if (faceIndexForCell % 2 == 0) {
+    solver->riemannSolver(fluxOut, fluxIn, stateOut, stateIn,
+        cellDescription.getCorrectorTimeStepSize(),
+        normalNonZero);
+  } else {
+    solver->riemannSolver(fluxIn, fluxOut, stateIn, stateOut,
+        cellDescription.getCorrectorTimeStepSize(),
+        normalNonZero);
+  }
 
   delete[] stateOut;
   delete[] fluxOut;
