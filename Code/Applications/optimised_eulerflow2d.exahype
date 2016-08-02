@@ -7,10 +7,7 @@
  */
 exahype-project  Euler2d
 
-  peano-path                 = ./Peano/peano
-  tarch-path                 = ./Peano/tarch
-  multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
-  sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
+  peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
   libxsmm-path               = ../libxsmm
   output-directory           = ./Applications/optimised_eulerflow2d

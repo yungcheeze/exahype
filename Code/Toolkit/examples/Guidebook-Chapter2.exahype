@@ -8,10 +8,7 @@
  */
 exahype-project MyEuler
 
-  peano-path                 = ./Peano/peano
-  tarch-path                 = ./Peano/tarch
-  multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
-  sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
+  peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
   output-directory           = ./Applications/guidebook-chapter-2
   architecture               = noarch

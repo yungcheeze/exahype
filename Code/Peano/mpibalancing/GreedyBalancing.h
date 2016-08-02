@@ -170,9 +170,9 @@ class mpibalancing::GreedyBalancing: public peano::parallel::loadbalancing::Orac
      */
     static bool                 _forkHasFailed;
 
-    const int                   _coarsestRegularInnerAndOuterGridLevel;
-
     const int                   _coarsestLevelWithRealWork;
+
+    const int                   _coarsestRegularInnerAndOuterGridLevel;
 
     std::map<int,int>           _workersLevel;
 

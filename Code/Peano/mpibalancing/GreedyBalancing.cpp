@@ -38,7 +38,9 @@ void mpibalancing::GreedyBalancing::receivedStartCommand( const int commandFromM
 
 
 int mpibalancing::GreedyBalancing::getCommandForWorker( int workerRank, bool forkIsAllowed, bool joinIsAllowed ) {
-  logTraceInWith4Arguments( "getCommandForWorker(int,bool)", workerRank, forkIsAllowed, joinIsAllowed, _joinsAllowed );
+  // @todo(Dominic->Tobias): I removed _joinsAllowed from the logTrace...(...)
+  logTraceInWith3Arguments( "getCommandForWorker(int,bool)", workerRank, forkIsAllowed, joinIsAllowed);
+
 
   if (_workersLevel.count(workerRank)==1) {
     const int workersLevel = _workersLevel.count(workerRank);
