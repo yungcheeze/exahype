@@ -114,6 +114,68 @@ void exahype::mappings::VolumeIntegral::mergeWithWorkerThread(
 }
 #endif
 
+void exahype::mappings::VolumeIntegral::enterCell(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  logTraceInWith4Arguments("enterCell(...)", fineGridCell,
+                           fineGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfCell);
+
+  if (fineGridCell.isInitialised()) {
+    const int numberOfADERDGCellDescriptions = static_cast<int>(
+        ADERDGCellDescriptionHeap::getInstance()
+            .getData(fineGridCell.getCellDescriptionsIndex())
+            .size());
+
+    // please use a different UserDefined per mapping/event
+    const peano::datatraversal::autotuning::MethodTrace methodTrace =
+        peano::datatraversal::autotuning::UserDefined9;
+    const int grainSize =
+        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+            numberOfADERDGCellDescriptions, methodTrace);
+    pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
+        records::ADERDGCellDescription& p =
+            ADERDGCellDescriptionHeap::getInstance().getData(
+                fineGridCell.getCellDescriptionsIndex())[i];
+
+    exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+        exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
+
+    double* lduh = 0;
+    double* lFhi = 0;
+
+    switch (p.getType()) {
+      case exahype::records::ADERDGCellDescription::Cell:
+        assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
+        lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
+        lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
+
+        assertionEquals(lduh[0], lduh[0]);  // assert no nan
+        assertionEquals(lFhi[0], lFhi[0]);  // assert no nan
+
+        solver->volumeIntegral(lduh, lFhi,
+                               fineGridVerticesEnumerator.getCellSize());
+
+        assertionEquals(lduh[0], lduh[0]);  // assert no nan
+        break;
+      default:
+        break;
+    }
+    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
+        .parallelSectionHasTerminated(methodTrace);
+  }
+
+  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
+}
+
+//
+// Below all methods are nop.
+//
+
 void exahype::mappings::VolumeIntegral::createHangingVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -317,65 +379,6 @@ void exahype::mappings::VolumeIntegral::touchVertexLastTime(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
   // do nothing
-}
-
-void exahype::mappings::VolumeIntegral::enterCell(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-                           fineGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfCell);
-
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getCellDescriptionsIndex())) {
-    const int numberOfADERDGCellDescriptions = static_cast<int>(
-        ADERDGCellDescriptionHeap::getInstance()
-            .getData(fineGridCell.getCellDescriptionsIndex())
-            .size());
-
-    // please use a different UserDefined per mapping/event
-    const peano::datatraversal::autotuning::MethodTrace methodTrace =
-        peano::datatraversal::autotuning::UserDefined9;
-    const int grainSize =
-        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-            numberOfADERDGCellDescriptions, methodTrace);
-    pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-        records::ADERDGCellDescription& p =
-            ADERDGCellDescriptionHeap::getInstance().getData(
-                fineGridCell.getCellDescriptionsIndex())[i];
-
-    exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
-        exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
-
-    double* lduh = 0;
-    double* lFhi = 0;
-
-    switch (p.getType()) {
-      case exahype::records::ADERDGCellDescription::Cell:
-        assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
-        lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
-        lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
-
-        assertionEquals(lduh[0], lduh[0]);  // assert no nan
-        assertionEquals(lFhi[0], lFhi[0]);  // assert no nan
-
-        solver->volumeIntegral(lduh, lFhi,
-                               fineGridVerticesEnumerator.getCellSize());
-
-        assertionEquals(lduh[0], lduh[0]);  // assert no nan
-        break;
-      default:
-        break;
-    }
-    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-        .parallelSectionHasTerminated(methodTrace);
-  }
-
-  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
 void exahype::mappings::VolumeIntegral::leaveCell(

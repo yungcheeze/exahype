@@ -329,8 +329,7 @@ void exahype::mappings::RiemannSolverReset::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getCellDescriptionsIndex())) {
+  if (fineGridCell.isInitialised()) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
         ADERDGCellDescriptionHeap::getInstance()
             .getData(fineGridCell.getCellDescriptionsIndex())
