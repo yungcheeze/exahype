@@ -89,7 +89,7 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
         new mpibalancing::GreedyBalancing(1,3)
       );
     }
-    else if ( configuration.find( "global_hotspot" )!=std::string::npos ) {
+    else if ( configuration.find( "hotspot" )!=std::string::npos ) {
       logInfo("initDistributedMemoryConfiguration()", "use global hotspot elimination without joins (mpibalancing/StaticBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
         new mpibalancing::StaticBalancing(false)
