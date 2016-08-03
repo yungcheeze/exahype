@@ -136,6 +136,7 @@ void GenericEulerKernelTest::testSolutionUpdate() {
       luh, ::exahype::tests::testdata::generic_euler::testSolutionUpdate::lduh,
       dt,
       5,  // getNumberOfVariables(),
+      0,  // getNumberOfParameters
       4   // getNodesPerCoordinateAxis()
       );
 
@@ -517,6 +518,7 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
         ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi,
         dx[0],
         5,  // getNumberOfVariables(),
+        0,  // getNumberOfParameters
         4   // getNodesPerCoordinateAxis()
         );
 
@@ -548,7 +550,8 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
     // output:
     double *lduh = new double[80];  // intentionally left uninitialised
 
-    kernels::aderdg::generic::c::volumeIntegralLinear(lduh, lFhi, dx[0], 5, 4);
+    kernels::aderdg::generic::c::volumeIntegralLinear(lduh, lFhi, dx[0], 5, 0,
+                                                      4);
 
     for (int i = 0; i < 80; i++) {
       validateNumericalEqualsWithEpsWithParams1(

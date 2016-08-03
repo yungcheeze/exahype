@@ -156,6 +156,7 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
 
   kernels::aderdg::generic::c::volumeIntegralLinear(lduh, lFhi, dx,
                                                     5,  // numberOfVariables
+                                                    0,  // numberOfParameters
                                                     4   // basisSize
                                                     );
 
@@ -407,7 +408,8 @@ void GenericEulerKernelTest::testSolutionUpdate() {
   }
 
   kernels::aderdg::generic::c::solutionUpdate(luh, lduh, dt,
-                                              5,  // getNumberOfVariables(),
+                                              5,  // getNumberOfVariables()
+                                              0,  // getNumberOfParameters()
                                               4   // getNodesPerCoordinateAxis()
                                               );
 

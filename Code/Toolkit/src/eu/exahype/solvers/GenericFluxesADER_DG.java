@@ -73,7 +73,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
       writer.write("  _profiler->start(\"solutionUpdate\");\n");
     }
     writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
-        + "::solutionUpdate( luh, lduh, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        + "::solutionUpdate( luh, lduh, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"solutionUpdate\");\n");
     }

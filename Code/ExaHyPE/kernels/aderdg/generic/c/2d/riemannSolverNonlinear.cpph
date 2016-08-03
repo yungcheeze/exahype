@@ -11,99 +11,88 @@
  * For the full license text, see LICENSE.txt
  **/
 
-// #include "../Kernels.h"
+// included in ../../Kernels.h
 
-// #include "string.h"
-
-// #include "tarch/la/Scalar.h"
-// #include "tarch/la/ScalarOperations.h"
-
-// #include "kernels/GaussLegendreQuadrature.h"
-// #include "kernels/DGMatrices.h"
-
-// #define EXAHYPE_CFL_FACTOR 0.9
-
-// #include <fstream>
-
-// using std::endl;
-// using std::cout;
-
+#include <algorithm>
 #include <cassert>
+#include <cmath>
+#include <cstring>
 
-// todo change template parameter in header and generator
-// template <void PDEFlux2d(const double * const Q, double * f, double * g)>
+#include "../../../../KernelUtils.h"
+
+namespace kernels {
+namespace aderdg {
+namespace generic {
+namespace c {
+
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda)>
-void kernels::aderdg::generic::c::riemannSolverNonlinear(
-    double* FL, double* FR, const double* const QL, const double* const QR,
-    const double dt, const int normalNonZero, const int numberOfVariables,
-    const int numberOfParameters, const int basisSize) {
-  // TODO(guera): Fix and remove
-  assert(numberOfParameters == 0 &&
-         "numberOfParameters has to be 0 at the moment");
-
-  double* QavL = new double[numberOfVariables];
-  double* QavR = new double[numberOfVariables];
-  double* lambdaL = new double[numberOfVariables];
-  double* lambdaR = new double[numberOfVariables];
+void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
+                            const double* const QR, const double dt,
+                            const int normalNonZero,
+                            const int numberOfVariables,
+                            const int numberOfParameters, const int basisSize) {
+  const int order = basisSize - 1;
 
   // Compute the average states from the left and the right, which we need to
   // compute the numerical dissipation
-  memset((double*)QavL, 0, numberOfVariables * sizeof(double));
-  memset((double*)QavR, 0, numberOfVariables * sizeof(double));
+  double* QavL = new double[numberOfVariables];
+  double* QavR = new double[numberOfVariables];
+  {
+    idx2 idx_QLR(basisSize, numberOfVariables);
+    std::memset(QavL, 0, numberOfVariables * sizeof(double));
+    std::memset(QavR, 0, numberOfVariables * sizeof(double));
+    for (int j = 0; j < basisSize; j++) {
+      const double weight = kernels::gaussLegendreWeights[order][j];
 
-  for (int ii = 0; ii < basisSize; ii++) {  // loop over dof
-    const int nodeIndex = ii;
-    const int dofStartIndex = nodeIndex * numberOfVariables;
-
-    double weight = kernels::gaussLegendreWeights[basisSize - 1][ii];
-
-    for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-      QavL[ivar] += weight * QL[dofStartIndex + ivar];
-      QavR[ivar] += weight * QR[dofStartIndex + ivar];
+      for (int k = 0; k < numberOfVariables; k++) {
+        QavL[k] += weight * QL[idx_QLR(j, k)];
+        QavR[k] += weight * QR[idx_QLR(j, k)];
+      }
     }
   }
-  //
+
+  double* LL = new double[numberOfVariables];
+  double* LR = new double[numberOfVariables];
+  PDEEigenvalues(QavL, normalNonZero, LL);
+  PDEEigenvalues(QavR, normalNonZero, LR);
+
   // Here, we implement a very simple Rusanov scheme with scalar dissipation
   // (smax*Id).
   // We can change this into a more sophisticated Osher or HLLEM Riemann solver
-  // whenever needed.
-  //
-  PDEEigenvalues(QavL, normalNonZero, lambdaL);
-  PDEEigenvalues(QavR, normalNonZero, lambdaR);
+  // whenever needed!
+  std::transform(LL, LL + numberOfVariables, LL,
+                 [](double d) { return std::abs(d); });
+  std::transform(LR, LR + numberOfVariables, LR,
+                 [](double d) { return std::abs(d); });
+  const double* smax_L = std::max_element(LL, LL + numberOfVariables);
+  const double* smax_R = std::max_element(LR, LR + numberOfVariables);
+  const double smax = std::max(*smax_L, *smax_R);
 
-  double sMax = 0;
-  for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-    sMax = std::max(sMax, std::max(fabs(lambdaL[ivar]), fabs(lambdaR[ivar])));
-  }
-  //
   // We now compute the numerical flux. Note that the scheme is at the moment
-  // written in
-  // CONSERVATION FORM => no fluctuations, but real fluxes.
-  // Later, this will be converted into the left and right fluctuations.
-  //
-  for (int ii = 0; ii < basisSize; ii++) {  // loop over dof
-    const int nodeIndex = ii;
-    const int dofStartIndex = nodeIndex * numberOfVariables;
+  // written in CONSERVATION FORM => no fluctuations, but real fluxes. Later,
+  // this will be converted into the left and right fluctuations.
 
-    // sum can only be done if all contributions are up
-    for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-      FL[dofStartIndex + ivar] =
-          0.5 * (FL[dofStartIndex + ivar] + FR[dofStartIndex + ivar]) -
-          0.5 * sMax * (QR[dofStartIndex + ivar] - QL[dofStartIndex + ivar]);
-
-      FR[dofStartIndex + ivar] = FL[dofStartIndex + ivar];
+  {
+    idx2 idx_FQLR(basisSize, numberOfVariables);
+    for (int j = 0; j < basisSize; j++) {
+      // Avoid diffusion of parameters
+      for (int k = 0; k < numberOfVariables - numberOfParameters; k++) {
+        FL[idx_FQLR(j, k)] =
+            0.5 * (FR[idx_FQLR(j, k)] + FL[idx_FQLR(j, k)]) -
+            0.5 * smax * (QR[idx_FQLR(j, k)] - QL[idx_FQLR(j, k)]);
+        FR[idx_FQLR(j, k)] = FL[idx_FQLR(j, k)];
+      }
     }
   }
-  //  // @todo 04/02/16:Dominic Etienne Charrier
-  //  // for debugging purposes
-  //  int _errors = 0;
-  //  bool _error = false;
-  //  std::cout << "sMax" << sMax << std::endl;
-  //  validateNumericalEqualsWithEps(sMax, 1.18321595661992, 1e-10);
 
   delete[] QavL;
   delete[] QavR;
-  delete[] lambdaL;
-  delete[] lambdaR;
+  delete[] LL;
+  delete[] LR;
 }
+
+}  // namespace c
+}  // namespace generic
+}  // namespace aderdg
+}  // namespace kernels
