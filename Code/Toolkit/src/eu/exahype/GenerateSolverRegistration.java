@@ -100,7 +100,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _writer.write("#include \"" + _solverName + ".h\"\n");
 
-//      _methodBodyWriter.write("  {\n"); // why do we need this?
+      _methodBodyWriter.write("  {\n");
       
       writeProfilerCreation();
 
@@ -109,7 +109,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     		                  "::" + _solverName + "("+order+"+1, parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)));\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
-//      _methodBodyWriter.write("  }\n"); // why do we need this?
+  
+      _methodBodyWriter.write("  }\n");
       
       _kernelNumber++;
       _plotterNumber = 0;
@@ -129,7 +130,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       
       _writer.write("#include \"" + _solverName + ".h\"\n");
 
-      _methodBodyWriter.write("  {\n");
+      _methodBodyWriter.write("  {\n"); // why do we need this?
       
       writeProfilerCreation();
 
@@ -138,7 +139,9 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
     		                  "::" + _solverName + "("+patchSize+", parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)));\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
-      _methodBodyWriter.write("  }\n");
+      
+      _methodBodyWriter.write("  }\n"); // why do we need this?
+      
       _kernelNumber++;
       _plotterNumber = 0;
 
