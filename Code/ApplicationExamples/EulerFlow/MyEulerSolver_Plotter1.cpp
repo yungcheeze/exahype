@@ -94,8 +94,8 @@ void MyEulerSolver_Plotter1::mapQuantities(
 	// now do the convergence test, as we have exact initial data
 	double Exact[nVars];
 	// TODO: Need a way to access _data in tarch::la::Vector.
-	double xpos[3];
-	for(int i=0; i<3; i++) xpos[i] = x[i];
+	double xpos[DIMENSIONS];
+	for(int i=0; i<DIMENSIONS; i++) xpos[i] = x[i];
 	
 	ShuVortex2D(xpos, Exact, time);
 
