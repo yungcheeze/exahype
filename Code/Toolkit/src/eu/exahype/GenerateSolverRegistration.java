@@ -99,8 +99,6 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       int order         = Integer.parseInt(node.getOrder().getText());
 
       _writer.write("#include \"" + _solverName + ".h\"\n");
-
-      _methodBodyWriter.write("  {\n");
       
       writeProfilerCreation();
 
