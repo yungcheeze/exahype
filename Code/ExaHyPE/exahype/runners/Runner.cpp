@@ -21,6 +21,7 @@
 
 #include "tarch/parallel/Node.h"
 #include "tarch/parallel/NodePool.h"
+#include "tarch/parallel/FCFSNodePoolStrategy.h"
 
 #include "tarch/multicore/Core.h"
 #include "tarch/multicore/MulticoreDefinitions.h"
@@ -30,9 +31,9 @@
 #include "peano/parallel/SendReceiveBufferPool.h"
 #include "peano/parallel/loadbalancing/Oracle.h"
 #include "peano/parallel/loadbalancing/OracleForOnePhaseWithGreedyPartitioning.h"
-#include "tarch/parallel/FCFSNodePoolStrategy.h"
 
 #include "peano/geometry/Hexahedron.h"
+
 #include "peano/utils/UserInterface.h"
 
 #include "peano/datatraversal/autotuning/Oracle.h"
@@ -41,9 +42,12 @@
 #include "sharedmemoryoracles/OracleForOnePhaseWithGrainSizeSampling.h"
 #include "sharedmemoryoracles/OracleForOnePhaseWithShrinkingGrainSize.h"
 
+#include "mpibalancing/GreedyBalancing.h"
+#include "mpibalancing/StaticBalancing.h"
+
 #include "exahype/plotters/Plotter.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
 
 tarch::logging::Log exahype::runners::Runner::_log("exahype::runners::Runner");
 
@@ -52,6 +56,7 @@ exahype::runners::Runner::Runner(const Parser& parser) : _parser(parser) {}
 exahype::runners::Runner::~Runner() {}
 
 void exahype::runners::Runner::initDistributedMemoryConfiguration() {
+  #ifdef Parallel
   std::string configuration = _parser.getMPIConfiguration();
   if (_parser.getMPILoadBalancingType()==Parser::MPILoadBalancingType::Static) {
     if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
@@ -79,9 +84,15 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
     }
 
     if ( configuration.find( "greedy" )!=std::string::npos ) {
-      logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins");
+      logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins (mpibalancing/GreedyBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-        new peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning(false)
+        new mpibalancing::GreedyBalancing(1,3)
+      );
+    }
+    else if ( configuration.find( "hotspot" )!=std::string::npos ) {
+      logInfo("initDistributedMemoryConfiguration()", "use global hotspot elimination without joins (mpibalancing/StaticBalancing)");
+      peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
+        new mpibalancing::StaticBalancing(false)
       );
     }
     else {
@@ -104,13 +115,15 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
   peano::parallel::SendReceiveBufferPool::getInstance().setBufferSize(bufferSize);
   peano::parallel::JoinDataBufferPool::getInstance().setBufferSize(bufferSize);
   logInfo("initDistributedMemoryConfiguration()", "use MPI buffer size of " << bufferSize);
+  #endif
 }
 
 
 void exahype::runners::Runner::shutdownDistributedMemoryConfiguration() {
+  #ifdef Parallel
   tarch::parallel::NodePool::getInstance().terminate();
-  exahype::repositories::RepositoryFactory::getInstance()
-      .shutdownAllParallelDatatypes();
+  exahype::repositories::RepositoryFactory::getInstance().shutdownAllParallelDatatypes();
+  #endif
 }
 
 void exahype::runners::Runner::initSharedMemoryConfiguration() {
@@ -188,7 +201,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
   // Geometry is static as we need it survive the whole simulation time.
   static peano::geometry::Hexahedron geometry(
     _parser.getDomainSize(),
-    tarch::la::Vector<DIMENSIONS, double>(_parser.getOffset()));
+    _parser.getOffset());
 
   logDebug(
     "run(...)",
@@ -196,10 +209,19 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
     " of width/size " << _parser.getDomainSize() <<
     ". bounding box has size " << _parser.getBoundingBoxSize() );
 
+  #ifdef Parallel
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
     geometry,
-    tarch::la::Vector<DIMENSIONS, double>(_parser.getBoundingBoxSize()),
-    tarch::la::Vector<DIMENSIONS, double>(_parser.getOffset()));
+    _parser.getBoundingBoxSize()*9.0/7.0,
+    _parser.getOffset()-1.0/7.0
+  );
+  #else
+  return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
+    geometry,
+    _parser.getBoundingBoxSize(),
+    _parser.getOffset()
+  );
+  #endif
 }
 
 
@@ -253,24 +275,38 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
    (!UseStationaryCriterion && !repository.getState().isGridBalanced())
   );
 
-  logInfo("runAsMaster()", "finished grid setup after " << gridSetupIterations << " iterations" );
+  logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
+
+  if (tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0) {
+    logWarning( "createGrid(Repository)", "there are still " << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes() << " ranks idle" )
+  }
 }
 
 
 int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& repository) {
   peano::utils::UserInterface::writeHeader();
 
+  initSolverTimeStamps();
   createGrid(repository);
 
-  //  NOTE: Only plot the tree in 2d. Otherwise the program will crash.
-  //  repository.switchToPlotAugmentedAMRGrid();
-  //  repository.iterate();
+  #if defined(Dim2) && defined(Asserts)
+  repository.switchToPlotAugmentedAMRGrid();
+  repository.iterate();
+  #endif
+
+  /*
+   * Set ADER-DG corrector time stamp and finite volumes time stamp.
+   * Compute ADER-DG corrector time step size implicitly and finite volumes time step size.
+   * (Implicitly means here that we set the predictor time step size but after the next newTimeStep(...)
+   * the corrector time step size is set as this predictor time step size.)
+   */
+  initSolverTimeStamps();
   repository.switchToSolutionAdjustmentAndGlobalTimeStepComputation();
   repository.iterate();
   #if defined(Debug) || defined(Asserts)
-  startNewTimeStep(-1,true);
+  startNewTimeStep(-1,true,true);
   #else
-  startNewTimeStep(-1,false);
+  startNewTimeStep(-1,true,false);
   #endif
 
   /*
@@ -291,7 +327,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    * Compute the current time step size of the next iteration.
    */
   bool plot = exahype::plotters::isAPlotterActive(
-      solvers::Solver::getMinSolverTimeStamp());
+      solvers::Solver::getMinSolverTimeStampOfAllSolvers());
   if (plot) {
     repository.switchToPredictorAndPlotAndGlobalTimeStepComputation();
   }
@@ -299,27 +335,38 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
     repository.switchToPredictorAndGlobalTimeStepComputation();
   }
   repository.iterate();
-  startNewTimeStep(0,true);
+
+  /*
+   * Set ADER-DG predictor time stamp and do not touch the finite volumes time stamp.
+   * Compute ADER-DG predictor time step size and do not touch finite volumes time step size.
+   */
+  startNewTimeStep(0,false,true);
 
   const double simulationEndTime = _parser.getSimulationEndTime();
   int n = 1;
 
-  while ((solvers::Solver::getMinSolverTimeStamp() < simulationEndTime) &&
-         tarch::la::greater(solvers::Solver::getMinSolverTimeStepSize(), 0.0)) {
+  logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers()); // change to log debug
+  logDebug("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
+
+  while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
+         tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
     bool plot = exahype::plotters::isAPlotterActive(
-        solvers::Solver::getMinSolverTimeStamp());
+        solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
     if (_parser.getFuseAlgorithmicSteps()) {
       runOneTimeStampWithFusedAlgorithmicSteps(repository, plot);
       recomputePredictorIfNecessary(repository,_parser.getFuseAlgorithmicStepsFactor());
-      startNewTimeStep(n,true);
+      startNewTimeStep(n,true,true);
     } else {
       runOneTimeStampWithFourSeparateAlgorithmicSteps(repository, plot);
-      startNewTimeStep(n,true);
+      startNewTimeStep(n,true,true);
     }
 
     n++;
     logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
+  }
+  if ( tarch::la::equals(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
+    logWarning("runAsMaster(...)","Minimum solver time step size is zero (up to machine precision).");
   }
 
   repository.logIterationStatistics(true);
@@ -330,27 +377,33 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
 void exahype::runners::Runner::initSolverTimeStamps() {
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    p->setMinPredictorTimeStamp(
-        0.0);
-    p->setMinCorrectorTimeStamp(
-        0.0);
+    p->initInitialTimeStamp(0.0);
   }
 }
 
-void exahype::runners::Runner::startNewTimeStep(int n,bool printInfo) {
+void exahype::runners::Runner::initFiniteVolumesSolverTimeStamps() {
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    if (p->getType()==exahype::solvers::Solver::Type::FiniteVolumes) {
+      p->initInitialTimeStamp(0.0);
+    }
+  }
+}
+
+void exahype::runners::Runner::startNewTimeStep(int n,bool startNewFiniteVolumesTimeStep,bool printInfo) {
   double currentMinTimeStamp = std::numeric_limits<double>::max();
   double currentMinTimeStepSize = std::numeric_limits<double>::max();
   double nextMinTimeStepSize = std::numeric_limits<double>::max();
 
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    p->startNewTimeStep();
-
+    if (startNewFiniteVolumesTimeStep || p->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+      p->startNewTimeStep();
+    }
     currentMinTimeStamp =
-        std::min(currentMinTimeStamp, p->getMinCorrectorTimeStamp());
+        std::min(currentMinTimeStamp, p->getMinTimeStamp());
     currentMinTimeStepSize =
-        std::min(currentMinTimeStepSize, p->getMinCorrectorTimeStepSize());
+        std::min(currentMinTimeStepSize, p->getMinTimeStepSize());
     nextMinTimeStepSize =
-        std::min(nextMinTimeStepSize, p->getMinPredictorTimeStepSize());
+        std::min(nextMinTimeStepSize, p->getNextMinTimeStepSize());
   }
 
   if (printInfo) {
@@ -360,8 +413,8 @@ void exahype::runners::Runner::startNewTimeStep(int n,bool printInfo) {
     logInfo("startNewTimeStep(...)",
             "\t\t dt_min         =" << currentMinTimeStepSize);
 
-    logInfo("startNewTimeStep(...)",
-            "\t\t next dt_min    =" << nextMinTimeStepSize);
+    logDebug("startNewTimeStep(...)",
+            "\t\t next dt_min    =" << nextMinTimeStepSize); // only interesting for ADER-DG. Prints MAX_DOUBLE for finite volumes.
   }
 #if defined(Debug) || defined(Asserts)
   tarch::logging::CommandLineLogger::getInstance()
@@ -403,22 +456,26 @@ bool exahype::runners::Runner::
   bool cflConditionWasViolated = false;
 
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    bool solverTimeStepSizeIsInstable = (p->getMinPredictorTimeStepSize() >
-                                         p->getMinNextPredictorTimeStepSize());
+    if (p->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+        bool solverTimeStepSizeIsInstable =
+          static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinPredictorTimeStepSize()
+          >
+          static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinNextPredictorTimeStepSize();
 
-    if (solverTimeStepSizeIsInstable) {
-      p->updateMinNextPredictorTimeStepSize(
-          factor * p->getMinNextPredictorTimeStepSize());
-      p->setMinPredictorTimeStepSize(
-          factor * p->getMinPredictorTimeStepSize());
-    } else {
-      p->updateMinNextPredictorTimeStepSize(
-          .5 * (p->getMinPredictorTimeStepSize() +
-                p->getMinNextPredictorTimeStepSize()));
+        if (solverTimeStepSizeIsInstable) {
+          static_cast<exahype::solvers::ADERDGSolver*>(p)->updateMinNextPredictorTimeStepSize(
+              factor * static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinNextPredictorTimeStepSize());
+          static_cast<exahype::solvers::ADERDGSolver*>(p)->setMinPredictorTimeStepSize(
+              factor * static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinPredictorTimeStepSize());
+        } else {
+          static_cast<exahype::solvers::ADERDGSolver*>(p)->updateMinNextPredictorTimeStepSize(
+              .5 * (static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinPredictorTimeStepSize() +
+                  static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinNextPredictorTimeStepSize()));
+        }
+
+        cflConditionWasViolated =
+            cflConditionWasViolated | solverTimeStepSizeIsInstable;
     }
-
-    cflConditionWasViolated =
-        cflConditionWasViolated | solverTimeStepSizeIsInstable;
   }
 
   return cflConditionWasViolated;  // | tooDiffusive;
@@ -444,28 +501,13 @@ void exahype::runners::Runner::recomputePredictorIfNecessary(
 void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(
     exahype::repositories::Repository& repository, bool plot) {
   // Only one time step (predictor vs. corrector) is used in this case.
-  repository.switchToFaceDataExchange();  // Riemann -> face2face
+  repository.switchToRiemannSolver();  // Riemann -> face2face
   repository.iterate();
-  repository.switchToCorrector();  // Face to cell
-  repository.iterate();
-
-//  int gridSetupIterations = 0;
-//  repository.switchToAugmentedAMRGrid();
-//  do {
-//    repository.iterate();
-//    gridSetupIterations++;
-//  } while (!repository.getState().isGridBalanced());
-//  repository.iterate();
-//  gridSetupIterations++;
-//
-//  logInfo("runAsMaster()",
-//          "grid setup iterations=" << gridSetupIterations << ", max-level="
-//          << repository.getState().getMaxLevel());
 
   if (plot) {
-    repository.switchToPlotAndGlobalTimeStepComputation();  // Inside cell
+    repository.switchToCorrectorAndPlot();  // Face to cell + Inside cell
   } else {
-    repository.switchToGlobalTimeStepComputation();  // Inside cell
+    repository.switchToCorrector();  // Face to cell + Inside cell
   }
   repository.iterate();
 

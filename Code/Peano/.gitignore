@@ -5,3 +5,4 @@ files.mk
 .cvsignore
 peano.doxygen-configuration
 src.doxys
+/sharedmemoryoracles.tar.gz

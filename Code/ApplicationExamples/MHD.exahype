@@ -1,0 +1,67 @@
+/**
+
+ Ideal Special Relativistic Magnetohydrodynamics.
+ A custom ExaHype Kernel written in Fortran,
+ currently only 3D,
+ provided by Olindo and modified by Sven.
+
+ Started 17. June, 2016.
+ Based on srhd3dfortran.exahype
+
+ */
+exahype-project  MHDSolver
+
+  peano-kernel-path          = ./Peano
+  exahype-path               = ./ExaHyPE
+  output-directory           = ./Applications/MHD/
+  architecture               = noarch
+
+  computational-domain
+    dimension                = 2
+/*    width                    = 6.283185307179586 */
+    width = 6.283185307179586, 6.283185307179586, 6.283185307179586
+    offset                   = 0.0, 0.0, 0.0
+    end-time                 = 0.8
+  end computational-domain
+
+
+
+  shared-memory
+    identifier               = dummy
+    cores                    = 30
+    properties-file          = sharedmemory.properties
+  end shared-memory
+
+  distributed-memory
+    identifier               = static_load_balancing
+    configure                = {greedy,FCFS}
+    buffer-size              = 64
+    timeout                  = 120
+  end distributed-memory
+
+  optimisation
+    fuse-algorithmic-steps        = on
+    fuse-algorithmic-steps-factor = 0.99
+  end optimisation
+
+  solver ADER-DG MHDSolver
+    variables          = 9
+    parameters         = 0
+    order              = 3
+    /* 27 grid points: 0.2327 */
+    maximum-mesh-size  = 0.24
+    time-stepping      = global
+    kernel             = generic::fluxes::nonlinear
+    /* we are using the new Fortran interface */
+    language           = C
+
+    plot vtk::Cartesian::binary
+      variables= 9
+      time     = 0.0
+      repeat   = 0.005
+      output   = ./solution
+      select   = {}
+    end plot
+  end solver
+
+end exahype-project

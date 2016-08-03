@@ -81,7 +81,17 @@ class exahype::runners::Runner {
 #endif
 
   void initSolverTimeStamps();
-  void startNewTimeStep(int n,bool printInfo);
+  void initFiniteVolumesSolverTimeStamps();
+
+
+  /**
+   * Starts a new time step for all registered solvers.
+   *
+   * \param n                             The time step.
+   * \param startNewFiniteVolumesTimeStep Update the finite volumes time stamp and time step size.
+   * \param printInfo                     Print information on minimum solver time step size and minimum solver time stamp.
+   */
+  void startNewTimeStep(int n,bool startNewFiniteVolumesTimeStep,bool printInfo);
 
   /**
    * Do one time step where all phases are actually fused into one traversal

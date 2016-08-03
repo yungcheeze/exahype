@@ -7,10 +7,7 @@
  */
 exahype-project  Euler2d
 
-  peano-path                 = ./Peano/peano
-  tarch-path                 = ./Peano/tarch
-  multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
-  sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
+  peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
   output-directory           = ./Applications/eulerflow2d
   architecture               = noarch
@@ -44,16 +41,17 @@ exahype-project  Euler2d
     variables          = 5
     parameters         = 0
     order              = 3
-    maximum-mesh-size  = 0.05
+    maximum-mesh-size  = 0.2
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     language           = C
 
-    plot vtk::ascii
-      time     = 0.0
-      repeat   = 0.05
-      output   = ./solution
-      select   = {all}
+    plot vtk::Cartesian::ascii
+      variables = 5
+      time      = 0.0
+      repeat    = 0.05
+      output    = ./solution
+      select    = {}
     end plot
   end solver
 

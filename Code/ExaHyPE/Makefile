@@ -55,7 +55,7 @@ COMPILER_LFLAGS=
 ifeq ($(call tolower,$(MODE)),release)
   # Settings for the Release mode
   # ----------------------------------------------
-  COMPILER_CFLAGS += -O3
+  COMPILER_CFLAGS += 
   COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),debug)
@@ -73,8 +73,8 @@ else ifeq ($(call tolower,$(MODE)),profile)
 else ifeq ($(call tolower,$(MODE)),asserts)
   # Settings for the Adderst mode
   # --------------------------------------------
-  COMPILER_CFLAGS += -DAsserts -p -pg
-  COMPILER_LFLAGS += -p -pg
+  COMPILER_CFLAGS += -DAsserts -g
+  COMPILER_LFLAGS += -g
 
 else
   # Option not recognized
@@ -142,12 +142,16 @@ endif
 #
 # Special options for all "non-Debug" builds
 ifneq ($(call tolower,$(MODE)),debug)
-
   ifeq ($(call tolower,$(COMPILER)),intel)
     # Settings for the Intel compiler
     # ----------------------------------------------
+    ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
+    COMPILER_CFLAGS += -O3 -fno-rtti -no-ipo -ip
+    COMPILER_LFLAGS +=
+    else
     COMPILER_CFLAGS += -fast -fno-rtti -no-ipo -ip
     COMPILER_LFLAGS +=
+    endif
 
     #Special options
     ifeq ($(call tolower,$(ARCHITECTURE)),cpu)
@@ -252,12 +256,6 @@ LL=$(CC)
 COBJECTS=$(CSOURCES:.cpp=.o)
 FOBJECTS=$(FSOURCES:.f90=.o)
 
-ifneq (,$(findstring Yes, $(MIXEDLANG) ))
-	LINK_FORTRAN+=typesDef.o
-else
-	LINK_FORTRAN=
-endif
-
 all: header build
 
 buildinfo:
@@ -266,28 +264,24 @@ buildinfo:
 cfiles.mk:
 	touch cfiles.mk
 	echo -n CSOURCES= > cfiles.mk
-	find -H $(PEANO_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
-	find -H $(TARCH_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
-	find -H $(MULTISCALELINKEDCELL_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
-	find -H $(SHAREDMEMORYORACLES_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
-	find -H $(EXAHYPE_PATH) -name '*.cpp' -not -path $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran/*'  | tr '\n' ' ' >> cfiles.mk
-ifneq (,$(findstring Yes, $(MIXEDLANG) ))
-	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.cpp'  | tr '\n' ' ' >> cfiles.mk
-endif
+	find -H $(PEANO_KERNEL_PEANO_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -H $(PEANO_KERNEL_TARCH_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -H $(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -H $(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -H $(PEANO_TOOLBOX_MPI_BLANCING_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
+	find -H $(EXAHYPE_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 	find -H $(PROJECT_PATH) -name '*.cpp' | tr '\n' ' ' >> cfiles.mk
 
-doFortran:
-ifneq (,$(findstring Yes, $(MIXEDLANG) ))
-	$(FC) $(FCOMPILER_CFLAGS) -c typesDef.f90
-endif
-
-ffiles.mk: | doFortran
-ifneq (,$(findstring Yes, $(MIXEDLANG) ))
+ffiles.mk:
 	touch ffiles.mk
 	echo -n FSOURCES= > ffiles.mk
-	find -H . -name '*.f90'  -not -path './typesDef.f90' | tr '\n' ' ' >> ffiles.mk
-	find -H $(EXAHYPE_PATH)'/kernels/aderdg/generic/fortran' -name '*.f90' | tr '\n' ' ' >> ffiles.mk
-endif
+	find -H . -name '*.f90' | tr '\n' ' ' >> ffiles.mk
+	# instead, compile modules already a first time now to circumvent dependency problems.
+	FMODULES := $(shell find -H . -name '*.f90' | xargs awk 'BEGIN{IGNORECASE = 1}!/^\s+!/ && (/module/) {print FILENAME; nextfile}')
+
+	ifneq( $(FMODULES), )
+		$(FC) $(FCOMPILER_CFLAGS) -c $(FMODULES)
+	endif
 
 header:
 	@echo ================================
@@ -300,9 +294,17 @@ header:
 	@echo Horizon 2020 research and innovation programme under grant
 	@echo agreement No 671698 \(ExaHyPE\). It is based upon the PDE
 	@echo framework Peano \(www.peano-framework.org\).
+	@echo 
+	@echo ================================
+	@echo "Building ExaHyPE with options:"
+	@echo ================================
+	@echo "COMPILER       | $(COMPILER)"
+	@echo "MODE           | $(MODE)"
+	@echo "SHAREDMEM      | $(SHAREDMEM)"
+	@echo "DISTRIBUTEDMEM | $(DISTRIBUTEDMEM)"
+	@echo ================================
 
-
-build: buildinfo ffiles.mk $(FOBJECTS) cfiles.mk $(COBJECTS)
+build: ffiles.mk $(FOBJECTS) cfiles.mk $(COBJECTS)
 	$(LL) $(COBJECTS) $(FOBJECTS) $(LINK_FORTRAN) -o $(EXECUTABLE) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)
 	@echo
 	@echo build of ExaHyPE successful
@@ -322,7 +324,8 @@ clean:
 
 
 $(COBJECTS): %.o : %.cpp
-	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH)  -I$(PEANO_PATH)/.. -I$(TARCH_PATH)/.. -I$(MULTISCALELINKEDCELL_PATH)/.. -I$(SHAREDMEMORYORACLES_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
+	$(CC) $(PROJECT_CFLAGS) $(COMPILER_CFLAGS) $(SYSTEM_CFLAGS) -I$(PROJECT_PATH) -I$(PEANO_TOOLBOX_MPI_BLANCING_PATH)/.. -I$(PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH)/.. -I$(PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH)/.. -I$(PEANO_KERNEL_PEANO_PATH)/.. -I$(PEANO_KERNEL_TARCH_PATH)/.. -I$(EXAHYPE_PATH) -I$(PROJECT_PATH)  -c $< -o $@
+
 
 $(FOBJECTS): %.o : %.f90
 	$(FC) $(FCOMPILER_CFLAGS) -c $< -o $@

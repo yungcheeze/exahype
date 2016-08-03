@@ -25,14 +25,6 @@ minOrder = 0;
 minDim   = 2;
 maxDim   = 3;
 
-# width of the vector unit, the export uses only double precision, hence:
-# architecture    SIMD_SIZE
-#    wsm            2
-#    snb            4
-#    hsw            4
-#    knl            8
-SIMD_SIZE = 4
-
 # for a matrix-matrix multiplication C = A *B
 # the row count of the matrix A has to be a multiple
 # of the SIMD_SIZE. This is achieved through padding
@@ -59,14 +51,6 @@ for fileName in os.listdir(outputDirectory):
 # one for each padding scheme
 filename=outputDirectory+"/matrices.cpp"
 filename2=outputDirectory+"/gausPoints.cpp"
-
-# file setup
-with open(filename,"a+") as out:
-    out.write("#include \"EulerFlow/dg/DGMatrices.h\" \n\n")
-out.close
-with open(filename2,"a+") as out2:
-    out2.write("#include \"EulerFlow/dg/DGMatrices.h\" \n\n")
-out2.close
 
 
 # we process one order after another
@@ -111,20 +95,13 @@ while (order <= maxOrder):
 ###############################################################################
     Kxi  = assembleStiffnessMatrix(xGPN, wGPN, order)
 #    Kxi2 = assembleStiffnessMatrixShorter(xGPN, wGPN, order)
-#    
-#    for j in range(0, order+1):
-#        for i in range(0, order+1):
-#            print (Kxi[i][j] - Kxi2[i][j])
 
-    #                (data, n,      m,       name,  aligned?, namespace, output file)
-    #writeMatrixToFile(Kxi, order+1, order+1, "Kxi", True, "exahype::dg::", filename)
     writeMatrixLookupTableInitToFile( out,"",Kxi,order+1,order+1,"Kxi[%d]" % order );
-#    writeMatrixLookupTableInitToFile( out,"",np.transpose(Kxi),order+1,order+1,"Kxi_transposed[%d]" % order);
 
 ###############################################################################
 # Mass matrix
 ###############################################################################
-#    MM = assembleMassMatrix(xGPN, wGPN, order)
+    MM = assembleMassMatrix(xGPN, wGPN, order)
     #writeMatrixToFile(MM, order+1, order+1, "MM", filename)
 
 
@@ -155,11 +132,17 @@ while (order <= maxOrder):
     writeVectorLookupTableInitToFile(out, "", FRCoeff, order+1, "FRCoeff[%d]" % order)
     writeMatrixLookupTableInitToFile(out, "", FCoeff, 2, order+1, "FCoeff[%d]" % order)
 
+
+###############################################################################
+# Derivative Matrix
+###############################################################################
+    dudx = assembleDiscreteDerivativeOperator(MM, Kxi)
+    writeMatrixLookupTableInitToFile(out,"",dudx,order+1,order+1,"dudx[%d]" % order)
+
 ###############################################################################
 # Equidistant grid projectors
 ###############################################################################
-##    dudx = assembleDiscreteDerivativeOperator(MM, Kxi)
-##    writeMatrixToFile(dudx, order+1, order+1, "dudx", True, "exahype::dg::", filename)
+
     # dim == 2 only
 #    subOutputMatrix  = assembleSubOutputMatrix(xGPN, order, dim)
 #    subOutputMatrix2 = assembleEquidistantGridProjector2d(xGPN, order, dim)    

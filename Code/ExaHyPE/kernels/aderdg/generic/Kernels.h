@@ -43,6 +43,48 @@
   (face * MbasisSize * MbasisSize * Mvar + Mvar * a + Mvar * MbasisSize * b + \
    var)
 
+/** Computes a 1-d node index.
+  * The brackets around \p ix allow to write
+  * idx1(ix+ox,...), where ox is some offset.
+  */
+#define nidx1(ix) \
+  numberOfVariables * (ix)
+
+/** Computes a 2-d node index.
+  * The brackets around \p ix and \p iy allow to write
+  * idx1(ix+ox, iy+oy,...), where ox and oy are some offsets.
+  */
+#define nidx2(ix, iy) \
+  numberOfVariables * (basisSize * (iy) + ix)
+
+/** Computes a 3-d node index.
+  * The brackets around \p ix, \p iy, and \p iz allow to write
+  * idx1(ix+ox, iy+oy, iz+oz,...), where ox, oy and oz are some offsets.
+  */
+#define nidx3(ix, iy, iz) \
+  numberOfVariables * (basisSize2 * (iz) + basisSize * (iy) + ix)
+
+/** Computes a 1-d index.
+  * The brackets around \p ix allow to write
+  * idx1(ix+ox,...), where ox is some offset.
+  */
+#define idx1(ix, ivar) \
+  numberOfVariables * (ix) + (ivar)
+
+/** Computes a 2-d index.
+  * The brackets around \p ix and \p iy allow to write
+  * idx1(ix+ox, iy+oy,...), where ox and oy are some offsets.
+  */
+#define idx2(ix, iy, ivar) \
+  numberOfVariables * (basisSize * (iy) + ix) + ivar
+
+/** Computes a 3-d index.
+  * The brackets around \p ix, \p iy, and \p iz allow to write
+  * idx1(ix+ox, iy+oy, iz+oz,...), where ox, oy and oz are some offsets.
+  */
+#define idx3(ix, iy, iz, ivar) \
+  numberOfVariables * (basisSize2 * (iz) + basisSize * (iy) + ix) + ivar
+
 // todo Dominic Etienne Charrier
 // Possibly redundant definition of face indices
 // see exahype/solvers/Solver.h
@@ -204,6 +246,18 @@ void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
                             const int normalNonZero,
                             const int numberOfVariables, const int basisSize);
 
+template <void PDEBoundaryConditions(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut)>
+void boundaryConditions(double* fluxOut,
+                        double* stateOut,
+                        const double* const fluxIn,
+                        const double* const stateIn,
+                        const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+                        const tarch::la::Vector<DIMENSIONS,double>& cellSize,
+                        const double t,const double dt,
+                        const int faceIndex,
+                        const int normalNonZero,
+                        const int numberOfVariables, const int basisSize);
+
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
@@ -250,6 +304,7 @@ void volumeUnknownsRestriction(
 #include "kernels/aderdg/generic/c/2d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/c/2d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/2d/stableTimeStepSize.cpph"
+#include "kernels/aderdg/generic/c/2d/boundaryConditions.cpph"
 #elif DIMENSIONS == 3
 #include "kernels/aderdg/generic/c/3d/riemannSolverLinear.cpph"
 #include "kernels/aderdg/generic/c/3d/riemannSolverNonlinear.cpph"
@@ -257,176 +312,8 @@ void volumeUnknownsRestriction(
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/3d/stableTimeStepSize.cpph"
+#include "kernels/aderdg/generic/c/3d/boundaryConditions.cpph"
 #endif
 
-namespace kernels {
-namespace aderdg {
-namespace generic {
-namespace fortran {
 
-// @todo Dominic Etienne Charrier
-// Inconsistent ordering of inout and in arguments for
-// template argument functions and non-template argument function.
-template <void PDEFlux(const double* const Q, double** F)>
-void spaceTimePredictorNonlinear(
-    double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
-    double* lFhbnd, const double* const luh,
-    const tarch::la::Vector<DIMENSIONS, double>& dx,
-    const double predictorTimeStepSize, const int numberOfVariables,
-    const int basisSize);
-
-// @todo Dominic Etienne Charrier
-// Inconsistent ordering of inout and in arguments for
-// template argument functions and non-template argument function.
-template <void PDENCP(const double* const Q, const double* const gradQ,
-                      double* BgradQ)>
-void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
-                              double* lFhi, double* lQhbnd, double* lFhbnd,
-                              const double* const luh,
-                              const tarch::la::Vector<DIMENSIONS, double>& dx,
-                              const double predictorTimeStepSize,
-                              const int numberOfVariables, const int basisSize);
-
-/**
- * (At the moment, we always evaluate the time averaged space-time
- * predictor unknowns.)
- * todo docu
- */
-void predictor(double* lQhi, double* lFhi, const double* const lQi,
-               const double* const lFi, const double predictorTimeStepSize,
-               const int numberOfVariables, const int basisSize);
-
-/**
- * @todo Dominic Etienne Charrier
- * This is just a "parent" function that
- * invokes the function going by the same
- * name 2*dim times.
- */
-void extrapolatedPredictor(double* lQhbnd, double* lFhbnd,
-                           const double* const lQhi, const double* const lFhi,
-                           const double predictorTimeStepSize,
-                           const int numberOfVariables, const int basisSize);
-
-// todo Dominic Etienne Charrier:
-// The DIMENSIONS depending mesh size vector enables overloading at the moment.
-// If we replace it by scalar mesh size, we have to add a template argument "int
-// dim".
-
-void solutionUpdate(double* luh, const double* const lduh, const double dt,
-                    const int numberOfVariables, const int basisSize);
-
-void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
-                             const tarch::la::Vector<DIMENSIONS, double>& dx,
-                             const int numberOfVariables, const int basisSize);
-
-void volumeIntegralLinear(double* lduh, const double* const lFhi,
-                          const tarch::la::Vector<DIMENSIONS, double>& dx,
-                          const int numberOfVariables, const int basisSize);
-
-// todo 10/02/16: Dominic
-// Keep only one surfaceIntegral.
-void surfaceIntegralNonlinear(double* lduh, const double* const lFbnd,
-                              const tarch::la::Vector<DIMENSIONS, double>& dx,
-                              const int numberOfVariables, const int basisSize);
-
-void surfaceIntegralLinear(double* lduh, const double* const lFbnd,
-                           const tarch::la::Vector<DIMENSIONS, double>& dx,
-                           const int numberOfVariables, const int basisSize);
-
-/*void surfaceIntegral2(
-    double* lduh,
-    const double* const lFhbnd,
-    const tarch::la::Vector<DIMENSIONS,double>&  dx,
-    const int numberOfVariables,
-    const int basisSize
-);*/
-
-// @todo Dominic Etienne Charrier
-// Inconsistent ordering of inout and in arguments for
-// template argument functions and non-template argument function.
-template <void PDESolutionAdjustment(const double* const x, const double w,
-                                     const double t, const double dt,
-                                     double* Q)>
-void solutionAdjustment(double* luh,
-                        const tarch::la::Vector<DIMENSIONS, double>& center,
-                        const tarch::la::Vector<DIMENSIONS, double>& dx,
-                        const double t, const double dt,
-                        const int numberOfVariables, const int basisSize);
-
-// @todo Dominic Etienne Charrier
-// Inconsistent ordering of inout and in arguments
-// template argument functions and non-template argument function.
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
-void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
-                            const double* const QR, const double dt,
-                            const int normalNonZero,
-                            const int numberOfVariables, const int basisSize);
-
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda),
-          void PDEMatrixB(const double* const Q, const int normalNonZero,
-                          double* Bn)>
-void riemannSolverLinear(double* FL, double* FR, const double* const QL,
-                         const double* const QR, const double dt,
-                         const int normalNonZero, const int numberOfVariables,
-                         const int basisSize);
-
-// @todo Dominic Etienne Charrier
-// Inconsistent ordering of inout and in arguments for
-// template argument functions and non-template argument function.
-template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
-                              double* lambda)>
-double stableTimeStepSize(const double* const luh,
-                          const tarch::la::Vector<DIMENSIONS, double>& dx,
-                          const int numberOfVariables, const int basisSize);
-
-void faceUnknownsProlongation(
-    double* lQhbndFine, double* lFhbndFine, const double* lQhbndCoarse,
-    const double* lFhbndCoarse, const int coarseGridLevel,
-    const int fineGridLevel,
-    const tarch::la::Vector<DIMENSIONS - 1, int>& subfaceIndex,
-    const int numberOfVariables, const int basisSize);
-
-void faceUnknownsRestriction(
-    double* lQhbndCoarse, double* lFhbndCoarse, const double* lQhbndFine,
-    const double* lFhbndFine, const int coarseGridLevel,
-    const int fineGridLevel,
-    const tarch::la::Vector<DIMENSIONS - 1, int>& subfaceIndex,
-    const int numberOfVariables, const int basisSize);
-
-void volumeUnknownsProlongation(
-    double* luhFine, const double* luhCoarse, const int coarseGridLevel,
-    const int fineGridLevel,
-    const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
-    const int numberOfVariables, const int basisSize);
-
-void volumeUnknownsRestriction(
-    double* luhCoarse, const double* luhFine, const int coarseGridLevel,
-    const int fineGridLevel,
-    const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
-    const int numberOfVariables, const int basisSize);
-
-}  // namespace fortran
-}  // namespace generic
-}  // namespace aderdg
-}  // namespace kernels
-
-#if DIMENSIONS == 3
-#include "kernels/aderdg/generic/fortran/3d/riemannSolverLinear.cpph"
-#include "kernels/aderdg/generic/fortran/3d/riemannSolverNonlinear.cpph"
-#include "kernels/aderdg/generic/fortran/3d/solutionAdjustment.cpph"
-#include "kernels/aderdg/generic/fortran/3d/spaceTimePredictorLinear.cpph"
-#include "kernels/aderdg/generic/fortran/3d/spaceTimePredictorNonlinear.cpph"
-#include "kernels/aderdg/generic/fortran/3d/stableTimeStepSize.cpph"
-// #elif DIMENSIONS == 2
-// //@todo
-// #include "kernels/aderdg/generic/fortran/2d/solutionAdjustment.cpph"
-// #include "kernels/aderdg/generic/fortran/2d/stableTimeStepSize.cpph"
-// #include "kernels/aderdg/generic/fortran/2d/spaceTimePredictorNonlinear.cpph"
-// #include "kernels/aderdg/generic/fortran/2d/spaceTimePredictorLinear.cpph"
-// #include "kernels/aderdg/generic/fortran/2d/riemannSolverNonlinear.cpph"
-// #include "kernels/aderdg/generic/fortran/2d/riemannSolverLinear.cpph"
-#endif
-
-#endif
+#endif /* _EXAHYPE_KERNELS_ADERDG_GENERIC_PDEFLUXES_H_ */

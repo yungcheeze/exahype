@@ -7,55 +7,75 @@ import eu.exahype.node.APaths;
 public class DirectoryAndPathChecker extends DepthFirstAdapter {
   public Boolean valid = true;
 
-  protected java.io.File peanoPath;
-  protected java.io.File tarchPath;
-  protected java.io.File multiscalelinkedcellPath;
+  protected java.io.File peanoKernelPath;
+  protected java.io.File peanoToolboxPath;
   protected java.io.File exahypePath;
   protected java.io.File outputDirectory;
   protected java.io.File sharedMemoryOraclesPath;
 
   @Override
   public void inAPaths(APaths node) {
-    peanoPath = new java.io.File(node.getPeanoPath().getText());
-    tarchPath = new java.io.File(node.getTarchPath().getText());
-    multiscalelinkedcellPath = new java.io.File(node.getMultiscalelinkedcellPath().getText());
-    sharedMemoryOraclesPath = new java.io.File(node.getSharedmemoryoraclesPath().getText());
+    peanoKernelPath  = new java.io.File(node.getPeanoKernelPath().getText());
+    peanoToolboxPath = node.getPeanoKernelPath()==null ? peanoKernelPath : new java.io.File(node.getPeanoKernelPath().getText());
     exahypePath = new java.io.File(node.getExahypePath().getText());
     outputDirectory = new java.io.File(node.getOutputDirectory().getText());
 
-    System.out.print("Peano kernel path: " + peanoPath.getAbsolutePath());
-    if (peanoPath.isDirectory()) {
+    System.out.print("Peano kernel path: " + peanoKernelPath.getAbsolutePath());
+    if (peanoKernelPath.isDirectory()) {
       System.out.println(" ... ok");
     } else {
       System.out.println(" ... not found");
       valid = false;
     }
 
-    System.out.print("Peano tarch path: " + tarchPath.getAbsolutePath());
-    if (tarchPath.isDirectory()) {
+    System.out.print("Peano kernel path " + peanoKernelPath.getAbsolutePath() + " holds peano sources");
+    if ((new java.io.File(peanoKernelPath.getAbsolutePath() + "/peano")).isDirectory()) {
+        System.out.println(" ... ok");
+      } else {
+        System.out.println(" ... not found");
+        valid = false;
+      }
+
+    System.out.print("Peano kernel path " + peanoKernelPath.getAbsolutePath() + " holds tarch sources");
+    if ((new java.io.File(peanoKernelPath.getAbsolutePath() + "/tarch")).isDirectory()) {
+        System.out.println(" ... ok");
+      } else {
+        System.out.println(" ... not found");
+        valid = false;
+      }
+
+    System.out.print("Peano toolboxes path: " + peanoToolboxPath.getAbsolutePath());
+    if (peanoToolboxPath.isDirectory()) {
       System.out.println(" ... ok");
     } else {
       System.out.println(" ... not found");
       valid = false;
     }
 
-    System.out.print(
-        "multiscalelinkecell (Peano toolbox) path: " + multiscalelinkedcellPath.getAbsolutePath());
-    if (multiscalelinkedcellPath.isDirectory()) {
-      System.out.println(" ... ok");
-    } else {
-      System.out.println(" ... not found");
-      valid = false;
-    }
+    System.out.print("Peano toolboxes path " + peanoToolboxPath.getAbsolutePath() + " holds multiscalelinkedcell sources");
+    if ((new java.io.File(peanoToolboxPath.getAbsolutePath() + "/multiscalelinkedcell")).isDirectory()) {
+        System.out.println(" ... ok");
+      } else {
+        System.out.println(" ... not found");
+        valid = false;
+      }
 
-    System.out.print(
-        "sharedmemoryoracles (Peano toolbox) path: " + sharedMemoryOraclesPath.getAbsolutePath());
-    if (multiscalelinkedcellPath.isDirectory()) {
-      System.out.println(" ... ok");
-    } else {
-      System.out.println(" ... not found");
-      valid = false;
-    }
+    System.out.print("Peano toolboxes path " + peanoToolboxPath.getAbsolutePath() + " holds sharedmemoryoracles sources");
+    if ((new java.io.File(peanoToolboxPath.getAbsolutePath() + "/sharedmemoryoracles")).isDirectory()) {
+        System.out.println(" ... ok");
+      } else {
+        System.out.println(" ... not found");
+        valid = false;
+      }
+
+    System.out.print("Peano toolboxes path " + peanoToolboxPath.getAbsolutePath() + " holds mpibalancing sources");
+    if ((new java.io.File(peanoToolboxPath.getAbsolutePath() + "/mpibalancing")).isDirectory()) {
+        System.out.println(" ... ok");
+      } else {
+        System.out.println(" ... not found");
+        valid = false;
+      }
+
   };
 
   @Override

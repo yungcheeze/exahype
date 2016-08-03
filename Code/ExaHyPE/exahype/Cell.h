@@ -18,15 +18,18 @@
 
 #include "exahype/records/Cell.h"
 #include "peano/grid/Cell.h"
+#include "peano/grid/VertexEnumerator.h"
 
 #include "exahype/records/ADERDGCellDescription.h"
+#include "exahype/records/FiniteVolumesCellDescription.h"
 #include "peano/heap/DoubleHeap.h"
 
 namespace exahype {
-class Cell;
+  class Cell;
 
-typedef peano::heap::PlainHeap<exahype::records::ADERDGCellDescription> ADERDGCellDescriptionHeap;
-typedef peano::heap::PlainDoubleHeap DataHeap;
+  typedef peano::heap::PlainHeap<exahype::records::ADERDGCellDescription>         ADERDGCellDescriptionHeap;
+  typedef peano::heap::PlainHeap<exahype::records::FiniteVolumesCellDescription>  FiniteVolumesCellDescriptionHeap;
+  typedef peano::heap::PlainDoubleHeap DataHeap;
 }
 
 /**
@@ -38,10 +41,21 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
 
   static tarch::logging::Log _log;
 
- public:
-  static const int InvalidCellDescriptionsIndex;
-  static const int ErasedCellDescriptionsIndex;
+  /**
+   * Each cell points to a series of cell descriptions. The array holding the
+   * series has to be stored on the heap and, consequently, initialised
+   * properly. This is done by create() while destroy() cleans up. Please note
+   * that you have to invoke create() once before you do anything with the cell
+   * at all. You should destroy() in return in the very end.
+   *
+   * The operation shows that each cell in the tree can theoretically hold a
+   * solver though only few do.
+   *
+   * This operation is used by addNewCellDescription().
+   */
+  void setupMetaData();
 
+ public:
   typedef struct {
     int parentIndex;
     tarch::la::Vector<DIMENSIONS, int> subcellIndex;
@@ -84,7 +98,10 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * routine is notably used by the automated adapters to derive adjacency
    * information on the cell level.
    */
-  int getADERDGCellDescriptionsIndex() const;
+  int getCellDescriptionsIndex() const;
+
+  int getNumberOfADERDGCellDescriptions() const;
+  int getNumberOfFiniteVolumeCellDescriptions() const;
 
   /**
    * Loads a ADERDGCellDescription associated
@@ -93,20 +110,18 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   inline exahype::records::ADERDGCellDescription& getADERDGCellDescription(
       int index) {
     return ADERDGCellDescriptionHeap::getInstance().getData(
-        getADERDGCellDescriptionsIndex())[index];
+        getCellDescriptionsIndex())[index];
   }
 
   /**
-   * Each cell points to a series of cell descriptions. The array holding the
-   * series has to be stored on the heap and, consequently, initialised
-   * properly. This is done by create() while destroy() cleans up. Please note
-   * that you have to invoke create() once before you do anything with the cell
-   * at all. You should destroy() in return in the very end.
-   *
-   * The operation shows that each cell in the tree can theoretically hold a
-   * solver though only few do.
+   * Loads a ADERDGCellDescription associated
+   * with this cell.
    */
-  void setupMetaData();
+  inline exahype::records::FiniteVolumesCellDescription& getFiniteVolumesCellDescription(
+      int index) {
+    return FiniteVolumesCellDescriptionHeap::getInstance().getData(
+        getCellDescriptionsIndex())[index];
+  }
 
   /**
    * @see setupMetaData()
@@ -116,13 +131,22 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   /**
    * todo docu
    *
-   * @pre setupMetaData() has to be called before.
+   * setupMetaData() is called if cell hasn't been properly initialised before.
    */
   void addNewCellDescription(
       const int solverNumber,
       const exahype::records::ADERDGCellDescription::Type cellType,
       const exahype::records::ADERDGCellDescription::RefinementEvent
           refinementEvent,
+      const int level, const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS, double>& size,
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
+
+  void addNewCellDescription(
+      const int solverNumber,
+      const exahype::records::FiniteVolumesCellDescription::Type cellType,
+//      const exahype::records::FiniteVolumesCellDescription::RefinementEvent
+//          refinementEvent,    @todo Dominic
       const int level, const int parentIndex,
       const tarch::la::Vector<DIMENSIONS, double>& size,
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre);
@@ -168,6 +192,19 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    */
   SubcellPosition computeSubcellPositionOfDescendant(
       const exahype::records::ADERDGCellDescription& pChild) const;
+
+  bool isInitialised() const;
+
+  /**
+   * This operation runs a dozen of assertions. It becomes nop if assertions
+   * are switched off.
+   */
+  void validateNoNansInADERDGSolver(
+    int                                  number,
+    exahype::Cell&                       fineGridCell,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    const std::string&                   methodTraceOfCaller
+  );
 };
 
 #endif

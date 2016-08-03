@@ -16,19 +16,21 @@
 #include "ADERDG2ProbeAscii.h"
 #include "ADERDG2VTKAscii.h"
 #include "ADERDG2VTKBinary.h"
+#include "FiniteVolumes2VTKAscii.h"
 #include "exahype/solvers/Solver.h"
 
 
 std::vector<exahype::plotters::Plotter*> exahype::plotters::RegisteredPlotters;
 
-tarch::logging::Log exahype::plotters::Plotter::_log(
-    "exahype::solvers::Plotter");
+tarch::logging::Log exahype::plotters::Plotter::_log( "exahype::solvers::Plotter" );
 
 
-exahype::plotters::Plotter::Plotter(int solver, int plotterCount,
-                                    const exahype::Parser& parser)
+exahype::plotters::Plotter::Plotter(
+  int solver, int plotterCount,
+  const exahype::Parser& parser, UserOnTheFlyPostProcessing* postProcessing)
     : _solver(solver),
       _identifier(parser.getIdentifierForPlotter(solver, plotterCount)),
+      _writtenUnknowns(parser.getUnknownsForPlotter(solver, plotterCount)),
       _time(parser.getFirstSnapshotTimeForPlotter(solver, plotterCount)),
       _repeat(parser.getRepeatTimeForPlotter(solver, plotterCount)),
       _filename(parser.getFilenameForPlotter(solver, plotterCount)),
@@ -57,38 +59,51 @@ exahype::plotters::Plotter::Plotter(int solver, int plotterCount,
        * not work for strings, so we map it onto an if-then-else cascade.
        */
       if (_identifier.compare( ADERDG2VTKAscii::getIdentifier() ) == 0) {
-        _device = new ADERDG2VTKAscii();
+        _device = new ADERDG2VTKAscii(postProcessing);
       }
+      else if (_identifier.compare( ADERDG2VTKBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2VTKBinary(postProcessing);
+      }
+      else if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2ProbeAscii(postProcessing);
+      }
+    break;
+    case exahype::solvers::Solver::Type::FiniteVolumes:
+      /**
+       * This is actually some kind of switch expression though switches do
+       * not work for strings, so we map it onto an if-then-else cascade.
+       */
+      if (_identifier.compare( FiniteVolumes2VTKAscii::getIdentifier() ) == 0) {
+        _device = new FiniteVolumes2VTKAscii(postProcessing);
+      }
+/*
       else if (_identifier.compare( ADERDG2VTKBinary::getIdentifier() ) == 0) {
         _device = new ADERDG2VTKBinary();
       }
       else if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
         _device = new ADERDG2ProbeAscii();
       }
-
-
-      if (_device==nullptr) {
-        logError(
-          "checkWetherSolverBecomesActive(double)",
-          "unknown plotter type "
-              << _identifier << " for "
-              << solvers::RegisteredSolvers[_solver]->getIdentifier()
-        );
-      }
-      else {
-        _device->init(
-            _filename,
-            // Internally, we always use the nodes per coordinate axis, i.e.,
-            // "order+1"
-            // Consider to pass the nodes per coordinate axis instead of the
-            // order
-            solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis() -
-            1,
-            solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
-            _select
-        );
-      }
+*/
     break;
+  }
+
+
+  if (_device!=nullptr) {
+    _device->init(
+        _filename,
+        solvers::RegisteredSolvers[_solver]->getNodesPerCoordinateAxis(),
+        solvers::RegisteredSolvers[_solver]->getNumberOfVariables(),
+        _writtenUnknowns,
+        _select
+    );
+  }
+  else {
+    logError(
+      "checkWetherSolverBecomesActive(double)",
+      "unknown plotter type "
+          << _identifier << " for "
+          << solvers::RegisteredSolvers[_solver]->getIdentifier()
+    );
   }
 }
 

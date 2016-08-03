@@ -229,8 +229,8 @@ class VolumeIntegralGenerator:
         # unroll outer loop
         for k in range(0, kmax):
             for j in range(0, self.m_config['nDof']):
-                l_dscalCode = Utils.generateDSCAL("kernels::aderdg::optimised::weights2["+str(i)+"]/dx[0]", 
-                                                "kernels::Kxi_T", 
+                l_dscalCode = Utils.generateDSCAL("weights2["+str(i)+"]/dx[0]",
+                                                "Kxi_T", 
                                                 "s_m", 
                                                 l_nElems)
                 l_sourceFile.write(l_dscalCode+"\n")
@@ -243,7 +243,7 @@ class VolumeIntegralGenerator:
                 l_sourceFile.write(
                     "    "+l_matmul_x.baseroutinename
                         +"(&lFhi["+str(l_baseAddr_lFhi_x + l_startAddr_lFhi_x)+"],"\
-                        "&kernels::s_m[0],"\
+                        "&s_m[0],"\
                         "&lduh["+str(l_startAddr_lduh)+"]);\n")
 
                 # y-direction
@@ -254,7 +254,7 @@ class VolumeIntegralGenerator:
                 l_sourceFile.write(
                     "    "+l_matmul_y.baseroutinename
                         +"(&lFhi["+str(l_baseAddr_lFhi_y + l_startAddr_lFhi_y)+"],"\
-                        "&kernels::s_m[0],"\
+                        "&s_m[0],"\
                         "&lduh["+str(l_startAddr_lduh)+"]);\n")
 
                 if(self.m_config['nDim'] >= 3):
@@ -265,7 +265,7 @@ class VolumeIntegralGenerator:
                                         + j * Backend.getSizeWithPadding(self.m_config['nVar'])*self.m_config['nDof']
                     l_sourceFile.write("    "+l_matmul_z.baseroutinename
                                             +"(&lFhi["+str(l_baseAddr_lFhi_z + l_startAddr_lFhi_z)+"],"\
-                                            "&kernels::s_m[0],"\
+                                            "&s_m[0],"\
                                             "&lduh["+str(l_startAddr_lduh)+"]);\n")
 
                 l_sourceFile.write("\n")

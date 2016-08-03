@@ -56,12 +56,6 @@ class exahype::mappings::RegularMesh {
   static tarch::logging::Log _log;
 
   /**
-   * The traversal counter is used (only on the global master) to decide
-   * how aggressive we may refine. See State::updateRegularInitialGridRefinementStrategy().
-   */
-  static int                 _traversalCounter;
-
-  /**
    * I use a copy of the state to determine whether I'm allowed to refine or not.
    */
   State _localState;

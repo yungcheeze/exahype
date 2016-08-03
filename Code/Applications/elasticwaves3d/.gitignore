@@ -1,9 +1,0 @@
-Makefile
-buildinfo.h
-cfiles.mk
-MyEulerSolver_generated.cpp
-KernelCalls.cpp
-typesDef.f90
-MyEulerSolver.h
-ExaHyPE-Euler3d
-

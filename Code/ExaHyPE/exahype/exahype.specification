@@ -3,13 +3,12 @@ component: ExaHyPE
 namespace: ::exahype
 
 heap-dastgen-file: ADERDGCellDescription.def
-//heap-dastgen-file: FVCellDescription.def
-// heap-dastgen-file: FusedADERDGCellDescription.def
+heap-dastgen-file: FiniteVolumesCellDescription.def
 
 vertex:
   dastgen-file: Vertex.def
-  read vector2PowD(int): ADERDGCellDescriptionsIndex
-  write vector2PowD(int): ADERDGCellDescriptionsIndex
+  read vector2PowD(int): CellDescriptionsIndex
+  write vector2PowD(int): CellDescriptionsIndex
   
 cell:
   dastgen-file: Cell.def
@@ -31,9 +30,6 @@ event-mapping: // -DEC: consider to move the computation of boundary extrapolate
   
 event-mapping:
   name: VolumeIntegral
-
-event-mapping:
-  name: RiemannSolverReset
 
 event-mapping:
   name: RiemannSolver
@@ -75,13 +71,14 @@ event-mapping:
   
 adapter:
   name: AugmentedAMRGrid
+  merge-with-user-defined-mapping: NewTimeStep        // (createInner/BoundaryVertex,enterCell,serial)
   merge-with-user-defined-mapping: RegularMesh        // (createInner/BoundaryVertex,enterCell,serial)
   merge-with-user-defined-mapping: MarkingForRefinement      // (enterCell,runconcurrently)
   merge-with-user-defined-mapping: Refinement                // (touchVertexLastTime,enterCell,serial)
   merge-with-user-defined-mapping: SolutionAdjustment        // (enterCell,runconcurrently)             
   merge-with-user-defined-mapping: MarkingForAugmentation    // (enterCell,runconcurrently)
   merge-with-user-defined-mapping: Augmentation              // (touchVertexLastTime,enterCell,serial)
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(ADERDGCellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)       
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)       
   
 adapter:
   name: PlotAugmentedAMRGrid
@@ -91,6 +88,7 @@ adapter:
 // Adapters for initialisation of time stepping
 adapter:
   name: SolutionAdjustmentAndGlobalTimeStepComputation
+  merge-with-user-defined-mapping: NewTimeStep
   merge-with-user-defined-mapping: SolutionAdjustment
   // needs current time step size
   merge-with-user-defined-mapping: GlobalTimeStepComputation
@@ -98,7 +96,6 @@ adapter:
 adapter:
   name: PredictorAndPlotAndGlobalTimeStepComputation
   merge-with-user-defined-mapping: NewTimeStep
-  merge-with-user-defined-mapping: RiemannSolverReset
   // needs current time step size
   merge-with-user-defined-mapping: SpaceTimePredictor // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: VolumeIntegral
@@ -109,7 +106,6 @@ adapter:
 adapter:
   name: PredictorAndGlobalTimeStepComputation
   merge-with-user-defined-mapping: NewTimeStep
-  merge-with-user-defined-mapping: RiemannSolverReset
   // needs current time step size
   merge-with-user-defined-mapping: SpaceTimePredictor // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: VolumeIntegral
@@ -121,7 +117,6 @@ adapter:
   name: ADERDGTimeStep
   // needs corrector time step size
   merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
-  merge-with-user-defined-mapping: RiemannSolverReset
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
   // needs predictor time step size
@@ -135,7 +130,6 @@ adapter:
   name: ADERDGTimeStepAndPlot
   // needs corrector time step size
   merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
-  merge-with-user-defined-mapping: RiemannSolverReset
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: Plot
@@ -145,28 +139,6 @@ adapter:
   merge-with-user-defined-mapping: GlobalTimeStepComputation
   merge-with-user-defined-mapping: FaceUnknownsProjection
  
-// Additional adapters for 4 phase time stepping
-adapter:
-  name: GlobalTimeStepComputation
-  merge-with-user-defined-mapping: GlobalTimeStepComputation
-  
-  
-adapter:
-  name: PlotAndGlobalTimeStepComputation
-  merge-with-user-defined-mapping: Plot
-  merge-with-user-defined-mapping: GlobalTimeStepComputation
-  
-
-adapter: 
-  name: FaceDataExchange
-  merge-with-user-defined-mapping: RiemannSolver
-
-adapter:
-  name: Predictor
-  merge-with-user-defined-mapping: SpaceTimePredictor 
-  merge-with-user-defined-mapping: VolumeIntegral
-  merge-with-user-defined-mapping: FaceUnknownsProjection
-
 /**
  * In a serial version, running the predictor is the same for optimistic time 
  * stepping and the non-fused algorithm. In the MPI case however a rerun in 
@@ -179,9 +151,32 @@ adapter:
   merge-with-user-defined-mapping: SpaceTimePredictor 
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: FaceUnknownsProjection
+ 
+// Additional adapters for 4 phase time stepping
+adapter: 
+  name: RiemannSolver
+  merge-with-user-defined-mapping: RiemannSolver
+
+adapter:
+  name: Predictor
+  merge-with-user-defined-mapping: SpaceTimePredictor 
+  merge-with-user-defined-mapping: VolumeIntegral
+  merge-with-user-defined-mapping: FaceUnknownsProjection
 
 adapter:
   name: Corrector
-  merge-with-user-defined-mapping: RiemannSolverReset
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
+
+adapter:
+  name: CorrectorAndPlot
+  merge-with-user-defined-mapping: SurfaceIntegral
+  merge-with-user-defined-mapping: SolutionUpdate
+  merge-with-user-defined-mapping: Plot
+  merge-with-user-defined-mapping: GlobalTimeStepComputation
+
+adapter:
+  name: Plot
+  merge-with-user-defined-mapping: Plot
+  

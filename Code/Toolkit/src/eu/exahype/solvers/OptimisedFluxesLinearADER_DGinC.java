@@ -111,6 +111,7 @@ public class OptimisedFluxesLinearADER_DGinC implements Solver {
     }
     writer.write("}\n");
     writer.write("\n\n\n");
+    // @todo boundaryConditions are missing
     writer.write("double " + projectName + "::" + solverName
         + "::stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
     if (_enableProfiler) {

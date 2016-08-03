@@ -17,7 +17,8 @@
 
 #include "peano/utils/Loop.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
+#include "exahype/solvers/FiniteVolumesSolver.h"
 #include "kernels/KernelCalls.h"
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
@@ -26,7 +27,7 @@
 
 #include "exahype/VertexOperations.h"
 
-#include <string>
+#include <cstring>
 
 /**
  * @todo Please tailor the parameters to your mapping's properties.
@@ -324,64 +325,54 @@ void exahype::mappings::FaceUnknownsProjection::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  // todo docu: Assumes top-down processing of the grid.
-
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getADERDGCellDescriptionsIndex())) {
-    const int numberOfADERDGCellDescriptions = static_cast<int>(
-        ADERDGCellDescriptionHeap::getInstance()
-            .getData(fineGridCell.getADERDGCellDescriptionsIndex())
-            .size());
+  if (fineGridCell.isInitialised()) {
+    const int numberOfADERDGCellDescriptions = fineGridCell.getNumberOfADERDGCellDescriptions();
     // please use a different UserDefined per mapping/event
-    const peano::datatraversal::autotuning::MethodTrace methodTrace =
-        peano::datatraversal::autotuning::UserDefined1;
-    const int grainSize =
-        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-            numberOfADERDGCellDescriptions, methodTrace);
+    const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined1;
+    const int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions, methodTrace);
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-        records::ADERDGCellDescription& pFine =
-            fineGridCell.getADERDGCellDescription(i);
-    exahype::solvers::Solver* solver =
-        exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
-    switch (pFine.getType()) {
-      case exahype::records::ADERDGCellDescription::Ancestor:
-        memset(DataHeap::getInstance().getData(pFine.getExtrapolatedPredictor()).data(), 0,
-               sizeof(double) * solver->getUnknownsPerCellBoundary());
-        memset(DataHeap::getInstance().getData(pFine.getFluctuation()).data(), 0,
-               sizeof(double) * solver->getUnknownsPerCellBoundary());
-        break;
-      default:
-        break;
-    }
+      records::ADERDGCellDescription& pFine = fineGridCell.getADERDGCellDescription(i);
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+        exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()]);
+      switch (pFine.getType()) {
+        case exahype::records::ADERDGCellDescription::Ancestor:
+          std::memset(DataHeap::getInstance().getData(pFine.getExtrapolatedPredictor()).data(), 0,
+                 sizeof(double) * solver->getUnknownsPerCellBoundary());
+          std::memset(DataHeap::getInstance().getData(pFine.getFluctuation()).data(), 0,
+                 sizeof(double) * solver->getUnknownsPerCellBoundary());
+          break;
+        default:
+          break;
+      }
 
-    // if we have at least one parent
-    if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(pFine.getParentIndex())) {
-      for (auto& pParent : ADERDGCellDescriptionHeap::getInstance().getData(pFine.getParentIndex())) {
-        exahype::Cell::SubcellPosition subcellPosition;
+      // if we have at least one parent
+      if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(pFine.getParentIndex())) {
+        for (auto& pParent : ADERDGCellDescriptionHeap::getInstance().getData(pFine.getParentIndex())) {
+          exahype::Cell::SubcellPosition subcellPosition;
 
-        if (pFine.getSolverNumber() == pParent.getSolverNumber()) {
-          switch (pFine.getType()) {
-            case exahype::records::ADERDGCellDescription::Descendant:
-              assertion1(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pFine.toString());
-              subcellPosition = fineGridCell.computeSubcellPositionOfDescendant(pFine);
+          if (pFine.getSolverNumber() == pParent.getSolverNumber()) {
+            switch (pFine.getType()) {
+              case exahype::records::ADERDGCellDescription::Descendant:
+                assertion1(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pFine.toString());
+                subcellPosition = fineGridCell.computeSubcellPositionOfDescendant(pFine);
 
-              prolongateFaceData(pFine, subcellPosition.parentIndex,
-                                 subcellPosition.subcellIndex);
+                prolongateADERDGFaceData(pFine, subcellPosition.parentIndex,
+                                   subcellPosition.subcellIndex);
 
-              break;
-            default:
-              break;
+                break;
+              default:
+                break;
+            }
           }
         }
       }
+      endpfor peano::datatraversal::autotuning::Oracle::getInstance()
+          .parallelSectionHasTerminated(methodTrace);
     }
-    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-        .parallelSectionHasTerminated(methodTrace);
-  }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
-void exahype::mappings::FaceUnknownsProjection::prolongateFaceData(
+void exahype::mappings::FaceUnknownsProjection::prolongateADERDGFaceData(
     const exahype::records::ADERDGCellDescription& cellDescription,
     const int parentIndex,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const {
@@ -412,7 +403,8 @@ void exahype::mappings::FaceUnknownsProjection::prolongateFaceData(
     if (subcellIndex[d] == 0) {
       const int faceIndex = 2 * d;
 
-      exahype::solvers::Solver* solver =exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+        exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
 
       const int numberOfFaceDof = solver->getUnknownsPerFace();
 
@@ -432,9 +424,8 @@ void exahype::mappings::FaceUnknownsProjection::prolongateFaceData(
     } else if (subcellIndex[d] == tarch::la::aPowI(levelDelta, 3) - 1) {
       const int faceIndex = 2 * d + 1;
 
-      exahype::solvers::Solver* solver =
-          exahype::solvers::RegisteredSolvers[cellDescription
-                                                  .getSolverNumber()];
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+          exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
 
       const int numberOfFaceDof = solver->getUnknownsPerFace();
 
@@ -450,6 +441,82 @@ void exahype::mappings::FaceUnknownsProjection::prolongateFaceData(
       solver->faceUnknownsProlongation(lQhbndFine, lFhbndFine, lQhbndCoarse,
                                        lFhbndCoarse, levelCoarse, levelFine,
                                        getSubfaceIndex(subcellIndex, d));
+    }
+  }
+}
+
+void exahype::mappings::FaceUnknownsProjection::prolongateFiniteVolumesFaceData(
+    const exahype::records::FiniteVolumesCellDescription& cellDescription,
+    const int parentIndex,
+    const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const {
+  // todo not dynamic with respect to the solver registry
+  assertion1(FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(parentIndex),
+             cellDescription.toString());
+
+  exahype::records::FiniteVolumesCellDescription& cellDescriptionParent =
+      FiniteVolumesCellDescriptionHeap::getInstance().getData(
+          parentIndex)[cellDescription.getSolverNumber()];
+
+  _parentOfDescendantFound += 1;
+
+  assertion(cellDescriptionParent.getSolverNumber() ==
+            cellDescription.getSolverNumber());
+//  assertion(cellDescriptionParent.getType() ==
+//                exahype::records::FiniteVolumesCellDescription::Cell ||
+//            cellDescriptionParent.getType() ==
+//                exahype::records::FiniteVolumesCellDescription::Descendant);
+
+  const int levelFine = cellDescription.getLevel();
+  const int levelCoarse = cellDescriptionParent.getLevel();
+  assertion(levelCoarse < levelFine);
+  const int levelDelta = levelFine - levelCoarse;
+
+  for (int d = 0; d < DIMENSIONS; ++d) {
+    // Check if cell is at "left" or "right" d face of parent
+    if (subcellIndex[d] == 0) {
+      const int faceIndex = 2 * d;
+
+      exahype::solvers::FiniteVolumesSolver* solver = static_cast<exahype::solvers::FiniteVolumesSolver*>(
+        exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
+
+
+      // todo @Dominic: implement !!!
+//      const int numberOfFaceDof = solver->getUnknownsPerFace();
+//
+//      double* lQhbndFine = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data() +
+//          (faceIndex * numberOfFaceDof);
+//      double* lFhbndFine = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
+//          (faceIndex * numberOfFaceDof);
+//      const double* lQhbndCoarse = DataHeap::getInstance().getData(cellDescriptionParent.getExtrapolatedPredictor()).data() +
+//          (faceIndex * numberOfFaceDof);
+//      const double* lFhbndCoarse = DataHeap::getInstance().getData(cellDescriptionParent.getFluctuation()).data() +
+//          (faceIndex * numberOfFaceDof);
+//
+//      solver->faceUnknownsProlongation(lQhbndFine, lFhbndFine, lQhbndCoarse,
+//                                       lFhbndCoarse, levelCoarse, levelFine,
+//                                       getSubfaceIndex(subcellIndex, d));
+
+    } else if (subcellIndex[d] == tarch::la::aPowI(levelDelta, 3) - 1) {
+      const int faceIndex = 2 * d + 1;
+
+      exahype::solvers::FiniteVolumesSolver* solver = static_cast<exahype::solvers::FiniteVolumesSolver*>(
+          exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
+
+      // todo implement
+//      const int numberOfFaceDof = solver->getUnknownsPerFace();
+//
+//      double* lQhbndFine = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data() +
+//           (faceIndex * numberOfFaceDof);
+//      double* lFhbndFine = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
+//           (faceIndex * numberOfFaceDof);
+//      const double* lQhbndCoarse = DataHeap::getInstance().getData(cellDescriptionParent.getExtrapolatedPredictor()).data() +
+//          (faceIndex * numberOfFaceDof);
+//      const double* lFhbndCoarse = DataHeap::getInstance().getData(cellDescriptionParent.getFluctuation()).data() +
+//          (faceIndex * numberOfFaceDof);
+//
+//      solver->faceUnknownsProlongation(lQhbndFine, lFhbndFine, lQhbndCoarse,
+//                                       lFhbndCoarse, levelCoarse, levelFine,
+//                                       getSubfaceIndex(subcellIndex, d));
     }
   }
 }
@@ -481,12 +548,10 @@ void exahype::mappings::FaceUnknownsProjection::leaveCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  // todo docu: Assumes bottom-up processing of the grid.
-
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          fineGridCell.getADERDGCellDescriptionsIndex())) {
+          fineGridCell.getCellDescriptionsIndex())) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
-        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex()).size());
+        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size());
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined10;
     const int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions, methodTrace);
@@ -504,7 +569,7 @@ void exahype::mappings::FaceUnknownsProjection::leaveCell(
             case exahype::records::ADERDGCellDescription::Ancestor:
               assertion1(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pFine.toString());
               subcellPosition = fineGridCell.computeSubcellPositionOfCellOrAncestor(pFine);
-              restrictFaceData(pFine,subcellPosition.parentIndex,subcellPosition.subcellIndex);
+              restrictADERDGFaceData(pFine,subcellPosition.parentIndex,subcellPosition.subcellIndex);
               break;
             default:
               break;
@@ -519,7 +584,7 @@ void exahype::mappings::FaceUnknownsProjection::leaveCell(
   logTraceOutWith1Argument("leaveCell(...)", fineGridCell);
 }
 
-void exahype::mappings::FaceUnknownsProjection::restrictFaceData(
+void exahype::mappings::FaceUnknownsProjection::restrictADERDGFaceData(
     const exahype::records::ADERDGCellDescription& cellDescription,
     const int parentIndex,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const {
@@ -546,7 +611,8 @@ void exahype::mappings::FaceUnknownsProjection::restrictFaceData(
       if (subcellIndex[d] == 0) {
         const int faceIndex = 2 * d;
 
-        exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
+        exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+          exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
 
         const int numberOfFaceDof = solver->getUnknownsPerFace();
 
@@ -567,7 +633,8 @@ void exahype::mappings::FaceUnknownsProjection::restrictFaceData(
       } else if (subcellIndex[d] == tarch::la::aPowI(levelDelta, 3) - 1) {
         const int faceIndex = 2 * d + 1;
 
-        exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
+        exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+          exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
 
         const int numberOfFaceDof = solver->getUnknownsPerFace();
 
@@ -589,6 +656,82 @@ void exahype::mappings::FaceUnknownsProjection::restrictFaceData(
   } else {
     _parentOfCellOrAncestorNotFound += 1;
   }
+}
+
+void exahype::mappings::FaceUnknownsProjection::restrictFiniteVolumesSolution(
+    const exahype::records::FiniteVolumesCellDescription& cellDescription,
+    const int parentIndex,
+    const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const {
+  // todo not dynamic with respect to the solver registry
+  assertion1(FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(parentIndex),
+             cellDescription.toString());
+
+  exahype::records::FiniteVolumesCellDescription& cellDescriptionParent =
+      FiniteVolumesCellDescriptionHeap::getInstance().getData(parentIndex)[cellDescription.getSolverNumber()];
+
+  assertion(cellDescriptionParent.getSolverNumber() == cellDescription.getSolverNumber());
+
+  // todo @Dominic: implement!!!
+
+  // Only do something if parent is an ancestor that holds data.
+//  if (cellDescriptionParent.getType() == exahype::records::FiniteVolumesCellDescription::Ancestor) {
+//    _parentOfCellOrAncestorFound += 1;
+//
+//    const int levelFine = cellDescription.getLevel();
+//    const int levelCoarse = cellDescriptionParent.getLevel();
+//    assertion(levelCoarse < levelFine);
+//    const int levelDelta = levelFine - levelCoarse;
+//
+//    for (int d = 0; d < DIMENSIONS; d++) {
+//      // Check if cell is at "left" or "right" d face of parent
+//      if (subcellIndex[d] == 0) {
+//        const int faceIndex = 2 * d;
+//
+//        exahype::solvers::FiniteVolumesSolver* solver = static_cast<exahype::solvers::FiniteVolumesSolver*>(
+//          exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
+//
+//        const int numberOfFaceDof = solver->getUnknownsPerFace();
+//
+//        const double* lQhbndFine = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data() +
+//            (faceIndex * numberOfFaceDof);
+//        const double* lFhbndFine =
+//            DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
+//            (faceIndex * numberOfFaceDof);
+//        double* lQhbndCoarse =DataHeap::getInstance().getData(cellDescriptionParent.getExtrapolatedPredictor()).data() +
+//            (faceIndex * numberOfFaceDof);
+//        double* lFhbndCoarse = DataHeap::getInstance().getData(cellDescriptionParent.getFluctuation()).data() +
+//            (faceIndex * numberOfFaceDof);
+//
+//        solver->faceUnknownsRestriction(lQhbndCoarse, lFhbndCoarse, lQhbndFine,
+//                                        lFhbndFine, levelCoarse, levelFine,
+//                                        getSubfaceIndex(subcellIndex, d));
+//
+//      } else if (subcellIndex[d] == tarch::la::aPowI(levelDelta, 3) - 1) {
+//        const int faceIndex = 2 * d + 1;
+//
+//        exahype::solvers::FiniteVolumesSolver* solver = static_cast<exahype::solvers::FiniteVolumesSolver*>(
+//          exahype::solvers::RegisteredSolvers[cellDescription.getSolverNumber()]);
+//
+//        const int numberOfFaceDof = solver->getUnknownsPerFace();
+//
+//        const double* lQhbndFine = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data() +
+//            (faceIndex * numberOfFaceDof);
+//        const double* lFhbndFine = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
+//            (faceIndex * numberOfFaceDof);
+//        double* lQhbndCoarse = DataHeap::getInstance().getData(cellDescriptionParent.getExtrapolatedPredictor()).data() +
+//            (faceIndex * numberOfFaceDof);
+//        double* lFhbndCoarse =
+//            DataHeap::getInstance().getData(cellDescriptionParent.getFluctuation()).data() +
+//            (faceIndex * numberOfFaceDof);
+//
+//        solver->faceUnknownsRestriction(lQhbndCoarse, lFhbndCoarse, lQhbndFine,
+//                                        lFhbndFine, levelCoarse, levelFine,
+//                                        getSubfaceIndex(subcellIndex, d));
+//      }
+//    }
+//  } else {
+//    _parentOfCellOrAncestorNotFound += 1;
+//  }
 }
 
 void exahype::mappings::FaceUnknownsProjection::beginIteration(

@@ -28,6 +28,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     writer.write(
         "    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
     writer.write("    static void flux(const double* const Q, double** F);\n");
+    writer.write("    static void boundaryValues(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut);\n");
     writer.write(
         "    static void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);\n");
 
@@ -122,6 +123,21 @@ public abstract class GenericFluxesADER_DG implements Solver {
     writer.write("}\n");
     writer.write("\n\n\n");
 
+    // boundaryConditions
+    writer.write("void " + projectName + "::" + solverName
+            + "::boundaryConditions(double* fluxOut,double* stateOut,const double* const fluxIn,const double* const stateIn,const tarch::la::Vector<DIMENSIONS, double>& cellCentre,const tarch::la::Vector<DIMENSIONS,double>& cellSize,const double t,const double dt,const int faceIndex,const int normalNonZero) {\n");
+    if (_enableProfiler) {
+        writer.write("  _profiler->start(\"boundaryConditions\");\n");
+    }
+    writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
+            + "::boundaryConditions<boundaryValues>"
+            + "( fluxOut, stateOut, fluxIn, stateIn, cellCentre, cellSize, t, dt, faceIndex, normalNonZero, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    if (_enableProfiler) {
+        writer.write("  _profiler->stop(\"boundaryConditions\");\n");
+    }
+    writer.write("}\n");
+    writer.write("\n\n\n");
+    
     writer.write("double " + projectName + "::" + solverName
         + "::stableTimeStepSize(const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx) {\n");
     if (_enableProfiler) {

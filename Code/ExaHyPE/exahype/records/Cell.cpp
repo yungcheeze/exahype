@@ -6,8 +6,8 @@
    }
    
    
-   exahype::records::Cell::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
-   _ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+   exahype::records::Cell::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
+   _CellDescriptionsIndex(CellDescriptionsIndex),
    _isInside(isInside),
    _state(state),
    _level(level),
@@ -25,13 +25,13 @@
    
    
    exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._cellIsAForkCandidate) {
+   _persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._cellIsAForkCandidate) {
       
    }
    
    
-   exahype::records::Cell::Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
-   _persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate) {
+   exahype::records::Cell::Cell(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
+   _persistentRecords(CellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate) {
       
    }
    
@@ -60,7 +60,7 @@
    
    void exahype::records::Cell::toString (std::ostream& out) const {
       out << "("; 
-      out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+      out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
       out << ",";
       out << "isInside:" << getIsInside();
       out << ",";
@@ -95,7 +95,7 @@
    
    exahype::records::CellPacked exahype::records::Cell::convert() const{
       return CellPacked(
-         getADERDGCellDescriptionsIndex(),
+         getCellDescriptionsIndex(),
          getIsInside(),
          getState(),
          getLevel(),
@@ -120,7 +120,7 @@
             
             const int Attributes = 6;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //ADERDGCellDescriptionsIndex
+               MPI_INT,		 //CellDescriptionsIndex
                MPI_CHAR,		 //isInside
                MPI_INT,		 //state
                MPI_INT,		 //level
@@ -129,7 +129,7 @@
             };
             
             int blocklen[Attributes] = {
-               1,		 //ADERDGCellDescriptionsIndex
+               1,		 //CellDescriptionsIndex
                1,		 //isInside
                1,		 //state
                1,		 //level
@@ -141,12 +141,12 @@
             
             MPI_Aint base;
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[5] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[5] );
             
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
@@ -163,7 +163,7 @@
             
             const int Attributes = 10;
             MPI_Datatype subtypes[Attributes] = {
-               MPI_INT,		 //ADERDGCellDescriptionsIndex
+               MPI_INT,		 //CellDescriptionsIndex
                MPI_CHAR,		 //isInside
                MPI_INT,		 //state
                MPI_INT,		 //level
@@ -176,7 +176,7 @@
             };
             
             int blocklen[Attributes] = {
-               1,		 //ADERDGCellDescriptionsIndex
+               1,		 //CellDescriptionsIndex
                1,		 //isInside
                1,		 //state
                1,		 //level
@@ -192,7 +192,7 @@
             
             MPI_Aint base;
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
@@ -201,7 +201,7 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._responsibleRank))), 		&disp[6] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[7] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[8] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[9] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[9] );
             
             for (int i=1; i<Attributes; i++) {
                assertion1( disp[i] > disp[i-1], i );
@@ -462,8 +462,8 @@ exahype::records::CellPacked::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
-_ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
+_CellDescriptionsIndex(CellDescriptionsIndex),
 _level(level),
 _accessNumber(accessNumber),
 _responsibleRank(responsibleRank),
@@ -493,7 +493,7 @@ exahype::records::CellPacked::CellPacked() {
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords.getCellIsAForkCandidate()) {
+_persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords.getCellIsAForkCandidate()) {
    if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
       std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
       std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -504,8 +504,8 @@ _persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRec
 }
 
 
-exahype::records::CellPacked::CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
-_persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate) {
+exahype::records::CellPacked::CellPacked(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
+_persistentRecords(CellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate) {
    if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
       std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
       std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -536,7 +536,7 @@ std::string exahype::records::CellPacked::toString() const {
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
    out << "("; 
-   out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+   out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
    out << ",";
    out << "isInside:" << getIsInside();
    out << ",";
@@ -571,7 +571,7 @@ exahype::records::CellPacked::PersistentRecords exahype::records::CellPacked::ge
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
    return Cell(
-      getADERDGCellDescriptionsIndex(),
+      getCellDescriptionsIndex(),
       getIsInside(),
       getState(),
       getLevel(),
@@ -596,7 +596,7 @@ exahype::records::Cell exahype::records::CellPacked::convert() const{
          
          const int Attributes = 5;
          MPI_Datatype subtypes[Attributes] = {
-            MPI_INT,		 //ADERDGCellDescriptionsIndex
+            MPI_INT,		 //CellDescriptionsIndex
             MPI_INT,		 //level
             MPI_CHAR,		 //subtreeHoldsWorker
             MPI_INT,		 //_packedRecords0
@@ -604,7 +604,7 @@ exahype::records::Cell exahype::records::CellPacked::convert() const{
          };
          
          int blocklen[Attributes] = {
-            1,		 //ADERDGCellDescriptionsIndex
+            1,		 //CellDescriptionsIndex
             1,		 //level
             1,		 //subtreeHoldsWorker
             1,		 //_packedRecords0
@@ -615,11 +615,11 @@ exahype::records::Cell exahype::records::CellPacked::convert() const{
          
          MPI_Aint base;
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[2] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[4] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[4] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -636,7 +636,7 @@ exahype::records::Cell exahype::records::CellPacked::convert() const{
          
          const int Attributes = 7;
          MPI_Datatype subtypes[Attributes] = {
-            MPI_INT,		 //ADERDGCellDescriptionsIndex
+            MPI_INT,		 //CellDescriptionsIndex
             MPI_INT,		 //level
             MPI_SHORT,		 //accessNumber
             MPI_INT,		 //responsibleRank
@@ -646,7 +646,7 @@ exahype::records::Cell exahype::records::CellPacked::convert() const{
          };
          
          int blocklen[Attributes] = {
-            1,		 //ADERDGCellDescriptionsIndex
+            1,		 //CellDescriptionsIndex
             1,		 //level
             DIMENSIONS_TIMES_TWO,		 //accessNumber
             1,		 //responsibleRank
@@ -659,13 +659,13 @@ exahype::records::Cell exahype::records::CellPacked::convert() const{
          
          MPI_Aint base;
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[3] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
          MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[5] );
-         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[6] );
+         MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[6] );
          
          for (int i=1; i<Attributes; i++) {
             assertion1( disp[i] > disp[i-1], i );
@@ -922,8 +922,8 @@ exahype::records::Cell::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Cell::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+exahype::records::Cell::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_CellDescriptionsIndex(CellDescriptionsIndex),
 _isInside(isInside),
 _state(state),
 _evenFlags(evenFlags),
@@ -942,13 +942,13 @@ exahype::records::Cell::Cell() {
 
 
 exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._cellIsAForkCandidate, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._cellIsAForkCandidate, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 
 }
 
 
-exahype::records::Cell::Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+exahype::records::Cell::Cell(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(CellDescriptionsIndex, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 
 }
 
@@ -977,7 +977,7 @@ return stringstr.str();
 
 void exahype::records::Cell::toString (std::ostream& out) const {
 out << "("; 
-out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -1014,7 +1014,7 @@ return _persistentRecords;
 
 exahype::records::CellPacked exahype::records::Cell::convert() const{
 return CellPacked(
-   getADERDGCellDescriptionsIndex(),
+   getCellDescriptionsIndex(),
    getIsInside(),
    getState(),
    getEvenFlags(),
@@ -1040,7 +1040,7 @@ void exahype::records::Cell::initDatatype() {
       
       const int Attributes = 5;
       MPI_Datatype subtypes[Attributes] = {
-         MPI_INT,		 //ADERDGCellDescriptionsIndex
+         MPI_INT,		 //CellDescriptionsIndex
          MPI_CHAR,		 //isInside
          MPI_INT,		 //state
          MPI_CHAR,		 //subtreeHoldsWorker
@@ -1048,7 +1048,7 @@ void exahype::records::Cell::initDatatype() {
       };
       
       int blocklen[Attributes] = {
-         1,		 //ADERDGCellDescriptionsIndex
+         1,		 //CellDescriptionsIndex
          1,		 //isInside
          1,		 //state
          1,		 //subtreeHoldsWorker
@@ -1059,11 +1059,11 @@ void exahype::records::Cell::initDatatype() {
       
       MPI_Aint base;
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[4] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[4] );
       
       for (int i=1; i<Attributes; i++) {
          assertion1( disp[i] > disp[i-1], i );
@@ -1080,7 +1080,7 @@ void exahype::records::Cell::initDatatype() {
       
       const int Attributes = 11;
       MPI_Datatype subtypes[Attributes] = {
-         MPI_INT,		 //ADERDGCellDescriptionsIndex
+         MPI_INT,		 //CellDescriptionsIndex
          MPI_CHAR,		 //isInside
          MPI_INT,		 //state
          MPI_INT,		 //evenFlags
@@ -1094,7 +1094,7 @@ void exahype::records::Cell::initDatatype() {
       };
       
       int blocklen[Attributes] = {
-         1,		 //ADERDGCellDescriptionsIndex
+         1,		 //CellDescriptionsIndex
          1,		 //isInside
          1,		 //state
          DIMENSIONS,		 //evenFlags
@@ -1111,7 +1111,7 @@ void exahype::records::Cell::initDatatype() {
       
       MPI_Aint base;
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[3] );
@@ -1121,7 +1121,7 @@ void exahype::records::Cell::initDatatype() {
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[7] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[8] );
       MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[9] );
-      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[10] );
+      MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[10] );
       
       for (int i=1; i<Attributes; i++) {
          assertion1( disp[i] > disp[i-1], i );
@@ -1382,8 +1382,8 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_CellDescriptionsIndex(CellDescriptionsIndex),
 _accessNumber(accessNumber),
 _responsibleRank(responsibleRank),
 _subtreeHoldsWorker(subtreeHoldsWorker),
@@ -1414,7 +1414,7 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords.getCellIsAForkCandidate(), persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords.getCellIsAForkCandidate(), persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -1425,8 +1425,8 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+exahype::records::CellPacked::CellPacked(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(CellDescriptionsIndex, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -1457,7 +1457,7 @@ return stringstr.str();
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -1494,7 +1494,7 @@ return _persistentRecords;
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
 return Cell(
-getADERDGCellDescriptionsIndex(),
+getCellDescriptionsIndex(),
 getIsInside(),
 getState(),
 getEvenFlags(),
@@ -1520,14 +1520,14 @@ void exahype::records::CellPacked::initDatatype() {
    
    const int Attributes = 4;
    MPI_Datatype subtypes[Attributes] = {
-      MPI_INT,		 //ADERDGCellDescriptionsIndex
+      MPI_INT,		 //CellDescriptionsIndex
       MPI_CHAR,		 //subtreeHoldsWorker
       MPI_INT,		 //_packedRecords0
       MPI_UB		 // end/displacement flag
    };
    
    int blocklen[Attributes] = {
-      1,		 //ADERDGCellDescriptionsIndex
+      1,		 //CellDescriptionsIndex
       1,		 //subtreeHoldsWorker
       1,		 //_packedRecords0
       1		 // end/displacement flag
@@ -1537,10 +1537,10 @@ void exahype::records::CellPacked::initDatatype() {
    
    MPI_Aint base;
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[1] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[3] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[3] );
    
    for (int i=1; i<Attributes; i++) {
       assertion1( disp[i] > disp[i-1], i );
@@ -1557,7 +1557,7 @@ void exahype::records::CellPacked::initDatatype() {
    
    const int Attributes = 8;
    MPI_Datatype subtypes[Attributes] = {
-      MPI_INT,		 //ADERDGCellDescriptionsIndex
+      MPI_INT,		 //CellDescriptionsIndex
       MPI_SHORT,		 //accessNumber
       MPI_INT,		 //responsibleRank
       MPI_CHAR,		 //subtreeHoldsWorker
@@ -1568,7 +1568,7 @@ void exahype::records::CellPacked::initDatatype() {
    };
    
    int blocklen[Attributes] = {
-      1,		 //ADERDGCellDescriptionsIndex
+      1,		 //CellDescriptionsIndex
       DIMENSIONS_TIMES_TWO,		 //accessNumber
       1,		 //responsibleRank
       1,		 //subtreeHoldsWorker
@@ -1582,14 +1582,14 @@ void exahype::records::CellPacked::initDatatype() {
    
    MPI_Aint base;
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[1] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[2] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[4] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[5] );
    MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[6] );
-   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[7] );
+   MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[7] );
    
    for (int i=1; i<Attributes; i++) {
       assertion1( disp[i] > disp[i-1], i );
@@ -1847,8 +1847,8 @@ exahype::records::Cell::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Cell::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+exahype::records::Cell::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_CellDescriptionsIndex(CellDescriptionsIndex),
 _isInside(isInside),
 _state(state),
 _level(level),
@@ -1865,13 +1865,13 @@ exahype::records::Cell::Cell() {
 
 
 exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 
 }
 
 
-exahype::records::Cell::Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+exahype::records::Cell::Cell(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(CellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 
 }
 
@@ -1900,7 +1900,7 @@ return stringstr.str();
 
 void exahype::records::Cell::toString (std::ostream& out) const {
 out << "("; 
-out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -1933,7 +1933,7 @@ return _persistentRecords;
 
 exahype::records::CellPacked exahype::records::Cell::convert() const{
 return CellPacked(
-getADERDGCellDescriptionsIndex(),
+getCellDescriptionsIndex(),
 getIsInside(),
 getState(),
 getLevel(),
@@ -1957,7 +1957,7 @@ Cell dummyCell[2];
 
 const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //level
@@ -1965,7 +1965,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //isInside
 1,		 //state
 1,		 //level
@@ -1976,11 +1976,11 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[4] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -1997,7 +1997,7 @@ Cell dummyCell[2];
 
 const int Attributes = 9;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //level
@@ -2009,7 +2009,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //isInside
 1,		 //state
 1,		 //level
@@ -2024,7 +2024,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
@@ -2032,7 +2032,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persiste
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[5] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[6] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[7] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[8] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[8] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -2293,8 +2293,8 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_CellDescriptionsIndex(CellDescriptionsIndex),
 _level(level),
 _accessNumber(accessNumber),
 _numberOfLoadsFromInputStream(numberOfLoadsFromInputStream),
@@ -2323,7 +2323,7 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -2334,8 +2334,8 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+exahype::records::CellPacked::CellPacked(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(CellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -2366,7 +2366,7 @@ return stringstr.str();
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -2399,7 +2399,7 @@ return _persistentRecords;
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
 return Cell(
-getADERDGCellDescriptionsIndex(),
+getCellDescriptionsIndex(),
 getIsInside(),
 getState(),
 getLevel(),
@@ -2423,14 +2423,14 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_INT,		 //level
 MPI_INT,		 //_packedRecords0
 MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //level
 1,		 //_packedRecords0
 1		 // end/displacement flag
@@ -2440,10 +2440,10 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[3] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -2460,7 +2460,7 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 7;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_INT,		 //level
 MPI_SHORT,		 //accessNumber
 MPI_INT,		 //numberOfLoadsFromInputStream
@@ -2470,7 +2470,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //level
 DIMENSIONS_TIMES_TWO,		 //accessNumber
 1,		 //numberOfLoadsFromInputStream
@@ -2483,13 +2483,13 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[4] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[5] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[6] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -2747,8 +2747,8 @@ exahype::records::Cell::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Cell::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+exahype::records::Cell::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_CellDescriptionsIndex(CellDescriptionsIndex),
 _isInside(isInside),
 _state(state),
 _level(level),
@@ -2768,13 +2768,13 @@ exahype::records::Cell::Cell() {
 
 
 exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._cellIsAForkCandidate, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._cellIsAForkCandidate, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 
 }
 
 
-exahype::records::Cell::Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+exahype::records::Cell::Cell(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(CellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 
 }
 
@@ -2803,7 +2803,7 @@ return stringstr.str();
 
 void exahype::records::Cell::toString (std::ostream& out) const {
 out << "("; 
-out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -2842,7 +2842,7 @@ return _persistentRecords;
 
 exahype::records::CellPacked exahype::records::Cell::convert() const{
 return CellPacked(
-getADERDGCellDescriptionsIndex(),
+getCellDescriptionsIndex(),
 getIsInside(),
 getState(),
 getLevel(),
@@ -2869,7 +2869,7 @@ Cell dummyCell[2];
 
 const int Attributes = 6;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //level
@@ -2878,7 +2878,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //isInside
 1,		 //state
 1,		 //level
@@ -2890,12 +2890,12 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[5] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -2912,7 +2912,7 @@ Cell dummyCell[2];
 
 const int Attributes = 12;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //level
@@ -2927,7 +2927,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //isInside
 1,		 //state
 1,		 //level
@@ -2945,7 +2945,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
@@ -2956,7 +2956,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persiste
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[8] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[9] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[10] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[11] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[11] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -3217,8 +3217,8 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_CellDescriptionsIndex(CellDescriptionsIndex),
 _level(level),
 _accessNumber(accessNumber),
 _responsibleRank(responsibleRank),
@@ -3250,7 +3250,7 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords.getCellIsAForkCandidate(), persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords.getCellIsAForkCandidate(), persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -3261,8 +3261,8 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+exahype::records::CellPacked::CellPacked(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(CellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -3293,7 +3293,7 @@ return stringstr.str();
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -3332,7 +3332,7 @@ return _persistentRecords;
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
 return Cell(
-getADERDGCellDescriptionsIndex(),
+getCellDescriptionsIndex(),
 getIsInside(),
 getState(),
 getLevel(),
@@ -3359,7 +3359,7 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_INT,		 //level
 MPI_CHAR,		 //subtreeHoldsWorker
 MPI_INT,		 //_packedRecords0
@@ -3367,7 +3367,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //level
 1,		 //subtreeHoldsWorker
 1,		 //_packedRecords0
@@ -3378,11 +3378,11 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[4] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -3399,7 +3399,7 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 9;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_INT,		 //level
 MPI_SHORT,		 //accessNumber
 MPI_INT,		 //responsibleRank
@@ -3411,7 +3411,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //level
 DIMENSIONS_TIMES_TWO,		 //accessNumber
 1,		 //responsibleRank
@@ -3426,7 +3426,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[3] );
@@ -3434,7 +3434,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._pe
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[5] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[6] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[7] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[8] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[8] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -3692,8 +3692,8 @@ exahype::records::Cell::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Cell::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+exahype::records::Cell::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_CellDescriptionsIndex(CellDescriptionsIndex),
 _isInside(isInside),
 _state(state),
 _evenFlags(evenFlags),
@@ -3707,13 +3707,13 @@ exahype::records::Cell::Cell() {
 
 
 exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber) {
+_persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber) {
 
 }
 
 
-exahype::records::Cell::Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, evenFlags, accessNumber) {
+exahype::records::Cell::Cell(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_persistentRecords(CellDescriptionsIndex, isInside, state, evenFlags, accessNumber) {
 
 }
 
@@ -3742,7 +3742,7 @@ return stringstr.str();
 
 void exahype::records::Cell::toString (std::ostream& out) const {
 out << "("; 
-out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -3769,7 +3769,7 @@ return _persistentRecords;
 
 exahype::records::CellPacked exahype::records::Cell::convert() const{
 return CellPacked(
-getADERDGCellDescriptionsIndex(),
+getCellDescriptionsIndex(),
 getIsInside(),
 getState(),
 getEvenFlags(),
@@ -3790,14 +3790,14 @@ Cell dummyCell[2];
 
 const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //isInside
 1,		 //state
 1		 // end/displacement flag
@@ -3807,10 +3807,10 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[3] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -3827,7 +3827,7 @@ Cell dummyCell[2];
 
 const int Attributes = 6;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //evenFlags
@@ -3836,7 +3836,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //isInside
 1,		 //state
 DIMENSIONS,		 //evenFlags
@@ -3848,12 +3848,12 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[5] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -4114,8 +4114,8 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_CellDescriptionsIndex(CellDescriptionsIndex),
 _accessNumber(accessNumber) {
 setIsInside(isInside);
 setState(state);
@@ -4141,7 +4141,7 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber) {
+_persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber) {
 if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -4152,8 +4152,8 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, evenFlags, accessNumber) {
+exahype::records::CellPacked::CellPacked(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_persistentRecords(CellDescriptionsIndex, isInside, state, evenFlags, accessNumber) {
 if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -4184,7 +4184,7 @@ return stringstr.str();
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -4211,7 +4211,7 @@ return _persistentRecords;
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
 return Cell(
-getADERDGCellDescriptionsIndex(),
+getCellDescriptionsIndex(),
 getIsInside(),
 getState(),
 getEvenFlags(),
@@ -4232,13 +4232,13 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 3;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_INT,		 //_packedRecords0
 MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //_packedRecords0
 1		 // end/displacement flag
 };
@@ -4247,9 +4247,9 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[1] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[2] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -4266,14 +4266,14 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_SHORT,		 //accessNumber
 MPI_INT,		 //_packedRecords0
 MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 DIMENSIONS_TIMES_TWO,		 //accessNumber
 1,		 //_packedRecords0
 1		 // end/displacement flag
@@ -4283,10 +4283,10 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[3] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -4544,8 +4544,8 @@ exahype::records::Cell::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Cell::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
-_ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+exahype::records::Cell::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
+_CellDescriptionsIndex(CellDescriptionsIndex),
 _isInside(isInside),
 _state(state),
 _evenFlags(evenFlags),
@@ -4562,13 +4562,13 @@ exahype::records::Cell::Cell() {
 
 
 exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._cellIsAForkCandidate) {
+_persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords._cellIsAForkCandidate) {
 
 }
 
 
-exahype::records::Cell::Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
-_persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate) {
+exahype::records::Cell::Cell(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
+_persistentRecords(CellDescriptionsIndex, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate) {
 
 }
 
@@ -4597,7 +4597,7 @@ return stringstr.str();
 
 void exahype::records::Cell::toString (std::ostream& out) const {
 out << "("; 
-out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -4630,7 +4630,7 @@ return _persistentRecords;
 
 exahype::records::CellPacked exahype::records::Cell::convert() const{
 return CellPacked(
-getADERDGCellDescriptionsIndex(),
+getCellDescriptionsIndex(),
 getIsInside(),
 getState(),
 getEvenFlags(),
@@ -4654,7 +4654,7 @@ Cell dummyCell[2];
 
 const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_CHAR,		 //subtreeHoldsWorker
@@ -4662,7 +4662,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //isInside
 1,		 //state
 1,		 //subtreeHoldsWorker
@@ -4673,11 +4673,11 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[4] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -4694,7 +4694,7 @@ Cell dummyCell[2];
 
 const int Attributes = 9;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //evenFlags
@@ -4706,7 +4706,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //isInside
 1,		 //state
 DIMENSIONS,		 //evenFlags
@@ -4721,7 +4721,7 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[3] );
@@ -4729,7 +4729,7 @@ MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persiste
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._responsibleRank))), 		&disp[5] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[6] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._cellIsAForkCandidate))), 		&disp[7] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[8] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[8] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -4990,8 +4990,8 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
-_ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
+_CellDescriptionsIndex(CellDescriptionsIndex),
 _accessNumber(accessNumber),
 _responsibleRank(responsibleRank),
 _subtreeHoldsWorker(subtreeHoldsWorker) {
@@ -5020,7 +5020,7 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords.getCellIsAForkCandidate()) {
+_persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._responsibleRank, persistentRecords._subtreeHoldsWorker, persistentRecords.getCellIsAForkCandidate()) {
 if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -5031,8 +5031,8 @@ assertion((DIMENSIONS+4 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
-_persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate) {
+exahype::records::CellPacked::CellPacked(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& responsibleRank, const bool& subtreeHoldsWorker, const bool& cellIsAForkCandidate):
+_persistentRecords(CellDescriptionsIndex, isInside, state, evenFlags, accessNumber, responsibleRank, subtreeHoldsWorker, cellIsAForkCandidate) {
 if ((DIMENSIONS+4 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -5063,7 +5063,7 @@ return stringstr.str();
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -5096,7 +5096,7 @@ return _persistentRecords;
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
 return Cell(
-getADERDGCellDescriptionsIndex(),
+getCellDescriptionsIndex(),
 getIsInside(),
 getState(),
 getEvenFlags(),
@@ -5120,14 +5120,14 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_CHAR,		 //subtreeHoldsWorker
 MPI_INT,		 //_packedRecords0
 MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //subtreeHoldsWorker
 1,		 //_packedRecords0
 1		 // end/displacement flag
@@ -5137,10 +5137,10 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[3] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -5157,7 +5157,7 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 6;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_SHORT,		 //accessNumber
 MPI_INT,		 //responsibleRank
 MPI_CHAR,		 //subtreeHoldsWorker
@@ -5166,7 +5166,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 DIMENSIONS_TIMES_TWO,		 //accessNumber
 1,		 //responsibleRank
 1,		 //subtreeHoldsWorker
@@ -5178,12 +5178,12 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._responsibleRank))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._subtreeHoldsWorker))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[5] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -5441,8 +5441,8 @@ exahype::records::Cell::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Cell::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+exahype::records::Cell::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_CellDescriptionsIndex(CellDescriptionsIndex),
 _isInside(isInside),
 _state(state),
 _level(level),
@@ -5457,13 +5457,13 @@ exahype::records::Cell::Cell() {
 
 
 exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber) {
+_persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._level, persistentRecords._evenFlags, persistentRecords._accessNumber) {
 
 }
 
 
-exahype::records::Cell::Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber) {
+exahype::records::Cell::Cell(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_persistentRecords(CellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber) {
 
 }
 
@@ -5492,7 +5492,7 @@ return stringstr.str();
 
 void exahype::records::Cell::toString (std::ostream& out) const {
 out << "("; 
-out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -5521,7 +5521,7 @@ return _persistentRecords;
 
 exahype::records::CellPacked exahype::records::Cell::convert() const{
 return CellPacked(
-getADERDGCellDescriptionsIndex(),
+getCellDescriptionsIndex(),
 getIsInside(),
 getState(),
 getLevel(),
@@ -5543,7 +5543,7 @@ Cell dummyCell[2];
 
 const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //level
@@ -5551,7 +5551,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //isInside
 1,		 //state
 1,		 //level
@@ -5562,11 +5562,11 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[4] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -5583,7 +5583,7 @@ Cell dummyCell[2];
 
 const int Attributes = 7;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //level
@@ -5593,7 +5593,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //isInside
 1,		 //state
 1,		 //level
@@ -5606,13 +5606,13 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._level))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[4] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[5] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[6] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[6] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -5873,8 +5873,8 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_CellDescriptionsIndex(CellDescriptionsIndex),
 _level(level),
 _accessNumber(accessNumber) {
 setIsInside(isInside);
@@ -5901,7 +5901,7 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber) {
+_persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords._level, persistentRecords.getEvenFlags(), persistentRecords._accessNumber) {
 if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -5912,8 +5912,8 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
-_persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber) {
+exahype::records::CellPacked::CellPacked(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const int& level, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber):
+_persistentRecords(CellDescriptionsIndex, isInside, state, level, evenFlags, accessNumber) {
 if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -5944,7 +5944,7 @@ return stringstr.str();
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -5973,7 +5973,7 @@ return _persistentRecords;
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
 return Cell(
-getADERDGCellDescriptionsIndex(),
+getCellDescriptionsIndex(),
 getIsInside(),
 getState(),
 getLevel(),
@@ -5995,14 +5995,14 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_INT,		 //level
 MPI_INT,		 //_packedRecords0
 MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //level
 1,		 //_packedRecords0
 1		 // end/displacement flag
@@ -6012,10 +6012,10 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[2] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[3] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -6032,7 +6032,7 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 5;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_INT,		 //level
 MPI_SHORT,		 //accessNumber
 MPI_INT,		 //_packedRecords0
@@ -6040,7 +6040,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //level
 DIMENSIONS_TIMES_TWO,		 //accessNumber
 1,		 //_packedRecords0
@@ -6051,11 +6051,11 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._level))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[3] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[4] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[4] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -6313,8 +6313,8 @@ exahype::records::Cell::PersistentRecords::PersistentRecords() {
 }
 
 
-exahype::records::Cell::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+exahype::records::Cell::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_CellDescriptionsIndex(CellDescriptionsIndex),
 _isInside(isInside),
 _state(state),
 _evenFlags(evenFlags),
@@ -6330,13 +6330,13 @@ exahype::records::Cell::Cell() {
 
 
 exahype::records::Cell::Cell(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords._isInside, persistentRecords._state, persistentRecords._evenFlags, persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 
 }
 
 
-exahype::records::Cell::Cell(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+exahype::records::Cell::Cell(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(CellDescriptionsIndex, isInside, state, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 
 }
 
@@ -6365,7 +6365,7 @@ return stringstr.str();
 
 void exahype::records::Cell::toString (std::ostream& out) const {
 out << "("; 
-out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -6396,7 +6396,7 @@ return _persistentRecords;
 
 exahype::records::CellPacked exahype::records::Cell::convert() const{
 return CellPacked(
-getADERDGCellDescriptionsIndex(),
+getCellDescriptionsIndex(),
 getIsInside(),
 getState(),
 getEvenFlags(),
@@ -6419,14 +6419,14 @@ Cell dummyCell[2];
 
 const int Attributes = 4;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //isInside
 1,		 //state
 1		 // end/displacement flag
@@ -6436,10 +6436,10 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[3] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[3] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -6456,7 +6456,7 @@ Cell dummyCell[2];
 
 const int Attributes = 8;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_CHAR,		 //isInside
 MPI_INT,		 //state
 MPI_INT,		 //evenFlags
@@ -6467,7 +6467,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //isInside
 1,		 //state
 DIMENSIONS,		 //evenFlags
@@ -6481,14 +6481,14 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._isInside))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._state))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._evenFlags))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._accessNumber[0]))), 		&disp[4] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[5] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[6] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[7] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCell[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[7] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -6749,8 +6749,8 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_ADERDGCellDescriptionsIndex(ADERDGCellDescriptionsIndex),
+exahype::records::CellPacked::PersistentRecords::PersistentRecords(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_CellDescriptionsIndex(CellDescriptionsIndex),
 _accessNumber(accessNumber),
 _numberOfLoadsFromInputStream(numberOfLoadsFromInputStream),
 _numberOfStoresToOutputStream(numberOfStoresToOutputStream) {
@@ -6778,7 +6778,7 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 
 
 exahype::records::CellPacked::CellPacked(const PersistentRecords& persistentRecords):
-_persistentRecords(persistentRecords._ADERDGCellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
+_persistentRecords(persistentRecords._CellDescriptionsIndex, persistentRecords.getIsInside(), persistentRecords.getState(), persistentRecords.getEvenFlags(), persistentRecords._accessNumber, persistentRecords._numberOfLoadsFromInputStream, persistentRecords._numberOfStoresToOutputStream) {
 if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -6789,8 +6789,8 @@ assertion((DIMENSIONS+3 < (8 * sizeof(int))));
 }
 
 
-exahype::records::CellPacked::CellPacked(const int& ADERDGCellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
-_persistentRecords(ADERDGCellDescriptionsIndex, isInside, state, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
+exahype::records::CellPacked::CellPacked(const int& CellDescriptionsIndex, const bool& isInside, const State& state, const std::bitset<DIMENSIONS>& evenFlags, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,short int>& accessNumber, const int& numberOfLoadsFromInputStream, const int& numberOfStoresToOutputStream):
+_persistentRecords(CellDescriptionsIndex, isInside, state, evenFlags, accessNumber, numberOfLoadsFromInputStream, numberOfStoresToOutputStream) {
 if ((DIMENSIONS+3 >= (8 * sizeof(int)))) {
 std::cerr << "Packed-Type in " << __FILE__ << " too small. Either use bigger data type or append " << std::endl << std::endl;
 std::cerr << "  Packed-Type: int hint-size no-of-bits;  " << std::endl << std::endl;
@@ -6821,7 +6821,7 @@ return stringstr.str();
 
 void exahype::records::CellPacked::toString (std::ostream& out) const {
 out << "("; 
-out << "ADERDGCellDescriptionsIndex:" << getADERDGCellDescriptionsIndex();
+out << "CellDescriptionsIndex:" << getCellDescriptionsIndex();
 out << ",";
 out << "isInside:" << getIsInside();
 out << ",";
@@ -6852,7 +6852,7 @@ return _persistentRecords;
 
 exahype::records::Cell exahype::records::CellPacked::convert() const{
 return Cell(
-getADERDGCellDescriptionsIndex(),
+getCellDescriptionsIndex(),
 getIsInside(),
 getState(),
 getEvenFlags(),
@@ -6875,13 +6875,13 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 3;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_INT,		 //_packedRecords0
 MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 1,		 //_packedRecords0
 1		 // end/displacement flag
 };
@@ -6890,9 +6890,9 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[1] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[2] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[2] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );
@@ -6909,7 +6909,7 @@ CellPacked dummyCellPacked[2];
 
 const int Attributes = 6;
 MPI_Datatype subtypes[Attributes] = {
-MPI_INT,		 //ADERDGCellDescriptionsIndex
+MPI_INT,		 //CellDescriptionsIndex
 MPI_SHORT,		 //accessNumber
 MPI_INT,		 //numberOfLoadsFromInputStream
 MPI_INT,		 //numberOfStoresToOutputStream
@@ -6918,7 +6918,7 @@ MPI_UB		 // end/displacement flag
 };
 
 int blocklen[Attributes] = {
-1,		 //ADERDGCellDescriptionsIndex
+1,		 //CellDescriptionsIndex
 DIMENSIONS_TIMES_TWO,		 //accessNumber
 1,		 //numberOfLoadsFromInputStream
 1,		 //numberOfStoresToOutputStream
@@ -6930,12 +6930,12 @@ MPI_Aint     disp[Attributes];
 
 MPI_Aint base;
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]))), &base);
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[0] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._CellDescriptionsIndex))), 		&disp[0] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._accessNumber[0]))), 		&disp[1] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfLoadsFromInputStream))), 		&disp[2] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._numberOfStoresToOutputStream))), 		&disp[3] );
 MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[0]._persistentRecords._packedRecords0))), 		&disp[4] );
-MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._ADERDGCellDescriptionsIndex))), 		&disp[5] );
+MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyCellPacked[1]._persistentRecords._CellDescriptionsIndex))), 		&disp[5] );
 
 for (int i=1; i<Attributes; i++) {
 assertion1( disp[i] > disp[i-1], i );

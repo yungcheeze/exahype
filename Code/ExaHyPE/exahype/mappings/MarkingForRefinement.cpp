@@ -19,7 +19,8 @@
 
 #include "tarch/la/VectorScalarOperations.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
+#include "exahype/solvers/FiniteVolumesSolver.h"
 #include "kernels/KernelCalls.h"
 
 /**
@@ -314,52 +315,91 @@ void exahype::mappings::MarkingForRefinement::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getADERDGCellDescriptionsIndex())) {
-    for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getADERDGCellDescriptionsIndex())) {
-      auto* solver = exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
-      exahype::solvers::Solver::RefinementControl refinementControl;
-      double* solution;
+  if ( fineGridCell.isInitialised() ) {
+    logDebug( "enterCell(...)", "enter with " << fineGridCell.getNumberOfADERDGCellDescriptions() << " ADER-DG solver(s) and " << fineGridCell.getNumberOfFiniteVolumeCellDescriptions() << " FV solver(s)")
 
-      if (tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),solver->getMaximumMeshSize())) {
-        switch (pFine.getType()) {
-          case exahype::records::ADERDGCellDescription::Cell:
-            switch (pFine.getRefinementEvent()) {
-              case exahype::records::ADERDGCellDescription::None:
-                solution = DataHeap::getInstance().getData(pFine.getSolution()).data();
+    for (int i=0; i<fineGridCell.getNumberOfADERDGCellDescriptions(); i++) {
+      auto* uncastedSolver = exahype::solvers::RegisteredSolvers[ fineGridCell.getADERDGCellDescription(i).getSolverNumber() ];
+      assertion( uncastedSolver->getType()==exahype::solvers::Solver::Type::ADER_DG );
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(uncastedSolver);
 
-                refinementControl = solver->refinementCriterion(
-                    solution, fineGridVerticesEnumerator.getCellCenter(),
-                    fineGridVerticesEnumerator.getCellSize(),
-                    pFine.getCorrectorTimeStamp(), pFine.getLevel());
+      if (
+        tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),solver->getMaximumMeshSize())
+        &&
+        fineGridCell.getADERDGCellDescription(i).getType()==exahype::records::ADERDGCellDescription::Cell
+        &&
+        fineGridCell.getADERDGCellDescription(i).getRefinementEvent()==exahype::records::ADERDGCellDescription::None
+      ) {
+        double*  solution = DataHeap::getInstance().getData(fineGridCell.getADERDGCellDescription(i).getSolution()).data();
 
-                switch (refinementControl) {
-                  case exahype::solvers::Solver::RefinementControl::Refine:
-                    pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::RefiningRequested);
+        exahype::solvers::Solver::RefinementControl refinementControl = solver->refinementCriterion(
+            solution, fineGridVerticesEnumerator.getCellCenter(),
+            fineGridVerticesEnumerator.getCellSize(),
+            fineGridCell.getADERDGCellDescription(i).getCorrectorTimeStamp(), fineGridCell.getADERDGCellDescription(i).getLevel());
 
-                    dfor2(v)
-                    if ((fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
-                        exahype::Vertex::Records::RefinementControl::Unrefined)
-                        && !fineGridVertices[ fineGridVerticesEnumerator(v) ].isRefinedOrRefining()) {
-                      fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
-                    }
-                    enddforx
-                    break;
-                  case exahype::solvers::Solver::RefinementControl::Erase:
-                    pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::ErasingRequested);
-                    break;
-                  default:
-                    break;
-                }
-                break;
-                  default:
-                    break;
-            }
+        switch (refinementControl) {
+          case exahype::solvers::Solver::RefinementControl::Refine:
+            fineGridCell.getADERDGCellDescription(i).setRefinementEvent(exahype::records::ADERDGCellDescription::RefiningRequested);
+
+            dfor2(v)
+              if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==exahype::Vertex::Records::RefinementControl::Unrefined) {
+                fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
+              }
+            enddforx
+          break;
+          case exahype::solvers::Solver::RefinementControl::Erase:
+            fineGridCell.getADERDGCellDescription(i).setRefinementEvent(exahype::records::ADERDGCellDescription::ErasingRequested);
+          break;
+          default:
             break;
-              default:
-                break;
         }
       }
     }
+
+    logDebug( "enterCell(...)", "continue  with " << fineGridCell.getNumberOfFiniteVolumeCellDescriptions() << " FV solver(s)")
+    for (int i=0; i<fineGridCell.getNumberOfFiniteVolumeCellDescriptions(); i++) {
+      auto* uncastedSolver = exahype::solvers::RegisteredSolvers[ fineGridCell.getFiniteVolumesCellDescription(i).getSolverNumber() ];
+      assertion( uncastedSolver->getType()==exahype::solvers::Solver::Type::FiniteVolumes );
+      exahype::solvers::FiniteVolumesSolver* solver = static_cast<exahype::solvers::FiniteVolumesSolver*>(uncastedSolver);
+
+      if (
+        tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),solver->getMaximumMeshSize())
+        &&
+        fineGridCell.getFiniteVolumesCellDescription(i).getType()==exahype::records::FiniteVolumesCellDescription::Cell
+/*
+        &&
+        fineGridCell.FiniteVolumesSolver(i).getRefinementEvent()==exahype::records::ADERDGCellDescription::None
+*/
+      ) {
+        double*  solution = DataHeap::getInstance().getData(fineGridCell.getFiniteVolumesCellDescription(i).getSolution()).data();
+
+        exahype::solvers::Solver::RefinementControl refinementControl = solver->refinementCriterion(
+            solution, fineGridVerticesEnumerator.getCellCenter(),
+            fineGridVerticesEnumerator.getCellSize(),
+            fineGridCell.getFiniteVolumesCellDescription(i).getTimeStamp(),
+            fineGridCell.getFiniteVolumesCellDescription(i).getTimeStepSize());
+
+        switch (refinementControl) {
+          case exahype::solvers::Solver::RefinementControl::Refine:
+//            fineGridCell.getADERDGCellDescription(i).setRefinementEvent(exahype::records::ADERDGCellDescription::RefiningRequested);
+
+            dfor2(v)
+              if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==exahype::Vertex::Records::RefinementControl::Unrefined) {
+                fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
+              }
+            enddforx
+          break;
+          case exahype::solvers::Solver::RefinementControl::Erase:
+            assertionMsg( false, "not implemented yet" );
+            //fineGridCell.getADERDGCellDescription(i).setRefinementEvent(exahype::records::ADERDGCellDescription::ErasingRequested);
+          break;
+          default:
+            break;
+        }
+      }
+    }
+
+    logDebug( "enterCell(...)", "left with " << fineGridCell.getNumberOfADERDGCellDescriptions() << " ADER-DG solver(s) and " << fineGridCell.getNumberOfFiniteVolumeCellDescriptions() << " FV solver(s)")
   }
 
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);

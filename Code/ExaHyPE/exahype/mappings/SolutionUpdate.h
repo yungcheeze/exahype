@@ -36,13 +36,17 @@ class SolutionUpdate;
 /**
  * Update the solution
  *
+ * <h2>ADER-DG</h2>
  * We run over all cells of the local spacetree
  *
  * - take the predicted data within each cell
  * - add the contribution from the Riemann solve to the predicted data
  * - mark the cell with the new time stamp
  *
- * All this is done in enterCell(). As the
+ * All this is done in enterCell().
+ *
+ * <h2>Finite Volumes</h2>
+ * This is where we do the actual time stepping with the finite volume scheme.
  *
  * @author Dominic Charrier Tobias Weinzierl
  */

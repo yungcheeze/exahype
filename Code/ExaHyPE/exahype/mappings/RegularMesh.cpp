@@ -19,6 +19,8 @@
 
 #include "tarch/la/VectorScalarOperations.h"
 
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
 /**
  * @todo Please tailor the parameters to your mapping's properties.
  */
@@ -74,7 +76,6 @@ exahype::mappings::RegularMesh::descendSpecification() {
 
 
 tarch::logging::Log exahype::mappings::RegularMesh::_log("exahype::mappings::RegularMesh");
-int                 exahype::mappings::RegularMesh::_traversalCounter(0);
 
 
 void exahype::mappings::RegularMesh::refineVertexIfNecessary(
@@ -163,12 +164,16 @@ void exahype::mappings::RegularMesh::beginIteration(
   ADERDGCellDescriptionHeap::getInstance().setName("ADERDGCellDescriptionHeap");
   DataHeap::getInstance().setName("DataHeap");
 
-  if ( tarch::parallel::Node::getInstance().isGlobalMaster() ) {
-    solverState.updateRegularInitialGridRefinementStrategy(_traversalCounter%5==0);
-  }
   _localState = solverState;
+}
 
-  _traversalCounter++;
+
+
+void exahype::mappings::RegularMesh::endIteration(exahype::State& solverState) {
+  // do nothing
+  if ( tarch::parallel::Node::getInstance().isGlobalMaster() ) {
+    solverState.updateRegularInitialGridRefinementStrategy();
+  }
 }
 
 
@@ -177,6 +182,56 @@ exahype::mappings::RegularMesh::RegularMesh(const RegularMesh& masterThread):
   _localState(masterThread._localState) {
 }
 #endif
+
+void exahype::mappings::RegularMesh::enterCell(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  logTraceInWith4Arguments("enterCell(...)", fineGridCell,
+                           fineGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfCell);
+
+  int solverNumber = 0;
+  if ( !fineGridCell.isInitialised() ) {
+    for (const auto& p : exahype::solvers::RegisteredSolvers) {
+      if (tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),p->getMaximumMeshSize())
+          &&
+          tarch::la::allGreater(coarseGridVerticesEnumerator.getCellSize(),p->getMaximumMeshSize())
+      ) {
+        if (p->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+          fineGridCell.addNewCellDescription(
+            solverNumber, exahype::records::ADERDGCellDescription::Cell,
+            exahype::records::ADERDGCellDescription::None,
+            fineGridVerticesEnumerator.getLevel(),
+            multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
+            fineGridVerticesEnumerator.getCellSize(),
+            // We pass the lower left corner of the cell as offset.
+            fineGridVerticesEnumerator.getVertexPosition());
+        }
+        else if (p->getType()==exahype::solvers::Solver::Type::FiniteVolumes) {
+          fineGridCell.addNewCellDescription(
+            solverNumber, exahype::records::FiniteVolumesCellDescription::Cell,
+            //exahype::records::FiniteVolumesCellDescription::None,
+            fineGridVerticesEnumerator.getLevel(),
+            multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
+            fineGridVerticesEnumerator.getCellSize(),
+            // We pass the lower left corner of the cell as offset.
+            fineGridVerticesEnumerator.getVertexPosition());
+          logInfo( "enterCell(...)", "initialised FV cell data" );
+        }
+        else {
+          assertionMsg(false,"not implemented yet");
+        }
+        fineGridCell.ensureNecessaryMemoryIsAllocated(solverNumber);
+      }
+      solverNumber++;
+    }
+  }
+  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
+}
 
 //
 // All routines below are nop
@@ -241,8 +296,8 @@ void exahype::mappings::RegularMesh::createCell(
   logTraceInWith4Arguments("createCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
-  fineGridCell.getCellData().setADERDGCellDescriptionsIndex(
-      exahype::Cell::InvalidCellDescriptionsIndex);
+  fineGridCell.getCellData().setCellDescriptionsIndex(
+      multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 
   logTraceOutWith1Argument("createCell(...)", fineGridCell);
 }
@@ -377,40 +432,6 @@ void exahype::mappings::RegularMesh::touchVertexFirstTime(
 }
 
 
-void exahype::mappings::RegularMesh::enterCell(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-                           fineGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfCell);
-
-  int solverNumber = 0;
-  if (fineGridCell.getADERDGCellDescriptionsIndex() == exahype::Cell::InvalidCellDescriptionsIndex) {
-    for (const auto& p : exahype::solvers::RegisteredSolvers) {
-      if (tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),p->getMaximumMeshSize())
-          &&
-          tarch::la::allGreater(coarseGridVerticesEnumerator.getCellSize(),p->getMaximumMeshSize())
-      ) {
-        fineGridCell.addNewCellDescription(
-            solverNumber, exahype::records::ADERDGCellDescription::Cell,
-            exahype::records::ADERDGCellDescription::None,
-            fineGridVerticesEnumerator.getLevel(),
-            exahype::Cell::InvalidCellDescriptionsIndex,
-            fineGridVerticesEnumerator.getCellSize(),
-            // We pass the lower left corner of the cell as offset.
-            fineGridVerticesEnumerator.getVertexPosition());
-        fineGridCell.ensureNecessaryMemoryIsAllocated(solverNumber);
-      }
-      solverNumber++;
-    }
-  }
-  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
-}
-
 void exahype::mappings::RegularMesh::leaveCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -421,9 +442,6 @@ void exahype::mappings::RegularMesh::leaveCell(
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::endIteration(exahype::State& solverState) {
-  // do nothing
-}
 
 void exahype::mappings::RegularMesh::descend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,

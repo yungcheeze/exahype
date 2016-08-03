@@ -18,13 +18,14 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/mappings/NewTimeStep.h"
  #include "exahype/mappings/RegularMesh.h"
  #include "exahype/mappings/MarkingForRefinement.h"
  #include "exahype/mappings/Refinement.h"
  #include "exahype/mappings/SolutionAdjustment.h"
  #include "exahype/mappings/MarkingForAugmentation.h"
  #include "exahype/mappings/Augmentation.h"
- #include "exahype/adapters/AugmentedAMRGrid2MultiscaleLinkedCell_6.h"
+ #include "exahype/adapters/AugmentedAMRGrid2MultiscaleLinkedCell_7.h"
 
 
 
@@ -44,21 +45,23 @@ namespace exahype {
  */
 class exahype::adapters::AugmentedAMRGrid {
   private:
-    typedef mappings::RegularMesh Mapping0;
-    typedef mappings::MarkingForRefinement Mapping1;
-    typedef mappings::Refinement Mapping2;
-    typedef mappings::SolutionAdjustment Mapping3;
-    typedef mappings::MarkingForAugmentation Mapping4;
-    typedef mappings::Augmentation Mapping5;
-    typedef adapters::AugmentedAMRGrid2MultiscaleLinkedCell_6 Mapping6;
+    typedef mappings::NewTimeStep Mapping0;
+    typedef mappings::RegularMesh Mapping1;
+    typedef mappings::MarkingForRefinement Mapping2;
+    typedef mappings::Refinement Mapping3;
+    typedef mappings::SolutionAdjustment Mapping4;
+    typedef mappings::MarkingForAugmentation Mapping5;
+    typedef mappings::Augmentation Mapping6;
+    typedef adapters::AugmentedAMRGrid2MultiscaleLinkedCell_7 Mapping7;
 
-     Mapping0  _map2RegularMesh;
-     Mapping1  _map2MarkingForRefinement;
-     Mapping2  _map2Refinement;
-     Mapping3  _map2SolutionAdjustment;
-     Mapping4  _map2MarkingForAugmentation;
-     Mapping5  _map2Augmentation;
-     Mapping6  _map2AugmentedAMRGrid2MultiscaleLinkedCell_6;
+     Mapping0  _map2NewTimeStep;
+     Mapping1  _map2RegularMesh;
+     Mapping2  _map2MarkingForRefinement;
+     Mapping3  _map2Refinement;
+     Mapping4  _map2SolutionAdjustment;
+     Mapping5  _map2MarkingForAugmentation;
+     Mapping6  _map2Augmentation;
+     Mapping7  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7;
 
 
   public:

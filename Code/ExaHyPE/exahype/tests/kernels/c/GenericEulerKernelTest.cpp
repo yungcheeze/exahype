@@ -66,10 +66,11 @@ void GenericEulerKernelTest::testEquidistantGridProjection() {
   const int numberOfVariables = 5;
   const int order             = 3;
   const int basisSize         = order+1;
+  const int cellUnknowns      = numberOfVariables * tarch::la::aPowI(basisSize,DIMENSIONS);
 
-  double * u = new double[basisSize * basisSize * numberOfVariables];
+  double * u = new double[cellUnknowns];
 
-  for (int i=0; i < basisSize * basisSize * numberOfVariables; ++i) {
+  for (int i=0; i < cellUnknowns; ++i) {
     u[i] = 1.0;
   }
 

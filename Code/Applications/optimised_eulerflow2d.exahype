@@ -7,10 +7,7 @@
  */
 exahype-project  Euler2d
 
-  peano-path                 = ./Peano/peano
-  tarch-path                 = ./Peano/tarch
-  multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
-  sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
+  peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
   libxsmm-path               = ../libxsmm
   output-directory           = ./Applications/optimised_eulerflow2d
@@ -50,11 +47,12 @@ exahype-project  Euler2d
     kernel             = optimised::fluxes::nonlinear
     language           = C
 
-    plot vtk::ascii
+    plot vtk::Cartesian::ascii
+      variables= 5
       time     = 0.0
       repeat   = 0.05
       output   = ./solution
-      select   = {Q4}
+      select   = {}
     end plot
   end solver
 

@@ -46,14 +46,15 @@ exahype-project  elasticwaves3d
     order              = 3
     maximum-mesh-size  = 0.05
     time-stepping      = global
-    kernel             = generic::fluxes::nonlinear
+    kernel             = generic::fluxes::linear
     language           = C
 
-    plot vtk::ascii
+    plot vtk::Cartesian::ascii
+      variables= 9
       time     = 0.0
       repeat   = 0.05
       output = ./solution
-      select   = {all}
+      select   = {}
     end plot
   end solver
 

@@ -12,12 +12,13 @@
  **/
  
 #include "MyEulerSolver.h"
+#include "InitialData.h"
 
 #include <memory>
 
-Euler::MyEulerSolver::MyEulerSolver(int kernelNumber, int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
-  : exahype::solvers::Solver(
-      "MyEulerSolver", exahype::solvers::Solver::Type::ADER_DG, kernelNumber, 5, 0, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
+Euler::MyEulerSolver::MyEulerSolver(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler)
+: exahype::solvers::ADERDGSolver(
+      "MyEulerSolver", 5, 0, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
   // @todo Please implement/augment if required
 }
 
@@ -103,25 +104,7 @@ void Euler::MyEulerSolver::adjustedSolutionValues(const double* const x,const do
   // Number of variables    = 5 (#unknowns + #parameters)
   // @todo Please implement
   if (tarch::la::equals(t, 0.0)) {
-    const double GAMMA = 1.4;
-
-    Q[0] = 1.;
-    Q[1] = 0.;
-    Q[2] = 0.;
-    Q[3] = 0.;
-#if DIMENSIONS == 2
-    Q[4] =
-        1. / (GAMMA - 1) +
-        std::exp(-((x[0] - 0.5) * (x[0] - 0.5) + (x[1] - 0.5) * (x[1] - 0.5)) /
-                 (0.05 * 0.05)) *
-            1.0e-3;
-#else
-    Q[4] =
-        1. / (GAMMA - 1) +
-        std::exp(-((x[0] - 0.5) * (x[0] - 0.5) + (x[1] - 0.5) * (x[1] - 0.5) 
-                  + (x[2] - 0.5) * (x[2] - 0.5)) / (0.05 * 0.05 * 0.05)) *
-            1.0e-3;
-#endif  
+      InitialData(x,Q);
   }
 }
 
@@ -132,5 +115,25 @@ exahype::solvers::Solver::RefinementControl Euler::MyEulerSolver::refinementCrit
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
+void Euler::MyEulerSolver::boundaryValues(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
+  // Dimensions             = 2
+  // Number of variables    = 5 (#unknowns + #parameters)
+
+
+  // @todo Please implement
+  // fluxOut
+  fluxOut[0] = fluxIn[0];
+  fluxOut[1] = fluxIn[1];
+  fluxOut[2] = fluxIn[2];
+  fluxOut[3] = fluxIn[3];
+  fluxOut[4] = fluxIn[4];
+  // stateOut
+  // @todo Please implement
+  stateOut[0] = stateIn[0];
+  stateOut[1] = stateIn[1];
+  stateOut[2] = stateIn[2];
+  stateOut[3] = stateIn[3];
+  stateOut[4] = stateIn[4];
+}
 
 

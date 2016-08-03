@@ -33,11 +33,9 @@ Tokens
 
   token_project                     = 'exahype-project';
 
-  token_peano_path                  = 'peano-path';
-  token_tarch_path                  = 'tarch-path';
+  token_peano_kernel_path           = 'peano-kernel-path';
+  token_peano_toolbox_path          = 'peano-toolbox-path';
   token_exahype_path                = 'exahype-path';
-  token_multiscalelinkedcell_path   = 'multiscalelinkedcell-path';
-  token_sharedmemoryoracles_path    = 'sharedmemoryoracles-path';
   token_libxsmm_path                = 'libxsmm-path';
   token_output_directory            = 'output-directory';
   token_architecture                = 'architecture';
@@ -53,9 +51,11 @@ Tokens
 
   token_solver                      = 'solver';
   token_aderdg                      = 'ADER-DG';
+  token_finite_volumes              = 'Finite-Volumes';
   token_variables                   = 'variables';
   token_parameters                  = 'parameters';
   token_order                       = 'order';
+  token_patch_size                  = 'patch-size';
   token_kernel                      = 'kernel';
   token_language                    = 'language';
 
@@ -65,6 +65,8 @@ Tokens
   token_repeat                      = 'repeat';
   token_output                      = 'output';
   token_select                      = 'select';
+  
+  token_couple_solvers              = 'couple-solvers';
 
   token_shared_memory               = 'shared-memory';
   token_cores                       = 'cores';
@@ -133,29 +135,32 @@ Productions
         optimisation?
         profiling?
         solver_list?
+        couple_solvers?
       token_end [end_token]:token_project
-        { -> New project( name, paths.paths, architecture, computational_domain.computational_domain, shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation, profiling.profiling, [solver_list.solver] ) }
+        { -> New project( name, paths.paths, architecture, computational_domain.computational_domain, shared_memory.shared_memory, distributed_memory.distributed_memory, optimisation.optimisation, profiling.profiling, couple_solvers.couple_solvers, [solver_list.solver] ) }
     ;
 
   paths {->paths} =
-     {without_libxsmm}
-        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename
-        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename
-        token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename
-        token_sharedmemoryoracles_path   [sharedmemoryoracles_path_equals]:token_equals         [sharedmemoryoracles_path]:filename
+     {without}
+        token_peano_kernel_path          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
         token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
         token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
-     { -> New paths(peano_path, tarch_path, multiscalelinkedcell_path, sharedmemoryoracles_path, exahype_path, Null, output_directory) }
+     { -> New paths(peano_kernel_path, Null, exahype_path, Null, output_directory) }
+     |
+     {with_toolbox}
+        token_peano_kernel_path          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
+        token_peano_toolbox_path         [peano_toolbox_path_equals]:token_equals               [peano_toolbox_path]:filename
+        token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
+        token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
+     { -> New paths(peano_kernel_path, peano_toolbox_path, exahype_path, Null, output_directory) }
      |
      {with_libxsmm}
-        token_peano_path                 [peano_path_equals]:token_equals                       [peano_path]:filename
-        token_tarch_path                 [tarch_path_equals]:token_equals                       [tarch_path]:filename
-        token_multiscalelinkedcell_path  [multiscalelinkedcell_path_equals]:token_equals        [multiscalelinkedcell_path]:filename
-        token_sharedmemoryoracles_path   [sharedmemoryoracles_path_equals]:token_equals         [sharedmemoryoracles_path]:filename
+        token_peano_kernel_path          [peano_kernel_path_equals]:token_equals                [peano_kernel_path]:filename
+        token_peano_toolbox_path         [peano_toolbox_path_equals]:token_equals               [peano_toolbox_path]:filename
         token_exahype_path               [exahype_path_equals]:token_equals                     [exahype_path]:filename
         token_libxsmm_path               [libxsmm_path_equals]:token_equals                     [libxsmm_path]:filename
         token_output_directory           [output_directory_equals]:token_equals                 [output_directory]:filename
-     { -> New paths(peano_path, tarch_path, multiscalelinkedcell_path, sharedmemoryoracles_path, exahype_path, libxsmm_path, output_directory) }
+     { -> New paths(peano_kernel_path, peano_toolbox_path, exahype_path, libxsmm_path, output_directory) }
     ;
 
   distributed_memory {->distributed_memory} =
@@ -166,9 +171,6 @@ Productions
       token_timeout      [timeout_equals]:token_equals    [timeout]:int_number
     token_end [end_token]:token_distributed_memory
       { -> New distributed_memory( identifier,configure,buffersize,timeout ) };
-
-
-
 
   shared_memory {->shared_memory} =
     [begin_token]:token_shared_memory
@@ -232,15 +234,24 @@ Productions
         { -> New profiling(profiler,metrics,Null,Null,Null,Null) }
       ;
 
-   plot_solution_list {->plot_solution*} =
-     [begin_token]:token_plot [plotter_type]:typename
+   couple_solvers {->couple_solvers} = 
+     [begin_token]:token_couple_solvers
+       identifier
        token_time      [time_equals]:token_equals     [time]:float_number
        token_repeat    [repeat_equals]:token_equals   [repeat]:float_number
-       token_output    [output_equals]:token_equals   [output]:filename
-       token_select    [select_equals]:token_equals   [select]:parameter_list
+     token_end [end_token]:token_couple_solvers
+     { -> New couple_solvers(identifier,time,repeat)};
+   
+   plot_solution_list {->plot_solution*} =
+     [begin_token]:token_plot [plotter_type]:typename
+       token_variables [variables_equals]:token_equals [variables]:int_number
+       token_time      [time_equals]:token_equals      [time]:float_number
+       token_repeat    [repeat_equals]:token_equals    [repeat]:float_number
+       token_output    [output_equals]:token_equals    [output]:filename
+       token_select    [select_equals]:token_equals    [select]:parameter_list
      token_end [end_token]:token_plot
      plot_solution_list?
-       { -> [New plot_solution(plotter_type,time,repeat,output,select),plot_solution_list.plot_solution] }
+       { -> [New plot_solution(plotter_type,variables,time,repeat,output,select),plot_solution_list.plot_solution] }
      ;
 
    solver_list {->solver*} =
@@ -257,7 +268,20 @@ Productions
        token_end [end_token]:token_solver
        solver_list?
        { -> [New solver.aderdg(name,variables,parameters,order,maximum_mesh_size,time_stepping,kernel,language,[plot_solution_list.plot_solution]),solver_list.solver] }
-       ;
+     |  
+     {finite_volumes}
+       [begin_token]:token_solver token_finite_volumes [name]:identifier
+         token_variables          [variables_equals]:token_equals          [variables]:int_number
+         token_parameters         [parameters_equals]:token_equals         [parameters]:int_number
+         token_patch_size         [patch_size_equals]:token_equals         [patch_size]:int_number
+         token_maximum_mesh_size  [maximum_mesh_size_equals]:token_equals  [maximum_mesh_size]:float_number
+         token_time_stepping      [time_stepping_equals]:token_equals      [time_stepping]:identifier
+         token_kernel             [kernel_equals]:token_equals             [kernel]:typename
+         token_language           [language_equals]:token_equals           [language]:identifier
+         plot_solution_list?
+       token_end [end_token]:token_solver
+       solver_list?
+       { -> [New solver.finite_volumes(name,variables,parameters,patch_size,maximum_mesh_size,time_stepping,kernel,language,[plot_solution_list.plot_solution]),solver_list.solver] };
 
 Abstract Syntax Tree
    project =
@@ -269,11 +293,12 @@ Abstract Syntax Tree
      distributed_memory?
      optimisation?
      profiling?
+     couple_solvers?
      solver*
      ;
 
    paths =
-     [peano_path]:filename [tarch_path]:filename [multiscalelinkedcell_path]:filename [sharedmemoryoracles_path]:filename [exahype_path]:filename [libxsmm_path]:filename? [output_directory]:filename;
+     [peano_kernel_path]:filename [peano_toolbox_path]:filename? [exahype_path]:filename [libxsmm_path]:filename? [output_directory]:filename;
 
    shared_memory =
      [identifier]:identifier [cores]:int_number [properties_file]:filename;
@@ -294,8 +319,12 @@ Abstract Syntax Tree
      [profiler]:identifier [metrics]:parameter_list [likwid_inc]:filename? [likwid_lib]:filename? [ipcm_inc]:filename? [ipcm_lib]:filename?;
 
    solver =
-      {aderdg} [name]:identifier [variables]:int_number [parameters]:int_number [order]:int_number [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier plot_solution*
-    ;
+       {aderdg}         [name]:identifier [variables]:int_number [parameters]:int_number [order]:int_number [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier plot_solution*
+     | {finite_volumes} [name]:identifier [variables]:int_number [parameters]:int_number [patch_size]:int_number [maximum_mesh_size]:float_number [time_stepping]:identifier [kernel]:typename [language]:identifier plot_solution*;
 
    plot_solution =
-     [plotter_type]:typename [time]:float_number [repeat]:float_number [output]:filename [select]:parameter_list;
+     [plotter_type]:typename [variables]:int_number [time]:float_number [repeat]:float_number [output]:filename [select]:parameter_list;
+
+   couple_solvers =
+     [identifier]:identifier [time]:float_number [repeat]:float_number;
+     

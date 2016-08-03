@@ -7,10 +7,7 @@
  */
 exahype-project  elasticwaves2d
 
-  peano-path                 = ./Peano/peano
-  tarch-path                 = ./Peano/tarch
-  multiscalelinkedcell-path  = ./Peano/multiscalelinkedcell
-  sharedmemoryoracles-path   = ./Peano/sharedmemoryoracles
+  peano-kernel-path          = ./Peano
   exahype-path               = ./ExaHyPE
   output-directory           = ./Applications/elasticwaves2d
   architecture               = noarch
@@ -46,14 +43,15 @@ exahype-project  elasticwaves2d
     order              = 3
     maximum-mesh-size  = 0.05
     time-stepping      = global
-    kernel             = generic::fluxes::nonlinear
+    kernel             = user::defined
     language           = C
 
-    plot vtk::ascii
+    plot vtk::Cartesian::ascii
+      variables= 5
       time     = 0.0
       repeat   = 0.05
       output = ./solution
-      select   = {all}
+      select   = {}
     end plot
   end solver
 

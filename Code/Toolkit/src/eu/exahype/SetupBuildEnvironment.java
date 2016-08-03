@@ -3,6 +3,7 @@ package eu.exahype;
 import eu.exahype.analysis.DepthFirstAdapter;
 import eu.exahype.node.AAderdgSolver;
 import eu.exahype.node.AProject;
+import eu.exahype.node.ACoupleSolvers;
 import eu.exahype.node.ASharedMemory;
 import eu.exahype.node.AComputationalDomain;
 import eu.exahype.node.ADistributedMemory;
@@ -111,12 +112,12 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
       _writer.write("# BOUNDARYCONDITIONS  None              Periodic                  Type of boundary conditions"        + "\n");
       _writer.write("# *********************************************************************************************"      + "\n");
 
-      _writer.write("PEANO_PATH=" + _directoryAndPathChecker.peanoPath.getAbsolutePath() + "\n");
-      _writer.write("TARCH_PATH=" + _directoryAndPathChecker.tarchPath.getAbsolutePath() + "\n");
-      _writer.write("MULTISCALELINKEDCELL_PATH="
-          + _directoryAndPathChecker.multiscalelinkedcellPath.getAbsolutePath() + "\n");
-      _writer.write("SHAREDMEMORYORACLES_PATH="
-          + _directoryAndPathChecker.sharedMemoryOraclesPath.getAbsolutePath() + "\n");
+      _writer.write("PEANO_KERNEL_PEANO_PATH=" + _directoryAndPathChecker.peanoKernelPath.getAbsolutePath() + "/peano\n");
+      _writer.write("PEANO_KERNEL_TARCH_PATH=" + _directoryAndPathChecker.peanoKernelPath.getAbsolutePath() + "/tarch\n");
+      _writer.write("PEANO_TOOLBOX_MULTISCALELINKEDCELL_PATH=" + _directoryAndPathChecker.peanoToolboxPath.getAbsolutePath() + "/multiscalelinkedcell\n");
+      _writer.write("PEANO_TOOLBOX_SHAREDMEMORY_ORACLES_PATH=" + _directoryAndPathChecker.peanoToolboxPath.getAbsolutePath() + "/sharedmemoryoracles\n");
+      _writer.write("PEANO_TOOLBOX_MPI_BLANCING_PATH=" + _directoryAndPathChecker.peanoToolboxPath.getAbsolutePath() + "/mpibalancing\n");
+
       _writer.write(
           "EXAHYPE_PATH=" + _directoryAndPathChecker.exahypePath.getAbsolutePath() + "\n");
       _writer.write(
@@ -250,6 +251,17 @@ public class SetupBuildEnvironment extends DepthFirstAdapter {
           "  If you run CSH, please replace \"export ARG=VALUE\" with \"setenv ARG VALUE\".\n");
 
       _writer.close();
+    } catch (Exception exc) {
+      System.err.println("ERROR: " + exc.toString());
+      valid = false;
+    }
+  }
+
+  public void inACoupleSolvers(ACoupleSolvers node) {
+    try {
+      if (node.getIdentifier().getText().trim().equals( "cellwise" ) ) {
+        _writer.write("COUPLE_SOLVERS=CellWise\n");
+      }
     } catch (Exception exc) {
       System.err.println("ERROR: " + exc.toString());
       valid = false;
