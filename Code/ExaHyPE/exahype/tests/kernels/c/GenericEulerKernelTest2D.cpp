@@ -3,14 +3,14 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #include "exahype/tests/kernels/c/GenericEulerKernelTest.h"
 
 #include <cstring>
@@ -328,7 +328,8 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
         FL, FR,
         ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
         ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR, dt,
-        normalNonZero, 5 /* nVar */, 4 /* basisSize */);
+        normalNonZero, 5 /* nVar */, 0 /* numberOfParameters */,
+        4 /* basisSize */);
 
     for (int i = 0; i < 20; i++) {
       validateNumericalEqualsWithEpsWithParams1(
@@ -365,7 +366,8 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
         FL, FR,
         ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
         ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR, dt,
-        normalNonZero, 5 /* nVar */, 4 /* basisSize */);
+        normalNonZero, 5 /* nVar */, 0 /* numberOfParameters */,
+        4 /* basisSize */);
 
     for (int i = 0; i < 20; i++) {
       validateNumericalEqualsWithEpsWithParams1(
@@ -407,6 +409,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
         0.0,  // dt
         0,    // normalNonZero
         5,    // getNumberOfVariables(),
+        0,    // getNumberOfParameters(),
         4     // getNodesPerCoordinateAxis()
         );
 
@@ -434,7 +437,8 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
         ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR,
         0.0,  // dt
         0,    // normalNonZero
-        5,    // getNumberOfVariables(),
+        5,    // getNumberOfVariables()
+        0,    // getNumberOfParameters()
         4     // getNodesPerCoordinateAxis()
         );
 
@@ -471,7 +475,8 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
         ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR,
         0.0,  // dt
         1,    // normalNonZero
-        5,    // getNumberOfVariables(),
+        5,    // getNumberOfVariables()
+        0,    // getNumberOfParameters()
         4     // getNodesPerCoordinateAxis()
         );
 

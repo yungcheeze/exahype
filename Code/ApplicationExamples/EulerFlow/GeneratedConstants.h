@@ -17,6 +17,7 @@
 static const int MY_POLYNOMIAL_DEGREE = 3;
 static const int MY_NUMBER_OF_VARIABLES = 5;
 static const int MY_NUMBER_OF_PARAMETERS = 0;
+static const int MY_DIMENSIONS = 2;
 
 
 #endif /* __MY_GENERATED_CONSTANTS__ */

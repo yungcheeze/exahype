@@ -3,14 +3,14 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 // #include "../Kernels.h"
 
 // #include "string.h"
@@ -28,6 +28,8 @@
 // using std::endl;
 // using std::cout;
 
+#include <cassert>
+
 // todo change template parameter in header and generator
 // template <void PDEFlux2d(const double * const Q, double * f, double * g)>
 template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
@@ -35,7 +37,11 @@ template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
 void kernels::aderdg::generic::c::riemannSolverNonlinear(
     double* FL, double* FR, const double* const QL, const double* const QR,
     const double dt, const int normalNonZero, const int numberOfVariables,
-    const int basisSize) {
+    const int numberOfParameters, const int basisSize) {
+  // TODO(guera): Fix and remove
+  assert(numberOfParameters == 0 &&
+         "numberOfParameters has to be 0 at the moment");
+
   double* QavL = new double[numberOfVariables];
   double* QavR = new double[numberOfVariables];
   double* lambdaL = new double[numberOfVariables];
