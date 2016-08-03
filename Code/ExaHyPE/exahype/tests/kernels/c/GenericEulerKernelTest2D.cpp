@@ -583,6 +583,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
         ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi,
         dx[0],
         5,  // getNumberOfVariables(),
+        0,  // getNumberOfParameters()
         4   // getNodesPerCoordinateAxis()
         );
 
@@ -615,7 +616,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
     double *lduh = new double[80];  // intentionally left uninitialised
 
     kernels::aderdg::generic::c::volumeIntegralNonlinear(lduh, lFhi, dx[0], 5,
-                                                         4);
+                                                         0, 4);
 
     for (int i = 0; i < 80; i++) {
       validateNumericalEqualsWithEpsWithParams1(

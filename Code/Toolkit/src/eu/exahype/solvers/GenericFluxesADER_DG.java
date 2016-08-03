@@ -87,7 +87,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     }
     writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
         + "::volumeIntegral" + (isLinear() ? "Linear" : "Nonlinear")
-        + "( lduh, lFhi, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        + "( lduh, lFhi, dx, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"volumeIntegral\");\n");
     }
