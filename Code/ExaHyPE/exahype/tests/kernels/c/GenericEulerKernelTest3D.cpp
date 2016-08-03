@@ -156,6 +156,7 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
 
   kernels::aderdg::generic::c::volumeIntegralLinear(lduh, lFhi, dx,
                                                     5,  // numberOfVariables
+                                                    0,  // numberOfParameters
                                                     4   // basisSize
                                                     );
 
