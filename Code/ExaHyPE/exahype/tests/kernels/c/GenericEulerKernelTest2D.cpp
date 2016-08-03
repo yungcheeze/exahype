@@ -677,15 +677,6 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
       4   // basisSize
       );
 
-  /*
-  std::cout << "lFbnd" << std::endl;
-  for (int i = 0; i < 80; i++) {
-    std::cout << lFbnd[i] << "," << std::endl;
-  }
-  */
-
-  // std::cout << "----" << std::endl;
-
   for (int i = 0; i < 80; i++) {
     validateNumericalEqualsWithEpsWithParams1(
         lQhi[i], ::exahype::tests::testdata::generic_euler::

@@ -220,8 +220,10 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
   }
 
   // Compute the boundary-extrapolated values for Q and F*n
-  std::memset(lQbnd, 0, 6 * basisSize2 * numberOfVariables * sizeof(double));
-  std::memset(lFbnd, 0, 6 * basisSize2 * numberOfVariables * sizeof(double));
+  std::memset(lQbnd, 0,
+              2 * DIMENSIONS * basisSize2 * numberOfVariables * sizeof(double));
+  std::memset(lFbnd, 0,
+              2 * DIMENSIONS * basisSize2 * numberOfVariables * sizeof(double));
   idx4 idx_lQbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfVariables);
   idx4 idx_lFbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfVariables);
 

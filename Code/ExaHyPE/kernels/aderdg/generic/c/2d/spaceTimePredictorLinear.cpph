@@ -11,14 +11,15 @@
  * For the full license text, see LICENSE.txt
  **/
 
+#include "../../../../KernelUtils.h"
 #include <cstring>
+
+#if DIMENSIONS == 2
 
 namespace kernels {
 namespace aderdg {
 namespace generic {
 namespace c {
-
-#if DIMENSIONS == 2
 
 template <void PDENCP(const double* const Q, const double* const gradQ,
                       double* BgradQ)>
@@ -32,411 +33,131 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
   const int basisSize2 = basisSize * basisSize;
   const int basisSize3 = basisSize2 * basisSize;
   const int basisSize4 = basisSize2 * basisSize2;
+  const int basisSize5 = basisSize4 * basisSize;
   const int order = basisSize - 1;
 
-  double* lQh =
-      new double[basisSize4 * numberOfVariables +
-                 basisSize3 *
-                     numberOfVariables];  // space-time degrees of freedom
-  std::memset(lQh, 0, basisSize4 * numberOfVariables * sizeof(double));
-
-  /* --------------------- BUG. Strides do not take into account basisSize+1 in
-   * time direction !!! We skip the
-   * problem by using an if, hence we will not compute the last (useless) time
-   * derivative !!! */
+  double* lQh = new double[basisSize2 * (basisSize + 1) *
+                           numberOfVariables];  // space-time degrees of freedom
+  std::memset(lQh, 0, basisSize2 * (basisSize + 1) * numberOfVariables *
+                          sizeof(double));
+  idx4 idx_lQh(basisSize + 1, basisSize, basisSize, numberOfVariables);
 
   // The zeroth time derivative (time dof number 1) is the initial condition
-  // lqh(k,1,j,i) += luh(k,j,i)
-  for (int i = 0; i < basisSize; i++) {
+  // lqh(l,k,j,1) += luh(l,k,j)
+  {
+    idx3 idx_luh(basisSize, basisSize, numberOfVariables);
     for (int j = 0; j < basisSize; j++) {
-      for (int k = 0; k < numberOfVariables; k++) {
-        lQh[i * basisSize2 * numberOfVariables +
-            j * basisSize * numberOfVariables + 0 * numberOfVariables + k] =
-            luh[i * basisSize * numberOfVariables + j * numberOfVariables + k];
+      for (int k = 0; k < basisSize; k++) {
+        // Copy parameters here
+        for (int l = 0; l < numberOfVariables; l++) {
+          lQh[idx_lQh(0, j, k, l)] += luh[idx_luh(j, k, l)];
+        }
       }
-      //  double x = luh[i * basisSize * numberOfVariables + j *
-      //  numberOfVariables + 9];
-      //  double y = luh[i * basisSize * numberOfVariables + j *
-      //  numberOfVariables + 10];
-      //  double value = luh[i * basisSize * numberOfVariables + j *
-      //  numberOfVariables + 0];
-      //
-      //  double error = value - (1.0 + 0.1*x + 0.2*y);
-
-      // if(std::abs(error)>1e-12){
-      //     printf("dx = %10.10e incoming data are wrong, %20.10e \n ", dx(0),
-      //     error);
-      // } else {
-      //     // printf("incoming error is nice: %20.10e\n", error);
-      // }
-
-      double x =
-          lQh[i * basisSize2 * numberOfVariables +
-              j * basisSize * numberOfVariables + 0 * numberOfVariables + 9];
-      double y =
-          lQh[i * basisSize2 * numberOfVariables +
-              j * basisSize * numberOfVariables + 0 * numberOfVariables + 10];
-
-      double value =
-          lQh[i * basisSize2 * numberOfVariables +
-              j * basisSize * numberOfVariables + 0 * numberOfVariables + 0];
-
-      //          double x = luh[i * basisSize * numberOfVariables + j *
-      //          numberOfVariables + 9];
-      //          double y = luh[i * basisSize * numberOfVariables + j *
-      //          numberOfVariables + 10];
-      //          double value = luh[i * basisSize * numberOfVariables + j *
-      //          numberOfVariables + 0];
-
-      double error = value - (1.0 + 0.1 * x + 0.2 * y);
-
-      /*      if(std::abs(error)>1e-12){
-                printf("dx = %10.10e copied initial data are wrong, %20.10e \n
-         ", dx(0), error);
-            }else{
-                printf("copied incoming error is nice: %20.10e\n", error);720
-            } */
-
-      /*     printf(" Zeroth derivative index = %d %d %d \n ",
-                  i * basisSize2 * numberOfVariables +
-                j * basisSize * numberOfVariables + 0 * numberOfVariables + 0,
-         i, j);  */
     }
   }
 
-  // printf("dx[0] = %f\n", dx[0]);
-
   // spatial gradient of q
-  double* gradQ = new double[basisSize3 * 2 * numberOfVariables];
-  std::memset(gradQ, 0, basisSize3 * 2 * numberOfVariables * sizeof(double));
+  double* gradQ = new double[basisSize3 * DIMENSIONS * numberOfVariables];
+  std::memset(gradQ, 0,
+              basisSize3 * DIMENSIONS * numberOfVariables * sizeof(double));
+  idx5 idx_gradQ(basisSize, basisSize, basisSize, DIMENSIONS,
+                 numberOfVariables);
 
-  double* lFh = new double[basisSize3 * 2 * numberOfVariables];
+  double* lFh = new double[basisSize3 * DIMENSIONS * numberOfVariables];
+  idx5 idx_lFh(basisSize, basisSize, basisSize, DIMENSIONS, numberOfVariables);
 
   // For linear PDE, the fastest space-time predictor is the good old
   // Cauchy-Kovalewski procedure
   for (int i = 0; i < basisSize; i++) {  // time DOFs
-    // Compute the derivatives in x direction (independent from the y
-    // derivative)
-    for (int j = 0; j < basisSize; j++) {
-      // Fortran: gradQ(:,1,:,j,i) = 1.0/dx(1) * lqh(:,i,:,j) *
+    // Compute the derivatives in x direction (independent from the y and z
+    // derivatives)
+    for (int k = 0; k < basisSize; k++) {
+      // Fortran: gradQ(:,1,:,k,i) = 1.0/dx(1) * lqh(:,:,k,i) *
       // dudx(:,:)^T
-      for (int k = 0; k < basisSize; k++) {
-        for (int l = 0; l < numberOfVariables; l++) {
-          for (int m = 0; m < basisSize; m++) {
-            gradQ[i * basisSize2 * 2 * numberOfVariables +
-                  j * basisSize * 2 * numberOfVariables +
-                  k * 2 * numberOfVariables + 0 * numberOfVariables + l] +=
-                1.0 / dx[0] * lQh[j * basisSize2 * numberOfVariables +
-                                  m * basisSize * numberOfVariables +
-                                  i * numberOfVariables + l] *
-                kernels::dudx[order][m][k];
+      for (int l = 0; l < basisSize; l++) {
+        // Skip parameters
+        for (int m = 0; m < numberOfVariables - numberOfParameters; m++) {
+          for (int n = 0; n < basisSize; n++) {
+            gradQ[idx_gradQ(i, k, l, 0, m)] += 1.0 / dx[0] *
+                                               lQh[idx_lQh(i, k, n, m)] *
+                                               kernels::dudx[order][n][l];
           }
         }
-
-        /*   {
-               int l = 0;
-           printf("Qx[%d] = %20.10e\n", i * basisSize2 * 2 * numberOfVariables +
-                     j * basisSize * 2 * numberOfVariables +
-                     k * 2 * numberOfVariables + 0 * numberOfVariables + l,
-                  gradQ[i * basisSize2 * 2 * numberOfVariables +
-                     j * basisSize * 2 * numberOfVariables +
-                     k * 2 * numberOfVariables + 0 * numberOfVariables + l]);
-           } */
       }
     }
 
-    // printf("For time i=%d:\n", i);
-    /*
-    printf("dudx[%d][0][0] = %f\n", order, kernels::dudx[order][0][0]);
-    printf("dudx[%d][1][0] = %f\n", order, kernels::dudx[order][1][0]);
-    printf("gradQ[0] = %f\n", gradQ[0]);
-    */
-
-    // y direction (independent from the x derivative)
-    for (int j = 0; j < basisSize; j++) {
-      // Fortran: gradQ(:,2,j,:,i) = 1.0/dx(2) * lqh(:,i,j,:) *
+    // y direction (independent from the x and z derivatives)
+    for (int k = 0; k < basisSize; k++) {
+      // Fortran: gradQ(:,2,k,:,i) = 1.0/dx(2) * lqh(:,k,:,i) *
       // dudx(:,:)^T
-      for (int k = 0; k < basisSize; k++) {
-        for (int l = 0; l < numberOfVariables; l++) {
-          for (int m = 0; m < basisSize; m++) {
-            gradQ[i * basisSize2 * 2 * numberOfVariables +
-                  k * basisSize * 2 * numberOfVariables +
-                  j * 2 * numberOfVariables + 1 * numberOfVariables + l] +=
-                1.0 / dx[1] * lQh[m * basisSize2 * numberOfVariables +
-                                  j * basisSize * numberOfVariables +
-                                  i * numberOfVariables + l] *
-                kernels::dudx[order][m][k];
+      for (int l = 0; l < basisSize; l++) {
+        // Skip parameters
+        for (int m = 0; m < numberOfVariables - numberOfParameters; m++) {
+          for (int n = 0; n < basisSize; n++) {
+            gradQ[idx_gradQ(i, l, k, 1, m)] += 1.0 / dx[1] *
+                                               lQh[idx_lQh(i, n, k, m)] *
+                                               kernels::dudx[order][n][l];
           }
         }
-
-        /*     {
-                  int l = 0;
-             printf("Qy[%d] = %20.10e\n", i * basisSize2 * 2 * numberOfVariables
-           +
-                       k * basisSize * 2 * numberOfVariables +
-                       j * 2 * numberOfVariables + 1 * numberOfVariables + l,
-                    gradQ[i * basisSize2 * 2 * numberOfVariables +
-                       k * basisSize * 2 * numberOfVariables +
-                       j * 2 * numberOfVariables + 1 * numberOfVariables + l]);
-             } */
       }
     }
-
-    ///*-------------------*////
-    /*
-      for (int ii = 0; ii < basisSize; ii++) {
-        for (int jj = 0; jj < basisSize; jj++) {
-
-            double x = lQh[ii * basisSize2 * numberOfVariables +
-                    jj * basisSize * numberOfVariables +
-                    0 * numberOfVariables + 9];
-            double y = lQh[ii * basisSize2 * numberOfVariables +
-                    jj * basisSize * numberOfVariables +
-                    0 * numberOfVariables + 10];
-
-            double value =  lQh[ii * basisSize2 * numberOfVariables +
-                    jj * basisSize * numberOfVariables +
-                    0 * numberOfVariables + 0];
-
-              double error = value - (1.0 + 0.1*x + 0.2*y);
-
-            if(std::abs(error)>1e-12){
-                printf("i = %d stuff 1 is now getting wrong, %20.10e \n ", i,
-      error);
-            }else{
-                printf("i = %d our stuff 1 is nice: %20.10e\n", i, error);
-            }
-
-
-        }
-      }
-    */
-    /*-------------------------*/
 
     // Compute the fluxes
-    for (int j = 0; j < basisSize; j++) {
-      for (int k = 0; k < basisSize; k++) {
-        PDENCP(&lQh[j * basisSize2 * numberOfVariables +
-                    k * basisSize * numberOfVariables + i * numberOfVariables],
-               &gradQ[i * basisSize2 * 2 * numberOfVariables +
-                      j * basisSize * 2 * numberOfVariables +
-                      k * 2 * numberOfVariables],
-               &lFh[i * basisSize2 * 2 * numberOfVariables +
-                    j * basisSize * 2 * numberOfVariables +
-                    k * 2 * numberOfVariables]);
-
-        /*         int l = 0;
-             for(    int d = 0; d<2; d++){
-             printf("lFh[%d] = %20.10e\n", i * basisSize2 * 2 *
-           numberOfVariables +
-                         j * basisSize * 2 * numberOfVariables +
-                         k * 2 * numberOfVariables + d * numberOfVariables + l,
-                    lFh[i * basisSize2 * 2 * numberOfVariables +
-                         j * basisSize * 2 * numberOfVariables +
-                         k * 2 * numberOfVariables + d * numberOfVariables +
-           l]);
-             }  */
+    for (int k = 0; k < basisSize; k++) {
+      for (int l = 0; l < basisSize; l++) {
+        PDENCP(&lQh[idx_lQh(i, k, l, 0)], &gradQ[idx_gradQ(i, k, l, 0, 0)],
+               &lFh[idx_lFh(i, k, l, 0, 0)]);
       }
     }
 
-    /* This if is the key to solve the memory problem. We just do NOT compute
-     * the last (useless) time derivative */
-
-    if (i < basisSize - 1) {
-      for (int j = 0; j < basisSize; j++) {
-        for (int k = 0; k < basisSize; k++) {
-          // lQh(:,i+1,k,j) -= SUM(lFh(:,1:nDim,k,j,i), dim=2)
-          for (int l = 0; l < 2; l++) {
-            for (int m = 0; m < numberOfVariables; m++) {
-              lQh[j * basisSize2 * numberOfVariables +
-                  k * basisSize * numberOfVariables +
-                  (i + 1) * numberOfVariables + m] -=
-                  lFh[i * basisSize2 * 2 * numberOfVariables +
-                      j * basisSize * 2 * numberOfVariables +
-                      k * 2 * numberOfVariables + l * numberOfVariables + m];
-
-              /*                if(i==basisSize-1){
-                              printf(" index = %d %d %d %d \n ", j * basisSize2
-                 * numberOfVariables +
-                              k * basisSize * numberOfVariables +
-                              (i+1) * numberOfVariables + m, j, k, i);
-
-                              }
-              */
-            }
+    for (int k = 0; k < basisSize; k++) {
+      for (int l = 0; l < basisSize; l++) {
+        // lQh(:,l,k,i+1) -= SUM(lFh(:,1:nDim,l,k,i), dim=2)
+        for (int m = 0; m < DIMENSIONS; m++) {
+          for (int n = 0; n < numberOfVariables; n++) {
+            lQh[idx_lQh(i + 1, k, l, n)] -= lFh[idx_lFh(i, k, l, m, n)];
           }
         }
-
-        /* if(i==0) {
-            int m = 0;
-            printf("lQh[%d] = %20.10e\n",j * basisSize2 * numberOfVariables +
-                k * basisSize * numberOfVariables + (i+1) * numberOfVariables +
-                m, lQh[j * basisSize2 * numberOfVariables +
-                k * basisSize * numberOfVariables + (i+1) * numberOfVariables +
-            m]);
-        } */
       }
     }
-
-    ///*-------------------*////
-    /*
-      for (int ii = 0; ii < basisSize; ii++) {
-        for (int jj = 0; jj < basisSize; jj++) {
-
-            double x = lQh[ii * basisSize2 * numberOfVariables +
-                    jj * basisSize * numberOfVariables +
-                    0 * numberOfVariables + 9];
-            double y = lQh[ii * basisSize2 * numberOfVariables +
-                    jj * basisSize * numberOfVariables +
-                    0 * numberOfVariables + 10];
-
-            double value =  lQh[ii * basisSize2 * numberOfVariables +
-                    jj * basisSize * numberOfVariables +
-                    0 * numberOfVariables + 0];
-
-              double error = value - (1.0 + 0.1*x + 0.2*y);
-
-            if(std::abs(error)>1e-12){
-                printf("i = %d stuff 2 is now getting wrong, %20.10e \n ", i,
-      error);
-            }else{
-                printf("i = %d our stuff 2 is nice: %20.10e\n", i, error);
-            }
-
-
-        }
-      }
-    */
-    /*-------------------------*/
   }
 
+  idx3 idx_lQhi(basisSize, basisSize, numberOfVariables);
+
   // Immediately compute the time-averaged space-time polynomials
-  // Fortran: lQhi(:,:,:) = lQh(:,1,:,:)
-  for (int i = 0; i < basisSize; i++) {
-    for (int j = 0; j < basisSize; j++) {
-      for (int k = 0; k < numberOfVariables; k++) {
-        lQhi[i * basisSize * numberOfVariables + j * numberOfVariables + k] =
-            lQh[i * basisSize2 * numberOfVariables +
-                j * basisSize * numberOfVariables + 0 * numberOfVariables + k];
+  // Fortran: lQhi(:,:,:,:) = lQh(:,:,:,:,1)
+  for (int j = 0; j < basisSize; j++) {
+    for (int k = 0; k < basisSize; k++) {
+      // Copy parameters here
+      for (int l = 0; l < numberOfVariables; l++) {
+        lQhi[idx_lQhi(j, k, l)] = lQh[idx_lQh(0, j, k, l)];
       }
-
-      /*      double x = lQh[i * basisSize2 * numberOfVariables +
-                    j * basisSize * numberOfVariables +
-                    0 * numberOfVariables + 9];
-            double y = lQh[i * basisSize2 * numberOfVariables +
-                    j * basisSize * numberOfVariables +
-                    0 * numberOfVariables + 10];
-
-            double value =  lQh[i * basisSize2 * numberOfVariables +
-                    j * basisSize * numberOfVariables +
-                    0 * numberOfVariables + 0];  */
-
-      //          double x = luh[i * basisSize * numberOfVariables + j *
-      //          numberOfVariables + 9];
-      //          double y = luh[i * basisSize * numberOfVariables + j *
-      //          numberOfVariables + 10];
-      //          double value = luh[i * basisSize * numberOfVariables + j *
-      //          numberOfVariables + 0];
-
-      //       double error = value - (1.0 + 0.1*x + 0.2*y);
-
-      //      if(std::abs(error)>1e-12){
-      //          printf("dx = %10.10e initial data are now wrong, %20.10e \n ",
-      //          dx(0), error);
-      //      }
     }
   }
 
   double dtavFac = 0.5 * dt;
   for (int i = 1; i < basisSize; i++) {
-    // Fortran: lQhi(:,:,:) += dtavFac * lQh(:,i,:,:)
-    for (int j = 0; j < basisSize; j++) {
-      for (int k = 0; k < basisSize; k++) {
-        for (int l = 0; l < numberOfVariables; l++) {
-          lQhi[j * basisSize * numberOfVariables + k * numberOfVariables + l] +=
-              lQh[j * basisSize2 * numberOfVariables +
-                  k * basisSize * numberOfVariables + i * numberOfVariables +
-                  l] *
-              dtavFac;
+    // Fortran: lQhi(:,:,:,:) += dtavFac * lQh(:,i,:,:,:)
+    for (int k = 0; k < basisSize; k++) {
+      for (int l = 0; l < basisSize; l++) {
+        // Skip parameters here
+        for (int m = 0; m < numberOfVariables - numberOfParameters; m++) {
+          lQhi[idx_lQhi(k, l, m)] += dtavFac * lQh[idx_lQh(i, k, l, m)];
         }
       }
     }
     dtavFac *= dt / (i + 2);
   }
 
-  /*    for (int j = 0; j < basisSize; j++) {
-        for (int k = 0; k < basisSize; k++) {
-              double x = lQhi[j * basisSize * numberOfVariables + k *
-     numberOfVariables +  9];
-              double y = lQhi[j * basisSize * numberOfVariables + k *
-     numberOfVariables + 10];
-              double value = 1 + 0.1*x + 0.2*y - 0.15*dt;
-              double error = std::abs(value - lQhi[j * basisSize *
-     numberOfVariables + k * numberOfVariables +  0]);
-              if(error > 1e-10) {
-                  printf("TOO BIG ERROR");
-                  printf(" lqhi = %20.10e, x=%20.10e, y=%20.10e error=%20.10e \n
-     ",
-              lQhi[j * basisSize * numberOfVariables + k * numberOfVariables +
-     0],
-              lQhi[j * basisSize * numberOfVariables + k * numberOfVariables +
-     9] ,
-              lQhi[j * basisSize * numberOfVariables + k * numberOfVariables +
-     10],
-              error
-              );
-              }
+  idx4 idx_lFhi(DIMENSIONS, basisSize, basisSize, numberOfVariables);
 
-        }
-      }
-    */
-
-  /* remove this stuff
-  dtavFac = 0.5 * dt;
-
-  // lFhi(:,:,:,:) = lFh(:,:,:,1)
-    int i = 0;
-    for (int j = 0; j < basisSize; j++) {
-      for (int k = 0; k < basisSize; k++) {
-        for (int d = 0; d < 2; d++) {
-         for (int l = 0; l < numberOfVariables; l++) {
-             lFhi[d * basisSize2 * numberOfVariables +
-               j * basisSize * numberOfVariables + k * numberOfVariables + l]=
-             lFh[i * basisSize2 * 2 * numberOfVariables +
-                    j * basisSize * 2 * numberOfVariables +
-                    k * 2 * numberOfVariables + d * numberOfVariables + l];
-      }
-    }
-      }
-    }
-
-  for (int i = 1; i < basisSize; i++) {
-   for (int j = 0; j < basisSize; j++) {
-      for (int k = 0; k < basisSize; k++) {
-        for (int d = 0; d < 2; d++) {
-         for (int l = 0; l < numberOfVariables; l++) {
-             lFhi[d * basisSize2 * numberOfVariables +
-               j * basisSize * numberOfVariables + k * numberOfVariables + l]+=
-             lFh[i * basisSize2 * 2 * numberOfVariables +
-                    j * basisSize * 2 * numberOfVariables +
-                    k * 2 * numberOfVariables + d * numberOfVariables + l];
-      }
-    }
-      }
-    }
-  }
-
-  */
-
-  for (int i = 0; i < 2; i++) {
-    for (int j = 0; j < basisSize; j++) {
-      for (int k = 0; k < basisSize; k++) {
-        for (int l = 0; l < numberOfVariables; l++) {
-          lFhi[i * basisSize2 * numberOfVariables +
-               j * basisSize * numberOfVariables + k * numberOfVariables + l] =
-              lFh[0 * basisSize2 * 2 * numberOfVariables +
-                  j * basisSize * 2 * numberOfVariables +
-                  k * 2 * numberOfVariables + i * numberOfVariables + l];
+  // lFhi(m,l,k,i) = lFh(m,i,l,k,1)
+  for (int i = 0; i < DIMENSIONS; i++) {
+    for (int k = 0; k < basisSize; k++) {
+      for (int l = 0; l < basisSize; l++) {
+        // Skip parameters
+        for (int m = 0; m < numberOfVariables - numberOfParameters; m++) {
+          lFhi[idx_lFhi(i, k, l, m)] = lFh[idx_lFh(0, k, l, i, m)];
         }
       }
     }
@@ -444,253 +165,101 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
 
   dtavFac = 0.5 * dt;
   for (int i = 1; i < basisSize; i++) {
-    // Fortran: lFhi(:,:,:,:) += dtavFac*lFh(:,:,:,:,i)
-    for (int j = 0; j < 2; j++) {
-      for (int k = 0; k < basisSize; k++) {
-        for (int l = 0; l < basisSize; l++) {
-          for (int m = 0; m < numberOfVariables - numberOfParameters; m++) {
-            lFhi[j * basisSize2 * numberOfVariables +
-                 k * basisSize * numberOfVariables + l * numberOfVariables +
-                 m] +=
-                lFh[i * basisSize2 * 2 * numberOfVariables +
-                    k * basisSize * 2 * numberOfVariables +
-                    l * 2 * numberOfVariables + j * numberOfVariables + m] *
-                dtavFac;
+    // Fortran: lFhi(n,m,l,j) += dtavFac*lFh(n,j,m,l,i)
+    for (int j = 0; j < DIMENSIONS; j++) {
+      for (int l = 0; l < basisSize; l++) {
+        for (int m = 0; m < basisSize; m++) {
+          // Skip parameters
+          for (int n = 0; n < numberOfVariables - numberOfParameters; n++) {
+            lFhi[idx_lFhi(j, l, m, n)] += dtavFac * lFh[idx_lFh(i, l, m, j, n)];
           }
         }
       }
     }
     dtavFac *= dt / (i + 2);
   }
-
-  /*
-     for (int k = 0; k < basisSize; k++) {
-        for (int l = 0; l < basisSize; l++) {
-
-            int m = 0;
-            for(int j = 0; j<2; j++)
-            printf("lFhi[%d] = %20.10e\n",
-                            j * basisSize2 * numberOfVariables +
-                 k * basisSize * numberOfVariables + l * numberOfVariables +
-                 m,
-                             lFhi[j * basisSize2 * numberOfVariables +
-                 k * basisSize * numberOfVariables + l * numberOfVariables +
-                 m]
-            );
-        }
-
-    }
-
-    */
-
-  double* Q;
-  const int numberOfFaceDof =
-      numberOfVariables *
-      basisSize;  // tarch::la::aPowI(DIMENSIONS-1,basisSize);
 
   // Compute the boundary-extrapolated values for Q and F*n
-  std::memset(lQbnd, 0, 4 * basisSize * numberOfVariables * sizeof(double));
-  std::memset(lFbnd, 0, 4 * basisSize * numberOfVariables * sizeof(double));
+  std::memset(lQbnd, 0,
+              2 * DIMENSIONS * basisSize * numberOfVariables * sizeof(double));
+  std::memset(lFbnd, 0,
+              2 * DIMENSIONS * basisSize * numberOfVariables * sizeof(double));
+  idx3 idx_lQbnd(2 * DIMENSIONS, basisSize, numberOfVariables);
+  idx3 idx_lFbnd(2 * DIMENSIONS, basisSize, numberOfVariables);
 
-  // copied from nonlinear code
+  // x-direction: face 1 (left) and face 2 (right)
+  for (int j = 0; j < basisSize; j++) {
+    // Fortran:
+    // lQbnd(:,j,1) = lQhi(:,:,j) * FLCoeff(:)
+    // lQbnd(:,j,2) = lQhi(:,:,j) * FRCoeff(:)
+    // Copy parameters
+    for (int k = 0; k < numberOfVariables; k++) {
+      for (int l = 0; l < basisSize; l++) {
+        // left
+        lQbnd[idx_lQbnd(0, j, k)] +=
+            lQhi[idx_lQhi(j, l, k)] * kernels::FLCoeff[order][l];
 
-  //
-  // x-direction: face 0 (left) and face 1 (right)
-  //
-  for (int jj = 0; jj < basisSize; jj++) {
-    const int nodeIndex = jj;
-    const int dofStartIndexL =
-        EXAHYPE_FACE_LEFT * numberOfFaceDof + nodeIndex * numberOfVariables;
-    const int dofStartIndexR =
-        EXAHYPE_FACE_RIGHT * numberOfFaceDof + nodeIndex * numberOfVariables;
-
-    for (int mm = 0; mm < basisSize; mm++) {  // loop over dof
-      const int mmNodeIndex = mm + basisSize * jj;
-      const int mmDofStartIndex = mmNodeIndex * numberOfVariables;
-
-      Q = &lQhi[mmDofStartIndex];
-
-      for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-        lQbnd[dofStartIndexL + ivar] += kernels::FLCoeff[basisSize - 1][mm] *
-                                        Q[ivar];  // lQhbnd(Facei,nDOF,nVar)
-        lQbnd[dofStartIndexR + ivar] += kernels::FRCoeff[basisSize - 1][mm] *
-                                        Q[ivar];  // lQhbnd(Facei,nDOF,nVar)
+        // right
+        lQbnd[idx_lQbnd(1, j, k)] +=
+            lQhi[idx_lQhi(j, l, k)] * kernels::FRCoeff[order][l];
       }
     }
   }
 
-  for (int jj = 0; jj < basisSize; jj++) {
-    const int nodeIndex = jj;
-    const int dofStartIndexL =
-        EXAHYPE_FACE_LEFT * numberOfFaceDof + nodeIndex * numberOfVariables;
-    const int dofStartIndexR =
-        EXAHYPE_FACE_RIGHT * numberOfFaceDof + nodeIndex * numberOfVariables;
-
-    for (int mm = 0; mm < basisSize; mm++) {  // loop over dof
-      const int mmNodeIndex = mm + basisSize * jj;
-      const int mmDofStartIndex = mmNodeIndex * numberOfVariables;
-
-      Q = &lQbnd[dofStartIndexL];
-
-      /* printf("x=%20.10e y=%20.10e lQbnd=%20.10e \n ",  Q[9], Q[10],
-      lQbnd[dofStartIndexL + 0]);
-      printf("dt=%20.10e\n", dt);
-
-          double x = Q[9];
-          double y = Q[10];
-          double value = 1 + 0.1*x + 0.2*y - 0.15*dt;
-          double error = std::abs(value - lQbnd[dofStartIndexL + 0]);
-          if(error > 1e-10) {
-              printf("TOO BIG ERROR on xbnd");
-              printf(" lqhi = %20.10e, x=%20.10e, y=%20.10e error=%20.10e \n ",
-          x,y,value,error);
-          }
-      */
-    }
-  }
-
-  //
-  // y-direction: face 2 (left) and face 3 (right)
-  //
-  for (int ii = 0; ii < basisSize; ii++) {
-    const int nodeIndex = ii;
-    const int dofStartIndexL =
-        EXAHYPE_FACE_FRONT * numberOfFaceDof + nodeIndex * numberOfVariables;
-    const int dofStartIndexR =
-        EXAHYPE_FACE_BACK * numberOfFaceDof + nodeIndex * numberOfVariables;
-
-    for (int mm = 0; mm < basisSize; mm++) {
-      const int mmNodeIndex = ii + basisSize * mm;
-      const int mmDofStartIndex = mmNodeIndex * numberOfVariables;
-
-      Q = &lQhi[mmDofStartIndex];
-
-      for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-        lQbnd[dofStartIndexL + ivar] +=
-            kernels::FLCoeff[basisSize - 1][mm] * Q[ivar];
-        lQbnd[dofStartIndexR + ivar] +=
-            kernels::FRCoeff[basisSize - 1][mm] * Q[ivar];
-
-      }  // mmDOfStartIndex = (mm  + basisSize * ii) * numberOfVariables
-    }
-    continue;
-  }
-
-  for (int ii = 0; ii < basisSize; ii++) {
-    const int nodeIndex = ii;
-    const int dofStartIndexL =
-        EXAHYPE_FACE_FRONT * numberOfFaceDof + nodeIndex * numberOfVariables;
-    const int dofStartIndexR =
-        EXAHYPE_FACE_BACK * numberOfFaceDof + nodeIndex * numberOfVariables;
-
-    for (int mm = 0; mm < basisSize; mm++) {
-      const int mmNodeIndex = ii + basisSize * mm;
-      const int mmDofStartIndex = mmNodeIndex * numberOfVariables;
-
-      Q = &lQbnd[dofStartIndexL];
-
-      /* printf("x=%20.10e y=%20.10e lQbnd=%20.10e \n ",  Q[9], Q[10],
-      lQbnd[dofStartIndexL + 0]);
-      printf("dt=%20.10e\n", dt);
-      */
-      /*    double x = Q[9];
-          double y = Q[10];
-          double value = 1 + 0.1*x + 0.2*y - 0.15*dt;
-          double error = std::abs(value - lQbnd[dofStartIndexL + 0]);
-          if(error > 1e-10) {
-              printf("TOO BIG ERROR on ybnd");
-              printf(" lqhi = %20.10e, x=%20.10e, y=%20.10e error=%20.10e \n ",
-          x,y,value,error);
-          } */
-    }
-  }
-
-  /* original linear code...
-
-
-  // x-direction: face 1 (left) and face 2 (right)
-  for (int i = 0; i < basisSize; i++) {
+  for (int j = 0; j < basisSize; j++) {
     // Fortran:
-    // lQbnd(:,i,1) = lQhi(:,:,i) * FLCoeff(:)
-    // lQbnd(:,i,2) = lQhi(:,:,i) * FRCoeff(:)
-    // lFbnd(:,i,1) = lFhi(:,:,i,1) * FLCoeff(:)
-    // lFbnd(:,i,2) = lFhi(:,:,i,1) * FRCoeff(:)
-    for (int j = 0; j < numberOfVariables; j++) {
-      for (int k = 0; k < basisSize; k++) {
+    // lFbnd(:,j,1) = lFhi(:,:,j,1) * FLCoeff(:)
+    // lFbnd(:,j,2) = lFhi(:,:,j,1) * FRCoeff(:)
+    // Skip parameters
+    for (int k = 0; k < numberOfVariables - numberOfParameters; k++) {
+      for (int l = 0; l < basisSize; l++) {
         // left
-        lQbnd[0 * basisSize * numberOfVariables + i * numberOfVariables + j] +=
-            lQhi[i * basisSize * numberOfVariables + k * numberOfVariables +
-                 j] *
-            kernels::FLCoeff[order][k];
+        lFbnd[idx_lFbnd(0, j, k)] +=
+            lFhi[idx_lFhi(0, j, l, k)] * kernels::FLCoeff[order][l];
 
         // right
-        lQbnd[1 * basisSize * numberOfVariables + i * numberOfVariables + j] +=
-            lQhi[i * basisSize * numberOfVariables + k * numberOfVariables +
-                 j] *
-            kernels::FRCoeff[order][k];
-
-        // left
-        lFbnd[0 * basisSize * numberOfVariables + i * numberOfVariables + j] +=
-            lFhi[0 * basisSize2 * numberOfVariables +
-                 i * basisSize * numberOfVariables + k * numberOfVariables +
-                 j] *
-            kernels::FLCoeff[order][k];
-
-        // right
-        lFbnd[1 * basisSize * numberOfVariables + i * numberOfVariables + j] +=
-            lFhi[0 * basisSize2 * numberOfVariables +
-                 i * basisSize * numberOfVariables + k * numberOfVariables +
-                 j] *
-            kernels::FRCoeff[order][k];
+        lFbnd[idx_lFbnd(1, j, k)] +=
+            lFhi[idx_lFhi(0, j, l, k)] * kernels::FRCoeff[order][l];
       }
     }
   }
 
   // y-direction: face 3 (left) and face 4 (right)
-  for (int i = 0; i < basisSize; i++) {
+  for (int j = 0; j < basisSize; j++) {
     // Fortran:
-    // lQbnd(:,i,3) = lQhi(:,i,:) * FLCoeff(:)
-    // lQbnd(:,i,4) = lQhi(:,i,:) * FRCoeff(:)
-    // lFbnd(:,i,3) = lFhi(:,i,:,2) * FLCoeff(:)
-    // lFbnd(:,i,4) = lFhi(:,i,:,2) * FRCoeff(:)
-    for (int j = 0; j < numberOfVariables; j++) {
-      for (int k = 0; k < basisSize; k++) {
+    // lQbnd(:,j,3) = lQhi(:,j,:) * FLCoeff(:)
+    // lQbnd(:,j,4) = lQhi(:,j,:) * FRCoeff(:)
+
+    // Copy parameters
+    for (int k = 0; k < numberOfVariables; k++) {
+      for (int l = 0; l < basisSize; l++) {
         // left
-        lQbnd[2 * basisSize * numberOfVariables + i * numberOfVariables + j] +=
-            lQhi[k * basisSize * numberOfVariables + i * numberOfVariables +
-                 j] *
-            kernels::FLCoeff[order][k];
+        lQbnd[idx_lQbnd(2, j, k)] +=
+            lQhi[idx_lQhi(l, j, k)] * kernels::FLCoeff[order][l];
 
         // right
-        lQbnd[3 * basisSize * numberOfVariables + i * numberOfVariables + j] +=
-            lQhi[k * basisSize * numberOfVariables + i * numberOfVariables +
-                 j] *
-            kernels::FRCoeff[order][k];
-
-        // left
-        lFbnd[2 * basisSize * numberOfVariables + i * numberOfVariables + j] +=
-            lFhi[1 * basisSize2 * numberOfVariables +
-                 k * basisSize * numberOfVariables + i * numberOfVariables +
-                 j] *
-            kernels::FLCoeff[order][k];
-
-        // right
-        lFbnd[3 * basisSize * numberOfVariables + i * numberOfVariables + j] +=
-            lFhi[1 * basisSize2 * numberOfVariables +
-                 k * basisSize * numberOfVariables + i * numberOfVariables +
-                 j] *
-            kernels::FRCoeff[order][k];
+        lQbnd[idx_lQbnd(3, j, k)] +=
+            lQhi[idx_lQhi(l, j, k)] * kernels::FRCoeff[order][l];
       }
     }
   }
 
-  */
+  for (int j = 0; j < basisSize; j++) {
+    // lFbnd(:,j,i,3) = lFhi(:,j,:,i,2) * FLCoeff(:)
+    // lFbnd(:,j,i,4) = lFhi(:,j,:,i,2) * FRCoeff(:)
+    // skip parameters
+    for (int k = 0; k < numberOfVariables - numberOfParameters; k++) {
+      for (int l = 0; l < basisSize; l++) {
+        // left
+        lFbnd[idx_lFbnd(2, j, k)] +=
+            lFhi[idx_lFhi(1, l, j, k)] * kernels::FLCoeff[order][l];
 
-  std::cout << "----------------" << std::endl;
-  for (int i = 0; i < 10; i++) {
-    std::cout << lFbnd[i] << " ";
+        // right
+        lFbnd[idx_lFbnd(3, j, k)] +=
+            lFhi[idx_lFhi(1, l, j, k)] * kernels::FRCoeff[order][l];
+      }
+    }
   }
-  std::cout << std::endl;
 
   // delete heap allocated arrays
   delete[] lQh;
@@ -698,9 +267,9 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
   delete[] lFh;
 }
 
-#endif  // DIMENSIONS == 2
-
 }  // namespace c
 }  // namespace generic
 }  // namespace aderdg
 }  // namespace kernels
+
+#endif  // DIMENSINS == 3
