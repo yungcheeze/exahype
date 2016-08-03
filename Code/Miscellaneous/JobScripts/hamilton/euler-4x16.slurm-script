@@ -1,6 +1,6 @@
 #!/bin/csh
 #SBATCH -p par6.q
-#SBATCH -N 3
+#SBATCH -N 4
 #SBATCH --ntasks-per-node=16
 #SBATCH --array 1-5
 #SBATCH -t 08:00:00
