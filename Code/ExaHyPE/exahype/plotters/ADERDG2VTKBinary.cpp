@@ -111,6 +111,9 @@ void exahype::plotters::ADERDG2VTKBinary::finishPlotting() {
     #endif
                    << "-" << _fileCounter << ".vtk";
 
+    // See issue #47 for discussion whether to quit program on failure:
+    // _patchWriter should raise/throw the C++ Exception or return something in case
+    // of failure.
     _patchWriter->writeToFile(snapshotFileName.str());
 
     delete _vertexDataWriter;

@@ -263,6 +263,8 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   do {
     repository.iterate();
     gridSetupIterations++;
+    repository.iterate();
+    gridSetupIterations++;
     logInfo("runAsMaster()",
       "grid setup iteration #" << gridSetupIterations <<
       ", max-level=" << repository.getState().getMaxLevel() <<

@@ -1,6 +1,7 @@
 #include "exahype/plotters/ADERDG2ProbeAscii.h"
 
 #include <fstream>
+#include <cstring>
 
 #include "peano/utils/Loop.h"
 
@@ -74,6 +75,12 @@ void exahype::plotters::ADERDG2ProbeAscii::openOutputStream() {
                    #endif
 		           << ".probe";
       _out->open( outputFilename.str() );
+      
+      // See issue #47 for discussion whether to quit program on failure
+      if(*_out && _out->fail()) {
+         logError("openOutputStream(...)", "Could not open file '" << outputFilename.str() << "': " << strerror(errno));
+	 exit(-2);
+      }
 
       if (*_out) {
         (*_out) << "# plot-time, real-time";
