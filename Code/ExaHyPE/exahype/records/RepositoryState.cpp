@@ -44,12 +44,11 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case UseAdapterPredictorAndGlobalTimeStepComputation: return "UseAdapterPredictorAndGlobalTimeStepComputation";
       case UseAdapterADERDGTimeStep: return "UseAdapterADERDGTimeStep";
       case UseAdapterADERDGTimeStepAndPlot: return "UseAdapterADERDGTimeStepAndPlot";
-      case UseAdapterGlobalTimeStepComputation: return "UseAdapterGlobalTimeStepComputation";
-      case UseAdapterPlotAndGlobalTimeStepComputation: return "UseAdapterPlotAndGlobalTimeStepComputation";
-      case UseAdapterFaceDataExchange: return "UseAdapterFaceDataExchange";
-      case UseAdapterPredictor: return "UseAdapterPredictor";
       case UseAdapterPredictorRerun: return "UseAdapterPredictorRerun";
+      case UseAdapterRiemannSolver: return "UseAdapterRiemannSolver";
+      case UseAdapterPredictor: return "UseAdapterPredictor";
       case UseAdapterCorrector: return "UseAdapterCorrector";
+      case UseAdapterCorrectorAndPlot: return "UseAdapterCorrectorAndPlot";
       case UseAdapterPlot: return "UseAdapterPlot";
       case NumberOfAdapters: return "NumberOfAdapters";
    }
@@ -57,7 +56,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterAugmentedAMRGrid=4,UseAdapterPlotAugmentedAMRGrid=5,UseAdapterSolutionAdjustmentAndGlobalTimeStepComputation=6,UseAdapterPredictorAndPlotAndGlobalTimeStepComputation=7,UseAdapterPredictorAndGlobalTimeStepComputation=8,UseAdapterADERDGTimeStep=9,UseAdapterADERDGTimeStepAndPlot=10,UseAdapterGlobalTimeStepComputation=11,UseAdapterPlotAndGlobalTimeStepComputation=12,UseAdapterFaceDataExchange=13,UseAdapterPredictor=14,UseAdapterPredictorRerun=15,UseAdapterCorrector=16,UseAdapterPlot=17,NumberOfAdapters=18)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterAugmentedAMRGrid=4,UseAdapterPlotAugmentedAMRGrid=5,UseAdapterSolutionAdjustmentAndGlobalTimeStepComputation=6,UseAdapterPredictorAndPlotAndGlobalTimeStepComputation=7,UseAdapterPredictorAndGlobalTimeStepComputation=8,UseAdapterADERDGTimeStep=9,UseAdapterADERDGTimeStepAndPlot=10,UseAdapterPredictorRerun=11,UseAdapterRiemannSolver=12,UseAdapterPredictor=13,UseAdapterCorrector=14,UseAdapterCorrectorAndPlot=15,UseAdapterPlot=16,NumberOfAdapters=17)";
 }
 
 

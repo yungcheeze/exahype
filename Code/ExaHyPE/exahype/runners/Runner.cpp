@@ -84,18 +84,12 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
     }
 
     if ( configuration.find( "greedy" )!=std::string::npos ) {
-      logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins");
+      logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins (mpibalancing/GreedyBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-        new peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning(false)
+        new mpibalancing::GreedyBalancing(1,3)
       );
     }
-    else if ( configuration.find( "local_hotspot" )!=std::string::npos ) {
-      logInfo("initDistributedMemoryConfiguration()", "use local hotspot elimination without joins (mpibalancing/GreedyBalancing)");
-      peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-        new mpibalancing::GreedyBalancing(1,false)
-      );
-    }
-    else if ( configuration.find( "global_hotspot" )!=std::string::npos ) {
+    else if ( configuration.find( "hotspot" )!=std::string::npos ) {
       logInfo("initDistributedMemoryConfiguration()", "use global hotspot elimination without joins (mpibalancing/StaticBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
         new mpibalancing::StaticBalancing(false)
@@ -281,7 +275,11 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
    (!UseStationaryCriterion && !repository.getState().isGridBalanced())
   );
 
-  logInfo("runAsMaster()", "finished grid setup after " << gridSetupIterations << " iterations" );
+  logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
+
+  if (tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0) {
+    logWarning( "createGrid(Repository)", "there are still " << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes() << " ranks idle" )
+  }
 }
 
 
@@ -503,28 +501,13 @@ void exahype::runners::Runner::recomputePredictorIfNecessary(
 void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(
     exahype::repositories::Repository& repository, bool plot) {
   // Only one time step (predictor vs. corrector) is used in this case.
-  repository.switchToFaceDataExchange();  // Riemann -> face2face
+  repository.switchToRiemannSolver();  // Riemann -> face2face
   repository.iterate();
-  repository.switchToCorrector();  // Face to cell
-  repository.iterate();
-
-//  int gridSetupIterations = 0;
-//  repository.switchToAugmentedAMRGrid();
-//  do {
-//    repository.iterate();
-//    gridSetupIterations++;
-//  } while (!repository.getState().isGridBalanced());
-//  repository.iterate();
-//  gridSetupIterations++;
-//
-//  logInfo("runAsMaster()",
-//          "grid setup iterations=" << gridSetupIterations << ", max-level="
-//          << repository.getState().getMaxLevel());
 
   if (plot) {
-    repository.switchToPlotAndGlobalTimeStepComputation();  // Inside cell
+    repository.switchToCorrectorAndPlot();  // Face to cell + Inside cell
   } else {
-    repository.switchToGlobalTimeStepComputation();  // Inside cell
+    repository.switchToCorrector();  // Face to cell + Inside cell
   }
   repository.iterate();
 

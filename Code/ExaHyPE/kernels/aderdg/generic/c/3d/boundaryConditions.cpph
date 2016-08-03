@@ -63,12 +63,11 @@ void kernels::aderdg::generic::c::boundaryConditions(double* fluxOut,
   for (int jj = 0; jj < basisSize; jj++) {  // loop over dof
     x[d2] = cellCentre[d2] + cellSize[d2] * (kernels::gaussLegendreNodes[basisSize-1][jj] - 0.5);
     for (int ii = 0; ii < basisSize; ii++) {  // loop over dof
-      x[d1] = cellCentre[d1] + cellSize[d1] * (kernels::gaussLegendreNodes[basisSize-1][ii] - 0.5);
-      for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-        PDEBoundaryConditions(x,t,faceIndex,normalNonZero,
-                              &fluxIn[idx2(ii,jj,ivar)],&stateIn[idx2(ii,jj,ivar)],
-                              &fluxOut[idx2(ii,jj,ivar)],&stateOut[idx2(ii,jj,ivar)]);
-      }
+      x[d1] = cellCentre[d1] + cellSize[d1] * (kernels::gaussLegendreNodes[basisSize-1][ii] - 0.5); 
+      PDEBoundaryConditions(x,t,faceIndex,normalNonZero,
+          &fluxIn[nidx2(ii,jj)], &stateIn[nidx2(ii,jj)],
+          &fluxOut[nidx2(ii,jj)],&stateOut[nidx2(ii,jj)]);
+
     }
   }
 }

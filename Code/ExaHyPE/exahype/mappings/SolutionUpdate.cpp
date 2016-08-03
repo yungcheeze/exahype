@@ -132,8 +132,6 @@ void exahype::mappings::SolutionUpdate::enterCell(
                            coarseGridCell, fineGridPositionOfCell);
 
   if (fineGridCell.isInitialised()) {
-    assertion( FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getCellDescriptionsIndex()) );
-
     // ADER-DG
     const int numberOfADERDGCellDescriptions = fineGridCell.getNumberOfADERDGCellDescriptions();
     // please use a different UserDefined per mapping/event

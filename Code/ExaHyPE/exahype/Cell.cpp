@@ -47,13 +47,9 @@ int exahype::Cell::getCellDescriptionsIndex() const {
 }
 
 void exahype::Cell::setupMetaData() {
-  assertion1(!ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-                 _cellData.getCellDescriptionsIndex()),
-             toString());
+  assertion1(!ADERDGCellDescriptionHeap::getInstance().isValidIndex(_cellData.getCellDescriptionsIndex()),toString());
 
-  const int CellDescriptionIndex =
-      ADERDGCellDescriptionHeap::getInstance().createData(0, 0);
-
+  const int CellDescriptionIndex = ADERDGCellDescriptionHeap::getInstance().createData(0, 0);
   FiniteVolumesCellDescriptionHeap::getInstance().createDataForIndex(CellDescriptionIndex,0,0);
 
   _cellData.setCellDescriptionsIndex(CellDescriptionIndex);
@@ -74,6 +70,11 @@ void exahype::Cell::shutdownMetaData() {
 
 
 bool exahype::Cell::isInitialised() const {
+  if (_cellData.getCellDescriptionsIndex() != multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
+    assertion( ADERDGCellDescriptionHeap::getInstance().isValidIndex(_cellData.getCellDescriptionsIndex()) );
+    assertion( FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(_cellData.getCellDescriptionsIndex()) );
+  }  // dead code elimination will get rid of this loop if Asserts flag is not set
+
   return _cellData.getCellDescriptionsIndex() != multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex;
 }
 

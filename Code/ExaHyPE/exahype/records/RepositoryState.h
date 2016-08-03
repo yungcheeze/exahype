@@ -31,7 +31,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   27/07/2016 17:56
+ * @date   02/08/2016 21:55
  */
 class exahype::records::RepositoryState { 
    
@@ -40,7 +40,7 @@ class exahype::records::RepositoryState {
       typedef exahype::records::RepositoryStatePacked Packed;
       
       enum Action {
-         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterAugmentedAMRGrid = 4, UseAdapterPlotAugmentedAMRGrid = 5, UseAdapterSolutionAdjustmentAndGlobalTimeStepComputation = 6, UseAdapterPredictorAndPlotAndGlobalTimeStepComputation = 7, UseAdapterPredictorAndGlobalTimeStepComputation = 8, UseAdapterADERDGTimeStep = 9, UseAdapterADERDGTimeStepAndPlot = 10, UseAdapterGlobalTimeStepComputation = 11, UseAdapterPlotAndGlobalTimeStepComputation = 12, UseAdapterFaceDataExchange = 13, UseAdapterPredictor = 14, UseAdapterPredictorRerun = 15, UseAdapterCorrector = 16, UseAdapterPlot = 17, NumberOfAdapters = 18
+         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterAugmentedAMRGrid = 4, UseAdapterPlotAugmentedAMRGrid = 5, UseAdapterSolutionAdjustmentAndGlobalTimeStepComputation = 6, UseAdapterPredictorAndPlotAndGlobalTimeStepComputation = 7, UseAdapterPredictorAndGlobalTimeStepComputation = 8, UseAdapterADERDGTimeStep = 9, UseAdapterADERDGTimeStepAndPlot = 10, UseAdapterPredictorRerun = 11, UseAdapterRiemannSolver = 12, UseAdapterPredictor = 13, UseAdapterCorrector = 14, UseAdapterCorrectorAndPlot = 15, UseAdapterPlot = 16, NumberOfAdapters = 17
       };
       
       struct PersistentRecords {
@@ -291,7 +291,7 @@ class exahype::records::RepositoryState {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   27/07/2016 17:56
+    * @date   02/08/2016 21:55
     */
    class exahype::records::RepositoryStatePacked { 
       

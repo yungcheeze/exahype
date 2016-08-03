@@ -46,13 +46,82 @@ namespace exahype {
 class exahype::plotters::Plotter {
  public:
 
+  /**
+   * Interface/abstract superclass for user-defined filtering and in-situ postprocessing
+   *
+   * For each solver that one specifies in the spec file, the toolkit generates
+   * one filter class where the user can in-situ postprocess the data before it
+   * goes into the actual output file.
+   *
+   * The superclass of such an in-situ postprocessing is this type.
+   *
+   * @author Tobias Weinzierl
+   */
   class UserOnTheFlyPostProcessing {
     public:
       virtual ~UserOnTheFlyPostProcessing() {}
 
+      /**
+       * Start plotting
+       *
+       * Is called per plot. The code instantiates each postprocessing filter
+       * only once. However, it calls the start and finish routine per written
+       * file. This way, you can either keep track of global data over the
+       * whole simulation time (if you plug into constructors and desctructors)
+       * or you can keep track of global quantities per written snapshot.
+       *
+       * Time is the minimal global time stamp of the simulation when the plot
+       * is started. If you have global time stepping, time is the simulation
+       * time of all data. If you use local or anarchic time stepping, time is
+       * the minimum of all time steps over the domain, as a plotter becomes
+       * active every time the minimum of all data in the domain overruns the
+       * snapshot time stamp.
+       */
       virtual void startPlotting( double time ) = 0;
+
+      /**
+       * Counterpart of startPlotting
+       */
       virtual void finishPlotting() = 0;
 
+      /**
+       * Mapping of simulation quantities onto output quantities
+       *
+       * This routine is called per output quantity that is to be plotted.
+       * Please note that it is called only for quantities of cells that do
+       * overlap with the spatial filter rules (if there are any). Filtering
+       * is done on a per-cell (ADER-DG)/per-patch (Finite Volumes) basis, i.e.
+       * a quantity might be outside of the filter and be plotted nevertheless
+       * if the corresponding cell overlaps with the plotted region.
+       *
+       * The sample locations (where the quantity comes from) depends on the
+       * type of the plotter underlying the filter. If it is a Cartesian
+       * plotter, then we sample all higher order polynomials within each cell
+       * with regular spacing equal to the order. If you use a probe, the
+       * quantity stems exactly from the probe (cmp. x parameter). Consult
+       * the spec of the plotters for details if in doubt.
+       *
+       * @param offsetOfPatch Offset (left, bottom, front corner) of patch from
+       *          which the quantity stems from.
+       * @param sizeOfPatch   Size of the underlying patch.
+       * @param x             Location of the mapped quantity. x is always
+       *          contained within the cell specified via offsetOfPatch and
+       *          sizeOfPatch. If you use a Cartesian plotter, the x are all
+       *          equidistant. Anyway, it is always the exact location where
+       *          Q is taken from the solution.
+       * @param Q             Vector of unknowns at position x. The cardinality
+       *          of the data is the unknowns plus the material parameters from
+       *          the spec file's solver.
+       * @param outputQuantities Vector of unknowns to be plotted actually. The
+       *          cardinality of this vector is the size specified via unknowns
+       *          in the plotter section in the spec file. Mappings are
+       *          expected to befill this array with data (usually from Q). If
+       *          the output cardinality in the spec file equals 0, this pointer
+       *          is nullptr.
+       * @param timeStamp     Actual time stamp of the quantity. In local time
+       *          stepping, different patches might have different time stamps
+       *          when we plot.
+       */
       virtual void mapQuantities(
         const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
         const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,

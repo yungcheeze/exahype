@@ -23,9 +23,6 @@ mpibalancing::GreedyBalancing::GreedyBalancing(int coarsestLevelWithRealWork, in
     activeNodes *= THREE_POWER_D;
     _finestLevelToForkAggressively++;
   }
-
-  // @todo zu Info
-  logWarning( "GreedyBalancing(int,int)", "finest level to fork aggressively=" << _finestLevelToForkAggressively );
 }
 
 
@@ -38,23 +35,23 @@ void mpibalancing::GreedyBalancing::receivedStartCommand( const int commandFromM
 
 
 int mpibalancing::GreedyBalancing::getCommandForWorker( int workerRank, bool forkIsAllowed, bool joinIsAllowed ) {
-  // @todo(Dominic->Tobias): I removed _joinsAllowed from the logTrace...(...)
   logTraceInWith3Arguments( "getCommandForWorker(int,bool)", workerRank, forkIsAllowed, joinIsAllowed);
 
+  int result = peano::parallel::loadbalancing::ForkGreedy;
 
-  if (_workersLevel.count(workerRank)==1) {
+  if (_forkHasFailed) {
+    result = peano::parallel::loadbalancing::Continue;
+  }
+  else if (_workersLevel.count(workerRank)==1) {
     const int workersLevel = _workersLevel.count(workerRank);
 
-    if (workersLevel<_finestLevelToForkAggressively) {
-      return peano::parallel::loadbalancing::ForkGreedy;
-    }
-    else {
-      return peano::parallel::loadbalancing::ForkOnce;
+    if (workersLevel>=_finestLevelToForkAggressively) {
+      result = peano::parallel::loadbalancing::ForkOnce;
     }
   }
-  else {
-    return peano::parallel::loadbalancing::ForkGreedy;
-  }
+
+  logTraceOutWith1Argument( "getCommandForWorker(int,bool)", result );
+  return result;
 }
 
 
@@ -85,10 +82,12 @@ peano::parallel::loadbalancing::OracleForOnePhase* mpibalancing::GreedyBalancing
 
 
 void mpibalancing::GreedyBalancing::forkFailed() {
-  logInfo(
-    "forkFailed()",
-    "oracle was informed that fork has failed. No further fork attempts in this iteration"
-  );
+  if (!_forkHasFailed) {
+    logInfo(
+      "forkFailed()",
+      "oracle was informed that fork has failed. No further fork attempts"
+    );
+  }
   _forkHasFailed = true;
 }
 

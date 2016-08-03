@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_PlotAndGlobalTimeStepComputation_H_
-#define EXAHYPE_ADAPTERS_PlotAndGlobalTimeStepComputation_H_
+#ifndef EXAHYPE_ADAPTERS_CorrectorAndPlot_H_
+#define EXAHYPE_ADAPTERS_CorrectorAndPlot_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,6 +18,8 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/mappings/SurfaceIntegral.h"
+ #include "exahype/mappings/SolutionUpdate.h"
  #include "exahype/mappings/Plot.h"
  #include "exahype/mappings/GlobalTimeStepComputation.h"
 
@@ -25,7 +27,7 @@
 
 namespace exahype {
       namespace adapters {
-        class PlotAndGlobalTimeStepComputation;
+        class CorrectorAndPlot;
       } 
 }
 
@@ -37,13 +39,17 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::PlotAndGlobalTimeStepComputation {
+class exahype::adapters::CorrectorAndPlot {
   private:
-    typedef mappings::Plot Mapping0;
-    typedef mappings::GlobalTimeStepComputation Mapping1;
+    typedef mappings::SurfaceIntegral Mapping0;
+    typedef mappings::SolutionUpdate Mapping1;
+    typedef mappings::Plot Mapping2;
+    typedef mappings::GlobalTimeStepComputation Mapping3;
 
-     Mapping0  _map2Plot;
-     Mapping1  _map2GlobalTimeStepComputation;
+     Mapping0  _map2SurfaceIntegral;
+     Mapping1  _map2SolutionUpdate;
+     Mapping2  _map2Plot;
+     Mapping3  _map2GlobalTimeStepComputation;
 
 
   public:
@@ -55,16 +61,16 @@ class exahype::adapters::PlotAndGlobalTimeStepComputation {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    PlotAndGlobalTimeStepComputation();
+    CorrectorAndPlot();
 
     #if defined(SharedMemoryParallelisation)
-    PlotAndGlobalTimeStepComputation(const PlotAndGlobalTimeStepComputation& masterThread);
+    CorrectorAndPlot(const CorrectorAndPlot& masterThread);
     #endif
 
-    virtual ~PlotAndGlobalTimeStepComputation();
+    virtual ~CorrectorAndPlot();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const PlotAndGlobalTimeStepComputation& workerThread);
+    void mergeWithWorkerThread(const CorrectorAndPlot& workerThread);
     #endif
 
     void createInnerVertex(

@@ -303,8 +303,7 @@ void exahype::mappings::Augmentation::enterCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-      coarseGridCell.getCellDescriptionsIndex())) {
+  if (coarseGridCell.isInitialised()) {
     for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(
         coarseGridCell.getCellDescriptionsIndex())) {
       bool solverNotFound = true;
@@ -339,7 +338,7 @@ void exahype::mappings::Augmentation::enterCell(
 
           solverNotFound = true;
           if (fineGridCell.isInitialised()) {
-            assertion( ADERDGCellDescriptionHeap::getInstance().isValidIndex(fineGridCell.getCellDescriptionsIndex()) );
+            assertion( fineGridCell.isInitialised() );
             for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.
                                                                                 getCellDescriptionsIndex())) {
               if (pCoarse.getSolverNumber() == pFine.getSolverNumber()) {
@@ -380,8 +379,7 @@ void exahype::mappings::Augmentation::leaveCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-      fineGridCell.getCellDescriptionsIndex())) {
+  if (fineGridCell.isInitialised()) {
     for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(
         fineGridCell.getCellDescriptionsIndex())) {
 
@@ -415,8 +413,7 @@ void exahype::mappings::Augmentation::ascend(
   logTraceInWith2Arguments("ascend(...)", coarseGridCell.toString(),
                            coarseGridVerticesEnumerator.toString());
 
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          coarseGridCell.getCellDescriptionsIndex())) {
+  if (coarseGridCell.isInitialised()) {
     for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(
              coarseGridCell.getCellDescriptionsIndex())) {
       bool eraseChildren = true;
@@ -429,8 +426,7 @@ void exahype::mappings::Augmentation::ascend(
             case exahype::records::ADERDGCellDescription::None:
               eraseChildren = true;
               dfor3(k)
-                if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-                          fineGridCells[kScalar].getCellDescriptionsIndex())) {
+                if (fineGridCells[kScalar].isInitialised()) {
                   for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(
                           fineGridCells[kScalar].getCellDescriptionsIndex())) {
                     if (pCoarse.getSolverNumber() == pFine.getSolverNumber()) {
@@ -444,8 +440,7 @@ void exahype::mappings::Augmentation::ascend(
 
               if (eraseChildren) {
                 dfor3(k)
-                  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-                                            fineGridCells[kScalar].getCellDescriptionsIndex())) {
+                  if (fineGridCells[kScalar].isInitialised()) {
                     auto pFine = ADERDGCellDescriptionHeap::getInstance().
                         getData(fineGridCells[kScalar].getCellDescriptionsIndex()).begin();
                     while (pFine != ADERDGCellDescriptionHeap::getInstance().
@@ -472,8 +467,7 @@ void exahype::mappings::Augmentation::ascend(
               // reset if not all children requested deaugmenting
               } else {
                 dfor3(k)
-                  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-                     fineGridCells[kScalar].getCellDescriptionsIndex())) {
+                  if (fineGridCells[kScalar].isInitialised()) {
                   for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(fineGridCells[kScalar]
                                                                .getCellDescriptionsIndex())) {
                     if (pCoarse.getSolverNumber()==pFine.getSolverNumber()) {

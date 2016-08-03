@@ -313,7 +313,6 @@ void exahype::mappings::Refinement::enterCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
   if (coarseGridCell.isInitialised()) {
-    assertion( ADERDGCellDescriptionHeap::getInstance().isValidIndex(coarseGridCell.getCellDescriptionsIndex()) );
     for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(coarseGridCell.getCellDescriptionsIndex())) {
       switch (pCoarse.getType()) {
         case exahype::records::ADERDGCellDescription::Cell:
@@ -335,8 +334,7 @@ void exahype::mappings::Refinement::enterCell(
                * we change the type of the children to Cell.
                * We furthermore set the
                */
-              if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-                  fineGridCell.getCellDescriptionsIndex())) {
+              if (fineGridCell.isInitialised()) {
                 for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())) {
                   if (pCoarse.getSolverNumber() == pFine.getSolverNumber()) {
                     assertion1(pFine.getType()==exahype::records::ADERDGCellDescription::Descendant ||
@@ -394,8 +392,7 @@ void exahype::mappings::Refinement::leaveCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-            fineGridCell.getCellDescriptionsIndex())) {
+  if (fineGridCell.isInitialised()) {
       for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(
                fineGridCell.getCellDescriptionsIndex())) {
         switch (pFine.getRefinementEvent()) {
@@ -430,8 +427,7 @@ void exahype::mappings::Refinement::ascend(
   logTraceInWith2Arguments("ascend(...)", coarseGridCell.toString(),
                            coarseGridVerticesEnumerator.toString());
 
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-          coarseGridCell.getCellDescriptionsIndex())) {
+  if (coarseGridCell.isInitialised()) {
     for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(
              coarseGridCell.getCellDescriptionsIndex())) {
       bool eraseChildren               = true;
@@ -443,8 +439,7 @@ void exahype::mappings::Refinement::ascend(
           eraseChildren = true;
 
           dfor3(k)
-            assertion(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-                fineGridCells[kScalar].getCellDescriptionsIndex()));
+            assertion(fineGridCells[kScalar].isInitialised());
             for (auto& pFine : ADERDGCellDescriptionHeap::getInstance()
                 .getData(fineGridCells[kScalar]
                 .getCellDescriptionsIndex())) {

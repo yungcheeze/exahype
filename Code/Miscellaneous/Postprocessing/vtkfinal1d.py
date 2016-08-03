@@ -11,6 +11,9 @@
 #
 # -- Sven K, 2016
 
+#### TODO: Merge this into exaplayer,
+####       just as an option for the Writer
+
 import sys
 from pylab import *
 ion();

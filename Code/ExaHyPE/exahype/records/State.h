@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   27/07/2016 17:56
+    * @date   02/08/2016 21:55
     */
    class exahype::records::State { 
       
@@ -1530,7 +1530,7 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   27/07/2016 17:56
+       * @date   02/08/2016 21:55
        */
       class exahype::records::StatePacked { 
          
@@ -3072,7 +3072,7 @@ namespace exahype {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   27/07/2016 17:56
+          * @date   02/08/2016 21:55
           */
          class exahype::records::State { 
             
@@ -4391,7 +4391,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   27/07/2016 17:56
+             * @date   02/08/2016 21:55
              */
             class exahype::records::StatePacked { 
                

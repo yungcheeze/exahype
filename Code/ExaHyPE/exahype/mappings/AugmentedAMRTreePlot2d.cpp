@@ -387,11 +387,8 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
         cellIndex,
         static_cast<int>(fineGridCell.getCellDescriptionsIndex()));
 
-    if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
-            fineGridCell.getCellDescriptionsIndex()) &&
-        ADERDGCellDescriptionHeap::getInstance()
-                .getData(fineGridCell.getCellDescriptionsIndex())
-                .size() > 0) {
+    if (fineGridCell.isInitialised() &&
+        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size() > 0) {
       int solverNumber = 0;
       bool solverFound = false;
 
