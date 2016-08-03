@@ -3,118 +3,80 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
-#include "kernels/aderdg/generic/Kernels.h"
 
-#include "string.h"
+#include "../../Kernels.h"
 
-#include "tarch/la/Scalar.h"
-#include "tarch/la/ScalarOperations.h"
+#include <cstring>
 
-#include "kernels/GaussLegendreQuadrature.h"
-#include "kernels/DGMatrices.h"
+#include <tarch/la/Vector.h>
 
-#include <fstream>
+#include "../../../../DGMatrices.h"
+#include "../../../../GaussLegendreQuadrature.h"
+#include "../../../../KernelUtils.h"
 
-using std::endl;
-using std::cout;
+namespace kernels {
+namespace aderdg {
+namespace generic {
+namespace c {
 
 #if DIMENSIONS == 2
 
-void kernels::aderdg::generic::c::volumeIntegralNonlinear(
-    double *lduh, const double *const lFhi,
-    const tarch::la::Vector<DIMENSIONS, double> &dx,
-    const int numberOfVariables, const int basisSize) {
-  // todo Angelika
-  // Please remove the typedefs in generic kernels again since numberOf(...)Dof
-  // is not
-  // a compile time variable anymore
-  // constexpr int numberOfDof =
-  //    5 * (3 + 1) * (3 + 1);  // tarch::la::aPowI(3+1,DIMENSIONS);
-  // constexpr int order = 3;
-
+void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
+                             const tarch::la::Vector<DIMENSIONS, double>& dx,
+                             const int numberOfVariables,
+                             const int numberOfParameters,
+                             const int basisSize) {
   const int order = basisSize - 1;
-  const int numberOfDof = numberOfVariables * basisSize * basisSize;
+  const int basisSize2 = basisSize * basisSize;
+  const int basisSize3 = basisSize2 * basisSize;
 
-  // memory layout of lFhi:
-  // lFhi = [ lFhi_x | lFhi_y ] ordered as follows
-  // (a) lFhi_x[nDOF_y][nDOF_x][nVar]
-  // (b) lFhi_y[nDOF_x][nDOF_y][nVar]
-  // Note the variable order of lFhi_y
-  // let's not bother with offsets and define separate flux matrices
-  const double *lFhi_x = &lFhi[0];            // f flux
-  const double *lFhi_y = &lFhi[numberOfDof];  // g flux
+  // Initialize the update DOF
+  std::memset(lduh, 0, basisSize2 * numberOfVariables * sizeof(double));
 
-  memset(lduh, 0, sizeof(double) * numberOfDof);
+  // x-direction
+  {
+    idx3 idx(basisSize, basisSize, numberOfVariables);
+    const int x_offset = 0 * basisSize2 * numberOfVariables;
+    for (int j = 0; j < basisSize; j++) {
+      const double weight = kernels::gaussLegendreWeights[order][j];
+      const double updateSize = weight / dx[0];
 
-  // access lduh(nDOF[2] x nDOF[1] x numberOfVariables) in the usual 3D array
-  // manner
-  // @todo Angelika
-  // typedef double tensor_t[3 + 1][5];
-  // tensor_t *lduh3D = (tensor_t *)lduh;
-
-  // lduh is (nDofy x nDofx x nVar)
-
-  // Compute the "derivatives" (contributions of the stiffness matrix)
-  // x direction (independent from the y and z derivatives)
-  for (int jj = 0; jj < basisSize; jj++) {
-    for (int ii = 0; ii < basisSize; ii++) {
-      const int nodeIndex = basisSize * jj + ii;
-      const int dofStartIndex = nodeIndex * numberOfVariables;
-
-      double weight = kernels::gaussLegendreWeights[order][jj];
-
-      // MATMUL: Kxi * lFhi_x
-      for (int mm = 0; mm < basisSize; mm++) {
-        const int mmNodeIndex = mm + basisSize * jj;
-        const int mmDofStartIndex = mmNodeIndex * numberOfVariables;
-
-        for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-          lduh[dofStartIndex + ivar] += weight / dx[0] *
-                                        kernels::Kxi[order][ii][mm] *
-                                        lFhi_x[mmDofStartIndex + ivar];
-          //          lduh3D[jj][ii][ivar] += weight / dx[0] *
-          //          kernels::Kxi[order][ii][mm] *
-          //                                  lFhi_x[mmDofStartIndex + ivar];
+      // Fortran: lduh(l, k, j) += lFhi_x(l, m, j) * Kxi(m, k)
+      // Matrix product: (l, m) * (m, k) = (l, k)
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
+          for (int m = 0; m < basisSize; m++) {
+            lduh[idx(j, k, l)] += kernels::Kxi[order][k][m] *
+                                  lFhi[x_offset + idx(j, m, l)] * updateSize;
+          }
         }
       }
     }
   }
 
-  // lduh is (nDofy x nDofx x nVar)
+  // y-direction
+  {
+    idx3 idx(basisSize, basisSize, numberOfVariables);
+    const int y_offset = 1 * basisSize2 * numberOfVariables;
+    for (int j = 0; j < basisSize; j++) {
+      const double weight = kernels::gaussLegendreWeights[order][j];
+      const double updateSize = weight / dx[1];
 
-  // Compute the "derivatives" (contributions of the stiffness matrix)
-  // y direction (independent from the x and z derivatives)
-  for (int jj = 0; jj < basisSize; jj++) {
-    for (int ii = 0; ii < basisSize; ii++) {
-      const int nodeIndex = basisSize * jj + ii;
-      const int dofStartIndex = nodeIndex * numberOfVariables;
-
-      double weight = kernels::gaussLegendreWeights[order][ii];
-
-      // MATMUL: Kxi * lFhi_y
-      for (int mm = 0; mm < basisSize; mm++) {
-        // without reordering:
-        // const int mmNodeIndex         = ii + basisSize * mm;
-        // const int mmDofStartIndex     = mmNodeIndex * numberOfVariables;
-        const int mmNodeIndex = mm + basisSize * ii;
-        const int mmDofStartIndex = mmNodeIndex * numberOfVariables;
-
-        // now we benefit from the reordering of lFhi_y
-        for (int ivar = 0; ivar < numberOfVariables; ivar++) {
-          lduh[dofStartIndex + ivar] += weight / dx[1] *
-                                        kernels::Kxi[order][jj][mm] *
-                                        lFhi_y[mmDofStartIndex + ivar];
-          //          lduh3D[jj][ii][ivar] += weight / dx[1] *
-          //          kernels::Kxi[order][jj][mm] *
-          //                                  lFhi_y[mmDofStartIndex + ivar];
+      // Fortran: lduh(l, j, k) += lFhi_y(l, m, j) * Kxi(m, k)
+      // Matrix product: (l, m) * (m, k) = (l, k)
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
+          for (int m = 0; m < basisSize; m++) {
+            lduh[idx(k, j, l)] += kernels::Kxi[order][k][m] *
+                                  lFhi[y_offset + idx(j, m, l)] * updateSize;
+          }
         }
       }
     }
@@ -122,3 +84,8 @@ void kernels::aderdg::generic::c::volumeIntegralNonlinear(
 }
 
 #endif  // DIMENSIONS == 2
+
+}  // namespace c
+}  // namespace generic
+}  // namespace aderdg
+}  // namespace kernels

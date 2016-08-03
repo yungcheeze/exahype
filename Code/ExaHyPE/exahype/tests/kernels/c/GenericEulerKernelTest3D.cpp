@@ -195,6 +195,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
   kernels::aderdg::generic::c::volumeIntegralNonlinear(
       lduh, lFhi, dx[0],
       5,   // getNumberOfVariables(),
+      0,   // getNumberOfParameters()
       4);  // getNodesPerCoordinateAxis()
 
   for (int i = 0; i < 320; i++) {
