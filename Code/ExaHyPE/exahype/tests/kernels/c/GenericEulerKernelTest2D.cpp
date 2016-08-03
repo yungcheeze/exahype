@@ -136,6 +136,7 @@ void GenericEulerKernelTest::testSolutionUpdate() {
       luh, ::exahype::tests::testdata::generic_euler::testSolutionUpdate::lduh,
       dt,
       5,  // getNumberOfVariables(),
+      0,  // getNumberOfParameters
       4   // getNodesPerCoordinateAxis()
       );
 

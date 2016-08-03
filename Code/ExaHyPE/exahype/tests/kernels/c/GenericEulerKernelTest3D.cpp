@@ -407,7 +407,8 @@ void GenericEulerKernelTest::testSolutionUpdate() {
   }
 
   kernels::aderdg::generic::c::solutionUpdate(luh, lduh, dt,
-                                              5,  // getNumberOfVariables(),
+                                              5,  // getNumberOfVariables()
+                                              0,  // getNumberOfParameters()
                                               4   // getNodesPerCoordinateAxis()
                                               );
 
