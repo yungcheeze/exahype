@@ -116,7 +116,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
         + "::riemannSolver"
         + (isLinear() ? "Linear<eigenvalues, matrixb>" : "Nonlinear<eigenvalues>")
-        + "( FL, FR, QL, QR, dt, normalNonZeroIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        + "( FL, FR, QL, QR, dt, normalNonZeroIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"riemannSolver\");\n");
     }
