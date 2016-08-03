@@ -103,8 +103,9 @@ void Euler::MyEulerSolver::adjustedSolutionValues(const double* const x,const do
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
   // @todo Please implement
-  if (tarch::la::equals(t, 0.0)) {
-      InitialData(x,Q);
+  if (tarch::la::equals(t, 0.0)) { 
+      // pass the time for exact initial data as t is not exactly 0.
+      InitialData(x,Q,t);
   }
 }
 

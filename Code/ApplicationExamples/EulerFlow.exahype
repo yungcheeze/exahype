@@ -27,18 +27,17 @@ exahype-project  Euler
 
   computational-domain
     dimension                = 2
-    width                    = 15.0, 15.0
+    width                    = 2.0, 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 0.5
+    end-time                 = 1.0
   end computational-domain
 
-/*
   shared-memory
     identifier               = autotuning
-    cores                    = 2
+    cores                    = 4
     properties-file          = sharedmemory.properties
   end shared-memory
- */
+
  /*
   distributed-memory
     identifier               = static_load_balancing
@@ -57,7 +56,8 @@ exahype-project  Euler
     variables         = 5
     parameters        = 0
     order             = 3
-    maximum-mesh-size = 1.5
+    /* 27 points: 0.05, 9 points: 0.15 */
+    maximum-mesh-size = 0.15
     time-stepping     = global
     kernel            = generic::fluxes::nonlinear
     language          = C
@@ -73,7 +73,7 @@ exahype-project  Euler
     /* this is the fake plotter used to compute global integrals */
     /* it has no output fields. */
     plot vtk::Cartesian::ascii
-      variables = 5
+      variables = 0
       time = 0.0
       repeat = 0.05
       output = ./output/these-files-should-not-be-there

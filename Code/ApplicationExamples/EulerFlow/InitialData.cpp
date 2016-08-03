@@ -9,6 +9,7 @@
 #include "InitialData.h"
 #include "Primitives.h"
 #include "GeneratedConstants.h"
+#include "PastaMatrix.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -37,8 +38,22 @@ void ShuVortex2D(const double* const  x, double* V, double t=0.0) {
 	V[4] = 1. + dp;
 }
 
+void MovingGauss2D(const double* const x, double* V, double t=0.0) {
+	Pasta::vec2 xvec(x);
+	Pasta::vec2 v0({ 0.5, 0 });
+	//Pasta::vec2 v0({ 0.0, 0 });
+	Pasta::vec2 x0({ 0.5, 0.5 });
+	double width = 0.25;
+	
+	V[0] = 0.5 + 0.2 * exp(- (xvec - x0 - v0*t).norm() / pow(width, MY_DIMENSIONS) ); // rho
+	V[1] = v0(0);
+	V[2] = v0(1);
+	V[3] = 0.;
+	V[4] = 1.; // pressure
+}
 
-void gauss(const double* const  x, double* Q) {
+void DiffusingGauss(const double* const  x, double* Q) {
+    // btw, there is also an exact solution for this cauchy data
     const double GAMMA = 1.4;
 
     Q[0] = 1.;
@@ -47,10 +62,10 @@ void gauss(const double* const  x, double* Q) {
     Q[3] = 0.;
 #if DIMENSIONS == 2
     Q[4] =
-        1. / (GAMMA - 1) +
-        exp(-((x[0] - 0.5) * (x[0] - 0.5) + (x[1] - 0.5) * (x[1] - 0.5)) /
-                 (0.05 * 0.05)) *
-            1.0e-3;
+	1. / (GAMMA - 1) +
+	exp(-((x[0] - 0.5) * (x[0] - 0.5) + (x[1] - 0.5) * (x[1] - 0.5)) /
+	         (0.05 * 0.05)) *
+	    1.0e-3;
 #else
     Q[4] =
         1. / (GAMMA - 1) +
@@ -63,8 +78,8 @@ void gauss(const double* const  x, double* Q) {
 static bool wroteAboutInitialData(false);
 #define logInitialData(txt...) { if(!wroteAboutInitialData) printf(txt); }
 
-void InitialData(const double* const  x, double* Q) {
-	const char* default_id = "ShuVortex";
+void InitialData(const double* const  x, double* Q, double t) {
+	const char* default_id = "MovingGauss2D";
 	const char* id = getenv("EXAHYPE_INITIALDATA");
 	if(!id) { logInitialData("Using default ID\n"); id = default_id; }
 	//logInitialData("Have read '%s'\n", id);
@@ -73,12 +88,17 @@ void InitialData(const double* const  x, double* Q) {
 		logInitialData("Loading ShuVortex Initial Data\n");
 		// ShuVortex gives us primitive data
                 double V[MY_NUMBER_OF_VARIABLES];
-		ShuVortex2D(x, V);
+		ShuVortex2D(x, V, t);
                 prim2con(Q, V);
-	} else if(sid == "Gaussian") {
+	} else if(sid == "MovingGauss2D") {
+		double V[MY_NUMBER_OF_VARIABLES];
+		MovingGauss2D(x, V, t);
+		prim2con(Q, V);
+		logInitialData("Loading moving Gauss\n");
+	} else if(sid == "DiffusingGauss") {
 		// default:
-		gauss(x, Q);
-		logInitialData("Loading Gaussian Initial Data\n");
+		DiffusingGauss(x, Q);
+		logInitialData("Loading diffusing Gauss Initial Data\n");
 	} else {
 		logInitialData("Do not understand requested Initial Data key\n");
 		exit(-42);
