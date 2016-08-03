@@ -110,7 +110,7 @@ void spaceTimePredictorNonlinear(
     double* lFhbnd, const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     const double predictorTimeStepSize, const int numberOfVariables,
-    const int basisSize);
+    const int numberOfParameters, const int basisSize);
 
 #if DIMENSIONS == 2
 
@@ -119,7 +119,7 @@ void spaceTimePredictorNonlinear(
     double* lQi, double* lFi, const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     const double predictorTimeStepSize, const int numberOfVariables,
-    const int basisSize);
+    const int numberOfParameters, const int basisSize);
 
 #endif  // DIMENSIONS == 2
 

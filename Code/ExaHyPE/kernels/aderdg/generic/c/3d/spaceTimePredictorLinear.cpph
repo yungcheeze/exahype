@@ -27,6 +27,7 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
                               const double* const luh,
                               const tarch::la::Vector<DIMENSIONS, double>& dx,
                               const double dt, const int numberOfVariables,
+                              const int numberOfParameters,
                               const int basisSize) {
   const int basisSize2 = basisSize * basisSize;
   const int basisSize3 = basisSize2 * basisSize;
@@ -37,6 +38,11 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
   double* lQh = new double[basisSize5 *
                            numberOfVariables];  // space-time degrees of freedom
   std::memset(lQh, 0, basisSize5 * numberOfVariables * sizeof(double));
+
+  //  printf(" dudx[%d] = %f, %f, %f, %f \n ", order,
+  //  kernels::dudx[order][0][0],
+  //         kernels::dudx[order][0][1], kernels::dudx[order][0][2],
+  //         kernels::dudx[order][0][3]);
 
   // The zeroth time derivative (time dof number 1) is the initial condition
   // lqh(l,1,k,j,i) += luh(l,k,j,i)
@@ -51,6 +57,11 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
                   j * basisSize * numberOfVariables + k * numberOfVariables +
                   l];
         }
+        //        printf(
+        //            " luh[%d][%d][%d] = %20.10e \n", i, j, k,
+        //            luh[i * basisSize2 * numberOfVariables +
+        //                j * basisSize * numberOfVariables + k *
+        //                numberOfVariables + 0]);
       }
     }
   }
@@ -84,6 +95,12 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
                   kernels::dudx[order][n][l];
             }
           }
+          /*          printf(" Qx[%d][%d][%d][%d] = %20.10e \n ", i, j, k, l,
+                           gradQ[i * basisSize3 * 3 * numberOfVariables +
+                                 j * basisSize2 * 3 * numberOfVariables +
+                                 k * basisSize * 3 * numberOfVariables +
+                                 l * 3 * numberOfVariables + 0 *
+             numberOfVariables + 0]); */
         }
       }
     }
@@ -107,6 +124,12 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
                   kernels::dudx[order][n][l];
             }
           }
+          /*          printf(" Qy[%d][%d][%d][%d] = %20.10e  \n ", i, j, k, l,
+                           gradQ[i * basisSize3 * 3 * numberOfVariables +
+                                 j * basisSize2 * 3 * numberOfVariables +
+                                 l * basisSize * 3 * numberOfVariables +
+                                 k * 3 * numberOfVariables + 1 *
+             numberOfVariables + 0]); */
         }
       }
     }
@@ -130,6 +153,12 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
                   kernels::dudx[order][n][l];
             }
           }
+          /*          printf(" Qz[%d][%d][%d][%d] = %20.10e  \n ", i, j, k, l,
+                           gradQ[i * basisSize3 * 3 * numberOfVariables +
+                                 l * basisSize2 * 3 * numberOfVariables +
+                                 j * basisSize * 3 * numberOfVariables +
+                                 k * 3 * numberOfVariables + 2 *
+             numberOfVariables + 0]); */
         }
       }
     }
@@ -154,20 +183,26 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
       }
     }
 
-    for (int j = 0; j < basisSize; j++) {
-      for (int k = 0; k < basisSize; k++) {
-        for (int l = 0; l < basisSize; l++) {
-          // lQh(:,l,k,j,i+1) -= SUM(lFh(:,1:nDim,l,k,j,i), dim=2)
-          for (int m = 0; m < 3; m++) {
-            for (int n = 0; n < numberOfVariables; n++) {
-              lQh[(i + 1) * basisSize3 * numberOfVariables +
-                  j * basisSize2 * numberOfVariables +
-                  k * basisSize * numberOfVariables + l * numberOfVariables +
-                  n] -=
-                  lFh[i * basisSize3 * 3 * numberOfVariables +
-                      j * basisSize2 * 3 * numberOfVariables +
-                      k * basisSize * 3 * numberOfVariables +
-                      l * 3 * numberOfVariables + m * numberOfVariables + n];
+    if (i < basisSize - 1) {  // TODO: Check this change
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          for (int l = 0; l < basisSize; l++) {
+            // lQh(:,i+1,l,k,j) -= SUM(lFh(:,1:nDim,l,k,j,i), dim=2)
+            for (int m = 0; m < 3; m++) {
+              for (int n = 0; n < numberOfVariables; n++) {
+                lQh[j * basisSize3 * numberOfVariables +
+                    k * basisSize2 * numberOfVariables +
+                    l * basisSize * numberOfVariables +
+                    (i + 1) * numberOfVariables + n] -=  // Todo: Here, there
+                                                         // was a bug in the
+                                                         // time index. (i+1)
+                                                         // was in the wrong
+                                                         // place.
+                    lFh[i * basisSize3 * 3 * numberOfVariables +
+                        j * basisSize2 * 3 * numberOfVariables +
+                        k * basisSize * 3 * numberOfVariables +
+                        l * 3 * numberOfVariables + m * numberOfVariables + n];
+              }
             }
           }
         }
@@ -204,13 +239,26 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
                  m] += lQh[j * basisSize3 * numberOfVariables +
                            k * basisSize2 * numberOfVariables +
                            l * basisSize * numberOfVariables +
-                           i * numberOfVariables + m];
+                           i * numberOfVariables + m] *
+                       dtavFac;  // todo fixed one bug
           }
         }
       }
     }
     dtavFac *= dt / (i + 2);
   }
+
+  // Fortran: lQhi(:,:,:,:) += dtavFac * lQh(:,i,:,:,:)
+  /*  for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < basisSize; l++) {
+          printf(" lqhi = %20.10e \n ", lQhi[j * basisSize2 * numberOfVariables
+    +
+                                             k * basisSize * numberOfVariables +
+                                             l * numberOfVariables + 0]);
+        }
+      }
+    } */
 
   // lFhi(:,:,:,:,:) = lFh(:,:,:,:,:,1)
   for (int i = 0; i < 3; i++) {
@@ -246,7 +294,8 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
                   lFh[i * basisSize3 * 3 * numberOfVariables +
                       k * basisSize2 * 3 * numberOfVariables +
                       l * basisSize * 3 * numberOfVariables +
-                      m * 3 * numberOfVariables + j * numberOfVariables + n];
+                      m * 3 * numberOfVariables + j * numberOfVariables + n] *
+                  dtavFac;  // todo fixed one bug
             }
           }
         }
@@ -304,6 +353,17 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
                       kernels::FRCoeff[order][l];
         }
       }
+
+      /*      printf(
+                "Qbnd0 = %20.10e \n ",
+                lQbnd[0 * basisSize2 * numberOfVariables +
+                      i * basisSize * numberOfVariables + j * numberOfVariables
+         + 0]);
+            printf(
+                "Qbnd1 = %20.10e \n ",
+                lQbnd[1 * basisSize2 * numberOfVariables +
+                      i * basisSize * numberOfVariables + j * numberOfVariables
+         + 0]); */
     }
   }
 
@@ -352,6 +412,16 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
                       kernels::FRCoeff[order][l];
         }
       }
+      /*      printf(
+                "Qbnd2 = %20.10e \n ",
+                lQbnd[2 * basisSize2 * numberOfVariables +
+                      i * basisSize * numberOfVariables + j * numberOfVariables
+         + 0]);
+            printf(
+                "Qbnd3 = %20.10e \n ",
+                lQbnd[3 * basisSize2 * numberOfVariables +
+                      i * basisSize * numberOfVariables + j * numberOfVariables
+         + 0]); */
     }
   }
 
@@ -400,6 +470,16 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
                       kernels::FRCoeff[order][l];
         }
       }
+      /*      printf(
+                "Qbnd4 = %20.10e \n ",
+                lQbnd[4 * basisSize2 * numberOfVariables +
+                      i * basisSize * numberOfVariables + j * numberOfVariables
+         + 0]);
+            printf(
+                "Qbnd5 = %20.10e \n ",
+                lQbnd[5 * basisSize2 * numberOfVariables +
+                      i * basisSize * numberOfVariables + j * numberOfVariables
+         + 0]); */
     }
   }
 

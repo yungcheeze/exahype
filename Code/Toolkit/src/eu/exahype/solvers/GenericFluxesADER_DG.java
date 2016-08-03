@@ -60,7 +60,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     }
     writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
         + "::spaceTimePredictor" + (isLinear() ? "Linear<ncp>" : "Nonlinear<flux>")
-        + "( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        + "( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"spaceTimePredictor\");\n");
     }
