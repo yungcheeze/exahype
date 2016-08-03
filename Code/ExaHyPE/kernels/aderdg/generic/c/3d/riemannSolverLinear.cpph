@@ -15,6 +15,8 @@
 #include <cmath>
 #include <cstring>
 
+#include "../../../../KernelUtils.h"
+
 namespace kernels {
 namespace aderdg {
 namespace generic {
@@ -35,20 +37,19 @@ void riemannSolverLinear(double* FL, double* FR, const double* const QL,
   // compute the numerical dissipation
   double* QavL = new double[numberOfVariables];
   double* QavR = new double[numberOfVariables];
-  std::memset(QavL, 0, numberOfVariables * sizeof(double));
-  std::memset(QavR, 0, numberOfVariables * sizeof(double));
-  for (int i = 0; i < basisSize; i++) {
-    for (int j = 0; j < basisSize; j++) {
-      const double weight = kernels::gaussLegendreWeights[order][i] *
-                            kernels::gaussLegendreWeights[order][j];
+  {
+    idx3 idx_QLR(basisSize, basisSize, numberOfVariables);
+    std::memset(QavL, 0, numberOfVariables * sizeof(double));
+    std::memset(QavR, 0, numberOfVariables * sizeof(double));
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        const double weight = kernels::gaussLegendreWeights[order][i] *
+                              kernels::gaussLegendreWeights[order][j];
 
-      for (int k = 0; k < numberOfVariables; k++) {
-        QavL[k] +=
-            weight *
-            QL[i * basisSize * numberOfVariables + j * numberOfVariables + k];
-        QavR[k] +=
-            weight *
-            QR[i * basisSize * numberOfVariables + j * numberOfVariables + k];
+        for (int k = 0; k < numberOfVariables; k++) {
+          QavL[k] += weight * QL[idx_QLR(i, j, k)];
+          QavR[k] += weight * QR[idx_QLR(i, j, k)];
+        }
       }
     }
   }
@@ -90,9 +91,12 @@ void riemannSolverLinear(double* FL, double* FR, const double* const QL,
               numberOfVariables * numberOfVariables * sizeof(double));
 
   // Avoid diffusion of parameters
-  for (int i = 0; i < numberOfVariables - numberOfParameters; i++) {
-    BnMinusIdSmax[i * numberOfVariables + i] -= smax;
-    BnPlusIdSmax[i * numberOfVariables + i] += smax;
+  {
+    idx2 idx_BnPM(numberOfVariables, numberOfVariables);
+    for (int i = 0; i < numberOfVariables - numberOfParameters; i++) {
+      BnMinusIdSmax[idx_BnPM(i, i)] -= smax;
+      BnPlusIdSmax[idx_BnPM(i, i)] += smax;
+    }
   }
 
   double* Q = new double[basisSize2 * numberOfVariables];
@@ -101,18 +105,20 @@ void riemannSolverLinear(double* FL, double* FR, const double* const QL,
 
   std::memset(FL, 0, basisSize2 * numberOfVariables * sizeof(double));
   std::memset(FR, 0, basisSize2 * numberOfVariables * sizeof(double));
-  for (int i = 0; i < basisSize; i++) {
-    for (int j = 0; j < basisSize; j++) {
-      // FL(:,j,i) = 0.5 * (Bn - Id*smax)(:,:) * (QR(:,j,i) - QL(:,j,i))
-      // FR(:,j,i) = 0.5 * (Bn + Id*smax)(:,:) * (QR(:,j,i) - QL(:,j,i))
-      for (int k = 0; k < numberOfVariables - numberOfParameters; k++) {
-        for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
-          FL[i * basisSize * numberOfVariables + j * numberOfVariables + k] +=
-              BnMinusIdSmax[l * numberOfVariables + k] *
-              Q[i * basisSize * numberOfVariables + j * numberOfVariables + l];
-          FR[i * basisSize * numberOfVariables + j * numberOfVariables + k] +=
-              BnPlusIdSmax[l * numberOfVariables + k] *
-              Q[i * basisSize * numberOfVariables + j * numberOfVariables + l];
+  {
+    idx2 idx_BnPM(numberOfVariables, numberOfVariables);
+    idx3 idx_QFLR(basisSize, basisSize, numberOfVariables);
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        // FL(:,j,i) = 0.5 * (Bn - Id*smax)(:,:) * (QR(:,j,i) - QL(:,j,i))
+        // FR(:,j,i) = 0.5 * (Bn + Id*smax)(:,:) * (QR(:,j,i) - QL(:,j,i))
+        for (int k = 0; k < numberOfVariables - numberOfParameters; k++) {
+          for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
+            FL[idx_QFLR(i, j, k)] +=
+                BnMinusIdSmax[idx_BnPM(l, k)] * Q[idx_QFLR(i, j, l)];
+            FR[idx_QFLR(i, j, k)] +=
+                BnPlusIdSmax[idx_BnPM(l, k)] * Q[idx_QFLR(i, j, l)];
+          }
         }
       }
     }
