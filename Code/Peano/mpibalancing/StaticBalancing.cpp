@@ -125,7 +125,11 @@ void mpibalancing::StaticBalancing::computeMaxForksOnCriticalWorker( const int c
       static_cast<int>(std::ceil(
         commandFromMaster*( 1.0-getMinimumWeightOfWorkers()/getMaximumWeightOfWorkers() )
       )) : 0;
-    assertion4(_maxForksOnCriticalWorker>=0, commandFromMaster, _maxForksOnCriticalWorker, getMinimumWeightOfWorkers(), getMaximumWeightOfWorkers());
+    assertion4(
+      _maxForksOnCriticalWorker>=0,
+      commandFromMaster, _maxForksOnCriticalWorker,
+      getMinimumWeightOfWorkers(), getMaximumWeightOfWorkers()
+    );
 
     if ( _maxForksOnCriticalWorker>static_cast<int>(commandFromMaster) ) {
       _maxForksOnCriticalWorker = static_cast<int>(commandFromMaster);
@@ -185,12 +189,23 @@ int mpibalancing::StaticBalancing::getCommandForWorker( int workerRank, bool for
     else if (
       _criticalWorker.count(workerRank)>0 &&
       forkIsAllowed &&
+      !_forkHasFailed &&
+      _maxForksOnCriticalWorker==0
+    ) {
+      result = peano::parallel::loadbalancing::Continue;
+      assertion( result!=peano::parallel::loadbalancing::UndefinedLoadBalancingFlag );
+    }
+    else if (
+      _criticalWorker.count(workerRank)>0 &&
+      forkIsAllowed &&
       !_forkHasFailed
     ) {
       result = _maxForksOnCriticalWorker;
+      assertion( result!=peano::parallel::loadbalancing::UndefinedLoadBalancingFlag );
     }
   }
 
+  assertion( result!=peano::parallel::loadbalancing::UndefinedLoadBalancingFlag );
   logTraceOutWith1Argument( "getCommandForWorker(int,bool)", result );
   return result;
 }
