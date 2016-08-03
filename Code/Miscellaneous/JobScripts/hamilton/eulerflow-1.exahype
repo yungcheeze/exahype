@@ -27,9 +27,9 @@ exahype-project  Euler
 
   computational-domain
     dimension                = 2
-    width                    = 1.0, 1.0
+    width                    = 15.0, 15.0
     offset                   = 0.0, 0.0
-    end-time                 = 0.4
+    end-time                 = 0.5
   end computational-domain
 
   shared-memory
@@ -40,7 +40,7 @@ exahype-project  Euler
  
   distributed-memory
     identifier               = static_load_balancing
-    configure                = {greedy,FCFS}
+    configure                = {greedy,FCFS} 
     buffer-size              = 64
     timeout                  = 120
   end distributed-memory
@@ -58,22 +58,6 @@ exahype-project  Euler
     time-stepping     = global
     kernel            = generic::fluxes::nonlinear
     language          = C
-
-    plot vtk::Cartesian::ascii
-      variables = 5
-      time      = 1.0
-      repeat    = 0.05
-      output    = ./solution
-      select    = {all} 
-    end plot
-
-    plot probe::ascii
-      variables = 5
-      time      = 1.0
-      repeat    = 0.05
-      output    = ./seismogram
-      select    = {all,x:0.2,y:0.2} 
-    end plot
   end solver
 
 end exahype-project
