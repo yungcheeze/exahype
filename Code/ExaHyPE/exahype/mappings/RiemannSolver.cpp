@@ -282,15 +282,20 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
              cellDescriptionsIndexOfRightCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) ||
              (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfRightCell) &&
              cellDescriptionsIndexOfLeftCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex)) {
-    const int cellDescriptionsIndex =
-        (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfLeftCell))
-            ? cellDescriptionsIndexOfLeftCell
-            : cellDescriptionsIndexOfRightCell;
-    const int faceIndex =
-        (cellDescriptionsIndex == cellDescriptionsIndexOfLeftCell)
-            ? faceIndexForLeftCell
-            : faceIndexForRightCell;
-
+    //
+    int cellDescriptionsIndex = cellDescriptionsIndexOfLeftCell;
+    int faceIndex             = faceIndexForLeftCell;
+    if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfRightCell)) {
+      cellDescriptionsIndex = cellDescriptionsIndexOfRightCell;
+      faceIndex             = faceIndexForRightCell;
+      assertion1(!ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+          cellDescriptionsIndexOfLeftCell),
+          cellDescriptionsIndexOfLeftCell);
+    } else {
+      assertion1(!ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+                cellDescriptionsIndexOfRightCell),
+                cellDescriptionsIndexOfRightCell);
+    }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
     assertion(ADERDGCellDescriptionHeap::getInstance().isValidIndex(
         cellDescriptionsIndex));
 
@@ -406,7 +411,7 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
         faceIndexForCell, normalNonZero, ii, stateIn[ii]);
     assertion5(std::isfinite(fluxIn[ii]), cellDescription.toString(),
         faceIndexForCell, normalNonZero, ii, fluxIn[ii]);
-  }  // dead code elimination will get rid of this loop if Asserts flag is not set
+  }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
 
   double* stateOut = new double[numberOfFaceDof];
   double* fluxOut  = new double[numberOfFaceDof];
@@ -430,11 +435,11 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
                faceIndexForCell, normalNonZero, ii, stateOut[ii]);
     assertion5(std::isfinite(fluxOut[ii]), cellDescription.toString(),
                faceIndexForCell, normalNonZero, ii, fluxOut[ii]);
-  }  // dead code elimination will get rid of this loop if Asserts flag is not set
+  }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
 
   for(int ii=0; ii<numberOfFaceDof; ++ii) {
     assertionNumericalEquals(stateOut[ii],stateIn[ii])
-  }  // dead code elimination will get rid of this loop if Asserts flag is not set
+  }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
 
   // @todo(Dominic): Add to docu why we need this.
   if (faceIndexForCell % 2 == 0) {
