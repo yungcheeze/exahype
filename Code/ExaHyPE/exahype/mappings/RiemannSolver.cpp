@@ -249,7 +249,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
           double* FR = DataHeap::getInstance().getData(cellDescriptionOfRightCell.getFluctuation()).data() +
               (faceIndexForRightCell * numberOfFaceDof);
 
-          for(int ii=0; ii<faceIndexForRightCell; ++ii) {
+          for(int ii=0; ii<numberOfFaceDof; ++ii) {
             assertion(std::isfinite(QL[ii]));
             assertion(std::isfinite(QR[ii]));
             assertion(std::isfinite(FL[ii]));
@@ -269,7 +269,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
                        cellDescriptionOfRightCell.getCorrectorTimeStepSize()),
               normalNonZero);
 
-          for(int ii=0; ii<faceIndexForRightCell; ++ii) {
+          for(int ii=0; ii<numberOfFaceDof; ++ii) {
             assertion(std::isfinite(FL[ii]));
             assertion(std::isfinite(FR[ii]));
           }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
@@ -368,7 +368,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
                         cellDescription.getCorrectorTimeStepSize(),
                         normalNonZero);
 
-  for (int ii = 0; ii < numberOfFaceDof; ii++) {
+  for (int ii = 0; ii<numberOfFaceDof; ii++) {
     assertion8(std::isfinite(QR[ii]), cellDescription.toString(),
                faceIndexForCell, normalNonZero, indexOfQValues, indexOfFValues,
                ii, QR[ii], QL[ii]);
@@ -401,11 +401,11 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
   double* fluxIn = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
       (faceIndexForCell * numberOfFaceDof);
 
-  for(int ii=0; ii<faceIndexForCell; ++ii) {
+  for(int ii=0; ii<numberOfFaceDof; ++ii) {
     assertion5(std::isfinite(stateIn[ii]), cellDescription.toString(),
-               faceIndexForCell, normalNonZero, ii, stateIn[ii]);
+        faceIndexForCell, normalNonZero, ii, stateIn[ii]);
     assertion5(std::isfinite(fluxIn[ii]), cellDescription.toString(),
-               faceIndexForCell, normalNonZero, ii, fluxIn[ii]);
+        faceIndexForCell, normalNonZero, ii, fluxIn[ii]);
   }  // dead code elimination will get rid of this loop if Asserts flag is not set
 
   double* stateOut = new double[numberOfFaceDof];
@@ -425,11 +425,15 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
                              cellDescription.getCorrectorTimeStepSize(),
                              faceIndexForCell,normalNonZero);
 
-  for(int ii=0; ii<faceIndexForCell; ++ii) {
+  for(int ii=0; ii<numberOfFaceDof; ++ii) {
     assertion5(std::isfinite(stateOut[ii]), cellDescription.toString(),
                faceIndexForCell, normalNonZero, ii, stateOut[ii]);
     assertion5(std::isfinite(fluxOut[ii]), cellDescription.toString(),
                faceIndexForCell, normalNonZero, ii, fluxOut[ii]);
+  }  // dead code elimination will get rid of this loop if Asserts flag is not set
+
+  for(int ii=0; ii<numberOfFaceDof; ++ii) {
+    assertionNumericalEquals(stateOut[ii],stateIn[ii])
   }  // dead code elimination will get rid of this loop if Asserts flag is not set
 
   // @todo(Dominic): Add to docu why we need this.
@@ -443,7 +447,7 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
         normalNonZero);
   }
 
-  for(int ii=0; ii<faceIndexForCell; ++ii) {
+  for(int ii=0; ii<numberOfFaceDof; ++ii) {
     assertion5(std::isfinite(fluxIn[ii]), cellDescription.toString(),
                faceIndexForCell, normalNonZero, ii, fluxIn[ii]);
     assertion5(std::isfinite(fluxOut[ii]), cellDescription.toString(),
@@ -476,10 +480,9 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
       int destScalar = TWO_POWER_D - myDestScalar - 1;
       int srcScalar = TWO_POWER_D - mySrcScalar - 1;
 
-      if (vertex.getAdjacentRanks()(destScalar) == tarch::parallel::Node::getInstance().getRank() &&
-          vertex.getAdjacentRanks()(srcScalar)  == fromRank &&
-          tarch::la::countEqualEntries(dest, src) == 1  // we are solely exchanging faces
-          ) {
+      if (vertex.getAdjacentRanks()(destScalar)   == tarch::parallel::Node::getInstance().getRank() &&
+          vertex.getAdjacentRanks()(srcScalar)    == fromRank &&
+          tarch::la::countEqualEntries(dest, src) == 1) {  // we are solely exchanging faces
         const int destCellDescriptionIndex =
             adjacentADERDGCellDescriptionsIndices(destScalar);
 
@@ -562,8 +565,7 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
                   assertionMsg(false, "should not be entered");
                 }
 
-                if (!cellDescriptions[currentSolver].getRiemannSolvePerformed(
-                        faceIndexForCell)) {
+                if (!cellDescriptions[currentSolver].getRiemannSolvePerformed(faceIndexForCell)) {
                   logDebug("mergeWithNeighbour(...)",
                            "solve Riemann problem with received data."
                                << " cellDescription="
