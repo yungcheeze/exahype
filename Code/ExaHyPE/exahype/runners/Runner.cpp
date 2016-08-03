@@ -84,15 +84,9 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
     }
 
     if ( configuration.find( "greedy" )!=std::string::npos ) {
-      logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins");
+      logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins (mpibalancing/GreedyBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-        new peano::parallel::loadbalancing::OracleForOnePhaseWithGreedyPartitioning(false)
-      );
-    }
-    else if ( configuration.find( "local_hotspot" )!=std::string::npos ) {
-      logInfo("initDistributedMemoryConfiguration()", "use local hotspot elimination without joins (mpibalancing/GreedyBalancing)");
-      peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-        new mpibalancing::GreedyBalancing(1,false)
+        new mpibalancing::GreedyBalancing(1,3)
       );
     }
     else if ( configuration.find( "global_hotspot" )!=std::string::npos ) {
@@ -281,7 +275,11 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
    (!UseStationaryCriterion && !repository.getState().isGridBalanced())
   );
 
-  logInfo("runAsMaster()", "finished grid setup after " << gridSetupIterations << " iterations" );
+  logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
+
+  if (tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0) {
+    logWarning( "createGrid(Repository)", "there are still " << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes() << " ranks idle" )
+  }
 }
 
 
