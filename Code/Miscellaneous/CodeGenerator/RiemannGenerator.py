@@ -65,6 +65,7 @@ class RiemannGenerator:
         l_description = '// Solve the Riemann problems \n\n'
 
         l_includeStatement = '#include "string.h"\n'                             \
+                             '#include <cmath>\n'                                \
                              '#include "kernels/aderdg/optimised/Kernels.h"\n'   \
                              '#include "kernels/aderdg/optimised/DGMatrices.h"\n'\
                              '#include "kernels/aderdg/optimised/GaussLegendreQuadrature.h"\n\n'
@@ -84,17 +85,6 @@ class RiemannGenerator:
         else:
             self.__generateRusanovSolverForNonlinear()
 
-        # fix datatype choice
-        l_sourceCode=open(self.m_filename).read()
-        if('DATATYPE' in l_sourceCode):
-            if(self.m_precision=='SP'):
-                l_sourceCode=l_sourceCode.replace('DATATYPE', 'float')
-            else:
-                l_sourceCode=l_sourceCode.replace('DATATYPE', 'double')
-            l_file=open(self.m_filename, 'w')
-            l_file.write(l_sourceCode)
-            l_file.flush()
-            l_file.close()
 
 
     def __generateAverageStates(self):
@@ -102,8 +92,8 @@ class RiemannGenerator:
 
         # uniform length of QavL, QavR
         l_paddedVectorLength = Backend.getSizeWithPadding(self.m_config['nVar'])
-        l_file.write('  DATATYPE QavL['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT))) = {0.};\n')
-        l_file.write('  DATATYPE QavR['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT))) = {0.};\n\n')
+        l_file.write('  double QavL['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT))) = {0.};\n')
+        l_file.write('  double QavR['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT))) = {0.};\n\n')
 
         # we need
         # aux = (/ 1.0, wGPN(j), wGPN(k) /)
@@ -118,13 +108,13 @@ class RiemannGenerator:
         for iVar in range(0, self.m_config['nVar']):
             l_file.write('#pragma simd\n')
             l_file.write('  for(int i=0;i<'+str(self.m_chunkSize)+';i++) {\n')
-            l_file.write('    QavL['+str(iVar)+'] += kernels::aderdg::optimised::weights2[i] * lQbndL['+str(iVar*self.m_chunkSize)+'+i];\n')
+            l_file.write('    QavL['+str(iVar)+'] += weights2[i] * lQbndL['+str(iVar*self.m_chunkSize)+'+i];\n')
             l_file.write('  }\n\n')
 
         for iVar in range(0, self.m_config['nVar']):
             l_file.write('#pragma simd\n')
             l_file.write('  for(int i=0;i<'+str(self.m_chunkSize)+';i++) {\n')
-            l_file.write('    QavR['+str(iVar)+'] += kernels::aderdg::optimised::weights2[i] * lQbndR['+str(iVar*self.m_chunkSize)+'+i];\n')
+            l_file.write('    QavR['+str(iVar)+'] += weights2[i] * lQbndR['+str(iVar*self.m_chunkSize)+'+i];\n')
             l_file.write('  }\n\n')
 
         l_file.close()
@@ -140,13 +130,13 @@ class RiemannGenerator:
         # uniform length of LL, LR
         l_paddedVectorLength = Backend.getSizeWithPadding(self.m_config['nVar'])
 
-        l_file.write('  DATATYPE lambdaL['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n')
+        l_file.write('  double lambdaL['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n')
         l_file.write('  PDEEigenvalues(&QavL[0], normalNonZero, &lambdaL[0]);\n')
-        l_file.write('  DATATYPE lambdaR['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n')
+        l_file.write('  double lambdaR['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n')
         l_file.write('  PDEEigenvalues(&QavR[0], normalNonZero, &lambdaR[0]);\n\n')
 
         # abs with intrinsics?
-        l_file.write('  DATATYPE smax = 0.;\n')
+        l_file.write('  double smax = 0.;\n')
         l_file.write('  for (int ivar = 0; ivar < '+str(self.m_config['nVar'])+'; ivar++) {\n')
         l_file.write('    smax = std::max(smax, std::max(fabs(lambdaL[ivar]), fabs(lambdaR[ivar])));\n')
         l_file.write('  }\n\n')
@@ -156,7 +146,7 @@ class RiemannGenerator:
         #               = 0.5 * [ ( lFbndR(k,j,:) + lFbndL(k,j,:) ) +     smax*( lQbndL(k,j,:) - lQbndR(k,j,:) ) ]
         l_file.write('#pragma simd\n')
         l_file.write('  for(int i=0; i<'+str(self.m_vectorLength)+'; i++) {\n')
-        l_file.write('    kernels::tmp_bnd[i] = smax * (lQbndL[i]-lQbndR[i]);\n')
+        l_file.write('    tmp_bnd[i] = smax * (lQbndL[i]-lQbndR[i]);\n')
         l_file.write('  }\n')
 
         l_file.write('#pragma simd\n')
@@ -166,9 +156,9 @@ class RiemannGenerator:
 
         l_file.write('#pragma simd\n')
         l_file.write('  for(int i=0; i<'+str(self.m_vectorLength)+'; i++) {\n')
-        l_file.write('    lFbndL[i] = 0.5 * (lFbndL[i] + kernels::tmp_bnd[i]) ;\n')
+        l_file.write('    lFbndL[i] = 0.5 * (lFbndL[i] + tmp_bnd[i]) ;\n')
         l_file.write('  }\n')
-        l_file.write('  memcpy(lFbndR,lFbndL,'+str(self.m_vectorLength)+' * sizeof(DATATYPE));\n')
+        l_file.write('  std::memcpy(lFbndR,lFbndL,'+str(self.m_vectorLength)+' * sizeof(double));\n')
 
 
         # write missing closing bracket

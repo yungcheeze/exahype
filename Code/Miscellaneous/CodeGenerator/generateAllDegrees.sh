@@ -38,7 +38,7 @@ cd -
 rm -r runtime
 
 MIN_DEGREE=3
-MAX_DEGREE=7
+MAX_DEGREE=8
 
 DEGREE=$MIN_DEGREE
 
