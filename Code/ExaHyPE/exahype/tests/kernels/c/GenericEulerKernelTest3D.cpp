@@ -330,6 +330,8 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
   // output (intentionally left uninitialised):
   double *FL = new double[4 * 4 * 5];  // nDOF(3) * nDOF(2) * nVar
   double *FR = new double[4 * 4 * 5];  // nDOF(3) * nDOF(2) * nVar
+  std::memset(FL, 0, 80 * sizeof(double));
+  std::memset(FR, 0, 80 * sizeof(double));
 
   // inputs:
   // exahype::tests::testdata::generic_euler::testRiemannSolver::QL[80 =
