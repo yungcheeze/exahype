@@ -68,6 +68,9 @@ extern const double lQbnd[80];
 }  // namespace testSpaceTimePredictorLinear
 
 namespace testSpaceTimePredictorNonlinear {
+extern const double luh[80];
+extern const double lQi[320];
+extern const double lFi[640];
 extern const double lQhi[80];
 extern const double lFhi[160];
 extern const double lQhbnd[80];
