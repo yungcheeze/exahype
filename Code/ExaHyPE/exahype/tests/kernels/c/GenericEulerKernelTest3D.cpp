@@ -3,14 +3,14 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #include "exahype/tests/kernels/c/GenericEulerKernelTest.h"
 
 #include "../testdata/generic_euler_testdata.h"
@@ -78,8 +78,27 @@ void GenericEulerKernelTest::testEigenvalues(const double *const Q,
 void GenericEulerKernelTest::testNCP(const double *const Q,
                                      const double *const gradQ,
                                      double *BgradQ) {
-  // 3D compressible Euler equations
-  std::memset(BgradQ, 0, 3 * 5 * sizeof(double));
+  // Q[5]
+  // gradQ[3][5]
+  // BgradQ[3][5]
+
+  // Arbitrary BS!
+
+  BgradQ[0] = 1.0;
+  BgradQ[1] = -3.0;
+  BgradQ[2] = Q[3];
+  BgradQ[3] = gradQ[3];
+  BgradQ[4] = -1.7;
+  BgradQ[5] = 4.0;
+  BgradQ[6] = Q[0];
+  BgradQ[7] = 0.1;
+  BgradQ[8] = 0.8;
+  BgradQ[9] = Q[4];
+  BgradQ[10] = 2.0;
+  BgradQ[11] = 8.0;
+  BgradQ[12] = -1.0;
+  BgradQ[13] = gradQ[14];
+  BgradQ[14] = 5.3;
 }  // testNCP
 
 void GenericEulerKernelTest::testMatrixB(const double *const Q,
@@ -156,6 +175,7 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
 
   kernels::aderdg::generic::c::volumeIntegralLinear(lduh, lFhi, dx,
                                                     5,  // numberOfVariables
+                                                    0,  // numberOfParameters
                                                     4   // basisSize
                                                     );
 
@@ -194,6 +214,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
   kernels::aderdg::generic::c::volumeIntegralNonlinear(
       lduh, lFhi, dx[0],
       5,   // getNumberOfVariables(),
+      0,   // getNumberOfParameters()
       4);  // getNodesPerCoordinateAxis()
 
   for (int i = 0; i < 320; i++) {
@@ -321,9 +342,8 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
                                                    testMatrixB>(
       FL, FR, exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
       exahype::tests::testdata::generic_euler::testRiemannSolver::QR, dt,
-      1,  // normalNonZero (only changes result of testEigenvalues, testMatrixB)
-      5,  // numberOfVariables
-      4   // basisSize
+      1 /*normalNonZero (only changes result of testEigenvalues, testMatrixB) */,
+      5 /* numberOfVariables */, 0 /* numberOfParameters */, 4 /* basisSize */
       );
 
   for (int i = 0; i < 80; i++) {
@@ -368,6 +388,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
       ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR, dt,
       1,  // normalNonZero
       5,  // numberOfVariables
+      0,  // numberOfParameters
       4   // basisSize
       );
 
@@ -407,7 +428,8 @@ void GenericEulerKernelTest::testSolutionUpdate() {
   }
 
   kernels::aderdg::generic::c::solutionUpdate(luh, lduh, dt,
-                                              5,  // getNumberOfVariables(),
+                                              5,  // getNumberOfVariables()
+                                              0,  // getNumberOfParameters()
                                               4   // getNodesPerCoordinateAxis()
                                               );
 
@@ -448,6 +470,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
       exahype::tests::testdata::generic_euler::testSpaceTimePredictor::luh, dx,
       timeStepSize,
       5,  // numberOfVariables
+      0,  // numberOfParameters
       4   // basisSize
       );
 
@@ -459,7 +482,10 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   }
 
   for (int i = 0; i < 960; i++) {
-    validateNumericalEqualsWithEpsWithParams1(lFhi[i], 0.0, eps, i);
+    validateNumericalEqualsWithEpsWithParams1(
+        lFhi[i], ::exahype::tests::testdata::generic_euler::
+                     testSpaceTimePredictorLinear::lFhi[i],
+        eps, i);
   }
 
   for (int i = 0; i < 480; i++) {
@@ -470,7 +496,10 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   }
 
   for (int i = 0; i < 480; i++) {
-    validateNumericalEqualsWithEpsWithParams1(lFhbnd[i], 0.0, eps, i);
+    validateNumericalEqualsWithEpsWithParams1(
+        lFhbnd[i], ::exahype::tests::testdata::generic_euler::
+                       testSpaceTimePredictorLinear::lFhbnd[i],
+        eps, i);
   }
 
   delete[] lQi;
@@ -507,6 +536,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
       exahype::tests::testdata::generic_euler::testSpaceTimePredictor::luh, dx,
       timeStepSize,
       5,  // numberOfVariables
+      0,  // numberOfParameters
       4   // basisSize
       );
 

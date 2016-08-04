@@ -63,6 +63,14 @@ class exahype::mappings::RiemannSolver {
    * the method further sets the ::riemannSolvePerformed
    * flags for the particular faces on both cell descriptions (per solver).
    *
+   * This method further synchronises the ADERDGCellDescriptions on both cells
+   * with the corresponding solver if this is required by the time stepping scheme.
+   * This operation must be performed in the touchVertexFirstTime(...) action
+   * code since we might have recomputed the predictor with
+   * a different time step size in the previous grid iteration.
+   * Then, the predictor time step size on the ADERDGCellDescriptions
+   * is not valid anymore.
+   *
    * <h2>Rationale</h2>
    *
    * We did originally split up the boundary condition handling and the Riemann
@@ -106,6 +114,14 @@ class exahype::mappings::RiemannSolver {
    * the standard solveRiemannProblemAtInterface() operation, we do not
    * check whether we shall run a Riemann solver or not.
    *
+   * This method further synchronises the ADERDGCellDescription
+   * with the corresponding solver if this is required by the time stepping scheme.
+   * This operation must be performed in the touchVertexFirstTime(...) action
+   * code since we might have recomputed the predictor with
+   * a different time step size in the previous grid iteration.
+   * Then, the predictor time step size on the ADERDGCellDescription
+   * is not valid anymore.
+   *
    * \note Not thread-safe.
    */
   void solveRiemannProblemAtInterface(
@@ -116,7 +132,15 @@ class exahype::mappings::RiemannSolver {
       const int indexOfQValues, const int indexOfFValues);
 
   /**
-   * Apply the boundary conditions at the face with index \p faceIndex
+   * Apply the boundary conditions at the face with index \p faceIndex.
+   *
+   * This method further synchronises the ADERDGCellDescription
+   * with the corresponding solver if this is required by the time stepping scheme.
+   * This operation must be performed in the touchVertexFirstTime(...) action
+   * code since we might have recomputed the predictor with
+   * a different time step size in the previous grid iteration.
+   * Then, the predictor time step size on the ADERDGCellDescription
+   * is not valid anymore.
    *
    * \note Not thread-safe.
    *

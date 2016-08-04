@@ -12,7 +12,7 @@ inline const std::string& getEnvParameter(const char* key) {
 	else return "";
 }
 
-void InitialData(const double* const  x, double* Q);
+void InitialData(const double* const  x, double* Q, double t);
 
 void ShuVortex2D(const double* const  x, double* Q, double t);
 

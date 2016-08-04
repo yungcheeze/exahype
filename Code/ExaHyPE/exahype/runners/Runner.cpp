@@ -453,8 +453,7 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
 // @todo 16/02/29:Dominic Etienne Charrier
 // @Tobias: This should move into solver class, or not?
 // The function does only make sense for optimistic time stepping
-bool exahype::runners::Runner::
-    setStableTimeStepSizesIfStabilityConditionWasHarmed(double factor) {
+bool exahype::runners::Runner::setStableTimeStepSizesIfStabilityConditionWasHarmed(double factor) {
   bool cflConditionWasViolated = false;
 
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
@@ -486,8 +485,7 @@ bool exahype::runners::Runner::
 void exahype::runners::Runner::recomputePredictorIfNecessary(
     exahype::repositories::Repository& repository,double factor) {
   // Must be evaluated before we start a new time step
-  bool stabilityConditionWasHarmed =
-      setStableTimeStepSizesIfStabilityConditionWasHarmed(factor);
+  bool stabilityConditionWasHarmed = setStableTimeStepSizesIfStabilityConditionWasHarmed(factor);
   // Note that it is important to switch the time step sizes, i.e,
   // start a new time step, before we recompute the predictor.
 

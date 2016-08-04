@@ -3,19 +3,22 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 // included in ../../Kernels.h
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <cstring>
+
+#include "../../../../KernelUtils.h"
 
 namespace kernels {
 namespace aderdg {
@@ -27,27 +30,27 @@ template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
 void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
                             const double* const QR, const double dt,
                             const int normalNonZero,
-                            const int numberOfVariables, const int basisSize) {
+                            const int numberOfVariables,
+                            const int numberOfParameters, const int basisSize) {
   const int order = basisSize - 1;
 
   // Compute the average states from the left and the right, which we need to
   // compute the numerical dissipation
   double* QavL = new double[numberOfVariables];
   double* QavR = new double[numberOfVariables];
-  std::memset(QavL, 0, numberOfVariables * sizeof(double));
-  std::memset(QavR, 0, numberOfVariables * sizeof(double));
-  for (int i = 0; i < basisSize; i++) {
-    for (int j = 0; j < basisSize; j++) {
-      const double weight = kernels::gaussLegendreWeights[order][i] *
-                            kernels::gaussLegendreWeights[order][j];
+  {
+    idx3 idx_QLR(basisSize, basisSize, numberOfVariables);
+    std::memset(QavL, 0, numberOfVariables * sizeof(double));
+    std::memset(QavR, 0, numberOfVariables * sizeof(double));
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        const double weight = kernels::gaussLegendreWeights[order][i] *
+                              kernels::gaussLegendreWeights[order][j];
 
-      for (int k = 0; k < numberOfVariables; k++) {
-        QavL[k] +=
-            weight *
-            QL[i * basisSize * numberOfVariables + j * numberOfVariables + k];
-        QavR[k] +=
-            weight *
-            QR[i * basisSize * numberOfVariables + j * numberOfVariables + k];
+        for (int k = 0; k < numberOfVariables; k++) {
+          QavL[k] += weight * QL[idx_QLR(i, j, k)];
+          QavR[k] += weight * QR[idx_QLR(i, j, k)];
+        }
       }
     }
   }
@@ -73,20 +76,17 @@ void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
   // written in CONSERVATION FORM => no fluctuations, but real fluxes. Later,
   // this will be converted into the left and right fluctuations.
 
-  for (int i = 0; i < basisSize; i++) {
-    for (int j = 0; j < basisSize; j++) {
-      for (int k = 0; k < numberOfVariables; k++) {
-        FL[i * basisSize * numberOfVariables + j * numberOfVariables + k] =
-            0.5 * (FR[i * basisSize * numberOfVariables +
-                      j * numberOfVariables + k] +
-                   FL[i * basisSize * numberOfVariables +
-                      j * numberOfVariables + k]) -
-            0.5 * smax * (QR[i * basisSize * numberOfVariables +
-                             j * numberOfVariables + k] -
-                          QL[i * basisSize * numberOfVariables +
-                             j * numberOfVariables + k]);
-        FR[i * basisSize * numberOfVariables + j * numberOfVariables + k] =
-            FL[i * basisSize * numberOfVariables + j * numberOfVariables + k];
+  {
+    idx3 idx_FQLR(basisSize, basisSize, numberOfVariables);
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        // Avoid diffusion of parameters
+        for (int k = 0; k < numberOfVariables - numberOfParameters; k++) {
+          FL[idx_FQLR(i, j, k)] =
+              0.5 * (FR[idx_FQLR(i, j, k)] + FL[idx_FQLR(i, j, k)]) -
+              0.5 * smax * (QR[idx_FQLR(i, j, k)] - QL[idx_FQLR(i, j, k)]);
+          FR[idx_FQLR(i, j, k)] = FL[idx_FQLR(i, j, k)];
+        }
       }
     }
   }

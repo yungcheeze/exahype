@@ -3,14 +3,14 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #ifndef _EXAHYPE_KERNELS_ADERDG_GENERIC_PDEFLUXES_H_
 #define _EXAHYPE_KERNELS_ADERDG_GENERIC_PDEFLUXES_H_
 
@@ -47,43 +47,42 @@
   * The brackets around \p ix allow to write
   * idx1(ix+ox,...), where ox is some offset.
   */
-#define nidx1(ix) \
-  numberOfVariables * (ix)
+#define nidx1(ix) numberOfVariables*(ix)
 
 /** Computes a 2-d node index.
   * The brackets around \p ix and \p iy allow to write
   * idx1(ix+ox, iy+oy,...), where ox and oy are some offsets.
   */
-#define nidx2(ix, iy) \
-  numberOfVariables * (basisSize * (iy) + ix)
+#define nidx2(ix, iy) numberOfVariables*(basisSize * (iy) + ix)
 
 /** Computes a 3-d node index.
   * The brackets around \p ix, \p iy, and \p iz allow to write
   * idx1(ix+ox, iy+oy, iz+oz,...), where ox, oy and oz are some offsets.
   */
 #define nidx3(ix, iy, iz) \
-  numberOfVariables * (basisSize2 * (iz) + basisSize * (iy) + ix)
+  numberOfVariables*(basisSize2 * (iz) + basisSize * (iy) + ix)
 
 /** Computes a 1-d index.
   * The brackets around \p ix allow to write
   * idx1(ix+ox,...), where ox is some offset.
   */
-#define idx1(ix, ivar) \
-  numberOfVariables * (ix) + (ivar)
+// #define idx1(ix, ivar) numberOfVariables*(ix) + (ivar)
 
 /** Computes a 2-d index.
   * The brackets around \p ix and \p iy allow to write
   * idx1(ix+ox, iy+oy,...), where ox and oy are some offsets.
   */
-#define idx2(ix, iy, ivar) \
-  numberOfVariables * (basisSize * (iy) + ix) + ivar
+// Please use idxX in ../KernelUtils.h. Attention: Different semantics!
+//#define idx2(ix, iy, ivar) numberOfVariables*(basisSize * (iy) + ix) + ivar
 
 /** Computes a 3-d index.
   * The brackets around \p ix, \p iy, and \p iz allow to write
   * idx1(ix+ox, iy+oy, iz+oz,...), where ox, oy and oz are some offsets.
   */
+/*
 #define idx3(ix, iy, iz, ivar) \
-  numberOfVariables * (basisSize2 * (iz) + basisSize * (iy) + ix) + ivar
+  numberOfVariables*(basisSize2 * (iz) + basisSize * (iy) + ix) + ivar
+  */
 
 // todo Dominic Etienne Charrier
 // Possibly redundant definition of face indices
@@ -111,7 +110,7 @@ void spaceTimePredictorNonlinear(
     double* lFhbnd, const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     const double predictorTimeStepSize, const int numberOfVariables,
-    const int basisSize);
+    const int numberOfParameters, const int basisSize);
 
 #if DIMENSIONS == 2
 
@@ -120,7 +119,7 @@ void spaceTimePredictorNonlinear(
     double* lQi, double* lFi, const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx,
     const double predictorTimeStepSize, const int numberOfVariables,
-    const int basisSize);
+    const int numberOfParameters, const int basisSize);
 
 #endif  // DIMENSIONS == 2
 
@@ -181,15 +180,18 @@ void extrapolatedPredictorYDirection(
 // dim".
 
 void solutionUpdate(double* luh, const double* const lduh, const double dt,
-                    const int numberOfVariables, const int basisSize);
+                    const int numberOfVariables, const int numberOfParameters,
+                    const int basisSize);
 
 void volumeIntegralLinear(double* lduh, const double* const lFhi,
                           const tarch::la::Vector<DIMENSIONS, double>& dx,
-                          const int numberOfVariables, const int basisSize);
+                          const int numberOfVariables,
+                          const int numberOfParameters, const int basisSize);
 
 void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
-                             const int numberOfVariables, const int basisSize);
+                             const int numberOfVariables,
+                             const int numberOfParameters, const int basisSize);
 
 // todo 10/02/16: Dominic
 // Keep only one surfaceIntegral.
@@ -244,19 +246,20 @@ template <void PDEEigenvalues(const double* const Q, const int normalNonZero,
 void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
                             const double* const QR, const double dt,
                             const int normalNonZero,
-                            const int numberOfVariables, const int basisSize);
+                            const int numberOfVariables,
+                            const int numberOfParameters, const int basisSize);
 
-template <void PDEBoundaryConditions(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut)>
-void boundaryConditions(double* fluxOut,
-                        double* stateOut,
-                        const double* const fluxIn,
-                        const double* const stateIn,
+template <void PDEBoundaryConditions(
+    const double* const x, const double t, const int faceIndex,
+    const int normalNonZero, const double* const fluxIn,
+    const double* const stateIn, double* fluxOut, double* stateOut)>
+void boundaryConditions(double* fluxOut, double* stateOut,
+                        const double* const fluxIn, const double* const stateIn,
                         const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-                        const tarch::la::Vector<DIMENSIONS,double>& cellSize,
-                        const double t,const double dt,
-                        const int faceIndex,
-                        const int normalNonZero,
-                        const int numberOfVariables, const int basisSize);
+                        const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+                        const double t, const double dt, const int faceIndex,
+                        const int normalNonZero, const int numberOfVariables,
+                        const int basisSize);
 
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
@@ -298,22 +301,21 @@ void volumeUnknownsRestriction(
 }  // namespace kernels
 
 #if DIMENSIONS == 2
+#include "kernels/aderdg/generic/c/2d/boundaryConditions.cpph"
 #include "kernels/aderdg/generic/c/2d/riemannSolverLinear.cpph"
 #include "kernels/aderdg/generic/c/2d/riemannSolverNonlinear.cpph"
 #include "kernels/aderdg/generic/c/2d/solutionAdjustment.cpph"
 #include "kernels/aderdg/generic/c/2d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/c/2d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/2d/stableTimeStepSize.cpph"
-#include "kernels/aderdg/generic/c/2d/boundaryConditions.cpph"
 #elif DIMENSIONS == 3
+#include "kernels/aderdg/generic/c/3d/boundaryConditions.cpph"
 #include "kernels/aderdg/generic/c/3d/riemannSolverLinear.cpph"
 #include "kernels/aderdg/generic/c/3d/riemannSolverNonlinear.cpph"
 #include "kernels/aderdg/generic/c/3d/solutionAdjustment.cpph"
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorLinear.cpph"
 #include "kernels/aderdg/generic/c/3d/spaceTimePredictorNonlinear.cpph"
 #include "kernels/aderdg/generic/c/3d/stableTimeStepSize.cpph"
-#include "kernels/aderdg/generic/c/3d/boundaryConditions.cpph"
 #endif
-
 
 #endif /* _EXAHYPE_KERNELS_ADERDG_GENERIC_PDEFLUXES_H_ */

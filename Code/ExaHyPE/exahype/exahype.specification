@@ -148,6 +148,7 @@ adapter:
 adapter:
   name: PredictorRerun
   merge-with-user-defined-mapping: DropIncomingMPIMessages
+  merge-with-user-defined-mapping: NewTimeStep
   merge-with-user-defined-mapping: SpaceTimePredictor 
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: FaceUnknownsProjection

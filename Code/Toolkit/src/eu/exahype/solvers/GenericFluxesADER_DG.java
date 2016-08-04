@@ -60,7 +60,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     }
     writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
         + "::spaceTimePredictor" + (isLinear() ? "Linear<ncp>" : "Nonlinear<flux>")
-        + "( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        + "( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"spaceTimePredictor\");\n");
     }
@@ -73,7 +73,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
       writer.write("  _profiler->start(\"solutionUpdate\");\n");
     }
     writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
-        + "::solutionUpdate( luh, lduh, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        + "::solutionUpdate( luh, lduh, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"solutionUpdate\");\n");
     }
@@ -87,7 +87,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     }
     writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
         + "::volumeIntegral" + (isLinear() ? "Linear" : "Nonlinear")
-        + "( lduh, lFhi, dx, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        + "( lduh, lFhi, dx, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"volumeIntegral\");\n");
     }
@@ -116,7 +116,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
         + "::riemannSolver"
         + (isLinear() ? "Linear<eigenvalues, matrixb>" : "Nonlinear<eigenvalues>")
-        + "( FL, FR, QL, QR, dt, normalNonZeroIndex, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+        + "( FL, FR, QL, QR, dt, normalNonZeroIndex, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"riemannSolver\");\n");
     }
