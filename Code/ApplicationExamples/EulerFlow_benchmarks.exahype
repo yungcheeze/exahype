@@ -56,7 +56,7 @@ exahype-project  Euler
     variables         = 5
     parameters        = 0
     order             = 3
-    maximum-mesh-size = 1.5
+    maximum-mesh-size = 0.05
     time-stepping     = global
     kernel            = generic::fluxes::nonlinear
     language          = C

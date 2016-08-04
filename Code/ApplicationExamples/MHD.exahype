@@ -44,6 +44,13 @@ exahype-project  MHDSolver
     fuse-algorithmic-steps-factor = 0.99
   end optimisation
 
+  /*
+    Q0         = das skalare Feld "dens", die relativistische ruhemasse,
+    (Q1,Q2,Q3) = den relativistischen Geschwindigkeitsvektor (Impuls),
+    Q4         = das skalare Feld der inneren Energie (Hydrodynamik),
+    (Q5,Q6,Q7) = das Magnetfeld (Vektorfeld, für SRHD=0).
+    Q8         = Die Divergenz des Magnetfelds, die verschwinden muss und ein Mass fuer die numerische Exaktheit ist
+   */
   solver ADER-DG MHDSolver
     variables          = 9
     parameters         = 0

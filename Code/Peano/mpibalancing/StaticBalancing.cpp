@@ -245,10 +245,12 @@ peano::parallel::loadbalancing::OracleForOnePhase* mpibalancing::StaticBalancing
 
 
 void mpibalancing::StaticBalancing::forkFailed() {
-  logInfo(
-    "forkFailed()",
-    "oracle was informed that fork has failed. No further fork attempts in this iteration"
-  );
+  if (!_forkHasFailed) {
+    logInfo(
+      "forkFailed()",
+      "oracle was informed that fork has failed. No further fork attempts in this iteration"
+    );
+  }
   _forkHasFailed = true;
 }
 

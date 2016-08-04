@@ -73,8 +73,22 @@ void GenericEulerKernelTest::testEigenvalues(const double *const Q,
 void GenericEulerKernelTest::testNCP(const double *const Q,
                                      const double *const gradQ,
                                      double *BgradQ) {
-  // 2D compressible Euler equations
-  std::memset(BgradQ, 0, 2 * 5 * sizeof(double));
+  // Arbitrary BS
+
+  // Q[5]
+  // gradQ[2][5]
+  // BgradQ[2][5]
+
+  BgradQ[0] = Q[0];
+  BgradQ[1] = Q[3];
+  BgradQ[2] = 3.0;
+  BgradQ[3] = gradQ[0];
+  BgradQ[4] = 0.7;
+  BgradQ[5] = Q[4];
+  BgradQ[6] = -1.0;
+  BgradQ[7] = gradQ[9];
+  BgradQ[8] = 3.8;
+  BgradQ[9] = gradQ[5];
 }  // testNCP
 
 void GenericEulerKernelTest::testMatrixB(const double *const Q,
@@ -659,6 +673,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
           luh,
       dx, dt,
       5,  // numberOfVariables
+      0,  // numberOfParameters
       4   // basisSize
       );
 
@@ -670,7 +685,10 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   }
 
   for (int i = 0; i < 160; i++) {
-    validateNumericalEqualsWithEpsWithParams1(lFhi[i], 0.0, eps, i);
+    validateNumericalEqualsWithEpsWithParams1(
+        lFhi[i], ::exahype::tests::testdata::generic_euler::
+                     testSpaceTimePredictorLinear::lFhi[i],
+        eps, i);
   }
 
   for (int i = 0; i < 80; i++) {
@@ -680,9 +698,13 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
         eps, i);
   }
 
+  // TODO: The "fixed" kernel from the coding week doesn't compute lFbnd.
+
+  /*
   for (int i = 0; i < 80; i++) {
     validateNumericalEqualsWithEpsWithParams1(lFbnd[i], 0.0, eps, i);
   }
+  */
 
   delete[] lQi;
   delete[] lFi;
@@ -731,6 +753,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   kernels::aderdg::generic::c::spaceTimePredictorNonlinear<testFlux>(
       lQi, lFi, luh, dx[0], timeStepSize,
       5,  // getNumberOfVariables(),
+      0,  // getNumberOfParameters()
       4   // getNodesPerCoordinateAxis()
       );
   kernels::aderdg::generic::c::predictor(lQhi, lFhi, lQi, lFi, timeStepSize,

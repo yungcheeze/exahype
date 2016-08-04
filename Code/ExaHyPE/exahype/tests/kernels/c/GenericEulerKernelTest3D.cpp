@@ -78,8 +78,27 @@ void GenericEulerKernelTest::testEigenvalues(const double *const Q,
 void GenericEulerKernelTest::testNCP(const double *const Q,
                                      const double *const gradQ,
                                      double *BgradQ) {
-  // 3D compressible Euler equations
-  std::memset(BgradQ, 0, 3 * 5 * sizeof(double));
+  // Q[5]
+  // gradQ[3][5]
+  // BgradQ[3][5]
+
+  // Arbitrary BS!
+
+  BgradQ[0] = 1.0;
+  BgradQ[1] = -3.0;
+  BgradQ[2] = Q[3];
+  BgradQ[3] = gradQ[3];
+  BgradQ[4] = -1.7;
+  BgradQ[5] = 4.0;
+  BgradQ[6] = Q[0];
+  BgradQ[7] = 0.1;
+  BgradQ[8] = 0.8;
+  BgradQ[9] = Q[4];
+  BgradQ[10] = 2.0;
+  BgradQ[11] = 8.0;
+  BgradQ[12] = -1.0;
+  BgradQ[13] = gradQ[14];
+  BgradQ[14] = 5.3;
 }  // testNCP
 
 void GenericEulerKernelTest::testMatrixB(const double *const Q,
@@ -451,6 +470,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
       exahype::tests::testdata::generic_euler::testSpaceTimePredictor::luh, dx,
       timeStepSize,
       5,  // numberOfVariables
+      0,  // numberOfParameters
       4   // basisSize
       );
 
@@ -462,7 +482,10 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   }
 
   for (int i = 0; i < 960; i++) {
-    validateNumericalEqualsWithEpsWithParams1(lFhi[i], 0.0, eps, i);
+    validateNumericalEqualsWithEpsWithParams1(
+        lFhi[i], ::exahype::tests::testdata::generic_euler::
+                     testSpaceTimePredictorLinear::lFhi[i],
+        eps, i);
   }
 
   for (int i = 0; i < 480; i++) {
@@ -473,7 +496,10 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
   }
 
   for (int i = 0; i < 480; i++) {
-    validateNumericalEqualsWithEpsWithParams1(lFhbnd[i], 0.0, eps, i);
+    validateNumericalEqualsWithEpsWithParams1(
+        lFhbnd[i], ::exahype::tests::testdata::generic_euler::
+                       testSpaceTimePredictorLinear::lFhbnd[i],
+        eps, i);
   }
 
   delete[] lQi;
@@ -510,6 +536,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
       exahype::tests::testdata::generic_euler::testSpaceTimePredictor::luh, dx,
       timeStepSize,
       5,  // numberOfVariables
+      0,  // numberOfParameters
       4   // basisSize
       );
 

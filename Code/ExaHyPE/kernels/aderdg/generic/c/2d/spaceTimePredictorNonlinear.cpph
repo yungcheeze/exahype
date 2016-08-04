@@ -3,14 +3,14 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 // #include "kernels/aderdg/generic/Kernels.h"
 
 // #include "string.h"
@@ -35,7 +35,10 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
     double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
     double* lFhbnd, const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt,
-    const int numberOfVariables, const int basisSize) {
+    const int numberOfVariables, const int numberOfParameters,
+    const int basisSize) {
+  assert(numberOfParameters == 0 &&
+         "number of parameters != 0 not yet supported");
   // todo Angelika
   // Please remove the typedefs in generic kernels again since numberOf(...)Dof
   // is not
@@ -94,7 +97,8 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
         for (int ivar = 0; ivar < numberOfVariables; ivar++) {
           // Trivial initial guess (can be significantly improved)
           lQi[spaceTimeDofStartIndex + ivar] = luh[dofStartIndex + ivar];
-          assertion(lQi[spaceTimeDofStartIndex + ivar]==lQi[spaceTimeDofStartIndex + ivar]);
+          assertion(lQi[spaceTimeDofStartIndex + ivar] ==
+                    lQi[spaceTimeDofStartIndex + ivar]);
 
           // Compute the contribution of the initial condition uh to the time
           // update. I prefer to compute it once
@@ -143,7 +147,7 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
           // @todo Angelika's old code
           // exahype::problem::PDEFlux(Q,f,g);
           PDEFlux(Q, F);
-          assertion(lQi[spaceTimeDofStartIndex]==lQi[spaceTimeDofStartIndex]);
+          assertion(lQi[spaceTimeDofStartIndex] == lQi[spaceTimeDofStartIndex]);
         }
       }
       // Above seems okay!
@@ -272,11 +276,12 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
               tmp[ivar + numberOfVariables * ll] +=
                   iWeight * kernels::iK1[basisSize - 1][ll][nn] *
                   rhs[nnSpaceTimeDofStartIndex + ivar];
-              assertion8(
-                tmp[ivar + numberOfVariables * ll]==tmp[ivar + numberOfVariables * ll],
-                ivar, numberOfVariables, ll, iWeight, kernels::iK1[basisSize - 1][ll][nn],
-                rhs[nnSpaceTimeDofStartIndex + ivar], nnSpaceTimeDofStartIndex, nn
-              );
+              assertion8(tmp[ivar + numberOfVariables * ll] ==
+                             tmp[ivar + numberOfVariables * ll],
+                         ivar, numberOfVariables, ll, iWeight,
+                         kernels::iK1[basisSize - 1][ll][nn],
+                         rhs[nnSpaceTimeDofStartIndex + ivar],
+                         nnSpaceTimeDofStartIndex, nn);
             }
           }
         }
@@ -289,10 +294,9 @@ void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
           for (int ivar = 0; ivar < numberOfVariables; ivar++) {
             lQi[spaceTimeDofStartIndex + ivar] =
                 tmp[ivar + numberOfVariables * ll];
-            assertion4(
-              lQi[spaceTimeDofStartIndex + ivar]==lQi[spaceTimeDofStartIndex + ivar],
-              spaceTimeDofStartIndex, ivar, numberOfVariables, ll
-            );
+            assertion4(lQi[spaceTimeDofStartIndex + ivar] ==
+                           lQi[spaceTimeDofStartIndex + ivar],
+                       spaceTimeDofStartIndex, ivar, numberOfVariables, ll);
           }
         }
 
@@ -481,7 +485,7 @@ template <void PDEFlux(const double* const Q, double** F)>
 void kernels::aderdg::generic::c::spaceTimePredictorNonlinear(
     double* lQi, double* lFi, const double* const luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt,
-    int numberOfVariables, int basisSize) {
+    int numberOfVariables, int numberOfParameters, int basisSize) {
   std::cout << "spaceTimePredictor Picard only" << std::endl;
   // todo Angelika
   // Please remove the typedefs in generic kernels again since numberOf(...)Dof
