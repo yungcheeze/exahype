@@ -150,6 +150,7 @@ extern const double lFhbnd[480];  // nVar * nDOFy * nDOF_z * 6
 }  // namespace testSpaceTimePredictorLinear
 
 namespace testSpaceTimePredictorNonlinear {
+extern const double luh[320];     // nVar * nDOFx * nDOFy * nDOFz
 extern const double lQi[1280];    // nVar * nDOFt * nDOFx * nDOFy * nDOFz
 extern const double lFi[3840];    // nVar * nDOFx * nDOFy * nDOFz * nDOFt * dim
 extern const double lQhi[320];    // nVar * nDOFx * nDOFy * nDOFz
