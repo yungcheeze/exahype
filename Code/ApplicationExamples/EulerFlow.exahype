@@ -27,9 +27,9 @@ exahype-project  Euler
 
   computational-domain
     dimension                = 2
-    width                    = 2.0, 1.0
+    width                    = 1.0, 1.0
     offset                   = 0.0, 0.0
-    end-time                 = 1.0
+    end-time                 = 0.12
   end computational-domain
 /*
   shared-memory
@@ -66,8 +66,8 @@ exahype-project  Euler
       variables = 5
       time      = 0.0
       repeat    = 0.05
-      output    = ./output/solution
-      select    = {} 
+      output    = ./conserved
+      select = {}
     end plot
 
     /* this is the fake plotter used to compute global integrals */
@@ -77,6 +77,22 @@ exahype-project  Euler
       time = 0.0
       repeat = 0.05
       output = ./output/these-files-should-not-be-there
+      select = {}
+    end plot
+
+    plot vtk::Cartesian::ascii
+      variables = 5
+      time      = 0.0
+      repeat    = 0.05
+      output    = ./primitive
+      select = {}
+    end plot
+    
+    plot vtk::Cartesian::ascii
+      variables = 5
+      time      = 0.0
+      repeat    = 0.05
+      output    = ./exact-primitive
       select = {}
     end plot
 
