@@ -325,8 +325,8 @@ SUBROUTINE InitialField(u0,xGP)
     REAL :: V0(nVar) 
     ! 
     sigma = (/ 0.05, 0.05, 0.05 /)       ! half-width
-    VBase(:) = (/ 1., 0., 0., 0., 1. /)  ! base-state 
-    ampl(:)  = 0.                        ! perturbation amplitude vector 
+    VBase(:) = (/ 1., 0.1, 0.2, 0.3, 1. /)  ! base-state 
+    ampl(:)  = 1e-4                        ! perturbation amplitude vector 
     ampl(5)   = 1e-3                     ! 
     V0(:) = VBase(:) + ampl(:)*EXP( -0.5*SUM(xGP**2/sigma**2) )    
     ! A simple debug check for the computation of derivatives 

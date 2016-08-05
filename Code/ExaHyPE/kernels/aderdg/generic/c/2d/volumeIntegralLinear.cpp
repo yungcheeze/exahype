@@ -34,7 +34,6 @@ void volumeIntegralLinear(double* lduh, const double* const lFhi,
   idx3 idx_lduh(basisSize, basisSize, numberOfVariables);
 
   const int basisSize2 = basisSize * basisSize;
-  const int basisSize3 = basisSize2 * basisSize;
   const int order = basisSize - 1;
 
   std::memset(lduh, 0, basisSize2 * numberOfVariables * sizeof(double));

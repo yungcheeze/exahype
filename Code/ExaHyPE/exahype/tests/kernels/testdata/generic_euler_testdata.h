@@ -68,6 +68,9 @@ extern const double lQbnd[80];
 }  // namespace testSpaceTimePredictorLinear
 
 namespace testSpaceTimePredictorNonlinear {
+extern const double luh[80];
+extern const double lQi[320];
+extern const double lFi[640];
 extern const double lQhi[80];
 extern const double lFhi[160];
 extern const double lQhbnd[80];
@@ -87,10 +90,18 @@ extern const double FR_2[20];
 }  // namespace testRiemannSolverLinear
 
 namespace testRiemannSolverNonlinear {
-extern const double FL_1[20];
-extern const double FR_1[20];
-extern const double FL_2[20];
-extern const double FR_2[20];
+extern const double QL_1_in[20];
+extern const double QR_1_in[20];
+extern const double QL_2_in[20];
+extern const double QR_2_in[20];
+
+extern const double FL_1_in[20];
+extern const double FR_1_in[20];
+extern const double FL_2_in[20];
+extern const double FR_2_in[20];
+
+extern const double F_1_out[20];
+extern const double F_2_out[20];
 }  // namespace testRiemannSolverNonlinear
 
 #endif  // Dim2
@@ -150,6 +161,7 @@ extern const double lFhbnd[480];  // nVar * nDOFy * nDOF_z * 6
 }  // namespace testSpaceTimePredictorLinear
 
 namespace testSpaceTimePredictorNonlinear {
+extern const double luh[320];     // nVar * nDOFx * nDOFy * nDOFz
 extern const double lQi[1280];    // nVar * nDOFt * nDOFx * nDOFy * nDOFz
 extern const double lFi[3840];    // nVar * nDOFx * nDOFy * nDOFz * nDOFt * dim
 extern const double lQhi[320];    // nVar * nDOFx * nDOFy * nDOFz

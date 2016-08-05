@@ -126,14 +126,27 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x,const double t, 
 
   // skip fluxes for the time being as it crashes
 /*
+  // Compute boundary state.
+  InitialData(x,stateOut,t);
 
+  // Compute flux and
+  // extract normal flux in a lazy fashion.
   double f[5];
   double g[5];
+#if DIMENSIONS==2
   double * F[2];
   F[0] = f;
   F[1] = g;
-
+#else
+  double h[5];
+  double * F[3];
+  F[0] = f;
+  F[1] = g;
+  F[2] = h;
+#endif
+  F[normalNonZero] = fluxOut;
   flux(stateOut, F);
+
   for (int i=0; i<5; i++) {
     fluxOut[i] = F[normalNonZero][i];
   }

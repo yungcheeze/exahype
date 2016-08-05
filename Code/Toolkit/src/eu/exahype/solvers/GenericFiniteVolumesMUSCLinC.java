@@ -22,7 +22,7 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
     writer.write("  private:\n");
     writer.write("    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
     writer.write("    static void flux(const double* const Q, double** F);\n");
-
+    writer.write("    static void source(const double* const Q, double* S);\n");
     writer.write("};\n\n\n");
   }
 
