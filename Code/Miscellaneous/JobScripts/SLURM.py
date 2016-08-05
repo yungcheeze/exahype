@@ -128,7 +128,7 @@ def runSingleSlURMjob(dimension, process, pdegree, hmax, compiler, mode, directo
   if process > 1:
     file.write("echo \"  distributed-memory                                                \" >> myUserSpec.exahype"                 + "\n")
     file.write("echo \"    identifier               = static_load_balancing                \" >> myUserSpec.exahype"                 + "\n")
-    file.write("echo \"    configure                = {greedy,FCFS}                        \" >> myUserSpec.exahype"                 + "\n")
+    file.write("echo \"    configure                = {hotspot,FCFS}                        \" >> myUserSpec.exahype"                 + "\n")
     file.write("echo \"    buffer-size              = 64                                   \" >> myUserSpec.exahype"                 + "\n")
     file.write("echo \"    timeout                  = 120                                  \" >> myUserSpec.exahype"                 + "\n")
     file.write("echo \"  end distributed-memory                                            \" >> myUserSpec.exahype"                 + "\n")
