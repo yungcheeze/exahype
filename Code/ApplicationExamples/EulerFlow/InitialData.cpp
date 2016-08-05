@@ -51,7 +51,7 @@ void MovingGauss2D(const double* const x, double* V, double t=0.0) {
 	Pasta::vec2 x0({ 0.5, 0.5 });
 	double width = 0.25;
 	
-	V[0] = 0.5 + 0.2 * exp(- (xvec - x0).norm() / pow(width, MY_DIMENSIONS) - v0*t); // rho
+	V[0] = 0.5 + 0.2 * exp(- (xvec - x0 - v0*t).norm() / pow(width, MY_DIMENSIONS)); // rho
 	V[1] = v0(0);
 	V[2] = v0(1);
 	V[3] = 0.;
