@@ -22,8 +22,9 @@ def addData(table,normalisation,plotLabels,experimentSetCounter,label):
     ydata = []
     for i in range(0,len(totalTime)):
       if count[i]==0:
-        print "ERROR " + str(i) + "th entry in " + table + "'s " + str(runtimeParser.getAdapterCountColumnFromTable(table,adap)) + "th column equals 0"
-        return 
+        print "ERROR " + str(i) + "th entry in " + table + "'s " + str(runtimeParser.getAdapterCountColumnFromTable(table,adap)) + "th column (adapter " + adap + ") equals 0"
+        ydata = []
+        break 
       ydata.append( totalTime[i]*normalisation/count[i])
     if len(ydata)==0:
       print "WARNING: file " + table + " seems to be empty for adapter " + adap
@@ -71,7 +72,8 @@ If multiple adapters are specified, then the cumulative user times are used to c
 Sample usages:\n
 python ../plotRuntime.py -experimentdescription '' -table x4-1.results.table -output experiment1 -xaxislabel "MPI Ranks" -dimension 2 \n
 python ../plotRuntime.py -experimentdescription '' -table x4-1.results.table -adapter Total ADERDGTimeStep PredictorRerun -output experiment1 -xaxislabel "MPI Ranks" -dimension 2 \n
-python ../plotRuntime.py -experimentdescription 'depth 3' 'depth 4' 'depth 5' 'depth 6' 'depth 7'  -table x4-1.results.table x4-2.results.table x4-3.results.table x4-4.results.table x4-5.results.table -adapter Total ADERDGTimeStep PredictorRerun -output experiment1 -xaxislabel "MPI Ranks" -dimension 2 \n
+python ../plotRuntime.py -experimentdescription 'depth 6' 'depth 7' 'depth 8' -table x4-1.results.table x4-2.results.table x4-3.results.table -adapter ADERDGTimeStep PredictorRerun -output experimentx4 -xaxislabel "MPI Ranks" -dimension 2 \n
+python ../plotRuntime.py -experimentdescription 'depth 4' 'depth 5' 'depth 6' 'depth 7' 'depth 8' 'depth 9' -table x16-0.results.table x16-1.results.table x16-2.results.table x16-3.results.table x16-4.results.table x16-5.results.table -adapter ADERDGTimeStep PredictorRerun -output experimentx16 -xaxislabel "MPI Ranks" -dimension 2 \n
 '''
 
 parser = argparse.ArgumentParser(description=help,formatter_class=RawTextHelpFormatter)
