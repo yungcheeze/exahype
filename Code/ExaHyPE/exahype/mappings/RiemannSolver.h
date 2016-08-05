@@ -49,6 +49,10 @@ class exahype::mappings::RiemannSolver {
    */
   static tarch::logging::Log _log;
 
+//  For debugging purposes
+  int _interiorFaceSolves;
+  int _boundaryFaceSolves;
+
   /**
    * Local copy of the state.
    */
@@ -63,13 +67,11 @@ class exahype::mappings::RiemannSolver {
    * the method further sets the ::riemannSolvePerformed
    * flags for the particular faces on both cell descriptions (per solver).
    *
-   * This method further synchronises the ADERDGCellDescriptions on both cells
+   * This method further synchronises the ADERDGCellDescription
    * with the corresponding solver if this is required by the time stepping scheme.
-   * This operation must be performed in the touchVertexFirstTime(...) action
-   * code since we might have recomputed the predictor with
-   * a different time step size in the previous grid iteration.
-   * Then, the predictor time step size on the ADERDGCellDescriptions
-   * is not valid anymore.
+   * This operation must be performed in mergeWithNeighbour(...) and
+   * touchVertexFirstTime(...) since both callbacks touch the
+   * ADERDGCellDescriptions before the other callbacks.
    *
    * <h2>Rationale</h2>
    *
@@ -104,43 +106,14 @@ class exahype::mappings::RiemannSolver {
                                       const int faceIndexForLeftCell,
                                       const int faceIndexForRightCell,
                                       const int normalNonZero);
-
-  /**
-   * Single-sided version of the other solveRiemannProblemAtInterface(). It
-   * works only on one cell and one solver within this cell and in return
-   * hands in the F and Q values explicitly through  indexOfQValues and
-   * indexOfFValues. The Riemann solver is invoked and the bits are set
-   * accordingly no matter of what they did hold before, i.e. different to
-   * the standard solveRiemannProblemAtInterface() operation, we do not
-   * check whether we shall run a Riemann solver or not.
-   *
-   * This method further synchronises the ADERDGCellDescription
-   * with the corresponding solver if this is required by the time stepping scheme.
-   * This operation must be performed in the touchVertexFirstTime(...) action
-   * code since we might have recomputed the predictor with
-   * a different time step size in the previous grid iteration.
-   * Then, the predictor time step size on the ADERDGCellDescription
-   * is not valid anymore.
-   *
-   * \note Not thread-safe.
-   */
-  void solveRiemannProblemAtInterface(
-      records::ADERDGCellDescription& cellDescription,
-      const int faceIndexForCell,
-      const int normalNonZero,  // @todo is redundant. We should be able to
-                                // derive this from faceIndexForCell
-      const int indexOfQValues, const int indexOfFValues);
-
   /**
    * Apply the boundary conditions at the face with index \p faceIndex.
    *
    * This method further synchronises the ADERDGCellDescription
    * with the corresponding solver if this is required by the time stepping scheme.
-   * This operation must be performed in the touchVertexFirstTime(...) action
-   * code since we might have recomputed the predictor with
-   * a different time step size in the previous grid iteration.
-   * Then, the predictor time step size on the ADERDGCellDescription
-   * is not valid anymore.
+   * This operation must be performed in mergeWithNeighbour(...) and
+   * touchVertexFirstTime(...) since both callbacks touch the
+   * ADERDGCellDescriptions before the other callbacks.
    *
    * \note Not thread-safe.
    *
@@ -156,6 +129,32 @@ class exahype::mappings::RiemannSolver {
    */
   void applyBoundaryConditions(records::ADERDGCellDescription& cellDescription,
                                const int faceIndex, const int normalNonZero);
+
+#ifdef Parallel
+  /**
+   * Single-sided version of the other solveRiemannProblemAtInterface(). It
+   * works only on one cell and one solver within this cell and in return
+   * hands in the F and Q values explicitly through  indexOfQValues and
+   * indexOfFValues. The Riemann solver is invoked and the bits are set
+   * accordingly no matter of what they did hold before, i.e. different to
+   * the standard solveRiemannProblemAtInterface() operation, we do not
+   * check whether we shall run a Riemann solver or not.
+   *
+   * This method further synchronises the ADERDGCellDescription
+   * with the corresponding solver if this is required by the time stepping scheme.
+   * This operation must be performed in mergeWithNeighbour(...) and
+   * touchVertexFirstTime(...) since both callbacks touch the
+   * ADERDGCellDescriptions before the other callbacks.
+   *
+   * \note Not thread-safe.
+   */
+  void solveRiemannProblemAtInterface(
+      records::ADERDGCellDescription& cellDescription,
+      const int faceIndexForCell,
+      const int normalNonZero,  // @todo is redundant. We should be able to // derive this from faceIndexForCell
+      const int indexOfQValues, const int indexOfFValues
+  );
+#endif
 
  public:
   /**

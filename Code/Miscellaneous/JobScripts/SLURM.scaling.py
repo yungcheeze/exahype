@@ -14,4 +14,4 @@ compilers = ["GNU", "Intel"]
 dimensions = ["2D", "3D"]
 modes = ["Release"]
 
-runMultipleSlURMjobs(dimensions, processes, pdegrees, hmaxs, compilers, modes)
+runMultipleSlURMjobs(dimensions, processes, pdegrees, hmaxs, compilers, modes, "scalingRun")

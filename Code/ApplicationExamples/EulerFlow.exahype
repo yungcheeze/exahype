@@ -31,13 +31,13 @@ exahype-project  Euler
     offset                   = 0.0, 0.0
     end-time                 = 1.0
   end computational-domain
-
+/*
   shared-memory
     identifier               = autotuning
     cores                    = 4
     properties-file          = sharedmemory.properties
   end shared-memory
-
+*/
  /*
   distributed-memory
     identifier               = static_load_balancing

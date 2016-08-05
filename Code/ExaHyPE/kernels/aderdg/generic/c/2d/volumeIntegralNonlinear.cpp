@@ -35,7 +35,6 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                              const int basisSize) {
   const int order = basisSize - 1;
   const int basisSize2 = basisSize * basisSize;
-  const int basisSize3 = basisSize2 * basisSize;
 
   // Initialize the update DOF
   std::memset(lduh, 0, basisSize2 * numberOfVariables * sizeof(double));

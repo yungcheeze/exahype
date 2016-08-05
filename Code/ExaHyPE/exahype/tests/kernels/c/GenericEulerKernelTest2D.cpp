@@ -330,6 +330,9 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
                                      // output:
     double *FL = new double[5 * 4];  // nVar * nDOF(2)
     double *FR = new double[5 * 4];  // nVar * nDOF(2)
+    // TODO: Improve test
+    std::memset(FL, 0, 20 * sizeof(double));
+    std::memset(FR, 0, 20 * sizeof(double));
 
     // input
     // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL
@@ -368,6 +371,8 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
                                      // output:
     double *FL = new double[5 * 4];  // nVar * nDOF(2)
     double *FR = new double[5 * 4];  // nVar * nDOF(2)
+    std::memset(FL, 0, 20 * sizeof(double));
+    std::memset(FR, 0, 20 * sizeof(double));
 
     // input:
     // ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL
@@ -415,9 +420,11 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     double QR[20] = {1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5,
                      1., 0., 0., 0., 2.5, 1., 0., 0., 0., 2.5};
 
-    // output:
+    // inout:
     double *FL = new double[20];
     double *FR = new double[20];
+    std::memset(FL, 0, 20 * sizeof(double));
+    std::memset(FR, 0, 20 * sizeof(double));
 
     kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
         FL, FR, QL, QR,
@@ -445,11 +452,18 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     // output:
     double *FL = new double[20];
     double *FR = new double[20];
+    std::memcpy(FL, ::exahype::tests::testdata::generic_euler::
+                        testRiemannSolverNonlinear::FL_1_in,
+                20 * sizeof(double));
+    std::memcpy(FR, ::exahype::tests::testdata::generic_euler::
+                        testRiemannSolverNonlinear::FR_1_in,
+                20 * sizeof(double));
 
     kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
-        FL, FR,
-        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
-        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR,
+        FL, FR, ::exahype::tests::testdata::generic_euler::
+                    testRiemannSolverNonlinear::QL_1_in,
+        ::exahype::tests::testdata::generic_euler::testRiemannSolverNonlinear::
+            QR_1_in,
         0.0,  // dt
         0,    // normalNonZero
         5,    // getNumberOfVariables()
@@ -460,14 +474,14 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     for (int i = 0; i < 20; i++) {
       validateNumericalEqualsWithEpsWithParams1(
           FL[i], ::exahype::tests::testdata::generic_euler::
-                     testRiemannSolverNonlinear::FL_1[i],
+                     testRiemannSolverNonlinear::F_1_out[i],
           eps, i);
     }
 
     for (int i = 0; i < 20; i++) {
       validateNumericalEqualsWithEpsWithParams1(
           FR[i], ::exahype::tests::testdata::generic_euler::
-                     testRiemannSolverNonlinear::FR_1[i],
+                     testRiemannSolverNonlinear::F_1_out[i],
           eps, i);
     }
 
@@ -483,11 +497,18 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     // output:
     double *FL = new double[20];
     double *FR = new double[20];
+    std::memcpy(FL, ::exahype::tests::testdata::generic_euler::
+                        testRiemannSolverNonlinear::FL_2_in,
+                20 * sizeof(double));
+    std::memcpy(FR, ::exahype::tests::testdata::generic_euler::
+                        testRiemannSolverNonlinear::FR_2_in,
+                20 * sizeof(double));
 
     kernels::aderdg::generic::c::riemannSolverNonlinear<testEigenvalues>(
-        FL, FR,
-        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QL,
-        ::exahype::tests::testdata::generic_euler::testRiemannSolver::QR,
+        FL, FR, ::exahype::tests::testdata::generic_euler::
+                    testRiemannSolverNonlinear::QL_2_in,
+        ::exahype::tests::testdata::generic_euler::testRiemannSolverNonlinear::
+            QR_2_in,
         0.0,  // dt
         1,    // normalNonZero
         5,    // getNumberOfVariables()
@@ -498,14 +519,14 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
     for (int i = 0; i < 20; i++) {
       validateNumericalEqualsWithEpsWithParams1(
           FL[i], ::exahype::tests::testdata::generic_euler::
-                     testRiemannSolverNonlinear::FL_2[i],
+                     testRiemannSolverNonlinear::F_2_out[i],
           eps, i);
     }
 
     for (int i = 0; i < 20; i++) {
       validateNumericalEqualsWithEpsWithParams1(
           FR[i], ::exahype::tests::testdata::generic_euler::
-                     testRiemannSolverNonlinear::FR_2[i],
+                     testRiemannSolverNonlinear::F_2_out[i],
           eps, i);
     }
 
@@ -715,14 +736,10 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
 }  // testSpaceTimePredictorLinear
 
 void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
-  double *luh = new double[80]();  // space DOF
-  for (int i = 0; i < 16; i++) {
-    luh[5 * i + 0] = 1.00000000000000000000e+00;
-    luh[5 * i + 4] = 2.50000000000000044409e+00;
-  }
-  // @todo Sollte kein Array sein, weil wir nur Wuerfel unterstuetzen
-  const double dx[2] = {3.70370370370370349811e-02, 3.70370370370370349811e-02};
-  const double timeStepSize = 1.40831757919882352703e-03;
+  cout << "Test space time predictor nonlinear, ORDER=3, DIM=2" << endl;
+
+  const tarch::la::Vector<DIMENSIONS, double> dx(5e-02, 5e-02);
+  const double timeStepSize = 1.686854344081342E-003;
 
   // local:
   double *lQi = new double[320];  // space-time DOF
@@ -734,37 +751,29 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   double *lQhbnd = new double[80];
   double *lFhbnd = new double[80];
 
-  // Original aus Angelikas Code
-  // dg::spaceTimePredictor<2>(lQi, lFi, luh, lQhi, lFhi, lQhbnd, lFhbnd, rhs0,
-  // rhs, tmp, dx, timeStepSize);
-
-  // todo 10/02/16:Dominic Etienne Charrier
-  // REMOVED
-  /*
-  kernels::aderdg::generic::spaceTimePredictor<testFlux>( lQi, lFi, lQhi, lFhi,
-  lQhbnd, lFhbnd, luh, dx[0], timeStepSize,
-                                                          5, //
-  getNumberOfVariables(),
-                                                          4  //
-  getNodesPerCoordinateAxis()
-  );
-  */
-  // ADDED
   kernels::aderdg::generic::c::spaceTimePredictorNonlinear<testFlux>(
-      lQi, lFi, luh, dx[0], timeStepSize,
+      lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd,
+      ::exahype::tests::testdata::generic_euler::
+          testSpaceTimePredictorNonlinear::luh,
+      dx, timeStepSize,
       5,  // getNumberOfVariables(),
       0,  // getNumberOfParameters()
       4   // getNodesPerCoordinateAxis()
       );
-  kernels::aderdg::generic::c::predictor(lQhi, lFhi, lQi, lFi, timeStepSize,
-                                         5,  // getNumberOfVariables(),
-                                         4   // getNodesPerCoordinateAxis()
-                                         );
-  kernels::aderdg::generic::c::extrapolatedPredictor(
-      lQhbnd, lFhbnd, lQhi, lFhi, timeStepSize,
-      5,  // getNumberOfVariables(),
-      4   // getNodesPerCoordinateAxis()
-      );
+
+  for (int i = 0; i < 320; i++) {
+    validateNumericalEqualsWithEpsWithParams1(
+        lQi[i], ::exahype::tests::testdata::generic_euler::
+                    testSpaceTimePredictorNonlinear::lQi[i],
+        eps, i);
+  }
+
+  for (int i = 0; i < 360; i++) {
+    validateNumericalEqualsWithEpsWithParams1(
+        lFi[i], ::exahype::tests::testdata::generic_euler::
+                    testSpaceTimePredictorNonlinear::lFi[i],
+        eps, i);
+  }
 
   for (int i = 0; i < 80; i++) {
     validateNumericalEqualsWithEpsWithParams1(
@@ -773,16 +782,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
         eps, i);
   }
 
-  // lFhi_x
-  for (int i = 0; i < 80; i++) {
-    validateNumericalEqualsWithEpsWithParams1(
-        lFhi[i], ::exahype::tests::testdata::generic_euler::
-                     testSpaceTimePredictorNonlinear::lFhi[i],
-        eps, i);
-  }
-
-  // lFhi_y
-  for (int i = 80; i < 160; i++) {
+  for (int i = 0; i < 160; i++) {
     validateNumericalEqualsWithEpsWithParams1(
         lFhi[i], ::exahype::tests::testdata::generic_euler::
                      testSpaceTimePredictorNonlinear::lFhi[i],
@@ -805,7 +805,6 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
         eps, i);
   }
 
-  delete[] luh;
   delete[] lQi;
   delete[] lFi;
   delete[] lQhi;
