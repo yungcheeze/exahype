@@ -330,6 +330,8 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
   // output (intentionally left uninitialised):
   double *FL = new double[4 * 4 * 5];  // nDOF(3) * nDOF(2) * nVar
   double *FR = new double[4 * 4 * 5];  // nDOF(3) * nDOF(2) * nVar
+  std::memset(FL, 0, 80 * sizeof(double));
+  std::memset(FR, 0, 80 * sizeof(double));
 
   // inputs:
   // exahype::tests::testdata::generic_euler::testRiemannSolver::QL[80 =
@@ -517,8 +519,8 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   // exahype::tests::testdata::generic_euler::testSpaceTimePredictor::luh[320 =
   // nVar * nDOFx * nDOFy * nDOFz]
 
-  const tarch::la::Vector<DIMENSIONS, double> dx(0.5, 0.5, 0.5);
-  const double timeStepSize = 1.267423918681417E-002;
+  const tarch::la::Vector<DIMENSIONS, double> dx(0.05, 0.05, 0.05);
+  const double timeStepSize = 1.083937460199773E-003;
 
   // local:
   double *lQi = new double[1280];  // nVar * nDOFx * nDOFy * nDOFz * nDOFt
@@ -533,8 +535,9 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
 
   kernels::aderdg::generic::c::spaceTimePredictorNonlinear<testFlux>(
       lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd,
-      exahype::tests::testdata::generic_euler::testSpaceTimePredictor::luh, dx,
-      timeStepSize,
+      exahype::tests::testdata::generic_euler::testSpaceTimePredictorNonlinear::
+          luh,
+      dx, timeStepSize,
       5,  // numberOfVariables
       0,  // numberOfParameters
       4   // basisSize
@@ -544,42 +547,42 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
     validateNumericalEqualsWithEpsWithParams1(
         lQi[i], ::exahype::tests::testdata::generic_euler::
                     testSpaceTimePredictorNonlinear::lQi[i],
-        5e-7, i);
+        eps, i);
   }
 
   for (int i = 0; i < 3840; i++) {
     validateNumericalEqualsWithEpsWithParams1(
         lFi[i], ::exahype::tests::testdata::generic_euler::
                     testSpaceTimePredictorNonlinear::lFi[i],
-        2.1e-5, i);
+        eps, i);
   }
 
   for (int i = 0; i < 320; i++) {
     validateNumericalEqualsWithEpsWithParams1(
         lQhi[i], ::exahype::tests::testdata::generic_euler::
                      testSpaceTimePredictorNonlinear::lQhi[i],
-        8e-8, i);
+        eps, i);
   }
 
   for (int i = 0; i < 960; i++) {
     validateNumericalEqualsWithEpsWithParams1(
         lFhi[i], ::exahype::tests::testdata::generic_euler::
                      testSpaceTimePredictorNonlinear::lFhi[i],
-        3.4e-6, i);
+        eps, i);
   }
 
   for (int i = 0; i < 480; i++) {
     validateNumericalEqualsWithEpsWithParams1(
         lQhbnd[i], ::exahype::tests::testdata::generic_euler::
                        testSpaceTimePredictorNonlinear::lQhbnd[i],
-        1.1e-7, i);
+        eps, i);
   }
 
   for (int i = 0; i < 480; i++) {
     validateNumericalEqualsWithEpsWithParams1(
         lFhbnd[i], ::exahype::tests::testdata::generic_euler::
                        testSpaceTimePredictorNonlinear::lFhbnd[i],
-        4.2e-6, i);
+        eps, i);
   }
 
   delete[] lQi;
