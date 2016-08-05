@@ -29,6 +29,7 @@ void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
   const double GAMMA = 1.4;
 
   const double irho = 1.0 / Q[0];
+  // TODO: For DIMENSIONS==3, there is an Q[3]*Q[3] missing.
   const double p =
       (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2]) * irho);
 
@@ -71,11 +72,12 @@ void Euler::MyEulerSolver::eigenvalues(const double* const Q, const int normalNo
 
   double irho = 1.0 / Q[0];
 
-#if DIMENSIONS == 2
+//#if DIMENSIONS == 2
+  // DIMENSIONS is not defined, for some reason. Built system broken or so.
   double p = (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2]) * irho);
-#else
-  double p = (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2] + Q[3] * Q[3]) * irho);
-#endif
+//#else
+  //double p = (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2] + Q[3] * Q[3]) * irho);
+//#endif
 
   double u_n = Q[normalNonZeroIndex + 1] * irho;
   double c = std::sqrt(GAMMA * p * irho);
@@ -119,7 +121,11 @@ exahype::solvers::Solver::RefinementControl Euler::MyEulerSolver::refinementCrit
 void Euler::MyEulerSolver::boundaryValues(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
-  InitialData(x,stateOut,t);
+
+//  InitialData(x,stateOut,t);
+
+  // skip fluxes for the time being as it crashes
+/*
 
   double f[5];
   double g[5];
@@ -131,21 +137,21 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x,const double t, 
   for (int i=0; i<5; i++) {
     fluxOut[i] = F[normalNonZero][i];
   }
-
+*/
   //  fluxOut
   //  //@todo Please implement
-  //  fluxOut[0] = fluxIn[0];
-  //  fluxOut[1] = fluxIn[1];
-  //  fluxOut[2] = fluxIn[2];
-  //  fluxOut[3] = fluxIn[3];
-  //  fluxOut[4] = fluxIn[4];
+  fluxOut[0] = fluxIn[0];
+  fluxOut[1] = fluxIn[1];
+  fluxOut[2] = fluxIn[2];
+  fluxOut[3] = fluxIn[3];
+  fluxOut[4] = fluxIn[4];
   //  // stateOut
   //  // @todo Please implement
-  //  stateOut[0] = stateIn[0];
-  //  stateOut[1] = stateIn[1];
-  //  stateOut[2] = stateIn[2];
-  //  stateOut[3] = stateIn[3];
-  //  stateOut[4] = stateIn[4];
+  stateOut[0] = stateIn[0];
+  stateOut[1] = stateIn[1];
+  stateOut[2] = stateIn[2];
+  stateOut[3] = stateIn[3];
+  stateOut[4] = stateIn[4];
 }
 
 

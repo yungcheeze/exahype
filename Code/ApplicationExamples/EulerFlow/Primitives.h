@@ -4,7 +4,7 @@
 #include "GeneratedConstants.h"
 
 // Ideal equation of state's Gamma
-static const double eos_gamma = 5./3.;
+static const double eos_gamma = 1.4; // cf. fluxes, eigenvalues, initial data
 
 // helper: Square of a.
 inline double SQ(double a) { return a*a; }
@@ -17,11 +17,11 @@ inline double SQ3(const double* const v, int start=1) {
 }
 
 /** The reason for this being in a header is pure lazyness and triviality of the C2P for Euler */
-
+/*
 inline void cons2prim(double* V, const double* Q) {
 	// Euler c2p
-	double p = (eos_gamma-1)*(Q[4] - 0.5/Q[0] * SQ3(Q) );
-	
+	double p = (eos_gamma-1)*(Q[4] - 0.5 * SQ3(Q) / Q[0] );
+
 	V[0] = Q[0]; // fluid density
 	V[1] = Q[1] / Q[0]; // fluid velocities
 	V[2] = Q[2] / Q[0];
@@ -38,8 +38,8 @@ inline void prim2con(double* Q, const double* V) {
 	Q[4] = V[4] / (eos_gamma-1) + 0.5*V[0] * SQ3(V);
 }
 
-/*
-// skip the con2prim for debugging
+*/
+// skip the cons2prim for debugging
 inline void cons2prim(double* V, const double* Q) {
 	for(int i=0; i<MY_NUMBER_OF_VARIABLES; i++)
 		V[i] = Q[i];
@@ -50,7 +50,7 @@ inline void prim2con(double* Q, const double* V) {
 	cons2prim(Q,V);
 }
 
-*/
+
 
 
 #endif /* __EULER_PRIMITIVES__ */
