@@ -213,7 +213,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
     geometry,
     _parser.getBoundingBoxSize()*9.0/7.0,
-    _parser.getOffset()-1.0/7.0
+    _parser.getOffset()-1.0/7.0*_parser.getBoundingBoxSize()
   );
   #else
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
