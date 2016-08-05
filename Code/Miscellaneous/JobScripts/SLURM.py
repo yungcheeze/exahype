@@ -1,10 +1,12 @@
 from subprocess import call
 import os,binascii,datetime
+import time
 
-def runMultipleSlURMjobs(dimensions, processes, pdegrees, hmaxs, compilers, modes):
+def runMultipleSlURMjobs(dimensions, processes, pdegrees, hmaxs, compilers, modes, suffix):
 
   #a tmp directory, where all logfiles go to
-  directory = str(datetime.date.today()) + binascii.b2a_hex(os.urandom(8))
+  numberOfSimulations = len(dimensions)*len(processes)*len(pdegrees)*len(hmaxs)*len(compilers)*len(modes)
+  directory = time.strftime('%Y_%m_%d__%H_%M_%S') + "_N" + str(numberOfSimulations) + "_" + suffix
   
   for dimension in dimensions:
     for process in processes:
@@ -23,7 +25,7 @@ def runSingleSlURMjob(dimension, process, pdegree, hmax, compiler, mode, directo
   
   file.write("#!/bin/bash"                                                                                                         + "\n")
   file.write("#SBATCH -o %j." + name + ".out "                                                                                     + "\n")
-  file.write("#SBATCH -D /home/hpc/pr63so/gu89tik2/jobs/logs"                                                                   + "\n")
+  file.write("#SBATCH -D /home/hpc/pr63so/gu89tik2/scratch/logs"                                                                   + "\n")
   file.write("#SBATCH -J " + name                                                                                                  + "\n")
   file.write("#SBATCH --get-user-env "                                                                                             + "\n")
   file.write("#SBATCH --clusters=mpp2"                                                                                             + "\n")
@@ -128,7 +130,7 @@ def runSingleSlURMjob(dimension, process, pdegree, hmax, compiler, mode, directo
   if process > 1:
     file.write("echo \"  distributed-memory                                                \" >> myUserSpec.exahype"                 + "\n")
     file.write("echo \"    identifier               = static_load_balancing                \" >> myUserSpec.exahype"                 + "\n")
-    file.write("echo \"    configure                = {hotspot,FCFS}                        \" >> myUserSpec.exahype"                 + "\n")
+    file.write("echo \"    configure                = {hotspot,FCFS}                       \" >> myUserSpec.exahype"                 + "\n")
     file.write("echo \"    buffer-size              = 64                                   \" >> myUserSpec.exahype"                 + "\n")
     file.write("echo \"    timeout                  = 120                                  \" >> myUserSpec.exahype"                 + "\n")
     file.write("echo \"  end distributed-memory                                            \" >> myUserSpec.exahype"                 + "\n")
@@ -169,6 +171,7 @@ def runSingleSlURMjob(dimension, process, pdegree, hmax, compiler, mode, directo
   file.write("echo \"*8**********************\""                                                                                   + "\n")
   file.write("export COMPILER=" + compiler                                                                                         + "\n")
   file.write("export MODE=" + mode                                                                                                 + "\n")
+  file.write("export EXAHYPE_INITIALDATA=DiffusingGauss"                                                                           + "\n")
   file.write("make clean"                                                                                                          + "\n")
   file.write("make -j56"                                                                                                           + "\n")
   if process == 1:

@@ -14,4 +14,4 @@ compilers = ["GNU", "Intel"]
 dimensions = ["2D", "3D"]
 modes = ["Profile"]
 
-runMultipleSlURMjobs(dimensions, processes, pdegrees, hmaxs, compilers, modes)
+runMultipleSlURMjobs(dimensions, processes, pdegrees, hmaxs, compilers, modes, "profilingRun")
