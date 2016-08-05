@@ -123,29 +123,22 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x,const double t, 
 
   double f[5];
   double g[5];
+#if DIMENSIONS==2
   double * F[2];
   F[0] = f;
   F[1] = g;
+#else
+  double h[5];
+  double * F[3];
+  F[0] = f;
+  F[1] = g;
+  F[2] = h;
+#endif
 
   flux(stateOut, F);
   for (int i=0; i<5; i++) {
     fluxOut[i] = F[normalNonZero][i];
   }
-
-  //  fluxOut
-  //  //@todo Please implement
-  //  fluxOut[0] = fluxIn[0];
-  //  fluxOut[1] = fluxIn[1];
-  //  fluxOut[2] = fluxIn[2];
-  //  fluxOut[3] = fluxIn[3];
-  //  fluxOut[4] = fluxIn[4];
-  //  // stateOut
-  //  // @todo Please implement
-  //  stateOut[0] = stateIn[0];
-  //  stateOut[1] = stateIn[1];
-  //  stateOut[2] = stateIn[2];
-  //  stateOut[3] = stateIn[3];
-  //  stateOut[4] = stateIn[4];
 }
 
 
