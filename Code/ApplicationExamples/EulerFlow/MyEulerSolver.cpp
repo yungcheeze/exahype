@@ -119,8 +119,11 @@ exahype::solvers::Solver::RefinementControl Euler::MyEulerSolver::refinementCrit
 void Euler::MyEulerSolver::boundaryValues(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
   // Dimensions             = 2
   // Number of variables    = 5 (#unknowns + #parameters)
+  // Compute boundary state.
   InitialData(x,stateOut,t);
 
+  // Compute flux and
+  // extract normal flux in a lazy fashion.
   double f[5];
   double g[5];
 #if DIMENSIONS==2
@@ -134,11 +137,8 @@ void Euler::MyEulerSolver::boundaryValues(const double* const x,const double t, 
   F[1] = g;
   F[2] = h;
 #endif
-
+  F[normalNonZero] = fluxOut;
   flux(stateOut, F);
-  for (int i=0; i<5; i++) {
-    fluxOut[i] = F[normalNonZero][i];
-  }
 }
 
 
