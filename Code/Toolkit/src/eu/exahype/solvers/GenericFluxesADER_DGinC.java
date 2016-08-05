@@ -50,6 +50,16 @@ public abstract class GenericFluxesADER_DGinC extends GenericFluxesADER_DG {
     }
     writer.write("}\n");
     writer.write("\n\n\n");
+
+    // source
+    writer.write("void " + projectName + "::" + solverName + "::source(const double* const Q, double* S) {\n");
+    writer.write("  // Number of variables = " + _numberOfUnknowns + " + " +  _numberOfParameters + "\n");
+    writer.write("  // @todo Please implement\n");
+    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+      writer.write("  S[" + i + "] = 0.0;\n");
+    }
+    writer.write("}\n");
+    writer.write("\n\n\n");
     
     // boundary conditions
     writer.write("void " + projectName + "::" + solverName
