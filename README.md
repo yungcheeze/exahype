@@ -13,12 +13,12 @@ Copy and paste these commands to start with a working ExaHyPE application:
 
 Now you are ready to follow compile and run an ExaHyPE application [according to the guidebook](http://www5.in.tum.de/exahype/guidebook.pdf):
 
-    java -jar ExaHyPE.jar Applications/eulerflow2d.exahype
+    java -jar ExaHyPE.jar ApplicationExamples/EulerFlow.exahype
     export COMPILER=gnu
     export TBB_INC=/usr/include/tbb
     export TBB_LIB=/usr/lib/tbb
-    cd Applications/eulerflow2d && make -j
-    ./ExaHyPE-Euler2d ../eulerflow2d.exahype
+    cd ApplicationExamples/EulerFlow && make -j
+    ./ExaHyPE-Euler ../EulerFlow.exahype
 
 ## General remarks ##
 
