@@ -195,7 +195,7 @@ void aderPredictorNonlinear(const double* lQi, const double* lFi,
   idx3 idx_lQhi(basisSize, basisSize, numberOfVariables);
   idx3 idx_lFhi(basisSize, basisSize, numberOfVariables);
 
-  std::memset(lQhi, 0, basisSize2 * numberOfVariables * sizeof(double));
+  std::memset(lQhi,   0, basisSize2 * numberOfVariables * sizeof(double));
   std::memset(lFhi_x, 0, basisSize2 * numberOfVariables * sizeof(double));
   std::memset(lFhi_y, 0, basisSize2 * numberOfVariables * sizeof(double));
 
