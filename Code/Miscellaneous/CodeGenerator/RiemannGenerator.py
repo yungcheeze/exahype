@@ -88,12 +88,12 @@ class RiemannGenerator:
 
 
     def __generateAverageStates(self):
-        l_file = open(self.m_filename, 'a')
+        l_sourceFile = open(self.m_filename, 'a')
 
         # uniform length of QavL, QavR
         l_paddedVectorLength = Backend.getSizeWithPadding(self.m_config['nVar'])
-        l_file.write('  double QavL['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT))) = {0.};\n')
-        l_file.write('  double QavR['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT))) = {0.};\n\n')
+        l_sourceFile.write('  double QavL['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT))) = {0.};\n')
+        l_sourceFile.write('  double QavR['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT))) = {0.};\n\n')
 
         # we need
         # aux = (/ 1.0, wGPN(j), wGPN(k) /)
@@ -106,64 +106,77 @@ class RiemannGenerator:
         # Each of the 5 chunks starts at an appropriately aligned address
 
         for iVar in range(0, self.m_config['nVar']):
-            l_file.write('#pragma simd\n')
-            l_file.write('  for(int i=0;i<'+str(self.m_chunkSize)+';i++) {\n')
-            l_file.write('    QavL['+str(iVar)+'] += weights2[i] * lQbndL['+str(iVar*self.m_chunkSize)+'+i];\n')
-            l_file.write('  }\n\n')
+            l_sourceFile.write('#pragma simd\n')
+            l_sourceFile.write('  for(int i=0;i<'+str(self.m_chunkSize)+';i++) {\n')
+            l_sourceFile.write('    QavL['+str(iVar)+'] += weights2[i] * lQbndL['+str(iVar*self.m_chunkSize)+'+i];\n')
+            l_sourceFile.write('  }\n\n')
 
         for iVar in range(0, self.m_config['nVar']):
-            l_file.write('#pragma simd\n')
-            l_file.write('  for(int i=0;i<'+str(self.m_chunkSize)+';i++) {\n')
-            l_file.write('    QavR['+str(iVar)+'] += weights2[i] * lQbndR['+str(iVar*self.m_chunkSize)+'+i];\n')
-            l_file.write('  }\n\n')
+            l_sourceFile.write('#pragma simd\n')
+            l_sourceFile.write('  for(int i=0;i<'+str(self.m_chunkSize)+';i++) {\n')
+            l_sourceFile.write('    QavR['+str(iVar)+'] += weights2[i] * lQbndR['+str(iVar*self.m_chunkSize)+'+i];\n')
+            l_sourceFile.write('  }\n\n')
 
-        l_file.close()
+        l_sourceFile.close()
 
     def __generateRusanovSolverForNonlinear(self):
         # write #include's and function signature
         self.__writeHeaderForRiemannSolver()
 
-        self.__generateAverageStates()
+        l_sourceFile = open(self.m_filename, 'a')
 
-        l_file = open(self.m_filename, 'a')
+        # gcc and icc specify distinct ways to inform the compiler about guaranteed alignment
+        # gcc: double* arr_ = (double*) __builtin_assume_aligned(a, ALIGNMENT);
+        # icc: __assume_aligned(a, ALIGNMENT);
+        # the default gcc on the cluster exhibits a well-known bug in alignment assumptions
+        # => we skip gcc here
+        # do not query __GNUC__ - icc also defines this
+        l_sourceFile.write('#ifdef __INTEL_COMPILER\n'\
+                     '  __assume_aligned(tmp_bnd, ALIGNMENT);\n'\
+                     '  __assume_aligned(weights2, ALIGNMENT);\n'
+                     '#endif\n')
+        l_sourceFile.close()
+
+
+        self.__generateAverageStates()
 
         # uniform length of LL, LR
         l_paddedVectorLength = Backend.getSizeWithPadding(self.m_config['nVar'])
 
-        l_file.write('  double lambdaL['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n')
-        l_file.write('  PDEEigenvalues(&QavL[0], normalNonZero, &lambdaL[0]);\n')
-        l_file.write('  double lambdaR['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n')
-        l_file.write('  PDEEigenvalues(&QavR[0], normalNonZero, &lambdaR[0]);\n\n')
+        l_sourceFile.write('  double lambdaL['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n')
+        l_sourceFile.write('  PDEEigenvalues(&QavL[0], normalNonZero, &lambdaL[0]);\n')
+        l_sourceFile.write('  double lambdaR['+str(l_paddedVectorLength)+'] __attribute__((aligned(ALIGNMENT)));\n')
+        l_sourceFile.write('  PDEEigenvalues(&QavR[0], normalNonZero, &lambdaR[0]);\n\n')
 
         # abs with intrinsics?
-        l_file.write('  double smax = 0.;\n')
-        l_file.write('  for (int ivar = 0; ivar < '+str(self.m_config['nVar'])+'; ivar++) {\n')
-        l_file.write('    smax = std::max(smax, std::max(fabs(lambdaL[ivar]), fabs(lambdaR[ivar])));\n')
-        l_file.write('  }\n\n')
+        l_sourceFile.write('  double smax = 0.;\n')
+        l_sourceFile.write('  for (int ivar = 0; ivar < '+str(self.m_config['nVar'])+'; ivar++) {\n')
+        l_sourceFile.write('    smax = std::max(smax, std::max(fabs(lambdaL[ivar]), fabs(lambdaR[ivar])));\n')
+        l_sourceFile.write('  }\n\n')
 
         # lFbndL(k,j,:) = 0.5 *   ( lFbndR(k,j,:) + lFbndL(k,j,:) ) - 0.5*smax*( lQbndR(k,j,:) - lQbndL(k,j,:) )
         #               = 0.5 *   ( lFbndR(k,j,:) + lFbndL(k,j,:) ) + 0.5*smax*( lQbndL(k,j,:) - lQbndR(k,j,:) )
         #               = 0.5 * [ ( lFbndR(k,j,:) + lFbndL(k,j,:) ) +     smax*( lQbndL(k,j,:) - lQbndR(k,j,:) ) ]
-        l_file.write('#pragma simd\n')
-        l_file.write('  for(int i=0; i<'+str(self.m_vectorLength)+'; i++) {\n')
-        l_file.write('    tmp_bnd[i] = smax * (lQbndL[i]-lQbndR[i]);\n')
-        l_file.write('  }\n')
+        l_sourceFile.write('#pragma simd\n')
+        l_sourceFile.write('  for(int i=0; i<'+str(self.m_vectorLength)+'; i++) {\n')
+        l_sourceFile.write('    tmp_bnd[i] = smax * (lQbndL[i]-lQbndR[i]);\n')
+        l_sourceFile.write('  }\n')
 
-        l_file.write('#pragma simd\n')
-        l_file.write('  for(int i=0; i<'+str(self.m_vectorLength)+'; i++) {\n')
-        l_file.write('    lFbndL[i] += lFbndR[i];\n')
-        l_file.write('  }\n')
+        l_sourceFile.write('#pragma simd\n')
+        l_sourceFile.write('  for(int i=0; i<'+str(self.m_vectorLength)+'; i++) {\n')
+        l_sourceFile.write('    lFbndL[i] += lFbndR[i];\n')
+        l_sourceFile.write('  }\n')
 
-        l_file.write('#pragma simd\n')
-        l_file.write('  for(int i=0; i<'+str(self.m_vectorLength)+'; i++) {\n')
-        l_file.write('    lFbndL[i] = 0.5 * (lFbndL[i] + tmp_bnd[i]) ;\n')
-        l_file.write('  }\n')
-        l_file.write('  std::memcpy(lFbndR,lFbndL,'+str(self.m_vectorLength)+' * sizeof(double));\n')
+        l_sourceFile.write('#pragma simd\n')
+        l_sourceFile.write('  for(int i=0; i<'+str(self.m_vectorLength)+'; i++) {\n')
+        l_sourceFile.write('    lFbndL[i] = 0.5 * (lFbndL[i] + tmp_bnd[i]) ;\n')
+        l_sourceFile.write('  }\n')
+        l_sourceFile.write('  std::memcpy(lFbndR,lFbndL,'+str(self.m_vectorLength)+' * sizeof(double));\n')
 
 
         # write missing closing bracket
-        l_file.write('}')
-        l_file.close()
+        l_sourceFile.write('}')
+        l_sourceFile.close()
 
     def __generateRusanovSolverForLinear(self):
         # TODO is this still feasible when we have material parameters?
@@ -174,20 +187,20 @@ class RiemannGenerator:
         # TODO
         # average out the material parameters
 
-        l_file = open(self.m_filename, 'a')
+        l_sourceFile = open(self.m_filename, 'a')
 
         # uniform length of QavL, QavR, LL, LR
         l_paddedVectorLength = Backend.getSizeWithPadding(self.m_config['nVar'])
 
 
         # compute averaged state
-        l_file.write('  #pragma simd')
-        l_file.write('  for(int i=0;i<'+str(l_paddedVectorLength)+';i++) {')
-        l_file.write('    QavL[i] += 0.5 * (QavL[i]+QavR[i]);')
-        l_file.write('  }')
+        l_sourceFile.write('  #pragma simd')
+        l_sourceFile.write('  for(int i=0;i<'+str(l_paddedVectorLength)+';i++) {')
+        l_sourceFile.write('    QavL[i] += 0.5 * (QavL[i]+QavR[i]);')
+        l_sourceFile.write('  }')
         # evaluate system matrix
-        l_file.write('  // CALL PDEMatrixB(out_Bn, QavL, nv)')
+        l_sourceFile.write('  // CALL PDEMatrixB(out_Bn, QavL, nv)')
 
         # write missing closing bracket
-        l_file.write('}')
-        l_file.close()
+        l_sourceFile.write('}')
+        l_sourceFile.close()
