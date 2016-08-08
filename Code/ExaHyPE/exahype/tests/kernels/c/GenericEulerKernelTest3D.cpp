@@ -17,8 +17,6 @@
 #include "kernels/KernelUtils.h"
 #include "kernels/aderdg/generic/Kernels.h"
 
-using std::cout;
-using std::endl;
 
 #if DIMENSIONS == 3
 
@@ -431,7 +429,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
 }  // testRiemannSolverNonlinear
 
 void GenericEulerKernelTest::testSolutionUpdate() {
-  cout << "Test solution update, ORDER=3, DIM=3" << endl;
+  logInfo( "testSolutionUpdate()", "Test solution update, ORDER=3, DIM=3" );
 
   // in/out:
   double *luh = new double[320];
