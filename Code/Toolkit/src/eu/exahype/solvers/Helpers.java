@@ -101,6 +101,7 @@ public class Helpers {
       java.io.BufferedWriter writer, String solverName, String projectName) throws IOException {
     writer.write("\n\n");
     writer.write("#include <memory>\n\n");
+    writer.write("#include \"exahype/Parser.h\"\n");
     writer.write("#include \"exahype/profilers/Profiler.h\"\n");
     writer.write("#include \"exahype/solvers/ADERDGSolver.h\"\n");
     writer.write("#include \"exahype/solvers/FiniteVolumesSolver.h\"\n");

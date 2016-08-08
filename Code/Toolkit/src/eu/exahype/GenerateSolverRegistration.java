@@ -53,7 +53,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"kernels/DGMatrices.h\"\n");
       _writer.write("#include \"kernels/DGBasisFunctions.h\"\n\n");
 
-      _methodBodyWriter.write("void kernels::initSolvers(const exahype::Parser& parser) {\n");
+      _methodBodyWriter.write("void kernels::initSolvers(exahype::Parser& parser) {\n");
       if (node.getSolver().size() == 0) {
         System.out.println("no solvers specified - create empty kernel calls ... ok");
       }
@@ -108,9 +108,9 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
     		                  "::" + _solverName + "("+order+"+1, parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)\n");
       if (node.getConstants()!=null) {
-          _methodBodyWriter.write( ", parser.getParserView(" +  _kernelNumber + ")));\n");
+          _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
         }
-      _methodBodyWriter.write( "));\n");
+      _methodBodyWriter.write( "  ));\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
   
@@ -142,9 +142,9 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
     		                  "::" + _solverName + "("+patchSize+", parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)" );
       if (node.getConstants()!=null) {
-        _methodBodyWriter.write( ", parser.getParserView(" +  _kernelNumber + ")));\n");
+        _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
       }
-      _methodBodyWriter.write( "));\n");
+      _methodBodyWriter.write( "  ));\n");
       _methodBodyWriter.write("  parser.checkSolverConsistency("+_kernelNumber+");\n\n");
       _methodBodyWriter.write("  \n");
       
