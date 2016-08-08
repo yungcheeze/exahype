@@ -35,7 +35,71 @@ namespace exahype {
  * @author Tobias Weinzierl
  */
 class exahype::Parser {
- private:
+  public:
+    /**
+     * View on the parser
+     *
+     * An instance of this class is a parser view. While the parser sees the
+     * whole specification file, a view only 'sees' the fragment that is
+     * specific to one solver. As such, we do pass it to solvers (that hold
+     * constants) and then allow these solvers to read their data from the
+     * config file.
+     *
+     * From the user's point of view, this class provides access to key-value
+     * pairs. If you have an instruction alike
+     * <pre>
+    constants         = {rho:0.4567,gamma:-4,alpha:4.04e-5,file:output}
+       </pre>
+     * in your
+     *
+     * @author Tobias Weinzierl
+     */
+    class ParserView {
+      private:
+        Parser&  _parser;
+        int      _solverNumberInSpecificationFile;
+
+        /**
+         * @return Value for given key. Returns the empty string if there is no
+         *         value. Returns std::npos if the key does not exist.
+         */
+        std::string getValue(const std::string selector, const std::string& key) const;
+      public:
+        ParserView( Parser& parser, int solverNumberInSpecificationFile );
+
+        /**
+         * You may use keys without a value. This operation allows you to check
+         * whether there are such keys. Furthermore, you might use this guy as
+         * a preamble to the other getters.
+         */
+        bool hasKey(const std::string& key) const;
+
+        /**
+         * Please ensure that isValueValidXXX holds before you invoke this operation.
+         */
+        bool        getValueAsBool(const std::string& key) const;
+
+        /**
+         * Please ensure that isValueValidXXX holds before you invoke this operation.
+         */
+        int         getValueAsInt(const std::string& key) const;
+
+        /**
+         * Please ensure that isValueValidXXX holds before you invoke this operation.
+         */
+        double      getValueAsDouble(const std::string& key) const;
+
+        /**
+         * Please ensure that isValueValidXXX holds before you invoke this operation.
+         */
+        std::string getValueAsString(const std::string& key) const;
+
+        bool  isValueValidBool(const std::string& key) const;
+        bool  isValueValidInt(const std::string& key) const;
+        bool  isValueValidDouble(const std::string& key) const;
+        bool  isValueValidString(const std::string& key) const;
+    };
+  private:
   static tarch::logging::Log _log;
 
   std::vector<std::string> _tokenStream;
@@ -136,7 +200,7 @@ class exahype::Parser {
   std::string getIdentifier(int solverNumber) const;
 
   /**
-   * \return The number of state variables of a solver.
+   * \return The number of state vaParserriables of a solver.
    */
   int getVariables(int solverNumber) const;
 
@@ -187,6 +251,8 @@ class exahype::Parser {
 
   std::string getProfilerIdentifier() const;
   std::string getMetricsIdentifierList() const;
+
+  ParserView getParserView( int solverNumber );
 };
 
 #endif

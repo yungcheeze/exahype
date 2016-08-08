@@ -17,7 +17,7 @@
 #include <fstream>
 
 #include <stdio.h>
-#include <string.h>
+#include <string>
 
 #include "tarch/la/ScalarOperations.h"
 
@@ -602,4 +602,192 @@ void exahype::Parser::checkSolverConsistency(int solverNumber) const {
     std::cerr.flush();
     exit(1);
   }
+}
+
+
+exahype::Parser::ParserView exahype::Parser::getParserView( int solverNumber ) {
+  return ParserView(*this,solverNumber);
+}
+
+
+exahype::Parser::ParserView::ParserView( Parser& parser, int solverNumberInSpecificationFile ):
+  _parser(parser),
+  _solverNumberInSpecificationFile(solverNumberInSpecificationFile) {
+}
+
+
+std::string exahype::Parser::ParserView::getValue(const std::string inputString, const std::string& key) const {
+  assertion(_parser.isValid());
+
+  if (inputString.substr(0,1)!="{") return "";
+  std::size_t currentIndex = 1;
+  bool nextTokenIsSearchedValue = false;
+  while (currentIndex<inputString.size()-1) {
+    std::size_t firstIndexColon   = inputString.find(":",currentIndex);
+    std::size_t firstIndexBracket = inputString.find("}",currentIndex);
+    std::size_t firstIndexComma   = inputString.find(",",currentIndex);
+    std::size_t endIndex          = std::min(firstIndexColon,std::min(firstIndexBracket,firstIndexComma));
+
+    std::string newToken = inputString.substr(currentIndex,endIndex-currentIndex);
+    if (nextTokenIsSearchedValue) {
+      return newToken;
+    }
+
+    nextTokenIsSearchedValue = (endIndex==firstIndexColon) && (newToken==key);
+
+    currentIndex = endIndex+1;
+  }
+
+  return "";
+}
+
+
+bool exahype::Parser::ParserView::hasKey(const std::string& key) const {
+  assertion(_parser.isValid());
+
+  const std::string inputString = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1 );
+
+  if (inputString.substr(0,1)!="{") return false;
+  std::size_t currentIndex = 1;
+  bool nextTokenIsValue = false;
+  while (currentIndex<inputString.size()-1) {
+    std::size_t firstIndexColon   = inputString.find(":",currentIndex);
+    std::size_t firstIndexBracket = inputString.find("}",currentIndex);
+    std::size_t firstIndexComma   = inputString.find(",",currentIndex);
+    std::size_t endIndex          = std::min(firstIndexColon,std::min(firstIndexBracket,firstIndexComma));
+
+    if (!nextTokenIsValue) {
+      std::string newToken = inputString.substr(currentIndex,endIndex-currentIndex);
+      logDebug( "hasKey(string)", "added token \"" << newToken << "\"" );
+      if (newToken==key) {
+        return true;
+      }
+    }
+
+    nextTokenIsValue = (endIndex==firstIndexColon);
+
+    currentIndex = endIndex+1;
+  }
+
+  return false;
+}
+
+
+int exahype::Parser::ParserView::getValueAsInt(const std::string& key) const {
+  const std::string inputString = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1 );
+  std::string value = getValue( inputString, key );
+
+  int result;
+  std::istringstream ss(value);
+  ss >> result;
+
+  if (ss) {
+    return true;
+  }
+  else {
+    assertion( !isValueValidInt(key) );
+    assertionMsg( false, "shall not happen. Please call isValueValidXXX before" );
+    return -1;
+  }
+}
+
+
+bool exahype::Parser::ParserView::getValueAsBool(const std::string& key) const {
+  const std::string inputString = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1 );
+  std::string value = getValue( inputString, key );
+
+  bool result;
+  std::istringstream ss(value);
+  ss >> result;
+
+  if (ss) {
+    return true;
+  }
+  else {
+    assertion( !isValueValidBool(key) );
+    assertionMsg( false, "shall not happen. Please call isValueValidXXX before" );
+    return -1;
+  }
+}
+
+
+double exahype::Parser::ParserView::getValueAsDouble(const std::string& key) const {
+  const std::string inputString = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1 );
+  std::string value = getValue( inputString, key );
+
+  double result;
+  std::istringstream ss(value);
+  ss >> result;
+
+  if (ss) {
+    return result;
+  }
+  else {
+      assertion( !isValueValidDouble(key) );
+      assertionMsg( false, "shall not happen. Please call isValueValidXXX before" );
+      return -1.0;
+  }
+}
+
+
+std::string exahype::Parser::ParserView::getValueAsString(const std::string& key) const {
+  const std::string inputString = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1 );
+  return getValue( inputString, key );
+}
+
+
+bool exahype::Parser::ParserView::isValueValidInt(const std::string& key) const {
+  const std::string inputString = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1 );
+  std::string value = getValue( inputString, key );
+
+  int result;
+  std::istringstream ss(value);
+  ss >> result;
+
+  if (ss) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+
+bool exahype::Parser::ParserView::isValueValidDouble(const std::string& key) const {
+  const std::string inputString = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1 );
+  std::string value = getValue( inputString, key );
+
+  double result;
+  std::istringstream ss(value);
+  ss >> result;
+
+  if (ss) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+
+bool exahype::Parser::ParserView::isValueValidBool(const std::string& key) const {
+  const std::string inputString = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1 );
+  std::string value = getValue( inputString, key );
+
+  bool result;
+  std::istringstream ss(value);
+  ss >> result;
+
+  if (ss) {
+    return true;
+  }
+  else {
+    return false;
+  }
+}
+
+
+bool exahype::Parser::ParserView::isValueValidString(const std::string& key) const {
+  const std::string inputString = _parser.getTokenAfter("solver", _solverNumberInSpecificationFile * 2 + 1, "constants", 1 );
+  return getValue( inputString, key )!="";
 }
