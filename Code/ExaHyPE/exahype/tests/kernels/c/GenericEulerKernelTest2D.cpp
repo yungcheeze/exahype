@@ -104,18 +104,15 @@ void GenericEulerKernelTest::testMatrixB(const double *const Q,
   // 3D compressible Euler equations
   double *B1 = new double[5 * 5];
   double *B2 = new double[5 * 5];
-  double *B3 = new double[5 * 5];
 
   std::memset(B1, 0, 5 * 5 * sizeof(double));
   std::memset(B2, 0, 5 * 5 * sizeof(double));
-
   // Bn = B1 if normalNonZero == 0
   //      B2 if normalNonZero == 1
   std::memcpy(Bn, (normalNonZero == 0) ? B1 : B2, 5 * 5 * sizeof(double));
 
   delete[] B1;
   delete[] B2;
-  delete[] B3;
 }  // testMatrixB
 
 void GenericEulerKernelTest::testPDEFluxes() {
@@ -145,7 +142,8 @@ void GenericEulerKernelTest::testSolutionUpdate() {
   cout << "Test solution update, ORDER=2, DIM=2" << endl;
 
   // inputs:
-  double *luh = new double[80]();
+  double *luh = new double[80];
+  std::fill(luh, luh + 80, 0.0);
   for (int i = 0; i < 80; i += 5) {
     luh[i] = 1.0;
     luh[i + 4] = 2.5;
@@ -578,8 +576,9 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
   {  // second test, analogous to 3d seed
 
     // input:
-    double dx[2] = {0.05, 0.05};       // mesh spacing
-    double *lFhi = new double[160]();  // nVar * dim * nDOFx * nDOFy
+    double dx[2] = {0.05, 0.05};     // mesh spacing
+    double *lFhi = new double[160];  // nVar * dim * nDOFx * nDOFy
+    std::fill(lFhi, lFhi + 160, 0.0);
     // lFhi = [ lFhi_x | lFhi_y ]
     double *lFhi_x = &lFhi[0];
     double *lFhi_y = &lFhi[80];
@@ -645,12 +644,11 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
     // input:
     double dx[2] = {0.05, 0.05};     // mesh spacing
     double *lFhi = new double[240];  // nVar * (dim+1) * nDOFx * nDOFy
+    std::fill(lFhi, lFhi + 240, 0.0);
     // lFhi = [ lFhi_x | lFhi_y | lShi]
     double *lFhi_x = &lFhi[0];
     double *lFhi_y = &lFhi[80];
     double *lShi = &lFhi[160];
-
-    std::fill(lFhi, lFhi + 240, 0.0);
 
     // seed direction
     for (int i = 0; i < 80; i += 5) {

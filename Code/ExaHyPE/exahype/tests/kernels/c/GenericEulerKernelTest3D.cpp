@@ -169,7 +169,8 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
   // input:
   const tarch::la::Vector<DIMENSIONS, double> dx(0.5, 0.5,
                                                  0.5);  // mesh spacing
-  double *lFhi = new double[960]();  // nVar * nDOFx * nDOFy * nDOFz * dim
+  double *lFhi = new double[960];  // nVar * nDOFx * nDOFy * nDOFz * dim
+  std::fill(lFhi, lFhi + 960, 0.0);
   // lFhi = [ lFhi_x  | lFhi_y | lFhi_z ], 320 entries each
   double *lFhi_x = &lFhi[0];
   double *lFhi_y = &lFhi[320];
@@ -207,8 +208,8 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
 
   // input:
   const double dx[3] = {0.05, 0.05, 0.05};  // mesh spacing
-  double *lFhi =
-      new double[1280]();  // nVar * nDOFx * nDOFy * nDOFz * (dim + 1)
+  double *lFhi = new double[1280];  // nVar * nDOFx * nDOFy * nDOFz * (dim + 1)
+  std::fill(lFhi, lFhi + 1280, 0.0);
   // lFhi = [ lFhi_x  | lFhi_y | lFhi_z | lShi], 320 entries each
   double *lFhi_x = &lFhi[0];
   double *lFhi_y = &lFhi[320];
@@ -247,8 +248,9 @@ void GenericEulerKernelTest::testSurfaceIntegralLinear() {
   cout << "Test surface integral linear, ORDER=3, DIM=3" << endl;
 
   // inputs:
-  const double dx[3] = {0.1, 0.1, 0.1};   // mesh spacing
-  double *lFhbnd = new double[6 * 80]();  // 480
+  const double dx[3] = {0.1, 0.1, 0.1};  // mesh spacing
+  double *lFhbnd = new double[6 * 80];   // 480
+  std::fill(lFhbnd, lFhbnd + 6 * 80, 0.0);
   double *FLeft = &lFhbnd[0];
   double *FRight = &lFhbnd[80];
   double *FFront = &lFhbnd[160];
@@ -295,8 +297,9 @@ void GenericEulerKernelTest::testSurfaceIntegralNonlinear() {
   cout << "Test surface integral nonlinear, ORDER=3, DIM=3" << endl;
 
   // inputs:
-  const double dx[3] = {0.1, 0.1, 0.1};   // mesh spacing
-  double *lFhbnd = new double[6 * 80]();  // 480
+  const double dx[3] = {0.1, 0.1, 0.1};  // mesh spacing
+  double *lFhbnd = new double[6 * 80];   // 480
+  std::fill(lFhbnd, lFhbnd + 6 * 80, 0.0);
   double *FLeft = &lFhbnd[0];
   double *FRight = &lFhbnd[80];
   double *FFront = &lFhbnd[160];
@@ -431,7 +434,8 @@ void GenericEulerKernelTest::testSolutionUpdate() {
   cout << "Test solution update, ORDER=3, DIM=3" << endl;
 
   // in/out:
-  double *luh = new double[320]();
+  double *luh = new double[320];
+  std::fill(luh, luh + 320, 0.0);
   for (int i = 0; i < 320; i += 5) {
     luh[i] = 1.0;
     luh[i + 4] = 2.5;
