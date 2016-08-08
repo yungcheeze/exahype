@@ -207,11 +207,13 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
 
   // input:
   const double dx[3] = {0.05, 0.05, 0.05};  // mesh spacing
-  double *lFhi = new double[960]();  // nVar * nDOFx * nDOFy * nDOFz * dim
-  // lFhi = [ lFhi_x  | lFhi_y | lFhi_z ], 320 entries each
+  double *lFhi =
+      new double[1280]();  // nVar * nDOFx * nDOFy * nDOFz * (dim + 1)
+  // lFhi = [ lFhi_x  | lFhi_y | lFhi_z | lShi], 320 entries each
   double *lFhi_x = &lFhi[0];
   double *lFhi_y = &lFhi[320];
   double *lFhi_z = &lFhi[640];
+  double *lShi = &lFhi[960];
 
   // seed direction
   for (int i = 0; i < 320; i += 5) {
@@ -219,6 +221,8 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
     lFhi_y[i + 2] = 1.;
     lFhi_z[i + 3] = 1.;
   }
+
+  std::fill(lShi, lShi + 320, 0.0);
 
   kernels::aderdg::generic::c::volumeIntegralNonlinear(
       lduh, lFhi, dx[0],

@@ -619,7 +619,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
     // input:
     double dx[2] = {3.70370370370370349811e-02,
                     3.70370370370370349811e-02};  // mesh spacing
-    // ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi[160]
+    // ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi[240]
 
     kernels::aderdg::generic::c::volumeIntegralNonlinear(
         lduh,
@@ -643,17 +643,20 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
   {  // second test, analogous to 3d seed
 
     // input:
-    double dx[2] = {0.05, 0.05};       // mesh spacing
-    double *lFhi = new double[160]();  // nVar * dim * nDOFx * nDOFy
-    // lFhi = [ lFhi_x | lFhi_y ]
+    double dx[2] = {0.05, 0.05};     // mesh spacing
+    double *lFhi = new double[240];  // nVar * (dim+1) * nDOFx * nDOFy
+    // lFhi = [ lFhi_x | lFhi_y | lShi]
     double *lFhi_x = &lFhi[0];
     double *lFhi_y = &lFhi[80];
+    double *lShi = &lFhi[160];
 
     // seed direction
     for (int i = 0; i < 80; i += 5) {
       lFhi_x[i + 1] = 1.;
       lFhi_y[i + 2] = 1.;
     }
+
+    std::fill(lShi, lShi + 80, 0.0);
 
     // output:
     double *lduh = new double[80];  // intentionally left uninitialised
