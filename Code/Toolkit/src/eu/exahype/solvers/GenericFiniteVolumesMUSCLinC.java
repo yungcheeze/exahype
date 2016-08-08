@@ -7,17 +7,19 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
   private int _numberOfParameters;
   private int _patchSize;
   private boolean _enableProfiler;
+  private boolean _hasConstants;
 
-  public GenericFiniteVolumesMUSCLinC(int numberOfVariables, int numberOfParameters, int patchSize, boolean enableProfiler) {
+  public GenericFiniteVolumesMUSCLinC(int numberOfVariables, int numberOfParameters, int patchSize, boolean enableProfiler, boolean hasConstants) {
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
     _patchSize          = patchSize;
     _enableProfiler     = enableProfiler;
+    _hasConstants       = hasConstants;
   }
 
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
-    Helpers.writeMinimalFiniteVolumesSolverHeader(solverName, writer, projectName);
+    Helpers.writeMinimalFiniteVolumesSolverHeader(solverName, writer, projectName, _hasConstants);
 
     writer.write("  private:\n");
     writer.write("    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
@@ -73,7 +75,14 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
       String projectName) throws java.io.IOException {
     writer.write("#include \"" + solverName + ".h\"\n");
     writer.write("\n\n\n");
-    writer.write(projectName + "::" + solverName + "::" + solverName + "(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
+    
+    if (_hasConstants) {
+      writer.write(projectName + "::" + solverName + "::" + solverName + "(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, exahype::Parser::ParserView constants):\n");
+    }
+    else {
+      writer.write(projectName + "::" + solverName + "::" + solverName + "(int cellsPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
+    }
+    
     writer.write("  exahype::solvers::FiniteVolumesSolver("
             + "\""+solverName+"\", "+_numberOfVariables+", "+_numberOfParameters+", cellsPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {\n");
     writer.write("  // @todo Please implement/augment if required\n");

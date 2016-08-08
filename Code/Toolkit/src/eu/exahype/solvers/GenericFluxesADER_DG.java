@@ -5,14 +5,16 @@ import java.io.IOException;
 
 public abstract class GenericFluxesADER_DG implements Solver {
   public static final String Identifier = "generic::fluxes::";
+  protected boolean _hasConstants;
 
   public GenericFluxesADER_DG(int dimensions, int numberOfUnknowns, int numberOfParameters,
-      int order, boolean enableProfiler) {
+      int order, boolean enableProfiler, boolean hasConstants) {
     _dimensions = dimensions;
     _numberOfUnknowns = numberOfUnknowns;
     _numberOfParameters = numberOfParameters;
     _order = order;
     _enableProfiler = enableProfiler;
+    _hasConstants   = hasConstants;
   }
 
   public abstract boolean isLinear();
@@ -22,7 +24,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
   @Override
   public final void writeHeader(BufferedWriter writer, String solverName, String projectName)
       throws IOException {
-    Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName);
+    Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants );
 
     writer.write("  private:\n");
     writer.write(

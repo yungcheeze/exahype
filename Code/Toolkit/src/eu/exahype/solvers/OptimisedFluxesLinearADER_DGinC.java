@@ -10,9 +10,10 @@ public class OptimisedFluxesLinearADER_DGinC implements Solver {
   private String _microarchitecture;
   private String _pathToLibxsmm;
   private boolean _enableProfiler;
+  private boolean _hasConstants;
 
   public OptimisedFluxesLinearADER_DGinC(int dimensions, int numberOfUnknowns, int numberOfParameters, int order,
-      String microarchitecture, String pathToLibxsmm, boolean enableProfiler) {
+      String microarchitecture, String pathToLibxsmm, boolean enableProfiler, boolean hasConstants) {
     _dimensions = dimensions;
     _numberOfUnknowns = numberOfUnknowns;
     _numberOfParameters = numberOfParameters;
@@ -20,6 +21,7 @@ public class OptimisedFluxesLinearADER_DGinC implements Solver {
     _microarchitecture = microarchitecture;
     _pathToLibxsmm = pathToLibxsmm;
     _enableProfiler = enableProfiler;
+    _hasConstants   = hasConstants;
   }
 
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
@@ -142,7 +144,7 @@ public class OptimisedFluxesLinearADER_DGinC implements Solver {
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
     Helpers.writeMinimalADERDGSolverUserImplementation(
-        solverName, writer, projectName, _numberOfUnknowns, _numberOfParameters, _order);
+        solverName, writer, projectName, _numberOfUnknowns, _numberOfParameters, _order, _hasConstants);
 
     int digits = String.valueOf(_numberOfUnknowns + _numberOfParameters).length();
 

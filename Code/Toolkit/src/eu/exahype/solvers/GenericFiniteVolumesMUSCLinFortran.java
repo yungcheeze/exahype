@@ -6,11 +6,13 @@ public class GenericFiniteVolumesMUSCLinFortran implements Solver {
   private int _numberOfVariables;
   private int _numberOfParameters;
   private int _patchSize;
+  private boolean _hasConstants;
 
-  public GenericFiniteVolumesMUSCLinFortran(int numberOfVariables, int numberOfParameters, int patchSize, boolean enableProfiler) {
+  public GenericFiniteVolumesMUSCLinFortran(int numberOfVariables, int numberOfParameters, int patchSize, boolean enableProfiler, boolean hasConstants) {
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
     _patchSize = patchSize;
+    _hasConstants = hasConstants;
   }
 
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)

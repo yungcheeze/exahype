@@ -6,16 +6,18 @@ public class UserDefinedADER_DGinC implements Solver {
   private int _numberOfVariables;
   private int _numberOfParameters;
   private int _order;
+  private boolean _hasConstants;
 
-  public UserDefinedADER_DGinC(int numberOfVariables, int numberOfParameters, int order) {
+  public UserDefinedADER_DGinC(int numberOfVariables, int numberOfParameters, int order, boolean hasConstants) {
     _numberOfVariables  = numberOfVariables;
     _numberOfParameters = numberOfParameters;
     _order = order;
+    _hasConstants = hasConstants;
   }
 
   public void writeHeader(java.io.BufferedWriter writer, String solverName, String projectName)
       throws java.io.IOException {
-    Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName);
+    Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants);
 
     writer.write("};\n\n\n");
   }
@@ -36,7 +38,14 @@ public class UserDefinedADER_DGinC implements Solver {
       String projectName) throws java.io.IOException {
     writer.write("#include \"" + solverName + ".h\"\n");
     writer.write("\n\n\n");
-    writer.write(projectName + "::" + solverName + "::" + solverName + "(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
+    
+    if (_hasConstants) {
+      writer.write(projectName + "::" + solverName + "::" + solverName + "(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, exahype::Parser::ParserView constants):\n");
+    }
+    else {
+      writer.write(projectName + "::" + solverName + "::" + solverName + "(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
+    }
+
     writer.write("  exahype::solvers::ADERDGSolver("
             + "\""+solverName+"\", "+_numberOfVariables+" /* numberOfVariables */, "+_numberOfParameters+" /* numberOfParameters */, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {\n");
     writer.write("  // @todo Please implement/augment if required\n");

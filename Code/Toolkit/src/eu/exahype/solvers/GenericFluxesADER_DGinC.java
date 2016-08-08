@@ -6,15 +6,15 @@ import java.io.IOException;
 public abstract class GenericFluxesADER_DGinC extends GenericFluxesADER_DG {
 
   public GenericFluxesADER_DGinC(int dimensions, int numberOfUnknowns, int numberOfParameters,
-      int order, boolean enableProfiler) {
-    super(dimensions, numberOfUnknowns, numberOfParameters, order, enableProfiler);
+      int order, boolean enableProfiler, boolean hasConstants) {
+    super(dimensions, numberOfUnknowns, numberOfParameters, order, enableProfiler, hasConstants);
   }
 
   @Override
   public final void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
     Helpers.writeMinimalADERDGSolverUserImplementation(solverName, writer, projectName,
-        _numberOfUnknowns, _numberOfParameters, _order);
+        _numberOfUnknowns, _numberOfParameters, _order, _hasConstants);
 
     int digits = String.valueOf(_numberOfUnknowns + _numberOfParameters).length();
 
