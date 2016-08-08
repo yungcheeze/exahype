@@ -22,6 +22,9 @@ registerTest(exahype::tests::c::FinitevolumesMusclTest)
 #pragma optimize("", off)
 #endif
 
+tarch::logging::Log exahype::tests::c::FinitevolumesMusclTest::_log( "exahype::tests::c::FinitevolumesMusclTest" );
+
+
 namespace exahype {
 namespace tests {
 namespace c {

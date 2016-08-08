@@ -16,9 +16,6 @@
 #include "../testdata/generic_euler_testdata.h"
 #include "kernels/aderdg/generic/Kernels.h"
 
-using std::cout;
-using std::endl;
-
 #if DIMENSIONS == 3
 
 namespace exahype {
@@ -124,7 +121,7 @@ void GenericEulerKernelTest::testMatrixB(const double *const Q,
 }  // testMatrixB
 
 void GenericEulerKernelTest::testPDEFluxes() {
-  cout << "Test PDE-related functions, DIM=3" << endl;
+  logInfo( "testPDEFluxes()",  "Test PDE-related functions, DIM=3" );
 
   double Q[5] = {1., 0.1, 0.2, 0.3, 3.5};  // pressure = 1.372
   double f[5], g[5], h[5];
@@ -325,7 +322,7 @@ void GenericEulerKernelTest::testSurfaceIntegralNonlinear() {
 }  // testSurfaceIntegralNonlinear
 
 void GenericEulerKernelTest::testRiemannSolverLinear() {
-  cout << "Test Riemann solver linear, ORDER=3, DIM=3" << endl;
+  logInfo( "testRiemannSolverLinear()", "Test Riemann solver linear, ORDER=3, DIM=3" );
 
   // output (intentionally left uninitialised):
   double *FL = new double[4 * 4 * 5];  // nDOF(3) * nDOF(2) * nVar
