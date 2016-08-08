@@ -215,6 +215,8 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
   double *lFhi_z = &lFhi[640];
   double *lShi = &lFhi[960];
 
+  std::fill(lFhi, lFhi + 1280, 0.0);
+
   // seed direction
   for (int i = 0; i < 320; i += 5) {
     lFhi_x[i + 1] = 1.;

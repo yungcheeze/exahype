@@ -106,7 +106,7 @@ extern const double F_2_out[20];
 
 #endif  // Dim2
 
-#if Dim3
+#ifdef Dim3
 
 namespace testPDEFluxes {
 extern const double f[5];
