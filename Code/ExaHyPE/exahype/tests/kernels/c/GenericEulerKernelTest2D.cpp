@@ -52,6 +52,14 @@ void GenericEulerKernelTest::testFlux(const double *Q, double **F) {
   g[4] = irho * Q[2] * (Q[4] + p);
 }
 
+void GenericEulerKernelTest::testSource(const double *Q, double *S) {
+  S[0] = 0.0;
+  S[1] = 0.0;
+  S[2] = 0.0;
+  S[3] = 0.0;
+  S[4] = 0.0;
+}
+
 void GenericEulerKernelTest::testEigenvalues(const double *const Q,
                                              const int normalNonZeroIndex,
                                              double *lambda) {
@@ -742,16 +750,17 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   const double timeStepSize = 1.686854344081342E-003;
 
   // local:
-  double *lQi = new double[320];  // space-time DOF
-  double *lFi = new double[640];
+  double *lQi = new double[320];  // nVar * nDOFx * nDOFy * nDOFt
+  double *lFi = new double[960];  // nVar * nDOFx * nDOFy * nDOFt * (dim + 1)
 
   // output:
-  double *lQhi = new double[80];
-  double *lFhi = new double[160];
-  double *lQhbnd = new double[80];
-  double *lFhbnd = new double[80];
+  double *lQhi = new double[80];    // nVar * nDOFx * nDOFy
+  double *lFhi = new double[240];   // nVar * nDOFx * nDOFy * (dim + 1)
+  double *lQhbnd = new double[80];  // nVar * nDOFy * 4
+  double *lFhbnd = new double[80];  // nVar * nDOFy * 4
 
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<testFlux>(
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<testFlux,
+                                                           testSource>(
       lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd,
       ::exahype::tests::testdata::generic_euler::
           testSpaceTimePredictorNonlinear::luh,
@@ -768,11 +777,24 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
         eps, i);
   }
 
-  for (int i = 0; i < 360; i++) {
-    validateNumericalEqualsWithEpsWithParams1(
-        lFi[i], ::exahype::tests::testdata::generic_euler::
-                    testSpaceTimePredictorNonlinear::lFi[i],
-        eps, i);
+  kernels::idx5 idx_lFi(4, 4, 4, (DIMENSIONS + 1), 5, __LINE__);
+  kernels::idx5 idx_lFi_expected(4, 4, 4, DIMENSIONS, 5, __LINE__);
+
+  for (int i = 0; i < 4; i++) {
+    for (int k = 0; k < 4; k++) {
+      for (int l = 0; l < 4; l++) {
+        for (int m = 0; m < 2; m++) {  // skip 2 ( = source)
+          for (int n = 0; n < 5; n++) {
+            validateNumericalEqualsWithEpsWithParams1(
+                lFi[idx_lFi(i, k, l, m, n)],
+                ::exahype::tests::testdata::generic_euler::
+                    testSpaceTimePredictorNonlinear::lFi[idx_lFi_expected(
+                        i, k, l, m, n)],
+                eps, idx_lFi(i, k, l, m, n));
+          }
+        }
+      }
+    }
   }
 
   for (int i = 0; i < 80; i++) {
@@ -782,7 +804,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
         eps, i);
   }
 
-  for (int i = 0; i < 160; i++) {
+  for (int i = 0; i < 160; i++) {  // skip 160 - 239 (source)
     validateNumericalEqualsWithEpsWithParams1(
         lFhi[i], ::exahype::tests::testdata::generic_euler::
                      testSpaceTimePredictorNonlinear::lFhi[i],
