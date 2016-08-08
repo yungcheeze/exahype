@@ -27,8 +27,9 @@ namespace mpibalancing {
  * !!! getCommandForWorker()
  *
  * getCommandForWorker() here is pretty simple and evaluates basically
- * _forksToConduct and _criticalWorker identifying whether the worker shall
- * fork or not. There are few special cases besides this:
+ * _forksToConduct and _criticalWorker identifying whether a worker shall
+ * fork (only if it is member of the set _criticalWorker) and how often it
+ * shall fork (_forksToConduct). There are few special cases besides this:
  *
  * - If the oracle is running on the global master and the weight table holds
  *   only one entry (i.e. the weight of the local rank), this is the very
@@ -46,14 +47,21 @@ namespace mpibalancing {
  *
  * !!! receivedStartCommand()
  *
- * This operation is the critical path analysis. If its command from above is
- * unequal to fork, there's no analysis to be done, i.e. we evaluate the
- * critical path recursively which works as we are working in a tree
- * environment.
+ * This operation triggers the critical path analysis which consists of two
+ * steps:
+ *
+ * - Determine the critial path
+ * - Compute the number of forks along the critical paths
+ *
+ * If its command from its master is unequal to fork, there's no analysis to
+ * be done, i.e. we evaluate the critical path recursively which works as we
+ * are working in a tree environment. Otherwise, the two operations map onto
+ * the routines identifyCriticalPathes() and
+ * computeMaxForksOnCriticalWorker().
  *
  * If we shall fork, we first identify the biggest and the smallest local
- * workload. For the latter, we have to be careful as the local workload is
- * by default set to 1. Now, if the worker (the one directly below the global
+ * workload. The local workload is always greater or equal to 1.
+ * If the worker (the one directly below the global
  * master, e.g.) forks all of its children, this local workload remains 1,
  * which is an unrealistic value. So we exclude that one explicitly from our
  * search.
@@ -94,13 +102,6 @@ namespace mpibalancing {
  * until the grid is balanced and can rebalance again. So whenever we encounter a local
  * minimum, we are more carefully with rebalancing.
  *
- * !!! Setup phase without grammar analysis
- *
- * In the setup phase, we do skip all the critical path analysis and just try to fork
- * all nodes and become a purely administrative rank. This is done for all nodes responsible
- * for cells above _finestAdministrativeLevel. The latter is set such that in a purely
- * regular case, it is basically the finest level where still all cells can be handled
- * by different ranks.
  *
  * @image html StaticBalancing.png
  * @author Tobias Weinzierl

@@ -104,7 +104,8 @@ namespace c {
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
-template <void PDEFlux(const double* const Q, double** F)>
+template <void PDEFlux(const double* const Q, double** F),
+          void PDESource(const double* const Q, double* S)>
 void spaceTimePredictorNonlinear(
     double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
     double* lFhbnd, const double* const luh,
