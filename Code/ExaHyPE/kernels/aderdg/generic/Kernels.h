@@ -145,21 +145,6 @@ void surfaceIntegralLinear(double* lduh, const double* const lFbnd,
     const int basisSize
 );*/
 
-#if DIMENSIONS == 2
-void surfaceIntegralXDirection(
-    double* lduh, const double* const lFhbnd, const double dx,
-    const int facePosition,   // 0 for "left" face, 1 for "right" face.
-    const double updateSign,  // -1 for "left" face, 1 for "right" face.
-    const int numberOfVariables, const int basisSize);
-
-void surfaceIntegralYDirection(
-    double* lduh, const double* const lFhbnd, const double dy,
-    const int facePosition,   // 0 for "left" face, 1 for "right" face.
-    const double updateSign,  // -1 for "left" face, 1 for "right" face.
-    const int numberOfVariables, const int basisSize);
-
-#endif
-
 // @todo Dominic Etienne Charrier
 // Inconsistent ordering of inout and in arguments for
 // template argument functions and non-template argument function.
