@@ -250,7 +250,9 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(const int solverNumber) {
                 p.setUpdate(DataHeap::getInstance().createData(
                     unknownsPerCell, unknownsPerCell));
                 p.setSolution(DataHeap::getInstance().createData(
-                    dataPerCell, dataPerCell));
+                    unknownsPerCell, unknownsPerCell));
+
+                // TODO(Dominic): Material parameters what are the correct array sizes?
               }
               break;
             default:
@@ -467,6 +469,16 @@ void exahype::Cell::validateNoNansInADERDGSolver(
   const std::string&                   methodTraceOfCaller
 ) {
   auto& p = fineGridCell.getADERDGCellDescription(number);
+
+  assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimePredictor()),p.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimeVolumeFlux()),p.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(p.getSolution()),p.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(p.getUpdate()),p.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(p.getPredictor()),p.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(p.getVolumeFlux()),p.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()),p.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(p.getFluctuation()),p.toString());
+
   assertionEquals4(p.getPredictorTimeStepSize(),p.getPredictorTimeStepSize(),
                    fineGridVerticesEnumerator.toString(),
                    p.toString(),fineGridCell.toString(),methodTraceOfCaller);

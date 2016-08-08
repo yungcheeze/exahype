@@ -451,6 +451,15 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
       switch (p.getType()) {
         case exahype::records::ADERDGCellDescription::Cell:
           assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimePredictor()),p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimeVolumeFlux()),p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getSolution()),p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getUpdate()),p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getPredictor()),p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getVolumeFlux()),p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()),p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getFluctuation()),p.toString());
+
           lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
           lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
 
