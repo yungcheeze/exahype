@@ -44,11 +44,12 @@ void exahype::plotters::ADERDG2ProbeAscii::finishPlotting() {
 
 
 void exahype::plotters::ADERDG2ProbeAscii::init(const std::string& filename, int orderPlusOne, int unknowns, int writtenUnknowns, const std::string& select) {
-  _order    = orderPlusOne-1;
-  _unknowns = unknowns;
-  _select   = select;
-  _filename = filename;
-  _time     = 0.0;
+  _order           = orderPlusOne-1;
+  _solverUnknowns  = unknowns;
+  _writtenUnknowns = writtenUnknowns;
+  _select          = select;
+  _filename        = filename;
+  _time            = 0.0;
 
   _x(0) = Parser::getValueFromPropertyString( select, "x" );
   _x(1) = Parser::getValueFromPropertyString( select, "y" );
@@ -84,13 +85,10 @@ void exahype::plotters::ADERDG2ProbeAscii::openOutputStream() {
 
       if (*_out) {
         (*_out) << "# plot-time, real-time";
-        for (int unknown=0; unknown < _unknowns; unknown++) {
+        for (int unknown=0; unknown < _writtenUnknowns; unknown++) {
           std::ostringstream identifier;
           identifier << "Q" << unknown;
-
-          if ( _select.find(identifier.str())!=std::string::npos || _select.find("all")!=std::string::npos ) {
-            (*_out) << "," << identifier.str();
-          }
+          (*_out) << "," << identifier.str();
         }
         (*_out) << std::endl;
       }
@@ -121,10 +119,6 @@ void exahype::plotters::ADERDG2ProbeAscii::plotPatch(
     // lazy opening
     openOutputStream();
 
-    if (_out!=nullptr && *_out) {
-      (*_out) << ", " << timeStamp;
-    }
-
     // Map coordinate vector x onto reference element.
     tarch::la::Vector<DIMENSIONS,double> xRef = _x - offsetOfPatch;
     xRef(0) /=  sizeOfPatch(0);
@@ -133,28 +127,43 @@ void exahype::plotters::ADERDG2ProbeAscii::plotPatch(
     xRef(2) /=  sizeOfPatch(2);
     #endif
 
-    for (int unknown=0; unknown < _unknowns; unknown++) {
-      std::ostringstream identifier;
-      identifier << "Q" << unknown;
+    double* interpoland = new double[_solverUnknowns];
+    double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
 
-      if ( _select.find(identifier.str())!=std::string::npos || _select.find("all")!=std::string::npos ) {
-        double value = 0.0;
+    for (int unknown=0; unknown < _solverUnknowns; unknown++) {
+      interpoland[unknown] = 0.0;
 
-        // The code below evaluates the basis functions at the reference coordinates
-        // and multiplies them with their respective coefficient.
-        dfor(ii,_order+1) { // Gauss-Legendre node indices
-          int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
-          value += kernels::basisFunctions[_order][ii(0)](xRef(0)) *
-                   kernels::basisFunctions[_order][ii(1)](xRef(1)) *
-                   #ifdef Dim3
-                   kernels::basisFunctions[_order][ii(2)](xRef(2)) *
-                   #endif
-                   u[iGauss * _unknowns + unknown];
-          assertion3(value == value, offsetOfPatch, sizeOfPatch, iGauss);
-        }
-
-        (*_out) << ", " << value;
+      // The code below evaluates the basis functions at the reference coordinates
+      // and multiplies them with their respective coefficient.
+      dfor(ii,_order+1) { // Gauss-Legendre node indices
+        int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
+        interpoland[unknown] += kernels::basisFunctions[_order][ii(0)](xRef(0)) *
+                 kernels::basisFunctions[_order][ii(1)](xRef(1)) *
+                 #ifdef Dim3
+                 kernels::basisFunctions[_order][ii(2)](xRef(2)) *
+                 #endif
+                 u[iGauss * _solverUnknowns + unknown];
+        assertion3(interpoland[unknown] == interpoland[unknown], offsetOfPatch, sizeOfPatch, iGauss);
       }
     }
+
+    _postProcessing->mapQuantities(
+      offsetOfPatch,
+      sizeOfPatch,
+      _x,
+      interpoland,
+      value,
+      timeStamp
+    );
+
+    if (_out!=nullptr && *_out) {
+      (*_out) << ", " << timeStamp;
+      for (int i=0; i<_writtenUnknowns; i++) {
+        (*_out) << ", " << value[i];
+      }
+    }
+
+    delete[] interpoland;
+    delete[] value;
   }
 }
