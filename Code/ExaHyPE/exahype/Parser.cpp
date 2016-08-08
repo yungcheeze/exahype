@@ -18,6 +18,7 @@
 
 #include <stdio.h>
 #include <string>
+#include <string.h>
 
 #include "tarch/la/ScalarOperations.h"
 
