@@ -132,10 +132,9 @@ class RiemannGenerator:
         # => we skip gcc here
         # do not query __GNUC__ - icc also defines this
         l_sourceFile.write('#ifdef __INTEL_COMPILER\n'\
-                     '  __assume_aligned(tmp_bnd, ALIGNMENT);\n'\
-                     '  __assume_aligned(weights2, ALIGNMENT);\n'
-                     '#endif\n')
-        l_sourceFile.close()
+                           '  __assume_aligned(tmp_bnd, ALIGNMENT);\n'\
+                           '  __assume_aligned(weights2, ALIGNMENT);\n'
+                           '#endif\n')
 
 
         self.__generateAverageStates()
