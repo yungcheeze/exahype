@@ -260,9 +260,23 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   int gridSetupIterations = 0;
   repository.switchToAugmentedAMRGrid();
 
-  do {
+  int gridSetupIterationsToRun = 3;
+  while (gridSetupIterationsToRun>0) {
     repository.iterate();
     gridSetupIterations++;
+   
+    if ( UseStationaryCriterion && repository.getState().isGridStationary() ) {
+      gridSetupIterationsToRun--;
+    }
+    else if (
+      !repository.getState().isGridBalanced() 
+    ) {
+      gridSetupIterationsToRun=3;
+    }
+    else {
+      gridSetupIterationsToRun--;
+    }
+
     #if defined(TrackGridStatistics) && defined(Asserts)
     logInfo("runAsMaster()",
       "grid setup iteration #" << gridSetupIterations <<
@@ -289,11 +303,6 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
     );
     #endif
   }
-  while (
-   ( UseStationaryCriterion && !repository.getState().isGridStationary())
-   ||
-   (!UseStationaryCriterion && !repository.getState().isGridBalanced())
-  );
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
 
