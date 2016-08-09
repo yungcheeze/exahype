@@ -1,15 +1,17 @@
 // ./make.sh
-#include "Kernels.h"
-#include "DGMatrices.h"
-#include "GaussLegendreQuadrature.h"
+#include "sources/Kernels.h"
+#include "sources/DGMatrices.h"
+#include "sources/GaussLegendreQuadrature.h"
 #include <iostream>
 #include <fstream>
 #include <set>
 #include <string.h>
 #include <iomanip>
 
+#define order 3
+
 using namespace std;
-// order 3 (nDOF 4)
+// order (see define)
 // 2D
 // nVar 5
 
@@ -30,7 +32,7 @@ int main(int argc, char* argv[]) {
   constexpr int pad = 3;
   constexpr int nVar = 5;
   constexpr int nVarPadded = nVar+pad;
-  constexpr int nDOF = 4;
+  constexpr int nDOF =  order+1;
   constexpr int dim = 2;
   std::set<int> orders;
   
@@ -41,7 +43,7 @@ int main(int argc, char* argv[]) {
   double *lFhi_x = &lFhi[0];
   double *lFhi_y = &lFhi[nVarPadded*nDOF*nDOF]; // (nVar + Pad) * nDOF**2
   
-  memset(lFhi, 0.0, 256*sizeof(double)); 
+  memset(lFhi, 0.0, nVarPadded*nDOF*nDOF*dim*sizeof(double)); 
   
   // assume isotropic cell widths
   double* dx = new double[dim];
@@ -100,7 +102,7 @@ int main(int argc, char* argv[]) {
     dx
   );
 
-  for(int i=0;i<80;i++) {
+  for(int i=0;i<nVar*nDOF*nDOF;i++) {
     cout << setprecision (15) << lduh[i] << endl;
   }
 
