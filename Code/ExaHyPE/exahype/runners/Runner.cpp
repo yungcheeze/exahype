@@ -12,6 +12,8 @@
  **/
  
 #include "exahype/runners/Runner.h"
+
+#include "../../../Peano/mpibalancing/HotspotBalancing.h"
 #include "exahype/repositories/Repository.h"
 #include "exahype/repositories/RepositoryFactory.h"
 
@@ -43,8 +45,6 @@
 #include "sharedmemoryoracles/OracleForOnePhaseWithShrinkingGrainSize.h"
 
 #include "mpibalancing/GreedyBalancing.h"
-#include "mpibalancing/StaticBalancing.h"
-
 #include "exahype/plotters/Plotter.h"
 
 #include "exahype/solvers/ADERDGSolver.h"
@@ -92,7 +92,7 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
     else if ( configuration.find( "hotspot" )!=std::string::npos ) {
       logInfo("initDistributedMemoryConfiguration()", "use global hotspot elimination without joins (mpibalancing/StaticBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-        new mpibalancing::StaticBalancing(false)
+        new mpibalancing::HotspotBalancing(false)
       );
     }
     else {
@@ -263,13 +263,31 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   do {
     repository.iterate();
     gridSetupIterations++;
-    repository.iterate();
-    gridSetupIterations++;
+    #if defined(TrackGridStatistics) && defined(Asserts)
+    logInfo("runAsMaster()",
+      "grid setup iteration #" << gridSetupIterations <<
+      ", max-level=" << repository.getState().getMaxLevel() <<
+      ", state=" << repository.getState().toString() <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+    );
+    #elif defined(Asserts)
+    logInfo("runAsMaster()",
+      "grid setup iteration #" << gridSetupIterations <<
+      ", state=" << repository.getState().toString() <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+    );
+    #elif defined(TrackGridStatistics)
     logInfo("runAsMaster()",
       "grid setup iteration #" << gridSetupIterations <<
       ", max-level=" << repository.getState().getMaxLevel() <<
       ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
+    #else
+    logInfo("runAsMaster()",
+      "grid setup iteration #" << gridSetupIterations <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+    );
+    #endif
   }
   while (
    ( UseStationaryCriterion && !repository.getState().isGridStationary())

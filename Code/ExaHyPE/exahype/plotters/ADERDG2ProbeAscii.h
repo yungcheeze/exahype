@@ -35,7 +35,8 @@ class exahype::plotters::ADERDG2ProbeAscii
 
   std::string          _filename;
   int                  _order;
-  int                  _unknowns;
+  int                  _solverUnknowns;
+  int                  _writtenUnknowns;
   std::string          _select;
   std::ofstream*       _out;
   bool                 _hasWrittenData;

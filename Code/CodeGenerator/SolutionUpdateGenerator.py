@@ -72,6 +72,16 @@ class SolutionUpdateGenerator:
 
         l_sourceFile = open(self.m_filename, 'a')
 
+        # gcc and icc specify distinct ways to inform the compiler about guaranteed alignment
+        # gcc: double* arr_ = (double*) __builtin_assume_aligned(a, ALIGNMENT);
+        # icc: __assume_aligned(a, ALIGNMENT);
+        # the default gcc on the cluster exhibits a well-known bug in alignment assumptions
+        # => we skip gcc here
+        # do not query __GNUC__ - icc also defines this
+        l_sourceFile.write('#ifdef __INTEL_COMPILER\n'\
+                           '  __assume_aligned(weights3, ALIGNMENT);\n'
+                           '#endif\n')
+
         # version: soa format
         # We must give the 'restrict' keyword here - otherwise auto-vectorisation fails.
         #l_file.write('  #pragma simd\n')

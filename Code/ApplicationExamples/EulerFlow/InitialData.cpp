@@ -14,6 +14,11 @@
 #include <stdlib.h>
 #include <math.h>
 #include <cstring>
+
+
+#include "tarch/logging/Log.h"
+
+
 using namespace std;
 
 /**
@@ -89,32 +94,37 @@ void DiffusingGauss(const double* const  x, double* Q) {
 	Q[4] = 1./(eos_gamma - 1) + exp(- (xvec - x0).norm() / pow(width, MY_DIMENSIONS) ) * 2;
 }
 
-static bool wroteAboutInitialData(false);
-#define logInitialData(txt...) { if(!wroteAboutInitialData) printf(txt); }
 
 void InitialData(const double* const  x, double* Q, double t) {
+        static tarch::logging::Log _log( "" );
+        static bool wroteAboutInitialData(false);
+
 	const char* default_id = "DiffusingGauss";
 	const char* id = getenv("EXAHYPE_INITIALDATA");
-	if(!id) { logInitialData("Using default ID\n"); id = default_id; }
+	if(!id) {
+          if(!wroteAboutInitialData) logInfo( "InitialData(double*,double,double)", "Using default ID");
+	  id = default_id;
+	}
+
 	//logInitialData("Have read '%s'\n", id);
 	std::string sid(id);
 	if(sid == "ShuVortex") {
-		logInitialData("Loading ShuVortex Initial Data\n");
+                if(!wroteAboutInitialData) logInfo( "InitialData(double*,double,double)", "Loading ShuVortex Initial Data");
 		// ShuVortex gives us primitive data
                 double V[MY_NUMBER_OF_VARIABLES];
 		ShuVortex2D(x, V, t);
                 prim2con(Q, V);
 	} else if(sid == "MovingGauss2D") {
+                if(!wroteAboutInitialData) logInfo( "InitialData(double*,double,double)", "Loading moving Gauss");
 		double V[MY_NUMBER_OF_VARIABLES];
 		MovingGauss2D(x, V, t);
 		prim2con(Q, V);
-		logInitialData("Loading moving Gauss\n");
 	} else if(sid == "DiffusingGauss") {
+                if(!wroteAboutInitialData) logInfo( "InitialData(double*,double,double)", "Loading diffusing Gauss Initial Data");
 		// default:
 		DiffusingGauss(x, Q);
-		logInitialData("Loading diffusing Gauss Initial Data\n");
 	} else {
-		logInitialData("Do not understand requested Initial Data key\n");
+                logError( "InitialData(double*,double,double)", "Do not understand requested Initial Data key");
 		exit(-42);
 	}
 	wroteAboutInitialData = true;

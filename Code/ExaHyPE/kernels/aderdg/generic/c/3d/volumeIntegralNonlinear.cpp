@@ -50,7 +50,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                               kernels::gaussLegendreWeights[order][j];
         const double updateSize = weight / dx[0];
 
-        // Fortran: lduh(l, k, j, i) += lFhi_x(l, m, j, i) * Kxi(m, k)
+        // Fortran: lduh(l, k, j, i) += us * lFhi_x(l, m, j, i) * Kxi(m, k)
         // Matrix product: (l, m) * (m, k) = (l, k)
         for (int k = 0; k < basisSize; k++) {
           for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
@@ -75,7 +75,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                               kernels::gaussLegendreWeights[order][j];
         const double updateSize = weight / dx[1];
 
-        // Fortran: lduh(l, j, k, i) += lFhi_y(l,m,j,i) * Kxi(m, k)
+        // Fortran: lduh(l, j, k, i) += us * lFhi_y(l,m,j,i) * Kxi(m, k)
         // Matrix product: (l, m) * (m, k) = (l, k)
         for (int k = 0; k < basisSize; k++) {
           for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
@@ -100,7 +100,7 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                               kernels::gaussLegendreWeights[order][j];
         const double updateSize = weight / dx[2];
 
-        // Fortran: lduh(l, j, i, k) += lFhi_z(l, m, j, i) * Kxi(m, k)
+        // Fortran: lduh(l, j, i, k) += us * lFhi_z(l, m, j, i) * Kxi(m, k)
         // Matrix product (l, m) * (m, k) = (l, k)
         for (int k = 0; k < basisSize; k++) {
           for (int l = 0; l < numberOfVariables - numberOfParameters; l++) {
@@ -109,6 +109,28 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                                        lFhi[z_offset + idx(i, j, m, l)] *
                                        updateSize;
             }
+          }
+        }
+      }
+    }
+  }
+
+  // source
+  {
+    idx4 idx(basisSize, basisSize, basisSize, numberOfVariables);
+    const int s_offset = 3 * basisSize3 * numberOfVariables;
+    for (int i = 0; i < basisSize; i++) {
+      for (int j = 0; j < basisSize; j++) {
+        for (int k = 0; k < basisSize; k++) {
+          const double weight = kernels::gaussLegendreWeights[order][i] *
+                                kernels::gaussLegendreWeights[order][j] *
+                                kernels::gaussLegendreWeights[order][k];
+
+          // Fortran: lduh(:,k,j,i) += w * lShi(:,k,j,i)
+
+          // TODO(guera): numberOfVariables - numberOfParameters
+          for (int l = 0; l < numberOfVariables; l++) {
+            lduh[idx(i, j, k, l)] += weight * lFhi[s_offset + idx(i, j, k, l)];
           }
         }
       }

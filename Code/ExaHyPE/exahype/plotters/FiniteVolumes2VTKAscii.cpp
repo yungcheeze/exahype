@@ -168,11 +168,13 @@ void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(
       for (int unknown=0; unknown < _solverUnknowns; unknown++) {
         sourceValue[unknown] = u[peano::utils::dLinearisedWithoutLookup(i,_numberOfCellsPerAxis)];
       }
-        
+
+      assertion(sizeOfPatch(0)==sizeOfPatch(1));
+
       _postProcessing->mapQuantities(
         offsetOfPatch,
         sizeOfPatch,
-        offsetOfPatch + i.convertScalar<double>()*sizeOfPatch/(_numberOfCellsPerAxis),
+        offsetOfPatch + i.convertScalar<double>()* (sizeOfPatch(0)/(_numberOfCellsPerAxis)),
         sourceValue,
         value,
         timeStamp

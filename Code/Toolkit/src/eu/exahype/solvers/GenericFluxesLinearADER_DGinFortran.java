@@ -4,8 +4,8 @@ public final class GenericFluxesLinearADER_DGinFortran extends GenericFluxesADER
   public static final String Identifier = GenericFluxesLinearADER_DGinC.Identifier;
 
   public GenericFluxesLinearADER_DGinFortran(int dimensions, int numberOfUnknowns,
-      int numberOfParameters, int order, boolean enableProfiler) {
-    super(dimensions, numberOfUnknowns, numberOfParameters, order, enableProfiler);
+      int numberOfParameters, int order, boolean enableProfiler, boolean hasConstants) {
+    super(dimensions, numberOfUnknowns, numberOfParameters, order, enableProfiler, hasConstants);
   }
 
   @Override
@@ -22,7 +22,7 @@ public final class GenericFluxesLinearADER_DGinFortran extends GenericFluxesADER
   public void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
     Helpers.writeMinimalADERDGSolverUserImplementation(solverName, writer, projectName,
-        _numberOfUnknowns, _numberOfParameters, _order);
+        _numberOfUnknowns, _numberOfParameters, _order, _hasConstants);
 
     int digits = String.valueOf(_numberOfUnknowns + _numberOfParameters).length();
 

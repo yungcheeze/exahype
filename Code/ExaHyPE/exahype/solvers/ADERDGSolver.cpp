@@ -42,9 +42,9 @@ exahype::solvers::ADERDGSolver::ADERDGSolver(
       _unknownsPerFace(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
       _unknownsPerCellBoundary(DIMENSIONS_TIMES_TWO * _unknownsPerFace),
       _unknownsPerCell(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
-      _fluxUnknownsPerCell(_unknownsPerCell * DIMENSIONS), // todo Angelika
+      _fluxUnknownsPerCell(_unknownsPerCell * (DIMENSIONS+1)), // +1 for sources
       _spaceTimeUnknownsPerCell(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
-      _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell * (DIMENSIONS+1)), // todo Angelika
+      _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell * (DIMENSIONS+1)), // +1 for sources
       _dataPerCell(numberOfVariables*power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
       _minCorrectorTimeStamp(std::numeric_limits<double>::max()),
       _minPredictorTimeStamp(std::numeric_limits<double>::max()),

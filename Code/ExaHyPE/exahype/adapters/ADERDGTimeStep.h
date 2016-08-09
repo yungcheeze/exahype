@@ -25,6 +25,7 @@
  #include "exahype/mappings/VolumeIntegral.h"
  #include "exahype/mappings/GlobalTimeStepComputation.h"
  #include "exahype/mappings/FaceUnknownsProjection.h"
+ #include "exahype/mappings/LoadBalancing.h"
 
 
 
@@ -51,6 +52,7 @@ class exahype::adapters::ADERDGTimeStep {
     typedef mappings::VolumeIntegral Mapping4;
     typedef mappings::GlobalTimeStepComputation Mapping5;
     typedef mappings::FaceUnknownsProjection Mapping6;
+    typedef mappings::LoadBalancing Mapping7;
 
      Mapping0  _map2RiemannSolver;
      Mapping1  _map2SurfaceIntegral;
@@ -59,6 +61,7 @@ class exahype::adapters::ADERDGTimeStep {
      Mapping4  _map2VolumeIntegral;
      Mapping5  _map2GlobalTimeStepComputation;
      Mapping6  _map2FaceUnknownsProjection;
+     Mapping7  _map2LoadBalancing;
 
 
   public:

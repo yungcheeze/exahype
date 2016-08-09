@@ -67,7 +67,7 @@ else ifeq ($(call tolower,$(MODE)),debug)
 else ifeq ($(call tolower,$(MODE)),profile)
   # Settings for the Profile mode
   # --------------------------------------------
-  COMPILER_CFLAGS += -DPerformanceAnalysis -p -pg
+  COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics -p -pg
   COMPILER_LFLAGS += -p -pg
 
 else ifeq ($(call tolower,$(MODE)),asserts)

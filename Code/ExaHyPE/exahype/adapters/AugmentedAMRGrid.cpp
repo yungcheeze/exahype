@@ -10,7 +10,8 @@ peano::CommunicationSpecification   exahype::adapters::AugmentedAMRGrid::communi
    & exahype::mappings::SolutionAdjustment::communicationSpecification()
    & exahype::mappings::MarkingForAugmentation::communicationSpecification()
    & exahype::mappings::Augmentation::communicationSpecification()
-   & exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_7::communicationSpecification()
+   & exahype::mappings::LoadBalancing::communicationSpecification()
+   & exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_8::communicationSpecification()
 
   ;
 }
@@ -25,7 +26,8 @@ peano::MappingSpecification   exahype::adapters::AugmentedAMRGrid::touchVertexLa
    & exahype::mappings::SolutionAdjustment::touchVertexLastTimeSpecification()
    & exahype::mappings::MarkingForAugmentation::touchVertexLastTimeSpecification()
    & exahype::mappings::Augmentation::touchVertexLastTimeSpecification()
-   & exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_7::touchVertexLastTimeSpecification()
+   & exahype::mappings::LoadBalancing::touchVertexLastTimeSpecification()
+   & exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_8::touchVertexLastTimeSpecification()
 
   ;
 }
@@ -40,7 +42,8 @@ peano::MappingSpecification   exahype::adapters::AugmentedAMRGrid::touchVertexFi
    & exahype::mappings::SolutionAdjustment::touchVertexFirstTimeSpecification()
    & exahype::mappings::MarkingForAugmentation::touchVertexFirstTimeSpecification()
    & exahype::mappings::Augmentation::touchVertexFirstTimeSpecification()
-   & exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_7::touchVertexFirstTimeSpecification()
+   & exahype::mappings::LoadBalancing::touchVertexFirstTimeSpecification()
+   & exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_8::touchVertexFirstTimeSpecification()
 
   ;
 }
@@ -55,7 +58,8 @@ peano::MappingSpecification   exahype::adapters::AugmentedAMRGrid::enterCellSpec
    & exahype::mappings::SolutionAdjustment::enterCellSpecification()
    & exahype::mappings::MarkingForAugmentation::enterCellSpecification()
    & exahype::mappings::Augmentation::enterCellSpecification()
-   & exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_7::enterCellSpecification()
+   & exahype::mappings::LoadBalancing::enterCellSpecification()
+   & exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_8::enterCellSpecification()
 
   ;
 }
@@ -70,7 +74,8 @@ peano::MappingSpecification   exahype::adapters::AugmentedAMRGrid::leaveCellSpec
    & exahype::mappings::SolutionAdjustment::leaveCellSpecification()
    & exahype::mappings::MarkingForAugmentation::leaveCellSpecification()
    & exahype::mappings::Augmentation::leaveCellSpecification()
-   & exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_7::leaveCellSpecification()
+   & exahype::mappings::LoadBalancing::leaveCellSpecification()
+   & exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_8::leaveCellSpecification()
 
   ;
 }
@@ -85,7 +90,8 @@ peano::MappingSpecification   exahype::adapters::AugmentedAMRGrid::ascendSpecifi
    & exahype::mappings::SolutionAdjustment::ascendSpecification()
    & exahype::mappings::MarkingForAugmentation::ascendSpecification()
    & exahype::mappings::Augmentation::ascendSpecification()
-   & exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_7::ascendSpecification()
+   & exahype::mappings::LoadBalancing::ascendSpecification()
+   & exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_8::ascendSpecification()
 
   ;
 }
@@ -100,7 +106,8 @@ peano::MappingSpecification   exahype::adapters::AugmentedAMRGrid::descendSpecif
    & exahype::mappings::SolutionAdjustment::descendSpecification()
    & exahype::mappings::MarkingForAugmentation::descendSpecification()
    & exahype::mappings::Augmentation::descendSpecification()
-   & exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_7::descendSpecification()
+   & exahype::mappings::LoadBalancing::descendSpecification()
+   & exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_8::descendSpecification()
 
   ;
 }
@@ -123,7 +130,8 @@ exahype::adapters::AugmentedAMRGrid::AugmentedAMRGrid(const AugmentedAMRGrid&  m
   _map2SolutionAdjustment(masterThread._map2SolutionAdjustment) , 
   _map2MarkingForAugmentation(masterThread._map2MarkingForAugmentation) , 
   _map2Augmentation(masterThread._map2Augmentation) , 
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7(masterThread._map2AugmentedAMRGrid2MultiscaleLinkedCell_7) 
+  _map2LoadBalancing(masterThread._map2LoadBalancing) , 
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8(masterThread._map2AugmentedAMRGrid2MultiscaleLinkedCell_8) 
 
 {
 }
@@ -137,7 +145,8 @@ void exahype::adapters::AugmentedAMRGrid::mergeWithWorkerThread(const AugmentedA
   _map2SolutionAdjustment.mergeWithWorkerThread(workerThread._map2SolutionAdjustment);
   _map2MarkingForAugmentation.mergeWithWorkerThread(workerThread._map2MarkingForAugmentation);
   _map2Augmentation.mergeWithWorkerThread(workerThread._map2Augmentation);
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.mergeWithWorkerThread(workerThread._map2AugmentedAMRGrid2MultiscaleLinkedCell_7);
+  _map2LoadBalancing.mergeWithWorkerThread(workerThread._map2LoadBalancing);
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.mergeWithWorkerThread(workerThread._map2AugmentedAMRGrid2MultiscaleLinkedCell_8);
 
 }
 #endif
@@ -159,7 +168,8 @@ void exahype::adapters::AugmentedAMRGrid::createHangingVertex(
   _map2SolutionAdjustment.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2MarkingForAugmentation.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Augmentation.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2LoadBalancing.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 
 }
@@ -181,7 +191,8 @@ void exahype::adapters::AugmentedAMRGrid::destroyHangingVertex(
   _map2SolutionAdjustment.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2MarkingForAugmentation.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Augmentation.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2LoadBalancing.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -202,7 +213,8 @@ void exahype::adapters::AugmentedAMRGrid::createInnerVertex(
   _map2SolutionAdjustment.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2MarkingForAugmentation.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Augmentation.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2LoadBalancing.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -223,7 +235,8 @@ void exahype::adapters::AugmentedAMRGrid::createBoundaryVertex(
   _map2SolutionAdjustment.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2MarkingForAugmentation.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Augmentation.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2LoadBalancing.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -244,7 +257,8 @@ void exahype::adapters::AugmentedAMRGrid::destroyVertex(
   _map2SolutionAdjustment.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2MarkingForAugmentation.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Augmentation.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2LoadBalancing.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -265,7 +279,8 @@ void exahype::adapters::AugmentedAMRGrid::createCell(
   _map2SolutionAdjustment.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2MarkingForAugmentation.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Augmentation.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2LoadBalancing.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -286,7 +301,8 @@ void exahype::adapters::AugmentedAMRGrid::destroyCell(
   _map2SolutionAdjustment.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2MarkingForAugmentation.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Augmentation.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2LoadBalancing.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -307,7 +323,8 @@ void exahype::adapters::AugmentedAMRGrid::mergeWithNeighbour(
    _map2SolutionAdjustment.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2MarkingForAugmentation.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2Augmentation.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
-   _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
+   _map2LoadBalancing.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
+   _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
 
 }
 
@@ -326,7 +343,8 @@ void exahype::adapters::AugmentedAMRGrid::prepareSendToNeighbour(
    _map2SolutionAdjustment.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2MarkingForAugmentation.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2Augmentation.prepareSendToNeighbour( vertex, toRank, x, h, level );
-   _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.prepareSendToNeighbour( vertex, toRank, x, h, level );
+   _map2LoadBalancing.prepareSendToNeighbour( vertex, toRank, x, h, level );
+   _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.prepareSendToNeighbour( vertex, toRank, x, h, level );
 
 }
 
@@ -345,7 +363,8 @@ void exahype::adapters::AugmentedAMRGrid::prepareCopyToRemoteNode(
    _map2SolutionAdjustment.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2MarkingForAugmentation.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2Augmentation.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
-   _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
+   _map2LoadBalancing.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
+   _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
 
 }
 
@@ -364,7 +383,8 @@ void exahype::adapters::AugmentedAMRGrid::prepareCopyToRemoteNode(
    _map2SolutionAdjustment.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2MarkingForAugmentation.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2Augmentation.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
-   _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
+   _map2LoadBalancing.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
+   _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
 
 }
 
@@ -384,7 +404,8 @@ void exahype::adapters::AugmentedAMRGrid::mergeWithRemoteDataDueToForkOrJoin(
    _map2SolutionAdjustment.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2MarkingForAugmentation.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2Augmentation.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
-   _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
+   _map2LoadBalancing.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
+   _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
 
 }
 
@@ -404,7 +425,8 @@ void exahype::adapters::AugmentedAMRGrid::mergeWithRemoteDataDueToForkOrJoin(
    _map2SolutionAdjustment.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2MarkingForAugmentation.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2Augmentation.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
-   _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
+   _map2LoadBalancing.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
+   _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
 
 }
 
@@ -427,7 +449,8 @@ bool exahype::adapters::AugmentedAMRGrid::prepareSendToWorker(
    result |= _map2SolutionAdjustment.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2MarkingForAugmentation.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2Augmentation.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
-   result |= _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
+   result |= _map2LoadBalancing.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
+   result |= _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
 
   return result;
 }
@@ -449,7 +472,8 @@ void exahype::adapters::AugmentedAMRGrid::prepareSendToMaster(
    _map2SolutionAdjustment.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2MarkingForAugmentation.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2Augmentation.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-   _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+   _map2LoadBalancing.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+   _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -476,7 +500,8 @@ void exahype::adapters::AugmentedAMRGrid::mergeWithMaster(
    _map2SolutionAdjustment.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2MarkingForAugmentation.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2Augmentation.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
-   _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
+   _map2LoadBalancing.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
+   _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
 
 }
 
@@ -500,7 +525,8 @@ void exahype::adapters::AugmentedAMRGrid::receiveDataFromMaster(
    _map2SolutionAdjustment.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2MarkingForAugmentation.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2Augmentation.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
-   _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
+   _map2LoadBalancing.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
+   _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -519,7 +545,8 @@ void exahype::adapters::AugmentedAMRGrid::mergeWithWorker(
    _map2SolutionAdjustment.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2MarkingForAugmentation.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2Augmentation.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
-   _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
+   _map2LoadBalancing.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
+   _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
 
 }
 
@@ -538,7 +565,8 @@ void exahype::adapters::AugmentedAMRGrid::mergeWithWorker(
    _map2SolutionAdjustment.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2MarkingForAugmentation.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2Augmentation.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
-   _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
+   _map2LoadBalancing.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
+   _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
 
 }
 #endif
@@ -560,7 +588,8 @@ void exahype::adapters::AugmentedAMRGrid::touchVertexFirstTime(
   _map2SolutionAdjustment.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2MarkingForAugmentation.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Augmentation.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2LoadBalancing.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -581,7 +610,8 @@ void exahype::adapters::AugmentedAMRGrid::touchVertexLastTime(
   _map2SolutionAdjustment.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2MarkingForAugmentation.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2Augmentation.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2LoadBalancing.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
 
@@ -602,7 +632,8 @@ void exahype::adapters::AugmentedAMRGrid::enterCell(
   _map2SolutionAdjustment.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2MarkingForAugmentation.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Augmentation.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2LoadBalancing.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -623,7 +654,8 @@ void exahype::adapters::AugmentedAMRGrid::leaveCell(
   _map2SolutionAdjustment.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2MarkingForAugmentation.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2Augmentation.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2LoadBalancing.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
 
@@ -638,7 +670,8 @@ void exahype::adapters::AugmentedAMRGrid::beginIteration(
   _map2SolutionAdjustment.beginIteration( solverState );
   _map2MarkingForAugmentation.beginIteration( solverState );
   _map2Augmentation.beginIteration( solverState );
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.beginIteration( solverState );
+  _map2LoadBalancing.beginIteration( solverState );
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.beginIteration( solverState );
 
 }
 
@@ -653,7 +686,8 @@ void exahype::adapters::AugmentedAMRGrid::endIteration(
   _map2SolutionAdjustment.endIteration( solverState );
   _map2MarkingForAugmentation.endIteration( solverState );
   _map2Augmentation.endIteration( solverState );
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.endIteration( solverState );
+  _map2LoadBalancing.endIteration( solverState );
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.endIteration( solverState );
 
 }
 
@@ -675,7 +709,8 @@ void exahype::adapters::AugmentedAMRGrid::descend(
   _map2SolutionAdjustment.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2MarkingForAugmentation.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Augmentation.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2LoadBalancing.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
 }
 
@@ -695,6 +730,7 @@ void exahype::adapters::AugmentedAMRGrid::ascend(
   _map2SolutionAdjustment.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2MarkingForAugmentation.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2Augmentation.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
-  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2LoadBalancing.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
+  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
 }

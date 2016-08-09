@@ -8,7 +8,7 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh)
     REAL, INTENT(OUT) :: lqbnd(nVar,6,nDOF(2),nDOF(3))                  ! time-averaged space-time degrees of freedom 
     REAL, INTENT(OUT) :: lFbnd(nVar,6,nDOF(2),nDOF(3))                  ! time-averaged nonlinear flux tensor in each space-time DOF 
     ! Local variables 
-    INTEGER :: i,j,k,l,m,iVar,iDim, iter 
+    INTEGER :: i,j,k,l,m,o,iVar,iDim, iter 
     REAL    :: rhs0(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))               ! contribution of the initial condition to the known right hand side 
     REAL    :: rhs(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! known right hand side 
     REAL    :: lqh(nVar,nDOF(1),nDOF(2),nDOF(3),nDOF(0))                ! space-time degrees of freedom 
@@ -42,7 +42,7 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh)
     ENDDO 
     ! 
     ! Discrete Picard iterations. This set of nested loops should (theoretically) be a dream for vectorization, since they are rather independent... 
-    write(*,*) "picard start"
+    !write(*,*) "picard start"
     DO iter = 1, N+1   
         ! save old space-time DOF 
         lqhold = lqh         
@@ -163,14 +163,15 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh)
     ENDIF    
     !
     CONTINUE
-    read(*,*) i
-    IF(i>0) THEN
+    !read(*,*) i
+    !IF(i>0) THEN
       !write(*,*) dt
       !write(*,*) dx
       !write(*,*) "+++++++++++++++++++++++++++++++++++luh"
       !write(*,*) luh
       !write(*,*) "+++++++++++++++++++++++++++++++++++end"
       !write(*,*) "+++++++++++++++++++++++++++++++++++lqh"
+      !write(*,*) "NDOF(3)= ",nDof(3)
       !do i = 1, nDOF(3)
       !  do j = 1, nDOF(2)
       !    do k = 1, nDOF(1)
@@ -184,6 +185,19 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh)
       !enddo
       !write(*,*) "+++++++++++++++++++++++++++++++++++end"
       !write(*,*) lFh
+      !do i = 1, nDOF(0)
+      !  do j = 1, nDOF(3)
+      !    do k = 1, nDOF(2)
+      !      do l = 1, nDOF(1)
+      !        do m = 1, 2 ! DIMENSIONS
+      !          do o = 1, nVar
+      !            write(*,*) lFh(o,m,l,k,j,i),","
+      !          enddo
+      !        enddo
+      !      enddo
+      !    enddo
+      !  enddo
+      !enddo
       !write(*,*) lqhi
       !do i = 1, nDim
       !  do j = 1, nDOF(3)
@@ -205,16 +219,18 @@ SUBROUTINE ADERSpaceTimePredictor(lqhi,lFhi,lQbnd,lFbnd,luh)
       !    enddo
       !  enddo
       !enddo
-      do i = 1, 2*nDim
-        do j = 1, nDOF(3)
-          do k = 1, nDOF(2)
-            do l = 1, nVar
-              write(*,*) lFbnd(l,i,k,j),","
-            enddo
-          enddo
-        enddo
-      enddo
-    ENDIF
+      !write(*,*) "-----------------------------"
+      !do i = 3, 4 ! 2 * DIMENSIONS
+      !  do j = 1, 1! nDOF(3)
+      !    do k = 1, 4! nDOF(1)
+      !      do l = 1, nVar
+      !        write(*,*) lFbnd(l,i,k,j),","
+      !      enddo
+      !    enddo
+      !  enddo
+      !enddo
+      !write(*,*) FLCoeff
+    !ENDIF
     !
 END SUBROUTINE ADERSpaceTimePredictor 
     

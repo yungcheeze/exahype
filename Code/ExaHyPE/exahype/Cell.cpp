@@ -250,7 +250,9 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(const int solverNumber) {
                 p.setUpdate(DataHeap::getInstance().createData(
                     unknownsPerCell, unknownsPerCell));
                 p.setSolution(DataHeap::getInstance().createData(
-                    dataPerCell, dataPerCell));
+                    unknownsPerCell, unknownsPerCell));
+
+                // TODO(Dominic): Material parameters what are the correct array sizes?
               }
               break;
             default:
@@ -467,6 +469,16 @@ void exahype::Cell::validateNoNansInADERDGSolver(
   const std::string&                   methodTraceOfCaller
 ) {
   auto& p = fineGridCell.getADERDGCellDescription(number);
+
+  assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimePredictor()),p.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimeVolumeFlux()),p.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(p.getSolution()),p.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(p.getUpdate()),p.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(p.getPredictor()),p.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(p.getVolumeFlux()),p.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()),p.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(p.getFluctuation()),p.toString());
+
   assertionEquals4(p.getPredictorTimeStepSize(),p.getPredictorTimeStepSize(),
                    fineGridVerticesEnumerator.toString(),
                    p.toString(),fineGridCell.toString(),methodTraceOfCaller);
@@ -605,3 +617,56 @@ int exahype::Cell::getNumberOfFiniteVolumeCellDescriptions() const {
   return FiniteVolumesCellDescriptionHeap::getInstance().getData(
       getCellDescriptionsIndex()).size();
 }
+
+
+#ifdef Parallel
+void exahype::Cell::clearLoadBalancingWorkloads() {
+  if (isRefined()) {
+    _cellData.setLocalWorkload(0.0);
+    _cellData.setGlobalWorkload(0.0);
+  }
+  else {
+    // @todo really insert here the number of real solvers and weight them accordingly
+    _cellData.setLocalWorkload(1.0);
+    _cellData.setGlobalWorkload(1.0);
+  }
+}
+
+
+void exahype::Cell::restrictLoadBalancingWorkloads(const Cell& childCell, bool isRemote) {
+  if (isRemote) {
+    // _cellData.setLocalWorkload(  _cellData.getLocalWorkload()  + childCell._cellData.getLocalWorkload() );
+    _cellData.setGlobalWorkload(
+      std::max(_cellData.getLocalWorkload(), childCell._cellData.getGlobalWorkload())
+    );
+  }
+  else {
+    _cellData.setLocalWorkload(  _cellData.getLocalWorkload()  + childCell._cellData.getLocalWorkload() );
+    _cellData.setGlobalWorkload( _cellData.getGlobalWorkload() + childCell._cellData.getGlobalWorkload() );
+  }
+
+  if ( ADERDGCellDescriptionHeap::getInstance().isValidIndex(getCellDescriptionsIndex()) ) {
+    const double embeddedADERDGCells = getNumberOfADERDGCellDescriptions();
+    const double embeddedFVPatches   = getNumberOfFiniteVolumeCellDescriptions();
+
+    // @todo this will require further tuning and it might become necessary to
+    //       take the order or patch size into account.
+    double additionalWeight = 4.0 * embeddedADERDGCells + 1.0 * embeddedFVPatches;
+
+    assertion(additionalWeight>=0.0);
+
+    _cellData.setLocalWorkload(  _cellData.getLocalWorkload()  + additionalWeight );
+    _cellData.setGlobalWorkload( _cellData.getGlobalWorkload() + additionalWeight );
+  }
+}
+
+
+double exahype::Cell::getLocalWorkload() const {
+  return _cellData.getLocalWorkload();
+}
+
+
+double exahype::Cell::getGlobalWorkload() const {
+  return _cellData.getGlobalWorkload();
+}
+#endif
