@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef _MPI_BALANCING_STATIC_BALANCING_H_
-#define _MPI_BALANCING_STATIC_BALANCING_H_
+#ifndef _MPI_BALANCING_HOTSPOT_BALANCING_H_
+#define _MPI_BALANCING_HOTSPOT_BALANCING_H_
 
 #include "peano/parallel/loadbalancing/OracleForOnePhase.h"
 #include "tarch/logging/Log.h"
@@ -12,19 +12,62 @@
 
 
 namespace mpibalancing {
-  class StaticBalancing;
+  class HotspotBalancing;
 }
 
 
 /**
- * Static Balancing
+ * Hotspot Balancing
  *
  * This balancing identifies the critical path locally, i.e. if the oracle is
  * told by its master that it shall fork at least once, it identifies its worker
  * with the biggest load and makes this one fork as well. Please note that the
  * critical path can be multiple ranks that are forked at the same time.
  *
- * !!! getCommandForWorker()
+ *
+ * <h2>Usage</h2>
+ *
+ * First of all, ensure that you include the balancing's header in your runner
+ * and then add
+ * <pre>
+peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
+  new mpibalancing::HotspotBalancing(false)
+);
+   </pre>
+ * on each rank. I strongly recommend to switch off joins for a first try -
+ * therefore the false argument in the snippet above.
+ *
+ * This oracle will not work properly, as we haven't fed it yet with a cost
+ * model. It cannot know which rank is member along the critical paths. In this
+ * introductory example, I realise a cell-based cost model and, for this,
+ * augment my cell definition:
+ *
+ * <pre>
+Packed-Type: int;
+
+class exahype::dastgen::Cell {
+  [...]
+
+  #ifdef Parallel
+  persistent double localWorkload;
+  persistent double globalWorkload;
+  #endif
+};
+  </pre>
+ *
+ * For each node in the spacetree, we hold the sum of its weight of all
+ * children (globalWorkload) and we also hold the sum of all children that are
+ * processed by the very same rank (localWorkload). I next typically introduce
+ * a new mapping for the load balancing.
+ *
+ * To befill this mapping with functionality, I have to extend my cell:
+ *
+ *
+ *
+ *
+ * <h2>Behaviour</h2>
+ *
+ * <h3> getCommandForWorker </h3>
  *
  * getCommandForWorker() here is pretty simple and evaluates basically
  * _forksToConduct and _criticalWorker identifying whether a worker shall
@@ -45,7 +88,7 @@ namespace mpibalancing {
  *   grid becomes smaller.
  *
  *
- * !!! receivedStartCommand()
+ * <h3>  receivedStartCommand </h3>
  *
  * This operation triggers the critical path analysis which consists of two
  * steps:
@@ -78,7 +121,7 @@ namespace mpibalancing {
  * Finally, we ensure that the forks are bounded by @f$ 3^d-1 @f$ or reset
  * the critical worker if no forks are to be done.
  *
- * !!! Local Minima
+ * <h3>  Local Minima </h3>
  *
  * If we have p ranks, it can happen that the oracle achieves perfect balancing with
  * @f$ \hat p < p @f$ ranks already. If we have 50 ranks, 10 in 2d already are perfectly
@@ -88,10 +131,10 @@ namespace mpibalancing {
  * If we identify a local minimum, we set the numbers to fork manually to
  * @f$(3^d-1)/2 @f$ and label all workers as critical.
  *
- * @image html StaticBalancing.png
+ * @image html HotspotBalancing.png
  * @author Tobias Weinzierl
  */
-class mpibalancing::StaticBalancing: public peano::parallel::loadbalancing::OracleForOnePhase {
+class mpibalancing::HotspotBalancing: public peano::parallel::loadbalancing::OracleForOnePhase {
   public:
     /**
      * Constructor
@@ -109,9 +152,9 @@ class mpibalancing::StaticBalancing: public peano::parallel::loadbalancing::Orac
      *                     the domain. Too regular grids facilitate a
      *                     proper load balancing in several cases.
      */
-    StaticBalancing( bool joinsAllowed, int coarsestRegularInnerAndOuterGridLevel = 3 );
+    HotspotBalancing( bool joinsAllowed, int coarsestRegularInnerAndOuterGridLevel = 3 );
 
-    virtual ~StaticBalancing();
+    virtual ~HotspotBalancing();
 
     /**
      * Analyse which workers are to be forked next.

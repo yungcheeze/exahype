@@ -12,6 +12,8 @@
  **/
  
 #include "exahype/runners/Runner.h"
+
+#include "../../../Peano/mpibalancing/HotspotBalancing.h"
 #include "exahype/repositories/Repository.h"
 #include "exahype/repositories/RepositoryFactory.h"
 
@@ -43,8 +45,6 @@
 #include "sharedmemoryoracles/OracleForOnePhaseWithShrinkingGrainSize.h"
 
 #include "mpibalancing/GreedyBalancing.h"
-#include "mpibalancing/StaticBalancing.h"
-
 #include "exahype/plotters/Plotter.h"
 
 #include "exahype/solvers/ADERDGSolver.h"
@@ -92,7 +92,7 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
     else if ( configuration.find( "hotspot" )!=std::string::npos ) {
       logInfo("initDistributedMemoryConfiguration()", "use global hotspot elimination without joins (mpibalancing/StaticBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-        new mpibalancing::StaticBalancing(false)
+        new mpibalancing::HotspotBalancing(false)
       );
     }
     else {

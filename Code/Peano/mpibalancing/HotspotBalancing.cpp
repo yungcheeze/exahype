@@ -1,5 +1,4 @@
-#include "mpibalancing/StaticBalancing.h"
-
+#include "HotspotBalancing.h"
 #include "tarch/Assertions.h"
 #include "tarch/la/ScalarOperations.h"
 #include "tarch/parallel/Node.h"
@@ -7,13 +6,13 @@
 #include "peano/parallel/loadbalancing/Oracle.h"
 
 
-tarch::logging::Log mpibalancing::StaticBalancing::_log( "mpibalancing::StaticBalancing" );
+tarch::logging::Log mpibalancing::HotspotBalancing::_log( "mpibalancing::HotspotBalancing" );
 
 
-bool mpibalancing::StaticBalancing::_forkHasFailed = false;
+bool mpibalancing::HotspotBalancing::_forkHasFailed = false;
 
 
-mpibalancing::StaticBalancing::StaticBalancing(bool joinsAllowed, int coarsestRegularInnerAndOuterGridLevel):
+mpibalancing::HotspotBalancing::HotspotBalancing(bool joinsAllowed, int coarsestRegularInnerAndOuterGridLevel):
   _coarsestRegularInnerAndOuterGridLevel(coarsestRegularInnerAndOuterGridLevel),
   _joinsAllowed(joinsAllowed),
   _criticalWorker(),
@@ -23,11 +22,11 @@ mpibalancing::StaticBalancing::StaticBalancing(bool joinsAllowed, int coarsestRe
 }
 
 
-mpibalancing::StaticBalancing::~StaticBalancing() {
+mpibalancing::HotspotBalancing::~HotspotBalancing() {
 }
 
 
-double mpibalancing::StaticBalancing::getMaximumWeightOfWorkers() const {
+double mpibalancing::HotspotBalancing::getMaximumWeightOfWorkers() const {
   double maximumWeight = std::numeric_limits<double>::min();
   for ( std::map<int,double>::const_iterator p=_weightMap.begin(); p!=_weightMap.end(); p++ ) {
     if ( p->second > maximumWeight ) {
@@ -41,7 +40,7 @@ double mpibalancing::StaticBalancing::getMaximumWeightOfWorkers() const {
 }
 
 
-double mpibalancing::StaticBalancing::getMinimumWeightOfWorkers() const {
+double mpibalancing::HotspotBalancing::getMinimumWeightOfWorkers() const {
   double minimumWeight  = std::numeric_limits<double>::max();
   for ( std::map<int,double>::const_iterator p=_weightMap.begin(); p!=_weightMap.end(); p++ ) {
     if ( p->second < minimumWeight ) {
@@ -53,7 +52,7 @@ double mpibalancing::StaticBalancing::getMinimumWeightOfWorkers() const {
 }
 
 
-void mpibalancing::StaticBalancing::identifyCriticalPathes( peano::parallel::loadbalancing::LoadBalancingFlag commandFromMaster ) {
+void mpibalancing::HotspotBalancing::identifyCriticalPathes( peano::parallel::loadbalancing::LoadBalancingFlag commandFromMaster ) {
   /**
    * We consider the CritialPathThreshold upper percent of the workers to be
    * critical.
@@ -93,7 +92,7 @@ void mpibalancing::StaticBalancing::identifyCriticalPathes( peano::parallel::loa
 }
 
 
-void mpibalancing::StaticBalancing::computeMaxForksOnCriticalWorker( peano::parallel::loadbalancing::LoadBalancingFlag commandFromMaster ) {
+void mpibalancing::HotspotBalancing::computeMaxForksOnCriticalWorker( peano::parallel::loadbalancing::LoadBalancingFlag commandFromMaster ) {
   if ( commandFromMaster>=peano::parallel::loadbalancing::LoadBalancingFlag::ForkOnce ) {
     _maxForksOnCriticalWorker = getMinimumWeightOfWorkers() < std::numeric_limits<double>::max() ?
       static_cast<int>(std::ceil(
@@ -120,7 +119,7 @@ void mpibalancing::StaticBalancing::computeMaxForksOnCriticalWorker( peano::para
 }
 
 
-void mpibalancing::StaticBalancing::receivedStartCommand( peano::parallel::loadbalancing::LoadBalancingFlag commandFromMaster ) {
+void mpibalancing::HotspotBalancing::receivedStartCommand( peano::parallel::loadbalancing::LoadBalancingFlag commandFromMaster ) {
   logTraceInWith1Argument("receivedStartCommand(LoadBalancingFlag)", peano::parallel::loadbalancing::convertLoadBalancingFlagToString(commandFromMaster));
 
   identifyCriticalPathes( commandFromMaster );
@@ -132,7 +131,7 @@ void mpibalancing::StaticBalancing::receivedStartCommand( peano::parallel::loadb
 }
 
 
-peano::parallel::loadbalancing::LoadBalancingFlag  mpibalancing::StaticBalancing::getCommandForWorker( int workerRank, bool forkIsAllowed, bool joinIsAllowed ) {
+peano::parallel::loadbalancing::LoadBalancingFlag  mpibalancing::HotspotBalancing::getCommandForWorker( int workerRank, bool forkIsAllowed, bool joinIsAllowed ) {
   logTraceInWith4Arguments( "getCommandForWorker(int,bool)", workerRank, forkIsAllowed, joinIsAllowed, _joinsAllowed );
   
   peano::parallel::loadbalancing::LoadBalancingFlag  result = peano::parallel::loadbalancing::LoadBalancingFlag::Continue;
@@ -180,7 +179,7 @@ peano::parallel::loadbalancing::LoadBalancingFlag  mpibalancing::StaticBalancing
 
 
 /*
-void mpibalancing::StaticBalancing::receivedTerminateCommand(
+void mpibalancing::HotspotBalancing::receivedTerminateCommand(
   int     workerRank,
   double  workerNumberOfInnerVertices,
   double  workerNumberOfBoundaryVertices,
@@ -199,16 +198,16 @@ void mpibalancing::StaticBalancing::receivedTerminateCommand(
 */
 
 
-void mpibalancing::StaticBalancing::plotStatistics() {
+void mpibalancing::HotspotBalancing::plotStatistics() {
 }
 
 
-peano::parallel::loadbalancing::OracleForOnePhase* mpibalancing::StaticBalancing::createNewOracle(int adapterNumber) const {
-  return new StaticBalancing(_joinsAllowed, _coarsestRegularInnerAndOuterGridLevel);
+peano::parallel::loadbalancing::OracleForOnePhase* mpibalancing::HotspotBalancing::createNewOracle(int adapterNumber) const {
+  return new HotspotBalancing(_joinsAllowed, _coarsestRegularInnerAndOuterGridLevel);
 }
 
 
-void mpibalancing::StaticBalancing::forkFailed() {
+void mpibalancing::HotspotBalancing::forkFailed() {
   if (!_forkHasFailed) {
     logInfo(
       "forkFailed()",
@@ -219,6 +218,6 @@ void mpibalancing::StaticBalancing::forkFailed() {
 }
 
 
-int mpibalancing::StaticBalancing::getCoarsestRegularInnerAndOuterGridLevel() const {
+int mpibalancing::HotspotBalancing::getCoarsestRegularInnerAndOuterGridLevel() const {
   return _coarsestRegularInnerAndOuterGridLevel;
 }

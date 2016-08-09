@@ -5,4 +5,10 @@ class exahype::dastgen::Cell {
    * We specify a ADERDGCellDescription for each Solver that should run on the grid.
    */
   parallelise persistent int CellDescriptionsIndex;
+  
+  
+  #ifdef Parallel
+  persistent double localWorkload;
+  persistent double globalWorkload;
+  #endif
 };

@@ -21,6 +21,7 @@
  #include "exahype/mappings/SurfaceIntegral.h"
  #include "exahype/mappings/SolutionUpdate.h"
  #include "exahype/mappings/GlobalTimeStepComputation.h"
+ #include "exahype/mappings/LoadBalancing.h"
 
 
 
@@ -43,10 +44,12 @@ class exahype::adapters::Corrector {
     typedef mappings::SurfaceIntegral Mapping0;
     typedef mappings::SolutionUpdate Mapping1;
     typedef mappings::GlobalTimeStepComputation Mapping2;
+    typedef mappings::LoadBalancing Mapping3;
 
      Mapping0  _map2SurfaceIntegral;
      Mapping1  _map2SolutionUpdate;
      Mapping2  _map2GlobalTimeStepComputation;
+     Mapping3  _map2LoadBalancing;
 
 
   public:
