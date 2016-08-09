@@ -25,6 +25,7 @@
 #
 # For a quick test, type
 # python Driver.py Euler 5 3 2 nonlinear hsw path/to/libxsmmRepository
+#                 NoOtherOption nVar Order 2/3d NoOtherOption Architecture 
 #
 # for Jenkins this is
 # python Driver.py Euler 5 3 2 nonlinear hsw ../../../libxsmm --precision=DP
