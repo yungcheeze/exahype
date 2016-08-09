@@ -63,6 +63,45 @@ class exahype::dastgen::Cell {
  * To befill this mapping with functionality, I have to extend my cell. The
  * example below is inspired by the ExaHyPE project:
  *
+ * <pre>
+
+void exahype::Cell::clearLoadBalancingWorkloads() {
+  if (isRefined()) {
+    _cellData.setLocalWorkload(0.0);
+    _cellData.setGlobalWorkload(0.0);
+  }
+  else {
+    _cellData.setLocalWorkload(1.0);
+    _cellData.setGlobalWorkload(1.0);
+  }
+}
+
+
+void exahype::Cell::restrictLoadBalancingWorkloads(const Cell& childCell, bool isRemote) {
+  if (isRemote) {
+    _cellData.setGlobalWorkload(
+      std::max(_cellData.getLocalWorkload(), childCell._cellData.getGlobalWorkload())
+    );
+  }
+  else {
+    _cellData.setLocalWorkload(  _cellData.getLocalWorkload()  + childCell._cellData.getLocalWorkload() );
+    _cellData.setGlobalWorkload( _cellData.getGlobalWorkload() + childCell._cellData.getGlobalWorkload() );
+  }
+}
+
+
+double exahype::Cell::getLocalWorkload() const {
+  return _cellData.getLocalWorkload();
+}
+
+
+double exahype::Cell::getGlobalWorkload() const {
+  _cellData.getGlobalWorkload();
+}
+
+
+  </pre>
+ *
  *
  * We finally invoke the routines in the new load balancing mapping:
  *
@@ -72,6 +111,93 @@ class exahype::dastgen::Cell {
  * - In mergeWithMaster(), we invoke it on the local cell plugging in the
  *   received worker cell.
  *
+ * <pre>
+
+void exahype::mappings::LoadBalancing::enterCell(
+      exahype::Cell&                 fineGridCell,
+      exahype::Vertex * const        fineGridVertices,
+      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+      exahype::Vertex * const        coarseGridVertices,
+      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+      exahype::Cell&                 coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+) {
+  fineGridCell.clearLoadBalancingWorkloads();
+}
+
+
+void exahype::mappings::LoadBalancing::leaveCell(
+      exahype::Cell&           fineGridCell,
+      exahype::Vertex * const  fineGridVertices,
+      const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
+      exahype::Vertex * const  coarseGridVertices,
+      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+      exahype::Cell&           coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
+) {
+  logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
+
+  coarseGridCell.restrictLoadBalancingWorkloads(fineGridCell,false);
+
+  if (coarseGridCell.isRoot()) {
+    mpibalancing::HotspotBalancing::restrictToRoot(
+      coarseGridCell.getLocalWorkload()
+    );
+  }
+
+  logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
+}
+
+
+#ifdef Parallel
+void exahype::mappings::LoadBalancing::mergeWithMaster(
+  const exahype::Cell&                       workerGridCell,
+  exahype::Vertex * const                    workerGridVertices,
+  const peano::grid::VertexEnumerator&       workerEnumerator,
+  exahype::Cell&                             fineGridCell,
+  exahype::Vertex * const                    fineGridVertices,
+  const peano::grid::VertexEnumerator&       fineGridVerticesEnumerator,
+  exahype::Vertex * const                    coarseGridVertices,
+  const peano::grid::VertexEnumerator&       coarseGridVerticesEnumerator,
+  exahype::Cell&                             coarseGridCell,
+  const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell,
+  int                                        worker,
+  const exahype::State&                      workerState,
+  exahype::State&                            masterState
+) {
+  logTraceIn( "mergeWithMaster(...)" );
+
+  coarseGridCell.restrictLoadBalancingWorkloads(workerGridCell,true);
+  mpibalancing::HotspotBalancing::receivedMergeWithMaster(
+    worker,
+    workerGridCell.getGlobalWorkload(),
+    workerState.getCouldNotEraseDueToDecompositionFlag()
+  );
+
+  logDebug( "mergeWithMaster(...)", "merged received/fine cell " << workerGridCell.toString() << " from rank " << worker << " into coarse cell " << coarseGridCell.toString() );
+
+  logTraceOut( "mergeWithMaster(...)" );
+}
+
+
+
+void exahype::mappings::LoadBalancing::mergeWithWorker(
+  exahype::Cell&           localCell,
+  const exahype::Cell&     receivedMasterCell,
+  const tarch::la::Vector<DIMENSIONS,double>&  cellCentre,
+  const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
+  int                                          level
+) {
+  logTraceInWith2Arguments( "mergeWithWorker(...)", localCell.toString(), receivedMasterCell.toString() );
+
+  localCell.clearLoadBalancingWorkloads();
+
+  logTraceOutWith1Argument( "mergeWithWorker(...)", localCell.toString() );
+}
+#endif
+
+
+  </pre>
  * Two calls to receivedMergeWithMaster() and restrictToRoot() in the merge
  * operation or leaveCell, respectively, connect the cost model to the
  * balancing.
@@ -212,6 +338,9 @@ class mpibalancing::HotspotBalancing: public peano::parallel::loadbalancing::Ora
     );
   }
        </pre>
+     * If a rank deploys all of its 3^d coarsest ranks to other nodes, i.e. is
+     * a pure administration rank, then this routine is automatically not
+     * called if you follow the recipes above and plug into leaveCell.
      */
     static void restrictToRoot(
       int     localWeight

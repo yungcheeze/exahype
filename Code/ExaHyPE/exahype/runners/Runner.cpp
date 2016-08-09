@@ -263,17 +263,24 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   do {
     repository.iterate();
     gridSetupIterations++;
-    #ifdef TrackGridStatistics
+    #if defined(TrackGridStatistics) && defined(Asserts)
     logInfo("runAsMaster()",
       "grid setup iteration #" << gridSetupIterations <<
       ", max-level=" << repository.getState().getMaxLevel() <<
+      ", state=" << repository.getState().toString() <<
       ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
     #elif defined(Asserts)
     logInfo("runAsMaster()",
       "grid setup iteration #" << gridSetupIterations <<
-      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes() <<
-      ", state=" << repository.getState().toString()
+      ", state=" << repository.getState().toString() <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+    );
+    #elif defined(TrackGridStatistics)
+    logInfo("runAsMaster()",
+      "grid setup iteration #" << gridSetupIterations <<
+      ", max-level=" << repository.getState().getMaxLevel() <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
     #else
     logInfo("runAsMaster()",

@@ -208,7 +208,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
 
   #ifdef Parallel
   void clearLoadBalancingWorkloads();
-  void restrictLoadBalancingWorkloads(const Cell& childCell);
+  void restrictLoadBalancingWorkloads(const Cell& childCell, bool isRemote);
   double getLocalWorkload() const;
   double getGlobalWorkload() const;
   #endif
