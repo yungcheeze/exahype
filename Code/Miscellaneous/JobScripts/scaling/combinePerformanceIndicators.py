@@ -17,21 +17,25 @@ for filename in filenames:
     output += filename.split(".")[0] + ","
     # print filename
     tokens = filename.split("__")
-    
+      
     for token in tokens:
       output += token.split("_")[1] + ","
-      
-      
-    # get scaling results
-    file = open(filename, "r" )
+        
+        
+    try:
+      # get scaling results
+      file = open(filename, "r" )
 
-    line = file.readline()
-    line = file.readline()
-    
-    tokens = line.split(" ")
-    # print tokens
-    
-    output += str(tokens[1]) + "," + str(tokens[4]) + "," + str(tokens[7]) + "," + str(tokens[10]) + "," + str(tokens[13]) + "\n"
+      line = file.readline()
+      line = file.readline()
+      
+      tokens = line.split(" ")
+      # print tokens
+      
+      output += str(tokens[1]) + "," + str(tokens[4]) + "," + str(tokens[7]) + "," + str(tokens[10]) + "," + str(tokens[13]) + "\n"
+    except:
+      output += "\n"
+
       
 print output
  

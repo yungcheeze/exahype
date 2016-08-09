@@ -5,14 +5,16 @@ import java.io.IOException;
 
 public abstract class GenericFluxesADER_DG implements Solver {
   public static final String Identifier = "generic::fluxes::";
+  protected boolean _hasConstants;
 
   public GenericFluxesADER_DG(int dimensions, int numberOfUnknowns, int numberOfParameters,
-      int order, boolean enableProfiler) {
+      int order, boolean enableProfiler, boolean hasConstants) {
     _dimensions = dimensions;
     _numberOfUnknowns = numberOfUnknowns;
     _numberOfParameters = numberOfParameters;
     _order = order;
     _enableProfiler = enableProfiler;
+    _hasConstants   = hasConstants;
   }
 
   public abstract boolean isLinear();
@@ -22,12 +24,13 @@ public abstract class GenericFluxesADER_DG implements Solver {
   @Override
   public final void writeHeader(BufferedWriter writer, String solverName, String projectName)
       throws IOException {
-    Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName);
+    Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants );
 
     writer.write("  private:\n");
     writer.write(
         "    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
     writer.write("    static void flux(const double* const Q, double** F);\n");
+    writer.write("    static void source(const double* const Q, double* S);\n");
     writer.write("    static void boundaryValues(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut);\n");
     writer.write(
         "    static void adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q);\n");
@@ -59,7 +62,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
       writer.write("  _profiler->start(\"spaceTimePredictor\");\n");
     }
     writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
-        + "::spaceTimePredictor" + (isLinear() ? "Linear<ncp>" : "Nonlinear<flux>")
+        + "::spaceTimePredictor" + (isLinear() ? "Linear<ncp>" : "Nonlinear<flux, source>")
         + "( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"spaceTimePredictor\");\n");

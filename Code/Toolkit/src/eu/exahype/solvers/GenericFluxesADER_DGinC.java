@@ -6,15 +6,15 @@ import java.io.IOException;
 public abstract class GenericFluxesADER_DGinC extends GenericFluxesADER_DG {
 
   public GenericFluxesADER_DGinC(int dimensions, int numberOfUnknowns, int numberOfParameters,
-      int order, boolean enableProfiler) {
-    super(dimensions, numberOfUnknowns, numberOfParameters, order, enableProfiler);
+      int order, boolean enableProfiler, boolean hasConstants) {
+    super(dimensions, numberOfUnknowns, numberOfParameters, order, enableProfiler, hasConstants);
   }
 
   @Override
   public final void writeUserImplementation(java.io.BufferedWriter writer, String solverName,
       String projectName) throws java.io.IOException {
     Helpers.writeMinimalADERDGSolverUserImplementation(solverName, writer, projectName,
-        _numberOfUnknowns, _numberOfParameters, _order);
+        _numberOfUnknowns, _numberOfParameters, _order, _hasConstants);
 
     int digits = String.valueOf(_numberOfUnknowns + _numberOfParameters).length();
 
@@ -47,6 +47,16 @@ public abstract class GenericFluxesADER_DGinC extends GenericFluxesADER_DG {
       for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
         writer.write("  h[" + String.format("%" + digits + "d", i) + "] = 0.0;\n");
       }
+    }
+    writer.write("}\n");
+    writer.write("\n\n\n");
+
+    // source
+    writer.write("void " + projectName + "::" + solverName + "::source(const double* const Q, double* S) {\n");
+    writer.write("  // Number of variables = " + _numberOfUnknowns + " + " +  _numberOfParameters + "\n");
+    writer.write("  // @todo Please implement\n");
+    for (int i = 0; i < _numberOfUnknowns + _numberOfParameters; i++) {
+      writer.write("  S[" + i + "] = 0.0;\n");
     }
     writer.write("}\n");
     writer.write("\n\n\n");

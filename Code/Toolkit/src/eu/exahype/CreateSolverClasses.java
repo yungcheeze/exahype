@@ -115,12 +115,12 @@ public class CreateSolverClasses extends DepthFirstAdapter {
       return;
     }
 
-    String kernel = node.getKernel().toString().trim();
-    boolean isLinear = kernel.substring(kernel.lastIndexOf("::")).equalsIgnoreCase("linear");
-
-    int numberOfVariables = Integer.parseInt(node.getVariables().toString().trim());
-    int numberOfParameters = Integer.parseInt(node.getParameters().toString().trim());
-    int order = Integer.parseInt(node.getOrder().toString().trim());
+    String  kernel             = node.getKernel().toString().trim();
+    boolean isLinear           = kernel.substring(kernel.lastIndexOf("::")).equalsIgnoreCase("linear");
+    int     numberOfVariables  = Integer.parseInt(node.getVariables().toString().trim());
+    int     numberOfParameters = Integer.parseInt(node.getParameters().toString().trim());
+    int     order              = Integer.parseInt(node.getOrder().toString().trim());
+    boolean hasConstants       = node.getConstants()!=null;
 
     if (numberOfParameters != 0) {
       System.err.println("ERROR: At the moment, parameters are not yet supported. " + 
@@ -136,33 +136,33 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     }
     else if (isFortran && kernel.equals( eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran.Identifier )) {
       solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinFortran(_dimensions,
-        numberOfVariables, numberOfParameters, order, _enableProfiler);
+        numberOfVariables, numberOfParameters, order, _enableProfiler, hasConstants);
     }
     else if (isFortran && kernel.equals( eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran.Identifier )) {
       solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinFortran(_dimensions,
-        numberOfVariables, numberOfParameters, order, _enableProfiler);
+        numberOfVariables, numberOfParameters, order, _enableProfiler, hasConstants);
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.UserDefinedADER_DGinC.Identifier )) {
       solver = new eu.exahype.solvers.UserDefinedADER_DGinC(numberOfVariables,
-        numberOfParameters, order);
+        numberOfParameters, order, hasConstants);
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFluxesLinearADER_DGinC.Identifier )) {
       solver = new eu.exahype.solvers.GenericFluxesLinearADER_DGinC(_dimensions,
-        numberOfVariables, numberOfParameters, order, _enableProfiler);
+        numberOfVariables, numberOfParameters, order, _enableProfiler, hasConstants );
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC.Identifier )) {
       solver = new eu.exahype.solvers.GenericFluxesNonlinearADER_DGinC(_dimensions,
-        numberOfVariables, numberOfParameters, order, _enableProfiler);
+        numberOfVariables, numberOfParameters, order, _enableProfiler, hasConstants);
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC.Identifier )) {
       solver = new eu.exahype.solvers.OptimisedFluxesLinearADER_DGinC(_dimensions,
         numberOfVariables, numberOfParameters, order, _microarchitecture, _pathToLibxsmm,
-        _enableProfiler);
+        _enableProfiler, hasConstants);
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC.Identifier )) {
       solver = new eu.exahype.solvers.OptimisedFluxesNonlinearADER_DGinC(_dimensions,
         numberOfVariables, numberOfParameters, order, _microarchitecture, _pathToLibxsmm,
-        _enableProfiler);
+        _enableProfiler, hasConstants);
     }
     else if (!isFortran && kernel.equals( eu.exahype.solvers.KernelEuler2d.Identifier )) {
        solver = new eu.exahype.solvers.KernelEuler2d();
@@ -288,6 +288,7 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     int numberOfVariables  = Integer.parseInt(node.getVariables().toString().trim());
     int numberOfParameters = Integer.parseInt(node.getParameters().toString().trim());
     int patchSize          = Integer.parseInt(node.getPatchSize().toString().trim());
+    boolean hasConstants   = node.getConstants()!=null;
 
     if (numberOfParameters != 0) {
       System.err.println("ERROR: At the moment, parameters are not yet supported. " + 
@@ -299,16 +300,16 @@ public class CreateSolverClasses extends DepthFirstAdapter {
     eu.exahype.solvers.Solver solver = null;
 
     if (isFortran && kernel.equals( eu.exahype.solvers.UserDefinedFiniteVolumesinFortran.Identifier )) {
-      solver = new eu.exahype.solvers.UserDefinedFiniteVolumesinFortran(numberOfVariables, numberOfParameters, patchSize, _enableProfiler);
+      solver = new eu.exahype.solvers.UserDefinedFiniteVolumesinFortran(numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
     }
     if (!isFortran && kernel.equals( eu.exahype.solvers.UserDefinedFiniteVolumesinC.Identifier )) {
-      solver = new eu.exahype.solvers.UserDefinedFiniteVolumesinC(numberOfVariables, numberOfParameters, patchSize, _enableProfiler);
+      solver = new eu.exahype.solvers.UserDefinedFiniteVolumesinC(numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
     }
     if (isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesMUSCLinFortran.Identifier )) {
-      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinFortran(numberOfVariables, numberOfParameters, patchSize, _enableProfiler);
+      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinFortran(numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
     }
     if (!isFortran && kernel.equals( eu.exahype.solvers.GenericFiniteVolumesMUSCLinC.Identifier )) {
-      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinC(numberOfVariables, numberOfParameters, patchSize, _enableProfiler);
+      solver = new eu.exahype.solvers.GenericFiniteVolumesMUSCLinC(numberOfVariables, numberOfParameters, patchSize, _enableProfiler, hasConstants);
     }
 
     if (solver == null) {

@@ -35,7 +35,6 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
                              const int basisSize) {
   const int order = basisSize - 1;
   const int basisSize2 = basisSize * basisSize;
-  const int basisSize3 = basisSize2 * basisSize;
 
   // Initialize the update DOF
   std::memset(lduh, 0, basisSize2 * numberOfVariables * sizeof(double));
@@ -77,6 +76,25 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
             lduh[idx(k, j, l)] += kernels::Kxi[order][k][m] *
                                   lFhi[y_offset + idx(j, m, l)] * updateSize;
           }
+        }
+      }
+    }
+  }
+
+  // source
+  {
+    idx3 idx(basisSize, basisSize, numberOfVariables);
+    const int s_offset = 2 * basisSize2 * numberOfVariables;
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        const double weight = kernels::gaussLegendreWeights[order][j] *
+                              kernels::gaussLegendreWeights[order][k];
+
+        // Fortran: lduh(:,k,j) += w * lShi(:,k,j)
+
+        // TODO(guera): numberOfVariables - numberOfParameters
+        for (int l = 0; l < numberOfVariables; l++) {
+          lduh[idx(j, k, l)] += weight * lFhi[s_offset + idx(j, k, l)];
         }
       }
     }

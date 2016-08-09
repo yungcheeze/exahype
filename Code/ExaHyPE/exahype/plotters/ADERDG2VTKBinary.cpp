@@ -173,10 +173,11 @@ void exahype::plotters::ADERDG2VTKBinary::plotPatch(
         }
       }
 
+      assertion(sizeOfPatch(0)==sizeOfPatch(1));
       _postProcessing->mapQuantities(
         offsetOfPatch,
         sizeOfPatch,
-        offsetOfPatch + i.convertScalar<double>()*sizeOfPatch/(_order+1),
+        offsetOfPatch + i.convertScalar<double>()* (sizeOfPatch(0)/(_order)),
         interpoland,
         value,
         timeStamp

@@ -16,6 +16,7 @@
 
 #include "peano/utils/Globals.h"
 #include "tarch/tests/TestCase.h"
+#include "tarch/logging/Log.h"
 
 namespace exahype {
 namespace tests {
@@ -29,6 +30,7 @@ class FinitevolumesMusclTest : public tarch::tests::TestCase {
   void run() override;
 
  private:
+  static tarch::logging::Log _log;
   void testSolutionUpdate();
 
   static void testFlux(const double* const Q, double** F);

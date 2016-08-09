@@ -13,20 +13,6 @@ tarch::logging::Log mpibalancing::StaticBalancing::_log( "mpibalancing::StaticBa
 bool mpibalancing::StaticBalancing::_forkHasFailed = false;
 
 
-/*
-int mpibalancing::StaticBalancing::getDefaultFinestAdministrativeLevel() {
-  int result = 0;
-  int regularCellsPerLevel = 1;
-  while ( regularCellsPerLevel < tarch::parallel::Node::getInstance().getNumberOfNodes() ) {
-    result++;
-    regularCellsPerLevel += tarch::la::aPowI(DIMENSIONS*result,3);
-  }
-  result--;
-  return result;
-}
-*/
-
-
 mpibalancing::StaticBalancing::StaticBalancing(bool joinsAllowed, int coarsestRegularInnerAndOuterGridLevel):
   _coarsestRegularInnerAndOuterGridLevel(coarsestRegularInnerAndOuterGridLevel),
   _joinsAllowed(joinsAllowed),
@@ -93,9 +79,9 @@ void mpibalancing::StaticBalancing::identifyCriticalPathes( int commandFromMaste
 
     if (maximumWeight <= (1.0+LocalMinimumThreshold)*minimumWeight) {
       maximumWeight = 0.0;
-      logDebug(
+      logInfo(
         "receivedStartCommand(int)",
-        "identified local minimal, fork all workers"
+        "balancing seems to have run into local minimum. Fork all workers"
       );
     }
 
@@ -112,6 +98,18 @@ void mpibalancing::StaticBalancing::identifyCriticalPathes( int commandFromMaste
     for ( std::map<int,double>::const_iterator p=_weightMap.begin(); p!=_weightMap.end(); p++ ) {
       _criticalWorker.insert( p->first );
     }
+  }
+
+  if (!_weightMap.empty()) {
+    std::ostringstream msg;
+    msg << "critical workers are";
+    for ( auto p: _weightMap ) {
+      if (p!=*_weightMap.begin()) {
+        msg << ",";
+      }
+      msg << " " << p.first;
+    }
+    logInfo( "receivedStartCommand(int)", msg.str() );
   }
 }
 
@@ -226,12 +224,6 @@ void mpibalancing::StaticBalancing::receivedTerminateCommand(
 ) {
   _workerCouldNotEraseDueToDecomposition[workerRank] = workerCouldNotEraseDueToDecomposition;
   _weightMap[workerRank]                             = workerNumberOfInnerCells > 0.0 ? workerNumberOfInnerCells : 1.0;
-
-/*
-  if (parentCellLocalWorkload>_weightMap[tarch::parallel::Node::getInstance().getRank()]) {
-    _weightMap[tarch::parallel::Node::getInstance().getRank()] = parentCellLocalWorkload;
-  }
-*/
 }
 
 

@@ -14,6 +14,11 @@
 #include <stdlib.h>
 #include <math.h>
 #include <cstring>
+
+
+#include "tarch/logging/Log.h"
+
+
 using namespace std;
 
 /**
@@ -38,6 +43,12 @@ void ShuVortex2D(const double* const  x, double* V, double t=0.0) {
 	V[4] = 1. + dp;
 }
 
+/**
+ * MovingGauss2D is a moving gaussian matter distribution where it is simple
+ * to give an analytic result.
+ * 
+ * 
+ **/
 void MovingGauss2D(const double* const x, double* V, double t=0.0) {
 	Pasta::vec2 xvec(x);
 	Pasta::vec2 v0({ 0.5, 0 });
@@ -45,62 +56,75 @@ void MovingGauss2D(const double* const x, double* V, double t=0.0) {
 	Pasta::vec2 x0({ 0.5, 0.5 });
 	double width = 0.25;
 	
-	V[0] = 0.5 + 0.2 * exp(- (xvec - x0 - v0*t).norm() / pow(width, MY_DIMENSIONS) ); // rho
+	V[0] = 0.5 + 0.2 * exp(- (xvec - x0 - v0*t).norm() / pow(width, MY_DIMENSIONS)); // rho
 	V[1] = v0(0);
 	V[2] = v0(1);
 	V[3] = 0.;
 	V[4] = 1.; // pressure
 }
 
-void DiffusingGauss(const double* const  x, double* Q) {
-    // btw, there is also an exact solution for this cauchy data
-    const double GAMMA = 1.4;
 
-    Q[0] = 1.;
-    Q[1] = 0.;
-    Q[2] = 0.;
-    Q[3] = 0.;
-#if DIMENSIONS == 2
-    Q[4] =
-	1. / (GAMMA - 1) +
-	exp(-((x[0] - 0.5) * (x[0] - 0.5) + (x[1] - 0.5) * (x[1] - 0.5)) /
-	         (0.05 * 0.05)) *
-	    1.0e-3;
-#else
-    Q[4] =
-        1. / (GAMMA - 1) +
-        exp(-((x[0] - 0.5) * (x[0] - 0.5) + (x[1] - 0.5) * (x[1] - 0.5) 
-                  + (x[2] - 0.5) * (x[2] - 0.5)) / (0.05 * 0.05 * 0.05)) *
-            1.0e-3;
-#endif  
+/**
+ * DiffusingGauss is not a consistent solution of Euler's equations, but instead
+ * a perturbation which immediately changes rho, vx, vy and vz. It corresponds
+ * to consistent initial data with roughly
+ *   rho = exp( - (r - v0*t)**2)
+ *   vx  = v0*t * exp(-y**2)  // actually even more complicated, it is more
+ *   vy  = v0*t * exp(-x**2)  // a velocity on a kind of ring of radius v0*t
+ *   E   = p/(gamma-1) + rho/2 * v**2 = p/(gamma-1) + alpha*exp(- (r-v0*t)**2)
+ *   p   = 1
+ * However, it is much more complicated to write the closed form solution instead
+ * of the perturbation approach. However, the closed form solution allows to
+ * specify the solution at any time while while the initial perturbation form
+ * does *not* allow to specify the solution.
+ * 
+ * Attention: If the prim2con in the Primitives.h is used, for some reason it
+ * surpresses this solution and rho=1, p=1, E=p/(gamma-1) is the resolut on the
+ * whole grid. I am not sure why this happens, it seems to be an error.
+ **/
+void DiffusingGauss(const double* const  x, double* Q) {
+	Pasta::vec2 xvec(x);
+	Pasta::vec2 x0({ 0.5, 0.5 });
+	double width = 0.05;
+
+	Q[0] = 1.;
+	Q[1] = 0.;
+	Q[2] = 0.;
+	Q[3] = 0.;
+	Q[4] = 1./(eos_gamma - 1) + exp(- (xvec - x0).norm() / pow(width, MY_DIMENSIONS) ) * 2;
 }
 
-static bool wroteAboutInitialData(false);
-#define logInitialData(txt...) { if(!wroteAboutInitialData) printf(txt); }
 
 void InitialData(const double* const  x, double* Q, double t) {
-	const char* default_id = "MovingGauss2D";
+        static tarch::logging::Log _log( "" );
+        static bool wroteAboutInitialData(false);
+
+	const char* default_id = "DiffusingGauss";
 	const char* id = getenv("EXAHYPE_INITIALDATA");
-	if(!id) { logInitialData("Using default ID\n"); id = default_id; }
+	if(!id) {
+          if(!wroteAboutInitialData) logInfo( "InitialData(double*,double,double)", "Using default ID");
+	  id = default_id;
+	}
+
 	//logInitialData("Have read '%s'\n", id);
 	std::string sid(id);
 	if(sid == "ShuVortex") {
-		logInitialData("Loading ShuVortex Initial Data\n");
+                if(!wroteAboutInitialData) logInfo( "InitialData(double*,double,double)", "Loading ShuVortex Initial Data");
 		// ShuVortex gives us primitive data
                 double V[MY_NUMBER_OF_VARIABLES];
 		ShuVortex2D(x, V, t);
                 prim2con(Q, V);
 	} else if(sid == "MovingGauss2D") {
+                if(!wroteAboutInitialData) logInfo( "InitialData(double*,double,double)", "Loading moving Gauss");
 		double V[MY_NUMBER_OF_VARIABLES];
 		MovingGauss2D(x, V, t);
 		prim2con(Q, V);
-		logInitialData("Loading moving Gauss\n");
 	} else if(sid == "DiffusingGauss") {
+                if(!wroteAboutInitialData) logInfo( "InitialData(double*,double,double)", "Loading diffusing Gauss Initial Data");
 		// default:
 		DiffusingGauss(x, Q);
-		logInitialData("Loading diffusing Gauss Initial Data\n");
 	} else {
-		logInitialData("Do not understand requested Initial Data key\n");
+                logError( "InitialData(double*,double,double)", "Do not understand requested Initial Data key");
 		exit(-42);
 	}
 	wroteAboutInitialData = true;

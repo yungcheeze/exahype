@@ -27,19 +27,20 @@ namespace c {
 
 namespace {
 
-template <void PDEFlux2d(const double* const Q, double** F)>
+template <void PDEFlux3d(const double* const Q, double** F),
+          void PDESource(const double* const Q, double* S)>
 void aderPicardLoopNonlinear(const double* luh, const double dt,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
                              int numberOfVariables, int basisSize, double* lQi,
                              double* lFi) {
   idx3 idx_luh(basisSize, basisSize, numberOfVariables);
   idx4 idx_lQi(basisSize, basisSize, basisSize, numberOfVariables);
-  idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS, numberOfVariables);
+  idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS + 1,
+               numberOfVariables);
 
   const int order = basisSize - 1;
   const int basisSize2 = basisSize * basisSize;
   const int basisSize3 = basisSize2 * basisSize;
-  const int basisSize4 = basisSize2 * basisSize2;
 
   // 1. Trivial initial guess
   for (int j = 0; j < basisSize; j++) {
@@ -86,7 +87,9 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
           double* F[2];
           F[0] = &lFi[idx_lFi(i, k, l, 0, 0)];
           F[1] = &lFi[idx_lFi(i, k, l, 1, 0)];
-          PDEFlux2d(Q, F);
+          double* S = &lFi[idx_lFi(i, k, l, 2, 0)];
+          PDEFlux3d(Q, F);
+          PDESource(Q, S);
         }
       }
 
@@ -131,6 +134,23 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
                                           lFi[idx_lFi(i, n, k, 1, m)] *
                                           kernels::Kxi[order][n][l];
             }
+          }
+        }
+      }
+
+      // source
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < basisSize; l++) {
+          const double weight = kernels::gaussLegendreWeights[order][k] *
+                                kernels::gaussLegendreWeights[order][l];
+          const double updateSize = weight * dt;
+          double* S = &lFi[idx_lFi(i, k, l, 2, 0)];
+
+          // TODO: numberOfVariables - numberOfParameters would do
+
+          // TODO: Subtract nonconservative part from S
+          for (int m = 0; m < numberOfVariables; m++) {
+            rhs[idx_rhs(i, k, l, m)] += updateSize * S[m];
           }
         }
       }
@@ -184,20 +204,24 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
 
 void aderPredictorNonlinear(const double* lQi, const double* lFi,
                             int numberOfVariables, int basisSize, double* lQhi,
-                            double* lFhi_x, double* lFhi_y) {
+                            double* lFhi_x, double* lFhi_y, double* lShi) {
+  // Immediately compute the time - averaged space - time polynomials
+
   const int basisSize2 = basisSize * basisSize;
-  const int basisSize3 = basisSize2 * basisSize;
   const int order = basisSize - 1;
 
   idx4 idx_lQi(basisSize, basisSize, basisSize, numberOfVariables);
-  idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS, numberOfVariables);
+  idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS + 1,
+               numberOfVariables);
 
   idx3 idx_lQhi(basisSize, basisSize, numberOfVariables);
   idx3 idx_lFhi(basisSize, basisSize, numberOfVariables);
+  idx3 idx_lShi(basisSize, basisSize, numberOfVariables);
 
   std::memset(lQhi, 0, basisSize2 * numberOfVariables * sizeof(double));
   std::memset(lFhi_x, 0, basisSize2 * numberOfVariables * sizeof(double));
   std::memset(lFhi_y, 0, basisSize2 * numberOfVariables * sizeof(double));
+  std::memset(lShi, 0, basisSize2 * numberOfVariables * sizeof(double));
 
   for (int j = 0; j < basisSize; j++) {
     for (int k = 0; k < basisSize; k++) {
@@ -215,6 +239,10 @@ void aderPredictorNonlinear(const double* lQi, const double* lFi,
           // Fortran: lFhi_y(:,j,k) = lFh(:,2,:k,j,:) * wGPN(:)
           lFhi_y[idx_lFhi(k, j, l)] += lFi[idx_lFi(m, j, k, 1, l)] *
                                        kernels::gaussLegendreWeights[order][m];
+
+          // Fortran: lShi(:,k,j) = lSh(:,k,j,:) * wGPN(:)
+          lShi[idx_lShi(j, k, l)] += lFi[idx_lFi(m, j, k, 2, l)] *
+                                     kernels::gaussLegendreWeights[order][m];
         }
       }
     }
@@ -225,7 +253,7 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
                                const double* lFhi_y, int numberOfVariables,
                                int basisSize, double* lQhbnd, double* lFhbnd) {
   // Compute the boundary-extrapolated values for Q and F*n
-  const int basisSize2 = basisSize * basisSize;
+
   const int order = basisSize - 1;
 
   idx3 idx_lQhi(basisSize, basisSize, numberOfVariables);
@@ -290,21 +318,22 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
 
 }  // namespace
 
-template <void PDEFlux3d(const double* const Q, double** F)>
+template <void PDEFlux2d(const double* const Q, double** F),
+          void PDESource(const double* const Q, double* S)>
 void spaceTimePredictorNonlinear(
     double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
     double* lFhbnd, const double* luh,
     const tarch::la::Vector<DIMENSIONS, double>& dx, double dt,
     int numberOfVariables, int numberOfParameters, int basisSize) {
   const int basisSize2 = basisSize * basisSize;
-  const int basisSize3 = basisSize2 * basisSize;
 
-  aderPicardLoopNonlinear<PDEFlux3d>(luh, dt, dx, numberOfVariables, basisSize,
-                                     lQi, lFi);
+  aderPicardLoopNonlinear<PDEFlux2d, PDESource>(luh, dt, dx, numberOfVariables,
+                                                basisSize, lQi, lFi);
 
   aderPredictorNonlinear(lQi, lFi, numberOfVariables, basisSize, lQhi,
                          &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
-                         &lFhi[1 * basisSize2 * numberOfVariables]   // lFhi_y
+                         &lFhi[1 * basisSize2 * numberOfVariables],  // lFhi_y
+                         &lFhi[2 * basisSize2 * numberOfVariables]   // lShi
                          );
 
   aderExtrapolatorNonlinear(

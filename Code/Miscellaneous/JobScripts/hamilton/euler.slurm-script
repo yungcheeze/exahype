@@ -1,9 +1,7 @@
 #!/bin/csh
 #SBATCH -p par6.q
-#SBATCH -N 32
-#SBATCH --ntasks-per-node=4
-#SBATCH --array 1-5
-#SBATCH -t 08:00:00
+#SBATCH --array 0-5
+#SBATCH -t 04:00:00
 #SBATCH --exclusive
 module purge
 module load slurm
@@ -12,6 +10,6 @@ module load intel_mpi/5.0.1
 module unload gcc/4.9.1
 module load gcc/4.9.1
 
-set output=$SLURM_NTASKS"x4-"$SLURM_ARRAY_TASK_ID".results"
+set output=$SLURM_NTASKS"x"$SLURM_NTASKS_PER_NODE"-"$SLURM_ARRAY_TASK_ID".results"
 mpirun ./ExaHyPE-Euler eulerflow-$SLURM_ARRAY_TASK_ID.exahype > $output
 

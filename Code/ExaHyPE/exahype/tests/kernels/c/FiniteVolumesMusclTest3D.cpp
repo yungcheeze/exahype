@@ -75,7 +75,7 @@ void FinitevolumesMusclTest::testEigenvalues(const double *const Q,
 }
 
 void FinitevolumesMusclTest::testSolutionUpdate() {
-  std::cout << "Test FVM MUSCL solutionUpdate" << std::endl;
+  logInfo( "testSolutionUpdate()", "Test FVM MUSCL solutionUpdate" );
 
   // linear advection x
   {

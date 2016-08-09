@@ -21,8 +21,6 @@
 
 #include "kernels/aderdg/generic/Kernels.h"
 
-using std::cout;
-using std::endl;
 
 // TODO: Do not conclude macro definitions with a semicolon?!
 //       (https://goo.gl/22Ac4j)
@@ -33,9 +31,13 @@ registerTest(exahype::tests::c::GenericEulerKernelTest)
 #pragma optimize("", off)
 #endif
 
+tarch::logging::Log exahype::tests::c::GenericEulerKernelTest::_log( "exahype::tests::c::GenericEulerKernelTest" );
+
+
 namespace exahype {
 namespace tests {
 namespace c {
+
 
 GenericEulerKernelTest::GenericEulerKernelTest()
     : tarch::tests::TestCase("exahype::tests::c::GenericEulerKernelTest") {}
@@ -61,7 +63,7 @@ void GenericEulerKernelTest::run() {
 }
 
 void GenericEulerKernelTest::testEquidistantGridProjection() {
-  cout << "Test equidistant grid projection, ORDER=2, DIM=2" << endl;
+  logInfo( "testEquidistantGridProjection()", "Test equidistant grid projection, ORDER=2, DIM=2" );
 
   const int numberOfVariables = 5;
   const int order             = 3;

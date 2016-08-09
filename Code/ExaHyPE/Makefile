@@ -10,7 +10,7 @@
 #
 # export variable  |  default-value  |  further values         |  description
 #--------------------------------------------------------------------------------------------------
-# ARCHITECTURE        CPU               Phi                       Hardware-plattfrom
+# ARCHITECTURE        CPU               Phi, KNL                  Hardware-plattfrom
 # COMPILER            Intel             GNU                       Used compiler (and linker)
 # MODE                Release           Debug, Profile, Asserts   Verbosity and Debug level
 # SHAREDMEM           None              OMP, TBB                  Shared-memory parallelisation
@@ -130,6 +130,12 @@ else ifeq ($(call tolower,$(ARCHITECTURE)),phi)
   # --------------------------------------------
   COMPILER_CFLAGS += -mmic
   COMPILER_LFLAGS += -mmic -lrt
+
+else ifeq ($(call tolower,$(ARCHITECTURE)),knl)
+  # Settings for the Xeon Phi architecture
+  # --------------------------------------------
+  COMPILER_CFLAGS += -xMIC-AVX512 -fma
+  COMPILER_LFLAGS += -xMIC-AVX512 -fma -lrt
 
 else
   # Option not recognized
