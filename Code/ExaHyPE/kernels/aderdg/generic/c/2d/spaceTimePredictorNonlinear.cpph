@@ -74,7 +74,9 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
   double* lQi_old = new double[basisSize3 * numberOfVariables];
   double* rhs = new double[basisSize3 * numberOfVariables];
 
-  for (int iter = 0; iter < order + 1; iter++) {
+  const int MaxIterations = 2*(order + 1);
+
+  for (int iter = 0; iter < MaxIterations; iter++) {
     // Save old space-time DOF
     std::memcpy(lQi_old, lQi, basisSize3 * numberOfVariables * sizeof(double));
 
@@ -178,7 +180,6 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
       }
     }
 
-/*
     // 5. Exit condition
     // TODO(guera): Stability of sum? -> Kahan, reduction?
     // TODO(guera): Is there something like kernels::tol?
@@ -192,10 +193,10 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
       break;
     }
 
-    if (iter == order) {  // No convergence after last iteration
-      assertion2(sq_res < tol * tol, sq_res, tol);
+    if (iter == MaxIterations) {  // No convergence after last iteration
+      static tarch::logging::Log _log( "kernels::aderdg::generic::c" );
+      logWarning( "aderPicardLoopNonlinear(...)", "|res|^2=" << sq_res << " > |tol|^2=" << tol * tol << " after " << iter << " iterations. Solver seems not to have converged properly within maximum number of iteration steps" );
     }
-*/
   }  // end iter
 
   // Delete heap-allocated arrays

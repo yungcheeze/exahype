@@ -31,10 +31,12 @@ namespace exahype {
 
 
 /**
- * This is a mapping from the spacetree traversal events to your user-defined activities.
- * The latter are realised within the mappings. 
+ * Compute the load balancing metrics bottom-up
+ *
+ * The mapping plugs into leaveCell() only and basically realises the ideas
+ * from the class documentation of mpibalancing::HotSpotBalancing.
  * 
- * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
+ * @author Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
 class exahype::mappings::LoadBalancing {

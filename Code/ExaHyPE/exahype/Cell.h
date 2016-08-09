@@ -205,6 +205,13 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     const std::string&                   methodTraceOfCaller
   );
+
+  #ifdef Parallel
+  void clearLoadBalancingWorkloads();
+  void restrictLoadBalancingWorkloads(const Cell& childCell);
+  double getLocalWorkload() const;
+  double getGlobalWorkload() const;
+  #endif
 };
 
 #endif

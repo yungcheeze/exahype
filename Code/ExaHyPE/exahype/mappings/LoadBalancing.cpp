@@ -1,5 +1,5 @@
 #include "exahype/mappings/LoadBalancing.h"
-
+#include "mpibalancing/HotspotBalancing.h"
 
 
 /**
@@ -9,55 +9,36 @@ peano::CommunicationSpecification   exahype::mappings::LoadBalancing::communicat
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
-      false
+      true
   );
 }
 
 
 /**
- * @todo Please tailor the parameters to your mapping's properties.
+ * All empty
  */
 peano::MappingSpecification   exahype::mappings::LoadBalancing::touchVertexLastTimeSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::LoadBalancing::touchVertexFirstTimeSpecification() { 
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+}
+peano::MappingSpecification   exahype::mappings::LoadBalancing::ascendSpecification() {
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
+}
+peano::MappingSpecification   exahype::mappings::LoadBalancing::descendSpecification() {
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 
+
 /**
- * @todo Please tailor the parameters to your mapping's properties.
+ * All is done cell-wisely.
  */
 peano::MappingSpecification   exahype::mappings::LoadBalancing::enterCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
+  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification   exahype::mappings::LoadBalancing::leaveCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidFineGridRaces);
-}
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
-peano::MappingSpecification   exahype::mappings::LoadBalancing::ascendSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
-}
-
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
-peano::MappingSpecification   exahype::mappings::LoadBalancing::descendSpecification() {
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
@@ -65,10 +46,84 @@ peano::MappingSpecification   exahype::mappings::LoadBalancing::descendSpecifica
 tarch::logging::Log                exahype::mappings::LoadBalancing::_log( "exahype::mappings::LoadBalancing" ); 
 
 
+
+void exahype::mappings::LoadBalancing::enterCell(
+      exahype::Cell&                 fineGridCell,
+      exahype::Vertex * const        fineGridVertices,
+      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+      exahype::Vertex * const        coarseGridVertices,
+      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+      exahype::Cell&                 coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
+) {
+  fineGridCell.clearLoadBalancingWorkloads();
+}
+
+
+void exahype::mappings::LoadBalancing::leaveCell(
+      exahype::Cell&           fineGridCell,
+      exahype::Vertex * const  fineGridVertices,
+      const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
+      exahype::Vertex * const  coarseGridVertices,
+      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
+      exahype::Cell&           coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
+) {
+  logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
+
+  coarseGridCell.restrictLoadBalancingWorkloads(fineGridCell);
+  if (coarseGridCell.isRoot()) {
+    mpibalancing::HotspotBalancing::restrictToRoot(
+      coarseGridCell.getLocalWorkload()
+    );
+  }
+
+  logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
+}
+
+
+#ifdef Parallel
+void exahype::mappings::LoadBalancing::mergeWithMaster(
+  const exahype::Cell&           workerGridCell,
+  exahype::Vertex * const        workerGridVertices,
+ const peano::grid::VertexEnumerator& workerEnumerator,
+  exahype::Cell&                 fineGridCell,
+  exahype::Vertex * const        fineGridVertices,
+  const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
+  exahype::Vertex * const        coarseGridVertices,
+  const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
+  exahype::Cell&                 coarseGridCell,
+  const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
+  int                                                                  worker,
+  const exahype::State&          workerState,
+  exahype::State&                masterState
+) {
+  logTraceIn( "mergeWithMaster(...)" );
+
+  fineGridCell.restrictLoadBalancingWorkloads(workerGridCell);
+  mpibalancing::HotspotBalancing::receivedMergeWithMaster(
+    worker,
+    workerGridCell.getGlobalWorkload(),
+    workerState.getCouldNotEraseDueToDecompositionFlag()
+  );
+
+  logTraceOut( "mergeWithMaster(...)" );
+}
+#endif
+
+
+
+//
+//   NOP
+// =======
+//
+void exahype::mappings::LoadBalancing::endIteration(
+  exahype::State&  solverState
+) {
+}
+
+
 exahype::mappings::LoadBalancing::LoadBalancing() {
-  logTraceIn( "LoadBalancing()" );
-  // @todo Insert your code here
-  logTraceOut( "LoadBalancing()" );
 }
 
 
@@ -306,27 +361,6 @@ void exahype::mappings::LoadBalancing::prepareSendToMaster(
 }
 
 
-void exahype::mappings::LoadBalancing::mergeWithMaster(
-  const exahype::Cell&           workerGridCell,
-  exahype::Vertex * const        workerGridVertices,
- const peano::grid::VertexEnumerator& workerEnumerator,
-  exahype::Cell&                 fineGridCell,
-  exahype::Vertex * const        fineGridVertices,
-  const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-  exahype::Vertex * const        coarseGridVertices,
-  const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-  exahype::Cell&                 coarseGridCell,
-  const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
-  int                                                                  worker,
-  const exahype::State&          workerState,
-  exahype::State&                masterState
-) {
-  logTraceIn( "mergeWithMaster(...)" );
-  // @todo Insert your code here
-  logTraceOut( "mergeWithMaster(...)" );
-}
-
-
 void exahype::mappings::LoadBalancing::receiveDataFromMaster(
       exahype::Cell&                        receivedCell, 
       exahype::Vertex *                     receivedVertices,
@@ -401,51 +435,9 @@ void exahype::mappings::LoadBalancing::touchVertexLastTime(
 }
 
 
-void exahype::mappings::LoadBalancing::enterCell(
-      exahype::Cell&                 fineGridCell,
-      exahype::Vertex * const        fineGridVertices,
-      const peano::grid::VertexEnumerator&                fineGridVerticesEnumerator,
-      exahype::Vertex * const        coarseGridVertices,
-      const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
-      exahype::Cell&                 coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
-) {
-  logTraceInWith4Arguments( "enterCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "enterCell(...)", fineGridCell );
-}
-
-
-void exahype::mappings::LoadBalancing::leaveCell(
-      exahype::Cell&           fineGridCell,
-      exahype::Vertex * const  fineGridVertices,
-      const peano::grid::VertexEnumerator&          fineGridVerticesEnumerator,
-      exahype::Vertex * const  coarseGridVertices,
-      const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
-      exahype::Cell&           coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
-) {
-  logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
-}
-
-
 void exahype::mappings::LoadBalancing::beginIteration(
   exahype::State&  solverState
 ) {
-  logTraceInWith1Argument( "beginIteration(State)", solverState );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "beginIteration(State)", solverState);
-}
-
-
-void exahype::mappings::LoadBalancing::endIteration(
-  exahype::State&  solverState
-) {
-  logTraceInWith1Argument( "endIteration(State)", solverState );
-  // @todo Insert your code here
-  logTraceOutWith1Argument( "endIteration(State)", solverState);
 }
 
 

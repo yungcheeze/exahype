@@ -8,7 +8,7 @@ class exahype::dastgen::Cell {
   
   
   #ifdef Parallel
-  persistent double localWorkload;
-  persistent double globalWorkload;
+  parallelise persistent double localWorkload;
+  parallelise persistent double globalWorkload;
   #endif
 };

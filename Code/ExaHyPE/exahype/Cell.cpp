@@ -617,3 +617,43 @@ int exahype::Cell::getNumberOfFiniteVolumeCellDescriptions() const {
   return FiniteVolumesCellDescriptionHeap::getInstance().getData(
       getCellDescriptionsIndex()).size();
 }
+
+
+#ifdef Parallel
+void exahype::Cell::clearLoadBalancingWorkloads() {
+  if (isRefined()) {
+    _cellData.setLocalWorkload(0.0);
+    _cellData.setGlobalWorkload(0.0);
+  }
+  else {
+    // @todo really insert here the number of real solvers and weight them accordingly
+    _cellData.setLocalWorkload(1.0);
+    _cellData.setGlobalWorkload(1.0);
+  }
+}
+
+
+void exahype::Cell::restrictLoadBalancingWorkloads(const Cell& childCell) {
+  if (childCell.isAssignedToRemoteRank()) {
+    // _cellData.setLocalWorkload(  _cellData.getLocalWorkload()  + childCell._cellData.getLocalWorkload() );
+    _cellData.setGlobalWorkload(
+      std::max(_cellData.getGlobalWorkload(), childCell._cellData.getGlobalWorkload())
+    );
+  }
+  else {
+    _cellData.setLocalWorkload(  _cellData.getLocalWorkload()  + childCell._cellData.getLocalWorkload() );
+    _cellData.setGlobalWorkload( _cellData.getGlobalWorkload() + childCell._cellData.getGlobalWorkload() );
+  }
+}
+
+
+double exahype::Cell::getLocalWorkload() const {
+  return _cellData.getLocalWorkload();
+}
+
+
+double exahype::Cell::getGlobalWorkload() const {
+  _cellData.getGlobalWorkload();
+}
+
+#endif

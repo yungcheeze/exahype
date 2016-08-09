@@ -49,8 +49,8 @@ class exahype::dastgen::Cell {
   [...]
 
   #ifdef Parallel
-  persistent double localWorkload;
-  persistent double globalWorkload;
+  persistent parallelise double localWorkload;
+  persistent parallelise double globalWorkload;
   #endif
 };
   </pre>
@@ -60,10 +60,21 @@ class exahype::dastgen::Cell {
  * processed by the very same rank (localWorkload). I next typically introduce
  * a new mapping for the load balancing.
  *
- * To befill this mapping with functionality, I have to extend my cell:
+ * To befill this mapping with functionality, I have to extend my cell. The
+ * example below is inspired by the ExaHyPE project:
  *
  *
+ * We finally invoke the routines in the new load balancing mapping:
  *
+ * - In enterCell, we call clearLoadBalancingWorkloads().
+ * - In leaveCell, we call restrictLoadBalancingWorkloads() on the parent cell
+ *   and pass it the fine grid cell.
+ * - In mergeWithMaster(), we invoke it on the local cell plugging in the
+ *   received worker cell.
+ *
+ * Two calls to receivedMergeWithMaster() and restrictToRoot() in the merge
+ * operation or leaveCell, respectively, connect the cost model to the
+ * balancing.
  *
  * <h2>Behaviour</h2>
  *
@@ -174,6 +185,38 @@ class mpibalancing::HotspotBalancing: public peano::parallel::loadbalancing::Ora
  
     int getCoarsestRegularInnerAndOuterGridLevel() const override;
 
+    /**
+     * Should be called in mergeWithMaster. Typically usage is as follows:
+     *
+     * <pre>
+  fineGridCell.restrictLoadBalancingWorkloads(workerGridCell);
+  mpibalancing::HotspotBalancing::receivedMergeWithMaster(
+    worker,
+    workerGridCell.getGlobalWorkload(),
+    workerState.getCouldNotEraseDueToDecompositionFlag()
+  );
+       <pre>
+     */
+    static void receivedMergeWithMaster(
+      int     workerRank,
+      double  workerWeight,
+      bool    workerCouldNotEraseDueToDecomposition
+    );
+
+    /**
+     * This operation is typically invoked in leaveCell in a fashion similar to
+     * <pre>
+  if (coarseGridCell.isRoot()) {
+    mpibalancing::HotspotBalancing::restrictToRoot(
+      coarseGridCell.getLocalWorkload()
+    );
+  }
+       </pre>
+     */
+    static void restrictToRoot(
+      int     localWeight
+    );
+
   private:
     /**
      * Runs an analysis on the _weightMap. This operation returns consistent
@@ -229,13 +272,13 @@ class mpibalancing::HotspotBalancing: public peano::parallel::loadbalancing::Ora
      * Holds for each worker its local weight. Is never empty as it always
      * holds something for the local rank.
      */
-    std::map<int,double>        _weightMap;
+    static std::map<int,double>        _weightMap;
 
     /**
      * Bookkeeps for each worker whether this one couldn't erase due to the
      * domain decomposition.
      */
-    std::map<int,bool>          _workerCouldNotEraseDueToDecomposition;
+    static std::map<int,bool>          _workerCouldNotEraseDueToDecomposition;
 
     /**
      * Set of critical workers

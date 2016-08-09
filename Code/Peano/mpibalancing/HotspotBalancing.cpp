@@ -9,7 +9,9 @@
 tarch::logging::Log mpibalancing::HotspotBalancing::_log( "mpibalancing::HotspotBalancing" );
 
 
-bool mpibalancing::HotspotBalancing::_forkHasFailed = false;
+bool                        mpibalancing::HotspotBalancing::_forkHasFailed = false;
+std::map<int,double>        mpibalancing::HotspotBalancing::_weightMap;
+std::map<int,bool>          mpibalancing::HotspotBalancing::_workerCouldNotEraseDueToDecomposition;
 
 
 mpibalancing::HotspotBalancing::HotspotBalancing(bool joinsAllowed, int coarsestRegularInnerAndOuterGridLevel):
@@ -178,24 +180,23 @@ peano::parallel::loadbalancing::LoadBalancingFlag  mpibalancing::HotspotBalancin
 }
 
 
-/*
-void mpibalancing::HotspotBalancing::receivedTerminateCommand(
+void mpibalancing::HotspotBalancing::receivedMergeWithMaster(
   int     workerRank,
-  double  workerNumberOfInnerVertices,
-  double  workerNumberOfBoundaryVertices,
-  double  workerNumberOfOuterVertices,
-  double  workerNumberOfInnerCells,
-  double  workerNumberOfOuterCells,
-  int     workerMaxLevel,
-  int     currentLevel,
-  const tarch::la::Vector<DIMENSIONS,double>& boundingBoxOffset,
-  const tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize,
+  double  workerWeight,
   bool    workerCouldNotEraseDueToDecomposition
 ) {
   _workerCouldNotEraseDueToDecomposition[workerRank] = workerCouldNotEraseDueToDecomposition;
-  _weightMap[workerRank]                             = workerNumberOfInnerCells > 0.0 ? workerNumberOfInnerCells : 1.0;
+  _weightMap[workerRank]                             = workerWeight > 1.0 ? workerWeight : 1.0;
 }
-*/
+
+
+void mpibalancing::HotspotBalancing::restrictToRoot(
+  int     localWeight
+) {
+  // @todo
+//  _workerCouldNotEraseDueToDecomposition[workerRank] = workerCouldNotEraseDueToDecomposition;
+//  _weightMap[workerRank]                             = workerNumberOfInnerCells > 0.0 ? workerNumberOfInnerCells : 1.0;
+}
 
 
 void mpibalancing::HotspotBalancing::plotStatistics() {
