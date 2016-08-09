@@ -7,6 +7,7 @@
 
 #include "tarch/parallel/Node.h"
 #include "tarch/parallel/NodePool.h"
+
 #ifdef Parallel
 #include "peano/parallel/SendReceiveBufferPool.h"
 #include "peano/parallel/loadbalancing/Oracle.h"
