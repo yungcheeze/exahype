@@ -114,6 +114,14 @@ extern double*** FCoeff;
  * DoF].
  */
 extern double*** equidistantGridProjector1d;
+/**
+ * For each equidistantGridProjector1d, there's its counterpart in this
+ * array with one entry less. Here, the projection is done onto the
+ * centre of the equidistant gridding. As the projection target is the
+ * last index of this three-times folded entry, only this entry is by one
+ * entry smaller.
+ */
+extern double*** equidistantGridCentreProjector1d;
 
 /**
  * This operator is used to transforms the degrees of freedom (DoF) located on a

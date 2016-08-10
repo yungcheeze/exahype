@@ -24,6 +24,7 @@ double*** kernels::iK1;
 double*** kernels::dudx;
 
 double*** kernels::equidistantGridProjector1d;
+double*** kernels::equidistantGridCentreProjector1d;
 
 double**** kernels::fineGridProjector1d;
 
@@ -64,6 +65,7 @@ void kernels::freeDGMatrices(const std::set<int>& orders) {
   for (int ii = 0; ii < MAX_ORDER + 1; ii++) {
     for (int jj = 0; jj < ii + 1; jj++) {
       delete[] equidistantGridProjector1d[ii][jj];
+      delete[] equidistantGridCentreProjector1d[ii][jj];
       delete[] fineGridProjector1d[ii][0][jj];
       delete[] fineGridProjector1d[ii][1][jj];
       delete[] fineGridProjector1d[ii][2][jj];
@@ -74,8 +76,10 @@ void kernels::freeDGMatrices(const std::set<int>& orders) {
     delete[] fineGridProjector1d[ii];
 
     delete[] equidistantGridProjector1d[ii];
+    delete[] equidistantGridCentreProjector1d[ii];
   }
   delete[] equidistantGridProjector1d;
+  delete[] equidistantGridCentreProjector1d;
   delete[] fineGridProjector1d;
 }
 
@@ -113,18 +117,21 @@ void kernels::initDGMatrices(const std::set<int>& orders) {
     }
   }
 
-  equidistantGridProjector1d = new double**[MAX_ORDER + 1];  // ***
-  fineGridProjector1d = new double***[MAX_ORDER + 1];        // ****
+  equidistantGridProjector1d        = new double**[MAX_ORDER + 1];  // ***
+  equidistantGridCentreProjector1d  = new double**[MAX_ORDER + 1];
+  fineGridProjector1d               = new double***[MAX_ORDER + 1];        // ****
 
   for (int ii = 0; ii < MAX_ORDER + 1; ii++) {
-    equidistantGridProjector1d[ii] = new double*[ii + 1];
-    fineGridProjector1d[ii] = new double**[3];
+    equidistantGridProjector1d[ii]        = new double*[ii + 1];
+    equidistantGridCentreProjector1d [ii] = new double*[ii + 1];
+    fineGridProjector1d[ii]    = new double**[3];
     fineGridProjector1d[ii][0] = new double*[ii + 1];
     fineGridProjector1d[ii][1] = new double*[ii + 1];
     fineGridProjector1d[ii][2] = new double*[ii + 1];
 
     for (int jj = 0; jj < ii + 1; jj++) {
-      equidistantGridProjector1d[ii][jj] = new double[ii + 1];
+      equidistantGridProjector1d[ii][jj]       = new double[ii + 1];
+      equidistantGridCentreProjector1d[ii][jj] = new double[ii];
       fineGridProjector1d[ii][0][jj] = new double[ii + 1];
       fineGridProjector1d[ii][1][jj] = new double[ii + 1];
       fineGridProjector1d[ii][2][jj] = new double[ii + 1];
@@ -140,6 +147,7 @@ void kernels::initDGMatrices(const std::set<int>& orders) {
   FCoeff[0][0][0] = 1.000000000000e+00;
   FCoeff[0][1][0] = 1.000000000000e+00;
   equidistantGridProjector1d[0][0][0] = 1.000000000000e+00;
+  equidistantGridCentreProjector1d[0][0][0] = 1.000000000000e+00;
   fineGridProjector1d[0][0][0][0] = 1.000000000000e+00;
   fineGridProjector1d[0][1][0][0] = 1.000000000000e+00;
   fineGridProjector1d[0][2][0][0] = 1.000000000000e+00;
@@ -166,6 +174,10 @@ void kernels::initDGMatrices(const std::set<int>& orders) {
   equidistantGridProjector1d[1][0][1] = -3.660254037844e-01;
   equidistantGridProjector1d[1][1][0] = -3.660254037844e-01;
   equidistantGridProjector1d[1][1][1] = 1.366025403784e+00;
+  equidistantGridCentreProjector1d[1][0][0] = 1.000000000000e+00;
+  equidistantGridCentreProjector1d[1][0][1] = 1.000000000000e+00;
+  equidistantGridCentreProjector1d[1][1][0] = 1.000000000000e+00;
+  equidistantGridCentreProjector1d[1][1][1] = 1.000000000000e+00;
   fineGridProjector1d[1][0][0][0] = 1.244016935856e+00;
   fineGridProjector1d[1][0][0][1] = 9.106836025230e-01;
   fineGridProjector1d[1][0][1][0] = -2.440169358563e-01;
