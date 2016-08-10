@@ -62,6 +62,27 @@ class exahype::plotters::ADERDG2VTK: public exahype::plotters::Plotter::Device {
   tarch::plotter::griddata::Writer::CellDataWriter*    _cellDataWriter;
 
   void writeTimeStampDataToPatch( double timeStamp, int vertexIndex );
+
+  void plotVertexData(
+    int firstVertexIndex,
+    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+    double* u,
+    double timeStamp
+  );
+
+  void plotCellData(
+    int firstCellIndex,
+    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+    double* u,
+    double timeStamp
+  );
+
+  std::pair<int,int> plotLegrendrePatch(
+    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch
+  );
  public:
   ADERDG2VTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, bool isBinary, bool isCartesian, bool plotCells);
   virtual ~ADERDG2VTK();

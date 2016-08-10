@@ -253,9 +253,113 @@ void exahype::plotters::ADERDG2VTK::writeTimeStampDataToPatch( double timeStamp,
 }
 
 
+void exahype::plotters::ADERDG2VTK::plotVertexData(
+  int firstVertexIndex,
+  const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+  const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+  double* u,
+  double timeStamp
+) {
+  assertion( _vertexDataWriter!=nullptr || _writtenUnknowns==0 );
+
+  double* interpoland = new double[_solverUnknowns];
+  double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
+
+  dfor(i,_order+1) {
+    for (int unknown=0; unknown < _solverUnknowns; unknown++) {
+      interpoland[unknown] = 0.0;
+      dfor(ii,_order+1) { // Gauss-Legendre node indices
+        int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
+        interpoland[unknown] += kernels::equidistantGridProjector1d[_order][ii(1)][i(1)] *
+                 kernels::equidistantGridProjector1d[_order][ii(0)][i(0)] *
+                 #ifdef Dim3
+                 kernels::equidistantGridProjector1d[_order][ii(2)][i(2)] *
+                 #endif
+                 u[iGauss * _solverUnknowns + unknown];
+        assertion3(interpoland[unknown] == interpoland[unknown], offsetOfPatch, sizeOfPatch, iGauss);
+      }
+    }
+
+    assertion(sizeOfPatch(0)==sizeOfPatch(1));
+    _postProcessing->mapQuantities(
+      offsetOfPatch,
+      sizeOfPatch,
+      offsetOfPatch + i.convertScalar<double>()* (sizeOfPatch(0)/(_order)),
+      i,
+      interpoland,
+      value,
+      timeStamp
+    );
+
+    if (_writtenUnknowns>0) {
+      _vertexDataWriter->plotVertex(firstVertexIndex, value, _writtenUnknowns );
+    }
+
+    firstVertexIndex++;
+  }
+
+  if (interpoland!=nullptr)  delete[] interpoland;
+  if (value!=nullptr)        delete[] value;
+}
+
+
+void exahype::plotters::ADERDG2VTK::plotCellData(
+  int firstCellIndex,
+  const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+  const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+  double* u,
+  double timeStamp
+) {
+  assertion( _cellDataWriter!=nullptr || _writtenUnknowns==0 );
+
+  double* interpoland = new double[_solverUnknowns];
+  double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
+
+  dfor(i,_order) {
+    for (int unknown=0; unknown < _solverUnknowns; unknown++) {
+      interpoland[unknown] = 0.0;
+      /**
+       * @todo Dominic, can you help me here
+       */
+      dfor(ii,_order+1) { // Gauss-Legendre node indices
+        int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
+        interpoland[unknown] += kernels::equidistantGridCentreProjector1d[_order][ii(1)][i(1)] *
+                 kernels::equidistantGridCentreProjector1d[_order][ii(0)][i(0)] *
+                 #ifdef Dim3
+                 kernels::equidistantGridCentreProjector1d[_order][ii(2)][i(2)] *
+                 #endif
+                 u[iGauss * _solverUnknowns + unknown];
+        assertion3(interpoland[unknown] == interpoland[unknown], offsetOfPatch, sizeOfPatch, iGauss);
+      }
+    }
+
+    assertion(sizeOfPatch(0)==sizeOfPatch(1));
+    _postProcessing->mapQuantities(
+      offsetOfPatch,
+      sizeOfPatch,
+      offsetOfPatch + (i.convertScalar<double>()+0.5)* (sizeOfPatch(0)/(_order)),
+      i,
+      interpoland,
+      value,
+      timeStamp
+    );
+
+    if (_writtenUnknowns>0) {
+      _cellDataWriter->plotCell(firstCellIndex, value, _writtenUnknowns );
+    }
+
+    firstCellIndex++;
+  }
+
+  if (interpoland!=nullptr)  delete[] interpoland;
+  if (value!=nullptr)        delete[] value;
+}
+
+
 void exahype::plotters::ADERDG2VTK::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
+    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+    double* u,
     double timeStamp) {
   if (
     tarch::la::allSmaller(_regionOfInterestLeftBottomFront,offsetOfPatch+sizeOfPatch)
@@ -266,54 +370,21 @@ void exahype::plotters::ADERDG2VTK::plotPatch(
     assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _timeStampDataWriter!=nullptr );
 
-    int vertexIndex = _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _order).first;
-
-    double* interpoland = new double[_solverUnknowns];
-    double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
-
-    //writeTimeStampDataToPatch( timeStamp, vertexIndex );
-
-    // @todo 16/05/03:Dominic Etienne Charrier
-    // This is depending on the choice of basis/implementation.
-    // The equidistant grid projection should therefore be moved into the solver.
-    dfor(i,_order+1) {
-          if (_writtenUnknowns>0) {
-          _timeStampDataWriter->plotVertex(vertexIndex, timeStamp);
-      }
-
-      for (int unknown=0; unknown < _solverUnknowns; unknown++) {
-        interpoland[unknown] = 0.0;
-        dfor(ii,_order+1) { // Gauss-Legendre node indices
-          int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
-          interpoland[unknown] += kernels::equidistantGridProjector1d[_order][ii(1)][i(1)] *
-                   kernels::equidistantGridProjector1d[_order][ii(0)][i(0)] *
-                   #ifdef Dim3
-                   kernels::equidistantGridProjector1d[_order][ii(2)][i(2)] *
-                   #endif
-                   u[iGauss * _solverUnknowns + unknown];
-          assertion3(interpoland[unknown] == interpoland[unknown], offsetOfPatch, sizeOfPatch, iGauss);
-        }
-      }
-
-      assertion(sizeOfPatch(0)==sizeOfPatch(1));
-      _postProcessing->mapQuantities(
-        offsetOfPatch,
-        sizeOfPatch,
-        offsetOfPatch + i.convertScalar<double>()* (sizeOfPatch(0)/(_order)),
-	i,
-        interpoland,
-        value,
-        timeStamp
-      );
-
-      if (_writtenUnknowns>0) {
-        _vertexDataWriter->plotVertex(vertexIndex, value, _writtenUnknowns );
-      }
-
-      vertexIndex++;
+    std::pair<int,int> vertexAndCellIndex(-1,-1);
+    if (_writtenUnknowns>0 && _isCartesian) {
+      vertexAndCellIndex = _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _order);
+    }
+    else if (_writtenUnknowns>0 && !_isCartesian) {
+      vertexAndCellIndex = plotLegrendrePatch(offsetOfPatch, sizeOfPatch, _order);
     }
 
-    if (interpoland!=nullptr)  delete[] interpoland;
-    if (value!=nullptr)        delete[] value;
+    writeTimeStampDataToPatch( timeStamp, vertexAndCellIndex.first );
+
+    if (_plotCells) {
+      plotCellData( vertexAndCellIndex.second, offsetOfPatch, sizeOfPatch, u, timeStamp );
+    }
+    else {
+      plotVertexData( vertexAndCellIndex.first, offsetOfPatch, sizeOfPatch, u, timeStamp );
+    }
   }
 }
