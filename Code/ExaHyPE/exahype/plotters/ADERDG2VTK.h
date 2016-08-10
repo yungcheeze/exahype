@@ -17,7 +17,6 @@
 #include "exahype/plotters/Plotter.h"
 
 #include "tarch/plotter/griddata/blockstructured/PatchWriterUnstructured.h"
-#include "tarch/plotter/griddata/unstructured/vtk/VTKTextFileWriter.h"
 
 namespace exahype {
   namespace plotters {
@@ -57,11 +56,12 @@ class exahype::plotters::ADERDG2VTK: public exahype::plotters::Plotter::Device {
   tarch::plotter::griddata::blockstructured::PatchWriterUnstructured*        _patchWriter;
   tarch::plotter::griddata::blockstructured::PatchWriter::SinglePatchWriter* _gridWriter;
 
-  tarch::plotter::griddata::Writer::VertexDataWriter*  _vertexTimeStampDataWriter;
+  tarch::plotter::griddata::Writer::VertexDataWriter*  _timeStampDataWriter;
   tarch::plotter::griddata::Writer::CellDataWriter*    _cellTimeStampDataWriter;
   tarch::plotter::griddata::Writer::VertexDataWriter*  _vertexDataWriter;
   tarch::plotter::griddata::Writer::CellDataWriter*    _cellDataWriter;
 
+  void writeTimeStampDataToPatch( double timeStamp, int vertexIndex );
  public:
   ADERDG2VTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, bool isBinary, bool isCartesian, bool plotCells);
   virtual ~ADERDG2VTK();

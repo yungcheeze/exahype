@@ -22,6 +22,11 @@
 #include "peano/utils/Loop.h"
 
 
+#include "tarch/plotter/griddata/unstructured/vtk/VTKTextFileWriter.h"
+#include "tarch/plotter/griddata/unstructured/vtk/VTKBinaryFileWriter.h"
+
+
+
 std::string exahype::plotters::ADERDG2CartesianVerticesVTKAscii::getIdentifier() {
   return "vtk::Cartesian::vertices::ascii";
 }
@@ -163,17 +168,31 @@ void exahype::plotters::ADERDG2VTK::startPlotting( double time ) {
   assertion( _patchWriter==nullptr );
 
   if (_writtenUnknowns>0) {
-    _patchWriter =
+    if (_isBinary) {
+      _patchWriter =
         new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
-            new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter());
+          new tarch::plotter::griddata::unstructured::vtk::VTKBinaryFileWriter());
+    }
+    else {
+      _patchWriter =
+        new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
+          new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter());
+    }
 
     _gridWriter                = _patchWriter->createSinglePatchWriter();
-    _vertexTimeStampDataWriter = _patchWriter->createVertexDataWriter("time", 1);
-    _vertexDataWriter          = _patchWriter->createVertexDataWriter("Q", _writtenUnknowns);
+    if (_plotCells) {
+      _cellDataWriter          = _patchWriter->createCellDataWriter("Q", _writtenUnknowns);
+      _vertexDataWriter        = nullptr;
+    }
+    else {
+      _cellDataWriter          = nullptr;
+      _vertexDataWriter        = _patchWriter->createVertexDataWriter("Q", _writtenUnknowns);
+    }
+    _timeStampDataWriter = _patchWriter->createVertexDataWriter("time", 1);
 
     assertion( _patchWriter!=nullptr );
     assertion( _gridWriter!=nullptr );
-    assertion( _vertexTimeStampDataWriter!=nullptr );
+    assertion( _timeStampDataWriter!=nullptr );
   }
 
   _postProcessing->startPlotting( time );
@@ -186,11 +205,12 @@ void exahype::plotters::ADERDG2VTK::finishPlotting() {
   if (_writtenUnknowns>0) {
     assertion( _patchWriter!=nullptr );
     assertion( _gridWriter!=nullptr );
-    assertion( _vertexTimeStampDataWriter!=nullptr );
+    assertion( _timeStampDataWriter!=nullptr );
 
     _gridWriter->close();
-    _vertexTimeStampDataWriter->close();
-    _vertexDataWriter->close();
+    _timeStampDataWriter->close();
+    if (_vertexDataWriter!=nullptr) _vertexDataWriter->close();
+    if (_cellDataWriter!=nullptr)   _cellDataWriter->close();
 
     std::ostringstream snapshotFileName;
     snapshotFileName << _filename
@@ -204,20 +224,32 @@ void exahype::plotters::ADERDG2VTK::finishPlotting() {
     // of failure.
     _patchWriter->writeToFile(snapshotFileName.str());
 
-    delete _vertexDataWriter;
-    delete _vertexTimeStampDataWriter;
+    if (_vertexDataWriter!=nullptr) delete _vertexDataWriter;
+    if (_cellDataWriter!=nullptr)   delete _cellDataWriter;
+    delete _timeStampDataWriter;
     delete _gridWriter;
     delete _patchWriter;
 
     _vertexDataWriter    = nullptr;
+    _cellDataWriter      = nullptr;
     _patchWriter         = nullptr;
-    _vertexTimeStampDataWriter = nullptr;
+    _timeStampDataWriter = nullptr;
     _gridWriter          = nullptr;
   }
 }
 
 
 exahype::plotters::ADERDG2VTK::~ADERDG2VTK() {
+}
+
+
+void exahype::plotters::ADERDG2VTK::writeTimeStampDataToPatch( double timeStamp, int vertexIndex ) {
+  if (_writtenUnknowns>0) {
+    dfor(i,_order+1) {
+      _timeStampDataWriter->plotVertex(vertexIndex, timeStamp);
+      vertexIndex++;
+    }
+  }
 }
 
 
@@ -232,19 +264,21 @@ void exahype::plotters::ADERDG2VTK::plotPatch(
   ) {
     assertion( _writtenUnknowns==0 || _patchWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
-    assertion( _writtenUnknowns==0 || _vertexTimeStampDataWriter!=nullptr );
+    assertion( _writtenUnknowns==0 || _timeStampDataWriter!=nullptr );
 
-    int vertexIndex = _writtenUnknowns==0 ? -1 : _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _order).first;
+    int vertexIndex = _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _order).first;
 
     double* interpoland = new double[_solverUnknowns];
     double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
+
+    //writeTimeStampDataToPatch( timeStamp, vertexIndex );
 
     // @todo 16/05/03:Dominic Etienne Charrier
     // This is depending on the choice of basis/implementation.
     // The equidistant grid projection should therefore be moved into the solver.
     dfor(i,_order+1) {
-      if (_writtenUnknowns>0) {
-        _vertexTimeStampDataWriter->plotVertex(vertexIndex, timeStamp);
+          if (_writtenUnknowns>0) {
+          _timeStampDataWriter->plotVertex(vertexIndex, timeStamp);
       }
 
       for (int unknown=0; unknown < _solverUnknowns; unknown++) {
@@ -279,7 +313,7 @@ void exahype::plotters::ADERDG2VTK::plotPatch(
       vertexIndex++;
     }
 
-    delete[] interpoland;
-    delete[] value;
+    if (interpoland!=nullptr)  delete[] interpoland;
+    if (value!=nullptr)        delete[] value;
   }
 }
