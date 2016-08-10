@@ -184,7 +184,7 @@ void mpibalancing::HotspotBalancing::receivedMergeWithMaster(
 
 
 void mpibalancing::HotspotBalancing::restrictToRoot(
-  int     localWeight
+  double localWeight
 ) {
   _weightMap[tarch::parallel::Node::getInstance().getRank()] = localWeight;
 }

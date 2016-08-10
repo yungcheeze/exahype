@@ -13,6 +13,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <limits>
 #include <utility>
 #include <vector>
 
@@ -146,11 +147,9 @@ template <void PDEFlux(const double* const Q, double** F),
           void PDESource(const double* const Q, double* S),
           void PDEEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda)>
-void solutionUpdate(double** luhCellwise,
-                    const tarch::la::Vector<DIMENSIONS, double>& dx, double dt,
-                    int numberOfVariables, int basisSize) {
-  const int basisSize2 = basisSize * basisSize;
-
+double solutionUpdate(double** luhCellwise,
+                      const tarch::la::Vector<DIMENSIONS, double>& dx,
+                      double dt, int numberOfVariables, int basisSize) {
   const int size_extended =
       (basisSize + 2) * (basisSize + 2) * numberOfVariables;
   idx3 idx_extended(basisSize + 2, basisSize + 2, numberOfVariables);
@@ -257,23 +256,34 @@ void solutionUpdate(double** luhCellwise,
   idx3 idx_Fx(basisSize, basisSize + 1, numberOfVariables);
   idx3 idx_Fy(basisSize + 1, basisSize, numberOfVariables);
 
+  double dt_max_allowed = std::numeric_limits<double>::max();
+  static const double EXAHYPE_CFL_FACTOR = 0.9;
+
   // x edges
   for (int j = 0; j < basisSize; j++) {
     for (int k = 0; k < basisSize + 1; k++) {
-      riemannSolver<PDEEigenvalues, PDEFlux>(
+      double s_max_x = riemannSolver<PDEEigenvalues, PDEFlux>(
           Fx + idx_Fx(j, k, 0), wRx + idx_extended(j + 1, k, 0),
           wLx + idx_extended(j + 1, k + 1, 0), numberOfVariables, 0);
+      // TODO(guera): Improve. I'm quite sure this is not the correct/best
+      // formula.
+      dt_max_allowed = std::min(
+          dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * dx[0] / s_max_x);
     }
   }
 
   // y edges
   for (int j = 0; j < basisSize + 1; j++) {
     for (int k = 0; k < basisSize; k++) {
-      riemannSolver<PDEEigenvalues, PDEFlux>(
+      double s_max_y = riemannSolver<PDEEigenvalues, PDEFlux>(
           Fy + idx_Fy(j, k, 0), wRy + idx_extended(j, k + 1, 0),
           wLy + idx_extended(j + 1, k + 1, 0), numberOfVariables, 1);
+      dt_max_allowed = std::min(
+          dt_max_allowed, EXAHYPE_CFL_FACTOR / DIMENSIONS * dx[1] / s_max_y);
     }
   }
+
+  // TODO(guera): Early exit if dt > dt_max_allowed?!
 
   // 5. Evolve, evaluate source, update cells
   double* ws = new double[numberOfVariables];
@@ -308,6 +318,8 @@ void solutionUpdate(double** luhCellwise,
   delete[] Fx;
   delete[] Fy;
   delete[] ws;
+
+  return dt_max_allowed;
 }
 
 }  // namespace c

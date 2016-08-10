@@ -56,15 +56,16 @@ public class CreatePlotterClasses extends DepthFirstAdapter {
     writer.write( "  public:\n" );
     writer.write( "  " + plotterName + "();\n" );
     writer.write( "  virtual ~" + plotterName + "();\n" );
-    writer.write( "  virtual void startPlotting(double time);\n");
-    writer.write( "  virtual void finishPlotting();\n");
-    writer.write( "  virtual void mapQuantities(\n" );
+    writer.write( "  void startPlotting(double time) override;\n");
+    writer.write( "  void finishPlotting() override;\n");
+    writer.write( "  void mapQuantities(\n" );
     writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,\n" );
     writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,\n" );
     writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& x,\n" );
+    writer.write( "    const tarch::la::Vector<DIMENSIONS, int>&    pos,\n" );
     writer.write( "    double* Q,\n" );
     writer.write( "    double* outputQuantities,\n" );
-    writer.write( "  double timeStamp);\n" );
+    writer.write( "    double timeStamp) override;\n" );
     writer.write( "};\n" );
   }
  
