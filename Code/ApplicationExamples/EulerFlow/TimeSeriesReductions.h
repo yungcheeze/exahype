@@ -29,7 +29,7 @@ public:
 	// print the header
 	fprintf(asc, "# ");
 	for(int i=0; i<LEN; i++) {
-            fprintf(asc, colnames[i]);
+            fprintf(asc, "%s,", colnames[i]);
         }
         fprintf(asc, "\n");
 
