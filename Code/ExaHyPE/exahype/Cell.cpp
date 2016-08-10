@@ -633,16 +633,30 @@ void exahype::Cell::clearLoadBalancingWorkloads() {
 }
 
 
-void exahype::Cell::restrictLoadBalancingWorkloads(const Cell& childCell) {
-  if (childCell.isAssignedToRemoteRank()) {
+void exahype::Cell::restrictLoadBalancingWorkloads(const Cell& childCell, bool isRemote) {
+  if (isRemote) {
     // _cellData.setLocalWorkload(  _cellData.getLocalWorkload()  + childCell._cellData.getLocalWorkload() );
     _cellData.setGlobalWorkload(
-      std::max(_cellData.getGlobalWorkload(), childCell._cellData.getGlobalWorkload())
+      std::max(_cellData.getLocalWorkload(), childCell._cellData.getGlobalWorkload())
     );
   }
   else {
     _cellData.setLocalWorkload(  _cellData.getLocalWorkload()  + childCell._cellData.getLocalWorkload() );
     _cellData.setGlobalWorkload( _cellData.getGlobalWorkload() + childCell._cellData.getGlobalWorkload() );
+  }
+
+  if ( ADERDGCellDescriptionHeap::getInstance().isValidIndex(getCellDescriptionsIndex()) ) {
+    const double embeddedADERDGCells = getNumberOfADERDGCellDescriptions();
+    const double embeddedFVPatches   = getNumberOfFiniteVolumeCellDescriptions();
+
+    // @todo this will require further tuning and it might become necessary to
+    //       take the order or patch size into account.
+    double additionalWeight = 4.0 * embeddedADERDGCells + 1.0 * embeddedFVPatches;
+
+    assertion(additionalWeight>=0.0);
+
+    _cellData.setLocalWorkload(  _cellData.getLocalWorkload()  + additionalWeight );
+    _cellData.setGlobalWorkload( _cellData.getGlobalWorkload() + additionalWeight );
   }
 }
 
@@ -653,7 +667,6 @@ double exahype::Cell::getLocalWorkload() const {
 
 
 double exahype::Cell::getGlobalWorkload() const {
-  _cellData.getGlobalWorkload();
+  return _cellData.getGlobalWorkload();
 }
-
 #endif

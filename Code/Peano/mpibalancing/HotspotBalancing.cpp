@@ -19,7 +19,6 @@ mpibalancing::HotspotBalancing::HotspotBalancing(bool joinsAllowed, int coarsest
   _joinsAllowed(joinsAllowed),
   _criticalWorker(),
   _maxForksOnCriticalWorker(THREE_POWER_D) {
-  _weightMap.insert( std::pair<int,double>(tarch::parallel::Node::getInstance().getRank(), 1.0) );
   _workerCouldNotEraseDueToDecomposition.insert( std::pair<int,bool>(tarch::parallel::Node::getInstance().getRank(), false) );
 }
 
@@ -35,9 +34,6 @@ double mpibalancing::HotspotBalancing::getMaximumWeightOfWorkers() const {
       maximumWeight = p->second;
     }
   }
-
-  assertion1( maximumWeight>=1.0, maximumWeight );
-
   return maximumWeight;
 }
 
@@ -49,7 +45,6 @@ double mpibalancing::HotspotBalancing::getMinimumWeightOfWorkers() const {
       minimumWeight = p->second;
     }
   }
-  assertion1( minimumWeight>=1.0, minimumWeight );
   return minimumWeight;
 }
 
@@ -62,44 +57,34 @@ void mpibalancing::HotspotBalancing::identifyCriticalPathes( peano::parallel::lo
   const double CritialPathThreshold = 0.1;
 
   _criticalWorker.clear();
+  assertion(_criticalWorker.size()==0);
 
   if (
+    (
     commandFromMaster>=peano::parallel::loadbalancing::LoadBalancingFlag::ForkOnce ||
     commandFromMaster==peano::parallel::loadbalancing::LoadBalancingFlag::Continue
+    )
+    &&
+    !_forkHasFailed
   ) {
     double maximumWeight = getMaximumWeightOfWorkers();
-    double minimumWeight = getMinimumWeightOfWorkers();
-    assertion(minimumWeight<=maximumWeight);
-
-    assertion2( maximumWeight>=1.0, maximumWeight, minimumWeight );    assertion2( minimumWeight>=1.0, maximumWeight, minimumWeight );
 
     for ( std::map<int,double>::const_iterator p=_weightMap.begin(); p!=_weightMap.end(); p++ ) {
       if ( p->second >= (1.0-CritialPathThreshold) * maximumWeight ) {
         _criticalWorker.insert(p->first);
+        assertion(_criticalWorker.size()>0);
       }
-    }
-
-    if (!_weightMap.empty()) {
-      std::ostringstream msg;
-      msg << "min weight=" << minimumWeight << ", max weight=" << maximumWeight << ". Critical workers are/is";
-      for ( auto p: _weightMap ) {
-        if (p!=*_weightMap.begin()) {
-          msg << ",";
-        }
-        msg << " (" << p.first << "," << p.second << ")";
-      }
-      logInfo( "receivedStartCommand(int)", msg.str() );
     }
   }
 }
 
 
 void mpibalancing::HotspotBalancing::computeMaxForksOnCriticalWorker( peano::parallel::loadbalancing::LoadBalancingFlag commandFromMaster ) {
-  if ( commandFromMaster>=peano::parallel::loadbalancing::LoadBalancingFlag::ForkOnce ) {
-    _maxForksOnCriticalWorker = getMinimumWeightOfWorkers() < std::numeric_limits<double>::max() ?
+  if ( !_criticalWorker.empty() ) {
+    _maxForksOnCriticalWorker =
       static_cast<int>(std::ceil(
         static_cast<int>(commandFromMaster)*( 1.0-getMinimumWeightOfWorkers()/getMaximumWeightOfWorkers() )
-      )) : 0;
+      ));
 
     if ( _maxForksOnCriticalWorker>static_cast<int>(commandFromMaster) ) {
       _maxForksOnCriticalWorker = static_cast<int>(commandFromMaster);
@@ -108,15 +93,32 @@ void mpibalancing::HotspotBalancing::computeMaxForksOnCriticalWorker( peano::par
     else if (_maxForksOnCriticalWorker>static_cast<int>(peano::parallel::loadbalancing::LoadBalancingFlag::ForkGreedy)) {
       _maxForksOnCriticalWorker = static_cast<int>(peano::parallel::loadbalancing::LoadBalancingFlag::ForkGreedy)/2;
     }
+    else if (_maxForksOnCriticalWorker<=0) {
+      _maxForksOnCriticalWorker = 1;
+    }
 
-    logInfo(
-      "receivedStartCommand(int)",
-      _maxForksOnCriticalWorker << " forks should be done next on " << _criticalWorker.size()-1 <<
-      " worker(s) plus the actual rank given the master fork command " << peano::parallel::loadbalancing::convertLoadBalancingFlagToString(commandFromMaster) <<
-      ". Number of weight entries (workers+1)=" << _weightMap.size() <<
-      ". Fork has failed before and vetos forks=" << _forkHasFailed <<
-      ". Load balancing is activated=" << peano::parallel::loadbalancing::Oracle::getInstance().isLoadBalancingActivated()
-    );
+    if (_maxForksOnCriticalWorker>0 && !_forkHasFailed) {
+      logInfo(
+        "computeMaxForksOnCriticalWorker(LoadBalancingFlag)",
+        _maxForksOnCriticalWorker << " forks should be done (-2 = continue) next on " << _criticalWorker.size() <<
+        " worker(s) given the master fork command " << peano::parallel::loadbalancing::convertLoadBalancingFlagToString(commandFromMaster) <<
+        ". Number of weight entries (workers+1)=" << _weightMap.size() <<
+        ". Fork has failed before and vetos forks=" << _forkHasFailed <<
+        ". max weight=" << getMaximumWeightOfWorkers() <<
+        ". min weight=" << getMinimumWeightOfWorkers() <<
+        ". Load balancing is activated=" << peano::parallel::loadbalancing::Oracle::getInstance().isLoadBalancingActivated()
+      );
+      std::ostringstream msg;
+      msg << "critical workers are/is";
+      for ( auto p: _criticalWorker ) {
+        if (p!=*_criticalWorker.begin()) {
+          msg << ",";
+        }
+        msg << " (" << p << "," << _weightMap[p] << ")";
+      }
+      msg << ". local weight= " << _weightMap[tarch::parallel::Node::getInstance().getRank()];
+      logInfo( "identifyCriticalPathes(LoadBalancingFlag)", msg.str() );
+    }
   }
 }
 
@@ -126,8 +128,6 @@ void mpibalancing::HotspotBalancing::receivedStartCommand( peano::parallel::load
 
   identifyCriticalPathes( commandFromMaster );
   computeMaxForksOnCriticalWorker( commandFromMaster );
-
-  _weightMap[tarch::parallel::Node::getInstance().getRank()] = 1.0;
 
   logTraceOut("receivedStartCommand(LoadBalancingFlag)" );
 }
@@ -167,13 +167,6 @@ peano::parallel::loadbalancing::LoadBalancingFlag  mpibalancing::HotspotBalancin
     assertion( result!=peano::parallel::loadbalancing::LoadBalancingFlag::UndefinedLoadBalancingFlag );
   }
 
-  // @todo Raus
-  logInfo(
-    "getCommandForWorker()",
-    "send rank " << workerRank << " flag " << peano::parallel::loadbalancing::convertLoadBalancingFlagToString(result)
-  );
-
-
   assertion( result!=peano::parallel::loadbalancing::LoadBalancingFlag::UndefinedLoadBalancingFlag );
   logTraceOutWith1Argument( "getCommandForWorker(int,bool)", result );
   return result;
@@ -193,9 +186,7 @@ void mpibalancing::HotspotBalancing::receivedMergeWithMaster(
 void mpibalancing::HotspotBalancing::restrictToRoot(
   int     localWeight
 ) {
-  // @todo
-//  _workerCouldNotEraseDueToDecomposition[workerRank] = workerCouldNotEraseDueToDecomposition;
-//  _weightMap[workerRank]                             = workerNumberOfInnerCells > 0.0 ? workerNumberOfInnerCells : 1.0;
+  _weightMap[tarch::parallel::Node::getInstance().getRank()] = localWeight;
 }
 
 

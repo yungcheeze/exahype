@@ -260,20 +260,42 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   int gridSetupIterations = 0;
   repository.switchToAugmentedAMRGrid();
 
-  do {
+  int gridSetupIterationsToRun = 3;
+  while (gridSetupIterationsToRun>0) {
     repository.iterate();
     gridSetupIterations++;
-    #ifdef TrackGridStatistics
+   
+    if ( UseStationaryCriterion && repository.getState().isGridStationary() ) {
+      gridSetupIterationsToRun--;
+    }
+    else if ( !repository.getState().isGridBalanced() && tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0 ) {
+      gridSetupIterationsToRun=3;  // we need at least 3 sweeps to recover from ongoing balancing
+    }
+    else if ( !repository.getState().isGridBalanced()  ) {
+      gridSetupIterationsToRun=1;  // one additional step to get adjacency right
+    }
+    else {
+      gridSetupIterationsToRun--;
+    }
+
+    #if defined(TrackGridStatistics) && defined(Asserts)
     logInfo("runAsMaster()",
       "grid setup iteration #" << gridSetupIterations <<
       ", max-level=" << repository.getState().getMaxLevel() <<
+      ", state=" << repository.getState().toString() <<
       ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
     #elif defined(Asserts)
     logInfo("runAsMaster()",
       "grid setup iteration #" << gridSetupIterations <<
-      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes() <<
-      ", state=" << repository.getState().toString()
+      ", state=" << repository.getState().toString() <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+    );
+    #elif defined(TrackGridStatistics)
+    logInfo("runAsMaster()",
+      "grid setup iteration #" << gridSetupIterations <<
+      ", max-level=" << repository.getState().getMaxLevel() <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
     #else
     logInfo("runAsMaster()",
@@ -282,17 +304,15 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
     );
     #endif
   }
-  while (
-   ( UseStationaryCriterion && !repository.getState().isGridStationary())
-   ||
-   (!UseStationaryCriterion && !repository.getState().isGridBalanced())
-  );
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
 
   if (tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0) {
     logWarning( "createGrid(Repository)", "there are still " << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes() << " ranks idle" )
   }
+
+  // Might be too restrictive for later runs. Remove but keep warning from above
+  assertion( tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()==0 );
 }
 
 

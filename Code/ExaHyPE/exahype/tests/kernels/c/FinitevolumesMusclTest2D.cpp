@@ -48,6 +48,14 @@ void FinitevolumesMusclTest::testFlux(const double *const Q, double **F) {
   g[4] = b * Q[1];
 }
 
+void FinitevolumesMusclTest::testSource(const double *const Q, double *S) {
+  S[0] = 0.0;
+  S[1] = 0.0;
+  S[2] = 0.0;
+  S[3] = 0.0;
+  S[4] = 0.0;
+}
+
 void FinitevolumesMusclTest::testEigenvalues(const double *const Q,
                                              const int normalNonZeroIndex,
                                              double *lambda) {
@@ -64,7 +72,7 @@ void FinitevolumesMusclTest::testEigenvalues(const double *const Q,
 }
 
 void FinitevolumesMusclTest::testSolutionUpdate() {
-  logInfo( "testSolutionUpdate()", "Test FVM MUSCL solutionUpdate" );
+  logInfo("testSolutionUpdate()", "Test FVM MUSCL solutionUpdate");
 
   // linear advection x
   {
@@ -116,7 +124,8 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
     }
 
     // do one time step
-    kernels::finitevolumes::muscl::c::solutionUpdate<testFlux, testEigenvalues>(
+    kernels::finitevolumes::muscl::c::solutionUpdate<testFlux, testSource,
+                                                     testEigenvalues>(
         luh, dx, dt, numberOfVariables, basisSize);
 
     // compute reference solution (shift by one in x direction)
@@ -196,7 +205,8 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
     }
 
     // do one time step
-    kernels::finitevolumes::muscl::c::solutionUpdate<testFlux, testEigenvalues>(
+    kernels::finitevolumes::muscl::c::solutionUpdate<testFlux, testSource,
+                                                     testEigenvalues>(
         luh, dx, dt, numberOfVariables, basisSize);
 
     // compute reference solution (shift by two in x direction)
@@ -328,7 +338,8 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
     }
 
     // do time step
-    kernels::finitevolumes::muscl::c::solutionUpdate<testFlux, testEigenvalues>(
+    kernels::finitevolumes::muscl::c::solutionUpdate<testFlux, testSource,
+                                                     testEigenvalues>(
         luh, dx, dt, numberOfVariables, basisSize);
 
     // check
@@ -409,7 +420,8 @@ void FinitevolumesMusclTest::testSolutionUpdate() {
     }
 
     // do second time step
-    kernels::finitevolumes::muscl::c::solutionUpdate<testFlux, testEigenvalues>(
+    kernels::finitevolumes::muscl::c::solutionUpdate<testFlux, testSource,
+                                                     testEigenvalues>(
         luh, dx, dt, numberOfVariables, basisSize);
 
     // initialize reference solution (shifted by two in y direction)

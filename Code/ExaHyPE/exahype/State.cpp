@@ -67,10 +67,8 @@ void exahype::State::updateRegularInitialGridRefinementStrategy() {
     isInvolvedInJoinOrFork()
     ||
     !isTraversalInverted()
-/*
     ||
     !isGridStationary()
-*/
   ) {
     _stateData.setGridConstructionState( exahype::records::State::Veto );
   }

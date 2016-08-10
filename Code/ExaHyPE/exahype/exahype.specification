@@ -1,3 +1,4 @@
+
 component: ExaHyPE
 
 namespace: ::exahype
@@ -81,6 +82,7 @@ adapter:
   merge-with-user-defined-mapping: SolutionAdjustment        // (enterCell,runconcurrently)             
   merge-with-user-defined-mapping: MarkingForAugmentation    // (enterCell,runconcurrently)
   merge-with-user-defined-mapping: Augmentation              // (touchVertexLastTime,enterCell,serial)
+  merge-with-user-defined-mapping: LoadBalancing
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)       
   
 adapter:
