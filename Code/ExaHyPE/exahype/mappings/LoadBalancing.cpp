@@ -56,7 +56,9 @@ void exahype::mappings::LoadBalancing::enterCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
+  #ifdef Parallel
   fineGridCell.clearLoadBalancingWorkloads();
+  #endif
 }
 
 
@@ -71,6 +73,7 @@ void exahype::mappings::LoadBalancing::leaveCell(
 ) {
   logTraceInWith4Arguments( "leaveCell(...)", fineGridCell, fineGridVerticesEnumerator.toString(), coarseGridCell, fineGridPositionOfCell );
 
+  #ifdef Parallel
   coarseGridCell.restrictLoadBalancingWorkloads(fineGridCell,false);
 
   // ohne das geht es
@@ -79,6 +82,7 @@ void exahype::mappings::LoadBalancing::leaveCell(
       coarseGridCell.getLocalWorkload()
     );
   }
+  #endif
 
   logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
 }
