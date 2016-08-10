@@ -11,8 +11,9 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#include "ADERDG2VTKBinary.h"
+#include "ADERDG2VTK.h"
 #include "tarch/parallel/Node.h"
+
 // @todo 16/05/03:Dominic Etienne Charreir Plotter depends now on kernels.
 // Should thus be placed in kernel module or the solver
 // should provide a function that computes solution values
@@ -21,18 +22,106 @@
 #include "peano/utils/Loop.h"
 
 
-exahype::plotters::ADERDG2VTKBinary::ADERDG2VTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+std::string exahype::plotters::ADERDG2CartesianVerticesVTKAscii::getIdentifier() {
+  return "vtk::Cartesian::vertices::ascii";
+}
+
+
+exahype::plotters::ADERDG2CartesianVerticesVTKAscii::ADERDG2CartesianVerticesVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+    ADERDG2VTK(postProcessing,false,true,false) {
+}
+
+
+std::string exahype::plotters::ADERDG2CartesianVerticesVTKBinary::getIdentifier() {
+  return "vtk::Cartesian::vertices::binary";
+}
+
+
+exahype::plotters::ADERDG2CartesianVerticesVTKBinary::ADERDG2CartesianVerticesVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+    ADERDG2VTK(postProcessing,true,true,false) {
+}
+
+
+
+std::string exahype::plotters::ADERDG2CartesianCellsVTKAscii::getIdentifier() {
+  return "vtk::Cartesian::cells::ascii";
+}
+
+
+exahype::plotters::ADERDG2CartesianCellsVTKAscii::ADERDG2CartesianCellsVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+    ADERDG2VTK(postProcessing,false,true,true) {
+}
+
+
+std::string exahype::plotters::ADERDG2CartesianCellsVTKBinary::getIdentifier() {
+ return "vtk::Cartesian::cells::binary";
+}
+
+
+exahype::plotters::ADERDG2CartesianCellsVTKBinary::ADERDG2CartesianCellsVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+    ADERDG2VTK(postProcessing,true,true,true) {
+}
+
+
+
+
+
+
+
+
+
+std::string exahype::plotters::ADERDG2LegendreVerticesVTKAscii::getIdentifier() {
+  return "vtk::Legendre::vertices::ascii";
+}
+
+
+exahype::plotters::ADERDG2LegendreVerticesVTKAscii::ADERDG2LegendreVerticesVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+    ADERDG2VTK(postProcessing,false,false,false) {
+}
+
+
+std::string exahype::plotters::ADERDG2LegendreVerticesVTKBinary::getIdentifier() {
+  return "vtk::Legendre::vertices::binary";
+}
+
+
+exahype::plotters::ADERDG2LegendreVerticesVTKBinary::ADERDG2LegendreVerticesVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+    ADERDG2VTK(postProcessing,true,false,false) {
+}
+
+
+
+std::string exahype::plotters::ADERDG2LegendreCellsVTKAscii::getIdentifier() {
+  return "vtk::Legendre::cells::ascii";
+}
+
+
+exahype::plotters::ADERDG2LegendreCellsVTKAscii::ADERDG2LegendreCellsVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+    ADERDG2VTK(postProcessing,false,false,true) {
+}
+
+
+std::string exahype::plotters::ADERDG2LegendreCellsVTKBinary::getIdentifier() {
+ return "vtk::Legendre::cells::binary";
+}
+
+
+exahype::plotters::ADERDG2LegendreCellsVTKBinary::ADERDG2LegendreCellsVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
+    ADERDG2VTK(postProcessing,true,false,true) {
+}
+
+
+
+exahype::plotters::ADERDG2VTK::ADERDG2VTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, bool isBinary, bool isCartesian, bool plotCells):
   Device(postProcessing),
-  _fileCounter(-1) {
+  _fileCounter(-1),
+  _isBinary(isBinary),
+  _isCartesian(isCartesian),
+  _plotCells(plotCells) {
 }
 
 
-std::string exahype::plotters::ADERDG2VTKBinary::getIdentifier() {
-  return "vtk::Cartesian::binary";
-}
-
-
-void exahype::plotters::ADERDG2VTKBinary::init(
+void exahype::plotters::ADERDG2VTK::init(
   const std::string& filename,
   int                orderPlusOne,
   int                unknowns,
@@ -68,7 +157,7 @@ void exahype::plotters::ADERDG2VTKBinary::init(
 }
 
 
-void exahype::plotters::ADERDG2VTKBinary::startPlotting( double time ) {
+void exahype::plotters::ADERDG2VTK::startPlotting( double time ) {
   _fileCounter++;
 
   assertion( _patchWriter==nullptr );
@@ -76,40 +165,39 @@ void exahype::plotters::ADERDG2VTKBinary::startPlotting( double time ) {
   if (_writtenUnknowns>0) {
     _patchWriter =
         new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
-            new tarch::plotter::griddata::unstructured::vtk::
-                VTKBinaryFileWriter());
+            new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter());
 
-    _gridWriter          = _patchWriter->createSinglePatchWriter();
-    _timeStampDataWriter = _patchWriter->createVertexDataWriter("time", 1);
-    _vertexDataWriter    = _patchWriter->createVertexDataWriter("Q", _writtenUnknowns);
+    _gridWriter                = _patchWriter->createSinglePatchWriter();
+    _vertexTimeStampDataWriter = _patchWriter->createVertexDataWriter("time", 1);
+    _vertexDataWriter          = _patchWriter->createVertexDataWriter("Q", _writtenUnknowns);
 
     assertion( _patchWriter!=nullptr );
     assertion( _gridWriter!=nullptr );
-    assertion( _timeStampDataWriter!=nullptr );
+    assertion( _vertexTimeStampDataWriter!=nullptr );
   }
 
   _postProcessing->startPlotting( time );
 }
 
 
-void exahype::plotters::ADERDG2VTKBinary::finishPlotting() {
+void exahype::plotters::ADERDG2VTK::finishPlotting() {
   _postProcessing->finishPlotting();
 
   if (_writtenUnknowns>0) {
     assertion( _patchWriter!=nullptr );
     assertion( _gridWriter!=nullptr );
-    assertion( _timeStampDataWriter!=nullptr );
+    assertion( _vertexTimeStampDataWriter!=nullptr );
 
     _gridWriter->close();
-    _timeStampDataWriter->close();
+    _vertexTimeStampDataWriter->close();
     _vertexDataWriter->close();
 
     std::ostringstream snapshotFileName;
     snapshotFileName << _filename
     #ifdef Parallel
-                   << "-rank-" << tarch::parallel::Node::getInstance().getRank()
+                     << "-rank-" << tarch::parallel::Node::getInstance().getRank()
     #endif
-                   << "-" << _fileCounter << ".vtk";
+                     << "-" << _fileCounter << ".vtk";
 
     // See issue #47 for discussion whether to quit program on failure:
     // _patchWriter should raise/throw the C++ Exception or return something in case
@@ -117,23 +205,23 @@ void exahype::plotters::ADERDG2VTKBinary::finishPlotting() {
     _patchWriter->writeToFile(snapshotFileName.str());
 
     delete _vertexDataWriter;
-    delete _timeStampDataWriter;
+    delete _vertexTimeStampDataWriter;
     delete _gridWriter;
     delete _patchWriter;
 
     _vertexDataWriter    = nullptr;
     _patchWriter         = nullptr;
-    _timeStampDataWriter = nullptr;
+    _vertexTimeStampDataWriter = nullptr;
     _gridWriter          = nullptr;
   }
 }
 
 
-exahype::plotters::ADERDG2VTKBinary::~ADERDG2VTKBinary() {
+exahype::plotters::ADERDG2VTK::~ADERDG2VTK() {
 }
 
 
-void exahype::plotters::ADERDG2VTKBinary::plotPatch(
+void exahype::plotters::ADERDG2VTK::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
     double timeStamp) {
@@ -144,7 +232,7 @@ void exahype::plotters::ADERDG2VTKBinary::plotPatch(
   ) {
     assertion( _writtenUnknowns==0 || _patchWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
-    assertion( _writtenUnknowns==0 || _timeStampDataWriter!=nullptr );
+    assertion( _writtenUnknowns==0 || _vertexTimeStampDataWriter!=nullptr );
 
     int vertexIndex = _writtenUnknowns==0 ? -1 : _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _order).first;
 
@@ -156,7 +244,7 @@ void exahype::plotters::ADERDG2VTKBinary::plotPatch(
     // The equidistant grid projection should therefore be moved into the solver.
     dfor(i,_order+1) {
       if (_writtenUnknowns>0) {
-        _timeStampDataWriter->plotVertex(vertexIndex, timeStamp);
+        _vertexTimeStampDataWriter->plotVertex(vertexIndex, timeStamp);
       }
 
       for (int unknown=0; unknown < _solverUnknowns; unknown++) {
@@ -178,6 +266,7 @@ void exahype::plotters::ADERDG2VTKBinary::plotPatch(
         offsetOfPatch,
         sizeOfPatch,
         offsetOfPatch + i.convertScalar<double>()* (sizeOfPatch(0)/(_order)),
+	i,
         interpoland,
         value,
         timeStamp

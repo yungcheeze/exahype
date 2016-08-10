@@ -151,6 +151,7 @@ void exahype::plotters::ADERDG2ProbeAscii::plotPatch(
       offsetOfPatch,
       sizeOfPatch,
       _x,
+      tarch::la::Vector<DIMENSIONS, int>(0),
       interpoland,
       value,
       timeStamp
