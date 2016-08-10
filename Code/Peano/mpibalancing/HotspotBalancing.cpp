@@ -87,6 +87,7 @@ void mpibalancing::HotspotBalancing::identifyCriticalPathes( peano::parallel::lo
         }
         msg << " (" << p << "," << _weightMap[p] << ")";
       }
+      msg << ". local weight= " << _weightMap[tarch::parallel::Node::getInstance().getRank()];
       logInfo( "identifyCriticalPathes(LoadBalancingFlag)", msg.str() );
     }
     #endif
