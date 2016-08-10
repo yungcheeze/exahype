@@ -1,4 +1,4 @@
-PROGRAM MainVolume
+PROGRAM Main
     USE typesDef
     IMPLICIT NONE
     ! Local variables
@@ -59,4 +59,4 @@ PROGRAM MainVolume
     CALL ADERVolumeIntegral(duh(:,:,:,:,1),qhi(:,:,:,:,1),Fhi(:,:,:,:,:,1))  
     PRINT *, duh(:,:,:,1,1)
 
-END PROGRAM MainVolume
+END PROGRAM Main

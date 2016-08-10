@@ -71,7 +71,7 @@ F90_OBJ = gauleg.o                  \
           RiemannSolver.o           \
           SurfaceIntegral.o         \
           ElementUpdate.o           \
-          mainVolume.o                
+          main.o                
 
 OBJS       = $(F90_OBJ)
 FOR_FILES  = $(OBJS:.o=.f90)
