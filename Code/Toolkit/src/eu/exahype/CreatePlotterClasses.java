@@ -105,6 +105,7 @@ public class CreatePlotterClasses extends DepthFirstAdapter {
     writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,\n" );
     writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,\n" );
     writer.write( "    const tarch::la::Vector<DIMENSIONS, double>& x,\n" );
+    writer.write( "    const tarch::la::Vector<DIMENSIONS, int>&    pos,\n" );
     writer.write( "    double* Q,\n" );
     writer.write( "    double* outputQuantities,\n" );
     writer.write( "    double timeStamp\n" );

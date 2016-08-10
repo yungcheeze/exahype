@@ -6,13 +6,18 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/plotters/Plotter.h"
-/**
- * Forward declaration
- */
-class MyEulerSolver;
+
+namespace Euler{
+  class MyEulerSolver_Plotter3;
+
+  /**
+   * Forward declaration
+   */
+  class MyEulerSolver;
+}
 
 
-class MyEulerSolver_Plotter3: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+class Euler::MyEulerSolver_Plotter3: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   private:
     double time;
   public:

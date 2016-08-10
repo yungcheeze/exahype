@@ -6,19 +6,32 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/plotters/Plotter.h"
-/**
- * Forward declaration
- */
-class MyEulerSolver;
+
+namespace Euler{
+  class MyEulerSolver_Plotter1;
+
+  /**
+   * Forward declaration
+   */
+  class MyEulerSolver;
+}
 
 /* I hope these modifications are not overwritten... */
 #include "GeneratedConstants.h"
 #include "TimeSeriesReductions.h"
 #define nVars MY_NUMBER_OF_VARIABLES
 
-using namespace std;
+namespace Euler{
+  class MyEulerSolver_Plotter1;
 
-class MyEulerSolver_Plotter1: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+  /**
+   * Forward declaration
+   */
+  class MyEulerSolver;
+}
+
+
+class Euler::MyEulerSolver_Plotter1: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   TimeSeriesReductions* conserved[nVars];
   TimeSeriesReductions* primitives[nVars];
   TimeSeriesReductions* errors[nVars];
