@@ -2,9 +2,7 @@ PROGRAM Main
     USE typesDef
     IMPLICIT NONE
     ! Local variables
-    INTEGER :: i,j,k,l,iElem,iFace,iVar,di
-    REAL, POINTER :: lQbndL(:,:,:),lFbndL(:,:,:),lQbndR(:,:,:),lFbndR(:,:,:)
-    REAL :: cnt,cntk,cntj,cnti
+    INTEGER :: i,iVar,di
     ! Input data
     CHARACTER(len=64) :: arg
     CALL GET_COMMAND_ARGUMENT(1, arg)
