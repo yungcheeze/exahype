@@ -13,8 +13,9 @@
  
 #include "exahype/plotters/Plotter.h"
 
+#include "ADERDG2CartesianVTK.h"
+#include "ADERDG2LegendreVTK.h"
 #include "ADERDG2ProbeAscii.h"
-#include "ADERDG2VTK.h"
 #include "FiniteVolumes2VTKAscii.h"
 #include "exahype/solvers/Solver.h"
 
@@ -49,6 +50,8 @@ exahype::plotters::Plotter::Plotter(
                               << _filename << " every " << _repeat
                               << " time units with first snapshot at " << _time
                               << ". plotter type is " << _identifier);
+
+  std::cout << std::endl << "(a)" << std::endl; std::cout.flush();
 
   assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
   switch (solvers::RegisteredSolvers[_solver]->getType()) {
@@ -136,6 +139,7 @@ bool exahype::plotters::Plotter::checkWetherSolverBecomesActive(double currentTi
     _isActive = true;
     _device->startPlotting(currentTimeStamp);
   }
+
   return isActive();
 }
 
