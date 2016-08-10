@@ -168,7 +168,7 @@ peano::parallel::loadbalancing::LoadBalancingFlag  mpibalancing::HotspotBalancin
   }
 
   assertion( result!=peano::parallel::loadbalancing::LoadBalancingFlag::UndefinedLoadBalancingFlag );
-  logTraceOutWith1Argument( "getCommandForWorker(int,bool)", result );
+  logTraceOutWith1Argument( "getCommandForWorker(int,bool)", static_cast<int>(result) );
   return result;
 }
 

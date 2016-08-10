@@ -50,7 +50,7 @@ peano::parallel::loadbalancing::LoadBalancingFlag  mpibalancing::GreedyBalancing
     }
   }
 
-  logTraceOutWith1Argument( "getCommandForWorker(int,bool)", result );
+  logTraceOutWith1Argument( "getCommandForWorker(int,bool)", static_cast<int>(result) );
   return result;
 }
 
