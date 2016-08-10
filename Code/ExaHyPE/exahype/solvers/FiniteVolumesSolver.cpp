@@ -13,78 +13,72 @@
 
 #include "exahype/solvers/FiniteVolumesSolver.h"
 
+namespace {
+constexpr const char* tags[]{"solutionUpdate", "stableTimeStepSize"};
+}  // namespace
 
 exahype::solvers::FiniteVolumesSolver::FiniteVolumesSolver(
-  const std::string& identifier,
-  int numberOfVariables,
-  int numberOfParameters,
-  int nodesPerCoordinateAxis,
-  double maximumMeshSize,
-  exahype::solvers::Solver::TimeStepping timeStepping,
-  std::unique_ptr<profilers::Profiler> profiler):
-  Solver(
-    identifier,
-    exahype::solvers::Solver::Type::FiniteVolumes,
-    numberOfVariables,
-    numberOfParameters,
-    nodesPerCoordinateAxis,
-    maximumMeshSize,
-    timeStepping,
-    std::move(profiler)
-  ),
-  _unknownsPerCell        (                        (numberOfVariables+numberOfParameters) * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
-  _unknownsPerFace        (                        (numberOfVariables)                    * power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
-  _unknownsPerCellBoundary( DIMENSIONS_TIMES_TWO * (numberOfVariables)                    * power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
-  _minTimeStamp       (std::numeric_limits<double>::max()),
-  _minTimeStepSize    (std::numeric_limits<double>::max()),
-  _nextMinTimeStepSize(std::numeric_limits<double>::max())
-  {
-  assertion3(_unknownsPerCell>0, numberOfVariables, numberOfParameters, nodesPerCoordinateAxis);
-}
+    const std::string& identifier, int numberOfVariables,
+    int numberOfParameters, int nodesPerCoordinateAxis, double maximumMeshSize,
+    exahype::solvers::Solver::TimeStepping timeStepping,
+    std::unique_ptr<profilers::Profiler> profiler)
+    : Solver(identifier, exahype::solvers::Solver::Type::FiniteVolumes,
+             numberOfVariables, numberOfParameters, nodesPerCoordinateAxis,
+             maximumMeshSize, timeStepping, std::move(profiler)),
+      _unknownsPerCell((numberOfVariables + numberOfParameters) *
+                       power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
+      _unknownsPerFace(
+          (numberOfVariables)*power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
+      _unknownsPerCellBoundary(
+          DIMENSIONS_TIMES_TWO *
+          (numberOfVariables)*power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
+      _minTimeStamp(std::numeric_limits<double>::max()),
+      _minTimeStepSize(std::numeric_limits<double>::max()),
+      _nextMinTimeStepSize(std::numeric_limits<double>::max()) {
+  assertion3(_unknownsPerCell > 0, numberOfVariables, numberOfParameters,
+             nodesPerCoordinateAxis);
 
+  // register tags with profiler
+  for (const char* tag : tags) {
+    _profiler->registerTag(tag);
+  }
+}
 
 int exahype::solvers::FiniteVolumesSolver::getUnknownsPerCell() const {
   return _unknownsPerCell;
 }
 
-
 double exahype::solvers::FiniteVolumesSolver::getMinTimeStamp() const {
   return _minTimeStamp;
 }
-
 
 double exahype::solvers::FiniteVolumesSolver::getMinTimeStepSize() const {
   return _minTimeStepSize;
 }
 
-
-void exahype::solvers::FiniteVolumesSolver::updateNextTimeStepSize( double value ) {
-  _nextMinTimeStepSize = std::min(_nextMinTimeStepSize,value);
+void exahype::solvers::FiniteVolumesSolver::updateNextTimeStepSize(
+    double value) {
+  _nextMinTimeStepSize = std::min(_nextMinTimeStepSize, value);
 }
-
 
 void exahype::solvers::FiniteVolumesSolver::initInitialTimeStamp(double value) {
   _minTimeStamp = value;
 }
 
-
 void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
-  _minTimeStamp       += _minTimeStepSize;
-  _minTimeStepSize     = _nextMinTimeStepSize;
+  _minTimeStamp += _minTimeStepSize;
+  _minTimeStepSize = _nextMinTimeStepSize;
   _nextMinTimeStepSize = std::numeric_limits<double>::max();
 }
-
 
 double exahype::solvers::FiniteVolumesSolver::getNextMinTimeStepSize() const {
   return _nextMinTimeStepSize;
 }
 
-
 void exahype::solvers::FiniteVolumesSolver::sendToRank(int rank, int tag) {
-  assertionMsg( false, "not implemented yet" );
+  assertionMsg(false, "not implemented yet");
 }
 
-
 void exahype::solvers::FiniteVolumesSolver::receiveFromRank(int rank, int tag) {
-  assertionMsg( false, "not implemented yet" );
+  assertionMsg(false, "not implemented yet");
 }
