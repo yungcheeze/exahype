@@ -31,6 +31,7 @@ class MyEulerSolver_Plotter1: public exahype::plotters::Plotter::UserOnTheFlyPos
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, int>&    pos,
     double* Q,
     double* outputQuantities,
   double timeStamp);
