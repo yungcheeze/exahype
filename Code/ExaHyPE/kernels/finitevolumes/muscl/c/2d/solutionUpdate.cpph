@@ -150,8 +150,6 @@ template <void PDEFlux(const double* const Q, double** F),
 double solutionUpdate(double** luhCellwise,
                       const tarch::la::Vector<DIMENSIONS, double>& dx,
                       double dt, int numberOfVariables, int basisSize) {
-  const int basisSize2 = basisSize * basisSize;
-
   const int size_extended =
       (basisSize + 2) * (basisSize + 2) * numberOfVariables;
   idx3 idx_extended(basisSize + 2, basisSize + 2, numberOfVariables);
