@@ -343,7 +343,7 @@ class mpibalancing::HotspotBalancing: public peano::parallel::loadbalancing::Ora
      * called if you follow the recipes above and plug into leaveCell.
      */
     static void restrictToRoot(
-      int     localWeight
+      double  localWeight
     );
 
   private:
