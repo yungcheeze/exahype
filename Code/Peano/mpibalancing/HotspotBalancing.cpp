@@ -75,22 +75,6 @@ void mpibalancing::HotspotBalancing::identifyCriticalPathes( peano::parallel::lo
         assertion(_criticalWorker.size()>0);
       }
     }
-
-    #if defined(Debug) || defined(Asserts)
-    if (!_weightMap.empty()) {
-      std::ostringstream msg;
-      msg << "max weight=" << maximumWeight << ". master's instruction="
-          << peano::parallel::loadbalancing::convertLoadBalancingFlagToString(commandFromMaster) << ". critical workers are/is";
-      for ( auto p: _criticalWorker ) {
-        if (p!=*_criticalWorker.begin()) {
-          msg << ",";
-        }
-        msg << " (" << p << "," << _weightMap[p] << ")";
-      }
-      msg << ". local weight= " << _weightMap[tarch::parallel::Node::getInstance().getRank()];
-      logInfo( "identifyCriticalPathes(LoadBalancingFlag)", msg.str() );
-    }
-    #endif
   }
 }
 
@@ -113,7 +97,7 @@ void mpibalancing::HotspotBalancing::computeMaxForksOnCriticalWorker( peano::par
       _maxForksOnCriticalWorker = 1;
     }
 
-    if (_maxForksOnCriticalWorker>0) {
+    if (_maxForksOnCriticalWorker>0 && !_forkHasFailed) {
       logInfo(
         "computeMaxForksOnCriticalWorker(LoadBalancingFlag)",
         _maxForksOnCriticalWorker << " forks should be done (-2 = continue) next on " << _criticalWorker.size() <<
@@ -124,6 +108,16 @@ void mpibalancing::HotspotBalancing::computeMaxForksOnCriticalWorker( peano::par
         ". min weight=" << getMinimumWeightOfWorkers() <<
         ". Load balancing is activated=" << peano::parallel::loadbalancing::Oracle::getInstance().isLoadBalancingActivated()
       );
+      std::ostringstream msg;
+      msg << "critical workers are/is";
+      for ( auto p: _criticalWorker ) {
+        if (p!=*_criticalWorker.begin()) {
+          msg << ",";
+        }
+        msg << " (" << p << "," << _weightMap[p] << ")";
+      }
+      msg << ". local weight= " << _weightMap[tarch::parallel::Node::getInstance().getRank()];
+      logInfo( "identifyCriticalPathes(LoadBalancingFlag)", msg.str() );
     }
   }
 }
