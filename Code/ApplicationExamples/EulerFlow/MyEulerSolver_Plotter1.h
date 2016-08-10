@@ -6,6 +6,10 @@
 //   www.exahype.eu
 // ========================
 #include "exahype/plotters/Plotter.h"
+/**
+ * Forward declaration
+ */
+class MyEulerSolver;
 
 /* I hope these modifications are not overwritten... */
 #include "GeneratedConstants.h"
@@ -23,7 +27,7 @@ class MyEulerSolver_Plotter1: public exahype::plotters::Plotter::UserOnTheFlyPos
   
   // Auto generated:
   public:
-  MyEulerSolver_Plotter1();
+  MyEulerSolver_Plotter1(MyEulerSolver& solver);
   virtual ~MyEulerSolver_Plotter1();
   virtual void startPlotting(double time);
   virtual void finishPlotting();
