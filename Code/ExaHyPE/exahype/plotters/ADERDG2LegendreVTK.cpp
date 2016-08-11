@@ -91,7 +91,6 @@ void exahype::plotters::ADERDG2LegendreVTK::init(
   _order             = orderPlusOne-1;
   _solverUnknowns    = unknowns;
   _select            = select;
-  _patchWriter       = nullptr;
   _writtenUnknowns   = writtenUnknowns;
 
   double x;
@@ -119,34 +118,32 @@ void exahype::plotters::ADERDG2LegendreVTK::init(
 void exahype::plotters::ADERDG2LegendreVTK::startPlotting( double time ) {
   _fileCounter++;
 
-  assertion( _patchWriter==nullptr );
-
   if (_writtenUnknowns>0) {
     if (_isBinary) {
-      _patchWriter =
-        new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
-          new tarch::plotter::griddata::unstructured::vtk::VTKBinaryFileWriter());
+      _gridWriter = new tarch::plotter::griddata::unstructured::vtk::VTKBinaryFileWriter();
     }
     else {
-      _patchWriter =
-        new tarch::plotter::griddata::blockstructured::PatchWriterUnstructured(
-          new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter());
+      _gridWriter = new tarch::plotter::griddata::unstructured::vtk::VTKTextFileWriter();
     }
 
-    _gridWriter                = _patchWriter->createSinglePatchWriter();
+    _vertexWriter                = _gridWriter->createVertexWriter();
+    _cellWriter                  = _gridWriter->createCellWriter();
+
     if (_plotCells) {
-      _cellDataWriter          = _patchWriter->createCellDataWriter("Q", _writtenUnknowns);
+      _cellDataWriter          = _gridWriter->createCellDataWriter("Q", _writtenUnknowns);
       _vertexDataWriter        = nullptr;
     }
     else {
       _cellDataWriter          = nullptr;
-      _vertexDataWriter        = _patchWriter->createVertexDataWriter("Q", _writtenUnknowns);
+      _vertexDataWriter        = _gridWriter->createVertexDataWriter("Q", _writtenUnknowns);
     }
-    _timeStampDataWriter = _patchWriter->createVertexDataWriter("time", 1);
 
-    assertion( _patchWriter!=nullptr );
+    _timeStampDataWriter = _gridWriter->createVertexDataWriter("time", 1);
+
     assertion( _gridWriter!=nullptr );
     assertion( _timeStampDataWriter!=nullptr );
+    assertion( _vertexWriter!=nullptr );
+    assertion( _cellWriter!=nullptr );
   }
 
   _postProcessing->startPlotting( time );
@@ -157,11 +154,11 @@ void exahype::plotters::ADERDG2LegendreVTK::finishPlotting() {
   _postProcessing->finishPlotting();
 
   if (_writtenUnknowns>0) {
-    assertion( _patchWriter!=nullptr );
     assertion( _gridWriter!=nullptr );
     assertion( _timeStampDataWriter!=nullptr );
 
-    _gridWriter->close();
+    _vertexWriter->close();
+    _cellWriter->close();
     _timeStampDataWriter->close();
     if (_vertexDataWriter!=nullptr) _vertexDataWriter->close();
     if (_cellDataWriter!=nullptr)   _cellDataWriter->close();
@@ -176,17 +173,19 @@ void exahype::plotters::ADERDG2LegendreVTK::finishPlotting() {
     // See issue #47 for discussion whether to quit program on failure:
     // _patchWriter should raise/throw the C++ Exception or return something in case
     // of failure.
-    _patchWriter->writeToFile(snapshotFileName.str());
+    _gridWriter->writeToFile(snapshotFileName.str());
 
     if (_vertexDataWriter!=nullptr) delete _vertexDataWriter;
     if (_cellDataWriter!=nullptr)   delete _cellDataWriter;
+    delete _vertexWriter;
+    delete _cellWriter;
     delete _timeStampDataWriter;
     delete _gridWriter;
-    delete _patchWriter;
 
     _vertexDataWriter    = nullptr;
     _cellDataWriter      = nullptr;
-    _patchWriter         = nullptr;
+    _vertexWriter         = nullptr;
+    _cellWriter         = nullptr;
     _timeStampDataWriter = nullptr;
     _gridWriter          = nullptr;
   }
@@ -331,7 +330,8 @@ void exahype::plotters::ADERDG2LegendreVTK::plotPatch(
     &&
     tarch::la::allGreater(_regionOfInterestRightTopBack,offsetOfPatch)
   ) {
-    assertion( _writtenUnknowns==0 || _patchWriter!=nullptr );
+    assertion( _writtenUnknowns==0 || _vertexWriter!=nullptr );
+    assertion( _writtenUnknowns==0 || _cellWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _timeStampDataWriter!=nullptr );
 
@@ -340,11 +340,13 @@ void exahype::plotters::ADERDG2LegendreVTK::plotPatch(
 
     writeTimeStampDataToPatch( timeStamp, vertexAndCellIndex.first );
 
+/*
     if (_plotCells) {
       plotCellData( vertexAndCellIndex.second, offsetOfPatch, sizeOfPatch, u, timeStamp );
     }
     else {
       plotVertexData( vertexAndCellIndex.first, offsetOfPatch, sizeOfPatch, u, timeStamp );
     }
+*/
   }
 }

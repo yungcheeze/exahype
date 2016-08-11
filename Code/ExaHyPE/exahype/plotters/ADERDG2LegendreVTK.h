@@ -17,6 +17,7 @@
 #include "exahype/plotters/Plotter.h"
 
 #include "tarch/plotter/griddata/blockstructured/PatchWriterUnstructured.h"
+#include "tarch/plotter/griddata/unstructured/UnstructuredGridWriter.h"
 
 namespace exahype {
   namespace plotters {
@@ -47,8 +48,10 @@ class exahype::plotters::ADERDG2LegendreVTK: public exahype::plotters::Plotter::
   tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestLeftBottomFront;
   tarch::la::Vector<DIMENSIONS, double>  _regionOfInterestRightTopBack;
 
-  tarch::plotter::griddata::blockstructured::PatchWriterUnstructured*        _patchWriter;
-  tarch::plotter::griddata::blockstructured::PatchWriter::SinglePatchWriter* _gridWriter;
+  tarch::plotter::griddata::unstructured::UnstructuredGridWriter*                    _gridWriter;
+
+  tarch::plotter::griddata::unstructured::UnstructuredGridWriter::VertexWriter*              _vertexWriter;
+  tarch::plotter::griddata::unstructured::UnstructuredGridWriter::CellWriter*                _cellWriter;
 
   tarch::plotter::griddata::Writer::VertexDataWriter*  _timeStampDataWriter;
   tarch::plotter::griddata::Writer::CellDataWriter*    _cellTimeStampDataWriter;
