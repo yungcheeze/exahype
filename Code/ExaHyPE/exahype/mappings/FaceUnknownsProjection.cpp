@@ -25,6 +25,8 @@
 
 #include "peano/datatraversal/autotuning/Oracle.h"
 
+#include "tarch/multicore/Lock.h"
+
 #include "exahype/VertexOperations.h"
 
 #include <cstring>
@@ -572,8 +574,6 @@ void exahype::mappings::FaceUnknownsProjection::leaveCell(
             case exahype::records::ADERDGCellDescription::Ancestor:
               assertion1(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pFine.toString());
               subcellPosition = fineGridCell.computeSubcellPositionOfCellOrAncestor(pFine);
-
-              tarch::multicore::Lock lock(_semaphoreForRestriction); // Is unlocked if lock gets out of scope.
               restrictADERDGFaceData(pFine,subcellPosition.parentIndex,subcellPosition.subcellIndex);
               break;
             default:
@@ -631,6 +631,7 @@ void exahype::mappings::FaceUnknownsProjection::restrictADERDGFaceData(
         double* lFhbndCoarse = DataHeap::getInstance().getData(cellDescriptionParent.getFluctuation()).data() +
             (faceIndex * numberOfFaceDof);
 
+        tarch::multicore::Lock lock(_semaphoreForRestriction); // Is unlocked if lock gets out of scope.
         solver->faceUnknownsRestriction(lQhbndCoarse, lFhbndCoarse, lQhbndFine,
                                         lFhbndFine, levelCoarse, levelFine,
                                         getSubfaceIndex(subcellIndex, d));
@@ -653,6 +654,7 @@ void exahype::mappings::FaceUnknownsProjection::restrictADERDGFaceData(
             DataHeap::getInstance().getData(cellDescriptionParent.getFluctuation()).data() +
             (faceIndex * numberOfFaceDof);
 
+        tarch::multicore::Lock lock(_semaphoreForRestriction); // Is unlocked if lock gets out of scope.
         solver->faceUnknownsRestriction(lQhbndCoarse, lFhbndCoarse, lQhbndFine,
                                         lFhbndFine, levelCoarse, levelFine,
                                         getSubfaceIndex(subcellIndex, d));
