@@ -44,7 +44,10 @@
 #include "sharedmemoryoracles/OracleForOnePhaseWithGrainSizeSampling.h"
 #include "sharedmemoryoracles/OracleForOnePhaseWithShrinkingGrainSize.h"
 
+#ifdef Parallel
 #include "mpibalancing/GreedyBalancing.h"
+#include "mpibalancing/FairNodePoolStrategy.h"
+#endif
 #include "exahype/plotters/Plotter.h"
 
 #include "exahype/solvers/ADERDGSolver.h"
@@ -66,15 +69,17 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
         );
         logInfo("initDistributedMemoryConfiguration()", "load balancing relies on FCFS answering strategy");
       }
-      // @todo evtl. fehlen hier die Includes
-      /*
-        if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
-          tarch::parallel::NodePool::getInstance().setStrategy(
-            new mpibalancing::FairNodePoolStrategy(6)
-          );
+      else if (configuration.find( "fair" )!=std::string::npos ) {
+        int ranksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"ranks-per-node"));
+        if (ranksPerNode<=0) {
+  	  logError( "initDistributedMemoryConfiguration()", "please inform fair balancing how many ranks per node you use through value \"ranks-per-node:XXX\". Read value " << ranksPerNode << " is invalid" );
+  	  ranksPerNode = 1;
         }
-        #else
-      */
+        tarch::parallel::NodePool::getInstance().setStrategy(
+          new mpibalancing::FairNodePoolStrategy(ranksPerNode)
+        );
+        logInfo("initDistributedMemoryConfiguration()", "load balancing relies on fair answering strategy with " << ranksPerNode << " rank(s) per node") ;
+      }
       else {
         logError("initDistributedMemoryConfiguration()", "no valid load balancing answering strategy specified: use FCFS");
         tarch::parallel::NodePool::getInstance().setStrategy(
