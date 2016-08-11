@@ -11,7 +11,7 @@ def createTable(path,prefix,postfix,MaxNodes):
   outFilename   = prefix + postfix + ".table"
   outFile       = open( outFilename, "w" )
   adapters      = []
-  for ranks in range(1,MaxNodes):
+  for ranks in range(1,MaxNodes+1):
     inputFileName = path + "/" + prefix + str(ranks) + postfix
     print "- search for " + inputFileName + " ... ",
     if os.path.isfile(inputFileName):
