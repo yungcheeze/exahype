@@ -26,6 +26,8 @@
 #include "tarch/plotter/griddata/unstructured/vtk/VTKBinaryFileWriter.h"
 
 
+#include "kernels/DGBasisFunctions.h"
+
 
 std::string exahype::plotters::ADERDG2CartesianVerticesVTKAscii::getIdentifier() {
   return "vtk::Cartesian::vertices::ascii";
@@ -267,20 +269,15 @@ void exahype::plotters::ADERDG2CartesianVTK::plotCellData(
 
   dfor(i,_order) {
     for (int unknown=0; unknown < _solverUnknowns; unknown++) {
-      interpoland[unknown] = 0.0;
-      /**
-       * @todo Dominic, can you help me here
-       */
-      dfor(ii,_order+1) { // Gauss-Legendre node indices
-        int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
-        interpoland[unknown] += kernels::equidistantGridCentreProjector1d[_order][ii(1)][i(1)] *
-                 kernels::equidistantGridCentreProjector1d[_order][ii(0)][i(0)] *
-                 #ifdef Dim3
-                 kernels::equidistantGridCentreProjector1d[_order][ii(2)][i(2)] *
-                 #endif
-                 u[iGauss * _solverUnknowns + unknown];
-        assertion3(interpoland[unknown] == interpoland[unknown], offsetOfPatch, sizeOfPatch, iGauss);
-      }
+      interpoland[unknown] = kernels::interpolate(
+        offsetOfPatch.data(),
+        sizeOfPatch.data(),
+        (offsetOfPatch + (i.convertScalar<double>()+0.5)* (sizeOfPatch(0)/(_order))).data(),
+        _solverUnknowns,
+        unknown,
+        _order,
+        u
+      );
     }
 
     assertion(sizeOfPatch(0)==sizeOfPatch(1));

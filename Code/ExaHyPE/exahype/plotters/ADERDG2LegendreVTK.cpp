@@ -284,6 +284,7 @@ void exahype::plotters::ADERDG2LegendreVTK::plotCellData(
        * @todo Dominic, can you help me here
        */
       dfor(ii,_order+1) { // Gauss-Legendre node indices
+/*
         int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
         interpoland[unknown] += kernels::equidistantGridCentreProjector1d[_order][ii(1)][i(1)] *
                  kernels::equidistantGridCentreProjector1d[_order][ii(0)][i(0)] *
@@ -292,6 +293,8 @@ void exahype::plotters::ADERDG2LegendreVTK::plotCellData(
                  #endif
                  u[iGauss * _solverUnknowns + unknown];
         assertion3(interpoland[unknown] == interpoland[unknown], offsetOfPatch, sizeOfPatch, iGauss);
+*/
+        assertion(false);
       }
     }
 
@@ -332,6 +335,7 @@ void exahype::plotters::ADERDG2LegendreVTK::plotPatch(
     assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _timeStampDataWriter!=nullptr );
 
+    //wenn nix rausgeschreiben wird, darf ich auch kein Patch aufrufen
     std::pair<int,int> vertexAndCellIndex = plotLegendrePatch(offsetOfPatch, sizeOfPatch);
 
     writeTimeStampDataToPatch( timeStamp, vertexAndCellIndex.first );
