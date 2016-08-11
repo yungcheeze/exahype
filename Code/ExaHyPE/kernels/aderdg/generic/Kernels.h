@@ -26,6 +26,8 @@
 #include "tarch/la/Scalar.h"
 #include "tarch/la/ScalarOperations.h"
 
+#include "tarch/logging/Log.h"
+
 #define MbasisSize 4
 #define Mvar 5
 #define Mdim 3

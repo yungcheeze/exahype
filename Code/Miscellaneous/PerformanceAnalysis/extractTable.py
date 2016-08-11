@@ -19,6 +19,8 @@ def createTable(path,prefix,postfix,MaxNodes):
 
       times    = runtimeParser.parse_adapter_times(inputFileName)
       maxLevel = runtimeParser.max_level(inputFileName)
+      newLine  = "" # We have to build up the line completely but only write it 
+                    # in the end. Otherwise we might get incomplete lines 
       
       if len(adapters)==0 and len(times)>0:
         outFile.write( "ranks/threads/nodes " )
@@ -32,24 +34,26 @@ def createTable(path,prefix,postfix,MaxNodes):
         outFile.write( "\n" )
         
       if len(adapters)>0:
-        outFile.write( str(ranks) )
-        outFile.write( " & "  )
-        outFile.write( str(maxLevel) )
+        newLine += str(ranks)
+        newLine += " & "  
+        newLine += str(maxLevel) 
         totalIterationCount = 0
         totalRuntime        = 0
         for adapter in adapters:
-          outFile.write( " & " )
-          outFile.write( str(times[adapter]['n']) )
+          newLine += " & " 
+          newLine += str(times[adapter]['n']) 
           totalIterationCount = totalIterationCount + times[adapter]['n']
-          outFile.write( " & " )
-          outFile.write( str(times[adapter]['usertime']) )
+          newLine += " & " 
+          newLine += str(times[adapter]['usertime']) 
           totalRuntime = totalRuntime + times[adapter]['usertime']
       
-        outFile.write( " & " )
-        outFile.write( str(totalIterationCount) )
-        outFile.write( " & " )
-        outFile.write( str(totalRuntime) )
-        outFile.write( "\n" )
+        newLine +=  " & " 
+        newLine += str(totalIterationCount) 
+        newLine += " & " 
+        newLine += str(totalRuntime) 
+        
+      if newLine!="":
+        outFile.write( newLine + "\n" ) 
     else:
       print "not available "
 

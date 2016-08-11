@@ -14,13 +14,11 @@
 #include "ADERDG2LegendreVTK.h"
 #include "tarch/parallel/Node.h"
 
-// @todo 16/05/03:Dominic Etienne Charreir Plotter depends now on kernels.
-// Should thus be placed in kernel module or the solver
-// should provide a function that computes solution values
-// at equidistant grid points
 #include "kernels/DGMatrices.h"
-#include "peano/utils/Loop.h"
+#include "kernels/GaussLegendreQuadrature.h"
+#include "kernels/DGBasisFunctions.h"
 
+#include "peano/utils/Loop.h"
 
 #include "tarch/plotter/griddata/unstructured/vtk/VTKTextFileWriter.h"
 #include "tarch/plotter/griddata/unstructured/vtk/VTKBinaryFileWriter.h"
@@ -210,7 +208,52 @@ std::pair<int,int> exahype::plotters::ADERDG2LegendreVTK::plotLegendrePatch(
   const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
   const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch
 ) {
+  int firstVertex = -1;
+  int firstCell   = -1;
 
+  if (_writtenUnknowns>0) {
+    assertion(_vertexWriter!=nullptr);
+    dfor(i,_order+1) {
+      tarch::la::Vector<2, double> p;
+
+      //p = offsetOfPatch + tarch::la::multiplyComponents( i.convertScalar<double>(), sizeOfPatch) * (1.0/_order);
+
+      for (int d=0; d<DIMENSIONS; d++) {
+	p(d) = offsetOfPatch(d) + kernels::gaussLegendreNodes[_order][i(d)] * sizeOfPatch(d);
+      }
+
+      const int newVertexNumber = _vertexWriter->plotVertex(p);
+      firstVertex = firstVertex==-1 ? newVertexNumber : firstVertex;
+    }
+
+    assertion(_cellWriter!=nullptr);
+    dfor(i,_order) {
+      #ifdef Dim2
+      int cellsVertexIndices[4];
+      cellsVertexIndices[0] = firstVertex + (i(0)+0) + (i(1)+0) * (_order+1);
+      cellsVertexIndices[1] = firstVertex + (i(0)+1) + (i(1)+0) * (_order+1);
+      cellsVertexIndices[2] = firstVertex + (i(0)+0) + (i(1)+1) * (_order+1);
+      cellsVertexIndices[3] = firstVertex + (i(0)+1) + (i(1)+1) * (_order+1);
+      const int newCellNumber = _cellWriter->plotQuadrangle(cellsVertexIndices);
+      firstCell = firstCell==-1 ? newCellNumber : firstCell;
+      #elif Dim3
+      assertionMsg( false, "not implemented yet" );
+      int cellsVertexIndices[8];
+      cellsVertexIndices[0] = firstVertex + (i(0)+0) + (i(1)+0) * (_order+1) + (i(2)+0) * (_order+1) * (_order+1);
+      cellsVertexIndices[1] = firstVertex + (i(0)+1) + (i(1)+0) * (_order+1) + (i(2)+0) * (_order+1) * (_order+1);
+      cellsVertexIndices[2] = firstVertex + (i(0)+0) + (i(1)+1) * (_order+1) + (i(2)+0) * (_order+1) * (_order+1);
+      cellsVertexIndices[3] = firstVertex + (i(0)+1) + (i(1)+1) * (_order+1) + (i(2)+0) * (_order+1) * (_order+1);
+      cellsVertexIndices[4] = firstVertex + (i(0)+0) + (i(1)+0) * (_order+1) + (i(2)+1) * (_order+1) * (_order+1);
+      cellsVertexIndices[5] = firstVertex + (i(0)+1) + (i(1)+0) * (_order+1) + (i(2)+1) * (_order+1) * (_order+1);
+      cellsVertexIndices[6] = firstVertex + (i(0)+0) + (i(1)+1) * (_order+1) + (i(2)+1) * (_order+1) * (_order+1);
+      cellsVertexIndices[7] = firstVertex + (i(0)+1) + (i(1)+1) * (_order+1) + (i(2)+1) * (_order+1) * (_order+1);
+      const int newCellNumber = _cellWriter->plotHexahedron(cellsVertexIndices);
+      firstCell = firstCell==-1 ? newCellNumber : firstCell;
+      #endif
+    }
+  }
+
+  return std::pair<int,int>(firstVertex,firstCell);
 }
 
 
@@ -227,25 +270,28 @@ void exahype::plotters::ADERDG2LegendreVTK::plotVertexData(
   double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
 
   dfor(i,_order+1) {
+    // This is inefficient but works. We could look it up directly from the arrays
+    tarch::la::Vector<DIMENSIONS, double> p;
+    for (int d=0; d<DIMENSIONS; d++) {
+      p(d) = offsetOfPatch(d) + kernels::gaussLegendreNodes[_order][i(d)] * sizeOfPatch(d);
+    }
     for (int unknown=0; unknown < _solverUnknowns; unknown++) {
-      interpoland[unknown] = 0.0;
-      dfor(ii,_order+1) { // Gauss-Legendre node indices
-        int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
-        interpoland[unknown] += kernels::equidistantGridProjector1d[_order][ii(1)][i(1)] *
-                 kernels::equidistantGridProjector1d[_order][ii(0)][i(0)] *
-                 #ifdef Dim3
-                 kernels::equidistantGridProjector1d[_order][ii(2)][i(2)] *
-                 #endif
-                 u[iGauss * _solverUnknowns + unknown];
-        assertion3(interpoland[unknown] == interpoland[unknown], offsetOfPatch, sizeOfPatch, iGauss);
-      }
+      interpoland[unknown] = kernels::interpolate(
+        offsetOfPatch.data(),
+        sizeOfPatch.data(),
+        p.data(), // das ist die Position
+        _solverUnknowns,
+        unknown,
+        _order,
+        u
+      );
     }
 
     assertion(sizeOfPatch(0)==sizeOfPatch(1));
     _postProcessing->mapQuantities(
       offsetOfPatch,
       sizeOfPatch,
-      offsetOfPatch + i.convertScalar<double>()* (sizeOfPatch(0)/(_order)),
+      p,
       i,
       interpoland,
       value,
@@ -277,31 +323,28 @@ void exahype::plotters::ADERDG2LegendreVTK::plotCellData(
   double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
 
   dfor(i,_order) {
+    // This is inefficient but works. We could look it up directly from the arrays
+    tarch::la::Vector<DIMENSIONS, double> p;
+    for (int d=0; d<DIMENSIONS; d++) {
+      p(d) = offsetOfPatch(d) + (kernels::gaussLegendreNodes[_order][i(d)]+kernels::gaussLegendreNodes[_order][i(d)+1]) * sizeOfPatch(d)/2.0;
+    }
     for (int unknown=0; unknown < _solverUnknowns; unknown++) {
-      interpoland[unknown] = 0.0;
-      /**
-       * @todo Dominic, can you help me here
-       */
-      dfor(ii,_order+1) { // Gauss-Legendre node indices
-/*
-        int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
-        interpoland[unknown] += kernels::equidistantGridCentreProjector1d[_order][ii(1)][i(1)] *
-                 kernels::equidistantGridCentreProjector1d[_order][ii(0)][i(0)] *
-                 #ifdef Dim3
-                 kernels::equidistantGridCentreProjector1d[_order][ii(2)][i(2)] *
-                 #endif
-                 u[iGauss * _solverUnknowns + unknown];
-        assertion3(interpoland[unknown] == interpoland[unknown], offsetOfPatch, sizeOfPatch, iGauss);
-*/
-        assertion(false);
-      }
+      interpoland[unknown] = kernels::interpolate(
+        offsetOfPatch.data(),
+        sizeOfPatch.data(),
+        p.data(), // das ist die Position
+        _solverUnknowns,
+        unknown,
+        _order,
+        u
+      );
     }
 
     assertion(sizeOfPatch(0)==sizeOfPatch(1));
     _postProcessing->mapQuantities(
       offsetOfPatch,
       sizeOfPatch,
-      offsetOfPatch + (i.convertScalar<double>()+0.5)* (sizeOfPatch(0)/(_order)),
+      p,
       i,
       interpoland,
       value,
@@ -335,18 +378,15 @@ void exahype::plotters::ADERDG2LegendreVTK::plotPatch(
     assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _timeStampDataWriter!=nullptr );
 
-    //wenn nix rausgeschreiben wird, darf ich auch kein Patch aufrufen
     std::pair<int,int> vertexAndCellIndex = plotLegendrePatch(offsetOfPatch, sizeOfPatch);
 
     writeTimeStampDataToPatch( timeStamp, vertexAndCellIndex.first );
 
-/*
     if (_plotCells) {
       plotCellData( vertexAndCellIndex.second, offsetOfPatch, sizeOfPatch, u, timeStamp );
     }
     else {
       plotVertexData( vertexAndCellIndex.first, offsetOfPatch, sizeOfPatch, u, timeStamp );
     }
-*/
   }
 }
