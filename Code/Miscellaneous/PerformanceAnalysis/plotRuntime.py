@@ -71,7 +71,7 @@ def switchToLogScales():
   XTicks  = [1]
   XLabels = [ "serial" ]
   for i in range(1,int(xDataMax)+2):
-    if i != 0 and ((i & (i - 1)) == 0):
+    if i>1 and ((i & (i - 1)) == 0):
       XTicks.append( i )
       XLabels.append( str(i) ) 
   pylab.xticks(XTicks,XLabels)
@@ -143,7 +143,10 @@ pylab.xlabel('cores')
 experimentSetCounter =  0
 for (table,label) in zip(args.table,args.experimentdescription):
   print "read " + table
-  maxLevel = runtimeParser.readColumnFromTable(table,1)   
+  maxLevel = runtimeParser.readColumnFromTable(table,1)
+  if len(maxLevel)>0 and maxLevel[-1]==0:
+    print "WARNING: max level seems not to have been plotted (perhaps code had been translated without -DTrackGridStatistics). Assume increase by one per table"
+    maxLevel[-1] = experimentSetCounter   
   if len(maxLevel)>0:
     normalisation = 1.0/(3**(maxLevel[-1]*dim))
     addData(table,normalisation,table==args.table[0],experimentSetCounter,label)
