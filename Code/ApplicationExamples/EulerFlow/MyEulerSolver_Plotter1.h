@@ -7,14 +7,31 @@
 // ========================
 #include "exahype/plotters/Plotter.h"
 
+namespace Euler{
+  class MyEulerSolver_Plotter1;
+
+  /**
+   * Forward declaration
+   */
+  class MyEulerSolver;
+}
+
 /* I hope these modifications are not overwritten... */
 #include "GeneratedConstants.h"
 #include "TimeSeriesReductions.h"
 #define nVars MY_NUMBER_OF_VARIABLES
 
-using namespace std;
+namespace Euler{
+  class MyEulerSolver_Plotter1;
 
-class MyEulerSolver_Plotter1: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+  /**
+   * Forward declaration
+   */
+  class MyEulerSolver;
+}
+
+
+class Euler::MyEulerSolver_Plotter1: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
   TimeSeriesReductions* conserved[nVars];
   TimeSeriesReductions* primitives[nVars];
   TimeSeriesReductions* errors[nVars];
@@ -23,7 +40,7 @@ class MyEulerSolver_Plotter1: public exahype::plotters::Plotter::UserOnTheFlyPos
   
   // Auto generated:
   public:
-  MyEulerSolver_Plotter1();
+  MyEulerSolver_Plotter1(MyEulerSolver& solver);
   virtual ~MyEulerSolver_Plotter1();
   virtual void startPlotting(double time);
   virtual void finishPlotting();
@@ -31,6 +48,7 @@ class MyEulerSolver_Plotter1: public exahype::plotters::Plotter::UserOnTheFlyPos
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, int>&    pos,
     double* Q,
     double* outputQuantities,
   double timeStamp);

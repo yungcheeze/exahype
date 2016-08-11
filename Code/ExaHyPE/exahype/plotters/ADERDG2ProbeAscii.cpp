@@ -119,38 +119,27 @@ void exahype::plotters::ADERDG2ProbeAscii::plotPatch(
     // lazy opening
     openOutputStream();
 
-    // Map coordinate vector x onto reference element.
-    tarch::la::Vector<DIMENSIONS,double> xRef = _x - offsetOfPatch;
-    xRef(0) /=  sizeOfPatch(0);
-    xRef(1) /=  sizeOfPatch(1);
-    #ifdef Dim3
-    xRef(2) /=  sizeOfPatch(2);
-    #endif
 
     double* interpoland = new double[_solverUnknowns];
     double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
 
     for (int unknown=0; unknown < _solverUnknowns; unknown++) {
-      interpoland[unknown] = 0.0;
-
-      // The code below evaluates the basis functions at the reference coordinates
-      // and multiplies them with their respective coefficient.
-      dfor(ii,_order+1) { // Gauss-Legendre node indices
-        int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
-        interpoland[unknown] += kernels::basisFunctions[_order][ii(0)](xRef(0)) *
-                 kernels::basisFunctions[_order][ii(1)](xRef(1)) *
-                 #ifdef Dim3
-                 kernels::basisFunctions[_order][ii(2)](xRef(2)) *
-                 #endif
-                 u[iGauss * _solverUnknowns + unknown];
-        assertion3(interpoland[unknown] == interpoland[unknown], offsetOfPatch, sizeOfPatch, iGauss);
-      }
+      interpoland[unknown] = kernels::interpolate(
+        offsetOfPatch.data(),
+        sizeOfPatch.data(),
+        _x.data(),
+        _solverUnknowns,
+        unknown,
+        _order,
+        u
+      );
     }
 
     _postProcessing->mapQuantities(
       offsetOfPatch,
       sizeOfPatch,
       _x,
+      tarch::la::Vector<DIMENSIONS, int>(0),
       interpoland,
       value,
       timeStamp

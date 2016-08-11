@@ -12,7 +12,8 @@
  **/
  
 #include "FiniteVolumes2VTKAscii.h"
-#include "ADERDG2VTKAscii.h"
+
+#include "ADERDG2CartesianVTK.h"
 #include "tarch/parallel/Node.h"
 
 // @todo 16/05/03:Dominic Etienne Charreir Plotter depends now on kernels.
@@ -31,7 +32,7 @@ exahype::plotters::FiniteVolumes2VTKAscii::FiniteVolumes2VTKAscii(exahype::plott
 
 
 std::string exahype::plotters::FiniteVolumes2VTKAscii::getIdentifier() {
-  return ADERDG2VTKAscii::getIdentifier();
+  return ADERDG2CartesianCellsVTKAscii::getIdentifier();
 }
 
 
@@ -175,6 +176,7 @@ void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(
         offsetOfPatch,
         sizeOfPatch,
         offsetOfPatch + i.convertScalar<double>()* (sizeOfPatch(0)/(_numberOfCellsPerAxis)),
+	i,
         sourceValue,
         value,
         timeStamp

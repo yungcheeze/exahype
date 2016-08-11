@@ -13,9 +13,9 @@
  
 #include "exahype/plotters/Plotter.h"
 
+#include "ADERDG2CartesianVTK.h"
+#include "ADERDG2LegendreVTK.h"
 #include "ADERDG2ProbeAscii.h"
-#include "ADERDG2VTKAscii.h"
-#include "ADERDG2VTKBinary.h"
 #include "FiniteVolumes2VTKAscii.h"
 #include "exahype/solvers/Solver.h"
 
@@ -51,6 +51,8 @@ exahype::plotters::Plotter::Plotter(
                               << " time units with first snapshot at " << _time
                               << ". plotter type is " << _identifier);
 
+  std::cout << std::endl << "(a)" << std::endl; std::cout.flush();
+
   assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
   switch (solvers::RegisteredSolvers[_solver]->getType()) {
     case exahype::solvers::Solver::Type::ADER_DG:
@@ -58,14 +60,29 @@ exahype::plotters::Plotter::Plotter(
        * This is actually some kind of switch expression though switches do
        * not work for strings, so we map it onto an if-then-else cascade.
        */
-      if (_identifier.compare( ADERDG2VTKAscii::getIdentifier() ) == 0) {
-        _device = new ADERDG2VTKAscii(postProcessing);
+      if (_identifier.compare( ADERDG2CartesianVerticesVTKAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianVerticesVTKAscii(postProcessing);
       }
-      else if (_identifier.compare( ADERDG2VTKBinary::getIdentifier() ) == 0) {
-        _device = new ADERDG2VTKBinary(postProcessing);
+      if (_identifier.compare( ADERDG2CartesianVerticesVTKBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianVerticesVTKBinary(postProcessing);
       }
-      else if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
-        _device = new ADERDG2ProbeAscii(postProcessing);
+      if (_identifier.compare( ADERDG2CartesianCellsVTKAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianCellsVTKAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2CartesianCellsVTKBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2CartesianCellsVTKBinary(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreVerticesVTKAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreVerticesVTKAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreVerticesVTKBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreVerticesVTKBinary(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreCellsVTKAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreCellsVTKAscii(postProcessing);
+      }
+      if (_identifier.compare( ADERDG2LegendreCellsVTKBinary::getIdentifier() ) == 0) {
+        _device = new ADERDG2LegendreCellsVTKBinary(postProcessing);
       }
     break;
     case exahype::solvers::Solver::Type::FiniteVolumes:
@@ -122,6 +139,7 @@ bool exahype::plotters::Plotter::checkWetherSolverBecomesActive(double currentTi
     _isActive = true;
     _device->startPlotting(currentTimeStamp);
   }
+
   return isActive();
 }
 

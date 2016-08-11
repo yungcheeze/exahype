@@ -80,6 +80,25 @@ void volumeIntegralNonlinear(double* lduh, const double* const lFhi,
       }
     }
   }
+
+  // source
+  {
+    idx3 idx(basisSize, basisSize, numberOfVariables);
+    const int s_offset = 2 * basisSize2 * numberOfVariables;
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        const double weight = kernels::gaussLegendreWeights[order][j] *
+                              kernels::gaussLegendreWeights[order][k];
+
+        // Fortran: lduh(:,k,j) += w * lShi(:,k,j)
+
+        // TODO(guera): numberOfVariables - numberOfParameters
+        for (int l = 0; l < numberOfVariables; l++) {
+          lduh[idx(j, k, l)] += weight * lFhi[s_offset + idx(j, k, l)];
+        }
+      }
+    }
+  }
 }
 
 #endif  // DIMENSIONS == 2

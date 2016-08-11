@@ -67,7 +67,7 @@ else ifeq ($(call tolower,$(MODE)),debug)
 else ifeq ($(call tolower,$(MODE)),profile)
   # Settings for the Profile mode
   # --------------------------------------------
-  COMPILER_CFLAGS += -DPerformanceAnalysis -p -pg
+  COMPILER_CFLAGS += -DPerformanceAnalysis -DTrackGridStatistics -p -pg
   COMPILER_LFLAGS += -p -pg
 
 else ifeq ($(call tolower,$(MODE)),asserts)
@@ -281,7 +281,7 @@ cfiles.mk:
 ffiles.mk:
 	touch ffiles.mk
 	echo -n FSOURCES= > ffiles.mk
-	find -H . -name '*.f90' | tr '\n' ' ' >> ffiles.mk
+	find -H $(PROJECT_PATH) -name '*.f90' | tr '\n' ' ' >> ffiles.mk
 	# instead, compile modules already a first time now to circumvent dependency problems.
 	FMODULES := $(shell find -H . -name '*.f90' | xargs awk 'BEGIN{IGNORECASE = 1}!/^\s+!/ && (/module/) {print FILENAME; nextfile}')
 

@@ -10,8 +10,12 @@ Markerfacecolors = ['None','None','None','k','k','k']
 Markers          = ['o','^','s','o','^','s']
 
 
+xDataMax = 0
+
 
 def addData(table,normalisation,plotLabels,experimentSetCounter,label):
+  global xDataMax
+  
   xdata    = runtimeParser.readColumnFromTable(table,0)
 
   symbolCounter = 0
@@ -29,8 +33,10 @@ def addData(table,normalisation,plotLabels,experimentSetCounter,label):
     if len(ydata)==0:
       print "WARNING: file " + table + " seems to be empty for adapter " + adap
     else:
-      if (ydata[0]<yDataMin):
+      if ydata[0]<yDataMin:
         yDataMin = ydata[0]
+      if xdata[-1]>xDataMax:
+        xDataMax = xdata[-1]
       if (plotLabels):
         pylab.plot(xdata,ydata,markersize=experimentSetCounter+4,label=adap,color=Colors[symbolCounter],marker=Markers[symbolCounter],markerfacecolor=Markerfacecolors[symbolCounter],markevery=1,lw=1.2) 
       else:
@@ -58,6 +64,17 @@ def initGlobalPlotterSettings():
   #ax.yaxis.set_major_formatter(mtick.FormatStrFormatter('%.2e'))
 
 
+def switchToLogScales():
+  global xDataMax
+  
+  pylab.loglog( basex=2, basey=2 )
+  XTicks  = [1]
+  XLabels = [ "serial" ]
+  for i in range(1,int(xDataMax)+2):
+    if i>1 and ((i & (i - 1)) == 0):
+      XTicks.append( i )
+      XLabels.append( str(i) ) 
+  pylab.xticks(XTicks,XLabels)
 
 
 ########################################################################
@@ -108,7 +125,7 @@ initGlobalPlotterSettings()
 
 pylab.savefig( outputFile + ".png" )
 pylab.savefig( outputFile + ".pdf" )
-pylab.loglog( basex=2, basey=2 )
+switchToLogScales()
 pylab.savefig( outputFile + "-log.png" )
 pylab.savefig( outputFile + "-log.pdf" )
 print "written " + outputFile
@@ -126,7 +143,10 @@ pylab.xlabel('cores')
 experimentSetCounter =  0
 for (table,label) in zip(args.table,args.experimentdescription):
   print "read " + table
-  maxLevel = runtimeParser.readColumnFromTable(table,1)   
+  maxLevel = runtimeParser.readColumnFromTable(table,1)
+  if len(maxLevel)>0 and maxLevel[-1]==0:
+    print "WARNING: max level seems not to have been plotted (perhaps code had been translated without -DTrackGridStatistics). Assume increase by one per table"
+    maxLevel[-1] = experimentSetCounter   
   if len(maxLevel)>0:
     normalisation = 1.0/(3**(maxLevel[-1]*dim))
     addData(table,normalisation,table==args.table[0],experimentSetCounter,label)
@@ -138,7 +158,7 @@ initGlobalPlotterSettings()
 
 pylab.savefig( outputFile + ".png" )
 pylab.savefig( outputFile + ".pdf" )
-pylab.loglog( basex=2, basey=2 )
+switchToLogScales()
 pylab.savefig( outputFile + "-log.png" )
 pylab.savefig( outputFile + "-log.pdf" )
 print "written " + outputFile

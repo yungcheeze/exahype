@@ -62,7 +62,7 @@ exahype-project  Euler
     kernel            = generic::fluxes::nonlinear
     language          = C
 
-    plot vtk::Cartesian::ascii
+    plot vtk::Cartesian::vertices::ascii
       variables = 5
       time      = 0.0
       repeat    = 0.05
@@ -72,7 +72,7 @@ exahype-project  Euler
 
     /* this is the fake plotter used to compute global integrals */
     /* it has no output fields. */
-    plot vtk::Cartesian::ascii
+    plot vtk::Cartesian::vertices::ascii
       variables = 0
       time = 0.0
       repeat = 0.05
@@ -80,7 +80,7 @@ exahype-project  Euler
       select = {}
     end plot
 
-    plot vtk::Cartesian::ascii
+    plot vtk::Cartesian::vertices::ascii
       variables = 5
       time      = 0.0
       repeat    = 0.05
@@ -88,7 +88,7 @@ exahype-project  Euler
       select = {}
     end plot
     
-    plot vtk::Cartesian::ascii
+    plot vtk::Cartesian::vertices::ascii
       variables = 5
       time      = 0.0
       repeat    = 0.05

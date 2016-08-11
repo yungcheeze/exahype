@@ -18,8 +18,6 @@
 #include "../testdata/generic_euler_testdata.h"
 #include "kernels/aderdg/generic/Kernels.h"
 
-using std::cout;
-using std::endl;
 
 #if DIMENSIONS == 2
 
@@ -50,6 +48,14 @@ void GenericEulerKernelTest::testFlux(const double *Q, double **F) {
   g[2] = irho * Q[2] * Q[2] + p;
   g[3] = irho * Q[2] * Q[3];
   g[4] = irho * Q[2] * (Q[4] + p);
+}
+
+void GenericEulerKernelTest::testSource(const double *Q, double *S) {
+  S[0] = 0.0;
+  S[1] = 0.0;
+  S[2] = 0.0;
+  S[3] = 0.0;
+  S[4] = 0.0;
 }
 
 void GenericEulerKernelTest::testEigenvalues(const double *const Q,
@@ -96,22 +102,19 @@ void GenericEulerKernelTest::testMatrixB(const double *const Q,
   // 3D compressible Euler equations
   double *B1 = new double[5 * 5];
   double *B2 = new double[5 * 5];
-  double *B3 = new double[5 * 5];
 
   std::memset(B1, 0, 5 * 5 * sizeof(double));
   std::memset(B2, 0, 5 * 5 * sizeof(double));
-
   // Bn = B1 if normalNonZero == 0
   //      B2 if normalNonZero == 1
   std::memcpy(Bn, (normalNonZero == 0) ? B1 : B2, 5 * 5 * sizeof(double));
 
   delete[] B1;
   delete[] B2;
-  delete[] B3;
 }  // testMatrixB
 
 void GenericEulerKernelTest::testPDEFluxes() {
-  cout << "Test PDE-related functions, DIM=2" << endl;
+  logInfo( "testPDEFluxes()", "Test PDE-related functions, DIM=2" );
 
   double Q[5] = {1., 0.1, 0.2, 0.3, 3.5};  // pressure = 1.39
   double f[5], g[5];
@@ -134,10 +137,11 @@ void GenericEulerKernelTest::testPDEFluxes() {
 }  // testPDEFluxes
 
 void GenericEulerKernelTest::testSolutionUpdate() {
-  cout << "Test solution update, ORDER=2, DIM=2" << endl;
+  logInfo( "testSolutionUpdate()",  "Test solution update, ORDER=2, DIM=2" );
 
   // inputs:
-  double *luh = new double[80]();
+  double *luh = new double[80];
+  std::fill(luh, luh + 80, 0.0);
   for (int i = 0; i < 80; i += 5) {
     luh[i] = 1.0;
     luh[i + 4] = 2.5;
@@ -165,7 +169,7 @@ void GenericEulerKernelTest::testSolutionUpdate() {
 }  // testSolutionUpdate
 
 void GenericEulerKernelTest::testSurfaceIntegralLinear() {
-  cout << "Test surface integral linear, ORDER=2, DIM=2" << endl;
+  logInfo( "testSurfaceIntegralLinear()", "Test surface integral linear, ORDER=2, DIM=2" );
 
   {  // test 1
     // inputs:
@@ -244,7 +248,7 @@ void GenericEulerKernelTest::testSurfaceIntegralLinear() {
 }  // testSurfaceIntegralLinear
 
 void GenericEulerKernelTest::testSurfaceIntegralNonlinear() {
-  cout << "Test surface integral nonlinear, ORDER=2, DIM=2" << endl;
+  logInfo( "testSurfaceIntegralNonlinear()", "Test surface integral nonlinear, ORDER=2, DIM=2" );
 
   {  // test 1
     // inputs:
@@ -324,7 +328,7 @@ void GenericEulerKernelTest::testSurfaceIntegralNonlinear() {
 
 void GenericEulerKernelTest::testRiemannSolverLinear() {
   // Rusanov
-  cout << "Test Riemann Solver linear (Rusanov), ORDER=2, DIM=2" << endl;
+  logInfo( "testRiemannSolverLinear()", "Test Riemann Solver linear (Rusanov), ORDER=2, DIM=2" );
 
   {                                  // test normalNonZero = 0
                                      // output:
@@ -411,7 +415,7 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
 
 void GenericEulerKernelTest::testRiemannSolverNonlinear() {
   // Rusanov
-  cout << "Test Riemann Solver nonlinear (Rusanov), ORDER=2, DIM=2" << endl;
+  logInfo( "testRiemannSolverNonlinear()", "Test Riemann Solver nonlinear (Rusanov), ORDER=2, DIM=2" );
 
   {  // test 1
      // input:
@@ -537,7 +541,7 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
 }  // testRiemannSolverNonlinear
 
 void GenericEulerKernelTest::testVolumeIntegralLinear() {
-  std::cout << "Test volume integral linear, ORDER=2, DIM=2" << std::endl;
+  logInfo( "testVolumeIntegralLinear()", "Test volume integral linear, ORDER=2, DIM=2" );
 
   {  // first test
     // output:
@@ -570,8 +574,9 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
   {  // second test, analogous to 3d seed
 
     // input:
-    double dx[2] = {0.05, 0.05};       // mesh spacing
-    double *lFhi = new double[160]();  // nVar * dim * nDOFx * nDOFy
+    double dx[2] = {0.05, 0.05};     // mesh spacing
+    double *lFhi = new double[160];  // nVar * dim * nDOFx * nDOFy
+    std::fill(lFhi, lFhi + 160, 0.0);
     // lFhi = [ lFhi_x | lFhi_y ]
     double *lFhi_x = &lFhi[0];
     double *lFhi_y = &lFhi[80];
@@ -601,7 +606,7 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
 }  // testVolumeIntegralLinear
 
 void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
-  cout << "Test volume integral nonlinear, ORDER=2, DIM=2" << endl;
+  logInfo( "testVolumeIntegralNonlinear()", "Test volume integral nonlinear, ORDER=2, DIM=2" );
 
   {  // first test
 
@@ -611,7 +616,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
     // input:
     double dx[2] = {3.70370370370370349811e-02,
                     3.70370370370370349811e-02};  // mesh spacing
-    // ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi[160]
+    // ::exahype::tests::testdata::generic_euler::testVolumeIntegral::lFhi[240]
 
     kernels::aderdg::generic::c::volumeIntegralNonlinear(
         lduh,
@@ -635,17 +640,21 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
   {  // second test, analogous to 3d seed
 
     // input:
-    double dx[2] = {0.05, 0.05};       // mesh spacing
-    double *lFhi = new double[160]();  // nVar * dim * nDOFx * nDOFy
-    // lFhi = [ lFhi_x | lFhi_y ]
+    double dx[2] = {0.05, 0.05};     // mesh spacing
+    double *lFhi = new double[240];  // nVar * (dim+1) * nDOFx * nDOFy
+    std::fill(lFhi, lFhi + 240, 0.0);
+    // lFhi = [ lFhi_x | lFhi_y | lShi]
     double *lFhi_x = &lFhi[0];
     double *lFhi_y = &lFhi[80];
+    double *lShi = &lFhi[160];
 
     // seed direction
     for (int i = 0; i < 80; i += 5) {
       lFhi_x[i + 1] = 1.;
       lFhi_y[i + 2] = 1.;
     }
+
+    std::fill(lShi, lShi + 80, 0.0);
 
     // output:
     double *lduh = new double[80];  // intentionally left uninitialised
@@ -667,7 +676,7 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
 }  // testVolumeIntegralNonlinear
 
 void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
-  cout << "Test space time predictor linear, ORDER=3, DIM=2" << endl;
+  logInfo( "testSpaceTimePredictorLinear()", "Test space time predictor linear, ORDER=3, DIM=2" );
 
   // inputs:
   // exahype::tests::testdata::generic_euler::testSpaceTimePredictor::luh[80 =
@@ -736,22 +745,23 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
 }  // testSpaceTimePredictorLinear
 
 void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
-  cout << "Test space time predictor nonlinear, ORDER=3, DIM=2" << endl;
+  logInfo( "testSpaceTimePredictorNonlinear()", "Test space time predictor nonlinear, ORDER=3, DIM=2" );
 
   const tarch::la::Vector<DIMENSIONS, double> dx(5e-02, 5e-02);
   const double timeStepSize = 1.686854344081342E-003;
 
   // local:
-  double *lQi = new double[320];  // space-time DOF
-  double *lFi = new double[640];
+  double *lQi = new double[320];  // nVar * nDOFx * nDOFy * nDOFt
+  double *lFi = new double[960];  // nVar * nDOFx * nDOFy * nDOFt * (dim + 1)
 
   // output:
-  double *lQhi = new double[80];
-  double *lFhi = new double[160];
-  double *lQhbnd = new double[80];
-  double *lFhbnd = new double[80];
+  double *lQhi = new double[80];    // nVar * nDOFx * nDOFy
+  double *lFhi = new double[240];   // nVar * nDOFx * nDOFy * (dim + 1)
+  double *lQhbnd = new double[80];  // nVar * nDOFy * 4
+  double *lFhbnd = new double[80];  // nVar * nDOFy * 4
 
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<testFlux>(
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<testFlux,
+                                                           testSource>(
       lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd,
       ::exahype::tests::testdata::generic_euler::
           testSpaceTimePredictorNonlinear::luh,
@@ -768,11 +778,24 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
         eps, i);
   }
 
-  for (int i = 0; i < 360; i++) {
-    validateNumericalEqualsWithEpsWithParams1(
-        lFi[i], ::exahype::tests::testdata::generic_euler::
-                    testSpaceTimePredictorNonlinear::lFi[i],
-        eps, i);
+  kernels::idx5 idx_lFi(4, 4, 4, (DIMENSIONS + 1), 5, __LINE__);
+  kernels::idx5 idx_lFi_expected(4, 4, 4, DIMENSIONS, 5, __LINE__);
+
+  for (int i = 0; i < 4; i++) {
+    for (int k = 0; k < 4; k++) {
+      for (int l = 0; l < 4; l++) {
+        for (int m = 0; m < 2; m++) {  // skip 2 ( = source)
+          for (int n = 0; n < 5; n++) {
+            validateNumericalEqualsWithEpsWithParams1(
+                lFi[idx_lFi(i, k, l, m, n)],
+                ::exahype::tests::testdata::generic_euler::
+                    testSpaceTimePredictorNonlinear::lFi[idx_lFi_expected(
+                        i, k, l, m, n)],
+                eps, idx_lFi(i, k, l, m, n));
+          }
+        }
+      }
+    }
   }
 
   for (int i = 0; i < 80; i++) {
@@ -782,7 +805,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
         eps, i);
   }
 
-  for (int i = 0; i < 160; i++) {
+  for (int i = 0; i < 160; i++) {  // skip 160 - 239 (source)
     validateNumericalEqualsWithEpsWithParams1(
         lFhi[i], ::exahype::tests::testdata::generic_euler::
                      testSpaceTimePredictorNonlinear::lFhi[i],
@@ -814,7 +837,7 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
 }  // testSpaceTimePredictorNonlinear
 
 void GenericEulerKernelTest::testFaceUnknownsProjection() {
-  cout << "Test face unknowns projection operators, ORDER=2, DIM=2" << endl;
+  logInfo( "testFaceUnknownsProjection()", "Test face unknowns projection operators, ORDER=2, DIM=2" );
 
   const int numberOfVariables = 1;
   const int basisSize = 4;
@@ -891,7 +914,7 @@ void GenericEulerKernelTest::testFaceUnknownsProjection() {
 }
 
 void GenericEulerKernelTest::testVolumeUnknownsProjection() {
-  cout << "Test volume unknowns projection operators, ORDER=2, DIM=2" << endl;
+  logInfo( "testVolumeUnknownsProjection()", "Test volume unknowns projection operators, ORDER=2, DIM=2" );
 
   const int numberOfVariables = 1;
   const int basisSize = 4;

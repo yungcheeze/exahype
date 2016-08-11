@@ -50,8 +50,11 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
   const int _unknownsPerCell;
 
   /**
-   * The total number of volume flux unknowns/basis functions associated with the volume of a cell.
+   * The total number of volume flux unknowns/basis functions PLUS the number of source unknowns
+   * associated with the volume of a cell.
    * This number includes the unknowns of all state variables.
+   *
+   *
    */
   const int _fluxUnknownsPerCell;
 
@@ -63,7 +66,8 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
   const int _spaceTimeUnknownsPerCell;
 
   /**
-   * The total number of space-time volume flux unknowns/basis functions associated with the
+   * The total number of space-time volume flux unknowns/basis functions
+   * PLUS the number of space-time source unknowns associated with the
    * space-time volume of a cell and its time stepping interval.
    * This number includes the unknowns of all state variables.
    */

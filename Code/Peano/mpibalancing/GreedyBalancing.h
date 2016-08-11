@@ -52,23 +52,9 @@ class mpibalancing::GreedyBalancing: public peano::parallel::loadbalancing::Orac
      * This operation is described in detail within the class documentation as
      * it realises the actual algorithm.
      */
-    void receivedStartCommand(const int commandFromMaster ) override;
+    void receivedStartCommand(peano::parallel::loadbalancing::LoadBalancingFlag commandFromMaster ) override;
 
-    int getCommandForWorker( int workerRank, bool forkIsAllowed, bool joinIsAllowed ) override;
-
-    void receivedTerminateCommand(
-      int     workerRank,
-      double  workerNumberOfInnerVertices,
-      double  workerNumberOfBoundaryVertices,
-      double  workerNumberOfOuterVertices,
-      double  workerNumberOfInnerCells,
-      double  workerNumberOfOuterCells,
-      int     workerMaxLevel,
-      int     currentLevel,
-      const tarch::la::Vector<DIMENSIONS,double>& boundingBoxOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize,
-      bool    workerCouldNotEraseDueToDecomposition
-    ) override;
+    peano::parallel::loadbalancing::LoadBalancingFlag getCommandForWorker( int workerRank, bool forkIsAllowed, bool joinIsAllowed ) override;
 
     void plotStatistics() override;
 

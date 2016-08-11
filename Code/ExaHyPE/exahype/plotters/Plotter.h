@@ -109,6 +109,14 @@ class exahype::plotters::Plotter {
        *          sizeOfPatch. If you use a Cartesian plotter, the x are all
        *          equidistant. Anyway, it is always the exact location where
        *          Q is taken from the solution.
+       * @param pos           All plotters break down each ADER-DG cell into
+       *          grids. For Finite Volumes, such grids are naturally in place
+       *          already. pos it the internal counter without this grids. For
+       *          ADER-DG, it enumerates through the Gauss-Legendre nodes. So
+       *          in this case, pos and x are slightly redundant - you can
+       *          compute x from pos. However, we decided to provide both.
+       *          If you invoke a probe plotter, this entry always is the zero
+       *          vector.
        * @param Q             Vector of unknowns at position x. The cardinality
        *          of the data is the unknowns plus the material parameters from
        *          the spec file's solver.
@@ -126,6 +134,7 @@ class exahype::plotters::Plotter {
         const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
         const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
         const tarch::la::Vector<DIMENSIONS, double>& x,
+	const tarch::la::Vector<DIMENSIONS, int>&    pos,
         double* Q,
         double* outputQuantities,
         double timeStamp) = 0;

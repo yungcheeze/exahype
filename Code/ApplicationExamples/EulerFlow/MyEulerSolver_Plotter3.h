@@ -7,20 +7,30 @@
 // ========================
 #include "exahype/plotters/Plotter.h"
 
+namespace Euler{
+  class MyEulerSolver_Plotter3;
 
-class MyEulerSolver_Plotter3: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
-  double time;	
+  /**
+   * Forward declaration
+   */
+  class MyEulerSolver;
+}
 
+
+class Euler::MyEulerSolver_Plotter3: public exahype::plotters::Plotter::UserOnTheFlyPostProcessing{
+  private:
+    double time;
   public:
-  MyEulerSolver_Plotter3();
+  MyEulerSolver_Plotter3(MyEulerSolver& solver);
   virtual ~MyEulerSolver_Plotter3();
-  virtual void startPlotting(double time);
-  virtual void finishPlotting();
-  virtual void mapQuantities(
+  void startPlotting(double time) override;
+  void finishPlotting() override;
+  void mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, int>&    pos,
     double* Q,
     double* outputQuantities,
-  double timeStamp);
+    double timeStamp) override;
 };

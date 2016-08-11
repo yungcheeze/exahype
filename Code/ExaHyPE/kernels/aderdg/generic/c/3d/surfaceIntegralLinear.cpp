@@ -3,16 +3,17 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #include <tarch/la/Vector.h>
 
+#include "../../../../KernelUtils.h"
 #include "kernels/aderdg/generic/Kernels.h"
 
 #if DIMENSIONS == 3
@@ -25,8 +26,10 @@ namespace c {
 void surfaceIntegralLinear(double *lduh, const double *const lFbnd,
                            const tarch::la::Vector<DIMENSIONS, double> &dx,
                            const int numberOfVariables, const int basisSize) {
-  const int basisSize2 = basisSize * basisSize;
   const int order = basisSize - 1;
+
+  idx4 idx_lduh(basisSize, basisSize, basisSize, numberOfVariables);
+  idx4 idx_lFbnd(2 * DIMENSIONS, basisSize, basisSize, numberOfVariables);
 
   // x faces
   for (int i = 0; i < basisSize; i++) {
@@ -38,16 +41,9 @@ void surfaceIntegralLinear(double *lduh, const double *const lFbnd,
       for (int k = 0; k < basisSize; k++) {
         // left flux minus right flux
         for (int l = 0; l < numberOfVariables; l++) {
-          lduh[i * basisSize2 * numberOfVariables +
-               j * basisSize * numberOfVariables + k * numberOfVariables + l] -=
-              (lFbnd[1 * basisSize2 * numberOfVariables +
-                     i * basisSize * numberOfVariables + j * numberOfVariables +
-                     l] *
-                   kernels::FRCoeff[order][k] +
-               lFbnd[0 * basisSize2 * numberOfVariables +
-                     i * basisSize * numberOfVariables + j * numberOfVariables +
-                     l] *
-                   kernels::FLCoeff[order][k]) *
+          lduh[idx_lduh(i, j, k, l)] -=
+              (lFbnd[idx_lFbnd(1, i, j, l)] * kernels::FRCoeff[order][k] +
+               lFbnd[idx_lFbnd(0, i, j, l)] * kernels::FLCoeff[order][k]) *
               updateSize;
         }
       }
@@ -64,16 +60,9 @@ void surfaceIntegralLinear(double *lduh, const double *const lFbnd,
 
         // back flux minus front flux
         for (int l = 0; l < numberOfVariables; l++) {
-          lduh[i * basisSize2 * numberOfVariables +
-               j * basisSize * numberOfVariables + k * numberOfVariables + l] -=
-              (lFbnd[3 * basisSize2 * numberOfVariables +
-                     i * basisSize * numberOfVariables + k * numberOfVariables +
-                     l] *
-                   kernels::FRCoeff[order][j] +
-               lFbnd[2 * basisSize2 * numberOfVariables +
-                     i * basisSize * numberOfVariables + k * numberOfVariables +
-                     l] *
-                   kernels::FLCoeff[order][j]) *
+          lduh[idx_lduh(i, j, k, l)] -=
+              (lFbnd[idx_lFbnd(3, i, k, l)] * kernels::FRCoeff[order][j] +
+               lFbnd[idx_lFbnd(2, i, k, l)] * kernels::FLCoeff[order][j]) *
               updateSize;
         }
       }
@@ -90,16 +79,9 @@ void surfaceIntegralLinear(double *lduh, const double *const lFbnd,
 
         // bottom flux minus top flux
         for (int l = 0; l < numberOfVariables; l++) {
-          lduh[i * basisSize2 * numberOfVariables +
-               j * basisSize * numberOfVariables + k * numberOfVariables + l] -=
-              (lFbnd[5 * basisSize2 * numberOfVariables +
-                     j * basisSize * numberOfVariables + k * numberOfVariables +
-                     l] *
-                   kernels::FRCoeff[order][i] +
-               lFbnd[4 * basisSize2 * numberOfVariables +
-                     j * basisSize * numberOfVariables + k * numberOfVariables +
-                     l] *
-                   kernels::FLCoeff[order][i]) *
+          lduh[idx_lduh(i, j, k, l)] -=
+              (lFbnd[idx_lFbnd(5, j, k, l)] * kernels::FRCoeff[order][i] +
+               lFbnd[idx_lFbnd(4, j, k, l)] * kernels::FLCoeff[order][i]) *
               updateSize;
         }
       }

@@ -2,30 +2,31 @@
 #include "InitialData.h"
 
 
-MyEulerSolver_Plotter3::MyEulerSolver_Plotter3() {
+Euler::MyEulerSolver_Plotter3::MyEulerSolver_Plotter3(MyEulerSolver& solver) {
   // @todo Please insert your code here
 }
 
 
-MyEulerSolver_Plotter3::~MyEulerSolver_Plotter3() {
+Euler::MyEulerSolver_Plotter3::~MyEulerSolver_Plotter3() {
   // @todo Please insert your code here
 }
 
 
-void MyEulerSolver_Plotter3::startPlotting(double time) {
+void Euler::MyEulerSolver_Plotter3::startPlotting(double time) {
   this->time = time;
 }
 
 
-void MyEulerSolver_Plotter3::finishPlotting() {
+void Euler::MyEulerSolver_Plotter3::finishPlotting() {
   // @todo Please insert your code here
 }
 
 
-void MyEulerSolver_Plotter3::mapQuantities(
+void Euler::MyEulerSolver_Plotter3::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, int>&    pos,
     double* Q,
     double* outputQuantities,
     double timeStamp

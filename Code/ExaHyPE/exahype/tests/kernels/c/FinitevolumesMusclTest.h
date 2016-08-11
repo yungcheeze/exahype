@@ -15,6 +15,7 @@
 #define _EXAHYPE_TESTS_FINITEVOLUMES_MUSCL_TEST_H_
 
 #include "peano/utils/Globals.h"
+#include "tarch/logging/Log.h"
 #include "tarch/tests/TestCase.h"
 
 namespace exahype {
@@ -29,9 +30,11 @@ class FinitevolumesMusclTest : public tarch::tests::TestCase {
   void run() override;
 
  private:
+  static tarch::logging::Log _log;
   void testSolutionUpdate();
 
   static void testFlux(const double* const Q, double** F);
+  static void testSource(const double* const Q, double* S);
   static void testEigenvalues(const double* const Q, const int normalNonZero,
                               double* lambda);
   // TODO(guera): Extend

@@ -1,8 +1,5 @@
-module load slurm
-
-
-
-sbatch --nodes=4 --ntasks-per-node=4 euler.slurm-script
+sbatch --nodes=1 --ntasks-per-node=1 euler.slurm-script
+sbatch --nodes=1 --ntasks-per-node=2 euler.slurm-script
 
 sbatch --nodes=1  --ntasks-per-node=4 euler.slurm-script
 sbatch --nodes=2  --ntasks-per-node=4 euler.slurm-script

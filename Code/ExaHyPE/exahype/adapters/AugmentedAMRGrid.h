@@ -25,7 +25,8 @@
  #include "exahype/mappings/SolutionAdjustment.h"
  #include "exahype/mappings/MarkingForAugmentation.h"
  #include "exahype/mappings/Augmentation.h"
- #include "exahype/adapters/AugmentedAMRGrid2MultiscaleLinkedCell_7.h"
+ #include "exahype/mappings/LoadBalancing.h"
+ #include "exahype/adapters/AugmentedAMRGrid2MultiscaleLinkedCell_8.h"
 
 
 
@@ -52,7 +53,8 @@ class exahype::adapters::AugmentedAMRGrid {
     typedef mappings::SolutionAdjustment Mapping4;
     typedef mappings::MarkingForAugmentation Mapping5;
     typedef mappings::Augmentation Mapping6;
-    typedef adapters::AugmentedAMRGrid2MultiscaleLinkedCell_7 Mapping7;
+    typedef mappings::LoadBalancing Mapping7;
+    typedef adapters::AugmentedAMRGrid2MultiscaleLinkedCell_8 Mapping8;
 
      Mapping0  _map2NewTimeStep;
      Mapping1  _map2RegularMesh;
@@ -61,7 +63,8 @@ class exahype::adapters::AugmentedAMRGrid {
      Mapping4  _map2SolutionAdjustment;
      Mapping5  _map2MarkingForAugmentation;
      Mapping6  _map2Augmentation;
-     Mapping7  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7;
+     Mapping7  _map2LoadBalancing;
+     Mapping8  _map2AugmentedAMRGrid2MultiscaleLinkedCell_8;
 
 
   public:

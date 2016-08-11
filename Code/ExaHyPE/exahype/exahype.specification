@@ -1,3 +1,4 @@
+
 component: ExaHyPE
 
 namespace: ::exahype
@@ -27,6 +28,9 @@ event-mapping:
 
 event-mapping: // -DEC: consider to move the computation of boundary extrapolated values out of the space-time predictor mapping
   name: SpaceTimePredictor
+
+event-mapping: 
+  name: LoadBalancing
   
 event-mapping:
   name: VolumeIntegral
@@ -78,6 +82,7 @@ adapter:
   merge-with-user-defined-mapping: SolutionAdjustment        // (enterCell,runconcurrently)             
   merge-with-user-defined-mapping: MarkingForAugmentation    // (enterCell,runconcurrently)
   merge-with-user-defined-mapping: Augmentation              // (touchVertexLastTime,enterCell,serial)
+  merge-with-user-defined-mapping: LoadBalancing
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)       
   
 adapter:
@@ -124,6 +129,7 @@ adapter:
   merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: GlobalTimeStepComputation
   merge-with-user-defined-mapping: FaceUnknownsProjection 
+  merge-with-user-defined-mapping: LoadBalancing
  
  
 adapter: 
@@ -169,6 +175,7 @@ adapter:
   merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: GlobalTimeStepComputation
+  merge-with-user-defined-mapping: LoadBalancing
 
 adapter:
   name: CorrectorAndPlot

@@ -30,45 +30,28 @@ mpibalancing::GreedyBalancing::~GreedyBalancing() {
 }
 
 
-void mpibalancing::GreedyBalancing::receivedStartCommand( const int commandFromMaster ) {
+void mpibalancing::GreedyBalancing::receivedStartCommand( peano::parallel::loadbalancing::LoadBalancingFlag commandFromMaster ) {
 }
 
 
-int mpibalancing::GreedyBalancing::getCommandForWorker( int workerRank, bool forkIsAllowed, bool joinIsAllowed ) {
+peano::parallel::loadbalancing::LoadBalancingFlag  mpibalancing::GreedyBalancing::getCommandForWorker( int workerRank, bool forkIsAllowed, bool joinIsAllowed ) {
   logTraceInWith3Arguments( "getCommandForWorker(int,bool)", workerRank, forkIsAllowed, joinIsAllowed);
 
-  int result = peano::parallel::loadbalancing::ForkGreedy;
+  peano::parallel::loadbalancing::LoadBalancingFlag result = peano::parallel::loadbalancing::LoadBalancingFlag::ForkGreedy;
 
   if (_forkHasFailed) {
-    result = peano::parallel::loadbalancing::Continue;
+    result = peano::parallel::loadbalancing::LoadBalancingFlag::Continue;
   }
   else if (_workersLevel.count(workerRank)==1) {
     const int workersLevel = _workersLevel.count(workerRank);
 
     if (workersLevel>=_finestLevelToForkAggressively) {
-      result = peano::parallel::loadbalancing::ForkOnce;
+      result = peano::parallel::loadbalancing::LoadBalancingFlag::ForkOnce;
     }
   }
 
-  logTraceOutWith1Argument( "getCommandForWorker(int,bool)", result );
+  logTraceOutWith1Argument( "getCommandForWorker(int,bool)", static_cast<int>(result) );
   return result;
-}
-
-
-void mpibalancing::GreedyBalancing::receivedTerminateCommand(
-  int     workerRank,
-  double  workerNumberOfInnerVertices,
-  double  workerNumberOfBoundaryVertices,
-  double  workerNumberOfOuterVertices,
-  double  workerNumberOfInnerCells,
-  double  workerNumberOfOuterCells,
-  int     workerMaxLevel,
-  int     currentLevel,
-  const tarch::la::Vector<DIMENSIONS,double>& boundingBoxOffset,
-  const tarch::la::Vector<DIMENSIONS,double>& boundingBoxSize,
-  bool    workerCouldNotEraseDueToDecomposition
-) {
-  _workersLevel[workerRank] = currentLevel;
 }
 
 

@@ -12,6 +12,8 @@
  **/
  
 #include "exahype/runners/Runner.h"
+
+#include "../../../Peano/mpibalancing/HotspotBalancing.h"
 #include "exahype/repositories/Repository.h"
 #include "exahype/repositories/RepositoryFactory.h"
 
@@ -42,9 +44,10 @@
 #include "sharedmemoryoracles/OracleForOnePhaseWithGrainSizeSampling.h"
 #include "sharedmemoryoracles/OracleForOnePhaseWithShrinkingGrainSize.h"
 
+#ifdef Parallel
 #include "mpibalancing/GreedyBalancing.h"
-#include "mpibalancing/StaticBalancing.h"
-
+#include "mpibalancing/FairNodePoolStrategy.h"
+#endif
 #include "exahype/plotters/Plotter.h"
 
 #include "exahype/solvers/ADERDGSolver.h"
@@ -66,15 +69,17 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
         );
         logInfo("initDistributedMemoryConfiguration()", "load balancing relies on FCFS answering strategy");
       }
-      // @todo evtl. fehlen hier die Includes
-      /*
-        if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
-          tarch::parallel::NodePool::getInstance().setStrategy(
-            new mpibalancing::FairNodePoolStrategy(6)
-          );
+      else if (configuration.find( "fair" )!=std::string::npos ) {
+        int ranksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"ranks-per-node"));
+        if (ranksPerNode<=0) {
+  	  logError( "initDistributedMemoryConfiguration()", "please inform fair balancing how many ranks per node you use through value \"ranks-per-node:XXX\". Read value " << ranksPerNode << " is invalid" );
+  	  ranksPerNode = 1;
         }
-        #else
-      */
+        tarch::parallel::NodePool::getInstance().setStrategy(
+          new mpibalancing::FairNodePoolStrategy(ranksPerNode)
+        );
+        logInfo("initDistributedMemoryConfiguration()", "load balancing relies on fair answering strategy with " << ranksPerNode << " rank(s) per node") ;
+      }
       else {
         logError("initDistributedMemoryConfiguration()", "no valid load balancing answering strategy specified: use FCFS");
         tarch::parallel::NodePool::getInstance().setStrategy(
@@ -92,7 +97,7 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
     else if ( configuration.find( "hotspot" )!=std::string::npos ) {
       logInfo("initDistributedMemoryConfiguration()", "use global hotspot elimination without joins (mpibalancing/StaticBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-        new mpibalancing::StaticBalancing(false)
+        new mpibalancing::HotspotBalancing(false)
       );
     }
     else {
@@ -260,28 +265,61 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   int gridSetupIterations = 0;
   repository.switchToAugmentedAMRGrid();
 
-  do {
+  int gridSetupIterationsToRun = 3;
+  while (gridSetupIterationsToRun>0) {
     repository.iterate();
     gridSetupIterations++;
-    repository.iterate();
-    gridSetupIterations++;
+   
+    if ( UseStationaryCriterion && repository.getState().isGridStationary() ) {
+      gridSetupIterationsToRun--;
+    }
+    else if ( !repository.getState().isGridBalanced() && tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0 ) {
+      gridSetupIterationsToRun=3;  // we need at least 3 sweeps to recover from ongoing balancing
+    }
+    else if ( !repository.getState().isGridBalanced()  ) {
+      gridSetupIterationsToRun=1;  // one additional step to get adjacency right
+    }
+    else {
+      gridSetupIterationsToRun--;
+    }
+
+    #if defined(TrackGridStatistics) && defined(Asserts)
+    logInfo("runAsMaster()",
+      "grid setup iteration #" << gridSetupIterations <<
+      ", max-level=" << repository.getState().getMaxLevel() <<
+      ", state=" << repository.getState().toString() <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+    );
+    #elif defined(Asserts)
+    logInfo("runAsMaster()",
+      "grid setup iteration #" << gridSetupIterations <<
+      ", state=" << repository.getState().toString() <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+    );
+    #elif defined(TrackGridStatistics)
     logInfo("runAsMaster()",
       "grid setup iteration #" << gridSetupIterations <<
       ", max-level=" << repository.getState().getMaxLevel() <<
       ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
+    #else
+    logInfo("runAsMaster()",
+      "grid setup iteration #" << gridSetupIterations <<
+      ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+    );
+    #endif
   }
-  while (
-   ( UseStationaryCriterion && !repository.getState().isGridStationary())
-   ||
-   (!UseStationaryCriterion && !repository.getState().isGridBalanced())
-  );
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
 
   if (tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0) {
     logWarning( "createGrid(Repository)", "there are still " << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes() << " ranks idle" )
   }
+
+  #ifdef Parallel
+  // Might be too restrictive for later runs. Remove but keep warning from above
+  assertion( tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()==0 );
+  #endif
 }
 
 
