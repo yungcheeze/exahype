@@ -11,7 +11,7 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#include "ADERDG2VTK.h"
+#include "ADERDG2CartesianVTK.h"
 #include "tarch/parallel/Node.h"
 
 // @todo 16/05/03:Dominic Etienne Charreir Plotter depends now on kernels.
@@ -26,6 +26,8 @@
 #include "tarch/plotter/griddata/unstructured/vtk/VTKBinaryFileWriter.h"
 
 
+#include "kernels/DGBasisFunctions.h"
+
 
 std::string exahype::plotters::ADERDG2CartesianVerticesVTKAscii::getIdentifier() {
   return "vtk::Cartesian::vertices::ascii";
@@ -33,7 +35,7 @@ std::string exahype::plotters::ADERDG2CartesianVerticesVTKAscii::getIdentifier()
 
 
 exahype::plotters::ADERDG2CartesianVerticesVTKAscii::ADERDG2CartesianVerticesVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2VTK(postProcessing,false,true,false) {
+    ADERDG2CartesianVTK(postProcessing,false,false) {
 }
 
 
@@ -43,7 +45,7 @@ std::string exahype::plotters::ADERDG2CartesianVerticesVTKBinary::getIdentifier(
 
 
 exahype::plotters::ADERDG2CartesianVerticesVTKBinary::ADERDG2CartesianVerticesVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2VTK(postProcessing,true,true,false) {
+    ADERDG2CartesianVTK(postProcessing,true,false) {
 }
 
 
@@ -54,7 +56,7 @@ std::string exahype::plotters::ADERDG2CartesianCellsVTKAscii::getIdentifier() {
 
 
 exahype::plotters::ADERDG2CartesianCellsVTKAscii::ADERDG2CartesianCellsVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2VTK(postProcessing,false,true,true) {
+    ADERDG2CartesianVTK(postProcessing,false,true) {
 }
 
 
@@ -64,69 +66,19 @@ std::string exahype::plotters::ADERDG2CartesianCellsVTKBinary::getIdentifier() {
 
 
 exahype::plotters::ADERDG2CartesianCellsVTKBinary::ADERDG2CartesianCellsVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2VTK(postProcessing,true,true,true) {
+    ADERDG2CartesianVTK(postProcessing,true,true) {
 }
 
 
-
-
-
-
-
-
-
-std::string exahype::plotters::ADERDG2LegendreVerticesVTKAscii::getIdentifier() {
-  return "vtk::Legendre::vertices::ascii";
-}
-
-
-exahype::plotters::ADERDG2LegendreVerticesVTKAscii::ADERDG2LegendreVerticesVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2VTK(postProcessing,false,false,false) {
-}
-
-
-std::string exahype::plotters::ADERDG2LegendreVerticesVTKBinary::getIdentifier() {
-  return "vtk::Legendre::vertices::binary";
-}
-
-
-exahype::plotters::ADERDG2LegendreVerticesVTKBinary::ADERDG2LegendreVerticesVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2VTK(postProcessing,true,false,false) {
-}
-
-
-
-std::string exahype::plotters::ADERDG2LegendreCellsVTKAscii::getIdentifier() {
-  return "vtk::Legendre::cells::ascii";
-}
-
-
-exahype::plotters::ADERDG2LegendreCellsVTKAscii::ADERDG2LegendreCellsVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2VTK(postProcessing,false,false,true) {
-}
-
-
-std::string exahype::plotters::ADERDG2LegendreCellsVTKBinary::getIdentifier() {
- return "vtk::Legendre::cells::binary";
-}
-
-
-exahype::plotters::ADERDG2LegendreCellsVTKBinary::ADERDG2LegendreCellsVTKBinary(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2VTK(postProcessing,true,false,true) {
-}
-
-
-
-exahype::plotters::ADERDG2VTK::ADERDG2VTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, bool isBinary, bool isCartesian, bool plotCells):
+exahype::plotters::ADERDG2CartesianVTK::ADERDG2CartesianVTK(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing, bool isBinary, bool plotCells):
   Device(postProcessing),
   _fileCounter(-1),
   _isBinary(isBinary),
-  _isCartesian(isCartesian),
   _plotCells(plotCells) {
 }
 
 
-void exahype::plotters::ADERDG2VTK::init(
+void exahype::plotters::ADERDG2CartesianVTK::init(
   const std::string& filename,
   int                orderPlusOne,
   int                unknowns,
@@ -162,7 +114,7 @@ void exahype::plotters::ADERDG2VTK::init(
 }
 
 
-void exahype::plotters::ADERDG2VTK::startPlotting( double time ) {
+void exahype::plotters::ADERDG2CartesianVTK::startPlotting( double time ) {
   _fileCounter++;
 
   assertion( _patchWriter==nullptr );
@@ -199,7 +151,7 @@ void exahype::plotters::ADERDG2VTK::startPlotting( double time ) {
 }
 
 
-void exahype::plotters::ADERDG2VTK::finishPlotting() {
+void exahype::plotters::ADERDG2CartesianVTK::finishPlotting() {
   _postProcessing->finishPlotting();
 
   if (_writtenUnknowns>0) {
@@ -239,11 +191,11 @@ void exahype::plotters::ADERDG2VTK::finishPlotting() {
 }
 
 
-exahype::plotters::ADERDG2VTK::~ADERDG2VTK() {
+exahype::plotters::ADERDG2CartesianVTK::~ADERDG2CartesianVTK() {
 }
 
 
-void exahype::plotters::ADERDG2VTK::writeTimeStampDataToPatch( double timeStamp, int vertexIndex ) {
+void exahype::plotters::ADERDG2CartesianVTK::writeTimeStampDataToPatch( double timeStamp, int vertexIndex ) {
   if (_writtenUnknowns>0) {
     dfor(i,_order+1) {
       _timeStampDataWriter->plotVertex(vertexIndex, timeStamp);
@@ -253,9 +205,108 @@ void exahype::plotters::ADERDG2VTK::writeTimeStampDataToPatch( double timeStamp,
 }
 
 
-void exahype::plotters::ADERDG2VTK::plotPatch(
+void exahype::plotters::ADERDG2CartesianVTK::plotVertexData(
+  int firstVertexIndex,
+  const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+  const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+  double* u,
+  double timeStamp
+) {
+  assertion( _vertexDataWriter!=nullptr || _writtenUnknowns==0 );
+
+  double* interpoland = new double[_solverUnknowns];
+  double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
+
+  dfor(i,_order+1) {
+    for (int unknown=0; unknown < _solverUnknowns; unknown++) {
+      interpoland[unknown] = 0.0;
+      dfor(ii,_order+1) { // Gauss-Legendre node indices
+        int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
+        interpoland[unknown] += kernels::equidistantGridProjector1d[_order][ii(1)][i(1)] *
+                 kernels::equidistantGridProjector1d[_order][ii(0)][i(0)] *
+                 #ifdef Dim3
+                 kernels::equidistantGridProjector1d[_order][ii(2)][i(2)] *
+                 #endif
+                 u[iGauss * _solverUnknowns + unknown];
+        assertion3(interpoland[unknown] == interpoland[unknown], offsetOfPatch, sizeOfPatch, iGauss);
+      }
+    }
+
+    assertion(sizeOfPatch(0)==sizeOfPatch(1));
+    _postProcessing->mapQuantities(
+      offsetOfPatch,
+      sizeOfPatch,
+      offsetOfPatch + i.convertScalar<double>()* (sizeOfPatch(0)/(_order)),
+      i,
+      interpoland,
+      value,
+      timeStamp
+    );
+
+    if (_writtenUnknowns>0) {
+      _vertexDataWriter->plotVertex(firstVertexIndex, value, _writtenUnknowns );
+    }
+
+    firstVertexIndex++;
+  }
+
+  if (interpoland!=nullptr)  delete[] interpoland;
+  if (value!=nullptr)        delete[] value;
+}
+
+
+void exahype::plotters::ADERDG2CartesianVTK::plotCellData(
+  int firstCellIndex,
+  const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
+  const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+  double* u,
+  double timeStamp
+) {
+  assertion( _cellDataWriter!=nullptr || _writtenUnknowns==0 );
+
+  double* interpoland = new double[_solverUnknowns];
+  double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
+
+  dfor(i,_order) {
+    for (int unknown=0; unknown < _solverUnknowns; unknown++) {
+      interpoland[unknown] = kernels::interpolate(
+        offsetOfPatch.data(),
+        sizeOfPatch.data(),
+        (offsetOfPatch + (i.convertScalar<double>()+0.5)* (sizeOfPatch(0)/(_order))).data(),
+        _solverUnknowns,
+        unknown,
+        _order,
+        u
+      );
+    }
+
+    assertion(sizeOfPatch(0)==sizeOfPatch(1));
+    _postProcessing->mapQuantities(
+      offsetOfPatch,
+      sizeOfPatch,
+      offsetOfPatch + (i.convertScalar<double>()+0.5)* (sizeOfPatch(0)/(_order)),
+      i,
+      interpoland,
+      value,
+      timeStamp
+    );
+
+    if (_writtenUnknowns>0) {
+      _cellDataWriter->plotCell(firstCellIndex, value, _writtenUnknowns );
+    }
+
+    firstCellIndex++;
+  }
+
+  if (interpoland!=nullptr)  delete[] interpoland;
+  if (value!=nullptr)        delete[] value;
+}
+
+
+void exahype::plotters::ADERDG2CartesianVTK::plotPatch(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
-    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch, double* u,
+    const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
+    double* u,
     double timeStamp) {
   if (
     tarch::la::allSmaller(_regionOfInterestLeftBottomFront,offsetOfPatch+sizeOfPatch)
@@ -266,54 +317,18 @@ void exahype::plotters::ADERDG2VTK::plotPatch(
     assertion( _writtenUnknowns==0 || _gridWriter!=nullptr );
     assertion( _writtenUnknowns==0 || _timeStampDataWriter!=nullptr );
 
-    int vertexIndex = _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _order).first;
-
-    double* interpoland = new double[_solverUnknowns];
-    double* value       = _writtenUnknowns==0 ? nullptr : new double[_writtenUnknowns];
-
-    //writeTimeStampDataToPatch( timeStamp, vertexIndex );
-
-    // @todo 16/05/03:Dominic Etienne Charrier
-    // This is depending on the choice of basis/implementation.
-    // The equidistant grid projection should therefore be moved into the solver.
-    dfor(i,_order+1) {
-          if (_writtenUnknowns>0) {
-          _timeStampDataWriter->plotVertex(vertexIndex, timeStamp);
-      }
-
-      for (int unknown=0; unknown < _solverUnknowns; unknown++) {
-        interpoland[unknown] = 0.0;
-        dfor(ii,_order+1) { // Gauss-Legendre node indices
-          int iGauss = peano::utils::dLinearisedWithoutLookup(ii,_order + 1);
-          interpoland[unknown] += kernels::equidistantGridProjector1d[_order][ii(1)][i(1)] *
-                   kernels::equidistantGridProjector1d[_order][ii(0)][i(0)] *
-                   #ifdef Dim3
-                   kernels::equidistantGridProjector1d[_order][ii(2)][i(2)] *
-                   #endif
-                   u[iGauss * _solverUnknowns + unknown];
-          assertion3(interpoland[unknown] == interpoland[unknown], offsetOfPatch, sizeOfPatch, iGauss);
-        }
-      }
-
-      assertion(sizeOfPatch(0)==sizeOfPatch(1));
-      _postProcessing->mapQuantities(
-        offsetOfPatch,
-        sizeOfPatch,
-        offsetOfPatch + i.convertScalar<double>()* (sizeOfPatch(0)/(_order)),
-	i,
-        interpoland,
-        value,
-        timeStamp
-      );
-
-      if (_writtenUnknowns>0) {
-        _vertexDataWriter->plotVertex(vertexIndex, value, _writtenUnknowns );
-      }
-
-      vertexIndex++;
+    std::pair<int,int> vertexAndCellIndex(0,0);
+    if (_writtenUnknowns>0) {
+      vertexAndCellIndex = _gridWriter->plotPatch(offsetOfPatch, sizeOfPatch, _order);
     }
 
-    if (interpoland!=nullptr)  delete[] interpoland;
-    if (value!=nullptr)        delete[] value;
+    writeTimeStampDataToPatch( timeStamp, vertexAndCellIndex.first );
+
+    if (_plotCells) {
+      plotCellData( vertexAndCellIndex.second, offsetOfPatch, sizeOfPatch, u, timeStamp );
+    }
+    else {
+      plotVertexData( vertexAndCellIndex.first, offsetOfPatch, sizeOfPatch, u, timeStamp );
+    }
   }
 }

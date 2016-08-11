@@ -12,7 +12,8 @@
  **/
  
 #include "FiniteVolumes2VTKAscii.h"
-#include "ADERDG2VTK.h"
+
+#include "ADERDG2CartesianVTK.h"
 #include "tarch/parallel/Node.h"
 
 // @todo 16/05/03:Dominic Etienne Charreir Plotter depends now on kernels.

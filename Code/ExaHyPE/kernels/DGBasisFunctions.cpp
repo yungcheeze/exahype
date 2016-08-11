@@ -12,12 +12,55 @@
  **/
  
 #include "kernels/DGBasisFunctions.h"
+//
+// Makes the kernels depend on Peano, but it just seems to be stupid not to reuse stuff that is already there.
+//
+#include "peano/utils/Loop.h"
+
 
 kernels::UnivariateFunction** kernels::basisFunctions;
 
 kernels::UnivariateFunction** kernels::basisFunctionFirstDerivatives;
 
 kernels::UnivariateFunction** kernels::basisFunctionSecondDerivatives;
+
+
+double kernels::interpolate(
+    const   double*                                      offsetOfPatch,
+    const double*                                      sizeOfPatch,
+    const double*                                      x,
+    int                                          numberOfUnknowns,
+    int                                          unknown,
+    int                                          order,
+    const double*                                      u
+) {
+  double result = 0.0;
+
+  double xRef[DIMENSIONS];
+  xRef[0] =  (x[0] - offsetOfPatch[0]) / sizeOfPatch[0];
+  xRef[1] =  (x[1] - offsetOfPatch[1]) / sizeOfPatch[1];
+  #ifdef Dim3
+  xRef[2] =  (x[2] - offsetOfPatch[2]) / sizeOfPatch[2];
+  #endif
+
+
+
+  // The code below evaluates the basis functions at the reference coordinates
+  // and multiplies them with their respective coefficient.
+  dfor(ii,order+1) { // Gauss-Legendre node indices
+    int iGauss = peano::utils::dLinearisedWithoutLookup(ii,order + 1);
+    result += kernels::basisFunctions[order][ii(0)](xRef[0]) *
+             kernels::basisFunctions[order][ii(1)](xRef[1]) *
+             #ifdef Dim3
+             kernels::basisFunctions[order][ii(2)](xRef[2]) *
+             #endif
+             u[iGauss * numberOfUnknowns + unknown];
+    assertion3(result == result, offsetOfPatch, sizeOfPatch, iGauss);
+  }
+
+  return result;
+}
+
 
 void kernels::freeBasisFunctions(const std::set<int>& orders) {
   // @todo The argument is not used yet.

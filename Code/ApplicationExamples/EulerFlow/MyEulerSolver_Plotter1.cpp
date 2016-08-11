@@ -12,7 +12,7 @@
 #include "Primitives.h"
 #include "InitialData.h"
 
-MyEulerSolver_Plotter1::MyEulerSolver_Plotter1() {
+Euler::MyEulerSolver_Plotter1::MyEulerSolver_Plotter1(MyEulerSolver& solver) {
 	// open all the reductions
 	assert( 5 == nVars );
 	
@@ -38,12 +38,12 @@ MyEulerSolver_Plotter1::MyEulerSolver_Plotter1() {
 }
 
 
-MyEulerSolver_Plotter1::~MyEulerSolver_Plotter1() {
+Euler::MyEulerSolver_Plotter1::~MyEulerSolver_Plotter1() {
 	// delete all reductions.
 }
 
 
-void MyEulerSolver_Plotter1::startPlotting(double time) {
+void Euler::MyEulerSolver_Plotter1::startPlotting(double time) {
 	this->time = time;
 	for(int i=0; i<nVars; i++) {
 		conserved[i]->initRow(time);
@@ -54,7 +54,7 @@ void MyEulerSolver_Plotter1::startPlotting(double time) {
 }
 
 
-void MyEulerSolver_Plotter1::finishPlotting() {
+void Euler::MyEulerSolver_Plotter1::finishPlotting() {
 	for(int i=0; i<nVars; i++) {
 		conserved[i]->writeRow();
 		primitives[i]->writeRow();
@@ -63,7 +63,7 @@ void MyEulerSolver_Plotter1::finishPlotting() {
 	statistics->writeRow();
 }
 
-void MyEulerSolver_Plotter1::mapQuantities(
+void Euler::MyEulerSolver_Plotter1::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,

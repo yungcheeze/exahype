@@ -169,7 +169,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _methodBodyWriter.write(
           "  exahype::plotters::RegisteredPlotters.push_back( new exahype::plotters::Plotter("
-              + (_kernelNumber - 1) + "," + _plotterNumber + ",parser,new " + plotterName + "() ));\n\n");
+              + (_kernelNumber - 1) + "," + _plotterNumber + ",parser,new " + _projectName + "::" + plotterName + "(  *static_cast<" + _projectName + "::" + _solverName + "*>(exahype::solvers::RegisteredSolvers[" + (_kernelNumber-1) + "])) ));\n\n");
       _plotterNumber++;
       System.out.println("added plotter ... ok");
     } catch (Exception exc) {

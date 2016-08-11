@@ -3,27 +3,27 @@
 #include "Primitives.h"
 
 
-MyEulerSolver_Plotter2::MyEulerSolver_Plotter2() {
+Euler::MyEulerSolver_Plotter2::MyEulerSolver_Plotter2(MyEulerSolver& solver) {
   // @todo Please insert your code here
 }
 
 
-MyEulerSolver_Plotter2::~MyEulerSolver_Plotter2() {
+Euler::MyEulerSolver_Plotter2::~MyEulerSolver_Plotter2() {
   // @todo Please insert your code here
 }
 
 
-void MyEulerSolver_Plotter2::startPlotting(double time) {
+void Euler::MyEulerSolver_Plotter2::startPlotting(double time) {
   // @todo Please insert your code here
 }
 
 
-void MyEulerSolver_Plotter2::finishPlotting() {
+void Euler::MyEulerSolver_Plotter2::finishPlotting() {
   // @todo Please insert your code here
 }
 
 
-void MyEulerSolver_Plotter2::mapQuantities(
+void Euler::MyEulerSolver_Plotter2::mapQuantities(
     const tarch::la::Vector<DIMENSIONS, double>& offsetOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& sizeOfPatch,
     const tarch::la::Vector<DIMENSIONS, double>& x,

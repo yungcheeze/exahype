@@ -311,8 +311,10 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
     logWarning( "createGrid(Repository)", "there are still " << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes() << " ranks idle" )
   }
 
+  #ifdef Parallel
   // Might be too restrictive for later runs. Remove but keep warning from above
   assertion( tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()==0 );
+  #endif
 }
 
 
