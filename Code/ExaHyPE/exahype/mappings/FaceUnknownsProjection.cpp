@@ -67,8 +67,9 @@ exahype::mappings::FaceUnknownsProjection::enterCellSpecification() {
 }
 peano::MappingSpecification
 exahype::mappings::FaceUnknownsProjection::leaveCellSpecification() {
-  return peano::MappingSpecification(peano::MappingSpecification::WholeTree,
-                                     peano::MappingSpecification::Serial);
+  return peano::MappingSpecification(
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 peano::MappingSpecification
 exahype::mappings::FaceUnknownsProjection::ascendSpecification() {
@@ -85,6 +86,8 @@ exahype::mappings::FaceUnknownsProjection::descendSpecification() {
 
 tarch::logging::Log exahype::mappings::FaceUnknownsProjection::_log(
     "exahype::mappings::FaceUnknownsProjection");
+
+tarch::multicore::BooleanSemaphore exahype::mappings::FaceUnknownsProjection::_semaphoreForRestriction;
 
 exahype::mappings::FaceUnknownsProjection::FaceUnknownsProjection() {
   // do nothing
@@ -569,6 +572,8 @@ void exahype::mappings::FaceUnknownsProjection::leaveCell(
             case exahype::records::ADERDGCellDescription::Ancestor:
               assertion1(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pFine.toString());
               subcellPosition = fineGridCell.computeSubcellPositionOfCellOrAncestor(pFine);
+
+              tarch::multicore::Lock lock(_semaphoreForRestriction); // Is unlocked if lock gets out of scope.
               restrictADERDGFaceData(pFine,subcellPosition.parentIndex,subcellPosition.subcellIndex);
               break;
             default:

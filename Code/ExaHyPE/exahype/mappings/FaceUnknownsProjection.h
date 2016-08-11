@@ -53,6 +53,12 @@ class exahype::mappings::FaceUnknownsProjection {
   static tarch::logging::Log _log;
 
   /**
+   * A semaphore that is locked if a thread performs a restriction
+   * operation.
+   */
+  static tarch::multicore::BooleanSemaphore _semaphoreForRestriction;
+
+  /**
    * Some counters for debuggin purposes.
    */
   static int _parentOfCellOrAncestorNotFound;
