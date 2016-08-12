@@ -69,6 +69,9 @@ class mpibalancing::FairNodePoolStrategy: public tarch::parallel::NodePoolStrate
         };
 
       private:
+        /**
+         * Is a copy of the encapsulating class' field.
+         */
         int         _mpiRanksPerNode;
 
         /**

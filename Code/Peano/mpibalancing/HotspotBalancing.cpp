@@ -129,6 +129,8 @@ void mpibalancing::HotspotBalancing::receivedStartCommand( peano::parallel::load
   identifyCriticalPathes( commandFromMaster );
   computeMaxForksOnCriticalWorker( commandFromMaster );
 
+  _weightMap[tarch::parallel::Node::getInstance().getRank()] =0.0;
+
   logTraceOut("receivedStartCommand(LoadBalancingFlag)" );
 }
 
@@ -183,10 +185,10 @@ void mpibalancing::HotspotBalancing::receivedMergeWithMaster(
 }
 
 
-void mpibalancing::HotspotBalancing::restrictToRoot(
+void mpibalancing::HotspotBalancing::increaseLocalWeight(
   double localWeight
 ) {
-  _weightMap[tarch::parallel::Node::getInstance().getRank()] = localWeight;
+  _weightMap[tarch::parallel::Node::getInstance().getRank()] += localWeight;
 }
 
 
