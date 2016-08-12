@@ -129,7 +129,7 @@ void mpibalancing::HotspotBalancing::receivedStartCommand( peano::parallel::load
   identifyCriticalPathes( commandFromMaster );
   computeMaxForksOnCriticalWorker( commandFromMaster );
 
-  _weightMap[tarch::parallel::Node::getInstance().getRank()] /= 2.0;
+  _weightMap[tarch::parallel::Node::getInstance().getRank()] =0.0;
 
   logTraceOut("receivedStartCommand(LoadBalancingFlag)" );
 }
