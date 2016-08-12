@@ -139,12 +139,6 @@ void exahype::mappings::LoadBalancing::leaveCell(
 
   coarseGridCell.restrictLoadBalancingWorkloads(fineGridCell,false);
 
-  if (coarseGridCell.isRoot()) {
-    mpibalancing::HotspotBalancing::restrictToRoot(
-      coarseGridCell.getLocalWorkload()
-    );
-  }
-
   logTraceOutWith1Argument( "leaveCell(...)", fineGridCell );
 }
 
@@ -197,9 +191,13 @@ void exahype::mappings::LoadBalancing::mergeWithWorker(
 #endif
 
 
+void endIteration( ...) {
+  set local workload
+}
+
   </pre>
- * Two calls to receivedMergeWithMaster() and restrictToRoot() in the merge
- * operation or leaveCell, respectively, connect the cost model to the
+ * Two calls to receivedMergeWithMaster() and in endIteration
+ * or leaveCell, respectively, connect the cost model to the
  * balancing.
  *
  * <h2>Behaviour</h2>
@@ -330,19 +328,13 @@ class mpibalancing::HotspotBalancing: public peano::parallel::loadbalancing::Ora
     );
 
     /**
-     * This operation is typically invoked in leaveCell in a fashion similar to
-     * <pre>
-  if (coarseGridCell.isRoot()) {
-    mpibalancing::HotspotBalancing::restrictToRoot(
-      coarseGridCell.getLocalWorkload()
-    );
-  }
-       </pre>
+     * This operation is typically invoked in endIteration().
+     *
      * If a rank deploys all of its 3^d coarsest ranks to other nodes, i.e. is
      * a pure administration rank, then this routine is automatically not
      * called if you follow the recipes above and plug into leaveCell.
      */
-    static void restrictToRoot(
+    static void increaseLocalWeight(
       double  localWeight
     );
 

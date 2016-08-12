@@ -78,8 +78,8 @@ void exahype::mappings::LoadBalancing::leaveCell(
 
   // ohne das geht es
   if (coarseGridCell.isRoot()) {
-    mpibalancing::HotspotBalancing::restrictToRoot(
-      coarseGridCell.getLocalWorkload()
+    mpibalancing::HotspotBalancing::increaseLocalWeight(
+      fineGridCell.getLocalWorkload()
     );
   }
   #endif
