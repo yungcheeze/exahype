@@ -21,7 +21,7 @@ F90 = ifort
 
 # Settings for SuperMUC
 # Run "module load tecplot" before compiling!
-LTEC   = /lrz/sys/applications/tecplot/2012r3/tecplot360/lib/libtecio.a
+LTEC   = $(TECPLOT_BASE)/tecplot360/lib/libtecio.a
 
 LFLAGS = $(LTEC) -cxxlib
 

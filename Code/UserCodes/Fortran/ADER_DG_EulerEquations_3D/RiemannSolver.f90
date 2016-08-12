@@ -13,21 +13,6 @@ SUBROUTINE ADERRiemannSolver(lQbndL,lFbndL,lQbndR,lFbndR,nv)
     REAL              :: LL(nVar), LR(nVar) 
     !
     ! Compute the average states from the left and the right, which we need to compute the numerical dissipation 
-    if (nv(2).eq.1) then
-    write(*,*) "before rsove"
-    write(*,*) nv
-    read(*,*) i
-    if(i > 0) then
-      write(*,*) "lQbndL"
-      write(*,*) lQbndL
-      write(*,*) "lQbndR"
-      write(*,*) lQbndR
-      write(*,*) "lFbndL"
-      write(*,*) lFbndL
-      write(*,*) "lFbndR"
-      write(*,*) lFbndR
-    endif
-    endif
     QavL = 0. 
     QavR = 0. 
     DO k = 1, nDOF(3)
@@ -55,16 +40,6 @@ SUBROUTINE ADERRiemannSolver(lQbndL,lFbndL,lQbndR,lFbndR,nv)
             lFbndR(:,j,k) = lFbndL(:,j,k) 
         ENDDO
     ENDDO
-    if(nv(2).eq.1) then
-    write(*,*) "after rsolve"
-    read(*,*) i
-    if (i > 0) then
-      write(*,*) "lFbndL"
-      write(*,*) lFbndL
-      write(*,*) "lFbndR"
-      write(*,*) lFbndR
-    endif
-    endif
     !
 END SUBROUTINE ADERRiemannSolver 
     
