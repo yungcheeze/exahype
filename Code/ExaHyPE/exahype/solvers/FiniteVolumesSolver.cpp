@@ -79,6 +79,10 @@ void exahype::solvers::FiniteVolumesSolver::sendToRank(int rank, int tag) {
   assertionMsg(false, "not implemented yet");
 }
 
-void exahype::solvers::FiniteVolumesSolver::receiveFromRank(int rank, int tag) {
+void exahype::solvers::FiniteVolumesSolver::receiveFromMasterRank(int rank, int tag) {
+  assertionMsg(false, "not implemented yet");
+}
+
+void exahype::solvers::FiniteVolumesSolver::receiveFromWorkerRank(int rank, int tag) {
   assertionMsg(false, "not implemented yet");
 }

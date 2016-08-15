@@ -224,13 +224,16 @@ class exahype::solvers::Solver {
       const int level) = 0;
 
   /**
-   * This operation has to different branches: one for the master and one for
-   * the worker. If we are in the master, we basically do only send out all
-   * the solver data to the worker. If we are on the worker, we do overwrite
-   * all solver data accordingly.
+   * Send solver copy to remote node
    */
   virtual void sendToRank(int rank, int tag) = 0;
-  virtual void receiveFromRank(int rank, int tag) = 0;
+
+
+  /**
+   * Receive solver copy from remote node
+   */
+  virtual void receiveFromMasterRank(int rank, int tag) = 0;
+  virtual void receiveFromWorkerRank(int rank, int tag) = 0;
 
   void toString();
 

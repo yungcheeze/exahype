@@ -126,9 +126,10 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
 
     virtual double getNextMinTimeStepSize() const override;
 
-    virtual void sendToRank(int rank, int tag) override;
+    void sendToRank(int rank, int tag) override;
 
-    virtual void receiveFromRank(int rank, int tag) override;
+    void receiveFromMasterRank(int rank, int tag) override;
+    void receiveFromWorkerRank(int rank, int tag) override;
 };
 
 

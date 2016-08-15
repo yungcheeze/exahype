@@ -467,8 +467,10 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    * the solver data to the worker. If we are on the worker, we do overwrite
    * all solver data accordingly.
    */
-  void sendToRank(int rank, int tag);
-  void receiveFromRank(int rank, int tag);
+  void sendToRank(int rank, int tag) override;
+
+  void receiveFromMasterRank(int rank, int tag) override;
+  void receiveFromWorkerRank(int rank, int tag) override;
 
   void toString();
 
