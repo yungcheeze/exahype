@@ -107,6 +107,19 @@ class exahype::mappings::GlobalTimeStepComputation {
   static peano::MappingSpecification ascendSpecification();
   static peano::MappingSpecification descendSpecification();
 
+  /**
+   * The global time step computation does synchronise the individual cells
+   * with the solver instances from the master. The actual
+   * synchronisation/consistency routines
+   * for the solvers are done in NewTimeStep and
+   * the SpaceTimePredictor.
+   *
+   * The fundamental job of the global time step mapping is to report back to
+   * the master what time step is permitted. As all those operations are
+   * actually done in enterCell---also the veto of a global time step is done
+   * in the Riemann solver, i.e. before enterCell---we can send back data as
+   * soon as the traversal operation leaves the local subtree.
+   */
   static peano::CommunicationSpecification communicationSpecification();
 
   /**

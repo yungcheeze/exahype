@@ -29,16 +29,12 @@
 
 #include <limits>
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::CommunicationSpecification
 exahype::mappings::GlobalTimeStepComputation::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::
-          SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::
-          SendDataAndStateAfterLastTouchVertexLastTime,
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterProcessingOfLocalSubtree,
       true);
 }
 

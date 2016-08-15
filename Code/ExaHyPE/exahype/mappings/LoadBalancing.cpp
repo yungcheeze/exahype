@@ -2,12 +2,10 @@
 #include "mpibalancing/HotspotBalancing.h"
 
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::CommunicationSpecification   exahype::mappings::LoadBalancing::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterLastTouchVertexLastTime,
       true
   );
