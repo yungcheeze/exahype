@@ -49,8 +49,8 @@ class RiemannSolver;
  * instances. In return, they update the solver instances with the maximal
  * permitted time step size for the subsequent iteration. This synchronisation
  * is realised in the mapping NewTimeStep, i.e. no solver synchronisation is to
- * be done in this mapping.
- *
+ * be done in this mapping. It is also realised in SpaceTimePredictor. So
+ * please consult the documentation there.
  *
  * @author Dominic E. Charrier and Tobias Weinzierl
  */
@@ -201,6 +201,10 @@ class exahype::mappings::RiemannSolver {
    * The mapping does synchronise through synchroniseTimeStepping() invoked
    * on the solvers. Yet, no data is transported through the vertices, the
    * cell or the state object.
+   *
+   * Though we need valid solvers for the actual Riemann solves, we do not
+   * do any solver exchange in this mapping. The appropriate data exchange
+   * is done in NewTimeStep() and SolutionUpdate().
    */
   static peano::CommunicationSpecification communicationSpecification();
 
