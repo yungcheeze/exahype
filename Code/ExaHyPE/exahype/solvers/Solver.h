@@ -225,6 +225,11 @@ class exahype::solvers::Solver {
 
   /**
    * Send solver copy to remote node
+   *
+   * <h2>Time step restriction</h2>
+   *
+   * The restrictions of global solver data is not done through the solver
+   * objects directly via MPI. See GlobalTimeStepComputation for example.
    */
   virtual void sendToRank(int rank, int tag) = 0;
 
@@ -233,7 +238,6 @@ class exahype::solvers::Solver {
    * Receive solver copy from remote node
    */
   virtual void receiveFromMasterRank(int rank, int tag) = 0;
-  virtual void receiveFromWorkerRank(int rank, int tag) = 0;
 
   void toString();
 

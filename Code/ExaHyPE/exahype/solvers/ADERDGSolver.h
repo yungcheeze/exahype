@@ -470,7 +470,6 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
   void sendToRank(int rank, int tag) override;
 
   void receiveFromMasterRank(int rank, int tag) override;
-  void receiveFromWorkerRank(int rank, int tag) override;
 
   void toString();
 

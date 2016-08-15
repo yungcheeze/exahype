@@ -252,27 +252,3 @@ void exahype::solvers::ADERDGSolver::receiveFromMasterRank(int rank, int tag) {
            MPI_STATUS_IGNORE);
 #endif
 }
-
-void exahype::solvers::ADERDGSolver::receiveFromWorkerRank(int rank, int tag) {
-#ifdef Parallel
-/*
-  @todo
-  MPI_Recv(&_minCorrectorTimeStamp, 1, MPI_DOUBLE, rank, tag,
-           tarch::parallel::Node::getInstance().getCommunicator(),
-           MPI_STATUS_IGNORE);
-  MPI_Recv(&_minCorrectorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
-           tarch::parallel::Node::getInstance().getCommunicator(),
-           MPI_STATUS_IGNORE);
-  MPI_Recv(&_minPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
-           tarch::parallel::Node::getInstance().getCommunicator(),
-           MPI_STATUS_IGNORE);
-  MPI_Recv(&_minPredictorTimeStamp, 1, MPI_DOUBLE, rank, tag,
-           tarch::parallel::Node::getInstance().getCommunicator(),
-           MPI_STATUS_IGNORE);
-  MPI_Recv(&_minNextPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
-           tarch::parallel::Node::getInstance().getCommunicator(),
-           MPI_STATUS_IGNORE);
-*/
-  assertionMsg( false, "not implemented yet" );
-#endif
-}
