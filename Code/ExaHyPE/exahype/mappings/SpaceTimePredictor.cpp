@@ -362,7 +362,7 @@ void exahype::mappings::SpaceTimePredictor::receiveDataFromMaster(
     exahype::Cell& workersCoarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   for (auto& p : exahype::solvers::RegisteredSolvers) {
-    p->receiveFromRank(tarch::parallel::NodePool::getInstance().getMasterRank(),
+    p->receiveFromMasterRank(tarch::parallel::NodePool::getInstance().getMasterRank(),
                        _mpiTag);
   }
 }

@@ -278,7 +278,7 @@ void exahype::mappings::NewTimeStep::receiveDataFromMaster(
     exahype::Cell& workersCoarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   for (auto& p : exahype::solvers::RegisteredSolvers) {
-    p->receiveFromRank(
+    p->receiveFromMasterRank(
         tarch::parallel::NodePool::getInstance().getMasterRank(), _mpiTag);
   }
 }
