@@ -79,6 +79,8 @@ void exahype::State::updateRegularInitialGridRefinementStrategy() {
 }
 
 bool exahype::State::refineInitialGridInCreationalEvents() const {
+  assertion1( !isInvolvedInJoinOrFork() || _stateData.getGridConstructionState() != exahype::records::State::Aggressive, toString() );
+
   #ifdef Parallel
   return _stateData.getGridConstructionState() == exahype::records::State::Aggressive;
   #else
