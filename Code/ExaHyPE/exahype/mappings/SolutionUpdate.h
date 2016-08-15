@@ -82,6 +82,9 @@ class exahype::mappings::SolutionUpdate {
   static peano::MappingSpecification ascendSpecification();
   static peano::MappingSpecification descendSpecification();
 
+  /**
+   * No data is to be synchronised between masters and workers.
+   */
   static peano::CommunicationSpecification communicationSpecification();
 
   /**

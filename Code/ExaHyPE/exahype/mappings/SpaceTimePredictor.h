@@ -80,6 +80,9 @@ class exahype::mappings::SpaceTimePredictor {
   static peano::MappingSpecification ascendSpecification();
   static peano::MappingSpecification descendSpecification();
 
+  /**
+   * Please consult the specification's documentation in NewTimeStep.
+   */
   static peano::CommunicationSpecification communicationSpecification();
 
   /**

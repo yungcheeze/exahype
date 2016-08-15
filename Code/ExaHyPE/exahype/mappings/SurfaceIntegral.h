@@ -65,6 +65,9 @@ class exahype::mappings::SurfaceIntegral {
   static peano::MappingSpecification ascendSpecification();
   static peano::MappingSpecification descendSpecification();
 
+  /**
+   * No data is to be synchronised between master and worker.
+   */
   static peano::CommunicationSpecification communicationSpecification();
 
   /**

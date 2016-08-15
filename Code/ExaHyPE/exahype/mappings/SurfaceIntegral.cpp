@@ -23,15 +23,12 @@
 
 #include "exahype/solvers/ADERDGSolver.h"
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::CommunicationSpecification
 exahype::mappings::SurfaceIntegral::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::
-          SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
           SendDataAndStateAfterLastTouchVertexLastTime,
       true);
 }

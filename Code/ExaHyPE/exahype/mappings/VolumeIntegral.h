@@ -65,6 +65,9 @@ class exahype::mappings::VolumeIntegral {
   static peano::MappingSpecification ascendSpecification();
   static peano::MappingSpecification descendSpecification();
 
+  /**
+   * No data is to be exchanged between master and workers.
+   */
   static peano::CommunicationSpecification communicationSpecification();
 
   /**

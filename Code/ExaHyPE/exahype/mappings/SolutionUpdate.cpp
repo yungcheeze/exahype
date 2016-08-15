@@ -25,16 +25,12 @@
 #include "exahype/VertexOperations.h"
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::CommunicationSpecification
 exahype::mappings::SolutionUpdate::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::
-          SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::
-          SendDataAndStateAfterLastTouchVertexLastTime,
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
       true);
 }
 

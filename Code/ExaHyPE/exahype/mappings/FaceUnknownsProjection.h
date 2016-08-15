@@ -157,6 +157,9 @@ class exahype::mappings::FaceUnknownsProjection {
   static peano::MappingSpecification ascendSpecification();
   static peano::MappingSpecification descendSpecification();
 
+  /**
+   * No data is to be kept consistent between master and workers.
+   */
   static peano::CommunicationSpecification communicationSpecification();
 
   /**
