@@ -19,16 +19,11 @@
 
 #include "tarch/multicore/Loop.h"
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::CommunicationSpecification
 exahype::mappings::NewTimeStep::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::
-          SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::
-          SendDataAndStateAfterLastTouchVertexLastTime,
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
       true);
 }
 
@@ -106,8 +101,7 @@ exahype::mappings::NewTimeStep::~NewTimeStep() {
 }
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::NewTimeStep::NewTimeStep(const NewTimeStep& masterThread)
-    : _localState(masterThread._localState) {}
+exahype::mappings::NewTimeStep::NewTimeStep(const NewTimeStep& masterThread) {}
 
 void exahype::mappings::NewTimeStep::mergeWithWorkerThread(
     const NewTimeStep& workerThread) {
@@ -378,11 +372,7 @@ void exahype::mappings::NewTimeStep::leaveCell(
 
 void exahype::mappings::NewTimeStep::beginIteration(
     exahype::State& solverState) {
-  logTraceInWith1Argument("beginIteration(State)", solverState);
-
-  _localState = solverState;
-
-  logTraceOutWith1Argument("beginIteration(State)", solverState);
+  // do nothing
 }
 
 void exahype::mappings::NewTimeStep::endIteration(exahype::State& solverState) {
