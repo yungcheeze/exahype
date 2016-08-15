@@ -24,22 +24,16 @@
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::CommunicationSpecification
 exahype::mappings::RiemannSolver::communicationSpecification() {
   return peano::CommunicationSpecification(
-      peano::CommunicationSpecification::ExchangeMasterWorkerData::
-          SendDataAndStateBeforeFirstTouchVertexFirstTime,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::
-          SendDataAndStateAfterLastTouchVertexLastTime,
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
       true);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::MappingSpecification
 exahype::mappings::RiemannSolver::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
@@ -47,9 +41,7 @@ exahype::mappings::RiemannSolver::touchVertexLastTimeSpecification() {
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::MappingSpecification
 exahype::mappings::RiemannSolver::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
@@ -57,9 +49,7 @@ exahype::mappings::RiemannSolver::touchVertexFirstTimeSpecification() {
       peano::MappingSpecification::AvoidFineGridRaces);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::MappingSpecification
 exahype::mappings::RiemannSolver::enterCellSpecification() {
   return peano::MappingSpecification(
@@ -67,9 +57,7 @@ exahype::mappings::RiemannSolver::enterCellSpecification() {
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::MappingSpecification
 exahype::mappings::RiemannSolver::leaveCellSpecification() {
   return peano::MappingSpecification(
@@ -77,9 +65,7 @@ exahype::mappings::RiemannSolver::leaveCellSpecification() {
       peano::MappingSpecification::AvoidFineGridRaces);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::MappingSpecification
 exahype::mappings::RiemannSolver::ascendSpecification() {
   return peano::MappingSpecification(
@@ -87,9 +73,7 @@ exahype::mappings::RiemannSolver::ascendSpecification() {
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::MappingSpecification
 exahype::mappings::RiemannSolver::descendSpecification() {
   return peano::MappingSpecification(
@@ -97,8 +81,11 @@ exahype::mappings::RiemannSolver::descendSpecification() {
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
-tarch::logging::Log exahype::mappings::RiemannSolver::_log(
-    "exahype::mappings::RiemannSolver");
+
+
+tarch::logging::Log exahype::mappings::RiemannSolver::_log( "exahype::mappings::RiemannSolver");
+
+
 
 exahype::mappings::RiemannSolver::RiemannSolver() {
   // do nothing
@@ -110,8 +97,7 @@ exahype::mappings::RiemannSolver::~RiemannSolver() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::RiemannSolver::RiemannSolver(
-    const RiemannSolver& masterThread)
-    : _localState(masterThread._localState) {}
+    const RiemannSolver& masterThread) {}
 
 void exahype::mappings::RiemannSolver::mergeWithWorkerThread(
     const RiemannSolver& workerThread) {
@@ -752,8 +738,6 @@ void exahype::mappings::RiemannSolver::leaveCell(
 void exahype::mappings::RiemannSolver::beginIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
-
-  _localState = solverState;
 
   _interiorFaceSolves = 0;
   _boundaryFaceSolves = 0;

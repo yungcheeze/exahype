@@ -35,12 +35,24 @@ class RiemannSolver;
 }
 
 /**
- * This is a mapping from the spacetree traversal events to your user-defined
- * activities.
- * The latter are realised within the mappings.
+ * Run the Riemann solves on the faces
  *
- * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
- * @version $Revision: 1.10 $
+ *
+ * @todo Dominic, bitte ordentlich dokumentieren, was hier wann, wo und warum passiert.
+ * Bitte auch dokumentieren, falls Du was mal probiert hast und es nicht funktioniert hat.
+ *
+ *
+ * <h2>Synchronisation in multi-rank environment</h2>
+ *
+ * The individual Riemann solves have to have knowledge about the the
+ * admissible time step sizes. This information is read from the solver
+ * instances. In return, they update the solver instances with the maximal
+ * permitted time step size for the subsequent iteration. This synchronisation
+ * is realised in the mapping NewTimeStep, i.e. no solver synchronisation is to
+ * be done in this mapping.
+ *
+ *
+ * @author Dominic E. Charrier and Tobias Weinzierl
  */
 class exahype::mappings::RiemannSolver {
  private:
@@ -49,14 +61,13 @@ class exahype::mappings::RiemannSolver {
    */
   static tarch::logging::Log _log;
 
-//  For debugging purposes
+  /*
+   *  For debugging purposes
+   *
+   * @todo Dominic, evtl solltest Du es dann in #ifdef Asserts oder #ifdef Debug einbetten?
+   */
   int _interiorFaceSolves;
   int _boundaryFaceSolves;
-
-  /**
-   * Local copy of the state.
-   */
-  exahype::State _localState;
 
   /**
    * Solve the Riemann problem at the interface between two cells ("left" and
@@ -158,21 +169,39 @@ class exahype::mappings::RiemannSolver {
 
  public:
   /**
-   * These flags are used to inform Peano about your operation. It tells the
-   * framework whether the operation is empty, whether it works only on the
-   * spacetree leaves, whether the operation can restart if the thread
-   * crashes (resiliency), and so forth. This information allows Peano to
-   * optimise the code.
-   *
-   * @see peano::MappingSpecification for information on thread safety.
+   * Nop
    */
   static peano::MappingSpecification touchVertexLastTimeSpecification();
+
+  /**
+   * @todo Dominic, warum darf das Zeugs so stehen?
+   */
   static peano::MappingSpecification touchVertexFirstTimeSpecification();
+  /**
+   * @todo Dominic, warum darf das Zeugs so stehen?
+   */
   static peano::MappingSpecification enterCellSpecification();
+
+  /**
+   * Nop
+   */
   static peano::MappingSpecification leaveCellSpecification();
+
+  /**
+   * Nop
+   */
   static peano::MappingSpecification ascendSpecification();
+
+  /**
+   * Nop
+   */
   static peano::MappingSpecification descendSpecification();
 
+  /**
+   * The mapping does synchronise through synchroniseTimeStepping() invoked
+   * on the solvers. Yet, no data is transported through the vertices, the
+   * cell or the state object.
+   */
   static peano::CommunicationSpecification communicationSpecification();
 
   /**
@@ -1003,36 +1032,9 @@ class exahype::mappings::RiemannSolver {
   /**
    * Enter a cell
    *
-   * In the Peano world, an algorithm tells the grid that the grid should be
-   * traversed. The grid then decides how to do this and runs over all cells
-   * (and vertices). For each cell, it calls handleCell(), i.e. if you want
-   * your algorithm to do somethin on a cell, you should implement this
-   * operation.
+   * Unset all flags.
    *
-   * @image html peano/grid/geometry-cell-inside-outside.png
-   *
-   * The operation is called for each inner and boundary element and, again,
-   * you may not access the cell's adjacent vertices directly. Instead, you
-   * have to use the enumerator. For all adjacent vertices of this cell,
-   * touchVertexFirstTime() already has been called. touchVertexLastTime() has
-   * not been called yet.
-   * More information on the interplay with ascend() and
-   * descend() can be found in peano::grid::nodes::Refined.
-   *
-   * If you need the position of the vertices of the cell or its size, use the
-   * enumerator.
-   *
-   * !!! Optimisation
-   *
-   * This operation is invoked if and only if the corresponding specification
-   * flag does not hold NOP. Due to this specification flag you also can define
-   * whether this operation works on the leaves only, whether it may be
-   * called in parallel by multiple threads, and whether it is fail-safe or
-   * can at least be called multiple times if a thread crashes.
-   *
-   * @see createCell() for a description of the arguments.
-   *
-   * @see peano::MappingSpecification for information on thread safety.
+   * @todo Dominic
    */
   void enterCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
