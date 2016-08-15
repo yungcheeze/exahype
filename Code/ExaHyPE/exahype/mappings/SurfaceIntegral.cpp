@@ -29,7 +29,6 @@ exahype::mappings::SurfaceIntegral::communicationSpecification() {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
-          SendDataAndStateAfterLastTouchVertexLastTime,
       true);
 }
 
