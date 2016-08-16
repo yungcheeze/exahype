@@ -236,7 +236,9 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
 
         assertion(!std::isnan(admissibleTimeStepSize));
 
+        p.setTimeStamp(p.getTimeStamp()+p.getTimeStepSize());
         p.setTimeStepSize(admissibleTimeStepSize);
+
         _minTimeStepSizes[p.getSolverNumber()] = std::min(
            admissibleTimeStepSize, _minTimeStepSizes[p.getSolverNumber()]); // todo MPI
       }
