@@ -97,7 +97,6 @@ void exahype::plotters::FiniteVolumes2VTKAscii::startPlotting( double time ) {
 
 void exahype::plotters::FiniteVolumes2VTKAscii::finishPlotting() {
   _postProcessing->finishPlotting();
-
   if (_writtenUnknowns>0) {
     assertion( _patchWriter!=nullptr );
     assertion( _gridWriter!=nullptr );
@@ -167,7 +166,7 @@ void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(
       }
 
       for (int unknown=0; unknown < _solverUnknowns; unknown++) {
-        sourceValue[unknown] = u[peano::utils::dLinearisedWithoutLookup(i,_numberOfCellsPerAxis)];
+      sourceValue[unknown] = u[peano::utils::dLinearisedWithoutLookup(i,_numberOfCellsPerAxis)*_solverUnknowns+unknown];
       }
 
       assertion(sizeOfPatch(0)==sizeOfPatch(1));
@@ -176,7 +175,7 @@ void exahype::plotters::FiniteVolumes2VTKAscii::plotPatch(
         offsetOfPatch,
         sizeOfPatch,
         offsetOfPatch + i.convertScalar<double>()* (sizeOfPatch(0)/(_numberOfCellsPerAxis)),
-	i,
+        i,
         sourceValue,
         value,
         timeStamp

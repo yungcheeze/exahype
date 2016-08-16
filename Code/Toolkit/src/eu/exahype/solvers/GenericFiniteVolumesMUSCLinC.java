@@ -40,6 +40,7 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
     writer.write("#include \"kernels/finitevolumes/muscl/c/3d/solutionUpdate.cpph\"\n");
     writer.write("#include \"kernels/finitevolumes/muscl/c/2d/stableTimeStepSize.cpph\"\n");
     writer.write("#include \"kernels/finitevolumes/muscl/c/3d/stableTimeStepSize.cpph\"\n");
+    writer.write("#include \"kernels/finitevolumes/muscl/c/2d/solutionAdjustment.cpph\"\n");
     writer.write("\n\n\n");
 
     writer.write("double " + projectName + "::" + solverName
@@ -68,6 +69,19 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
       writer.write("  _profiler->stop(\"solutionUpdate\");\n");
     }
     writer.write("}\n\n\n");
+	
+	writer.write("void " + projectName + "::" + solverName
+        + "::solutionAdjustment(double *luh,const tarch::la::Vector<DIMENSIONS,double>& center,const tarch::la::Vector<DIMENSIONS,double>& dx,double t,double dt) {\n");
+    if (_enableProfiler) {
+      writer.write("  _profiler->start(\"solutionAdjustment\");\n");
+    }
+    writer.write("  kernels::finitevolumes::muscl::c"
+        + "::solutionAdjustment<adjustedSolutionValues>( luh, center, dx, t, dt, getNumberOfVariables(), getNodesPerCoordinateAxis() );\n");
+    if (_enableProfiler) {
+      writer.write("  _profiler->stop(\"solutionAdjustment\");\n");
+    }
+    writer.write("}\n");
+    writer.write("\n\n\n");
 
     writer.write("\n\n\n");
   }

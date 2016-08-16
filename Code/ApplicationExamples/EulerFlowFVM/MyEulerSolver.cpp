@@ -8,15 +8,6 @@ EulerFVM::MyEulerSolver::MyEulerSolver(int cellsPerCoordinateAxis, double maximu
 }
 
 
-
-void EulerFVM::MyEulerSolver::solutionAdjustment( double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) {
-  if ( tarch::la::equals(t,0.0) ) {
-  // @todo Please implement and set initial conditions
-  }
-  // @todo Feel free to add further conditions
-}
-
-
 bool EulerFVM::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t) {
   // @todo Please implement
   if ( tarch::la::equals(t,0.0) ) {
@@ -26,6 +17,24 @@ bool EulerFVM::MyEulerSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENS
   else {
     // @todo Please implement
     return false; 
+  }
+}
+
+void EulerFVM::MyEulerSolver::adjustedSolutionValues(const double* const x,
+                                                  const double w,
+                                                  const double t,
+                                                  const double dt, double* Q) {
+  if (tarch::la::equals(t, 0.0)) {
+    const double GAMMA = 1.4;
+    Q[0] = 1.;
+    Q[1] = 0.;
+    Q[2] = 0.;
+    Q[3] = 0.;
+    Q[4] =
+        1. / (GAMMA -1) +
+        std::exp(-((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5)) /
+        (0.5 *0.5)) *
+        1.0e-1;
   }
 }
 
