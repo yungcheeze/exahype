@@ -28,6 +28,9 @@
 
 // TODO(guera): Remove once likwid 4.1 is available on SuperMUC. At the moment
 // this section is somewhat Haswell specific.
+
+// TODO(guera): Implement Flop/s metric. 
+// See http://likwid-tools.blogspot.de/2012/02/intel-sandybridge-and-counting-flops.html
 namespace {
 constexpr const char* groups[] = {"BRANCH",  "CLOCK",    "DATA",     "ENERGY",
                                   "ICACHE",  "L2",       "L2CACHE",  "L3",
