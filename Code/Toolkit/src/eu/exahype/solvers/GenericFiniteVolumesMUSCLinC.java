@@ -63,7 +63,7 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
       writer.write("  _profiler->start(\"solutionUpdate\");\n");
     }
     writer.write(
-        "  kernels::finitevolumes::muscl::c::solutionUpdate<flux,source,eigenvalues>(luh, dx, dt, getNumberOfVariables(), "
+        "  maxAdmissibleDt = kernels::finitevolumes::muscl::c::solutionUpdate<flux,source,eigenvalues>(luh, dx, dt, getNumberOfVariables(), "
             + _patchSize + " /* patchSize */);\n");
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"solutionUpdate\");\n");
