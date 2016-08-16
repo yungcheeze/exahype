@@ -210,8 +210,6 @@ void exahype::mappings::SolutionUpdate::enterCell(
 
         double admissibleTimeStepSize=0;
         solver->solutionUpdate(finiteVolumeSolutions,fineGridVerticesEnumerator.getCellSize(),pFine.getTimeStepSize(),admissibleTimeStepSize);
-        // todo is finiteVolumeSolution double pointer or single pointer???
-        // todo What is the admissible time step size ???
 
         if (admissibleTimeStepSize < pFine.getTimeStepSize()) {
           logWarning("enterCell(...)","Finite volumes solver time step size harmed CFL condition. dt="<<pFine.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize);
