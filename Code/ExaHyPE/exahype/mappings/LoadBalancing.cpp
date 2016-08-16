@@ -6,7 +6,7 @@
 peano::CommunicationSpecification   exahype::mappings::LoadBalancing::communicationSpecification() {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
-      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterProcessingOfLocalSubtree,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
       true
   );
 }
@@ -34,10 +34,20 @@ peano::MappingSpecification   exahype::mappings::LoadBalancing::descendSpecifica
  * All is done cell-wisely.
  */
 peano::MappingSpecification   exahype::mappings::LoadBalancing::enterCellSpecification() {
+  #ifdef Parallel
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  #else
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  #endif
 }
+
+
 peano::MappingSpecification   exahype::mappings::LoadBalancing::leaveCellSpecification() {
+  #ifdef Parallel
   return peano::MappingSpecification(peano::MappingSpecification::WholeTree,peano::MappingSpecification::AvoidCoarseGridRaces);
+  #else
+  return peano::MappingSpecification(peano::MappingSpecification::Nop,peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+  #endif
 }
 
 

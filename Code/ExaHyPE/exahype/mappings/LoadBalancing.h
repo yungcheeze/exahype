@@ -47,21 +47,48 @@ class exahype::mappings::LoadBalancing {
     static tarch::logging::Log  _log;
   public:
     /**
-     * These flags are used to inform Peano about your operation. It tells the 
-     * framework whether the operation is empty, whether it works only on the 
-     * spacetree leaves, whether the operation can restart if the thread 
-     * crashes (resiliency), and so forth. This information allows Peano to
-     * optimise the code.
-     *
-     * @see peano::MappingSpecification for information on thread safety.
+     * Nothing to be done
      */
     static peano::MappingSpecification   touchVertexLastTimeSpecification();
+    /**
+     * Nothing to be done
+     */
     static peano::MappingSpecification   touchVertexFirstTimeSpecification();
+
+    /**
+     * Operation degenerates to nop if we translate without MPI.
+     *
+     * @see enterCell() where we clear the workload flags
+     */
     static peano::MappingSpecification   enterCellSpecification();
+
+    /**
+     * Operation degenerates to nop if we translate without MPI.
+     *
+     * @see leaveCell() for a discussion of the restriction mechanism.
+     */
     static peano::MappingSpecification   leaveCellSpecification();
+
+    /**
+     * Nothing to be done
+     */
     static peano::MappingSpecification   ascendSpecification();
+
+    /**
+     * Nothing to be done
+     */
     static peano::MappingSpecification   descendSpecification();
 
+    /**
+     * The load balancing does rely on an analysed tree grammar, i.e.
+     * information propagates from fine grid levels to coarser levels.
+     * However, we do not enforce any worker-master data exchange in this
+     * mapping. If another mapping does require worker-master data exchange
+     * (as a global time step size or time stamp has to be computed for
+     * example), we do plug into the event and also update the load balancing.
+     * But in general, we do not enforce and worker-master synchronisation at
+     * all.
+     */
     static peano::CommunicationSpecification   communicationSpecification();
 
 
