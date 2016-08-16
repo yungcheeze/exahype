@@ -32,7 +32,11 @@ void EulerFVM::MyEulerSolver::adjustedSolutionValues(const double* const x,
     Q[3] = 0.;
     Q[4] =
         1. / (GAMMA -1) +
-        std::exp(-((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5)) /
+        std::exp(-((x[0] -0.5) *(x[0] -0.5) + (x[1] -0.5) *(x[1] -0.5) 
+#if DIMENSIONS == 3
+        + (x[2] -0.5) *(x[2] -0.5)
+#endif
+        ) /
         (0.05 *0.05)) *
         1.0e-1;
   }

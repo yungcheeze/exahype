@@ -41,6 +41,7 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
     writer.write("#include \"kernels/finitevolumes/muscl/c/2d/stableTimeStepSize.cpph\"\n");
     writer.write("#include \"kernels/finitevolumes/muscl/c/3d/stableTimeStepSize.cpph\"\n");
     writer.write("#include \"kernels/finitevolumes/muscl/c/2d/solutionAdjustment.cpph\"\n");
+	writer.write("#include \"kernels/finitevolumes/muscl/c/3d/solutionAdjustment.cpph\"\n");
     writer.write("\n\n\n");
 
     writer.write("double " + projectName + "::" + solverName

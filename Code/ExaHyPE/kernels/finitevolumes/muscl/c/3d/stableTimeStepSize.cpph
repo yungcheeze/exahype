@@ -78,7 +78,7 @@ double stableTimeStepSize(double** luhCellwise,
 
   delete[] lambda;
 
-  return dt_max_stable;
+  return dt_max_stable/2; // TODO JMG /2 as a quick fix, find more permanent solution
 }
 
 }  // namespace c
