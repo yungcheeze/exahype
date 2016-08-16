@@ -18,8 +18,8 @@ def addData(table,normalisation,plotLabels,experimentSetCounter,label):
   
   xdata    = runtimeParser.readColumnFromTable(table,0)
 
-  symbolCounter = 0
   yDataMin      = 65636
+  symbolCounter = 0
   for adap in args.adapter:
     totalTime    = runtimeParser.readColumnFromTable(table, runtimeParser.getAdapterRuntimeColumnFromTable(table,adap) )
     count        = runtimeParser.readColumnFromTable(table, runtimeParser.getAdapterCountColumnFromTable(table,adap) )
@@ -46,8 +46,15 @@ def addData(table,normalisation,plotLabels,experimentSetCounter,label):
   if len(xdata)>0 and len(ydata)>0:
     pylab.text(xdata[-1],ydata[-1],label)
 
-  ydata = [yDataMin/x*xdata[0] for x in xdata]
-  pylab.plot(xdata,ydata,markersize=4,markevery=1,lw=1.2,linestyle='dashed',color='grey') 
+
+  if len(xdata)>0 and xdata[0]==1:
+    tSerial = yDataMin
+    for x in range(1,len(xdata)):
+      if xdata[x]==int(args.singlecore):
+        tSerial = ydata[x]
+
+    ydata = [tSerial/x*int(args.singlecore) for x in xdata]
+    pylab.plot(xdata,ydata,markersize=4,markevery=1,lw=1.2,linestyle='dashed',color='grey') 
 
 
 
@@ -68,13 +75,20 @@ def switchToLogScales():
   global xDataMax
   
   pylab.loglog( basex=2, basey=2 )
-  XTicks  = [1]
+  XTicks  = [ int(args.singlecore) ]
   XLabels = [ "serial" ]
   for i in range(1,int(xDataMax)+2):
-    if i>1 and ((i & (i - 1)) == 0):
+    if i>1 and ((i & (i - 1)) == 0) and i>int(args.singlecore):
       XTicks.append( i )
       XLabels.append( str(i) ) 
   pylab.xticks(XTicks,XLabels)
+  pylab.xlim(int(args.singlecore),xDataMax)
+
+  #and i>int(args.singlecore)
+
+  #for i in range(1,len(xdata)):
+  #  if xdata[i]==args.singlecore:
+  #    tSerial = yData[i]
 
 
 ########################################################################
@@ -101,6 +115,7 @@ parser.add_argument('-dimension',required=True,help="Dimension of problem. Eithe
 parser.add_argument('-xaxislabel',required=True,help="Label of x axis.")
 parser.add_argument('-fontsize',default=10,required=False,help="Font size of the legend and tick labels. Axis labels are computed by ceiling the font size times a factor 1.2.")
 parser.add_argument('-experimentdescription',nargs='+',required=True,help="Per table entry, one experiment desription is required")
+parser.add_argument('-singlecore',required=True,help="Which core count is the sequential run time")
 args   = parser.parse_args();
 
 dim = int(args.dimension)
