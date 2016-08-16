@@ -70,9 +70,9 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
         logInfo("initDistributedMemoryConfiguration()", "load balancing relies on FCFS answering strategy");
       }
       else if (configuration.find( "fair" )!=std::string::npos ) {
-        int ranksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"ranks-per-node"));
+        int ranksPerNode = static_cast<int>(exahype::Parser::getValueFromPropertyString(configuration,"ranks_per_node"));
         if (ranksPerNode<=0) {
-  	  logError( "initDistributedMemoryConfiguration()", "please inform fair balancing how many ranks per node you use through value \"ranks-per-node:XXX\". Read value " << ranksPerNode << " is invalid" );
+  	  logError( "initDistributedMemoryConfiguration()", "please inform fair balancing how many ranks per node you use through value \"ranks_per_node:XXX\". Read value " << ranksPerNode << " is invalid" );
   	  ranksPerNode = 1;
         }
         tarch::parallel::NodePool::getInstance().setStrategy(
