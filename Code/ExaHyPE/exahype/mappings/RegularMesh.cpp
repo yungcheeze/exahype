@@ -77,6 +77,11 @@ exahype::mappings::RegularMesh::descendSpecification() {
 
 tarch::logging::Log exahype::mappings::RegularMesh::_log("exahype::mappings::RegularMesh");
 
+#if defined(SharedMemoryParallelisation)
+exahype::mappings::RegularMesh::RegularMesh(const RegularMesh& masterThread):
+  _localState(masterThread._localState) {
+}
+#endif
 
 void exahype::mappings::RegularMesh::refineVertexIfNecessary(
   exahype::Vertex&                              fineGridVertex,
@@ -158,30 +163,22 @@ void exahype::mappings::RegularMesh::createInnerVertex(
 }
 
 
-void exahype::mappings::RegularMesh::beginIteration(
-  exahype::State& solverState
-) {
-  ADERDGCellDescriptionHeap::getInstance().setName("ADERDGCellDescriptionHeap");
-  DataHeap::getInstance().setName("DataHeap");
+void exahype::mappings::RegularMesh::createCell(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  logTraceInWith4Arguments("createCell(...)", fineGridCell,
+                           fineGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfCell);
+  fineGridCell.getCellData().setCellDescriptionsIndex(
+      multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 
-  _localState = solverState;
+  logTraceOutWith1Argument("createCell(...)", fineGridCell);
 }
 
-
-
-void exahype::mappings::RegularMesh::endIteration(exahype::State& solverState) {
-  // do nothing
-  if ( tarch::parallel::Node::getInstance().isGlobalMaster() ) {
-    solverState.updateRegularInitialGridRefinementStrategy();
-  }
-}
-
-
-#if defined(SharedMemoryParallelisation)
-exahype::mappings::RegularMesh::RegularMesh(const RegularMesh& masterThread):
-  _localState(masterThread._localState) {
-}
-#endif
 
 void exahype::mappings::RegularMesh::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -233,12 +230,30 @@ void exahype::mappings::RegularMesh::enterCell(
 }
 
 
+void exahype::mappings::RegularMesh::beginIteration(
+  exahype::State& solverState
+) {
+  ADERDGCellDescriptionHeap::getInstance().setName("ADERDGCellDescriptionHeap");
+  DataHeap::getInstance().setName("DataHeap");
+
+  _localState = solverState;
+}
+
+
+
+void exahype::mappings::RegularMesh::endIteration(exahype::State& solverState) {
+  // do nothing
+  if ( tarch::parallel::Node::getInstance().isGlobalMaster() ) {
+    solverState.updateRegularInitialGridRefinementStrategy();
+  }
+}
+
+
 
 //
-// All routines below are nop
-// ==========================
+// All methods below are nop,
 //
-
+// ==================================
 
 
 
@@ -279,7 +294,6 @@ void exahype::mappings::RegularMesh::destroyHangingVertex(
   // do nothing
 }
 
-
 void exahype::mappings::RegularMesh::destroyVertex(
     const exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -291,22 +305,6 @@ void exahype::mappings::RegularMesh::destroyVertex(
   // do nothing
 }
 
-void exahype::mappings::RegularMesh::createCell(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  logTraceInWith4Arguments("createCell(...)", fineGridCell,
-                           fineGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfCell);
-  fineGridCell.getCellData().setCellDescriptionsIndex(
-      multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
-
-  logTraceOutWith1Argument("createCell(...)", fineGridCell);
-}
-
 void exahype::mappings::RegularMesh::destroyCell(
     const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -316,7 +314,6 @@ void exahype::mappings::RegularMesh::destroyCell(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   // do nothing
 }
-
 #ifdef Parallel
 void exahype::mappings::RegularMesh::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,

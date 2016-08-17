@@ -22,22 +22,16 @@
 
 #include "exahype/solvers/Solver.h"
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::CommunicationSpecification
 exahype::mappings::SolutionAdjustment::communicationSpecification() {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::
-          SendDataAndStateBeforeFirstTouchVertexFirstTime,
+      MaskOutMasterWorkerDataAndStateExchange,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::
-          SendDataAndStateAfterLastTouchVertexLastTime,
+      MaskOutWorkerMasterDataAndStateExchange,
       true);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification
 exahype::mappings::SolutionAdjustment::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
@@ -45,9 +39,6 @@ exahype::mappings::SolutionAdjustment::touchVertexLastTimeSpecification() {
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification
 exahype::mappings::SolutionAdjustment::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
@@ -55,9 +46,6 @@ exahype::mappings::SolutionAdjustment::touchVertexFirstTimeSpecification() {
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification
 exahype::mappings::SolutionAdjustment::enterCellSpecification() {
   return peano::MappingSpecification(
@@ -65,9 +53,6 @@ exahype::mappings::SolutionAdjustment::enterCellSpecification() {
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification
 exahype::mappings::SolutionAdjustment::leaveCellSpecification() {
   return peano::MappingSpecification(
@@ -75,9 +60,6 @@ exahype::mappings::SolutionAdjustment::leaveCellSpecification() {
       peano::MappingSpecification::AvoidFineGridRaces);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification
 exahype::mappings::SolutionAdjustment::ascendSpecification() {
   return peano::MappingSpecification(
@@ -85,9 +67,6 @@ exahype::mappings::SolutionAdjustment::ascendSpecification() {
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification
 exahype::mappings::SolutionAdjustment::descendSpecification() {
   return peano::MappingSpecification(
@@ -98,99 +77,103 @@ exahype::mappings::SolutionAdjustment::descendSpecification() {
 tarch::logging::Log exahype::mappings::SolutionAdjustment::_log(
     "exahype::mappings::SolutionAdjustment");
 
-exahype::mappings::SolutionAdjustment::SolutionAdjustment() {
-  // do nothing
-}
-
-exahype::mappings::SolutionAdjustment::~SolutionAdjustment() {
-  // do nothing
-}
-
-#if defined(SharedMemoryParallelisation)
-exahype::mappings::SolutionAdjustment::SolutionAdjustment(
-    const SolutionAdjustment& masterThread)
-    : _localState(masterThread._localState) {}
-
-void exahype::mappings::SolutionAdjustment::mergeWithWorkerThread(
-    const SolutionAdjustment& workerThread) {
-  // do nothing
-}
-#endif
-
-void exahype::mappings::SolutionAdjustment::createHangingVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::SolutionAdjustment::destroyHangingVertex(
-    const exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::SolutionAdjustment::createInnerVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::SolutionAdjustment::createBoundaryVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::SolutionAdjustment::destroyVertex(
-    const exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::SolutionAdjustment::createCell(
+void exahype::mappings::SolutionAdjustment::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
+  logTraceInWith4Arguments("enterCell(...)", fineGridCell,
+                           fineGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfCell);
+
+  if (fineGridCell.isInitialised()) {
+    // ADER-DG
+    const int numberOfADERDGCellDescriptions = fineGridCell.getNumberOfADERDGCellDescriptions();
+
+    // please use a different UserDefined per mapping/event
+    peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined11;
+    int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions, methodTrace);
+    // clang-format off
+    pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
+      auto& pFine = fineGridCell.getADERDGCellDescription(i);
+
+      auto* solver = exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
+
+      // Unlike the other ADERDG mappings, this mapping is used
+      // in the adaptive mesh refinement routine.
+      // We thus make sure here that only cells with stable
+      // refinement status are updated.
+      if (
+          pFine.getType()==exahype::records::ADERDGCellDescription::Cell
+          &&
+          pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None
+      ) {
+        double* luh = DataHeap::getInstance().getData(pFine.getSolution()).data();
+
+        assertionEquals(luh[0],luh[0]); // assert no nan
+        if (solver->hasToAdjustSolution(
+            fineGridVerticesEnumerator.getCellCenter(),
+            fineGridVerticesEnumerator.getCellSize(),
+            pFine.getCorrectorTimeStamp())) {
+          solver->solutionAdjustment(
+              luh, fineGridVerticesEnumerator.getCellCenter(),
+              fineGridVerticesEnumerator.getCellSize(),
+              pFine.getCorrectorTimeStamp(), pFine.getCorrectorTimeStepSize());
+        }
+
+        assertion(!std::isnan(luh[0])); // assert no nan
+      }
+    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
+        .parallelSectionHasTerminated(methodTrace);
+
+    // FINITE VOLUMES
+    const int numberOfFiniteVolumesCellDescriptions = fineGridCell.getNumberOfFiniteVolumeCellDescriptions();
+
+    // please use a different UserDefined per mapping/event
+    methodTrace = peano::datatraversal::autotuning::UserDefined11; // todo introduce more user defined method traces
+    grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfFiniteVolumesCellDescriptions, methodTrace);
+    // clang-format off
+    pfor(i, 0, numberOfFiniteVolumesCellDescriptions, grainSize)
+      auto& pFine = fineGridCell.getFiniteVolumesCellDescription(i);
+
+      auto* solver = exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
+
+      // Unlike the other FiniteVolumes mappings, this mapping is used
+      // in the adaptive mesh refinement routine.
+      // We thus make sure here that only cells with stable
+      // refinement status are updated.
+      if (
+          pFine.getType()==exahype::records::FiniteVolumesCellDescription::Cell
+  //        &&
+  //        pFine.getRefinementEvent()==exahype::records::FiniteVolumesCellDescription::None // todo do we have refinement events ??
+      ) {
+        double* luh = DataHeap::getInstance().getData(pFine.getSolution()).data();
+
+        assertionEquals(luh[0],luh[0]); // assert no nan
+        if (solver->hasToAdjustSolution(
+            fineGridVerticesEnumerator.getCellCenter(),
+            fineGridVerticesEnumerator.getCellSize(),
+            pFine.getTimeStamp())) {
+          solver->solutionAdjustment(
+              luh, fineGridVerticesEnumerator.getCellCenter(),
+              fineGridVerticesEnumerator.getCellSize(),
+              pFine.getTimeStamp(),pFine.getTimeStepSize());
+        }
+
+        assertion(!std::isnan(luh[0])); // assert no nan
+      }
+    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
+    .parallelSectionHasTerminated(methodTrace);
+  }
+  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
-void exahype::mappings::SolutionAdjustment::destroyCell(
-    const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
-}
+//
+// Below all methods are nop.
+//
+//===================================
 
 #ifdef Parallel
 void exahype::mappings::SolutionAdjustment::mergeWithNeighbour(
@@ -300,6 +283,101 @@ void exahype::mappings::SolutionAdjustment::mergeWithWorker(
 }
 #endif
 
+exahype::mappings::SolutionAdjustment::SolutionAdjustment() {
+  // do nothing
+}
+
+exahype::mappings::SolutionAdjustment::~SolutionAdjustment() {
+  // do nothing
+}
+
+#if defined(SharedMemoryParallelisation)
+exahype::mappings::SolutionAdjustment::SolutionAdjustment(
+    const SolutionAdjustment& masterThread) {
+  // do nothing
+}
+void exahype::mappings::SolutionAdjustment::mergeWithWorkerThread(
+    const SolutionAdjustment& workerThread) {
+  // do nothing
+}
+#endif
+
+void exahype::mappings::SolutionAdjustment::createHangingVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::SolutionAdjustment::destroyHangingVertex(
+    const exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::SolutionAdjustment::createInnerVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::SolutionAdjustment::createBoundaryVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::SolutionAdjustment::destroyVertex(
+    const exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::SolutionAdjustment::createCell(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
+void exahype::mappings::SolutionAdjustment::destroyCell(
+    const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
+
 void exahype::mappings::SolutionAdjustment::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -322,99 +400,6 @@ void exahype::mappings::SolutionAdjustment::touchVertexLastTime(
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::enterCell(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-                           fineGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfCell);
-
-  if (fineGridCell.isInitialised()) {
-    // ADER-DG
-    const int numberOfADERDGCellDescriptions = fineGridCell.getNumberOfADERDGCellDescriptions();
-
-    // please use a different UserDefined per mapping/event
-    peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined11;
-    int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions, methodTrace);
-    // clang-format off
-    pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      auto& pFine = fineGridCell.getADERDGCellDescription(i);
-
-      auto* solver = exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
-
-      // Unlike the other ADERDG mappings, this mapping is used
-      // in the adaptive mesh refinement routine.
-      // We thus make sure here that only cells with stable
-      // refinement status are updated.
-      if (
-          pFine.getType()==exahype::records::ADERDGCellDescription::Cell
-          &&
-          pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None
-      ) {
-        double* luh = DataHeap::getInstance().getData(pFine.getSolution()).data();
-
-        assertionEquals(luh[0],luh[0]); // assert no nan
-        if (solver->hasToAdjustSolution(
-            fineGridVerticesEnumerator.getCellCenter(),
-            fineGridVerticesEnumerator.getCellSize(),
-            pFine.getCorrectorTimeStamp())) {
-          solver->solutionAdjustment(
-              luh, fineGridVerticesEnumerator.getCellCenter(),
-              fineGridVerticesEnumerator.getCellSize(),
-              pFine.getCorrectorTimeStamp(), pFine.getCorrectorTimeStepSize());
-        }
-
-        assertion(!std::isnan(luh[0])); // assert no nan
-      }
-    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-        .parallelSectionHasTerminated(methodTrace);
-
-    // FINITE VOLUMES
-    const int numberOfFiniteVolumesCellDescriptions = fineGridCell.getNumberOfFiniteVolumeCellDescriptions();
-
-    // please use a different UserDefined per mapping/event
-    methodTrace = peano::datatraversal::autotuning::UserDefined11; // todo introduce more user defined method traces
-    grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfFiniteVolumesCellDescriptions, methodTrace);
-    // clang-format off
-    pfor(i, 0, numberOfFiniteVolumesCellDescriptions, grainSize)
-      auto& pFine = fineGridCell.getFiniteVolumesCellDescription(i);
-
-      auto* solver = exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
-
-      // Unlike the other FiniteVolumes mappings, this mapping is used
-      // in the adaptive mesh refinement routine.
-      // We thus make sure here that only cells with stable
-      // refinement status are updated.
-      if (
-          pFine.getType()==exahype::records::FiniteVolumesCellDescription::Cell
-  //        &&
-  //        pFine.getRefinementEvent()==exahype::records::FiniteVolumesCellDescription::None // todo do we have refinement events ??
-      ) {
-        double* luh = DataHeap::getInstance().getData(pFine.getSolution()).data();
-
-        assertionEquals(luh[0],luh[0]); // assert no nan
-        if (solver->hasToAdjustSolution(
-            fineGridVerticesEnumerator.getCellCenter(),
-            fineGridVerticesEnumerator.getCellSize(),
-            pFine.getTimeStamp())) {
-          solver->solutionAdjustment(
-              luh, fineGridVerticesEnumerator.getCellCenter(),
-              fineGridVerticesEnumerator.getCellSize(),
-              pFine.getTimeStamp(),pFine.getTimeStepSize());
-        }
-
-        assertion(!std::isnan(luh[0])); // assert no nan
-      }
-    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-    .parallelSectionHasTerminated(methodTrace);
-  }
-  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
-}
-
 void exahype::mappings::SolutionAdjustment::leaveCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -427,11 +412,7 @@ void exahype::mappings::SolutionAdjustment::leaveCell(
 
 void exahype::mappings::SolutionAdjustment::beginIteration(
     exahype::State& solverState) {
-  logTraceInWith1Argument("beginIteration(State)", solverState);
-
-  _localState = solverState;
-
-  logTraceOutWith1Argument("beginIteration(State)", solverState);
+  // do nothing
 }
 
 void exahype::mappings::SolutionAdjustment::endIteration(

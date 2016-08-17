@@ -38,8 +38,14 @@ exahype::mappings::GlobalTimeStepComputation::communicationSpecification() {
       true);
 }
 
+peano::MappingSpecification
+exahype::mappings::GlobalTimeStepComputation::enterCellSpecification() {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+}
 /**
- * @todo Please tailor the parameters to your mapping's properties.
+ * Nop.
  */
 peano::MappingSpecification exahype::mappings::GlobalTimeStepComputation::
     touchVertexLastTimeSpecification() {
@@ -47,50 +53,24 @@ peano::MappingSpecification exahype::mappings::GlobalTimeStepComputation::
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification exahype::mappings::GlobalTimeStepComputation::
     touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
-peano::MappingSpecification
-exahype::mappings::GlobalTimeStepComputation::enterCellSpecification() {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
-}
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification
 exahype::mappings::GlobalTimeStepComputation::leaveCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces);
 }
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification
 exahype::mappings::GlobalTimeStepComputation::ascendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
-
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::MappingSpecification
 exahype::mappings::GlobalTimeStepComputation::descendSpecification() {
   return peano::MappingSpecification(
@@ -104,14 +84,6 @@ int exahype::mappings::GlobalTimeStepComputation::_mpiTag =
     tarch::parallel::Node::reserveFreeTag(
         "exahype::mappings::GlobalTimeStepComputation");
 
-exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation() {
-  // do nothing
-}
-
-exahype::mappings::GlobalTimeStepComputation::~GlobalTimeStepComputation() {
-  // do nothing
-}
-
 void exahype::mappings::GlobalTimeStepComputation::
     prepareEmptyLocalTimeStepData() {
   _minTimeStepSizes.resize(exahype::solvers::RegisteredSolvers.size());
@@ -121,22 +93,6 @@ void exahype::mappings::GlobalTimeStepComputation::
     _minTimeStepSizes[i] = std::numeric_limits<double>::max();
   }
 }
-
-#if defined(SharedMemoryParallelisation)
-exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(
-    const GlobalTimeStepComputation& masterThread) {
-  prepareEmptyLocalTimeStepData();
-}
-
-void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(
-    const GlobalTimeStepComputation& workerThread) {
-  for (int i = 0;
-       i < static_cast<int>(exahype::solvers::RegisteredSolvers.size()); i++) {
-    _minTimeStepSizes[i] =
-        std::min(_minTimeStepSizes[i], workerThread._minTimeStepSizes[i]);
-  }
-}
-#endif
 
 void exahype::mappings::GlobalTimeStepComputation::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -267,18 +223,6 @@ void exahype::mappings::GlobalTimeStepComputation::endIteration(
 }
 
 #ifdef Parallel
-bool exahype::mappings::GlobalTimeStepComputation::prepareSendToWorker(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    int worker) {
-  // do nothing
-  return true;
-}
-
 void exahype::mappings::GlobalTimeStepComputation::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
@@ -314,6 +258,18 @@ void exahype::mappings::GlobalTimeStepComputation::mergeWithMaster(
     _minTimeStepSizes[i] =
         std::min(_minTimeStepSizes[i], receivedMinTimeStepSizes[i]);
   }
+}
+
+bool exahype::mappings::GlobalTimeStepComputation::prepareSendToWorker(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker) {
+  // do nothing
+  return true;
 }
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithNeighbour(
@@ -386,6 +342,30 @@ void exahype::mappings::GlobalTimeStepComputation::mergeWithWorker(
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
+}
+#endif
+
+exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation() {
+  // do nothing
+}
+
+exahype::mappings::GlobalTimeStepComputation::~GlobalTimeStepComputation() {
+  // do nothing
+}
+
+#if defined(SharedMemoryParallelisation)
+exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(
+    const GlobalTimeStepComputation& masterThread) {
+  prepareEmptyLocalTimeStepData();
+}
+
+void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(
+    const GlobalTimeStepComputation& workerThread) {
+  for (int i = 0;
+       i < static_cast<int>(exahype::solvers::RegisteredSolvers.size()); i++) {
+    _minTimeStepSizes[i] =
+        std::min(_minTimeStepSizes[i], workerThread._minTimeStepSizes[i]);
+  }
 }
 #endif
 

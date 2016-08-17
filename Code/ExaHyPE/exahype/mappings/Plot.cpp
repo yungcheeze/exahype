@@ -21,9 +21,7 @@
 
 #include "exahype/plotters/Plotter.h"
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::CommunicationSpecification
 exahype::mappings::Plot::communicationSpecification() {
   return peano::CommunicationSpecification(
@@ -33,7 +31,6 @@ exahype::mappings::Plot::communicationSpecification() {
           SendDataAndStateAfterLastTouchVertexLastTime,
       true);
 }
-
 peano::MappingSpecification
 exahype::mappings::Plot::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
@@ -370,6 +367,12 @@ void exahype::mappings::Plot::beginIteration(exahype::State& solverState) {
 void exahype::mappings::Plot::endIteration(exahype::State& solverState) {
   exahype::plotters::finishedPlotting();
 }
+
+//
+// Below all methods are nop.
+//
+//===================================
+
 
 void exahype::mappings::Plot::descend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,

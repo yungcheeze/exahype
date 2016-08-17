@@ -23,9 +23,6 @@
 #include "exahype/solvers/FiniteVolumesSolver.h"
 #include "kernels/KernelCalls.h"
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::CommunicationSpecification
 exahype::mappings::MarkingForRefinement::communicationSpecification() {
   return peano::CommunicationSpecification(
@@ -76,100 +73,116 @@ exahype::mappings::MarkingForRefinement::descendSpecification() {
 tarch::logging::Log exahype::mappings::MarkingForRefinement::_log(
     "exahype::mappings::MarkingForRefinement");
 
-exahype::mappings::MarkingForRefinement::MarkingForRefinement() {
-  // do nothing
-}
 
-exahype::mappings::MarkingForRefinement::~MarkingForRefinement() {
-  // do nothing
-}
-
-#if defined(SharedMemoryParallelisation)
-exahype::mappings::MarkingForRefinement::MarkingForRefinement(
-    const MarkingForRefinement& masterThread) {
-  // do nothing
-}
-
-void exahype::mappings::MarkingForRefinement::mergeWithWorkerThread(
-    const MarkingForRefinement& workerThread) {
-  // do nothing
-}
-#endif
-
-void exahype::mappings::MarkingForRefinement::createHangingVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::MarkingForRefinement::destroyHangingVertex(
-    const exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::MarkingForRefinement::createInnerVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::MarkingForRefinement::createBoundaryVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::MarkingForRefinement::destroyVertex(
-    const exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::MarkingForRefinement::createCell(
+void exahype::mappings::MarkingForRefinement::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
+  logTraceInWith4Arguments("enterCell(...)", fineGridCell,
+                           fineGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfCell);
+
+  if ( fineGridCell.isInitialised() ) {
+    logDebug( "enterCell(...)", "enter with " <<
+        fineGridCell.getNumberOfADERDGCellDescriptions() << " ADER-DG solver(s) and " << fineGridCell.getNumberOfFiniteVolumeCellDescriptions() << " FV solver(s)")
+    for (int i=0; i<fineGridCell.getNumberOfADERDGCellDescriptions(); i++) {
+      auto* uncastedSolver = exahype::solvers::RegisteredSolvers[ fineGridCell.getADERDGCellDescription(i).getSolverNumber() ];
+      assertion( uncastedSolver->getType()==exahype::solvers::Solver::Type::ADER_DG );
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(uncastedSolver);
+
+      if (
+        tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),solver->getMaximumMeshSize())
+        &&
+        fineGridCell.getADERDGCellDescription(i).getType()==exahype::records::ADERDGCellDescription::Cell
+        &&
+        fineGridCell.getADERDGCellDescription(i).getRefinementEvent()==exahype::records::ADERDGCellDescription::None
+      ) {
+        double*  solution = DataHeap::getInstance().getData(fineGridCell.getADERDGCellDescription(i).getSolution()).data();
+
+        exahype::solvers::Solver::RefinementControl refinementControl = solver->refinementCriterion(
+            solution, fineGridVerticesEnumerator.getCellCenter(),
+            fineGridVerticesEnumerator.getCellSize(),
+            fineGridCell.getADERDGCellDescription(i).getCorrectorTimeStamp(), fineGridCell.getADERDGCellDescription(i).getLevel());
+
+        switch (refinementControl) {
+          case exahype::solvers::Solver::RefinementControl::Refine:
+            fineGridCell.getADERDGCellDescription(i).setRefinementEvent(exahype::records::ADERDGCellDescription::RefiningRequested);
+
+            dfor2(v)
+              if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==exahype::Vertex::Records::RefinementControl::Unrefined) {
+                fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
+              }
+            enddforx
+          break;
+          case exahype::solvers::Solver::RefinementControl::Erase:
+            fineGridCell.getADERDGCellDescription(i).setRefinementEvent(exahype::records::ADERDGCellDescription::ErasingRequested);
+          break;
+          default:
+            break;
+        }
+      }
+    }
+
+    logDebug( "enterCell(...)", "continue  with " << fineGridCell.getNumberOfFiniteVolumeCellDescriptions() << " FV solver(s)")
+    for (int i=0; i<fineGridCell.getNumberOfFiniteVolumeCellDescriptions(); i++) {
+      auto* uncastedSolver = exahype::solvers::RegisteredSolvers[ fineGridCell.getFiniteVolumesCellDescription(i).getSolverNumber() ];
+      assertion( uncastedSolver->getType()==exahype::solvers::Solver::Type::FiniteVolumes );
+      exahype::solvers::FiniteVolumesSolver* solver = static_cast<exahype::solvers::FiniteVolumesSolver*>(uncastedSolver);
+
+      if (
+        tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),solver->getMaximumMeshSize())
+        &&
+        fineGridCell.getFiniteVolumesCellDescription(i).getType()==exahype::records::FiniteVolumesCellDescription::Cell
+/*
+        &&
+        fineGridCell.FiniteVolumesSolver(i).getRefinementEvent()==exahype::records::ADERDGCellDescription::None
+*/
+      ) {
+        double*  solution = DataHeap::getInstance().getData(fineGridCell.getFiniteVolumesCellDescription(i).getSolution()).data();
+
+        exahype::solvers::Solver::RefinementControl refinementControl = solver->refinementCriterion(
+            solution, fineGridVerticesEnumerator.getCellCenter(),
+            fineGridVerticesEnumerator.getCellSize(),
+            fineGridCell.getFiniteVolumesCellDescription(i).getTimeStamp(),
+            fineGridCell.getFiniteVolumesCellDescription(i).getTimeStepSize());
+
+        switch (refinementControl) {
+          case exahype::solvers::Solver::RefinementControl::Refine:
+//            fineGridCell.getADERDGCellDescription(i).setRefinementEvent(exahype::records::ADERDGCellDescription::RefiningRequested);
+
+            dfor2(v)
+              if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==exahype::Vertex::Records::RefinementControl::Unrefined) {
+                fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
+              }
+            enddforx
+          break;
+          case exahype::solvers::Solver::RefinementControl::Erase:
+            assertionMsg( false, "not implemented yet" );
+            //fineGridCell.getADERDGCellDescription(i).setRefinementEvent(exahype::records::ADERDGCellDescription::ErasingRequested);
+          break;
+          default:
+            break;
+        }
+      }
+    }
+
+    logDebug( "enterCell(...)", "left with " << fineGridCell.getNumberOfADERDGCellDescriptions() << " ADER-DG solver(s) and " << fineGridCell.getNumberOfFiniteVolumeCellDescriptions() << " FV solver(s)")
+  }
+
+  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
-void exahype::mappings::MarkingForRefinement::destroyCell(
-    const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
-}
+
+
+//
+// Below all methods are nop.
+//
+// ====================================
+
+
 
 #ifdef Parallel
 void exahype::mappings::MarkingForRefinement::mergeWithNeighbour(
@@ -282,6 +295,101 @@ void exahype::mappings::MarkingForRefinement::mergeWithWorker(
 }
 #endif
 
+exahype::mappings::MarkingForRefinement::MarkingForRefinement() {
+  // do nothing
+}
+
+exahype::mappings::MarkingForRefinement::~MarkingForRefinement() {
+  // do nothing
+}
+
+#if defined(SharedMemoryParallelisation)
+exahype::mappings::MarkingForRefinement::MarkingForRefinement(
+    const MarkingForRefinement& masterThread) {
+  // do nothing
+}
+
+void exahype::mappings::MarkingForRefinement::mergeWithWorkerThread(
+    const MarkingForRefinement& workerThread) {
+  // do nothing
+}
+#endif
+
+void exahype::mappings::MarkingForRefinement::createHangingVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::MarkingForRefinement::destroyHangingVertex(
+    const exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::MarkingForRefinement::createInnerVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::MarkingForRefinement::createBoundaryVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::MarkingForRefinement::destroyVertex(
+    const exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::MarkingForRefinement::createCell(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
+void exahype::mappings::MarkingForRefinement::destroyCell(
+    const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
 void exahype::mappings::MarkingForRefinement::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -302,107 +410,6 @@ void exahype::mappings::MarkingForRefinement::touchVertexLastTime(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
   // do nothing
-}
-
-void exahype::mappings::MarkingForRefinement::enterCell(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-                           fineGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfCell);
-
-  if ( fineGridCell.isInitialised() ) {
-    logDebug( "enterCell(...)", "enter with " << fineGridCell.getNumberOfADERDGCellDescriptions() << " ADER-DG solver(s) and " << fineGridCell.getNumberOfFiniteVolumeCellDescriptions() << " FV solver(s)")
-
-    for (int i=0; i<fineGridCell.getNumberOfADERDGCellDescriptions(); i++) {
-      auto* uncastedSolver = exahype::solvers::RegisteredSolvers[ fineGridCell.getADERDGCellDescription(i).getSolverNumber() ];
-      assertion( uncastedSolver->getType()==exahype::solvers::Solver::Type::ADER_DG );
-      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(uncastedSolver);
-
-      if (
-        tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),solver->getMaximumMeshSize())
-        &&
-        fineGridCell.getADERDGCellDescription(i).getType()==exahype::records::ADERDGCellDescription::Cell
-        &&
-        fineGridCell.getADERDGCellDescription(i).getRefinementEvent()==exahype::records::ADERDGCellDescription::None
-      ) {
-        double*  solution = DataHeap::getInstance().getData(fineGridCell.getADERDGCellDescription(i).getSolution()).data();
-
-        exahype::solvers::Solver::RefinementControl refinementControl = solver->refinementCriterion(
-            solution, fineGridVerticesEnumerator.getCellCenter(),
-            fineGridVerticesEnumerator.getCellSize(),
-            fineGridCell.getADERDGCellDescription(i).getCorrectorTimeStamp(), fineGridCell.getADERDGCellDescription(i).getLevel());
-
-        switch (refinementControl) {
-          case exahype::solvers::Solver::RefinementControl::Refine:
-            fineGridCell.getADERDGCellDescription(i).setRefinementEvent(exahype::records::ADERDGCellDescription::RefiningRequested);
-
-            dfor2(v)
-              if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==exahype::Vertex::Records::RefinementControl::Unrefined) {
-                fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
-              }
-            enddforx
-          break;
-          case exahype::solvers::Solver::RefinementControl::Erase:
-            fineGridCell.getADERDGCellDescription(i).setRefinementEvent(exahype::records::ADERDGCellDescription::ErasingRequested);
-          break;
-          default:
-            break;
-        }
-      }
-    }
-
-    logDebug( "enterCell(...)", "continue  with " << fineGridCell.getNumberOfFiniteVolumeCellDescriptions() << " FV solver(s)")
-    for (int i=0; i<fineGridCell.getNumberOfFiniteVolumeCellDescriptions(); i++) {
-      auto* uncastedSolver = exahype::solvers::RegisteredSolvers[ fineGridCell.getFiniteVolumesCellDescription(i).getSolverNumber() ];
-      assertion( uncastedSolver->getType()==exahype::solvers::Solver::Type::FiniteVolumes );
-      exahype::solvers::FiniteVolumesSolver* solver = static_cast<exahype::solvers::FiniteVolumesSolver*>(uncastedSolver);
-
-      if (
-        tarch::la::allSmallerEquals(fineGridVerticesEnumerator.getCellSize(),solver->getMaximumMeshSize())
-        &&
-        fineGridCell.getFiniteVolumesCellDescription(i).getType()==exahype::records::FiniteVolumesCellDescription::Cell
-/*
-        &&
-        fineGridCell.FiniteVolumesSolver(i).getRefinementEvent()==exahype::records::ADERDGCellDescription::None
-*/
-      ) {
-        double*  solution = DataHeap::getInstance().getData(fineGridCell.getFiniteVolumesCellDescription(i).getSolution()).data();
-
-        exahype::solvers::Solver::RefinementControl refinementControl = solver->refinementCriterion(
-            solution, fineGridVerticesEnumerator.getCellCenter(),
-            fineGridVerticesEnumerator.getCellSize(),
-            fineGridCell.getFiniteVolumesCellDescription(i).getTimeStamp(),
-            fineGridCell.getFiniteVolumesCellDescription(i).getTimeStepSize());
-
-        switch (refinementControl) {
-          case exahype::solvers::Solver::RefinementControl::Refine:
-//            fineGridCell.getADERDGCellDescription(i).setRefinementEvent(exahype::records::ADERDGCellDescription::RefiningRequested);
-
-            dfor2(v)
-              if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==exahype::Vertex::Records::RefinementControl::Unrefined) {
-                fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
-              }
-            enddforx
-          break;
-          case exahype::solvers::Solver::RefinementControl::Erase:
-            assertionMsg( false, "not implemented yet" );
-            //fineGridCell.getADERDGCellDescription(i).setRefinementEvent(exahype::records::ADERDGCellDescription::ErasingRequested);
-          break;
-          default:
-            break;
-        }
-      }
-    }
-
-    logDebug( "enterCell(...)", "left with " << fineGridCell.getNumberOfADERDGCellDescriptions() << " ADER-DG solver(s) and " << fineGridCell.getNumberOfFiniteVolumeCellDescriptions() << " FV solver(s)")
-  }
-
-  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
 void exahype::mappings::MarkingForRefinement::leaveCell(

@@ -58,7 +58,6 @@ class Augmentation;
  * to not have helper cells at all.
  *
  * @author Dominic Etienne Charrier
- * @version $Revision: 1.10 $
  */
 
 class exahype::mappings::Augmentation {
@@ -127,8 +126,8 @@ public:
    * Further sets the refinement event on a coarse grid Descendant to Augmenting
    * if the first new Descendant was initialised on the fine grid.
    *
-   * Lastly, vetoes setting the DeaugmentingRequested flag, i.e.,
-   * erasing, requests of these helper cells if these help cells have child cells themselves.
+   * Lastly, vetoes setting the DeaugmentingRequested refinement event, i.e.,
+   * erasing, requests of these helper cells if they have child cells themselves.
    */
   void enterCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -158,7 +157,7 @@ public:
    * deaugmenting. If so, we remove these cells and erase the surrounding vertices.
    *
    * @todo:
-   * 1. Move restriction code out out ascend(...) and merge in into enterCell(...)
+   * 1. Move erasing code out out ascend(...) and merge in into enterCell(...)
    * and leaveCell(...). Event ascend(...) causes conflicts with the adjacency management
    * and probably further problems with the grid.
    */

@@ -37,6 +37,8 @@ class NewTimeStep;
  * This mapping is used to synchronise the compute cell time step sizes
  * with the solver ones. It further is necessary to reset the Riemann
  * solve flags on compute and helper cells.
+ *
+ * @author Dominic Etienne Charrier
  */
 class exahype::mappings::NewTimeStep {
  private:
@@ -56,30 +58,15 @@ class exahype::mappings::NewTimeStep {
    * Run through the whole grid. Run concurrently on the fine grid.
    */
   static peano::MappingSpecification enterCellSpecification();
-  /**
-   * Nop.
-   */
   static peano::MappingSpecification touchVertexLastTimeSpecification();
-  /**
-   * Nop.
-   */
   static peano::MappingSpecification touchVertexFirstTimeSpecification();
-  /**
-   * Nop.
-   */
   static peano::MappingSpecification leaveCellSpecification();
-  /**
-   * Nop.
-   */
   static peano::MappingSpecification ascendSpecification();
-  /**
-   * Nop.
-   */
   static peano::MappingSpecification descendSpecification();
 
   /**
-   * Send data and state before first touch first time.
-   * Mask out worker master data and state exchange.
+   * Receive data and state before first touch first time.
+   * Mask out worker master data and state exchange in sends.
    * Further let Peano handle heap data exchange internally.
    */
   static peano::CommunicationSpecification communicationSpecification();
@@ -154,10 +141,12 @@ class exahype::mappings::NewTimeStep {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
 
+
   //
-  // Below are functions are nop.
+  // Below all methods are nop.
   //
   //===================================
+
 
 
   /**
@@ -168,7 +157,6 @@ class exahype::mappings::NewTimeStep {
                           const tarch::la::Vector<DIMENSIONS, double>& x,
                           const tarch::la::Vector<DIMENSIONS, double>& h,
                           int level);
-
   /**
    * Nop.
    */
@@ -176,7 +164,6 @@ class exahype::mappings::NewTimeStep {
                               const tarch::la::Vector<DIMENSIONS, double>& x,
                               const tarch::la::Vector<DIMENSIONS, double>& h,
                               int level);
-
   /**
    * Nop.
    */
@@ -184,7 +171,6 @@ class exahype::mappings::NewTimeStep {
                                const tarch::la::Vector<DIMENSIONS, double>& x,
                                const tarch::la::Vector<DIMENSIONS, double>& h,
                                int level);
-
   /**
    * Nop.
    */
@@ -192,7 +178,6 @@ class exahype::mappings::NewTimeStep {
       exahype::Cell& localCell, int toRank,
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
-
   /**
    * Nop.
    */
@@ -208,8 +193,6 @@ class exahype::mappings::NewTimeStep {
       exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
       int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
-
-
   /**
    * Nop.
    */
@@ -225,7 +208,6 @@ class exahype::mappings::NewTimeStep {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       int worker, const exahype::State& workerState,
       exahype::State& masterState);
-
   /**
    * Nop.
    */
@@ -236,7 +218,6 @@ class exahype::mappings::NewTimeStep {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       const exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
   /**
    * Nop.
    */
@@ -245,7 +226,6 @@ class exahype::mappings::NewTimeStep {
                        const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
                        const tarch::la::Vector<DIMENSIONS, double>& cellSize,
                        int level);
-
   /**
    * Nop.
    */
@@ -266,7 +246,6 @@ class exahype::mappings::NewTimeStep {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
   /**
    * Nop.
    */
@@ -278,7 +257,6 @@ class exahype::mappings::NewTimeStep {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
   /**
    * Nop.
    */
@@ -290,7 +268,6 @@ class exahype::mappings::NewTimeStep {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
   /**
    * Nop.
    */
@@ -302,7 +279,6 @@ class exahype::mappings::NewTimeStep {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
   /**
    * Nop.
    */
@@ -314,7 +290,6 @@ class exahype::mappings::NewTimeStep {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
   /**
    * Nop.
    */
@@ -325,7 +300,6 @@ class exahype::mappings::NewTimeStep {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
   /**
    * Nop.
    */
@@ -337,7 +311,6 @@ class exahype::mappings::NewTimeStep {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
   /**
    * Nop.
    */
@@ -349,7 +322,6 @@ class exahype::mappings::NewTimeStep {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
   /**
    * Nop.
    */
@@ -361,7 +333,6 @@ class exahype::mappings::NewTimeStep {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
   /**
    * Nop.
    */
@@ -372,17 +343,14 @@ class exahype::mappings::NewTimeStep {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
   /**
    * Nop.
    */
   void beginIteration(exahype::State& solverState);
-
   /**
    * Nop.
    */
   void endIteration(exahype::State& solverState);
-
   /**
    * Nop.
    */
@@ -393,7 +361,6 @@ class exahype::mappings::NewTimeStep {
       exahype::Vertex* const coarseGridVertices,
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell);
-
   /**
    * Nop.
    */
