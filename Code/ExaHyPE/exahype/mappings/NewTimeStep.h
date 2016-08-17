@@ -34,7 +34,9 @@ class NewTimeStep;
 }
 
 /**
- * TODO(Dominic):
+ * This mapping is used to synchronise the compute cell time step sizes
+ * with the solver ones. It further is necessary to reset the Riemann
+ * solve flags on compute and helper cells.
  */
 class exahype::mappings::NewTimeStep {
  private:
