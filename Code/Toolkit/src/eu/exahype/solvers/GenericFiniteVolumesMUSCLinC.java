@@ -23,8 +23,8 @@ public class GenericFiniteVolumesMUSCLinC implements Solver {
     Helpers.writeMinimalFiniteVolumesSolverHeader(solverName, writer, projectName, _hasConstants);
 
     writer.write("  private:\n");
-    writer.write(
-        "    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
+    writer.write("    static void adjustedSolutionValues(const double* const x, const double w, const double t, const double dt, double* Q);\n");
+    writer.write("    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
     writer.write("    static void flux(const double* const Q, double** F);\n");
     writer.write("    static void source(const double* const Q, double* S);\n");
     writer.write("};\n\n\n");
