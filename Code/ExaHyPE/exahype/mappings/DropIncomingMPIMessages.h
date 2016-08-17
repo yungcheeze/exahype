@@ -45,6 +45,9 @@ class DropIncomingMPIMessages;
  * (it already left the node through MPI), we receive it throughout the resend
  * in this mapping and just drop it.
  *
+ * @todo:
+ * 1. Needs to consider neighbour information ("metadata") in AMR settings.
+ *
  * @author Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
