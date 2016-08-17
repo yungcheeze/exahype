@@ -348,9 +348,9 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   repository.switchToSolutionAdjustmentAndGlobalTimeStepComputation();
   repository.iterate();
   #if defined(Debug) || defined(Asserts)
-  startNewTimeStep(-1,true,true);
+  startNewTimeStep(-1);
   #else
-  startNewTimeStep(-1,true,false);
+  startNewTimeStep(-1);
   #endif
 
   /*
@@ -384,10 +384,9 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    * Set ADER-DG predictor time stamp and do not touch the finite volumes time stamp.
    * Compute ADER-DG predictor time step size and do not touch finite volumes time step size.
    */
-  startNewTimeStep(0,false,true);
+  startNewTimeStep(-1);
 
   const double simulationEndTime = _parser.getSimulationEndTime();
-  int n = 1;
 
   logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers()); // change to log debug
   logDebug("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
@@ -398,15 +397,32 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
         solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
     if (_parser.getFuseAlgorithmicSteps()) {
-      runOneTimeStampWithFusedAlgorithmicSteps(repository, plot);
+      int numberOfStepsToRun = 1;
+      if (plot) {
+        numberOfStepsToRun = 0;
+      }
+      else if (solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers()>0.0) {   // @todo TW: Nur wenn alle verwendeten Solver fixed sind.
+	/**
+	 * This computation is optimistic. If we were pessimistic, we had to
+	 * use the max solver time step size. However, this is not necessary
+	 * here, as we half the time steps anyway.
+	 */
+	numberOfStepsToRun = std::floor( (exahype::plotters::getTimeOfNextPlot() - solvers::Solver::getMaxSolverTimeStampOfAllSolvers()) / solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() );
+	numberOfStepsToRun = numberOfStepsToRun<2 ? 1 : numberOfStepsToRun/2;
+      }
+
+
+      // @todo Remove
+      if (numberOfStepsToRun>1) numberOfStepsToRun = 1;
+
+      runOneTimeStampWithFusedAlgorithmicSteps(repository, numberOfStepsToRun);
       recomputePredictorIfNecessary(repository,_parser.getFuseAlgorithmicStepsFactor());
-      startNewTimeStep(n,true,true);
+      startNewTimeStep(numberOfStepsToRun);
     } else {
       runOneTimeStampWithFourSeparateAlgorithmicSteps(repository, plot);
-      startNewTimeStep(n,true,true);
+      startNewTimeStep(1);
     }
 
-    n++;
     logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
   }
   if ( tarch::la::equals(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
@@ -433,15 +449,20 @@ void exahype::runners::Runner::initFiniteVolumesSolverTimeStamps() {
   }
 }
 
-void exahype::runners::Runner::startNewTimeStep(int n,bool startNewFiniteVolumesTimeStep,bool printInfo) {
-  double currentMinTimeStamp = std::numeric_limits<double>::max();
+void exahype::runners::Runner::startNewTimeStep(int numberOfStepsRanSinceLastCall) {
+  double currentMinTimeStamp    = std::numeric_limits<double>::max();
   double currentMinTimeStepSize = std::numeric_limits<double>::max();
-  double nextMinTimeStepSize = std::numeric_limits<double>::max();
+  double nextMinTimeStepSize    = std::numeric_limits<double>::max();
+
+  static int n = 0;
+  if (numberOfStepsRanSinceLastCall==0) {
+    n++;
+  }
+  else if (numberOfStepsRanSinceLastCall>0) {
+    n+=numberOfStepsRanSinceLastCall;
+  }
 
   for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    if (startNewFiniteVolumesTimeStep || p->getType()==exahype::solvers::Solver::Type::ADER_DG) {
-      p->startNewTimeStep();
-    }
     currentMinTimeStamp =
         std::min(currentMinTimeStamp, p->getMinTimeStamp());
     currentMinTimeStepSize =
@@ -450,24 +471,21 @@ void exahype::runners::Runner::startNewTimeStep(int n,bool startNewFiniteVolumes
         std::min(nextMinTimeStepSize, p->getNextMinTimeStepSize());
   }
 
-  if (printInfo) {
-    logInfo("startNewTimeStep(...)",
+  logInfo("startNewTimeStep(...)",
             "step " << n << "\t t_min          =" << currentMinTimeStamp);
 
-    logInfo("startNewTimeStep(...)",
+  logInfo("startNewTimeStep(...)",
             "\t\t dt_min         =" << currentMinTimeStepSize);
 
-    logDebug("startNewTimeStep(...)",
+  logDebug("startNewTimeStep(...)",
             "\t\t next dt_min    =" << nextMinTimeStepSize); // only interesting for ADER-DG. Prints MAX_DOUBLE for finite volumes.
-  }
 #if defined(Debug) || defined(Asserts)
-  tarch::logging::CommandLineLogger::getInstance()
-      .closeOutputStreamAndReopenNewOne();
+  tarch::logging::CommandLineLogger::getInstance().closeOutputStreamAndReopenNewOne();
 #endif
 }
 
 void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
-    exahype::repositories::Repository& repository, bool plot) {
+    exahype::repositories::Repository& repository, int numberOfStepsToRun) {
   /*
    * The adapter below performs the following steps:
    *
@@ -483,13 +501,13 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
    * 4. Compute the cell-local time step sizes
    */
 
-  if (plot) {
+  if (numberOfStepsToRun==0) {
     repository.switchToADERDGTimeStepAndPlot();
+    repository.iterate();
   } else {
     repository.switchToADERDGTimeStep();
+    repository.iterate(numberOfStepsToRun);
   }
-
-  repository.iterate();
 }
 
 // @todo 16/02/29:Dominic Etienne Charrier

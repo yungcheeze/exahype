@@ -91,19 +91,23 @@ class exahype::runners::Runner {
   /**
    * Starts a new time step for all registered solvers.
    *
-   * \param n                             The time step.
-   * \param startNewFiniteVolumesTimeStep Update the finite volumes time stamp and time step size.
-   * \param printInfo                     Print information on minimum solver time step size and minimum solver time stamp.
+   * \param numberOfStepsRanSinceLastCall The number of time step done since
+   *          the last call. If you pass -1, then you've done only preparatory
+   *          time steps so far.
+   * \param startNewFiniteVolumesTimeStep Update the finite volumes time stamp
+   *          and time step size.
+   * \param printInfo                     Print information on minimum solver
+   *          time step size and minimum solver time stamp.
    */
-  void startNewTimeStep(int n,bool startNewFiniteVolumesTimeStep,bool printInfo);
+  void startNewTimeStep(int numberOfStepsRanSinceLastCall);
 
   /**
    * Do one time step where all phases are actually fused into one traversal
    *
-   * @param plot      Do plot the way along
+   * @param numberOfStepsToRun Number of steps to run. If you hand in 0, then
+   *           it runs one time step plus does a plot.
    */
-  void runOneTimeStampWithFusedAlgorithmicSteps(
-      exahype::repositories::Repository& repository, bool plot);
+  void runOneTimeStampWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository, int numberOfStepsToRun);
 
   bool setStableTimeStepSizesIfStabilityConditionWasHarmed(double factor);
 

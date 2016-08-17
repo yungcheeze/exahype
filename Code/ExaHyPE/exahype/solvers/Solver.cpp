@@ -85,3 +85,15 @@ double exahype::solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() {
 
   return currentMinTimeStepSize;
 }
+
+
+double exahype::solvers::Solver::getMaxSolverTimeStampOfAllSolvers() {
+  double currentMaxTimeStamp = std::numeric_limits<double>::min();
+
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    currentMaxTimeStamp =
+        std::max(currentMaxTimeStamp, p->getMinTimeStamp());
+  }
+
+  return currentMaxTimeStamp;
+}

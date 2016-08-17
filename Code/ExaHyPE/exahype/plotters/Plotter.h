@@ -31,6 +31,7 @@ namespace exahype {
 
     bool isAPlotterActive(double currentTimeStep);
     void finishedPlotting();
+    double getTimeOfNextPlot();
   }
 }
 
@@ -181,6 +182,9 @@ class exahype::plotters::Plotter {
   const int              _solver;
   const std::string      _identifier;
   int                    _writtenUnknowns;
+  /**
+   * Time of the next snapshot to be written
+   */
   double                 _time;
   const double           _repeat;
   const std::string      _filename;
@@ -218,6 +222,13 @@ class exahype::plotters::Plotter {
                  double* u, double timeStamp);
 
   std::string getFileName() const;
+
+  /**
+   * If you want to check whether to active a plotter, please use
+   * checkWetherSolverBecomesActive(). This operation is meant to determine
+   * the next time step if you have fixed time stepping.
+   */
+  double getNextPlotTime() const;
 };
 
 #endif

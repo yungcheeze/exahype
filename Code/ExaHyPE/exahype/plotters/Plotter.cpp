@@ -133,6 +133,11 @@ exahype::plotters::Plotter::~Plotter() {
 }
 
 
+double exahype::plotters::Plotter::getNextPlotTime() const {
+  return _time;
+}
+
+
 bool exahype::plotters::Plotter::checkWetherSolverBecomesActive(double currentTimeStamp) {
   if ((_time >= 0.0) && tarch::la::greaterEquals(currentTimeStamp, _time)) {
     
@@ -192,6 +197,15 @@ bool exahype::plotters::isAPlotterActive(double currentTimeStep) {
   bool result = false;
   for (const auto& p : RegisteredPlotters) {
     result |= p->checkWetherSolverBecomesActive(currentTimeStep);
+  }
+  return result;
+}
+
+
+double exahype::plotters::getTimeOfNextPlot() {
+  double result = std::numeric_limits<double>::max();
+  for (const auto& p : RegisteredPlotters) {
+    result = std::min(result,p->getNextPlotTime());
   }
   return result;
 }

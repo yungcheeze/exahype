@@ -255,14 +255,14 @@ void exahype::mappings::GlobalTimeStepComputation::beginIteration(
 
 void exahype::mappings::GlobalTimeStepComputation::endIteration(
     exahype::State& solverState) {
-  for (int i = 0;
-       i < static_cast<int>(exahype::solvers::RegisteredSolvers.size()); i++) {
+  for (int i = 0; i < static_cast<int>(exahype::solvers::RegisteredSolvers.size()); i++) {
     exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[i];
 
     logDebug("mergeLocalTimeStepDataIntoSolvers()",
              "solver " << i << " is updated with time step size "
                        << _minTimeStepSizes[i]);
     solver->updateNextTimeStepSize(_minTimeStepSizes[i]);
+    solver->startNewTimeStep();
   }
 }
 
