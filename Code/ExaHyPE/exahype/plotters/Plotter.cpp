@@ -116,7 +116,7 @@ exahype::plotters::Plotter::Plotter(
   }
   else {
     logError(
-      "checkWetherSolverBecomesActive(double)",
+      "Plotter(...)",
       "unknown plotter type "
           << _identifier << " for "
           << solvers::RegisteredSolvers[_solver]->getIdentifier()
@@ -135,6 +135,14 @@ exahype::plotters::Plotter::~Plotter() {
 
 bool exahype::plotters::Plotter::checkWetherSolverBecomesActive(double currentTimeStamp) {
   if ((_time >= 0.0) && tarch::la::greaterEquals(currentTimeStamp, _time)) {
+    
+    if (_device==nullptr){
+      logError(
+        "checkWetherSolverBecomesActive(double)",
+        "unknown plotter type "
+      );
+      
+    }
     assertion(_device!=nullptr);
     _isActive = true;
     _device->startPlotting(currentTimeStamp);
