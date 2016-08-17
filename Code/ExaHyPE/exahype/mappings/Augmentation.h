@@ -56,6 +56,9 @@ class Augmentation;
  * @discussion:
  * 1. Since we treat the limiter as full finite volumes solver, we could consider
  * to not have helper cells at all.
+ *
+ * @author Dominic Etienne Charrier
+ * @version $Revision: 1.10 $
  */
 
 class exahype::mappings::Augmentation {
