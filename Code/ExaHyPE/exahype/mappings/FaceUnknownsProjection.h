@@ -40,8 +40,17 @@ class FaceUnknownsProjection;
 }
 
 /**
-   * Nop.
-   */
+ * This mapping is used to prolongate coarse grid face unknowns
+ * down to fine grid cells and to restrict
+ * coarse grid face unknowns up to coarse grid cells.
+ *
+ * @developers:
+ * TODO(Dominic): Need to propagate face data
+ * from master to worker (prolongation).
+ * Need to propagate face data from worker to master
+ * (erasing,joins).
+ * (Multilevel stuff is going to be tricky.)
+ */
 class exahype::mappings::FaceUnknownsProjection {
  private:
   /**
