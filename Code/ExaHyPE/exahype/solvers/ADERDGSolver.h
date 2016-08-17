@@ -413,7 +413,8 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
   ///@}
 
   /**
-   * @todo Dominic, please add a description what this routine does.
+   * Copies the time stepping data from the global solver onto the patch's time
+   * meta data.
    */
   void synchroniseTimeStepping(
       exahype::records::ADERDGCellDescription& p) const;

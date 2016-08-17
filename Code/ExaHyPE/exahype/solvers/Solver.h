@@ -81,6 +81,11 @@ class exahype::solvers::Solver {
      * In the global time stepping mode, every cells works with the same time step.
      */
     Global,
+    /**
+     * In the fixed time stepping mode, we assume that each cell advanced in
+     * time with the prescribed time step size. No CFL condition is checked.
+     */
+    GlobalFixed
     // Local, Anarchic
   };
 

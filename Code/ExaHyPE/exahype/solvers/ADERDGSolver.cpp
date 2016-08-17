@@ -125,63 +125,56 @@ void exahype::solvers::ADERDGSolver::synchroniseTimeStepping(
 
   //  if (p.getNextPredictorTimeStepSize() < )
 
-  if (_timeStepping == TimeStepping::Global) {
-    p.setCorrectorTimeStamp(_minCorrectorTimeStamp);
-    p.setCorrectorTimeStepSize(_minCorrectorTimeStepSize);
-    p.setPredictorTimeStamp(_minPredictorTimeStamp);
-    p.setPredictorTimeStepSize(_minPredictorTimeStepSize);
-
-    /*
-        assertionNumericalEquals1(p.getCorrectorTimeStamp()
-       ,solve.getCorrectorTimeStamp(),   1e-12); // todo precision
-        assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solve.getCorrectorTimeStepSize(),1e-12);
-        assertionNumericalEquals1(p.getPredictorTimeStamp()
-       ,solve.getPredictorTimeStamp(),   1e-12);
-        assertionNumericalEquals1(p.getPredictorTimeStepSize(),solve.getPredictorTimeStepSize(),1e-12);
-     */
+  switch (_timeStepping) {
+    case TimeStepping::Global:
+      p.setCorrectorTimeStamp(_minCorrectorTimeStamp);
+      p.setCorrectorTimeStepSize(_minCorrectorTimeStepSize);
+      p.setPredictorTimeStamp(_minPredictorTimeStamp);
+      p.setPredictorTimeStepSize(_minPredictorTimeStepSize);
+      break;
+    case TimeStepping::GlobalFixed:
+      p.setCorrectorTimeStamp(_minCorrectorTimeStamp);
+      p.setCorrectorTimeStepSize(_minCorrectorTimeStepSize);
+      p.setPredictorTimeStamp(_minPredictorTimeStamp);
+      p.setPredictorTimeStepSize(_minPredictorTimeStepSize);
+      break;
   }
-/*  if (!solve.isCorrectorTimeLagging()) {*/
-//    p.setCorrectorTimeStamp   (p.getPredictorTimeStamp   ());
-//    p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
-//  }
+}
 
-#if defined(Debug) || defined(Asserts)
-// @ŧodo Wieder reinnehmen
-/*
-if (solver.getTimeStepping()==exahype::solvers::ADERDGSolver::GLOBAL &&
-!solver.isCorrectorTimeLagging()) {
-  // Note that the solve time stamps and time step sizes are not modified if
-corrector time lagging
-  // is deactivated. Thus, solve.getPredictor... and solve.getCorrector... are
-not the same in general
-  // for any value of solve.isCorrectorTimeLagging().
-  assertionNumericalEquals1(p.getPredictorTimeStamp()
-,solver.getPredictorTimeStamp(),   1e-12); // todo precision
-  assertionNumericalEquals1(p.getPredictorTimeStepSize(),solver.getPredictorTimeStepSize(),1e-12);
-  assertionNumericalEquals1(p.getCorrectorTimeStamp()
-,solver.getPredictorTimeStamp(),   1e-12);
-  assertionNumericalEquals1(p.getCorrectorTimeStepSize(),solver.getPredictorTimeStepSize(),1e-12);
-}
- */
-#endif
-}
 
 void exahype::solvers::ADERDGSolver::startNewTimeStep() {
-  _minCorrectorTimeStamp = _minPredictorTimeStamp;
-  _minCorrectorTimeStepSize = _minPredictorTimeStepSize;
+  switch (_timeStepping) {
+    case TimeStepping::Global:
+      _minCorrectorTimeStamp    = _minPredictorTimeStamp;
+      _minCorrectorTimeStepSize = _minPredictorTimeStepSize;
 
-  _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
-  _minPredictorTimeStamp =
-      _minPredictorTimeStamp + _minNextPredictorTimeStepSize;
+      _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
+      _minPredictorTimeStamp    = _minPredictorTimeStamp + _minNextPredictorTimeStepSize;
 
-  _minNextPredictorTimeStepSize = std::numeric_limits<double>::max();
+      _minNextPredictorTimeStepSize = std::numeric_limits<double>::max();
+      break;
+    case TimeStepping::GlobalFixed:
+      _minCorrectorTimeStamp    = _minPredictorTimeStamp;
+      _minCorrectorTimeStepSize = _minPredictorTimeStepSize;
+
+      _minPredictorTimeStepSize = _minNextPredictorTimeStepSize;
+      _minPredictorTimeStamp    = _minPredictorTimeStamp + _minNextPredictorTimeStepSize;
+      break;
+  }
 }
 
-void exahype::solvers::ADERDGSolver::updateMinNextPredictorTimeStepSize(
-    const double& minNextPredictorTimeStepSize) {
-  _minNextPredictorTimeStepSize =
-      std::min(_minNextPredictorTimeStepSize, minNextPredictorTimeStepSize);
+
+void exahype::solvers::ADERDGSolver::updateMinNextPredictorTimeStepSize(const double& minNextPredictorTimeStepSize) {
+  switch (_timeStepping) {
+    case TimeStepping::Global:
+      _minNextPredictorTimeStepSize = std::min(_minNextPredictorTimeStepSize, minNextPredictorTimeStepSize);
+      break;
+    case TimeStepping::GlobalFixed:
+      _minNextPredictorTimeStepSize = _minNextPredictorTimeStepSize==std::numeric_limits<double>::max() ? std::min(_minNextPredictorTimeStepSize, minNextPredictorTimeStepSize) : _minNextPredictorTimeStepSize;
+      break;
+  }
 }
+
 
 double exahype::solvers::ADERDGSolver::getMinNextPredictorTimeStepSize() const {
   return _minNextPredictorTimeStepSize;

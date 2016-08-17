@@ -18,13 +18,15 @@
 std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
 
 exahype::solvers::Solver::Solver(
-    const std::string& identifier,
-    exahype::solvers::Solver::Type type,
-    int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis,
-    double maximumMeshSize,
-    exahype::solvers::Solver::TimeStepping timeStepping,
-    std::unique_ptr<profilers::Profiler> profiler)
-    : _identifier(identifier),
+  const std::string&                     identifier,
+  exahype::solvers::Solver::Type         type,
+  int                                    numberOfVariables,
+  int                                    numberOfParameters,
+  int                                    nodesPerCoordinateAxis,
+  double                                 maximumMeshSize,
+  exahype::solvers::Solver::TimeStepping timeStepping,
+  std::unique_ptr<profilers::Profiler>   profiler
+  ):  _identifier(identifier),
       _type(type),
       _numberOfVariables(numberOfVariables),
       _numberOfParameters(numberOfParameters),
@@ -35,9 +37,11 @@ exahype::solvers::Solver::Solver(
   assertion(numberOfParameters==0);
 }
 
+
 std::string exahype::solvers::Solver::getIdentifier() const {
   return _identifier;
 }
+
 
 exahype::solvers::Solver::Type exahype::solvers::Solver::getType() const {
   return _type;

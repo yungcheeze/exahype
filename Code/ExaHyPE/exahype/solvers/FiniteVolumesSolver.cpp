@@ -66,9 +66,17 @@ void exahype::solvers::FiniteVolumesSolver::initInitialTimeStamp(double value) {
 }
 
 void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
-  _minTimeStamp += _minTimeStepSize;
-  _minTimeStepSize = _nextMinTimeStepSize;
-  _nextMinTimeStepSize = std::numeric_limits<double>::max();
+  switch (_timeStepping) {
+    case TimeStepping::Global:
+      _minTimeStamp        += _minTimeStepSize;
+      _minTimeStepSize      = _nextMinTimeStepSize;
+      _nextMinTimeStepSize  = std::numeric_limits<double>::max();
+      break;
+    case TimeStepping::GlobalFixed:
+      _minTimeStamp        += _minTimeStepSize;
+      _minTimeStepSize      = _nextMinTimeStepSize;
+      break;
+  }
 }
 
 double exahype::solvers::FiniteVolumesSolver::getNextMinTimeStepSize() const {

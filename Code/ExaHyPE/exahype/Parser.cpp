@@ -54,8 +54,8 @@ exahype::Parser::Parser() {
   _identifier2Type.insert (
       std::pair<std::string,exahype::solvers::Solver::Type> ("Finite-Volumes", exahype::solvers::Solver::Type::FiniteVolumes) );
 
-  _identifier2TimeStepping.insert (
-      std::pair<std::string,exahype::solvers::Solver::TimeStepping> ("global", exahype::solvers::Solver::TimeStepping::Global) );
+  _identifier2TimeStepping.insert( std::pair<std::string,exahype::solvers::Solver::TimeStepping> ("global", exahype::solvers::Solver::TimeStepping::Global) );
+  _identifier2TimeStepping.insert( std::pair<std::string,exahype::solvers::Solver::TimeStepping> ("globalfixed", exahype::solvers::Solver::TimeStepping::GlobalFixed) );
 }
 
 void exahype::Parser::readFile(const std::string& filename) {

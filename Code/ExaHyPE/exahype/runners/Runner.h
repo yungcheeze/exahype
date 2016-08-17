@@ -80,6 +80,10 @@ class exahype::runners::Runner {
   void runGlobalStep();
 #endif
 
+  /**
+   * Reset all time stamps to zero. Runs through the solver registry only,
+   * i.e. no grid traversal is required.
+   */
   void initSolverTimeStamps();
   void initFiniteVolumesSolverTimeStamps();
 
