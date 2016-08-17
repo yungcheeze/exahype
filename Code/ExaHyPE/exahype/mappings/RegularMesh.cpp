@@ -220,7 +220,6 @@ void exahype::mappings::RegularMesh::enterCell(
             fineGridVerticesEnumerator.getCellSize(),
             // We pass the lower left corner of the cell as offset.
             fineGridVerticesEnumerator.getVertexPosition());
-          logInfo( "enterCell(...)", "initialised FV cell data" );
         }
         else {
           assertionMsg(false,"not implemented yet");
@@ -233,10 +232,16 @@ void exahype::mappings::RegularMesh::enterCell(
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
+
+
 //
 // All routines below are nop
 // ==========================
 //
+
+
+
+
 exahype::mappings::RegularMesh::RegularMesh() {
   // do nothing
 }
