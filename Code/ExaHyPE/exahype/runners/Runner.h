@@ -89,17 +89,19 @@ class exahype::runners::Runner {
 
 
   /**
-   * Starts a new time step for all registered solvers.
+   * Print minimum of current solver time stamps and time step sizes.
+   *
+   * The solver time stamp and step sizes are computed as
+   * minimum over the patch quantities.
    *
    * \param numberOfStepsRanSinceLastCall The number of time step done since
    *          the last call. If you pass -1, then you've done only preparatory
    *          time steps so far.
-   * \param startNewFiniteVolumesTimeStep Update the finite volumes time stamp
-   *          and time step size.
-   * \param printInfo                     Print information on minimum solver
-   *          time step size and minimum solver time stamp.
+   *
+   * \note A value \p numberOfStepsRanSinceLastCall greater than 1 is only interesting
+   *       for fixed time stepping runs.
    */
-  void startNewTimeStep(int numberOfStepsRanSinceLastCall);
+  void printTimeStepInfo(int numberOfStepsRanSinceLastCall);
 
   /**
    * Do one time step where all phases are actually fused into one traversal
@@ -109,8 +111,33 @@ class exahype::runners::Runner {
    */
   void runOneTimeStampWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository, int numberOfStepsToRun);
 
+  /**
+   * Resets the corrector and predictor time step sizes of an ADER-DG solver
+   * to the same CFL stable time step size weighted by a nonzero \p factor
+   * smaller than one or equal to one.
+   *
+   * \note Currently this function only makes sense for single
+   * ADERDG solvers and global time stepping.
+   *
+   * @developers:
+   * TODO(Dominic): This should move into solver class, or not?
+   * The function does only make sense for the fused algorithmic steps optimisation.
+   */
   bool setStableTimeStepSizesIfStabilityConditionWasHarmed(double factor);
 
+  /**
+   * Resets the corrector and predictor time step sizes of an ADER-DG solver
+   *
+   *
+   * \param factor
+   *
+   * \note Currently this function only makes sense for single
+   * ADERDG solvers and global time stepping.
+   *
+   * @developers:
+   * TODO(Dominic): This should move into solver class, or not?
+   * The function does only make sense for the fused algorithmic steps optimisation.
+   */
   void recomputePredictorIfNecessary(
       exahype::repositories::Repository& repository,double factor);
 
