@@ -408,19 +408,17 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       if (plot) {
         numberOfStepsToRun = 0;
       }
-      else if (solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers()>0.0) {   // @todo TW: Nur wenn alle verwendeten Solver fixed sind.
+      else if (solvers::Solver::allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping::GlobalFixed)) {
         /**
          * This computation is optimistic. If we were pessimistic, we had to
          * use the max solver time step size. However, this is not necessary
          * here, as we half the time steps anyway.
          */
-        numberOfStepsToRun = std::floor( (exahype::plotters::getTimeOfNextPlot() - solvers::Solver::getMaxSolverTimeStampOfAllSolvers()) / solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() );
+    	if (solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers()>0.0) {
+          numberOfStepsToRun = std::floor( (exahype::plotters::getTimeOfNextPlot() - solvers::Solver::getMaxSolverTimeStampOfAllSolvers()) / solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() );
+    	}
         numberOfStepsToRun = numberOfStepsToRun<2 ? 1 : numberOfStepsToRun/2;
       }
-
-
-      // @todo Remove
-      if (numberOfStepsToRun>1) numberOfStepsToRun = 1;
 
       runOneTimeStampWithFusedAlgorithmicSteps(repository, numberOfStepsToRun);
       recomputePredictorIfNecessary(repository,_parser.getFuseAlgorithmicStepsFactor());
