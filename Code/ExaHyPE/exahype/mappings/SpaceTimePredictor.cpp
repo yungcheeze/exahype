@@ -77,99 +77,102 @@ int exahype::mappings::SpaceTimePredictor::_mpiTag =
     tarch::parallel::Node::reserveFreeTag(
         "exahype::mappings::SpaceTimePredictor");
 
-exahype::mappings::SpaceTimePredictor::SpaceTimePredictor() {
-  // do nothing
-}
-
-exahype::mappings::SpaceTimePredictor::~SpaceTimePredictor() {
-  // do nothing
-}
-
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::SpaceTimePredictor::SpaceTimePredictor(
     const SpaceTimePredictor& masterThread) {
-  // do nothing
+  // TODO(Dominic): Merge from other branch.
 }
-
 void exahype::mappings::SpaceTimePredictor::mergeWithWorkerThread(
     const SpaceTimePredictor& workerThread) {
   // do nothing
 }
 #endif
 
-void exahype::mappings::SpaceTimePredictor::createHangingVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::SpaceTimePredictor::destroyHangingVertex(
-    const exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::SpaceTimePredictor::createInnerVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::SpaceTimePredictor::createBoundaryVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::SpaceTimePredictor::destroyVertex(
-    const exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::SpaceTimePredictor::createCell(
+void exahype::mappings::SpaceTimePredictor::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
-}
+  logTraceInWith4Arguments("enterCell(...)", fineGridCell,
+                           fineGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfCell);
 
-void exahype::mappings::SpaceTimePredictor::destroyCell(
-    const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
+  if (fineGridCell.isInitialised()) {
+    const int numberOfADERDGCellDescriptions = static_cast<int>(
+        ADERDGCellDescriptionHeap::getInstance()
+            .getData(fineGridCell.getCellDescriptionsIndex())
+            .size());
+
+    // please use a different UserDefined per mapping/event
+    const peano::datatraversal::autotuning::MethodTrace methodTrace =
+        peano::datatraversal::autotuning::UserDefined7;
+    const int grainSize =
+        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
+            numberOfADERDGCellDescriptions, methodTrace);
+    pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
+      auto& p = fineGridCell.getADERDGCellDescription(i);
+
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+          exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
+
+      // space-time DoF (basisSize**(DIMENSIONS+1))
+      double* lQi = 0;
+      double* lFi = 0;
+
+      // volume DoF (basisSize**(DIMENSIONS))
+      double* luh = 0;
+      double* lQhi = 0;
+      double* lFhi = 0;
+
+      // face DoF (basisSize**(DIMENSIONS-1))
+      double* lQhbnd = 0;
+      double* lFhbnd = 0;
+
+      switch (p.getType()) {
+        case exahype::records::ADERDGCellDescription::Cell:
+          assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimePredictor()),p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimeVolumeFlux()),p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getSolution()),p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getUpdate()),p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getPredictor()),p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getVolumeFlux()),p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()),p.toString());
+          assertion1(DataHeap::getInstance().isValidIndex(p.getFluctuation()),p.toString());
+
+          lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
+          lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
+
+          luh = DataHeap::getInstance().getData(p.getSolution()).data();
+          lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
+          lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
+
+          lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
+          lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
+
+          fineGridCell.validateNoNansInADERDGSolver(i,fineGridCell,fineGridVerticesEnumerator,"exahype::mappings::SpaceTimePredictor::enterCell[pre]");
+
+          solver->spaceTimePredictor(
+              lQi, lFi, lQhi, lFhi,
+              lQhbnd,
+              lFhbnd,
+              luh, fineGridVerticesEnumerator.getCellSize(),
+              p.getPredictorTimeStepSize());
+
+          fineGridCell.validateNoNansInADERDGSolver(i,fineGridCell,fineGridVerticesEnumerator,"exahype::mappings::SpaceTimePredictor::enterCell[post]");
+
+          break;
+        default:
+          break;
+      }
+    endpfor
+
+    peano::datatraversal::autotuning::Oracle::getInstance()
+        .parallelSectionHasTerminated(methodTrace);
+  }
+  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
 #ifdef Parallel
@@ -283,6 +286,46 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
   enddforx enddforx
 }
 
+bool exahype::mappings::SpaceTimePredictor::prepareSendToWorker(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker) {
+  for (auto& p : exahype::solvers::RegisteredSolvers) {
+    p->sendToRank(worker, _mpiTag);
+  }
+
+  return true;
+}
+
+void exahype::mappings::SpaceTimePredictor::receiveDataFromMaster(
+    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
+    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
+    exahype::Vertex* const receivedCoarseGridVertices,
+    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
+    exahype::Cell& receivedCoarseGridCell,
+    exahype::Vertex* const workersCoarseGridVertices,
+    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
+    exahype::Cell& workersCoarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  for (auto& p : exahype::solvers::RegisteredSolvers) {
+    p->receiveFromMasterRank(tarch::parallel::NodePool::getInstance().getMasterRank(),
+                       _mpiTag);
+  }
+}
+
+
+
+//
+// Below all methods are nop.
+//
+// ====================================
+
+
+
 void exahype::mappings::SpaceTimePredictor::prepareCopyToRemoteNode(
     exahype::Vertex& localVertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -311,21 +354,6 @@ void exahype::mappings::SpaceTimePredictor::mergeWithRemoteDataDueToForkOrJoin(
   // do nothing
 }
 
-bool exahype::mappings::SpaceTimePredictor::prepareSendToWorker(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    int worker) {
-  for (auto& p : exahype::solvers::RegisteredSolvers) {
-    p->sendToRank(worker, _mpiTag);
-  }
-
-  return true;
-}
-
 void exahype::mappings::SpaceTimePredictor::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
@@ -351,22 +379,6 @@ void exahype::mappings::SpaceTimePredictor::mergeWithMaster(
   // do nothing
 }
 
-void exahype::mappings::SpaceTimePredictor::receiveDataFromMaster(
-    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
-    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
-    exahype::Vertex* const receivedCoarseGridVertices,
-    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
-    exahype::Cell& receivedCoarseGridCell,
-    exahype::Vertex* const workersCoarseGridVertices,
-    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
-    exahype::Cell& workersCoarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  for (auto& p : exahype::solvers::RegisteredSolvers) {
-    p->receiveFromMasterRank(tarch::parallel::NodePool::getInstance().getMasterRank(),
-                       _mpiTag);
-  }
-}
-
 void exahype::mappings::SpaceTimePredictor::mergeWithWorker(
     exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
@@ -381,6 +393,91 @@ void exahype::mappings::SpaceTimePredictor::mergeWithWorker(
   // do nothing
 }
 #endif
+
+
+exahype::mappings::SpaceTimePredictor::SpaceTimePredictor() {
+  // do nothing
+}
+
+exahype::mappings::SpaceTimePredictor::~SpaceTimePredictor() {
+  // do nothing
+}
+
+void exahype::mappings::SpaceTimePredictor::createHangingVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::SpaceTimePredictor::destroyHangingVertex(
+    const exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::SpaceTimePredictor::createInnerVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::SpaceTimePredictor::createBoundaryVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::SpaceTimePredictor::destroyVertex(
+    const exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::SpaceTimePredictor::createCell(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
+void exahype::mappings::SpaceTimePredictor::destroyCell(
+    const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
 
 void exahype::mappings::SpaceTimePredictor::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
@@ -402,93 +499,6 @@ void exahype::mappings::SpaceTimePredictor::touchVertexLastTime(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
   // do nothing
-}
-
-void exahype::mappings::SpaceTimePredictor::enterCell(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-                           fineGridVerticesEnumerator.toString(),
-                           coarseGridCell, fineGridPositionOfCell);
-
-  if (fineGridCell.isInitialised()) {
-    const int numberOfADERDGCellDescriptions = static_cast<int>(
-        ADERDGCellDescriptionHeap::getInstance()
-            .getData(fineGridCell.getCellDescriptionsIndex())
-            .size());
-
-    // please use a different UserDefined per mapping/event
-    const peano::datatraversal::autotuning::MethodTrace methodTrace =
-        peano::datatraversal::autotuning::UserDefined7;
-    const int grainSize =
-        peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-            numberOfADERDGCellDescriptions, methodTrace);
-    pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      auto& p = fineGridCell.getADERDGCellDescription(i);
-
-      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
-          exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
-
-      // space-time DoF (basisSize**(DIMENSIONS+1))
-      double* lQi = 0;
-      double* lFi = 0;
-
-      // volume DoF (basisSize**(DIMENSIONS))
-      double* luh = 0;
-      double* lQhi = 0;
-      double* lFhi = 0;
-
-      // face DoF (basisSize**(DIMENSIONS-1))
-      double* lQhbnd = 0;
-      double* lFhbnd = 0;
-
-      switch (p.getType()) {
-        case exahype::records::ADERDGCellDescription::Cell:
-          assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimePredictor()),p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimeVolumeFlux()),p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getSolution()),p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getUpdate()),p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getPredictor()),p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getVolumeFlux()),p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()),p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getFluctuation()),p.toString());
-
-          lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
-          lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
-
-          luh = DataHeap::getInstance().getData(p.getSolution()).data();
-          lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
-          lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
-
-          lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
-          lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
-
-          fineGridCell.validateNoNansInADERDGSolver(i,fineGridCell,fineGridVerticesEnumerator,"exahype::mappings::SpaceTimePredictor::enterCell[pre]");
-
-          solver->spaceTimePredictor(
-              lQi, lFi, lQhi, lFhi,
-              lQhbnd,
-              lFhbnd,
-              luh, fineGridVerticesEnumerator.getCellSize(),
-              p.getPredictorTimeStepSize());
-
-          fineGridCell.validateNoNansInADERDGSolver(i,fineGridCell,fineGridVerticesEnumerator,"exahype::mappings::SpaceTimePredictor::enterCell[post]");
-
-          break;
-        default:
-          break;
-      }
-    endpfor
-
-    peano::datatraversal::autotuning::Oracle::getInstance()
-        .parallelSectionHasTerminated(methodTrace);
-  }
-  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
 void exahype::mappings::SpaceTimePredictor::leaveCell(

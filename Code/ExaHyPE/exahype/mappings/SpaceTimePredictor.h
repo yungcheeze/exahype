@@ -58,7 +58,6 @@ class SpaceTimePredictor;
  *
  *
  * @author Dominic E. Charrier and Tobias Weinzierl
- * @version $Revision: 1.10 $
  */
 class exahype::mappings::SpaceTimePredictor {
  private:
@@ -86,21 +85,32 @@ class exahype::mappings::SpaceTimePredictor {
   static peano::CommunicationSpecification communicationSpecification();
 
   /**
-   * Nop
+   * Enter a cell
+   *
+   * Run through all solvers assigned to a (real) cell and invoke the solver's
+   * spaceTimePredictor().
+   *
+   * <h2>MPI</h2>
+   *
+   * The predictor writes something into the boundary arrays lQhbnd and lFhbnd.
+   * These values are write-only and have to exchanged with neighbouring ranks.
+   *
+   * @see enterCellSpecification()
    */
-  SpaceTimePredictor();
+  void enterCell(
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
 #if defined(SharedMemoryParallelisation)
   /**
-   * Nop
+   * Access the states mapping in a read-only fashion.
    */
   SpaceTimePredictor(const SpaceTimePredictor& masterThread);
 #endif
-
-  /**
-   * Nop
-   */
-  virtual ~SpaceTimePredictor();
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -194,15 +204,6 @@ class exahype::mappings::SpaceTimePredictor {
 
 #ifdef Parallel
   /**
-   * Nop
-   */
-  void mergeWithNeighbour(exahype::Vertex& vertex,
-                          const exahype::Vertex& neighbour, int fromRank,
-                          const tarch::la::Vector<DIMENSIONS, double>& x,
-                          const tarch::la::Vector<DIMENSIONS, double>& h,
-                          int level);
-
-  /**
    * Prepare a vertex that is sent to the neighbour
    *
    * We run the $2^d$ adjacent cells and for each cell that is local, we do
@@ -247,6 +248,53 @@ class exahype::mappings::SpaceTimePredictor {
                               int level);
 
   /**
+   * Exchange all the global states with the worker
+   *
+   * This ensures that all workers have correct states with correct time step
+   * sizes.
+   */
+  bool prepareSendToWorker(
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      int worker);
+
+  /**
+   * See prepareSendToWorker(). This is the counterpart operation.
+   */
+  void receiveDataFromMaster(
+      exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
+      const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
+      exahype::Vertex* const receivedCoarseGridVertices,
+      const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
+      exahype::Cell& receivedCoarseGridCell,
+      exahype::Vertex* const workersCoarseGridVertices,
+      const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
+      exahype::Cell& workersCoarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
+
+
+  //
+  // Below all methods are nop.
+  //
+  //===================================
+
+
+
+  /**
+   * Nop
+   */
+  void mergeWithNeighbour(exahype::Vertex& vertex,
+                          const exahype::Vertex& neighbour, int fromRank,
+                          const tarch::la::Vector<DIMENSIONS, double>& x,
+                          const tarch::la::Vector<DIMENSIONS, double>& h,
+                          int level);
+
+  /**
    * Nop
    */
   void prepareCopyToRemoteNode(exahype::Vertex& localVertex, int toRank,
@@ -279,21 +327,6 @@ class exahype::mappings::SpaceTimePredictor {
       const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
 
   /**
-   * Exchange all the global states with the worker
-   *
-   * This ensures that all workers have correct states with correct time step
-   * sizes.
-   */
-  bool prepareSendToWorker(
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-      int worker);
-
-  /**
    * Nop
    */
   void mergeWithMaster(
@@ -321,20 +354,6 @@ class exahype::mappings::SpaceTimePredictor {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
-   * See prepareSendToWorker(). This is the counterpart operation.
-   */
-  void receiveDataFromMaster(
-      exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
-      const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
-      exahype::Vertex* const receivedCoarseGridVertices,
-      const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
-      exahype::Cell& receivedCoarseGridCell,
-      exahype::Vertex* const workersCoarseGridVertices,
-      const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
-      exahype::Cell& workersCoarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
    * Nop
    */
   void mergeWithWorker(exahype::Cell& localCell,
@@ -352,6 +371,15 @@ class exahype::mappings::SpaceTimePredictor {
                        const tarch::la::Vector<DIMENSIONS, double>& h,
                        int level);
 #endif
+  /**
+   * Nop
+   */
+  SpaceTimePredictor();
+
+  /**
+   * Nop
+   */
+  virtual ~SpaceTimePredictor();
 
   /**
    * Nop
@@ -376,27 +404,6 @@ class exahype::mappings::SpaceTimePredictor {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Enter a cell
-   *
-   * Run through all solvers assigned to a (real) cell and invoke the solver's
-   * spaceTimePredictor().
-   *
-   * <h2>MPI</h2>
-   *
-   * The predictor writes something into the boundary arrays lQhbnd and lFhbnd.
-   * These values are write-only and have to exchanged with neighbouring ranks.
-   *
-   * @see enterCellSpecification()
-   */
-  void enterCell(
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
    * Nop
