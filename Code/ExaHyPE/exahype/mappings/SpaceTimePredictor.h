@@ -95,7 +95,10 @@ class exahype::mappings::SpaceTimePredictor {
    * Enter a cell
    *
    * Run through all solvers assigned to a (real) cell and invoke the solver's
-   * spaceTimePredictor().
+   * spaceTimePredictor(...).
+   *
+   * Directly after invoke the solver's volumeIntegral(...) routine.
+   * Please see the discussion in the class header.
    *
    * <h2>MPI</h2>
    *
