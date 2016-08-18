@@ -5,7 +5,6 @@ peano::CommunicationSpecification   exahype::adapters::PredictorAndGlobalTimeSte
   return peano::CommunicationSpecification::getMinimalSpecification()
    & exahype::mappings::NewTimeStep::communicationSpecification()
    & exahype::mappings::SpaceTimePredictor::communicationSpecification()
-   & exahype::mappings::VolumeIntegral::communicationSpecification()
    & exahype::mappings::GlobalTimeStepComputation::communicationSpecification()
    & exahype::mappings::FaceUnknownsProjection::communicationSpecification()
 
@@ -17,7 +16,6 @@ peano::MappingSpecification   exahype::adapters::PredictorAndGlobalTimeStepCompu
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::NewTimeStep::touchVertexLastTimeSpecification()
    & exahype::mappings::SpaceTimePredictor::touchVertexLastTimeSpecification()
-   & exahype::mappings::VolumeIntegral::touchVertexLastTimeSpecification()
    & exahype::mappings::GlobalTimeStepComputation::touchVertexLastTimeSpecification()
    & exahype::mappings::FaceUnknownsProjection::touchVertexLastTimeSpecification()
 
@@ -29,7 +27,6 @@ peano::MappingSpecification   exahype::adapters::PredictorAndGlobalTimeStepCompu
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::NewTimeStep::touchVertexFirstTimeSpecification()
    & exahype::mappings::SpaceTimePredictor::touchVertexFirstTimeSpecification()
-   & exahype::mappings::VolumeIntegral::touchVertexFirstTimeSpecification()
    & exahype::mappings::GlobalTimeStepComputation::touchVertexFirstTimeSpecification()
    & exahype::mappings::FaceUnknownsProjection::touchVertexFirstTimeSpecification()
 
@@ -41,7 +38,6 @@ peano::MappingSpecification   exahype::adapters::PredictorAndGlobalTimeStepCompu
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::NewTimeStep::enterCellSpecification()
    & exahype::mappings::SpaceTimePredictor::enterCellSpecification()
-   & exahype::mappings::VolumeIntegral::enterCellSpecification()
    & exahype::mappings::GlobalTimeStepComputation::enterCellSpecification()
    & exahype::mappings::FaceUnknownsProjection::enterCellSpecification()
 
@@ -53,7 +49,6 @@ peano::MappingSpecification   exahype::adapters::PredictorAndGlobalTimeStepCompu
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::NewTimeStep::leaveCellSpecification()
    & exahype::mappings::SpaceTimePredictor::leaveCellSpecification()
-   & exahype::mappings::VolumeIntegral::leaveCellSpecification()
    & exahype::mappings::GlobalTimeStepComputation::leaveCellSpecification()
    & exahype::mappings::FaceUnknownsProjection::leaveCellSpecification()
 
@@ -65,7 +60,6 @@ peano::MappingSpecification   exahype::adapters::PredictorAndGlobalTimeStepCompu
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::NewTimeStep::ascendSpecification()
    & exahype::mappings::SpaceTimePredictor::ascendSpecification()
-   & exahype::mappings::VolumeIntegral::ascendSpecification()
    & exahype::mappings::GlobalTimeStepComputation::ascendSpecification()
    & exahype::mappings::FaceUnknownsProjection::ascendSpecification()
 
@@ -77,7 +71,6 @@ peano::MappingSpecification   exahype::adapters::PredictorAndGlobalTimeStepCompu
   return peano::MappingSpecification::getMinimalSpecification()
    & exahype::mappings::NewTimeStep::descendSpecification()
    & exahype::mappings::SpaceTimePredictor::descendSpecification()
-   & exahype::mappings::VolumeIntegral::descendSpecification()
    & exahype::mappings::GlobalTimeStepComputation::descendSpecification()
    & exahype::mappings::FaceUnknownsProjection::descendSpecification()
 
@@ -97,7 +90,6 @@ exahype::adapters::PredictorAndGlobalTimeStepComputation::~PredictorAndGlobalTim
 exahype::adapters::PredictorAndGlobalTimeStepComputation::PredictorAndGlobalTimeStepComputation(const PredictorAndGlobalTimeStepComputation&  masterThread):
   _map2NewTimeStep(masterThread._map2NewTimeStep) , 
   _map2SpaceTimePredictor(masterThread._map2SpaceTimePredictor) , 
-  _map2VolumeIntegral(masterThread._map2VolumeIntegral) , 
   _map2GlobalTimeStepComputation(masterThread._map2GlobalTimeStepComputation) , 
   _map2FaceUnknownsProjection(masterThread._map2FaceUnknownsProjection) 
 
@@ -108,7 +100,6 @@ exahype::adapters::PredictorAndGlobalTimeStepComputation::PredictorAndGlobalTime
 void exahype::adapters::PredictorAndGlobalTimeStepComputation::mergeWithWorkerThread(const PredictorAndGlobalTimeStepComputation& workerThread) {
   _map2NewTimeStep.mergeWithWorkerThread(workerThread._map2NewTimeStep);
   _map2SpaceTimePredictor.mergeWithWorkerThread(workerThread._map2SpaceTimePredictor);
-  _map2VolumeIntegral.mergeWithWorkerThread(workerThread._map2VolumeIntegral);
   _map2GlobalTimeStepComputation.mergeWithWorkerThread(workerThread._map2GlobalTimeStepComputation);
   _map2FaceUnknownsProjection.mergeWithWorkerThread(workerThread._map2FaceUnknownsProjection);
 
@@ -127,7 +118,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::createHangingVert
 ) {
   _map2NewTimeStep.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2SpaceTimePredictor.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2VolumeIntegral.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2FaceUnknownsProjection.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
@@ -146,7 +136,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::destroyHangingVer
 ) {
   _map2NewTimeStep.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2SpaceTimePredictor.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2VolumeIntegral.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2FaceUnknownsProjection.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
@@ -164,7 +153,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::createInnerVertex
 ) {
   _map2NewTimeStep.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2SpaceTimePredictor.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2VolumeIntegral.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2FaceUnknownsProjection.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
@@ -182,7 +170,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::createBoundaryVer
 ) {
   _map2NewTimeStep.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2SpaceTimePredictor.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2VolumeIntegral.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2FaceUnknownsProjection.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
@@ -200,7 +187,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::destroyVertex(
 ) {
   _map2NewTimeStep.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2SpaceTimePredictor.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2VolumeIntegral.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2FaceUnknownsProjection.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
@@ -218,7 +204,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::createCell(
 ) {
   _map2NewTimeStep.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2SpaceTimePredictor.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2VolumeIntegral.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GlobalTimeStepComputation.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2FaceUnknownsProjection.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
@@ -236,7 +221,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::destroyCell(
 ) {
   _map2NewTimeStep.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2SpaceTimePredictor.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2VolumeIntegral.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GlobalTimeStepComputation.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2FaceUnknownsProjection.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
@@ -254,7 +238,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::mergeWithNeighbou
 ) {
    _map2NewTimeStep.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2SpaceTimePredictor.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
-   _map2VolumeIntegral.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2GlobalTimeStepComputation.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2FaceUnknownsProjection.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
 
@@ -270,7 +253,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::prepareSendToNeig
 ) {
    _map2NewTimeStep.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2SpaceTimePredictor.prepareSendToNeighbour( vertex, toRank, x, h, level );
-   _map2VolumeIntegral.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2GlobalTimeStepComputation.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2FaceUnknownsProjection.prepareSendToNeighbour( vertex, toRank, x, h, level );
 
@@ -286,7 +268,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::prepareCopyToRemo
 ) {
    _map2NewTimeStep.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2SpaceTimePredictor.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
-   _map2VolumeIntegral.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2GlobalTimeStepComputation.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2FaceUnknownsProjection.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
 
@@ -302,7 +283,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::prepareCopyToRemo
 ) {
    _map2NewTimeStep.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2SpaceTimePredictor.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
-   _map2VolumeIntegral.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2GlobalTimeStepComputation.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2FaceUnknownsProjection.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
 
@@ -319,7 +299,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::mergeWithRemoteDa
 ) {
    _map2NewTimeStep.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2SpaceTimePredictor.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
-   _map2VolumeIntegral.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2GlobalTimeStepComputation.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2FaceUnknownsProjection.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
 
@@ -336,7 +315,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::mergeWithRemoteDa
 ) {
    _map2NewTimeStep.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2SpaceTimePredictor.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
-   _map2VolumeIntegral.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2GlobalTimeStepComputation.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2FaceUnknownsProjection.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
 
@@ -356,7 +334,6 @@ bool exahype::adapters::PredictorAndGlobalTimeStepComputation::prepareSendToWork
   bool result = false;
    result |= _map2NewTimeStep.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2SpaceTimePredictor.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
-   result |= _map2VolumeIntegral.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2GlobalTimeStepComputation.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2FaceUnknownsProjection.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
 
@@ -375,7 +352,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::prepareSendToMast
 ) {
    _map2NewTimeStep.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2SpaceTimePredictor.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-   _map2VolumeIntegral.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2GlobalTimeStepComputation.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2FaceUnknownsProjection.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
@@ -399,7 +375,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::mergeWithMaster(
 ) {
    _map2NewTimeStep.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2SpaceTimePredictor.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
-   _map2VolumeIntegral.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2GlobalTimeStepComputation.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2FaceUnknownsProjection.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
 
@@ -420,7 +395,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::receiveDataFromMa
 ) {
    _map2NewTimeStep.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2SpaceTimePredictor.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
-   _map2VolumeIntegral.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2GlobalTimeStepComputation.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2FaceUnknownsProjection.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
 
@@ -436,7 +410,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::mergeWithWorker(
 ) {
    _map2NewTimeStep.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2SpaceTimePredictor.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
-   _map2VolumeIntegral.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2GlobalTimeStepComputation.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2FaceUnknownsProjection.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
 
@@ -452,7 +425,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::mergeWithWorker(
 ) {
    _map2NewTimeStep.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2SpaceTimePredictor.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
-   _map2VolumeIntegral.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2GlobalTimeStepComputation.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2FaceUnknownsProjection.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
 
@@ -471,7 +443,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::touchVertexFirstT
 ) {
   _map2NewTimeStep.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2SpaceTimePredictor.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2VolumeIntegral.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2FaceUnknownsProjection.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
@@ -489,7 +460,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::touchVertexLastTi
 ) {
   _map2NewTimeStep.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2SpaceTimePredictor.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
-  _map2VolumeIntegral.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2GlobalTimeStepComputation.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2FaceUnknownsProjection.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
@@ -507,7 +477,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::enterCell(
 ) {
   _map2NewTimeStep.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2SpaceTimePredictor.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2VolumeIntegral.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GlobalTimeStepComputation.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2FaceUnknownsProjection.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
@@ -525,7 +494,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::leaveCell(
 ) {
   _map2NewTimeStep.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2SpaceTimePredictor.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
-  _map2VolumeIntegral.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2GlobalTimeStepComputation.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2FaceUnknownsProjection.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
@@ -537,7 +505,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::beginIteration(
 ) {
   _map2NewTimeStep.beginIteration( solverState );
   _map2SpaceTimePredictor.beginIteration( solverState );
-  _map2VolumeIntegral.beginIteration( solverState );
   _map2GlobalTimeStepComputation.beginIteration( solverState );
   _map2FaceUnknownsProjection.beginIteration( solverState );
 
@@ -549,7 +516,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::endIteration(
 ) {
   _map2NewTimeStep.endIteration( solverState );
   _map2SpaceTimePredictor.endIteration( solverState );
-  _map2VolumeIntegral.endIteration( solverState );
   _map2GlobalTimeStepComputation.endIteration( solverState );
   _map2FaceUnknownsProjection.endIteration( solverState );
 
@@ -568,7 +534,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::descend(
 ) {
   _map2NewTimeStep.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2SpaceTimePredictor.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
-  _map2VolumeIntegral.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2GlobalTimeStepComputation.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2FaceUnknownsProjection.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
@@ -585,7 +550,6 @@ void exahype::adapters::PredictorAndGlobalTimeStepComputation::ascend(
 ) {
   _map2NewTimeStep.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2SpaceTimePredictor.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
-  _map2VolumeIntegral.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2GlobalTimeStepComputation.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2FaceUnknownsProjection.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 

@@ -18,7 +18,6 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/SurfaceIntegral.h"
  #include "exahype/mappings/SolutionUpdate.h"
  #include "exahype/mappings/Plot.h"
  #include "exahype/mappings/GlobalTimeStepComputation.h"
@@ -41,15 +40,13 @@ namespace exahype {
  */
 class exahype::adapters::CorrectorAndPlot {
   private:
-    typedef mappings::SurfaceIntegral Mapping0;
-    typedef mappings::SolutionUpdate Mapping1;
-    typedef mappings::Plot Mapping2;
-    typedef mappings::GlobalTimeStepComputation Mapping3;
+    typedef mappings::SolutionUpdate Mapping0;
+    typedef mappings::Plot Mapping1;
+    typedef mappings::GlobalTimeStepComputation Mapping2;
 
-     Mapping0  _map2SurfaceIntegral;
-     Mapping1  _map2SolutionUpdate;
-     Mapping2  _map2Plot;
-     Mapping3  _map2GlobalTimeStepComputation;
+     Mapping0  _map2SolutionUpdate;
+     Mapping1  _map2Plot;
+     Mapping2  _map2GlobalTimeStepComputation;
 
 
   public:

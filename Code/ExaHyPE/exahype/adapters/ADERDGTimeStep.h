@@ -19,10 +19,8 @@
 
 
  #include "exahype/mappings/RiemannSolver.h"
- #include "exahype/mappings/SurfaceIntegral.h"
  #include "exahype/mappings/SolutionUpdate.h"
  #include "exahype/mappings/SpaceTimePredictor.h"
- #include "exahype/mappings/VolumeIntegral.h"
  #include "exahype/mappings/GlobalTimeStepComputation.h"
  #include "exahype/mappings/FaceUnknownsProjection.h"
  #include "exahype/mappings/LoadBalancing.h"
@@ -46,22 +44,18 @@ namespace exahype {
 class exahype::adapters::ADERDGTimeStep {
   private:
     typedef mappings::RiemannSolver Mapping0;
-    typedef mappings::SurfaceIntegral Mapping1;
-    typedef mappings::SolutionUpdate Mapping2;
-    typedef mappings::SpaceTimePredictor Mapping3;
-    typedef mappings::VolumeIntegral Mapping4;
-    typedef mappings::GlobalTimeStepComputation Mapping5;
-    typedef mappings::FaceUnknownsProjection Mapping6;
-    typedef mappings::LoadBalancing Mapping7;
+    typedef mappings::SolutionUpdate Mapping1;
+    typedef mappings::SpaceTimePredictor Mapping2;
+    typedef mappings::GlobalTimeStepComputation Mapping3;
+    typedef mappings::FaceUnknownsProjection Mapping4;
+    typedef mappings::LoadBalancing Mapping5;
 
      Mapping0  _map2RiemannSolver;
-     Mapping1  _map2SurfaceIntegral;
-     Mapping2  _map2SolutionUpdate;
-     Mapping3  _map2SpaceTimePredictor;
-     Mapping4  _map2VolumeIntegral;
-     Mapping5  _map2GlobalTimeStepComputation;
-     Mapping6  _map2FaceUnknownsProjection;
-     Mapping7  _map2LoadBalancing;
+     Mapping1  _map2SolutionUpdate;
+     Mapping2  _map2SpaceTimePredictor;
+     Mapping3  _map2GlobalTimeStepComputation;
+     Mapping4  _map2FaceUnknownsProjection;
+     Mapping5  _map2LoadBalancing;
 
 
   public:
