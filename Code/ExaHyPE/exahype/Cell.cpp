@@ -233,8 +233,6 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(const int solverNumber) {
                 const int fluxUnknownsPerCell =
                     static_cast<const exahype::solvers::ADERDGSolver*>(solver)->getFluxUnknownsPerCell();
 
-                const int dataPerCell = static_cast<const exahype::solvers::ADERDGSolver*>(solver)->getDataPerCell();
-
                 // Allocate space-time DoF
                 p.setSpaceTimePredictor(DataHeap::getInstance().createData(
                     spaceTimeUnknownsPerCell, spaceTimeUnknownsPerCell));
