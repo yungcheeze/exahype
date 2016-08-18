@@ -175,11 +175,6 @@ class exahype::solvers::Solver {
   Type getType() const;
 
   /**
-   * Returns the time stepping mode of this solver.
-   */
-  TimeStepping getTimeStepping() const;
-
-  /**
    * Returns the number of state variables.
    */
   int getNumberOfVariables() const;
@@ -282,6 +277,8 @@ class exahype::solvers::Solver {
    * time stamps.
    */
   static double getMaxSolverTimeStampOfAllSolvers();
+
+  static bool allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping scheme);
 };
 
 #endif

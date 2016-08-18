@@ -97,3 +97,14 @@ double exahype::solvers::Solver::getMaxSolverTimeStampOfAllSolvers() {
 
   return currentMaxTimeStamp;
 }
+
+
+bool exahype::solvers::Solver::allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping scheme) {
+  bool result = true;
+
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    result &= p->_timeStepping==scheme;
+  }
+
+  return result;
+}
