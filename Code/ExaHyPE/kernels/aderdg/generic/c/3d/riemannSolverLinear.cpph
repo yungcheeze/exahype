@@ -33,8 +33,7 @@ void riemannSolverLinear(double* FL, double* FR, const double* const QL,
   const int basisSize2 = basisSize * basisSize;
   const int order = basisSize - 1;
 
-  // Compute the average states from the left and the right, which we need to
-  // compute the numerical dissipation
+  // Compute the average states (and parameters) from the left and the right
   double* QavL = new double[numberOfVariables];
   double* QavR = new double[numberOfVariables];
   {
@@ -54,6 +53,7 @@ void riemannSolverLinear(double* FL, double* FR, const double* const QL,
     }
   }
 
+  // TODO: Size should be numberOfVariables - numberOfParameters
   double* LL = new double[numberOfVariables];
   double* LR = new double[numberOfVariables];
   PDEEigenvalues(QavL, normalNonZero, LL);
@@ -63,12 +63,14 @@ void riemannSolverLinear(double* FL, double* FR, const double* const QL,
   // (smax*Id).
   // We can change this into a more sophisticated Osher or HLLEM Riemann solver
   // whenever needed!
-  std::transform(LL, LL + numberOfVariables, LL,
-                 [](double d) { return std::abs(d); });
-  std::transform(LR, LR + numberOfVariables, LR,
-                 [](double d) { return std::abs(d); });
-  const double* smax_L = std::max_element(LL, LL + numberOfVariables);
-  const double* smax_R = std::max_element(LR, LR + numberOfVariables);
+  std::transform(LL, LL + numberOfVariables - numberOfParameters, LL,
+                 std::abs<double>);
+  std::transform(LR, LR + numberOfVariables - numberOfParameters, LR,
+                 std::abs<double>);
+  const double* smax_L =
+      std::max_element(LL, LL + numberOfVariables - numberOfParameters);
+  const double* smax_R =
+      std::max_element(LR, LR + numberOfVariables - numberOfParameters);
   const double smax = std::max(*smax_L, *smax_R);
 
   // We now compute the numerical flux. Note that the scheme is at the moment
@@ -77,7 +79,7 @@ void riemannSolverLinear(double* FL, double* FR, const double* const QL,
 
   // evaluate the system matrix just once in the averaged state
   double* Qav = new double[numberOfVariables];
-  // Qav = 0.5 * (QavL + QavR)
+  // Qav = 0.5 * (QavL + QavR) (includes parameters)
   std::transform(QavL, QavL + numberOfVariables, QavR, Qav,
                  [](double a, double b) { return 0.5 * (a + b); });
   double* Bn = new double[numberOfVariables * numberOfVariables];
@@ -90,9 +92,9 @@ void riemannSolverLinear(double* FL, double* FR, const double* const QL,
   std::memcpy(BnPlusIdSmax, Bn,
               numberOfVariables * numberOfVariables * sizeof(double));
 
-  // Avoid diffusion of parameters
   {
     idx2 idx_BnPM(numberOfVariables, numberOfVariables);
+    // Avoid diffusion of parameters
     for (int i = 0; i < numberOfVariables - numberOfParameters; i++) {
       BnMinusIdSmax[idx_BnPM(i, i)] -= smax;
       BnPlusIdSmax[idx_BnPM(i, i)] += smax;
