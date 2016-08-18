@@ -56,6 +56,13 @@ class SpaceTimePredictor;
  * As the mapping accesses the state data in a read-only fashion, no special
  * attention is required here.
  *
+ * <h2>Missing bug fixes and optimisations<h2>
+ *
+ * 1. We currently send out and receive 2^{d-1} messages per face. This will become an even bigger issue
+ *    when we introduce space-time face data.
+ * 2. Volume integral of volume fluxes should move into touchVertexLastTime/prepareSendToNeighbour.
+ *    Here it should be performed directly after we have sent out all the face data
+ *    to give the network some time to deliver the MPI messages (theoretically).
  *
  * @author Dominic E. Charrier and Tobias Weinzierl
  */

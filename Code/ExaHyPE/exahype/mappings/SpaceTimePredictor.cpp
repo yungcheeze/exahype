@@ -21,9 +21,6 @@
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
 peano::CommunicationSpecification
 exahype::mappings::SpaceTimePredictor::communicationSpecification() {
   return peano::CommunicationSpecification(
@@ -123,6 +120,7 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
 
       // volume DoF (basisSize**(DIMENSIONS))
       double* luh = 0;
+      double* lduh = 0;
       double* lQhi = 0;
       double* lFhi = 0;
 
@@ -145,7 +143,8 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
           lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
           lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
 
-          luh = DataHeap::getInstance().getData(p.getSolution()).data();
+          luh  = DataHeap::getInstance().getData(p.getSolution()).data();
+          lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
           lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
           lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
 
@@ -160,6 +159,12 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
               lFhbnd,
               luh, fineGridVerticesEnumerator.getCellSize(),
               p.getPredictorTimeStepSize());
+
+          // Perform volume integral
+          // TODO(Dominic): This should move into touchVertexLastTime/prepareSendToNeighbour.
+          // Here it should be performed directly after we have sent out all the face data
+          // to give the network some time to deliver the MPI messages (theoretically).
+          solver->volumeIntegral(lduh, lFhi, fineGridVerticesEnumerator.getCellSize());
 
           fineGridCell.validateNoNansInADERDGSolver(i,fineGridCell,fineGridVerticesEnumerator,"exahype::mappings::SpaceTimePredictor::enterCell[post]");
 
@@ -236,20 +241,15 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
           assertion(DataHeap::getInstance().isValidIndex(
               cellDescriptions[currentSolver].getFluctuation()));
 
-          const double* lQhbnd = DataHeap::getInstance()
-                                     .getData(cellDescriptions[currentSolver]
-                                                  .getExtrapolatedPredictor())
-                                     .data() +
+          const double* lQhbnd = DataHeap::getInstance().getData(cellDescriptions[currentSolver]
+                                 .getExtrapolatedPredictor()).data() +
                                  (offsetInFaceArray * numberOfFaceDof);
-          const double* lFhbnd =
-              DataHeap::getInstance()
-                  .getData(cellDescriptions[currentSolver].getFluctuation())
-                  .data() +
-              (offsetInFaceArray * numberOfFaceDof);
+          const double* lFhbnd = DataHeap::getInstance()
+                                 .getData(cellDescriptions[currentSolver].getFluctuation()).data() +
+                                 (offsetInFaceArray * numberOfFaceDof);
 
           if (adjacentADERDGCellDescriptionsIndices(destScalar) ==
-              multiscalelinkedcell::HangingVertexBookkeeper::
-                  DomainBoundaryAdjacencyIndex) {
+             multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
 #ifdef PeriodicBC
             assertionMsg(false, "Vasco, we have to implement this");
             DataHeap::getInstance().sendData(
