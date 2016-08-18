@@ -31,15 +31,9 @@ event-mapping: // -DEC: consider to move the computation of boundary extrapolate
 
 event-mapping: 
   name: LoadBalancing
-  
-event-mapping:
-  name: VolumeIntegral
 
 event-mapping:
   name: RiemannSolver
-  
-event-mapping:
-  name: SurfaceIntegral
  
 event-mapping:
   name: NewTimeStep
@@ -103,7 +97,6 @@ adapter:
   merge-with-user-defined-mapping: NewTimeStep
   // needs current time step size
   merge-with-user-defined-mapping: SpaceTimePredictor // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: GlobalTimeStepComputation
   merge-with-user-defined-mapping: FaceUnknownsProjection
@@ -113,7 +106,6 @@ adapter:
   merge-with-user-defined-mapping: NewTimeStep
   // needs current time step size
   merge-with-user-defined-mapping: SpaceTimePredictor // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: GlobalTimeStepComputation
   merge-with-user-defined-mapping: FaceUnknownsProjection
 
@@ -122,11 +114,9 @@ adapter:
   name: ADERDGTimeStep
   // needs corrector time step size
   merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
-  merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
   // needs predictor time step size
   merge-with-user-defined-mapping: SpaceTimePredictor  // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: GlobalTimeStepComputation
   merge-with-user-defined-mapping: FaceUnknownsProjection 
   merge-with-user-defined-mapping: LoadBalancing
@@ -136,12 +126,10 @@ adapter:
   name: ADERDGTimeStepAndPlot
   // needs corrector time step size
   merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
-  merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: Plot
   // needs predictor time step size
   merge-with-user-defined-mapping: SpaceTimePredictor  // DEC: after predictor we can start the face data exchange 
-  merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: GlobalTimeStepComputation
   merge-with-user-defined-mapping: FaceUnknownsProjection
  
@@ -156,7 +144,6 @@ adapter:
   merge-with-user-defined-mapping: DropIncomingMPIMessages
   merge-with-user-defined-mapping: NewTimeStep
   merge-with-user-defined-mapping: SpaceTimePredictor 
-  merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: FaceUnknownsProjection
  
 // Additional adapters for 4 phase time stepping
@@ -167,19 +154,16 @@ adapter:
 adapter:
   name: Predictor
   merge-with-user-defined-mapping: SpaceTimePredictor 
-  merge-with-user-defined-mapping: VolumeIntegral
   merge-with-user-defined-mapping: FaceUnknownsProjection
 
 adapter:
   name: Corrector
-  merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: GlobalTimeStepComputation
   merge-with-user-defined-mapping: LoadBalancing
 
 adapter:
   name: CorrectorAndPlot
-  merge-with-user-defined-mapping: SurfaceIntegral
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: GlobalTimeStepComputation
