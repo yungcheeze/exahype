@@ -147,7 +147,7 @@ class exahype::runners::Runner {
    *
    * @param plot      Do plot in the after the corrector has been applied
    */
-  void runOneTimeStampWithFourSeparateAlgorithmicSteps(
+  void runOneTimeStampWithThreeSeparateAlgorithmicSteps(
       exahype::repositories::Repository& repository, bool plot);
 
   /**

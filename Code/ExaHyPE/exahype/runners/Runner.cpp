@@ -424,7 +424,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       recomputePredictorIfNecessary(repository,_parser.getFuseAlgorithmicStepsFactor());
       printTimeStepInfo(numberOfStepsToRun);
     } else {
-      runOneTimeStampWithFourSeparateAlgorithmicSteps(repository, plot);
+      runOneTimeStampWithThreeSeparateAlgorithmicSteps(repository, plot);
       printTimeStepInfo(1);
     }
 
@@ -560,7 +560,7 @@ void exahype::runners::Runner::recomputePredictorIfNecessary(
   }
 }
 
-void exahype::runners::Runner::runOneTimeStampWithFourSeparateAlgorithmicSteps(
+void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
     exahype::repositories::Repository& repository, bool plot) {
   // Only one time step (predictor vs. corrector) is used in this case.
   repository.switchToRiemannSolver();  // Riemann -> face2face
