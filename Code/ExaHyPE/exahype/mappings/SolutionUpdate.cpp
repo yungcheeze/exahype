@@ -34,9 +34,7 @@ exahype::mappings::SolutionUpdate::communicationSpecification() {
       true);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::MappingSpecification
 exahype::mappings::SolutionUpdate::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
@@ -44,9 +42,7 @@ exahype::mappings::SolutionUpdate::touchVertexLastTimeSpecification() {
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::MappingSpecification
 exahype::mappings::SolutionUpdate::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
@@ -54,9 +50,7 @@ exahype::mappings::SolutionUpdate::touchVertexFirstTimeSpecification() {
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::MappingSpecification
 exahype::mappings::SolutionUpdate::enterCellSpecification() {
   return peano::MappingSpecification(
@@ -64,9 +58,7 @@ exahype::mappings::SolutionUpdate::enterCellSpecification() {
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::MappingSpecification
 exahype::mappings::SolutionUpdate::leaveCellSpecification() {
   return peano::MappingSpecification(
@@ -84,9 +76,7 @@ exahype::mappings::SolutionUpdate::ascendSpecification() {
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
-/**
- * @todo Please tailor the parameters to your mapping's properties.
- */
+
 peano::MappingSpecification
 exahype::mappings::SolutionUpdate::descendSpecification() {
   return peano::MappingSpecification(
@@ -96,14 +86,6 @@ exahype::mappings::SolutionUpdate::descendSpecification() {
 
 tarch::logging::Log exahype::mappings::SolutionUpdate::_log(
     "exahype::mappings::SolutionUpdate");
-
-exahype::mappings::SolutionUpdate::SolutionUpdate() {
-  // do nothing
-}
-
-exahype::mappings::SolutionUpdate::~SolutionUpdate() {
-  // do nothing
-}
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::SolutionUpdate::SolutionUpdate(
@@ -233,8 +215,32 @@ void exahype::mappings::SolutionUpdate::enterCell(
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
+
+void exahype::mappings::SolutionUpdate::beginIteration(
+    exahype::State& solverState) {
+  logTraceInWith1Argument("beginIteration(State)", solverState);
+
+  _localState = solverState;
+
+  logTraceOutWith1Argument("beginIteration(State)", solverState);
+}
+
+
+//
 // Below all methods are nop.
 //
+//=====================================
+
+
+
+exahype::mappings::SolutionUpdate::SolutionUpdate() {
+  // do nothing
+}
+
+exahype::mappings::SolutionUpdate::~SolutionUpdate() {
+  // do nothing
+}
+
 void exahype::mappings::SolutionUpdate::createHangingVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -448,15 +454,6 @@ void exahype::mappings::SolutionUpdate::leaveCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   // do nothing
-}
-
-void exahype::mappings::SolutionUpdate::beginIteration(
-    exahype::State& solverState) {
-  logTraceInWith1Argument("beginIteration(State)", solverState);
-
-  _localState = solverState;
-
-  logTraceOutWith1Argument("beginIteration(State)", solverState);
 }
 
 void exahype::mappings::SolutionUpdate::endIteration(
