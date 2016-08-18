@@ -110,6 +110,14 @@ class exahype::mappings::SolutionUpdate {
    * values within the fine grid cell (at a given time).
    * If so, we call the corresponding solver routine
    * that adjusts the solvers' solution values within the fine grid cell.
+   *
+   * <h2>ADER-DG<h2>
+   * For ADER-DG solvers, we call the surfaceIntegral(...) routine before
+   * we call the solutionUpdate(...) routine of the solvers.
+   *
+   * <h2>Finite volumes<h2>
+   * For finite volume solvers, we simply call the
+   * solutionUpdate(...) routine.
    */
   void enterCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
