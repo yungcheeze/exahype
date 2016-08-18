@@ -125,12 +125,14 @@ void exahype::mappings::SolutionUpdate::enterCell(
           &&
           pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None
       ) {
-        double* luh  = DataHeap::getInstance().getData(pFine.getSolution()).data();
-        double* lduh = DataHeap::getInstance().getData(pFine.getUpdate()).data();
+        double* luh    = DataHeap::getInstance().getData(pFine.getSolution()).data();
+        double* lduh   = DataHeap::getInstance().getData(pFine.getUpdate()).data();
+        double* lFhbnd = DataHeap::getInstance().getData(pFine.getFluctuation()).data();
 
         assertion(!std::isnan(luh[0]));
         assertion(!std::isnan(lduh[0]));
 
+        solver->surfaceIntegral(lduh, lFhbnd,fineGridVerticesEnumerator.getCellSize());
         solver->solutionUpdate(luh, lduh, pFine.getCorrectorTimeStepSize());
 
         if (solver->hasToAdjustSolution(
