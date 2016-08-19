@@ -27,9 +27,26 @@
 namespace exahype {
   class Cell;
 
+  /**
+   * Rank-local heap that stores ADERDGCellDescription instances.
+   */
   typedef peano::heap::PlainHeap<exahype::records::ADERDGCellDescription>         ADERDGCellDescriptionHeap;
+
+  /**
+   * Rank-local heap that stores FiniteVolumesCellDescription instances.
+   */
   typedef peano::heap::PlainHeap<exahype::records::FiniteVolumesCellDescription>  FiniteVolumesCellDescriptionHeap;
+  /**
+   * We store the degrees of freedom associated with the ADERDGCellDescription and FiniteVolumesCellDescription
+   * instances on this heap.
+   * We further use this heap to send and receive face data from one MPI rank to the other.
+   */
   typedef peano::heap::PlainDoubleHeap DataHeap;
+  /**
+   * We abuse this heap to send and receive metadata from one MPI rank to the other.
+   * We never actually store data on this heap.
+   */
+  typedef peano::heap::PlainIntegerHeap  MetadataHeap;
 }
 
 /**
@@ -100,7 +117,18 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    */
   int getCellDescriptionsIndex() const;
 
+  void setCellDescriptionsIndex(int cellDescriptionsIndex);
+
+  /**
+   * Returns the number of ADERDGCellDescriptions associated
+   * with this cell.
+   */
   int getNumberOfADERDGCellDescriptions() const;
+
+  /**
+   * Returns the number of FiniteVolumesCellDescriptions associated
+   * with this cell.
+   */
   int getNumberOfFiniteVolumeCellDescriptions() const;
 
   /**
@@ -108,7 +136,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * with this cell.
    */
   inline exahype::records::ADERDGCellDescription& getADERDGCellDescription(
-      int index) {
+      int index) const {
     return ADERDGCellDescriptionHeap::getInstance().getData(
         getCellDescriptionsIndex())[index];
   }
@@ -118,7 +146,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * with this cell.
    */
   inline exahype::records::FiniteVolumesCellDescription& getFiniteVolumesCellDescription(
-      int index) {
+      int index) const {
     return FiniteVolumesCellDescriptionHeap::getInstance().getData(
         getCellDescriptionsIndex())[index];
   }
@@ -127,6 +155,55 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * @see setupMetaData()
    */
   void shutdownMetaData();
+
+  /**
+   * Encodes the metadata as integer sequence.
+   *
+   * The first element refers to the number of
+   * ADERDGCellDescriptions associated with this cell (nADERG).
+   * The next 2*nADERG elements store a pair of
+   * solver number, and cell description type (encoded as int)
+   * for each ADERDGCellDescription associated with this cell.
+   *
+   * The element 1+2*nADERDG refers to the number of
+   * FiniteVolumesCellDescriptions associated with this cell (nFV).
+   * The remaining 2*nFV elements store a pair of
+   * solver number, and cell description type (encoded as int)
+   * for each FiniteVolumesCellDescription associated with this cell.
+   *
+   * @todo(Dominic): Not directly associated with a cell. Consider
+   * to move this function somewhere else.
+   */
+  static std::vector<peano::heap::records::IntegerHeapData> encodeMetadata(const int cellDescriptionsIndex);
+
+  /**
+   * Checks if no unnecessary memory is allocated for the ADERDGCellDescription.
+   * If this is not the case, it deallocates the unnecessarily allocated memory.
+   */
+  static void ensureNoUnnecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription);
+
+  /**
+   * Checks if all the necessary memory is allocated for the ADERDGCellDescription.
+   * If this is not the case, it allocates the necessary
+   * memory for the cell description.
+   */
+  static void ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription);
+
+  /**
+   * TODO(Dominic): Implement!
+   */
+//  /**
+//   * Checks if no unnecessary memory is allocated for the ADERDGCellDescription.
+//   * If this is not the case, it deallocates the unnecessarily allocated memory.
+//   */
+//  static void ensureNoUnnecessaryMemoryIsAllocated(exahype::records::FiniteVolumesCellDescription& cellDescription);
+//
+//  /**
+//   * Checks if all the necessary memory is allocated for the ADERDGCellDescription.
+//   * If this is not the case, it allocates the necessary
+//   * memory for the cell description.
+//   */
+//  static void ensureNecessaryMemoryIsAllocated(exahype::records::FiniteVolumesCellDescription& cellDescription);
 
   /**
    * todo docu
@@ -193,6 +270,16 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   SubcellPosition computeSubcellPositionOfDescendant(
       const exahype::records::ADERDGCellDescription& pChild) const;
 
+  /**
+   * @return if this cell is initialised.
+   *
+   * @developers:
+   * Note that it is not simply sufficient to
+   * check if the heap index equals
+   * multiscalelinkedcell::HangingVertexBookkeeper.
+   *
+   * @TODO bug
+   */
   bool isInitialised() const;
 
   /**
