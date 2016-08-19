@@ -49,7 +49,7 @@ void ElasticityKernelTest::run() {
 //
   testMethod(testSpaceTimePredictorLinear);
 //  testMethod(testSpaceTimePredictorNonlinear);
-//  testMethod(testVolumeIntegralLinear);
+  testMethod(testVolumeIntegralLinear);
 //  testMethod(testVolumeIntegralNonlinear);
   testMethod(testRiemannSolverLinear);
 //  testMethod(testRiemannSolverNonlinear);

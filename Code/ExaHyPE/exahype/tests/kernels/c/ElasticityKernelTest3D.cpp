@@ -29,6 +29,8 @@ void ElasticityKernelTest::testRiemannSolverLinear() {}
 
 void ElasticityKernelTest::testSpaceTimePredictorLinear() {}
 
+void ElasticityKernelTest::testVolumeIntegralLinear() {}
+
 }  // namespace c
 }  // namespace tests
 }  // namespace exahype

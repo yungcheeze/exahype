@@ -424,6 +424,61 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {
   delete[] lFbnd;
 }
 
+void ElasticityKernelTest::testVolumeIntegralLinear() {
+  logInfo("ElasticityKernelTest::testVolumeIntegralLinear()",
+          "Test VolumeIntegral linear, ORDER=4, DIM=2");
+
+  double *lFhi = new double[(DIMENSIONS + 1) * kBasisSize * kBasisSize *
+                            kNumberOfVariables];
+  std::fill(
+      lFhi,
+      lFhi + (DIMENSIONS + 1) * kBasisSize * kBasisSize * kNumberOfVariables,
+      std::numeric_limits<double>::quiet_NaN());
+  kernels::idx4 idx_lFhi(DIMENSIONS + 1, kBasisSize, kBasisSize,
+                         kNumberOfVariables);
+  kernels::idx4 idx_lFhi_IN(DIMENSIONS, kBasisSize, kBasisSize,
+                            kNumberOfVariables - kNumberOfParameters);
+
+  for (int i = 0; i < DIMENSIONS; i++) {
+    for (int j = 0; j < kBasisSize; j++) {
+      for (int k = 0; k < kBasisSize; k++) {
+        for (int l = 0; l < kNumberOfVariables - kNumberOfParameters; l++) {
+          lFhi[idx_lFhi(i, j, k, l)] = exahype::tests::testdata::elasticity::
+              testVolumeIntegralLinear::lFhi_IN[idx_lFhi_IN(i, j, k, l)];
+        }
+      }
+    }
+  }
+
+  double *lduh = new double[kBasisSize * kBasisSize * kNumberOfVariables];
+  kernels::idx3 idx_lduh(kBasisSize, kBasisSize, kNumberOfVariables);
+  kernels::idx3 idx_lduh_OUT(kBasisSize, kBasisSize,
+                             kNumberOfVariables - kNumberOfParameters);
+
+  const tarch::la::Vector<DIMENSIONS, double> dx(38.4615384615385,
+                                                 35.7142857142857);
+
+  // Execute kernel
+  kernels::aderdg::generic::c::volumeIntegralLinear(
+      lduh, lFhi, dx, kNumberOfVariables, kNumberOfParameters, kBasisSize);
+
+  // Compare
+  for (int i = 0; i < kBasisSize; i++) {
+    for (int j = 0; j < kBasisSize; j++) {
+      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
+        validateNumericalEqualsWithEpsWithParams1(
+            lduh[idx_lduh(i, j, k)],
+            exahype::tests::testdata::elasticity::testVolumeIntegralLinear::
+                lduh_OUT[idx_lduh_OUT(i, j, k)],
+            eps, idx_lduh_OUT(i, j, k));
+      }
+    }
+  }
+
+  delete[] lFhi;
+  delete[] lduh;
+}
+
 }  // namespace c
 }  // namespace tests
 }  // namespace exahype

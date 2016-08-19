@@ -27,15 +27,19 @@ namespace testSurfaceIntegralLinear {
 }  // namespace testSurfaceIntegralLinear
 
 namespace testVolumeIntegralLinear {
-// extern const double lduh_1[80];
-// extern const double lduh_2[80];
+extern const double lFhi_IN[2 * 5 * 5 * 9];
+extern const double lduh_OUT[5 * 5 * 9];
 }  // namespace testVolumeIntegralLinear
 
 namespace testSpaceTimePredictorLinear {
-// extern const double luh[80];
-// extern const double lFhi[160];
-// extern const double lQhi[80];
-// extern const double lQbnd[80];
+extern const double luh_IN[9 * 5 * 5];
+extern const double param_IN[3 * 5 * 5];
+// extern const double lQi_OUT[];
+// extern const double lFi_OUT[];
+extern const double lQhi_OUT[9 * 5 * 5];
+extern const double lFhi_OUT[9 * 5 * 5 * 2];
+extern const double lQbnd_OUT[9 * 5 * 4];  // 2 * DIMENSIONS = 4
+extern const double lFbnd_OUT[9 * 5 * 4];
 }  // namespace testSpaceTimePredictorLinear
 
 namespace testRiemannSolverLinear {
