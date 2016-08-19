@@ -324,9 +324,6 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   // Might be too restrictive for later runs. Remove but keep warning from above
   assertion( tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()==0 );
 #endif
-
-  logInfo("createGrid(Repository)",
-      "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB"); 
 }
 
 
