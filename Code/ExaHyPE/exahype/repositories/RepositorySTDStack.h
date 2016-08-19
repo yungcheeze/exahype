@@ -21,6 +21,7 @@
  #include "exahype/adapters/SolutionAdjustmentAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndPlotAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndGlobalTimeStepComputation.h" 
+ #include "exahype/adapters/GridErasing.h" 
  #include "exahype/adapters/ADERDGTimeStep.h" 
  #include "exahype/adapters/ADERDGTimeStepAndPlot.h" 
  #include "exahype/adapters/PredictorRerun.h" 
@@ -59,6 +60,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation> _gridWithSolutionAdjustmentAndGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictorAndPlotAndGlobalTimeStepComputation> _gridWithPredictorAndPlotAndGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictorAndGlobalTimeStepComputation> _gridWithPredictorAndGlobalTimeStepComputation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GridErasing> _gridWithGridErasing;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::ADERDGTimeStep> _gridWithADERDGTimeStep;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::ADERDGTimeStepAndPlot> _gridWithADERDGTimeStepAndPlot;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictorRerun> _gridWithPredictorRerun;
@@ -76,6 +78,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureSolutionAdjustmentAndGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measurePredictorAndPlotAndGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measurePredictorAndGlobalTimeStepComputationCPUTime;
+    tarch::timing::Measurement _measureGridErasingCPUTime;
     tarch::timing::Measurement _measureADERDGTimeStepCPUTime;
     tarch::timing::Measurement _measureADERDGTimeStepAndPlotCPUTime;
     tarch::timing::Measurement _measurePredictorRerunCPUTime;
@@ -90,6 +93,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureSolutionAdjustmentAndGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measurePredictorAndPlotAndGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measurePredictorAndGlobalTimeStepComputationCalendarTime;
+    tarch::timing::Measurement _measureGridErasingCalendarTime;
     tarch::timing::Measurement _measureADERDGTimeStepCalendarTime;
     tarch::timing::Measurement _measureADERDGTimeStepAndPlotCalendarTime;
     tarch::timing::Measurement _measurePredictorRerunCalendarTime;
@@ -142,6 +146,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToSolutionAdjustmentAndGlobalTimeStepComputation();    
     virtual void switchToPredictorAndPlotAndGlobalTimeStepComputation();    
     virtual void switchToPredictorAndGlobalTimeStepComputation();    
+    virtual void switchToGridErasing();    
     virtual void switchToADERDGTimeStep();    
     virtual void switchToADERDGTimeStepAndPlot();    
     virtual void switchToPredictorRerun();    
@@ -156,6 +161,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual bool isActiveAdapterSolutionAdjustmentAndGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterPredictorAndPlotAndGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterPredictorAndGlobalTimeStepComputation() const;
+    virtual bool isActiveAdapterGridErasing() const;
     virtual bool isActiveAdapterADERDGTimeStep() const;
     virtual bool isActiveAdapterADERDGTimeStepAndPlot() const;
     virtual bool isActiveAdapterPredictorRerun() const;

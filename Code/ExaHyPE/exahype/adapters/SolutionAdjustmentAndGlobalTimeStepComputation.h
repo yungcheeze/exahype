@@ -18,6 +18,7 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/mappings/DropIncomingMPIMetadataMessages.h"
  #include "exahype/mappings/NewTimeStep.h"
  #include "exahype/mappings/SolutionAdjustment.h"
  #include "exahype/mappings/GlobalTimeStepComputation.h"
@@ -40,13 +41,15 @@ namespace exahype {
  */
 class exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation {
   private:
-    typedef mappings::NewTimeStep Mapping0;
-    typedef mappings::SolutionAdjustment Mapping1;
-    typedef mappings::GlobalTimeStepComputation Mapping2;
+    typedef mappings::DropIncomingMPIMetadataMessages Mapping0;
+    typedef mappings::NewTimeStep Mapping1;
+    typedef mappings::SolutionAdjustment Mapping2;
+    typedef mappings::GlobalTimeStepComputation Mapping3;
 
-     Mapping0  _map2NewTimeStep;
-     Mapping1  _map2SolutionAdjustment;
-     Mapping2  _map2GlobalTimeStepComputation;
+     Mapping0  _map2DropIncomingMPIMetadataMessages;
+     Mapping1  _map2NewTimeStep;
+     Mapping2  _map2SolutionAdjustment;
+     Mapping3  _map2GlobalTimeStepComputation;
 
 
   public:

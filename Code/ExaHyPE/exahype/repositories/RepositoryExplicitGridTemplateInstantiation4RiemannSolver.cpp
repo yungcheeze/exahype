@@ -18,6 +18,7 @@
  #include "exahype/adapters/SolutionAdjustmentAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndPlotAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndGlobalTimeStepComputation.h" 
+ #include "exahype/adapters/GridErasing.h" 
  #include "exahype/adapters/ADERDGTimeStep.h" 
  #include "exahype/adapters/ADERDGTimeStepAndPlot.h" 
  #include "exahype/adapters/PredictorRerun.h" 

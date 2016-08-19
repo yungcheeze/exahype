@@ -42,6 +42,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case UseAdapterSolutionAdjustmentAndGlobalTimeStepComputation: return "UseAdapterSolutionAdjustmentAndGlobalTimeStepComputation";
       case UseAdapterPredictorAndPlotAndGlobalTimeStepComputation: return "UseAdapterPredictorAndPlotAndGlobalTimeStepComputation";
       case UseAdapterPredictorAndGlobalTimeStepComputation: return "UseAdapterPredictorAndGlobalTimeStepComputation";
+      case UseAdapterGridErasing: return "UseAdapterGridErasing";
       case UseAdapterADERDGTimeStep: return "UseAdapterADERDGTimeStep";
       case UseAdapterADERDGTimeStepAndPlot: return "UseAdapterADERDGTimeStepAndPlot";
       case UseAdapterPredictorRerun: return "UseAdapterPredictorRerun";
@@ -56,7 +57,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterAugmentedAMRGrid=4,UseAdapterPlotAugmentedAMRGrid=5,UseAdapterSolutionAdjustmentAndGlobalTimeStepComputation=6,UseAdapterPredictorAndPlotAndGlobalTimeStepComputation=7,UseAdapterPredictorAndGlobalTimeStepComputation=8,UseAdapterADERDGTimeStep=9,UseAdapterADERDGTimeStepAndPlot=10,UseAdapterPredictorRerun=11,UseAdapterRiemannSolver=12,UseAdapterPredictor=13,UseAdapterCorrector=14,UseAdapterCorrectorAndPlot=15,UseAdapterPlot=16,NumberOfAdapters=17)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterAugmentedAMRGrid=4,UseAdapterPlotAugmentedAMRGrid=5,UseAdapterSolutionAdjustmentAndGlobalTimeStepComputation=6,UseAdapterPredictorAndPlotAndGlobalTimeStepComputation=7,UseAdapterPredictorAndGlobalTimeStepComputation=8,UseAdapterGridErasing=9,UseAdapterADERDGTimeStep=10,UseAdapterADERDGTimeStepAndPlot=11,UseAdapterPredictorRerun=12,UseAdapterRiemannSolver=13,UseAdapterPredictor=14,UseAdapterCorrector=15,UseAdapterCorrectorAndPlot=16,UseAdapterPlot=17,NumberOfAdapters=18)";
 }
 
 

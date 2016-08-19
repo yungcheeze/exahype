@@ -67,6 +67,7 @@ class exahype::repositories::Repository {
     virtual void switchToSolutionAdjustmentAndGlobalTimeStepComputation() = 0;    
     virtual void switchToPredictorAndPlotAndGlobalTimeStepComputation() = 0;    
     virtual void switchToPredictorAndGlobalTimeStepComputation() = 0;    
+    virtual void switchToGridErasing() = 0;    
     virtual void switchToADERDGTimeStep() = 0;    
     virtual void switchToADERDGTimeStepAndPlot() = 0;    
     virtual void switchToPredictorRerun() = 0;    
@@ -81,6 +82,7 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterSolutionAdjustmentAndGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterPredictorAndPlotAndGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterPredictorAndGlobalTimeStepComputation() const = 0;
+    virtual bool isActiveAdapterGridErasing() const = 0;
     virtual bool isActiveAdapterADERDGTimeStep() const = 0;
     virtual bool isActiveAdapterADERDGTimeStepAndPlot() const = 0;
     virtual bool isActiveAdapterPredictorRerun() const = 0;
