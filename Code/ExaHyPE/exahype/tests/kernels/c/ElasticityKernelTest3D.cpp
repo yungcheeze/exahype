@@ -31,6 +31,8 @@ void ElasticityKernelTest::testSpaceTimePredictorLinear() {}
 
 void ElasticityKernelTest::testVolumeIntegralLinear() {}
 
+void ElasticityKernelTest::testSurfaceIntegralLinear() {}
+
 }  // namespace c
 }  // namespace tests
 }  // namespace exahype

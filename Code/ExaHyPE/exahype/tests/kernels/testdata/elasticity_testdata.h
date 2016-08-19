@@ -22,8 +22,9 @@ namespace elasticity {
 #ifdef Dim2
 
 namespace testSurfaceIntegralLinear {
-// extern const double lduh_out_1[80];
-// extern const double lduh_out_2[80];
+extern const double lFbnd_IN[4 * 5 * 9];
+extern const double lduh_IN[5 * 5 * 9];
+extern const double lduh_OUT[5 * 5 * 9];
 }  // namespace testSurfaceIntegralLinear
 
 namespace testVolumeIntegralLinear {

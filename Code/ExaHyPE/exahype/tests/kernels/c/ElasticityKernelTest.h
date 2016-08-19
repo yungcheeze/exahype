@@ -40,7 +40,7 @@ class ElasticityKernelTest : public tarch::tests::TestCase {
   //  void testVolumeIntegralNonlinear();
   void testRiemannSolverLinear();
   //  void testRiemannSolverNonlinear();
-  //  void testSurfaceIntegralLinear();
+  void testSurfaceIntegralLinear();
   //  void testSurfaceIntegralNonlinear();
   //  void testSolutionUpdate();
   //  void testVolumeUnknownsProjection();

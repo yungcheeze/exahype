@@ -479,6 +479,68 @@ void ElasticityKernelTest::testVolumeIntegralLinear() {
   delete[] lduh;
 }
 
+void ElasticityKernelTest::testSurfaceIntegralLinear() {
+  logInfo("ElasticityKernelTest::testSurfaceIntegralLinear()",
+          "Test SurfaceIntegral linear, ORDER=4, DIM=2");
+
+  double *lFbnd = new double[2 * DIMENSIONS * kBasisSize * kNumberOfVariables];
+  kernels::idx3 idx_lFbnd(2 * DIMENSIONS, kBasisSize, kNumberOfVariables);
+  kernels::idx3 idx_lFbnd_IN(2 * DIMENSIONS, kBasisSize,
+                             kNumberOfVariables - kNumberOfParameters);
+
+  std::fill(lFbnd, lFbnd + 2 * DIMENSIONS * kBasisSize * kNumberOfVariables,
+            std::numeric_limits<double>::quiet_NaN());
+
+  for (int i = 0; i < 2 * DIMENSIONS; i++) {
+    for (int j = 0; j < kBasisSize; j++) {
+      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
+        lFbnd[idx_lFbnd(i, j, k)] = exahype::tests::testdata::elasticity::
+            testSurfaceIntegralLinear::lFbnd_IN[idx_lFbnd_IN(i, j, k)];
+      }
+    }
+  }
+
+  double *lduh = new double[kBasisSize * kBasisSize * kNumberOfVariables];
+  kernels::idx3 idx_lduh(kBasisSize, kBasisSize, kNumberOfVariables);
+  kernels::idx3 idx_lduh_INOUT(kBasisSize, kBasisSize,
+                               kNumberOfVariables - kNumberOfParameters);
+
+  std::fill(lduh, lduh + kBasisSize * kBasisSize * kNumberOfVariables,
+            std::numeric_limits<double>::quiet_NaN());
+
+  for (int i = 0; i < kBasisSize; i++) {
+    for (int j = 0; j < kBasisSize; j++) {
+      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
+        lduh[idx_lduh(i, j, k)] = exahype::tests::testdata::elasticity::
+            testSurfaceIntegralLinear::lduh_IN[idx_lduh_INOUT(i, j, k)];
+      }
+    }
+  }
+
+  const tarch::la::Vector<DIMENSIONS, double> dx(38.4615384615385,
+                                                 35.7142857142857);
+
+  // Execute kernel
+  kernels::aderdg::generic::c::surfaceIntegralLinear(
+      lduh, lFbnd, dx, kNumberOfVariables, kBasisSize);
+
+  // Compare
+  for (int i = 0; i < kBasisSize; i++) {
+    for (int j = 0; j < kBasisSize; j++) {
+      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
+        validateNumericalEqualsWithEpsWithParams1(
+            lduh[idx_lduh(i, j, k)],
+            exahype::tests::testdata::elasticity::testSurfaceIntegralLinear::
+                lduh_OUT[idx_lduh_INOUT(i, j, k)],
+            eps, idx_lduh_INOUT(i, j, k));
+      }
+    }
+  }
+
+  delete[] lFbnd;
+  delete[] lduh;
+}
+
 }  // namespace c
 }  // namespace tests
 }  // namespace exahype

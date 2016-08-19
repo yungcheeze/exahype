@@ -53,7 +53,7 @@ void ElasticityKernelTest::run() {
 //  testMethod(testVolumeIntegralNonlinear);
   testMethod(testRiemannSolverLinear);
 //  testMethod(testRiemannSolverNonlinear);
-//  testMethod(testSurfaceIntegralLinear);
+  testMethod(testSurfaceIntegralLinear);
 //  testMethod(testSurfaceIntegralNonlinear);
 //  testMethod(testFaceUnknownsProjection);
 //  testMethod(testVolumeUnknownsProjection);
