@@ -27,6 +27,8 @@ namespace c {
 
 void ElasticityKernelTest::testRiemannSolverLinear() {}
 
+void ElasticityKernelTest::testSpaceTimePredictorLinear() {}
+
 }  // namespace c
 }  // namespace tests
 }  // namespace exahype

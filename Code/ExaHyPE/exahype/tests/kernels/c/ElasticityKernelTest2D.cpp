@@ -34,6 +34,10 @@ static const int kN = 4;
 static const int kBasisSize = kN + 1;
 
 void ElasticityKernelTest::testFlux(const double *Q, double **F) {
+  for (int i = 0; i < kNumberOfVariables; i++) {
+    assertion2(std::isfinite(Q[i]), Q[i], i);
+  }
+
   double *f = F[0];
   double *g = F[1];
   // double* h = F[2];
@@ -75,6 +79,12 @@ void ElasticityKernelTest::testFlux(const double *Q, double **F) {
   //  h[7 - 1] = - irho *Q[4 - 1];
   //  h[8 - 1] = - irho *Q[2 - 1];
   //  h[9 - 1] = - irho *Q[5 - 1];
+
+  for (int i = 0; i < DIMENSIONS; i++) {
+    for (int j = 0; j < kNumberOfVariables; j++) {
+      assertion3(std::isfinite(F[i][j]), F[i][j], i, j);
+    }
+  }
 }
 
 void ElasticityKernelTest::testSource(const double *Q, double *S) {
@@ -86,11 +96,16 @@ void ElasticityKernelTest::testEigenvalues(const double *const Q,
                                            double *lambda) {
   std::fill(lambda, lambda + kNumberOfParameters, 0.0);
 
+  std::fill(lambda, lambda + kNumberOfVariables, 0.0);
+
   double lam = Q[9];    // par(1)
   double mu = Q[10];    // par(2)
   double rho0 = Q[11];  // par(3)
   double cp = std::sqrt((lam + 2 * mu) / rho0);
   double cs = std::sqrt(mu / rho0);
+
+  assert(std::isfinite(cp));
+  assert(std::isfinite(cs));
 
   lambda[1 - 1] = -cp;
   lambda[2 - 1] = -cs;
@@ -107,47 +122,50 @@ void ElasticityKernelTest::testNCP(const double *const Q,
                                    const double *const gradQ, double *BgradQ) {
   std::fill(BgradQ, BgradQ + kNumberOfVariables * DIMENSIONS, 0.0);
 
-  double lam = Q[9];          // par(1)
-  double mu = Q[10];          // par(2)
-  double irho = 1.0 / Q[11];  // 1.0 / par(3)
+  double lam = Q[kNumberOfVariables - kNumberOfParameters];     // par(1)
+  double mu = Q[kNumberOfVariables - kNumberOfParameters + 1];  // par(2)
+  double irho =
+      1.0 / Q[kNumberOfVariables - kNumberOfParameters + 2];  // 1.0 / par(3)
 
-  //  const double *gradQx = gradQ + 0 * kNumberOfVariables;
-  //  const double *gradQy = gradQ + 1 * kNumberOfVariables;
+  assert(std::isfinite(irho));
+
+  const double *gradQx = gradQ + 0 * kNumberOfVariables;
+  const double *gradQy = gradQ + 1 * kNumberOfVariables;
   //  const double *gradQz = gradQ + 2 * kNumberOfVariables;
 
   double *BgradQx = BgradQ + 0 * kNumberOfVariables;
   double *BgradQy = BgradQ + 1 * kNumberOfVariables;
-  double *BgradQz = BgradQ + 2 * kNumberOfVariables;
+  //  double *BgradQz = BgradQ + 2 * kNumberOfVariables;
 
-  BgradQx[1 - 1] = -(lam + 2 * mu) * BgradQx[7 - 1];
-  BgradQx[2 - 1] = -lam * BgradQx[7 - 1];
-  BgradQx[3 - 1] = -lam * BgradQx[7 - 1];
-  BgradQx[4 - 1] = -mu * BgradQx[8 - 1];
+  BgradQx[1 - 1] = -(lam + 2 * mu) * gradQx[7 - 1];
+  BgradQx[2 - 1] = -lam * gradQx[7 - 1];
+  BgradQx[3 - 1] = -lam * gradQx[7 - 1];
+  BgradQx[4 - 1] = -mu * gradQx[8 - 1];
   BgradQx[5 - 1] = 0.0;
-  BgradQx[6 - 1] = -mu * BgradQx[9 - 1];
-  BgradQx[7 - 1] = -irho * BgradQx[1 - 1];
-  BgradQx[8 - 1] = -irho * BgradQx[4 - 1];
-  BgradQx[9 - 1] = -irho * BgradQx[6 - 1];
+  BgradQx[6 - 1] = -mu * gradQx[9 - 1];
+  BgradQx[7 - 1] = -irho * gradQx[1 - 1];
+  BgradQx[8 - 1] = -irho * gradQx[4 - 1];
+  BgradQx[9 - 1] = -irho * gradQx[6 - 1];
 
-  BgradQy[1 - 1] = -lam * BgradQy[8 - 1];
-  BgradQy[2 - 1] = -(lam + 2 * mu) * BgradQy[8 - 1];
-  BgradQy[3 - 1] = -lam * BgradQy[8 - 1];
-  BgradQy[4 - 1] = -mu * BgradQy[7 - 1];
-  BgradQy[5 - 1] = -mu * BgradQy[9 - 1];
+  BgradQy[1 - 1] = -lam * gradQy[8 - 1];
+  BgradQy[2 - 1] = -(lam + 2 * mu) * gradQy[8 - 1];
+  BgradQy[3 - 1] = -lam * gradQy[8 - 1];
+  BgradQy[4 - 1] = -mu * gradQy[7 - 1];
+  BgradQy[5 - 1] = -mu * gradQy[9 - 1];
   BgradQy[6 - 1] = 0.0;
-  BgradQy[7 - 1] = -irho * BgradQy[4 - 1];
-  BgradQy[8 - 1] = -irho * BgradQy[2 - 1];
-  BgradQy[9 - 1] = -irho * BgradQy[5 - 1];
+  BgradQy[7 - 1] = -irho * gradQy[4 - 1];
+  BgradQy[8 - 1] = -irho * gradQy[2 - 1];
+  BgradQy[9 - 1] = -irho * gradQy[5 - 1];
 
-  BgradQy[1 - 1] = -lam * BgradQz[9 - 1];
-  BgradQy[2 - 1] = -lam * BgradQz[9 - 1];
-  BgradQy[3 - 1] = -(lam + 2 * mu) * BgradQz[9 - 1];
-  BgradQy[4 - 1] = 0.0;
-  BgradQy[5 - 1] = -mu * BgradQz[8 - 1];
-  BgradQy[6 - 1] = -mu * BgradQz[7 - 1];
-  BgradQy[7 - 1] = -irho * BgradQz[6 - 1];
-  BgradQy[8 - 1] = -irho * BgradQz[5 - 1];
-  BgradQy[9 - 1] = -irho * BgradQz[3 - 1];
+  //  BgradQy[1 - 1] = -lam * gradQz[9 - 1];
+  //  BgradQy[2 - 1] = -lam * gradQz[9 - 1];
+  //  BgradQy[3 - 1] = -(lam + 2 * mu) * gradQz[9 - 1];
+  //  BgradQy[4 - 1] = 0.0;
+  //  BgradQy[5 - 1] = -mu * gradQz[8 - 1];
+  //  BgradQy[6 - 1] = -mu * gradQz[7 - 1];
+  //  BgradQy[7 - 1] = -irho * gradQz[6 - 1];
+  //  BgradQy[8 - 1] = -irho * gradQz[5 - 1];
+  //  BgradQy[9 - 1] = -irho * gradQz[3 - 1];
 
 }  // testNCP
 
@@ -160,6 +178,8 @@ void ElasticityKernelTest::testMatrixB(const double *const Q,
   double lam = Q[9];          // par(1)
   double mu = Q[10];          // par(2)
   double irho = 1.0 / Q[11];  // 1./par(3)
+
+  assert(std::isfinite(irho));
 
   switch (normalNonZero) {
     case 0:
@@ -277,6 +297,131 @@ void ElasticityKernelTest::testRiemannSolverLinear() {
   delete[] qR;
   delete[] FL;
   delete[] FR;
+}
+
+void ElasticityKernelTest::testSpaceTimePredictorLinear() {
+  logInfo("ElasticityKernelTest::testSpaceTimePredictorLinear()",
+          "Test SpaceTimePredictor linear, ORDER=4, DIM=2");
+
+  double *luh = new double[kNumberOfVariables * kBasisSize * kBasisSize];
+  kernels::idx3 idx_luh(kBasisSize, kBasisSize, kNumberOfVariables);
+  kernels::idx3 idx_luh_IN(kBasisSize, kBasisSize,
+                           kNumberOfVariables - kNumberOfParameters);
+  kernels::idx3 idx_param_IN(kBasisSize, kBasisSize, kNumberOfParameters);
+
+  // Assemble luh = concatenate dofs and parameters
+  for (int i = 0; i < kBasisSize; i++) {
+    for (int j = 0; j < kBasisSize; j++) {
+      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
+        luh[idx_luh(i, j, k)] = exahype::tests::testdata::elasticity::
+            testSpaceTimePredictorLinear::luh_IN[idx_luh_IN(i, j, k)];
+      }
+      for (int k = 0; k < kNumberOfParameters; k++) {
+        luh[idx_luh(i, j, k + kNumberOfVariables - kNumberOfParameters)] =
+            exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::
+                param_IN[idx_param_IN(i, j, k)];
+      }
+    }
+  }
+
+  // TODO: Unused
+  double *lQi = new double[kNumberOfVariables * kBasisSize * kBasisSize *
+                           (kBasisSize + 1)];
+  double *lFi = new double[kNumberOfVariables * DIMENSIONS * kBasisSize *
+                           kBasisSize * kBasisSize];
+
+  double *lQhi = new double[kNumberOfVariables * kBasisSize * kBasisSize];
+  double *lFhi =
+      new double[kNumberOfVariables * kBasisSize * kBasisSize * DIMENSIONS];
+  double *lQbnd = new double[kNumberOfVariables * kBasisSize * 2 * DIMENSIONS];
+  double *lFbnd = new double[kNumberOfVariables * kBasisSize * 2 * DIMENSIONS];
+
+  kernels::idx3 idx_lQhi(kBasisSize, kBasisSize, kNumberOfVariables);
+  kernels::idx4 idx_lFhi(DIMENSIONS, kBasisSize, kBasisSize,
+                         kNumberOfVariables);
+  kernels::idx3 idx_lQbnd(2 * DIMENSIONS, kBasisSize, kNumberOfVariables);
+  kernels::idx3 idx_lFbnd(2 * DIMENSIONS, kBasisSize, kNumberOfVariables);
+
+  const tarch::la::Vector<DIMENSIONS, double> dx(38.4615384615385,
+                                                 35.7142857142857);
+  const double dt = 0.813172798364530;
+
+  // Execute kernel
+  kernels::aderdg::generic::c::spaceTimePredictorLinear<testNCP>(
+      lQi, lFi, lQhi, lFhi, lQbnd, lFbnd, luh, dx, dt, kNumberOfVariables,
+      kNumberOfParameters, kBasisSize);
+
+  // Check result
+  kernels::idx3 idx_lQhi_OUT(kBasisSize, kBasisSize,
+                             kNumberOfVariables - kNumberOfParameters,
+                             __LINE__);
+  for (int i = 0; i < kBasisSize; i++) {
+    for (int j = 0; j < kBasisSize; j++) {
+      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
+        validateNumericalEqualsWithEpsWithParams1(
+            lQhi[idx_lQhi(i, j, k)],
+            exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::
+                lQhi_OUT[idx_lQhi_OUT(i, j, k)],
+            eps, idx_lQhi_OUT(i, j, k));
+      }
+    }
+  }
+
+  kernels::idx4 idx_lFhi_OUT(DIMENSIONS, kBasisSize, kBasisSize,
+                             kNumberOfVariables - kNumberOfParameters,
+                             __LINE__);
+  for (int i = 0; i < DIMENSIONS; i++) {
+    for (int j = 0; j < kBasisSize; j++) {
+      for (int k = 0; k < kBasisSize; k++) {
+        for (int l = 0; l < kNumberOfVariables - kNumberOfParameters; l++) {
+          validateNumericalEqualsWithEpsWithParams1(
+              lFhi[idx_lFhi(i, j, k, l)],
+              exahype::tests::testdata::elasticity::
+                  testSpaceTimePredictorLinear::lFhi_OUT[idx_lFhi_OUT(i, j, k,
+                                                                      l)],
+              eps, idx_lFhi_OUT(i, j, k, l));
+        }
+      }
+    }
+  }
+
+  kernels::idx3 idx_lQbnd_OUT(2 * DIMENSIONS, kBasisSize,
+                              kNumberOfVariables - kNumberOfParameters,
+                              __LINE__);
+  for (int i = 0; i < 2 * DIMENSIONS; i++) {
+    for (int j = 0; j < kBasisSize; j++) {
+      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
+        validateNumericalEqualsWithEpsWithParams1(
+            lQbnd[idx_lQbnd(i, j, k)],
+            exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::
+                lQbnd_OUT[idx_lQbnd_OUT(i, j, k)],
+            eps, idx_lQbnd_OUT(i, j, k));
+      }
+    }
+  }
+
+  kernels::idx3 idx_lFbnd_OUT(2 * DIMENSIONS, kBasisSize,
+                              kNumberOfVariables - kNumberOfParameters,
+                              __LINE__);
+  for (int i = 0; i < 2 * DIMENSIONS; i++) {
+    for (int j = 0; j < kBasisSize; j++) {
+      for (int k = 0; k < kNumberOfVariables - kNumberOfParameters; k++) {
+        validateNumericalEqualsWithEpsWithParams1(
+            lFbnd[idx_lFbnd(i, j, k)],
+            exahype::tests::testdata::elasticity::testSpaceTimePredictorLinear::
+                lFbnd_OUT[idx_lFbnd_OUT(i, j, k)],
+            eps, idx_lFbnd_OUT(i, j, k));
+      }
+    }
+  }
+
+  delete[] luh;
+  delete[] lQi;
+  delete[] lFi;
+  delete[] lQhi;
+  delete[] lFhi;
+  delete[] lQbnd;
+  delete[] lFbnd;
 }
 
 }  // namespace c

@@ -34,7 +34,7 @@ class ElasticityKernelTest : public tarch::tests::TestCase {
   static tarch::logging::Log _log;
 
   //  void testPDEFluxes();
-  //  void testSpaceTimePredictorLinear();
+  void testSpaceTimePredictorLinear();
   //  void testSpaceTimePredictorNonlinear();
   //  void testVolumeIntegralLinear();
   //  void testVolumeIntegralNonlinear();

@@ -47,7 +47,7 @@ void ElasticityKernelTest::run() {
   _log.info("ElasticityKernelTest::run()", "ElasticityKernelTest is active");
 //  testMethod(testPDEFluxes);
 //
-//  testMethod(testSpaceTimePredictorLinear);
+  testMethod(testSpaceTimePredictorLinear);
 //  testMethod(testSpaceTimePredictorNonlinear);
 //  testMethod(testVolumeIntegralLinear);
 //  testMethod(testVolumeIntegralNonlinear);
