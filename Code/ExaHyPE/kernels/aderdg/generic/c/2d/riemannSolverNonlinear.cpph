@@ -34,8 +34,7 @@ void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
                             const int numberOfParameters, const int basisSize) {
   const int order = basisSize - 1;
 
-  // Compute the average states from the left and the right, which we need to
-  // compute the numerical dissipation
+  // Compute the average states (and parameters) from the left and the right
   double* QavL = new double[numberOfVariables];
   double* QavR = new double[numberOfVariables];
   {
@@ -52,6 +51,7 @@ void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
     }
   }
 
+  // TODO: New size: numberOfVariables - numberOfParameters
   double* LL = new double[numberOfVariables];
   double* LR = new double[numberOfVariables];
   PDEEigenvalues(QavL, normalNonZero, LL);
@@ -61,12 +61,14 @@ void riemannSolverNonlinear(double* FL, double* FR, const double* const QL,
   // (smax*Id).
   // We can change this into a more sophisticated Osher or HLLEM Riemann solver
   // whenever needed!
-  std::transform(LL, LL + numberOfVariables, LL,
-                 [](double d) { return std::abs(d); });
-  std::transform(LR, LR + numberOfVariables, LR,
-                 [](double d) { return std::abs(d); });
-  const double* smax_L = std::max_element(LL, LL + numberOfVariables);
-  const double* smax_R = std::max_element(LR, LR + numberOfVariables);
+  std::transform(LL, LL + numberOfVariables - numberOfParameters, LL,
+                 std::abs<double>);
+  std::transform(LR, LR + numberOfVariables - numberOfParameters, LR,
+                 std::abs<double>);
+  const double* smax_L =
+      std::max_element(LL, LL + numberOfVariables - numberOfParameters);
+  const double* smax_R =
+      std::max_element(LR, LR + numberOfVariables - numberOfParameters);
   const double smax = std::max(*smax_L, *smax_R);
 
   // We now compute the numerical flux. Note that the scheme is at the moment

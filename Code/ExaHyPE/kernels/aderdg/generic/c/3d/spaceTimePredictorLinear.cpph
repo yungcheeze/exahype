@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/
 
-#include "../../../../KernelUtils.h"
 #include <cstring>
+#include "../../../../KernelUtils.h"
 
 #if DIMENSIONS == 3
 
@@ -21,6 +21,8 @@ namespace aderdg {
 namespace generic {
 namespace c {
 
+// TODO(guera): lQi and lFi are not used at all. We use lQh and lFh locally
+// instead.
 template <void PDENCP(const double* const Q, const double* const gradQ,
                       double* BgradQ)>
 void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
@@ -51,7 +53,7 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
         for (int k = 0; k < basisSize; k++) {
           // Copy parameters here
           for (int l = 0; l < numberOfVariables; l++) {
-            lQh[idx_lQh(0, i, j, k, l)] += luh[idx_luh(i, j, k, l)];
+            lQh[idx_lQh(0, i, j, k, l)] = luh[idx_luh(i, j, k, l)];
           }
         }
       }
@@ -84,7 +86,7 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
             for (int n = 0; n < basisSize; n++) {
               gradQ[idx_gradQ(i, j, k, l, 0, m)] +=
                   1.0 / dx[0] * lQh[idx_lQh(i, j, k, n, m)] *
-                  kernels::dudx[order][n][l];
+                  kernels::dudx[order][l][n];
             }
           }
         }
@@ -102,7 +104,7 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
             for (int n = 0; n < basisSize; n++) {
               gradQ[idx_gradQ(i, j, l, k, 1, m)] +=
                   1.0 / dx[1] * lQh[idx_lQh(i, j, n, k, m)] *
-                  kernels::dudx[order][n][l];
+                  kernels::dudx[order][l][n];
             }
           }
         }
@@ -120,7 +122,7 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
             for (int n = 0; n < basisSize; n++) {
               gradQ[idx_gradQ(i, l, j, k, 2, m)] +=
                   1.0 / dx[2] * lQh[idx_lQh(i, n, j, k, m)] *
-                  kernels::dudx[order][n][l];
+                  kernels::dudx[order][l][n];
             }
           }
         }
@@ -143,9 +145,21 @@ void spaceTimePredictorLinear(double* lQi, double* lFi, double* lQhi,
         for (int l = 0; l < basisSize; l++) {
           // lQh(:,l,k,j,i+1) -= SUM(lFh(:,1:nDim,l,k,j,i), dim=2)
           for (int m = 0; m < DIMENSIONS; m++) {
-            for (int n = 0; n < numberOfVariables; n++) {
+            for (int n = 0; n < numberOfVariables - numberOfParameters; n++) {
               lQh[idx_lQh(i + 1, j, k, l, n)] -= lFh[idx_lFh(i, j, k, l, m, n)];
             }
+          }
+        }
+      }
+    }
+
+    // Copy parameters
+    for (int j = 0; j < basisSize; j++) {
+      for (int k = 0; k < basisSize; k++) {
+        for (int l = 0; l < basisSize; l++) {
+          for (int n = numberOfVariables - numberOfParameters;
+               n < numberOfVariables; n++) {
+            lQh[idx_lQh(i + 1, j, k, l, n)] = lQh[idx_lQh(i, j, k, l, n)];
           }
         }
       }

@@ -324,9 +324,6 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   // Might be too restrictive for later runs. Remove but keep warning from above
   assertion( tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()==0 );
 #endif
-
-  logInfo("createGrid(Repository)",
-      "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB"); 
 }
 
 
@@ -398,7 +395,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
   const double simulationEndTime = _parser.getSimulationEndTime();
 
-  logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers()); // change to log debug
+  logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers());
   logDebug("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
 
   while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
@@ -418,7 +415,9 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
          * here, as we half the time steps anyway.
          */
     	if (solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers()>0.0) {
-          numberOfStepsToRun = std::floor( (exahype::plotters::getTimeOfNextPlot() - solvers::Solver::getMaxSolverTimeStampOfAllSolvers()) / solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() );
+    	  const double timeIntervalTillNextPlot = std::min(exahype::plotters::getTimeOfNextPlot(),simulationEndTime) - solvers::Solver::getMaxSolverTimeStampOfAllSolvers();
+          numberOfStepsToRun = std::floor( timeIntervalTillNextPlot / solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() );
+          logDebug("runAsMaster(...)", "number of possible time steps=" << numberOfStepsToRun << " with time till next plot=" << timeIntervalTillNextPlot );
     	}
         numberOfStepsToRun = numberOfStepsToRun<2 ? 1 : numberOfStepsToRun/2;
       }

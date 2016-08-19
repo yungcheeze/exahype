@@ -1,6 +1,6 @@
 #include "exahype/mappings/LoadBalancing.h"
 #include "mpibalancing/HotspotBalancing.h"
-
+#include "peano/utils/UserInterface.h"
 
 
 peano::CommunicationSpecification   exahype::mappings::LoadBalancing::communicationSpecification() {
@@ -145,18 +145,17 @@ void exahype::mappings::LoadBalancing::mergeWithWorker(
 
 
 
+void exahype::mappings::LoadBalancing::endIteration(
+  exahype::State&  solverState
+) {
+  logInfo("endIteration(State)", "memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
+}
+
+
 //
 //   NOP
 // =======
 //
-
-
-void exahype::mappings::LoadBalancing::endIteration(
-  exahype::State&  solverState
-) {
-}
-
-
 exahype::mappings::LoadBalancing::LoadBalancing() {
   // do nothing
 }

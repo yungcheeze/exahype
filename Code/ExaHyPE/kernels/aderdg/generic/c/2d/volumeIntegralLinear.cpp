@@ -13,8 +13,8 @@
 
 #include "../../Kernels.h"
 
-#include "../../../../KernelUtils.h"
 #include <cstring>
+#include "../../../../KernelUtils.h"
 
 namespace kernels {
 namespace aderdg {
