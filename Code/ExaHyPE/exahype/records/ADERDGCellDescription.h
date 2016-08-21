@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   18/08/2016 16:39
+    * @date   21/08/2016 16:04
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -88,6 +88,18 @@ namespace exahype {
             Type _type;
             int _parentIndex;
             RefinementEvent _refinementEvent;
+            double _volumeSolutionMin;
+            double _volumeSolutionMax;
+            #ifdef UseManualAlignment
+            tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> _faceSolutionMin __attribute__((aligned(VectorisationAlignment)));
+            #else
+            tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> _faceSolutionMin;
+            #endif
+            #ifdef UseManualAlignment
+            tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> _faceSolutionMax __attribute__((aligned(VectorisationAlignment)));
+            #else
+            tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> _faceSolutionMax;
+            #endif
             /**
              * Generated
              */
@@ -96,7 +108,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const double& volumeSolutionMin, const double& volumeSolutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax);
             
             
             inline int getSolverNumber() const 
@@ -691,6 +703,162 @@ namespace exahype {
             
             
             
+            inline double getVolumeSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _volumeSolutionMin;
+            }
+            
+            
+            
+            inline void setVolumeSolutionMin(const double& volumeSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _volumeSolutionMin = volumeSolutionMin;
+            }
+            
+            
+            
+            inline double getVolumeSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _volumeSolutionMax;
+            }
+            
+            
+            
+            inline void setVolumeSolutionMax(const double& volumeSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _volumeSolutionMax = volumeSolutionMax;
+            }
+            
+            
+            
+            /**
+             * Generated and optimized
+             * 
+             * If you realise a for loop using exclusively arrays (vectors) and compile 
+             * with -DUseManualAlignment you may add 
+             * \code
+             #pragma vector aligned
+             #pragma simd
+             \endcode to this for loop to enforce your compiler to use SSE/AVX.
+             * 
+             * The alignment is tied to the unpacked records, i.e. for packed class
+             * variants the machine's natural alignment is switched off to recude the  
+             * memory footprint. Do not use any SSE/AVX operations or 
+             * vectorisation on the result for the packed variants, as the data is misaligned. 
+             * If you rely on vectorisation, convert the underlying record 
+             * into the unpacked version first. 
+             * 
+             * @see convert()
+             */
+            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _faceSolutionMin;
+            }
+            
+            
+            
+            /**
+             * Generated and optimized
+             * 
+             * If you realise a for loop using exclusively arrays (vectors) and compile 
+             * with -DUseManualAlignment you may add 
+             * \code
+             #pragma vector aligned
+             #pragma simd
+             \endcode to this for loop to enforce your compiler to use SSE/AVX.
+             * 
+             * The alignment is tied to the unpacked records, i.e. for packed class
+             * variants the machine's natural alignment is switched off to recude the  
+             * memory footprint. Do not use any SSE/AVX operations or 
+             * vectorisation on the result for the packed variants, as the data is misaligned. 
+             * If you rely on vectorisation, convert the underlying record 
+             * into the unpacked version first. 
+             * 
+             * @see convert()
+             */
+            inline void setFaceSolutionMin(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _faceSolutionMin = (faceSolutionMin);
+            }
+            
+            
+            
+            /**
+             * Generated and optimized
+             * 
+             * If you realise a for loop using exclusively arrays (vectors) and compile 
+             * with -DUseManualAlignment you may add 
+             * \code
+             #pragma vector aligned
+             #pragma simd
+             \endcode to this for loop to enforce your compiler to use SSE/AVX.
+             * 
+             * The alignment is tied to the unpacked records, i.e. for packed class
+             * variants the machine's natural alignment is switched off to recude the  
+             * memory footprint. Do not use any SSE/AVX operations or 
+             * vectorisation on the result for the packed variants, as the data is misaligned. 
+             * If you rely on vectorisation, convert the underlying record 
+             * into the unpacked version first. 
+             * 
+             * @see convert()
+             */
+            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _faceSolutionMax;
+            }
+            
+            
+            
+            /**
+             * Generated and optimized
+             * 
+             * If you realise a for loop using exclusively arrays (vectors) and compile 
+             * with -DUseManualAlignment you may add 
+             * \code
+             #pragma vector aligned
+             #pragma simd
+             \endcode to this for loop to enforce your compiler to use SSE/AVX.
+             * 
+             * The alignment is tied to the unpacked records, i.e. for packed class
+             * variants the machine's natural alignment is switched off to recude the  
+             * memory footprint. Do not use any SSE/AVX operations or 
+             * vectorisation on the result for the packed variants, as the data is misaligned. 
+             * If you rely on vectorisation, convert the underlying record 
+             * into the unpacked version first. 
+             * 
+             * @see convert()
+             */
+            inline void setFaceSolutionMax(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _faceSolutionMax = (faceSolutionMax);
+            }
+            
+            
+            
          };
          
       private: 
@@ -710,7 +878,7 @@ namespace exahype {
          /**
           * Generated
           */
-         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const double& volumeSolutionMin, const double& volumeSolutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax);
          
          /**
           * Generated
@@ -1437,6 +1605,214 @@ namespace exahype {
          }
          
          
+         
+         inline double getVolumeSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._volumeSolutionMin;
+         }
+         
+         
+         
+         inline void setVolumeSolutionMin(const double& volumeSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._volumeSolutionMin = volumeSolutionMin;
+         }
+         
+         
+         
+         inline double getVolumeSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._volumeSolutionMax;
+         }
+         
+         
+         
+         inline void setVolumeSolutionMax(const double& volumeSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._volumeSolutionMax = volumeSolutionMax;
+         }
+         
+         
+         
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._faceSolutionMin;
+         }
+         
+         
+         
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline void setFaceSolutionMin(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._faceSolutionMin = (faceSolutionMin);
+         }
+         
+         
+         
+         inline double getFaceSolutionMin(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            assertion(elementIndex>=0);
+            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+            return _persistentRecords._faceSolutionMin[elementIndex];
+            
+         }
+         
+         
+         
+         inline void setFaceSolutionMin(int elementIndex, const double& faceSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            assertion(elementIndex>=0);
+            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+            _persistentRecords._faceSolutionMin[elementIndex]= faceSolutionMin;
+            
+         }
+         
+         
+         
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._faceSolutionMax;
+         }
+         
+         
+         
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline void setFaceSolutionMax(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._faceSolutionMax = (faceSolutionMax);
+         }
+         
+         
+         
+         inline double getFaceSolutionMax(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            assertion(elementIndex>=0);
+            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+            return _persistentRecords._faceSolutionMax[elementIndex];
+            
+         }
+         
+         
+         
+         inline void setFaceSolutionMax(int elementIndex, const double& faceSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            assertion(elementIndex>=0);
+            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+            _persistentRecords._faceSolutionMax[elementIndex]= faceSolutionMax;
+            
+         }
+         
+         
          /**
           * Generated
           */
@@ -1530,7 +1906,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   18/08/2016 16:39
+             * @date   21/08/2016 16:04
              */
             class exahype::records::ADERDGCellDescriptionPacked { 
                
@@ -1563,6 +1939,10 @@ namespace exahype {
                      Type _type;
                      int _parentIndex;
                      RefinementEvent _refinementEvent;
+                     double _volumeSolutionMin;
+                     double _volumeSolutionMax;
+                     tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> _faceSolutionMin;
+                     tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> _faceSolutionMax;
                      /**
                       * Generated
                       */
@@ -1571,7 +1951,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const double& volumeSolutionMin, const double& volumeSolutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax);
                      
                      
                      inline int getSolverNumber() const 
@@ -2166,6 +2546,162 @@ namespace exahype {
                      
                      
                      
+                     inline double getVolumeSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _volumeSolutionMin;
+                     }
+                     
+                     
+                     
+                     inline void setVolumeSolutionMin(const double& volumeSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _volumeSolutionMin = volumeSolutionMin;
+                     }
+                     
+                     
+                     
+                     inline double getVolumeSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _volumeSolutionMax;
+                     }
+                     
+                     
+                     
+                     inline void setVolumeSolutionMax(const double& volumeSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _volumeSolutionMax = volumeSolutionMax;
+                     }
+                     
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _faceSolutionMin;
+                     }
+                     
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline void setFaceSolutionMin(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _faceSolutionMin = (faceSolutionMin);
+                     }
+                     
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _faceSolutionMax;
+                     }
+                     
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline void setFaceSolutionMax(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _faceSolutionMax = (faceSolutionMax);
+                     }
+                     
+                     
+                     
                   };
                   
                private: 
@@ -2185,7 +2721,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const double& volumeSolutionMin, const double& volumeSolutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax);
                   
                   /**
                    * Generated
@@ -2912,6 +3448,214 @@ namespace exahype {
                   }
                   
                   
+                  
+                  inline double getVolumeSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._volumeSolutionMin;
+                  }
+                  
+                  
+                  
+                  inline void setVolumeSolutionMin(const double& volumeSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._volumeSolutionMin = volumeSolutionMin;
+                  }
+                  
+                  
+                  
+                  inline double getVolumeSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._volumeSolutionMax;
+                  }
+                  
+                  
+                  
+                  inline void setVolumeSolutionMax(const double& volumeSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._volumeSolutionMax = volumeSolutionMax;
+                  }
+                  
+                  
+                  
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._faceSolutionMin;
+                  }
+                  
+                  
+                  
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline void setFaceSolutionMin(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._faceSolutionMin = (faceSolutionMin);
+                  }
+                  
+                  
+                  
+                  inline double getFaceSolutionMin(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion(elementIndex>=0);
+                     assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                     return _persistentRecords._faceSolutionMin[elementIndex];
+                     
+                  }
+                  
+                  
+                  
+                  inline void setFaceSolutionMin(int elementIndex, const double& faceSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion(elementIndex>=0);
+                     assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                     _persistentRecords._faceSolutionMin[elementIndex]= faceSolutionMin;
+                     
+                  }
+                  
+                  
+                  
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._faceSolutionMax;
+                  }
+                  
+                  
+                  
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline void setFaceSolutionMax(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._faceSolutionMax = (faceSolutionMax);
+                  }
+                  
+                  
+                  
+                  inline double getFaceSolutionMax(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion(elementIndex>=0);
+                     assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                     return _persistentRecords._faceSolutionMax[elementIndex];
+                     
+                  }
+                  
+                  
+                  
+                  inline void setFaceSolutionMax(int elementIndex, const double& faceSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion(elementIndex>=0);
+                     assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                     _persistentRecords._faceSolutionMax[elementIndex]= faceSolutionMax;
+                     
+                  }
+                  
+                  
                   /**
                    * Generated
                    */
@@ -3002,7 +3746,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   18/08/2016 16:39
+                      * @date   21/08/2016 16:04
                       */
                      class exahype::records::ADERDGCellDescription { 
                         
@@ -3052,6 +3796,18 @@ namespace exahype {
                               Type _type;
                               int _parentIndex;
                               RefinementEvent _refinementEvent;
+                              double _volumeSolutionMin;
+                              double _volumeSolutionMax;
+                              #ifdef UseManualAlignment
+                              tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> _faceSolutionMin __attribute__((aligned(VectorisationAlignment)));
+                              #else
+                              tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> _faceSolutionMin;
+                              #endif
+                              #ifdef UseManualAlignment
+                              tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> _faceSolutionMax __attribute__((aligned(VectorisationAlignment)));
+                              #else
+                              tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> _faceSolutionMax;
+                              #endif
                               /**
                                * Generated
                                */
@@ -3060,7 +3816,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                              PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const double& volumeSolutionMin, const double& volumeSolutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax);
                               
                               
                               inline int getSolverNumber() const 
@@ -3597,6 +4353,162 @@ namespace exahype {
                               
                               
                               
+                              inline double getVolumeSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _volumeSolutionMin;
+                              }
+                              
+                              
+                              
+                              inline void setVolumeSolutionMin(const double& volumeSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _volumeSolutionMin = volumeSolutionMin;
+                              }
+                              
+                              
+                              
+                              inline double getVolumeSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _volumeSolutionMax;
+                              }
+                              
+                              
+                              
+                              inline void setVolumeSolutionMax(const double& volumeSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _volumeSolutionMax = volumeSolutionMax;
+                              }
+                              
+                              
+                              
+                              /**
+                               * Generated and optimized
+                               * 
+                               * If you realise a for loop using exclusively arrays (vectors) and compile 
+                               * with -DUseManualAlignment you may add 
+                               * \code
+                               #pragma vector aligned
+                               #pragma simd
+                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                               * 
+                               * The alignment is tied to the unpacked records, i.e. for packed class
+                               * variants the machine's natural alignment is switched off to recude the  
+                               * memory footprint. Do not use any SSE/AVX operations or 
+                               * vectorisation on the result for the packed variants, as the data is misaligned. 
+                               * If you rely on vectorisation, convert the underlying record 
+                               * into the unpacked version first. 
+                               * 
+                               * @see convert()
+                               */
+                              inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _faceSolutionMin;
+                              }
+                              
+                              
+                              
+                              /**
+                               * Generated and optimized
+                               * 
+                               * If you realise a for loop using exclusively arrays (vectors) and compile 
+                               * with -DUseManualAlignment you may add 
+                               * \code
+                               #pragma vector aligned
+                               #pragma simd
+                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                               * 
+                               * The alignment is tied to the unpacked records, i.e. for packed class
+                               * variants the machine's natural alignment is switched off to recude the  
+                               * memory footprint. Do not use any SSE/AVX operations or 
+                               * vectorisation on the result for the packed variants, as the data is misaligned. 
+                               * If you rely on vectorisation, convert the underlying record 
+                               * into the unpacked version first. 
+                               * 
+                               * @see convert()
+                               */
+                              inline void setFaceSolutionMin(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _faceSolutionMin = (faceSolutionMin);
+                              }
+                              
+                              
+                              
+                              /**
+                               * Generated and optimized
+                               * 
+                               * If you realise a for loop using exclusively arrays (vectors) and compile 
+                               * with -DUseManualAlignment you may add 
+                               * \code
+                               #pragma vector aligned
+                               #pragma simd
+                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                               * 
+                               * The alignment is tied to the unpacked records, i.e. for packed class
+                               * variants the machine's natural alignment is switched off to recude the  
+                               * memory footprint. Do not use any SSE/AVX operations or 
+                               * vectorisation on the result for the packed variants, as the data is misaligned. 
+                               * If you rely on vectorisation, convert the underlying record 
+                               * into the unpacked version first. 
+                               * 
+                               * @see convert()
+                               */
+                              inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _faceSolutionMax;
+                              }
+                              
+                              
+                              
+                              /**
+                               * Generated and optimized
+                               * 
+                               * If you realise a for loop using exclusively arrays (vectors) and compile 
+                               * with -DUseManualAlignment you may add 
+                               * \code
+                               #pragma vector aligned
+                               #pragma simd
+                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                               * 
+                               * The alignment is tied to the unpacked records, i.e. for packed class
+                               * variants the machine's natural alignment is switched off to recude the  
+                               * memory footprint. Do not use any SSE/AVX operations or 
+                               * vectorisation on the result for the packed variants, as the data is misaligned. 
+                               * If you rely on vectorisation, convert the underlying record 
+                               * into the unpacked version first. 
+                               * 
+                               * @see convert()
+                               */
+                              inline void setFaceSolutionMax(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _faceSolutionMax = (faceSolutionMax);
+                              }
+                              
+                              
+                              
                            };
                            
                         private: 
@@ -3616,7 +4528,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const double& volumeSolutionMin, const double& volumeSolutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax);
                            
                            /**
                             * Generated
@@ -4247,6 +5159,214 @@ namespace exahype {
                            }
                            
                            
+                           
+                           inline double getVolumeSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._volumeSolutionMin;
+                           }
+                           
+                           
+                           
+                           inline void setVolumeSolutionMin(const double& volumeSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._volumeSolutionMin = volumeSolutionMin;
+                           }
+                           
+                           
+                           
+                           inline double getVolumeSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._volumeSolutionMax;
+                           }
+                           
+                           
+                           
+                           inline void setVolumeSolutionMax(const double& volumeSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._volumeSolutionMax = volumeSolutionMax;
+                           }
+                           
+                           
+                           
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._faceSolutionMin;
+                           }
+                           
+                           
+                           
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline void setFaceSolutionMin(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._faceSolutionMin = (faceSolutionMin);
+                           }
+                           
+                           
+                           
+                           inline double getFaceSolutionMin(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              assertion(elementIndex>=0);
+                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                              return _persistentRecords._faceSolutionMin[elementIndex];
+                              
+                           }
+                           
+                           
+                           
+                           inline void setFaceSolutionMin(int elementIndex, const double& faceSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              assertion(elementIndex>=0);
+                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                              _persistentRecords._faceSolutionMin[elementIndex]= faceSolutionMin;
+                              
+                           }
+                           
+                           
+                           
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._faceSolutionMax;
+                           }
+                           
+                           
+                           
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline void setFaceSolutionMax(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._faceSolutionMax = (faceSolutionMax);
+                           }
+                           
+                           
+                           
+                           inline double getFaceSolutionMax(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              assertion(elementIndex>=0);
+                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                              return _persistentRecords._faceSolutionMax[elementIndex];
+                              
+                           }
+                           
+                           
+                           
+                           inline void setFaceSolutionMax(int elementIndex, const double& faceSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              assertion(elementIndex>=0);
+                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                              _persistentRecords._faceSolutionMax[elementIndex]= faceSolutionMax;
+                              
+                           }
+                           
+                           
                            /**
                             * Generated
                             */
@@ -4340,7 +5460,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   18/08/2016 16:39
+                               * @date   21/08/2016 16:04
                                */
                               class exahype::records::ADERDGCellDescriptionPacked { 
                                  
@@ -4372,6 +5492,10 @@ namespace exahype {
                                        Type _type;
                                        int _parentIndex;
                                        RefinementEvent _refinementEvent;
+                                       double _volumeSolutionMin;
+                                       double _volumeSolutionMax;
+                                       tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> _faceSolutionMin;
+                                       tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> _faceSolutionMax;
                                        /**
                                         * Generated
                                         */
@@ -4380,7 +5504,7 @@ namespace exahype {
                                        /**
                                         * Generated
                                         */
-                                       PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                                       PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const double& volumeSolutionMin, const double& volumeSolutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax);
                                        
                                        
                                        inline int getSolverNumber() const 
@@ -4917,6 +6041,162 @@ namespace exahype {
                                        
                                        
                                        
+                                       inline double getVolumeSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          return _volumeSolutionMin;
+                                       }
+                                       
+                                       
+                                       
+                                       inline void setVolumeSolutionMin(const double& volumeSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          _volumeSolutionMin = volumeSolutionMin;
+                                       }
+                                       
+                                       
+                                       
+                                       inline double getVolumeSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          return _volumeSolutionMax;
+                                       }
+                                       
+                                       
+                                       
+                                       inline void setVolumeSolutionMax(const double& volumeSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          _volumeSolutionMax = volumeSolutionMax;
+                                       }
+                                       
+                                       
+                                       
+                                       /**
+                                        * Generated and optimized
+                                        * 
+                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                        * with -DUseManualAlignment you may add 
+                                        * \code
+                                        #pragma vector aligned
+                                        #pragma simd
+                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                        * 
+                                        * The alignment is tied to the unpacked records, i.e. for packed class
+                                        * variants the machine's natural alignment is switched off to recude the  
+                                        * memory footprint. Do not use any SSE/AVX operations or 
+                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                        * If you rely on vectorisation, convert the underlying record 
+                                        * into the unpacked version first. 
+                                        * 
+                                        * @see convert()
+                                        */
+                                       inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          return _faceSolutionMin;
+                                       }
+                                       
+                                       
+                                       
+                                       /**
+                                        * Generated and optimized
+                                        * 
+                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                        * with -DUseManualAlignment you may add 
+                                        * \code
+                                        #pragma vector aligned
+                                        #pragma simd
+                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                        * 
+                                        * The alignment is tied to the unpacked records, i.e. for packed class
+                                        * variants the machine's natural alignment is switched off to recude the  
+                                        * memory footprint. Do not use any SSE/AVX operations or 
+                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                        * If you rely on vectorisation, convert the underlying record 
+                                        * into the unpacked version first. 
+                                        * 
+                                        * @see convert()
+                                        */
+                                       inline void setFaceSolutionMin(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          _faceSolutionMin = (faceSolutionMin);
+                                       }
+                                       
+                                       
+                                       
+                                       /**
+                                        * Generated and optimized
+                                        * 
+                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                        * with -DUseManualAlignment you may add 
+                                        * \code
+                                        #pragma vector aligned
+                                        #pragma simd
+                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                        * 
+                                        * The alignment is tied to the unpacked records, i.e. for packed class
+                                        * variants the machine's natural alignment is switched off to recude the  
+                                        * memory footprint. Do not use any SSE/AVX operations or 
+                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                        * If you rely on vectorisation, convert the underlying record 
+                                        * into the unpacked version first. 
+                                        * 
+                                        * @see convert()
+                                        */
+                                       inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          return _faceSolutionMax;
+                                       }
+                                       
+                                       
+                                       
+                                       /**
+                                        * Generated and optimized
+                                        * 
+                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                        * with -DUseManualAlignment you may add 
+                                        * \code
+                                        #pragma vector aligned
+                                        #pragma simd
+                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                        * 
+                                        * The alignment is tied to the unpacked records, i.e. for packed class
+                                        * variants the machine's natural alignment is switched off to recude the  
+                                        * memory footprint. Do not use any SSE/AVX operations or 
+                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                        * If you rely on vectorisation, convert the underlying record 
+                                        * into the unpacked version first. 
+                                        * 
+                                        * @see convert()
+                                        */
+                                       inline void setFaceSolutionMax(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          _faceSolutionMax = (faceSolutionMax);
+                                       }
+                                       
+                                       
+                                       
                                     };
                                     
                                  private: 
@@ -4936,7 +6216,7 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent);
+                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const double& volumeSolutionMin, const double& volumeSolutionMax, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax);
                                     
                                     /**
                                      * Generated
@@ -5564,6 +6844,214 @@ namespace exahype {
  #endif 
  {
                                        _persistentRecords._refinementEvent = refinementEvent;
+                                    }
+                                    
+                                    
+                                    
+                                    inline double getVolumeSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _persistentRecords._volumeSolutionMin;
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setVolumeSolutionMin(const double& volumeSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _persistentRecords._volumeSolutionMin = volumeSolutionMin;
+                                    }
+                                    
+                                    
+                                    
+                                    inline double getVolumeSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _persistentRecords._volumeSolutionMax;
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setVolumeSolutionMax(const double& volumeSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _persistentRecords._volumeSolutionMax = volumeSolutionMax;
+                                    }
+                                    
+                                    
+                                    
+                                    /**
+                                     * Generated and optimized
+                                     * 
+                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                     * with -DUseManualAlignment you may add 
+                                     * \code
+                                     #pragma vector aligned
+                                     #pragma simd
+                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                     * 
+                                     * The alignment is tied to the unpacked records, i.e. for packed class
+                                     * variants the machine's natural alignment is switched off to recude the  
+                                     * memory footprint. Do not use any SSE/AVX operations or 
+                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                     * If you rely on vectorisation, convert the underlying record 
+                                     * into the unpacked version first. 
+                                     * 
+                                     * @see convert()
+                                     */
+                                    inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMin() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _persistentRecords._faceSolutionMin;
+                                    }
+                                    
+                                    
+                                    
+                                    /**
+                                     * Generated and optimized
+                                     * 
+                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                     * with -DUseManualAlignment you may add 
+                                     * \code
+                                     #pragma vector aligned
+                                     #pragma simd
+                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                     * 
+                                     * The alignment is tied to the unpacked records, i.e. for packed class
+                                     * variants the machine's natural alignment is switched off to recude the  
+                                     * memory footprint. Do not use any SSE/AVX operations or 
+                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                     * If you rely on vectorisation, convert the underlying record 
+                                     * into the unpacked version first. 
+                                     * 
+                                     * @see convert()
+                                     */
+                                    inline void setFaceSolutionMin(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _persistentRecords._faceSolutionMin = (faceSolutionMin);
+                                    }
+                                    
+                                    
+                                    
+                                    inline double getFaceSolutionMin(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       assertion(elementIndex>=0);
+                                       assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                                       return _persistentRecords._faceSolutionMin[elementIndex];
+                                       
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setFaceSolutionMin(int elementIndex, const double& faceSolutionMin) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       assertion(elementIndex>=0);
+                                       assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                                       _persistentRecords._faceSolutionMin[elementIndex]= faceSolutionMin;
+                                       
+                                    }
+                                    
+                                    
+                                    
+                                    /**
+                                     * Generated and optimized
+                                     * 
+                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                     * with -DUseManualAlignment you may add 
+                                     * \code
+                                     #pragma vector aligned
+                                     #pragma simd
+                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                     * 
+                                     * The alignment is tied to the unpacked records, i.e. for packed class
+                                     * variants the machine's natural alignment is switched off to recude the  
+                                     * memory footprint. Do not use any SSE/AVX operations or 
+                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                     * If you rely on vectorisation, convert the underlying record 
+                                     * into the unpacked version first. 
+                                     * 
+                                     * @see convert()
+                                     */
+                                    inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,double> getFaceSolutionMax() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _persistentRecords._faceSolutionMax;
+                                    }
+                                    
+                                    
+                                    
+                                    /**
+                                     * Generated and optimized
+                                     * 
+                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                     * with -DUseManualAlignment you may add 
+                                     * \code
+                                     #pragma vector aligned
+                                     #pragma simd
+                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                     * 
+                                     * The alignment is tied to the unpacked records, i.e. for packed class
+                                     * variants the machine's natural alignment is switched off to recude the  
+                                     * memory footprint. Do not use any SSE/AVX operations or 
+                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                     * If you rely on vectorisation, convert the underlying record 
+                                     * into the unpacked version first. 
+                                     * 
+                                     * @see convert()
+                                     */
+                                    inline void setFaceSolutionMax(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& faceSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _persistentRecords._faceSolutionMax = (faceSolutionMax);
+                                    }
+                                    
+                                    
+                                    
+                                    inline double getFaceSolutionMax(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       assertion(elementIndex>=0);
+                                       assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                                       return _persistentRecords._faceSolutionMax[elementIndex];
+                                       
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setFaceSolutionMax(int elementIndex, const double& faceSolutionMax) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       assertion(elementIndex>=0);
+                                       assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                                       _persistentRecords._faceSolutionMax[elementIndex]= faceSolutionMax;
+                                       
                                     }
                                     
                                     
