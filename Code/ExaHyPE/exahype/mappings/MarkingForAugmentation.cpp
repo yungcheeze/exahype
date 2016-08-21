@@ -113,7 +113,11 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
 
   if (fineGridCell.isInitialised() &&
       multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
-          VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices))) {
+          VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices)) &&
+     multiscalelinkedcell::adjacencyInformationIsConsistent(
+              VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices))
+
+  ) {
     const tarch::la::Vector<THREE_POWER_D, int>
         neighbourCellDescriptionIndices =
             multiscalelinkedcell::getIndicesAroundCell(
