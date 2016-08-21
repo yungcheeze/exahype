@@ -154,8 +154,10 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
 
 void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
     const int cellDescriptionsIndexOfLeftCell,
-    const int cellDescriptionsIndexOfRightCell, const int faceIndexForLeftCell,
-    const int faceIndexForRightCell, const int normalNonZero) {
+    const int cellDescriptionsIndexOfRightCell,
+    const int faceIndexForLeftCell,
+    const int faceIndexForRightCell,
+    const int normalNonZero) {
   // Only continue if this is an internal face, i.e.,
   // both cell description indices are valid
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfLeftCell)
