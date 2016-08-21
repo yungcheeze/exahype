@@ -84,6 +84,31 @@ std::string multiscalelinkedcell::indicesToString( const tarch::la::Vector<TWO_P
   return msg.str();
 }
 
+bool multiscalelinkedcell::adjacencyInformationIsConsistent(
+    const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&  indices
+) {
+  tarch::la::Vector<DIMENSIONS,int> centre(1); // Initialize center(1) as (1,1,...,1).
+  dfor2(v1) // Loop over vertices.
+    dfor2(v2) // Loop over vertices.
+      if (v1Scalar < v2Scalar) { // Allow only single check per pair.
+        dfor2(a1) // Loop over indices vertex v1.
+          dfor2(a2) // Loop over indices of vertex v2.
+            if (
+                tarch::la::equals(v1+a1,v2+a2) &&
+                tarch::la::countEqualEntries(a1+v1,centre) >= DIMENSIONS-1
+            ) { // Detect overlap of adjacency data. Only include centre and face neighbours of centre.
+              if( indices( v1Scalar * TWO_POWER_D + a1Scalar )!=indices( v2Scalar * TWO_POWER_D + a2Scalar ) ) {
+                return false;
+              }
+            }
+          enddforx // a2
+        enddforx // a1
+      }
+    enddforx // v2
+  enddforx // v1
+
+  return true;
+}
 
 tarch::la::Vector<THREE_POWER_D,int> multiscalelinkedcell::getIndicesAroundCell(
   const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&  indices
@@ -94,6 +119,8 @@ tarch::la::Vector<THREE_POWER_D,int> multiscalelinkedcell::getIndicesAroundCell(
 
   tarch::la::Vector<THREE_POWER_D,int> result;
 
+  assertion1( adjacencyInformationIsConsistent(indices), indices );
+
   #ifdef Dim2
   assertionEquals1(indices( 0*TWO_POWER_D + 1 ), indices( 1*TWO_POWER_D + 0 ), indices);
   assertionEquals1(indices( 0*TWO_POWER_D + 3 ), indices( 3*TWO_POWER_D + 0 ), indices);
@@ -103,7 +130,6 @@ tarch::la::Vector<THREE_POWER_D,int> multiscalelinkedcell::getIndicesAroundCell(
   assertionEquals1(indices( 0*TWO_POWER_D + 3 ), indices( 1*TWO_POWER_D + 2 ), indices);
   assertionEquals1(indices( 1*TWO_POWER_D + 2 ), indices( 3*TWO_POWER_D + 0 ), indices);
   assertionEquals1(indices( 3*TWO_POWER_D + 0 ), indices( 2*TWO_POWER_D + 1 ), indices);
-
   result(0) = indices( 0*TWO_POWER_D + 0 );
   result(1) = indices( 0*TWO_POWER_D + 1 );
   result(2) = indices( 1*TWO_POWER_D + 1 );
