@@ -242,6 +242,28 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    *   max solutions. Return false if we seem to run into oscillations.
    */
   bool setSolutionMinMaxAndAnalyseValidity( double min, double max, int solverIndex );
+
+  /**
+   * Merge the solution min and max values on a face between two cell
+   * descriptions. Signature is similar to the solver of a Riemann problem.
+   */
+  static void mergeSolutionMinMaxOnFace(
+    const int cellDescriptionsIndexOfLeftCell,
+    const int cellDescriptionsIndexOfRightCell,
+    const int faceIndexForLeftCell,
+    const int faceIndexForRightCell
+  );
+
+  /**
+   * Single-sided variant of mergeSolutionMinMaxOnFace() that is required
+   * for MPI where min and max value are explicitly exchanged through messages.
+   */
+  static void mergeSolutionMinMaxOnFace(
+    const int cellDescriptionsIndex,
+    double min, double max,
+    int faceNumber,
+    int ADERDGSolverNumber
+  );
 };
 
 #endif
