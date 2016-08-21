@@ -81,17 +81,19 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-#ifdef Parallel
-  return;
-#endif
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
+  // TODO(Dominic): Remove
+  #ifdef Parallel
+    return;
+  #endif
 
-  if (fineGridCell.isInitialised() &&
+  if (
+      fineGridCell.isInitialised() &&
       multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
           VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices)) &&
-          multiscalelinkedcell::adjacencyInformationIsConsistent(
+      multiscalelinkedcell::adjacencyInformationIsConsistent(
           VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices))
   ) {
     const tarch::la::Vector<THREE_POWER_D, int>
@@ -99,6 +101,9 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
             multiscalelinkedcell::getIndicesAroundCell(
                 VertexOperations::readCellDescriptionsIndex(
                     fineGridVerticesEnumerator, fineGridVertices));
+
+    const int numberOfRemoteAdjacencyIndices =
+        multiscalelinkedcell::countRemoteAdjacencyIndicesAtFacesOfCell(neighbourCellDescriptionIndices);
 
     bool refineFineGridCell = false;
     for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())) {
@@ -113,31 +118,41 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
       switch (pFine.getType()) {
         case exahype::records::ADERDGCellDescription::Ancestor:
         case exahype::records::ADERDGCellDescription::EmptyAncestor:
-          switch (augmentationControl) {
-            case AugmentationControl::NextToCell:
-            case AugmentationControl::NextToCellAndAncestor:
-              pFine.setType(exahype::records::ADERDGCellDescription::Ancestor);
-              fineGridCell.ensureNecessaryMemoryIsAllocated(pFine.getSolverNumber());
-              break;
-            default:
-              pFine.setType(exahype::records::ADERDGCellDescription::EmptyAncestor);
-              fineGridCell.ensureNoUnnecessaryMemoryIsAllocated(pFine.getSolverNumber());
-              break;
+          /**
+           * We only reset the type if it has not been already done
+           * by the mergeWithNeighbour(...) routine.
+           * The latter has happened if numberOfRemoteAdjacencyIndices>0.
+           */
+          if (numberOfRemoteAdjacencyIndices==0) {
+            pFine.setType(exahype::records::ADERDGCellDescription::EmptyAncestor);
+          } // This does apply to Ancestor and EmptyAncestor.
+          if (augmentationControl==AugmentationControl::NextToCell &&
+              augmentationControl==AugmentationControl::NextToCellAndAncestor) {
+            pFine.setType(exahype::records::ADERDGCellDescription::Ancestor);
+          } else {
+            pFine.setType(exahype::records::ADERDGCellDescription::EmptyAncestor);
           }
+          fineGridCell.ensureNecessaryMemoryIsAllocated(pFine.getSolverNumber());
+          fineGridCell.ensureNoUnnecessaryMemoryIsAllocated(pFine.getSolverNumber());
           break;
         case exahype::records::ADERDGCellDescription::Descendant:
         case exahype::records::ADERDGCellDescription::EmptyDescendant:
-          switch (augmentationControl) {
-            case AugmentationControl::NextToCell:
-            case AugmentationControl::NextToCellAndAncestor:
-              pFine.setType(exahype::records::ADERDGCellDescription::Descendant);
-              fineGridCell.ensureNecessaryMemoryIsAllocated(pFine.getSolverNumber());
-              break;
-            default:
-              pFine.setType(exahype::records::ADERDGCellDescription::EmptyDescendant);
-              fineGridCell.ensureNoUnnecessaryMemoryIsAllocated(pFine.getSolverNumber());
-              break;
+          /**
+           * We only reset the type if it has not been already done
+           * by the mergeWithNeighbour(...) routine.
+           * The latter has happened if numberOfRemoteAdjacencyIndices>0.
+           */
+          if(numberOfRemoteAdjacencyIndices==0) {
+            pFine.setType(exahype::records::ADERDGCellDescription::EmptyDescendant);
+          } // This does apply to Descendant and EmptyDescendant.
+          if (augmentationControl==AugmentationControl::NextToCell ||
+              augmentationControl==AugmentationControl::NextToCellAndAncestor) {
+            pFine.setType(exahype::records::ADERDGCellDescription::Descendant);
+          } else {
+            pFine.setType(exahype::records::ADERDGCellDescription::EmptyDescendant);
           }
+          fineGridCell.ensureNecessaryMemoryIsAllocated(pFine.getSolverNumber());
+          fineGridCell.ensureNoUnnecessaryMemoryIsAllocated(pFine.getSolverNumber());
           break;
         default:
           break;
@@ -266,6 +281,11 @@ void exahype::mappings::MarkingForAugmentation::prepareSendToNeighbour(
   logTraceInWith5Arguments("prepareSendToNeighbour(...)", vertex,
                            toRank, x, h, level);
 
+  // TODO(Dominic): Remove
+  #ifdef Parallel
+    return;
+  #endif
+
 
   #if !defined(PeriodicBC)
   if (vertex.isBoundary()) return;
@@ -331,6 +351,11 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
   logTraceInWith6Arguments("mergeWithNeighbour(...)", vertex, neighbour,
                            fromRank, fineGridX, fineGridH, level);
 
+  // TODO(Dominic): Remove
+  #ifdef Parallel
+    return;
+  #endif
+
   // TODO(Dominic): AMR + MPI
   // 1. Get metadata,
   // 2. Set AugmentationRequest if neighbour is of type Ancestor
@@ -340,12 +365,7 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
   if (vertex.isBoundary()) return;
 #endif
   // TODO (Dominic): Add to docu: mergeWithNeighbour(..) happens before vertex creation events.
-  // but is an existing one.
-  // Only interior vertices are sending, no explicit check required.
   if (vertex.isInside()) {
-    assertion1(vertex.isInside(),vertex.toString());
-    assertion1(neighbour.isInside(),neighbour.toString());
-
     tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
           vertex.getCellDescriptionsIndex();
 
@@ -408,11 +428,19 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
                             typeAsInt==static_cast<int>(exahype::records::ADERDGCellDescription::Ancestor)) {
                           p.setRefinementEvent(exahype::records::ADERDGCellDescription::AugmentingRequested);
                         }
-                        if (typeAsInt!=static_cast<int>(exahype::records::ADERDGCellDescription::Cell)) {
-                          p.setType(exahype::records::ADERDGCellDescription::EmptyDescendant);
-                          // TODO(Dominic): Change type here; let the enterCell method do the memory allocation
-                          // exahype::Cell::ensureNoUnnecessaryMemoryIsAllocated(p);
-                          // Idea: Change the type here but let enterCell overwrite it
+                        /**
+                         * Method mergeWithNeighbour touches the cell the first time. We set the helper cell type
+                         * to EmptyDescendant/EmptyAncestor, and overwrite it if the MPI neighbour is a compute cell.
+                         *
+                         * Currently the face data is received 2^{d-1} times per face. This
+                         * has no influence here.
+                         *
+                         * See also enterCell(...).
+                         * TODO(Dominic): Add docu.
+                         */
+                        p.setType(exahype::records::ADERDGCellDescription::EmptyDescendant);
+                        if (typeAsInt==static_cast<int>(exahype::records::ADERDGCellDescription::Cell)) {
+                          p.setType(exahype::records::ADERDGCellDescription::Descendant);
                         }
                         break;
                       case exahype::records::ADERDGCellDescription::EmptyDescendant:
@@ -422,22 +450,27 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
                         }
                         if (typeAsInt==static_cast<int>(exahype::records::ADERDGCellDescription::Cell)) {
                           p.setType(exahype::records::ADERDGCellDescription::Descendant);
-                          // TODO(Dominic): Change type here; let the enterCell method do the memory allocation
-                          // exahype::Cell::ensureNecessaryMemoryIsAllocated(p);
                         }
                         break;
                       case exahype::records::ADERDGCellDescription::Ancestor:
-                        if (typeAsInt!=static_cast<int>(exahype::records::ADERDGCellDescription::Cell)) {
-                          p.setType(exahype::records::ADERDGCellDescription::EmptyAncestor);
-                          // TODO(Dominic): Change type here; let the enterCell method do the memory allocation
-                          // exahype::Cell::ensureNoUnnecessaryMemoryIsAllocated(p);
+                        /**
+                         * Method mergeWithNeighbour touches the cell the first time. We set the helper cell type
+                         * to EmptyDescendant/EmptyAncestor, and overwrite it if the MPI neighbour is a compute cell.
+                         *
+                         * Currently the face data is received 2^{d-1} times per face. This
+                         * has no influence here.
+                         *
+                         * See also enterCell(...).
+                         * TODO(Dominic): Add docu.
+                         */
+                        p.setType(exahype::records::ADERDGCellDescription::EmptyAncestor);
+                        if (typeAsInt==static_cast<int>(exahype::records::ADERDGCellDescription::Cell)) {
+                          p.setType(exahype::records::ADERDGCellDescription::Ancestor);
                         }
                         break;
                       case exahype::records::ADERDGCellDescription::EmptyAncestor:
                         if (typeAsInt==static_cast<int>(exahype::records::ADERDGCellDescription::Cell)) {
                           p.setType(exahype::records::ADERDGCellDescription::Ancestor);
-                          // TODO(Dominic): Change type here; let the enterCell method do the memory allocation
-                          // exahype::Cell::ensureNecessaryMemoryIsAllocated(p);
                         }
                         break;
                       default:
