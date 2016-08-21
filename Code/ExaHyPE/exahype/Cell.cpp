@@ -103,7 +103,7 @@ void exahype::Cell::addNewCellDescription(
                  solvers::RegisteredSolvers.size(),
              solverNumber, exahype::solvers::RegisteredSolvers.size());
 
-  const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
+  //const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
   assertion(solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes);
 
   exahype::records::FiniteVolumesCellDescription newCellDescription;
@@ -124,6 +124,7 @@ void exahype::Cell::addNewCellDescription(
   FiniteVolumesCellDescriptionHeap::getInstance()
       .getData(_cellData.getCellDescriptionsIndex())
       .push_back(newCellDescription);
+
 }
 
 
@@ -156,7 +157,7 @@ void exahype::Cell::addNewCellDescription(
                  solvers::RegisteredSolvers.size(),
              solverNumber, exahype::solvers::RegisteredSolvers.size());
 
-  const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
+  //const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
   assertion(solver->getType()==exahype::solvers::Solver::Type::ADER_DG);
 
   exahype::records::ADERDGCellDescription newCellDescription;
@@ -185,6 +186,10 @@ void exahype::Cell::addNewCellDescription(
   newCellDescription.setUpdate(-1);
   newCellDescription.setExtrapolatedPredictor(-1);
   newCellDescription.setFluctuation(-1);
+
+  // Limiter meta data (oscillations identificator)
+  newCellDescription.setSolutionMin(std::numeric_limits<double>::min());
+  newCellDescription.setSolutionMax(std::numeric_limits<double>::max());
 
   ADERDGCellDescriptionHeap::getInstance()
       .getData(_cellData.getCellDescriptionsIndex())
@@ -490,18 +495,18 @@ void exahype::Cell::validateNoNansInADERDGSolver(
   #endif
   * (solver->getNumberOfParameters()+solver->getNumberOfVariables());
 
-  double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
+  //double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
   for (int i=0; i<numberOfVolumeEntries; i++)
     assertionEquals5(luh[i], luh[i],
                    fineGridVerticesEnumerator.toString(),
                    p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
 
-  double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
-  double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
-  double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
-  double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
-  double* lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
-  double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
+  //double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
+  //double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
+  //double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
+  //double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
+  //double* lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
+  //double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
 
   for (int i=0; i<numberOfVolumeEntries; i++) {
@@ -668,3 +673,30 @@ double exahype::Cell::getGlobalWorkload() const {
   return _cellData.getGlobalWorkload();
 }
 #endif
+
+
+bool exahype::Cell::setSolutionMinMaxAndAnalyseValidity( double min, double max, int solverIndex ) {
+  assertion( ADERDGCellDescriptionHeap::getInstance().isValidIndex( getCellDescriptionsIndex() ) ) ;
+  assertion( ADERDGCellDescriptionHeap::getInstance().getData( getCellDescriptionsIndex() ).size()>solverIndex ) ;
+  assertion( max>=min );
+
+  exahype::records::ADERDGCellDescription& cellDescription = ADERDGCellDescriptionHeap::getInstance().getData(getCellDescriptionsIndex())[solverIndex];
+
+  double cellMinimum = std::numeric_limits<double>::max();
+  double cellMaximum = std::numeric_limits<double>::min();
+
+  for (int faceNumber = 0; faceNumber<DIMENSIONS_TIMES_TWO; faceNumber++ ) {
+    cellMinimum = std::min(cellMinimum,cellDescription.getSolutionMin(faceNumber));
+    cellMaximum = std::max(cellMaximum,cellDescription.getSolutionMax(faceNumber));
+  }
+
+  bool isValidNewCombination = tarch::la::greater(min,cellMinimum)
+                             & tarch::la::greater(cellMaximum,max);
+
+  for (int faceNumber = 0; faceNumber<DIMENSIONS_TIMES_TWO; faceNumber++ ) {
+    cellDescription.setSolutionMin(min);
+    cellDescription.setSolutionMax(max);
+  }
+
+  return isValidNewCombination;
+}

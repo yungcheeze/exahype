@@ -246,8 +246,6 @@ class exahype::records::ADERDGCellDescription {
   parallelise persistent RefinementEvent refinementEvent;
   ///@}
 
-  parallelise persistent double volumeSolutionMin;
-  parallelise persistent double volumeSolutionMax;
-  parallelise persistent double faceSolutionMin[DIMENSIONS_TIMES_TWO];
-  parallelise persistent double faceSolutionMax[DIMENSIONS_TIMES_TWO];
+  parallelise persistent double solutionMin[DIMENSIONS_TIMES_TWO];
+  parallelise persistent double solutionMax[DIMENSIONS_TIMES_TWO];
 };
