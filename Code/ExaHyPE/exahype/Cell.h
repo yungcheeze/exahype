@@ -45,6 +45,7 @@ namespace exahype {
   /**
    * We abuse this heap to send and receive metadata from one MPI rank to the other.
    * We never actually store data on this heap.
+   * TODO(Dominic): Change to RLEIntegerHeap that compresses data.
    */
   typedef peano::heap::PlainIntegerHeap  MetadataHeap;
 }
@@ -106,7 +107,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   Cell(const Base::PersistentCell& argument);
 
   /**
-   * Allocates a vector for the
+   * TODO(Dominic): Add docu.
    */
   void initialiseStorageOnHeap();
 
@@ -117,6 +118,9 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    */
   int getCellDescriptionsIndex() const;
 
+  /**
+   * TODO(Dominic): Add docu.
+   */
   void setCellDescriptionsIndex(int cellDescriptionsIndex);
 
   /**
