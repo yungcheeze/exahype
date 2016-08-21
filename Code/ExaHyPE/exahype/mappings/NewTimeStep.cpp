@@ -119,7 +119,6 @@ void exahype::mappings::NewTimeStep::enterCell(
       p.setRiemannSolvePerformed(riemannSolvePerformed);
 
       if(p.getType()==exahype::records::ADERDGCellDescription::Cell) {
-        assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
         solver->synchroniseTimeStepping(p);
       }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()

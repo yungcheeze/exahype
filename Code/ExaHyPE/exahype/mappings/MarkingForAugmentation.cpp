@@ -34,6 +34,14 @@ exahype::mappings::MarkingForAugmentation::communicationSpecification() {
 }
 
 peano::MappingSpecification
+exahype::mappings::MarkingForAugmentation::enterCellSpecification() {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::AvoidFineGridRaces);
+}
+
+// All specs below are nop.
+peano::MappingSpecification
 exahype::mappings::MarkingForAugmentation::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
@@ -41,12 +49,6 @@ exahype::mappings::MarkingForAugmentation::touchVertexLastTimeSpecification() {
 }
 peano::MappingSpecification
 exahype::mappings::MarkingForAugmentation::touchVertexFirstTimeSpecification() {
-  return peano::MappingSpecification(
-      peano::MappingSpecification::WholeTree,
-      peano::MappingSpecification::AvoidFineGridRaces);
-}
-peano::MappingSpecification
-exahype::mappings::MarkingForAugmentation::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::AvoidFineGridRaces);
@@ -88,6 +90,8 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
 
   if (fineGridCell.isInitialised() &&
       multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
+          VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices)) &&
+          multiscalelinkedcell::adjacencyInformationIsConsistent(
           VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices))
   ) {
     const tarch::la::Vector<THREE_POWER_D, int>

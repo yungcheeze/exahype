@@ -38,6 +38,11 @@ class NewTimeStep;
  * with the solver ones. It further is necessary to reset the Riemann
  * solve flags on compute and helper cells.
  *
+ * @developers:
+ * An adapter does not need to include this mapping
+ * if it calls the RiemannSolver mapping functions before the other ones.
+ * TODO(Dominic): Rename this mapping.
+ *
  * @author Dominic Etienne Charrier
  */
 class exahype::mappings::NewTimeStep {

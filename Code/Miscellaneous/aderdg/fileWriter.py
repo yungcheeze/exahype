@@ -60,7 +60,7 @@ def writeVectorLookupTableInitToFile(out, indent, vector, n, vectorname):
     text = ""
     for l in range(0,n):
         value = vector[l]
-        line = "%s%s[%d] = %.12e;\n" % (indent,vectorname,l,value)
+        line = "%s%s[%d] = %.15e;\n" % (indent,vectorname,l,value)
         text += line
     out.write(text)
 
