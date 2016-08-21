@@ -131,8 +131,8 @@ void exahype::Cell::addNewCellDescription(
                  solvers::RegisteredSolvers.size(),
              solverNumber, exahype::solvers::RegisteredSolvers.size());
 
-  //const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
-  assertion(solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes);
+//  const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
+//  assertion(solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes);
 
   exahype::records::FiniteVolumesCellDescription newCellDescription;
   newCellDescription.setSolverNumber(solverNumber);
@@ -185,8 +185,8 @@ void exahype::Cell::addNewCellDescription(
                  solvers::RegisteredSolvers.size(),
              solverNumber, exahype::solvers::RegisteredSolvers.size());
 
-  //const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
-  assertion(solver->getType()==exahype::solvers::Solver::Type::ADER_DG);
+//  const solvers::Solver* solver = solvers::RegisteredSolvers[solverNumber];
+//  assertion(solver->getType()==exahype::solvers::Solver::Type::ADER_DG);
 
   exahype::records::ADERDGCellDescription newCellDescription;
   newCellDescription.setSolverNumber(solverNumber);
@@ -454,7 +454,34 @@ void exahype::Cell::validateNoNansInADERDGSolver(
   const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
   const std::string&                   methodTraceOfCaller
 ) {
+  int unknownsPerCell              = 0;
+  int fluxUnknownsPerCell          = 0;
+  int spaceTimeUnknownsPerCell     = 0;
+  int spaceTimeFluxUnknownsPerCell = 0;
+  int unknownsPerCellBoundary      = 0;
+
+#if defined(Debug) || defined(Asserts)
   auto& p = fineGridCell.getADERDGCellDescription(number);
+  double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
+  double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
+  double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
+  double* lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
+  double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
+  double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
+  double* lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
+  double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
+
+  exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+      exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
+  unknownsPerCell              = solver->getUnknownsPerCell();
+  fluxUnknownsPerCell          = solver->getFluxUnknownsPerCell();
+  spaceTimeUnknownsPerCell     = solver->getSpaceTimeUnknownsPerCell();
+  spaceTimeFluxUnknownsPerCell = solver->getSpaceTimeFluxUnknownsPerCell();
+  unknownsPerCellBoundary      = solver->getUnknownsPerCellBoundary();
+  #endif
+
+
+  assertion1(solver->getType()==exahype::solvers::Solver::Type::ADER_DG,p.toString());
 
   assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimePredictor()),p.toString());
   assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimeVolumeFlux()),p.toString());
@@ -469,55 +496,36 @@ void exahype::Cell::validateNoNansInADERDGSolver(
                    fineGridVerticesEnumerator.toString(),
                    p.toString(),fineGridCell.toString(),methodTraceOfCaller);
 
-  exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
-      exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
-  #ifdef Dim2
-  const int numberOfVolumeEntries = solver->getNodesPerCoordinateAxis() * solver->getNodesPerCoordinateAxis()
-  #else
-  const int numberOfVolumeEntries = solver->getNodesPerCoordinateAxis() * solver->getNodesPerCoordinateAxis() * solver->getNodesPerCoordinateAxis()
-  #endif
-  * (solver->getNumberOfParameters()+solver->getNumberOfVariables());
+  for (int i=0; i<spaceTimeUnknownsPerCell; i++) {
+    assertion5(std::isfinite(lQi[i]), fineGridVerticesEnumerator.toString(),
+            p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
-  //double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
-  for (int i=0; i<numberOfVolumeEntries; i++)
-    assertionEquals5(luh[i], luh[i],
-                   fineGridVerticesEnumerator.toString(),
-                   p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+  for (int i=0; i<spaceTimeFluxUnknownsPerCell; i++) {
+    assertion5(std::isfinite(lFi[i]), fineGridVerticesEnumerator.toString(),
+        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
-  //double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
-  //double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
-  //double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
-  //double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
-  //double* lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
-  //double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
+  for (int i=0; i<unknownsPerCell; i++) {
+    assertion5(std::isfinite(luh[i]), fineGridVerticesEnumerator.toString(),
+        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+    assertion5(std::isfinite(lduh[i]), fineGridVerticesEnumerator.toString(),
+        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+    assertion5(std::isfinite(lQhi[i]), fineGridVerticesEnumerator.toString(),
+        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
+  for (int i=0; i<fluxUnknownsPerCell; i++) {
+    assertion5(std::isfinite(lFhi[i]), fineGridVerticesEnumerator.toString(),
+        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
-  for (int i=0; i<numberOfVolumeEntries; i++) {
-    assertionEquals11(lQi[i], lQi[i],
-     fineGridVerticesEnumerator.toString(),
-     p.toString(),fineGridCell.toString(),methodTraceOfCaller,i,
-     (long int)(lQi), (long int)(lFi), (long int)(lQhi), (long int)(lFhi), (long int)(lQhbnd), (long int)(lFhbnd) );
-  }
-
-  assertionEquals4(lFi[0], lFi[0],
-                   fineGridVerticesEnumerator.toString(),
-                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
-
-  assertionEquals4(lQhi[0], lQhi[0],
-                   fineGridVerticesEnumerator.toString(),
-                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
-
-  assertionEquals4(lFhi[0], lFhi[0],
-                   fineGridVerticesEnumerator.toString(),
-                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
-
-  assertionEquals4(lQhbnd[0], lQhbnd[0],
-                   fineGridVerticesEnumerator.toString(),
-                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
-
-  assertionEquals4(lFhbnd[0], lFhbnd[0],
-                   fineGridVerticesEnumerator.toString(),
-                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
+  for (int i=0; i<unknownsPerCellBoundary; i++) {
+    assertion5(std::isfinite(lQhbnd[i]), fineGridVerticesEnumerator.toString(),
+        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+    assertion5(std::isfinite(lFhbnd[i]), fineGridVerticesEnumerator.toString(),
+        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 }
 
 
@@ -708,7 +716,7 @@ double exahype::Cell::getGlobalWorkload() const {
 
 bool exahype::Cell::setSolutionMinMaxAndAnalyseValidity( double min, double max, int solverIndex ) {
   assertion( ADERDGCellDescriptionHeap::getInstance().isValidIndex( getCellDescriptionsIndex() ) ) ;
-  assertion( ADERDGCellDescriptionHeap::getInstance().getData( getCellDescriptionsIndex() ).size()>solverIndex ) ;
+  assertion( ADERDGCellDescriptionHeap::getInstance().getData( getCellDescriptionsIndex() ).size()>static_cast<unsigned int>(solverIndex) ) ;
   assertion( max>=min );
 
   exahype::records::ADERDGCellDescription& cellDescription = ADERDGCellDescriptionHeap::getInstance().getData(getCellDescriptionsIndex())[solverIndex];
@@ -771,7 +779,7 @@ void exahype::Cell::mergeSolutionMinMaxOnFace(
   int ADERDGSolverNumber
 ) {
   assertion( ADERDGCellDescriptionHeap::getInstance().isValidIndex( cellDescriptionsIndex ) ) ;
-  assertion( ADERDGCellDescriptionHeap::getInstance().getData( cellDescriptionsIndex ).size()>ADERDGSolverNumber ) ;
+  assertion( ADERDGCellDescriptionHeap::getInstance().getData( cellDescriptionsIndex ).size()>static_cast<unsigned int>(ADERDGSolverNumber) ) ;
   assertion( max>=min );
 
   records::ADERDGCellDescription& cellDescription = ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndex)[ADERDGSolverNumber];
