@@ -332,21 +332,25 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
 
   initSolverTimeStamps();
   createGrid(repository);
-
-#if defined(Dim2) && defined(Asserts)
-  repository.switchToPlotAugmentedAMRGrid();
-  repository.iterate();
-#endif
-
   /*
    * Set ADER-DG corrector time stamp and finite volumes time stamp.
    * Compute ADER-DG corrector time step size implicitly and finite volumes time step size.
    * (Implicitly means here that we set the predictor time step size but after the next newTimeStep(...)
    * the corrector time step size is set as this predictor time step size.)
+   *
+   * Note that it is important that we run SolutionAdjustmentAnd
+   * GlobalTimeStepComputation directly after the grid setup
+   * since we receive here the metadata
+   * that was sent in the last iteration of the grid setup.
    */
   initSolverTimeStamps();
   repository.switchToSolutionAdjustmentAndGlobalTimeStepComputation();
   repository.iterate();
+
+#if defined(Dim2) && defined(Asserts)
+  repository.switchToPlotAugmentedAMRGrid();
+  repository.iterate();
+#endif
 
   /*
    * Set the time stamps of the solvers to the initial value again.
