@@ -96,7 +96,7 @@ bool multiscalelinkedcell::adjacencyInformationIsConsistent(
             if (
                 tarch::la::equals(v1+a1,v2+a2) &&
                 tarch::la::countEqualEntries(a1+v1,centre) >= DIMENSIONS-1
-            ) { // Detect overlap of adjacency data. Only include centre and face neighbours of centre.
+            ) { // Detect overlap of adjacency data. Only include cell (i.e., centre) and face neighbours of cell.
               if( indices( v1Scalar * TWO_POWER_D + a1Scalar )!=indices( v2Scalar * TWO_POWER_D + a2Scalar ) ) {
                 return false;
               }
@@ -108,6 +108,25 @@ bool multiscalelinkedcell::adjacencyInformationIsConsistent(
   enddforx // v1
 
   return true;
+}
+
+bool multiscalelinkedcell::countRemoteAdjacencyIndicesAtFacesOfCell(
+    tarch::la::Vector<THREE_POWER_D,int> indicesAroundCell
+) {
+  int result = 0;
+
+  tarch::la::Vector<DIMENSIONS,int> centre(1); // Initialize center(1) as (1,1,...,1).
+  dfor3(a) // Loop over adjacency indices.
+    if (
+        indicesAroundCell(aScalar)==multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex
+        &&
+        tarch::la::countEqualEntries(a,centre) == DIMENSIONS-1
+    ) { // Only include face neighbours of cell.
+      ++result;
+    }
+  enddforx // a
+
+  return result;
 }
 
 tarch::la::Vector<THREE_POWER_D,int> multiscalelinkedcell::getIndicesAroundCell(
