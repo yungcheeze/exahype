@@ -132,21 +132,42 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
     logDebug("touchVertexFirstTime()","fineGridVertex.isBoundary(): " << fineGridVertex.isBoundary());
 
     solveRiemannProblemAtInterface(
-        adjacentCellDescriptionsIndices[cellIndicesLeft[i]],
-        adjacentCellDescriptionsIndices[cellIndicesRight[i]],
-        EXAHYPE_FACE_RIGHT, EXAHYPE_FACE_LEFT, 0);
+      adjacentCellDescriptionsIndices[cellIndicesLeft[i]],
+      adjacentCellDescriptionsIndices[cellIndicesRight[i]],
+      EXAHYPE_FACE_RIGHT, EXAHYPE_FACE_LEFT,
+      0);
+
+    Cell::mergeSolutionMinMaxOnFace(
+      adjacentCellDescriptionsIndices[cellIndicesLeft[i]],
+      adjacentCellDescriptionsIndices[cellIndicesRight[i]],
+      EXAHYPE_FACE_RIGHT, EXAHYPE_FACE_LEFT
+    );
 
     solveRiemannProblemAtInterface(
-        adjacentCellDescriptionsIndices[cellIndicesFront[i]],
-        adjacentCellDescriptionsIndices[cellIndicesBack[i]],
-        EXAHYPE_FACE_BACK, EXAHYPE_FACE_FRONT, 1);
+      adjacentCellDescriptionsIndices[cellIndicesFront[i]],
+      adjacentCellDescriptionsIndices[cellIndicesBack[i]],
+      EXAHYPE_FACE_BACK, EXAHYPE_FACE_FRONT,
+      1);
 
-#if DIMENSIONS == 3
+    Cell::mergeSolutionMinMaxOnFace(
+      adjacentCellDescriptionsIndices[cellIndicesFront[i]],
+      adjacentCellDescriptionsIndices[cellIndicesBack[i]],
+      EXAHYPE_FACE_BACK, EXAHYPE_FACE_FRONT
+    );
+
+    #if DIMENSIONS == 3
     solveRiemannProblemAtInterface(
-        adjacentCellDescriptionsIndices[cellIndicesBottom[i]],
-        adjacentCellDescriptionsIndices[cellIndicesTop[i]],
-        EXAHYPE_FACE_TOP, EXAHYPE_FACE_BOTTOM, 2);
-#endif
+      adjacentCellDescriptionsIndices[cellIndicesBottom[i]],
+      adjacentCellDescriptionsIndices[cellIndicesTop[i]],
+      EXAHYPE_FACE_TOP, EXAHYPE_FACE_BOTTOM,
+      2);
+
+    Cell::mergeSolutionMinMaxOnFace(
+      adjacentCellDescriptionsIndices[cellIndicesBottom[i]],
+      adjacentCellDescriptionsIndices[cellIndicesTop[i]],
+      EXAHYPE_FACE_TOP, EXAHYPE_FACE_BOTTOM
+    );
+    #endif
   }
 
   logTraceOutWith1Argument("touchVertexFirstTime(...)", fineGridVertex);
@@ -478,14 +499,16 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
 
                 int receivedlQhbndIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
                 int receivedlFhbndIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
+                int receivedMinMax      = DataHeap::getInstance().createData(0, 2);
 
                 assertion(DataHeap::getInstance().getData(receivedlQhbndIndex).empty());
                 assertion(DataHeap::getInstance().getData(receivedlFhbndIndex).empty());
 
-                // @todo Reihenfolge dokumentieren! Auch umgedreht hier
                 DataHeap::getInstance().receiveData(receivedlFhbndIndex, fromRank, fineGridX, level,
                     peano::heap::MessageType::NeighbourCommunication);
                 DataHeap::getInstance().receiveData(receivedlQhbndIndex, fromRank, fineGridX, level,
+                    peano::heap::MessageType::NeighbourCommunication);
+                DataHeap::getInstance().receiveData(receivedMinMax,  fromRank, fineGridX, level,
                     peano::heap::MessageType::NeighbourCommunication);
 
                 int faceIndexForCell = -1;
@@ -519,13 +542,22 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
                                << ",vertex=" << vertex.toString());
 
                   solveRiemannProblemAtInterface(
-                      cellDescriptions[currentSolver], faceIndexForCell,
-                      normalOfExchangedFace, receivedlQhbndIndex,
+                      cellDescriptions[currentSolver],
+                      faceIndexForCell,
+                      normalOfExchangedFace,
+                      receivedlQhbndIndex,
                       receivedlFhbndIndex);
+
+                  Cell::mergeSolutionMinMaxOnFace(
+                      cellDescriptions[currentSolver],
+                      faceIndexForCell,
+                      DataHeap::getInstance().getData(receivedMinMax)[0],
+                      DataHeap::getInstance().getData(receivedMinMax)[1]);
                 }
 
                 DataHeap::getInstance().deleteData(receivedlQhbndIndex);
                 DataHeap::getInstance().deleteData(receivedlFhbndIndex);
+                DataHeap::getInstance().deleteData(receivedMinMax);
               }
             } else {
               assertionMsg(false, "Dominic, please implement");

@@ -176,8 +176,10 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
 
       for (int currentSolver = 0; currentSolver < static_cast<int>(cellDescriptions.size()); currentSolver++) {
         if (cellDescriptions[currentSolver].getType() == exahype::records::ADERDGCellDescription::Cell) {
+          #ifdef Asserts
           const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
           assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
+          #endif
 
           assertion(DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getExtrapolatedPredictor()));
           assertion(DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getFluctuation()));
@@ -207,6 +209,7 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
             DataHeap::HeapEntries lFhbnd = DataHeap::getInstance().receiveData(
                 fromRank, fineGridX, level,
                 peano::heap::MessageType::NeighbourCommunication);
+            DataHeap::getInstance().receiveData(fromRank, fineGridX, level, peano::heap::MessageType::NeighbourCommunication);
           }
         } else {
           assertionMsg(false, "Dominic, please implement");
