@@ -105,7 +105,8 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    * @param toRank The rank we want to send the message to.
    *
    * @developers:
-   * TODO(Dominic): Do not send metadata from all the vertices.
+   * TODO(Dominic): Do not receive metadata at all the 2^{d-1} vertices ajdacent to a face.
+   * TODO(Dominic): Consider joins.
    * TODO(Dominic): Potentially, there is still a bug if two neighbouring ranks are
    *                forking at the same time.
    */
@@ -139,9 +140,11 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    *                 in the vector returned by getAdjacentRemoteRanks().
    * @param fromRank The rank we want to send the message to.
    *
-   * TODO(Dominic): Do not receive metadata at all the vertices.
+   * TODO(Dominic): Do not receive metadata at all the 2^{d-1} vertices ajdacent to a face.
+   * TODO(Dominic): Consider joins.
    * TODO(Dominic): Potentially, there is still a bug if two neighbouring ranks are
    *                forking at the same time.
+   *
    */
   bool hasToReceiveMetadata(
       const exahype::State* state,
