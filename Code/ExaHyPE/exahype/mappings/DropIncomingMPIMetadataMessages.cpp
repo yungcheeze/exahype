@@ -101,9 +101,7 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithNeighbour(
                            fromRank, fineGridX, fineGridH, level);
 
 // TODO(Dominic): Remove
-#ifdef Parallel
   return;
-#endif
 
   // TODO(Dominic): AMR + MPI
   // 1. Get metadata,
@@ -149,7 +147,7 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithNeighbour(
         if (
             vertex.hasToReceiveMetadata(_state,src,dest,fromRank)
         ) {  // we are solely exchanging faces
-          logInfo("mergeWithNeighbour(...)","drop message.");
+          logDebug("mergeWithNeighbour(...)","drop message.");
 
           // After the grid setup, we still have to receive all
           // previously sent MPI messages in
