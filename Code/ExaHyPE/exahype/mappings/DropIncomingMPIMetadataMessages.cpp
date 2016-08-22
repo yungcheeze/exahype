@@ -127,14 +127,27 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithNeighbour(
         int destScalar = TWO_POWER_D - myDestScalar - 1;
         int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
+        assertion(
+            ((tarch::la::countEqualEntries(dest, src) == 1 &&
+            vertex.getAdjacentRanks()(srcScalar)    == fromRank &&
+            (vertex.getAdjacentRanks()(destScalar)  == tarch::parallel::Node::getInstance().getRank()))
+            &&
+            vertex.hasToReceiveMetadata(_state,src,dest,fromRank))
+            ||
+            (!(tarch::la::countEqualEntries(dest, src) == 1 &&
+            vertex.getAdjacentRanks()(srcScalar)    == fromRank &&
+            (vertex.getAdjacentRanks()(destScalar)  == tarch::parallel::Node::getInstance().getRank()))
+            &&
+            !vertex.hasToReceiveMetadata(_state,src,dest,fromRank))
+        );
+
         assertion1(!_state->isForkTriggeredForRank(vertex.getAdjacentRanks()(destScalar)), _state->toString());
         assertion1(!_state->isForkingRank(vertex.getAdjacentRanks()(destScalar)),          _state->toString());
         assertion1(!_state->isForkTriggeredForRank(vertex.getAdjacentRanks()(srcScalar)), _state->toString());
         assertion1(!_state->isForkingRank(vertex.getAdjacentRanks()(srcScalar)),          _state->toString());
 
-        if (tarch::la::countEqualEntries(dest, src) == 1 &&
-            vertex.getAdjacentRanks()(srcScalar)    == fromRank &&
-            vertex.getAdjacentRanks()(destScalar)   == tarch::parallel::Node::getInstance().getRank()
+        if (
+            vertex.hasToReceiveMetadata(_state,src,dest,fromRank)
         ) {  // we are solely exchanging faces
           logInfo("mergeWithNeighbour(...)","drop message.");
 

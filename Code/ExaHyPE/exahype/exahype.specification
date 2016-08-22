@@ -84,6 +84,17 @@ adapter:
   merge-with-user-defined-mapping: Augmentation              // (touchVertexLastTime,enterCell,serial)
   merge-with-user-defined-mapping: LoadBalancing
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)       
+
+adapter:
+  name: AugmentedAMRGridNoLoadBalancing
+  merge-with-user-defined-mapping: NewTimeStep        // (createInner/BoundaryVertex,enterCell,serial)
+  merge-with-user-defined-mapping: RegularMesh        // (createInner/BoundaryVertex,enterCell,serial)
+  merge-with-user-defined-mapping: MarkingForRefinement      // (enterCell,runconcurrently)
+  merge-with-user-defined-mapping: Refinement                // (touchVertexLastTime,enterCell,serial)
+  merge-with-user-defined-mapping: SolutionAdjustment        // (enterCell,runconcurrently)             
+  merge-with-user-defined-mapping: MarkingForAugmentation    // (enterCell,runconcurrently)
+  merge-with-user-defined-mapping: Augmentation              // (touchVertexLastTime,enterCell,serial)
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
   
 adapter:
   name: PlotAugmentedAMRGrid

@@ -14,6 +14,7 @@
 #include "peano/stacks/VertexSTDStack.h"
 
  #include "exahype/adapters/AugmentedAMRGrid.h" 
+ #include "exahype/adapters/AugmentedAMRGridNoLoadBalancing.h" 
  #include "exahype/adapters/PlotAugmentedAMRGrid.h" 
  #include "exahype/adapters/SolutionAdjustmentAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndPlotAndGlobalTimeStepComputation.h" 
