@@ -275,47 +275,9 @@ exahype::mappings::MarkingForAugmentation::augmentationCriterion(
   return AugmentationControl::Default;
 }
 
-void exahype::mappings::MarkingForAugmentation::createInnerVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::MarkingForAugmentation::createBoundaryVertex(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
-void exahype::mappings::MarkingForAugmentation::touchVertexFirstTime(
-    exahype::Vertex& fineGridVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
-  // do nothing
-}
-
 void exahype::mappings::MarkingForAugmentation::beginIteration(
     exahype::State& solverState) {
   _state = &solverState; // Pointer to rank's state.
-}
-
-void exahype::mappings::MarkingForAugmentation::endIteration(
-    exahype::State& solverState) {
-  // do nothing
 }
 
 #ifdef Parallel
@@ -325,6 +287,9 @@ void exahype::mappings::MarkingForAugmentation::prepareSendToNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   logTraceInWith5Arguments("prepareSendToNeighbour(...)", vertex,
                            toRank, x, h, level);
+
+  // TODO(Dominic): remove
+  return;
 
 
   #if !defined(PeriodicBC)
@@ -357,13 +322,19 @@ void exahype::mappings::MarkingForAugmentation::prepareSendToNeighbour(
 
       if (
         vertex.hasToSendMetadata(_state,src,dest,toRank)
-      ) { // we are solely exchanging faces
+      ) {
           const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
           // TODO(Dominic): Encountered situation where srcCellDescriptionsIndex > 0 but
           // index was not valid. I assume this happens if a fork was triggered. In this
           // case I sent out an empty message. Add to docu.
           if (!_state->isForkTriggeredForRank(vertex.getAdjacentRanks()(srcScalar)) &&
               ADERDGCellDescriptionHeap::getInstance().isValidIndex(srcCellDescriptionIndex)) {
+            logDebug("prepareSendToNeighbour(...)","[data] sent to rank "<<toRank<<", x:"<<
+                x.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
+                << vertex.getAdjacentRanks() <<
+                ", src forking: "
+                << _state->isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
+
             std::vector<peano::heap::records::IntegerHeapData> metadata =
                 exahype::Cell::encodeMetadata(srcCellDescriptionIndex);
 
@@ -407,6 +378,9 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
   logTraceInWith6Arguments("mergeWithNeighbour(...)", vertex, neighbour,
                            fromRank, fineGridX, fineGridH, level);
+
+  // TODO(Dominic): remove
+  return;
 
   // TODO(Dominic): AMR + MPI
   // 1. Get metadata,
@@ -454,8 +428,8 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
 
         if (
           vertex.hasToReceiveMetadata(_state,src,dest,fromRank)
-        ) {  // we are solely exchanging faces
-          logInfo("mergeWithNeighbour(...)","[pre] rec. from rank "<<fromRank<<", x:"<<
+        ) {
+          logDebug("mergeWithNeighbour(...)","[pre] rec. from rank "<<fromRank<<", x:"<<
                                           fineGridX.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
                                           << vertex.getAdjacentRanks());
 
@@ -664,6 +638,39 @@ void exahype::mappings::MarkingForAugmentation::mergeWithWorker(
 }
 #endif
 
+void exahype::mappings::MarkingForAugmentation::createInnerVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::MarkingForAugmentation::createBoundaryVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::MarkingForAugmentation::touchVertexFirstTime(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
 void exahype::mappings::MarkingForAugmentation::createHangingVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -753,5 +760,10 @@ void exahype::mappings::MarkingForAugmentation::descend(
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell) {
+  // do nothing
+}
+
+void exahype::mappings::MarkingForAugmentation::endIteration(
+    exahype::State& solverState) {
   // do nothing
 }
