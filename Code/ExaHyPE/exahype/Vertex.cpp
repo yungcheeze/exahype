@@ -37,3 +37,33 @@ tarch::la::Vector<TWO_POWER_D, int>&
 exahype::Vertex::getCellDescriptionsIndex() {
   return _vertexData._persistentRecords._CellDescriptionsIndex;
 }
+
+bool exahype::Vertex::hasToSendMetadata(
+    const exahype::State* state,
+    const tarch::la::Vector<DIMENSIONS,int>& src,
+    const tarch::la::Vector<DIMENSIONS,int>& dest,
+    const int toRank) {
+  const int srcScalar  = peano::utils::dLinearisedWithoutLookup(src,2);
+  const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
+  const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
+
+  return tarch::la::countEqualEntries(dest, src)  == 1 &&
+         adjacentRanks(destScalar)   == toRank &&
+         (adjacentRanks(srcScalar)   == tarch::parallel::Node::getInstance().getRank() ||
+         state->isForkTriggeredForRank(adjacentRanks(srcScalar)));
+}
+
+bool exahype::Vertex::hasToReceiveMetadata(
+    const exahype::State* state,
+    const tarch::la::Vector<DIMENSIONS,int>& src,
+    const tarch::la::Vector<DIMENSIONS,int>& dest,
+    const int fromRank) {
+  const int srcScalar  = peano::utils::dLinearisedWithoutLookup(src,2);
+  const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
+  const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
+
+  return tarch::la::countEqualEntries(dest, src) == 1 &&
+      adjacentRanks(srcScalar)    == fromRank &&
+      (adjacentRanks(destScalar)  == tarch::parallel::Node::getInstance().getRank() ||
+       state->isForkingRank(adjacentRanks(destScalar)));
+}

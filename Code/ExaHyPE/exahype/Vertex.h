@@ -19,6 +19,8 @@
 #include "peano/grid/VertexEnumerator.h"
 #include "peano/utils/Globals.h"
 
+#include "exahype/State.h"
+
 namespace exahype {
 class Vertex;
 
@@ -29,11 +31,16 @@ class VertexOperations;
 }
 
 /**
- * Blueprint for grid vertex.
+ * A grid vertex.
  *
- * This file has originally been created by the PDT and may be manually extended
- *to
- * the needs of your application. We do not recommend to remove anything!
+ * Peano realises the neighbour communication between
+ * different MPI ranks via exchanging and merging vertices.
+ * It further offers routines in the mappings to prepare
+ * vertices before the data exchange and routines to merge
+ * the exchanged vertices. In these two routines, we plugin the
+ * sending and receiving of heap data.
+ * A fair share of the required heap data exchange functionality can
+ * thus be found in this class.
  */
 class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
  private:
@@ -73,6 +80,74 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    * Return the cell descriptions indices of the adjacent cells.
    */
   tarch::la::Vector<TWO_POWER_D, int>& getCellDescriptionsIndex();
+
+  /**
+   * Returns if this vertex needs to send a metadata message to a remote rank \p toRank.
+   *
+   * We need to send a message to remote rank \p roRank if both ranks
+   * share a face and the adjacent rank at position dest is the remote rank.
+   *
+   * It is further necessary that either holds:
+   *
+   * 1. The adjacent rank at position src in the vertex' adjacency information
+   *    equals the rank of the MPI process that calls
+   *    this function.
+   *
+   * 2. For the rank at position src in the vertex' adjacency information forking was triggered.
+   *    Then, the domain at position src will not be owned anymore by the rank of the MPI process that calls
+   *    this function in the next iteration. However, remote ranks still expect receiving data from it.
+   *
+   * @param state  The state tells us if a neighbouring rank is forking or if forking was triggered for this rank.
+   * @param src    A counter of a d-dimensional for-loop referring to the the message source
+   *               in the vector returned by getAdjacentRemoteRanks().
+   * @param dest   A counter of a d-dimensional for-loop referring to the message destination
+   *               in the vector returned by getAdjacentRemoteRanks().
+   * @param toRank The rank we want to send the message to.
+   *
+   * @developers:
+   * TODO(Dominic): Do not send metadata from all the vertices.
+   * TODO(Dominic): Potentially, there is still a bug if two neighbouring ranks are
+   *                forking at the same time.
+   */
+  bool hasToSendMetadata(
+      const exahype::State* state,
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest,
+      const int toRank);
+
+  /**
+   * Returns if this vertex needs to receive a metadata message from a remote rank \p fromRank.
+   *
+   * We need to receive a message from remote rank \p fromRank if both ranks
+   * share a face and the adjacent rank at position src is the remote rank.
+   *
+   * It is further necessary that either holds:
+   *
+   * 1. The adjacent rank at position dest in the vertex' adjacency information
+   *    equals the rank of the MPI process that calls
+   *    this function.
+   *
+   * 2. The rank at position dest in the vertex' adjacency information is now a forking rank.
+   *    Then, the domain at position dest was owned by the rank of the MPI process that calls
+   *    this function in the previous iteration and remote ranks have thus sent data to it.
+   *
+   *
+   * @param state    The state tells us if a neighbouring rank is forking or if forking was triggered for this rank.
+   * @param src      A counter of a d-dimensional for-loop referring to the the message source
+   *                 in the vector returned by getAdjacentRemoteRanks().
+   * @param dest     A counter of a d-dimensional for-loop referring to the message destination
+   *                 in the vector returned by getAdjacentRemoteRanks().
+   * @param fromRank The rank we want to send the message to.
+   *
+   * TODO(Dominic): Do not receive metadata at all the vertices.
+   * TODO(Dominic): Potentially, there is still a bug if two neighbouring ranks are
+   *                forking at the same time.
+   */
+  bool hasToReceiveMetadata(
+      const exahype::State* state,
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest,
+      const int fromRank);
 };
 
 #endif
