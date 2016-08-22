@@ -214,7 +214,10 @@ class exahype::mappings::RiemannSolver {
    * Solve Riemann problems on all interior faces that are adjacent
    * to this vertex and impose boundary conditions on faces that
    * belong to the boundary. This is done for all cell descriptions
-   * belonging to the cells thatg an interior face.
+   * belonging to the cells that are an interior face.
+   *
+   * The routine itself runs the loop over the faces. The actual
+   * functionality is outsourced to solveRiemannProblemAtInterface().
    *
    * The function ensures implicitly that interior faces
    * do not align with MPI boundaries. In this case, no operation
@@ -230,6 +233,15 @@ class exahype::mappings::RiemannSolver {
    * Thread-safety of this function is ensured by setting
    * RiemannSolver::touchVertexFirstTimeSpecification()
    * to peano::MappingSpecification::AvoidFineGridRaces.
+   *
+   * <h2>Limiter identification</h2>
+   * Each ADER-DG solver analyses the local min and max values within a cell.
+   * This information however is not stored in the cell but on the 2d faces
+   * of a cell. See Cell::setSolutionMinMaxAndAnalyseValidity() for details.
+   * The face information then in the subsequent step has to be merged which
+   * is done when we trigger the Riemann solve.
+   *
+   * @see Cell::mergeSolutionMinMaxOnFace()
    */
   void touchVertexFirstTime(
       exahype::Vertex& fineGridVertex,
@@ -278,6 +290,21 @@ class exahype::mappings::RiemannSolver {
    * - We identify incoming faces.
    * - We create (temporary) indices on the heap.
    * - We receive the data into these indices.
+   *
+   * As we always receive data in the iteration following the sends and as
+   * Peano inverts the traversal direction after each grid sweep, we have to
+   * invert the order in which data is received, too.
+   *
+   * <h2>Send</h2>
+   * Sending out data corresponds logically to a projection of cell data onto
+   * the faces. Therefore, I realise it within
+   * SpaceTimePredictor::prepareSendToNeighbour().
+   *
+   *
+   * <h2>Min max analysis</h2>
+   * The min/max analysis runs analogously. We do send out min and max from
+   * either side to the other rank and then merge min and max on both sides
+   * into the local data.
    */
   void mergeWithNeighbour(exahype::Vertex& vertex,
                           const exahype::Vertex& neighbour, int fromRank,

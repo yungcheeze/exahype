@@ -270,6 +270,13 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
                     << multiscalelinkedcell::indexToString(
                            adjacentADERDGCellDescriptionsIndices(destScalar))
                     << ", src=" << src << ", dest=" << dest);
+
+            std::vector<double> sentMinMax(2);
+            sentMinMax[0] = cellDescriptions[currentSolver].getSolutionMin(offsetInFaceArray);
+            sentMinMax[1] = cellDescriptions[currentSolver].getSolutionMax(offsetInFaceArray);
+
+            DataHeap::getInstance().sendData(
+                sentMinMax, toRank, x, level, peano::heap::MessageType::NeighbourCommunication);
             DataHeap::getInstance().sendData(
                 lQhbnd, numberOfFaceDof, toRank, x, level,
                 peano::heap::MessageType::NeighbourCommunication);

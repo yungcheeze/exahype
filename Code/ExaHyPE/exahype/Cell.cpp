@@ -297,8 +297,10 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCel
 }
 
 void exahype::Cell::ensureNoUnnecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription) {
+  #ifdef Asserts
   const solvers::Solver* solver = solvers::RegisteredSolvers[cellDescription.getSolverNumber()];
   assertion1(solver->getType()==exahype::solvers::Solver::Type::ADER_DG,cellDescription.toString());
+  #endif
 
   if (DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
     switch (cellDescription.getType()) {
@@ -747,42 +749,40 @@ void exahype::Cell::mergeSolutionMinMaxOnFace(
   const int faceIndexForLeftCell,
   const int faceIndexForRightCell
 ) {
-  assertion( ADERDGCellDescriptionHeap::getInstance().isValidIndex( cellDescriptionsIndexOfLeftCell ) ) ;
-  assertion( ADERDGCellDescriptionHeap::getInstance().isValidIndex( cellDescriptionsIndexOfRightCell ) ) ;
+  if (
+    ADERDGCellDescriptionHeap::getInstance().isValidIndex( cellDescriptionsIndexOfLeftCell )
+    &&
+    ADERDGCellDescriptionHeap::getInstance().isValidIndex( cellDescriptionsIndexOfRightCell )
+  ) {
+    for (auto& leftCellDescription: ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndexOfLeftCell))
+    for (auto& rightCellDescription: ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndexOfRightCell)) {
+      if (
+        leftCellDescription.getType() == exahype::records::ADERDGCellDescription::Cell
+        &&
+        rightCellDescription.getType() == exahype::records::ADERDGCellDescription::Cell
+      ) {
+        double min = std::min( leftCellDescription.getSolutionMin(faceIndexForLeftCell), rightCellDescription.getSolutionMin(faceIndexForRightCell) );
+        double max = std::max( leftCellDescription.getSolutionMax(faceIndexForLeftCell), rightCellDescription.getSolutionMax(faceIndexForRightCell) );
 
-  for (auto& leftCellDescription: ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndexOfLeftCell))
-  for (auto& rightCellDescription: ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndexOfRightCell)) {
-    if (
-      leftCellDescription.getType() == exahype::records::ADERDGCellDescription::Cell
-      &&
-      rightCellDescription.getType() == exahype::records::ADERDGCellDescription::Cell
-    ) {
-      double min = std::min( leftCellDescription.getSolutionMin(faceIndexForLeftCell), rightCellDescription.getSolutionMin(faceIndexForRightCell) );
-      double max = std::max( leftCellDescription.getSolutionMax(faceIndexForLeftCell), rightCellDescription.getSolutionMax(faceIndexForRightCell) );
-
-      leftCellDescription.setSolutionMin(faceIndexForLeftCell,min);
-      rightCellDescription.setSolutionMin(faceIndexForRightCell,min);
-      leftCellDescription.setSolutionMax(faceIndexForLeftCell,max);
-      rightCellDescription.setSolutionMax(faceIndexForRightCell,max);
-    }
-    else {
-      assertionMsg( false, "Dominic, please implement" );
+        leftCellDescription.setSolutionMin(faceIndexForLeftCell,min);
+        rightCellDescription.setSolutionMin(faceIndexForRightCell,min);
+        leftCellDescription.setSolutionMax(faceIndexForLeftCell,max);
+        rightCellDescription.setSolutionMax(faceIndexForRightCell,max);
+      }
+      else {
+        assertionMsg( false, "Dominic, please implement" );
+      }
     }
   }
 }
 
 
 void exahype::Cell::mergeSolutionMinMaxOnFace(
-  const int cellDescriptionsIndex,
-  double min, double max,
-  int faceNumber,
-  int ADERDGSolverNumber
+  records::ADERDGCellDescription&  cellDescription,
+  int                              faceNumber,
+  double min, double max
 ) {
-  assertion( ADERDGCellDescriptionHeap::getInstance().isValidIndex( cellDescriptionsIndex ) ) ;
-  assertion( ADERDGCellDescriptionHeap::getInstance().getData( cellDescriptionsIndex ).size()>static_cast<unsigned int>(ADERDGSolverNumber) ) ;
   assertion( max>=min );
-
-  records::ADERDGCellDescription& cellDescription = ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndex)[ADERDGSolverNumber];
 
   if (cellDescription.getType() == exahype::records::ADERDGCellDescription::Cell) {
     cellDescription.setSolutionMin( faceNumber, std::min( cellDescription.getSolutionMin(faceNumber),min ) );
