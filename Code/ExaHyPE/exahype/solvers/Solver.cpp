@@ -119,3 +119,14 @@ double exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers() {
 
   return result;
 }
+
+
+double exahype::solvers::Solver::getFinestMaximumMeshSizeOfAllSolvers() {
+  double result = std::numeric_limits<double>::min();
+
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    result = std::max( result, p->_maximumMeshSize );
+  }
+
+  return result;
+}
