@@ -176,6 +176,12 @@ class exahype::runners::Runner {
    * a slight generalisation. See Peano guidebook.
    */
   void createGrid(exahype::repositories::Repository& repository);
+
+  /**
+   * Run through all the solvers and identify the coarsest grid level in the tree
+   * that will be populated by a solver.
+   */
+  int getCoarsestGridLevelOfAllSolvers() const;
  public:
   explicit Runner(const Parser& parser);
   virtual ~Runner();
