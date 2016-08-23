@@ -13,6 +13,8 @@ void getTestData(double* &luh, int& numberOfVariable, int& basisSize) {
   }
 }
 
+
+/**
 int main() {
   double* luh;
   int numberOfVariable, basisSize;
@@ -50,3 +52,4 @@ int main() {
   
   return 0;
 }
+*/
