@@ -108,3 +108,25 @@ bool exahype::solvers::Solver::allSolversUseTimeSteppingScheme(solvers::Solver::
 
   return result;
 }
+
+
+double exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers() {
+  double result = std::numeric_limits<double>::max();
+
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    result = std::min( result, p->_maximumMeshSize );
+  }
+
+  return result;
+}
+
+
+double exahype::solvers::Solver::getFinestMaximumMeshSizeOfAllSolvers() {
+  double result = std::numeric_limits<double>::min();
+
+  for (const auto& p : exahype::solvers::RegisteredSolvers) {
+    result = std::max( result, p->_maximumMeshSize );
+  }
+
+  return result;
+}
