@@ -38,6 +38,7 @@ exahype::Vertex::getCellDescriptionsIndex() {
   return _vertexData._persistentRecords._CellDescriptionsIndex;
 }
 
+#ifdef Parallel
 bool exahype::Vertex::hasToSendMetadata(
     const exahype::State* state,
     const tarch::la::Vector<DIMENSIONS,int>& src,
@@ -67,3 +68,4 @@ bool exahype::Vertex::hasToReceiveMetadata(
       (adjacentRanks(destScalar)  == tarch::parallel::Node::getInstance().getRank() ||
        state->isForkingRank(adjacentRanks(destScalar)));
 }
+#endif

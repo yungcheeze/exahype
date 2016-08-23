@@ -81,6 +81,8 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    */
   tarch::la::Vector<TWO_POWER_D, int>& getCellDescriptionsIndex();
 
+
+#ifdef Parallel
   /**
    * Returns if this vertex needs to send a metadata message to a remote rank \p toRank.
    *
@@ -151,6 +153,7 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest,
       const int fromRank);
+#endif
 };
 
 #endif
