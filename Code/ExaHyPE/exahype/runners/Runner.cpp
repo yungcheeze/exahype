@@ -95,13 +95,13 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
     if ( configuration.find( "greedy" )!=std::string::npos ) {
       logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins (mpibalancing/GreedyBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-          new mpibalancing::GreedyBalancing(1,3)
+          new mpibalancing::GreedyBalancing(getCoarsestGridLevelOfAllSolvers(),getCoarsestGridLevelOfAllSolvers())
       );
     }
     else if ( configuration.find( "hotspot" )!=std::string::npos ) {
       logInfo("initDistributedMemoryConfiguration()", "use global hotspot elimination without joins (mpibalancing/StaticBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-          new mpibalancing::HotspotBalancing(false)
+          new mpibalancing::HotspotBalancing(false,getCoarsestGridLevelOfAllSolvers())
       );
     }
     else {
@@ -206,6 +206,22 @@ void exahype::runners::Runner::shutdownSharedMemoryConfiguration() {
 }
 
 
+int exahype::runners::Runner::getCoarsestGridLevelOfAllSolvers() const {
+  double boundingBox = _parser.getBoundingBoxSize()(0);
+  double hMax        = exahype::solvers::Solver::getCoarsestMeshSizeOfAllSolvers();
+
+  int    result      = 1;
+  double currenthMax = std::numeric_limits<double>::max();
+  while (currenthMax>hMax) {
+    currenthMax = boundingBox / threePowI(result);
+    result++;
+  }
+
+  logDebug( "getCoarsestGridLevelOfAllSolvers()", "regular grid depth of " << result << " creates grid with h_max=" << currenthMax );
+  return result;
+}
+
+
 exahype::repositories::Repository* exahype::runners::Runner::createRepository() const {
   // Geometry is static as we need it survive the whole simulation time.
   static peano::geometry::Hexahedron geometry(
@@ -216,13 +232,18 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
       "run(...)",
       "create computational domain at " << _parser.getOffset() <<
       " of width/size " << _parser.getDomainSize() <<
-      ". bounding box has size " << _parser.getBoundingBoxSize() );
-
+      ". bounding box has size " << _parser.getBoundingBoxSize() <<
+      ". grid regular up to level " << getCoarsestGridLevelOfAllSolvers() << " (level 1 is coarsest available cell in tree)" );
 #ifdef Parallel
+  const double boundingBoxScaling = static_cast<double>(getCoarsestGridLevelOfAllSolvers()) / (static_cast<double>(getCoarsestGridLevelOfAllSolvers())-2);
+  const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
+  logInfo(
+      "run(...)",
+      "increase domain artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
       geometry,
-      _parser.getBoundingBoxSize()*9.0/7.0,
-      _parser.getOffset()-1.0/7.0*_parser.getBoundingBoxSize()
+      _parser.getBoundingBoxSize()*boundingBoxScaling,
+      _parser.getOffset()-boundingBoxShift*_parser.getBoundingBoxSize()
   );
 #else
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
