@@ -237,13 +237,16 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
 #ifdef Parallel
   const double boundingBoxScaling = static_cast<double>(getCoarsestGridLevelOfAllSolvers()) / (static_cast<double>(getCoarsestGridLevelOfAllSolvers())-2);
   const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
+  assertion1(boundingBoxScaling>=1.0,boundingBoxShift);
+  assertion1(boundingBoxShift<=0.,boundingBoxShift);
+
   logInfo(
       "run(...)",
       "increase domain artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
       geometry,
       _parser.getBoundingBoxSize()*boundingBoxScaling,
-      _parser.getOffset()-boundingBoxShift*_parser.getBoundingBoxSize()
+      _parser.getOffset()+boundingBoxShift*_parser.getBoundingBoxSize()
   );
 #else
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
@@ -335,7 +338,7 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
 #endif
   }
 
-  logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
+  logWarning("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
 
   if (tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0) {
     logWarning( "createGrid(Repository)", "there are still " << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes() << " ranks idle" )
@@ -385,81 +388,81 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    */
   initSolverTimeStamps();
 
-  /*
-   * Compute current first predictor based on current time step size.
-   * Set current time step size as old time step size of next iteration.
-   * Compute the current time step size of the next iteration.
-   */
-  bool plot = exahype::plotters::isAPlotterActive(
-      solvers::Solver::getMinSolverTimeStampOfAllSolvers());
-  if (plot) {
-    repository.switchToPredictorAndPlotAndGlobalTimeStepComputation();
-  }
-  else {
-    repository.switchToPredictorAndGlobalTimeStepComputation();
-  }
-  repository.iterate();
-  /*
-   * Reset the time stamps of the finite volumes solvers.
-   *
-   * !!! Rationale
-   * Unlike for the rearranged ADER-DG scheme, we only
-   * need one warm up iteration for the finite volumes solvers.
-   * But since we have to perform two time step computations
-   * to warm up the ADER-DG schemes,
-   * the finite volumes solvers think they are already
-   * advanced by one time step after the computation
-   * of the second time step size.
-   */
-  initFiniteVolumesSolverTimeStamps();
-
-  /*
-   * Finally print the initial time step info.
-   */
-  printTimeStepInfo(-1);
-
-  const double simulationEndTime = _parser.getSimulationEndTime();
-
-  logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers());
-  logDebug("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
-
-  while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
-      tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
-    bool plot = exahype::plotters::isAPlotterActive(
-        solvers::Solver::getMinSolverTimeStampOfAllSolvers());
-
-    if (_parser.getFuseAlgorithmicSteps()) {
-      int numberOfStepsToRun = 1;
-      if (plot) {
-        numberOfStepsToRun = 0;
-      }
-      else if (solvers::Solver::allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping::GlobalFixed)) {
-        /**
-         * This computation is optimistic. If we were pessimistic, we had to
-         * use the max solver time step size. However, this is not necessary
-         * here, as we half the time steps anyway.
-         */
-    	if (solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers()>0.0) {
-    	  const double timeIntervalTillNextPlot = std::min(exahype::plotters::getTimeOfNextPlot(),simulationEndTime) - solvers::Solver::getMaxSolverTimeStampOfAllSolvers();
-          numberOfStepsToRun = std::floor( timeIntervalTillNextPlot / solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() );
-          logDebug("runAsMaster(...)", "number of possible time steps=" << numberOfStepsToRun << " with time till next plot=" << timeIntervalTillNextPlot );
-    	}
-        numberOfStepsToRun = numberOfStepsToRun<2 ? 1 : numberOfStepsToRun/2;
-      }
-
-      runOneTimeStampWithFusedAlgorithmicSteps(repository, numberOfStepsToRun);
-      recomputePredictorIfNecessary(repository,_parser.getFuseAlgorithmicStepsFactor());
-      printTimeStepInfo(numberOfStepsToRun);
-    } else {
-      runOneTimeStampWithThreeSeparateAlgorithmicSteps(repository, plot);
-      printTimeStepInfo(1);
-    }
-
-    logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
-  }
-  if ( tarch::la::equals(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
-    logWarning("runAsMaster(...)","Minimum solver time step size is zero (up to machine precision).");
-  }
+//  /*
+//   * Compute current first predictor based on current time step size.
+//   * Set current time step size as old time step size of next iteration.
+//   * Compute the current time step size of the next iteration.
+//   */
+//  bool plot = exahype::plotters::isAPlotterActive(
+//      solvers::Solver::getMinSolverTimeStampOfAllSolvers());
+//  if (plot) {
+//    repository.switchToPredictorAndPlotAndGlobalTimeStepComputation();
+//  }
+//  else {
+//    repository.switchToPredictorAndGlobalTimeStepComputation();
+//  }
+//  repository.iterate();
+//  /*
+//   * Reset the time stamps of the finite volumes solvers.
+//   *
+//   * !!! Rationale
+//   * Unlike for the rearranged ADER-DG scheme, we only
+//   * need one warm up iteration for the finite volumes solvers.
+//   * But since we have to perform two time step computations
+//   * to warm up the ADER-DG schemes,
+//   * the finite volumes solvers think they are already
+//   * advanced by one time step after the computation
+//   * of the second time step size.
+//   */
+//  initFiniteVolumesSolverTimeStamps();
+//
+//  /*
+//   * Finally print the initial time step info.
+//   */
+//  printTimeStepInfo(-1);
+//
+//  const double simulationEndTime = _parser.getSimulationEndTime();
+//
+//  logDebug("runAsMaster(...)","min solver time stamp: "     << solvers::Solver::getMinSolverTimeStampOfAllSolvers());
+//  logDebug("runAsMaster(...)","min solver time step size: " << solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers());
+//
+//  while ((solvers::Solver::getMinSolverTimeStampOfAllSolvers() < simulationEndTime) &&
+//      tarch::la::greater(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
+//    bool plot = exahype::plotters::isAPlotterActive(
+//        solvers::Solver::getMinSolverTimeStampOfAllSolvers());
+//
+//    if (_parser.getFuseAlgorithmicSteps()) {
+//      int numberOfStepsToRun = 1;
+//      if (plot) {
+//        numberOfStepsToRun = 0;
+//      }
+//      else if (solvers::Solver::allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping::GlobalFixed)) {
+//        /**
+//         * This computation is optimistic. If we were pessimistic, we had to
+//         * use the max solver time step size. However, this is not necessary
+//         * here, as we half the time steps anyway.
+//         */
+//    	if (solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers()>0.0) {
+//    	  const double timeIntervalTillNextPlot = std::min(exahype::plotters::getTimeOfNextPlot(),simulationEndTime) - solvers::Solver::getMaxSolverTimeStampOfAllSolvers();
+//          numberOfStepsToRun = std::floor( timeIntervalTillNextPlot / solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() );
+//          logDebug("runAsMaster(...)", "number of possible time steps=" << numberOfStepsToRun << " with time till next plot=" << timeIntervalTillNextPlot );
+//    	}
+//        numberOfStepsToRun = numberOfStepsToRun<2 ? 1 : numberOfStepsToRun/2;
+//      }
+//
+//      runOneTimeStampWithFusedAlgorithmicSteps(repository, numberOfStepsToRun);
+//      recomputePredictorIfNecessary(repository,_parser.getFuseAlgorithmicStepsFactor());
+//      printTimeStepInfo(numberOfStepsToRun);
+//    } else {
+//      runOneTimeStampWithThreeSeparateAlgorithmicSteps(repository, plot);
+//      printTimeStepInfo(1);
+//    }
+//
+//    logDebug("runAsMaster(...)", "state=" << repository.getState().toString());
+//  }
+//  if ( tarch::la::equals(solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers(), 0.0)) {
+//    logWarning("runAsMaster(...)","Minimum solver time step size is zero (up to machine precision).");
+//  }
 
   repository.logIterationStatistics(true);
   repository.terminate();
