@@ -218,7 +218,7 @@ int exahype::runners::Runner::getCoarsestGridLevelOfAllSolvers() const {
   }
 
   logDebug( "getCoarsestGridLevelOfAllSolvers()", "regular grid depth of " << result << " creates grid with h_max=" << currenthMax );
-  return result;
+  return std::max(3,result);
 }
 
 
@@ -236,14 +236,17 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
       ". grid regular up to level " << getCoarsestGridLevelOfAllSolvers() << " (level 1 is coarsest available cell in tree)" );
 #ifdef Parallel
   const double boundingBoxScaling = static_cast<double>(getCoarsestGridLevelOfAllSolvers()) / (static_cast<double>(getCoarsestGridLevelOfAllSolvers())-2);
+  assertion4(boundingBoxScaling>=1.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize() );
   const double boundingBoxShift   = (1.0-boundingBoxScaling)/2.0;
+  assertion5(boundingBoxShift<=0.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize(), boundingBoxScaling );
+
   logInfo(
       "run(...)",
       "increase domain artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
       geometry,
       _parser.getBoundingBoxSize()*boundingBoxScaling,
-      _parser.getOffset()-boundingBoxShift*_parser.getBoundingBoxSize()
+      _parser.getOffset()+boundingBoxShift*_parser.getBoundingBoxSize()
   );
 #else
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
