@@ -340,7 +340,11 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
 
-  if (tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0) {
+  if (
+    tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0
+    &&
+	  tarch::parallel::Node::getInstance().getNumberOfNodes()>1
+  ) {
     logWarning( "createGrid(Repository)", "there are still " << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes() << " ranks idle" )
   }
 
