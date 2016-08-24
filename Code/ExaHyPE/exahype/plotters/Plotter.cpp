@@ -84,6 +84,9 @@ exahype::plotters::Plotter::Plotter(
       if (_identifier.compare( ADERDG2LegendreCellsVTKBinary::getIdentifier() ) == 0) {
         _device = new ADERDG2LegendreCellsVTKBinary(postProcessing);
       }
+      if (_identifier.compare( ADERDG2ProbeAscii::getIdentifier() ) == 0) {
+        _device = new ADERDG2ProbeAscii(postProcessing);
+      }
     break;
     case exahype::solvers::Solver::Type::FiniteVolumes:
       /**
@@ -144,7 +147,7 @@ bool exahype::plotters::Plotter::checkWetherSolverBecomesActive(double currentTi
     if (_device==nullptr){
       logError(
         "checkWetherSolverBecomesActive(double)",
-        "unknown plotter type "
+        "unknown plotter type " << _identifier << " piping into file " << _filename
       );
       
     }
