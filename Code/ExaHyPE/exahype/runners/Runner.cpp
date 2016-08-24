@@ -75,7 +75,7 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
           logError( "initDistributedMemoryConfiguration()", "please inform fair balancing how many ranks per node you use through value \"ranks_per_node:XXX\". Read value " << ranksPerNode << " is invalid" );
           ranksPerNode = 1;
         }
-        if ( ranksPerNode<=tarch::parallel::Node::getInstance().getNumberOfNodes() ) {
+        if ( ranksPerNode>=tarch::parallel::Node::getInstance().getNumberOfNodes() ) {
           logWarning( "initDistributedMemoryConfiguration()", "value \"ranks_per_node:XXX\" exceeds total rank count. Reset to 1" );
           ranksPerNode = 1;
         }
