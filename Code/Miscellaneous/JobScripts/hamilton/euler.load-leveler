@@ -16,9 +16,6 @@
 . /etc/profile.d/modules.sh
 module load gcc/4.9
 
-for ARRAY_TASK_ID in 0 1 2 3 4 5
-do
-  output=$LOADL_TOTAL_TASKS"xNTASKS_PER_NODE-"$ARRAY_TASK_ID".results"
-  poe ./ExaHyPE-Euler eulerflow-$ARRAY_TASK_ID.exahype > $output
-done
+output=$LOADL_TOTAL_TASKS"xNTASKS_PER_NODE-EXPERIMENT.results"
+poe ./ExaHyPE-Euler eulerflow-EXPERIMENT.exahype > $output
 
