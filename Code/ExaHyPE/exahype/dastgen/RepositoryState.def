@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and
 // use, please see the copyright notice at www.peano-framework.org
 class exahype::records::RepositoryState { 
-  enum Action { WriteCheckpoint, ReadCheckpoint, Terminate, RunOnAllNodes,UseAdapterAugmentedAMRGrid,UseAdapterAugmentedAMRGridNoLoadBalancing,UseAdapterPlotAugmentedAMRGrid,UseAdapterSolutionAdjustmentAndGlobalTimeStepComputation,UseAdapterPredictorAndPlotAndGlobalTimeStepComputation,UseAdapterPredictorAndGlobalTimeStepComputation,UseAdapterGridErasing,UseAdapterADERDGTimeStep,UseAdapterADERDGTimeStepAndPlot,UseAdapterPredictorRerun,UseAdapterRiemannSolver,UseAdapterPredictor,UseAdapterCorrector,UseAdapterCorrectorAndPlot,UseAdapterPlot,NumberOfAdapters};
+  enum Action { WriteCheckpoint, ReadCheckpoint, Terminate, RunOnAllNodes,UseAdapterAugmentedAMRGrid,UseAdapterPlotAugmentedAMRGrid,UseAdapterSolutionAdjustmentAndGlobalTimeStepComputation,UseAdapterPredictorAndPlotAndGlobalTimeStepComputation,UseAdapterPredictorAndGlobalTimeStepComputation,UseAdapterGridErasing,UseAdapterADERDGTimeStep,UseAdapterADERDGTimeStepAndPlot,UseAdapterPredictorRerun,UseAdapterRiemannSolver,UseAdapterPredictor,UseAdapterCorrector,UseAdapterCorrectorAndPlot,UseAdapterPlot,NumberOfAdapters};
   persistent parallelise Action action;
   persistent parallelise int    numberOfIterations;
   persistent parallelise bool   exchangeBoundaryVertices;
