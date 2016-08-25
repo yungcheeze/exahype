@@ -15,7 +15,8 @@
 
  Euler Flow
 
- A simple project. (well, it was simple, in the beginning).
+ This is a clone of the EulerFlow application using the
+ Finite Volume Method (FVM) instead of ADER-DG.
 
  */
 exahype-project  EulerFVM
