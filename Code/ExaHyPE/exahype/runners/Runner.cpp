@@ -75,7 +75,7 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
           logError( "initDistributedMemoryConfiguration()", "please inform fair balancing how many ranks per node you use through value \"ranks_per_node:XXX\". Read value " << ranksPerNode << " is invalid" );
           ranksPerNode = 1;
         }
-        if ( ranksPerNode<=tarch::parallel::Node::getInstance().getNumberOfNodes() ) {
+        if ( ranksPerNode>=tarch::parallel::Node::getInstance().getNumberOfNodes() ) {
           logWarning( "initDistributedMemoryConfiguration()", "value \"ranks_per_node:XXX\" exceeds total rank count. Reset to 1" );
           ranksPerNode = 1;
         }
@@ -340,7 +340,11 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
 
-  if (tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0) {
+  if (
+    tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0
+    &&
+	  tarch::parallel::Node::getInstance().getNumberOfNodes()>1
+  ) {
     logWarning( "createGrid(Repository)", "there are still " << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes() << " ranks idle" )
   }
 
