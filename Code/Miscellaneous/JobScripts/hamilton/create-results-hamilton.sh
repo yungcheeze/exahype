@@ -1,3 +1,5 @@
+rm *.results
+
 sbatch --nodes=1  --ntasks-per-node=1  euler-asserts.slurm-script
 sbatch --nodes=1  --ntasks-per-node=16 euler-asserts.slurm-script
 sbatch --nodes=2  --ntasks-per-node=16 euler-asserts.slurm-script

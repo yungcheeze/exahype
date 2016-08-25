@@ -164,6 +164,12 @@ class exahype::Parser {
   int getNumberOfThreads() const;
 
   tarch::la::Vector<DIMENSIONS, double> getDomainSize() const;
+
+  /**
+   * @return Bounding box size. If the user has specified a non-cubical domain,
+   *         then the bounding box still is cubical and all of its entries are
+   *         the biggest dimension along one coordinate axis.
+   */
   tarch::la::Vector<DIMENSIONS, double> getBoundingBoxSize() const;
 
   tarch::la::Vector<DIMENSIONS, double> getOffset() const;

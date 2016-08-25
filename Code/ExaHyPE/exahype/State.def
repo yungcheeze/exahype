@@ -1,27 +1,6 @@
 Packed-Type: short int;
 
-class exahype::dastgen::State {  
-  /**
-   * The minimum time step size of all solves for the previous sweep.
-   */
-  parallelise persistent double previousMinTimeStepSize;
-
-  /**
-   * The minimum time step size of all solves for the current sweep.
-   */
-  parallelise persistent double currentMinTimeStepSize;
-  
-  /**
-   * Estimate of the minimum time step size of all solves
-   * for the next sweep.
-   */
-  parallelise persistent double nextMinTimeStepSize;
-  
-  /**
-   * Minimum of the time stamps of all solves. 
-   */
-  parallelise persistent double currentMinTimeStamp;
-  
+class exahype::dastgen::State {    
   #ifdef Parallel
   enum GridConstructionState {
     Default, Veto, Aggressive

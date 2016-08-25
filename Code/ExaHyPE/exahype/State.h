@@ -118,9 +118,15 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    * routine only may be used by the setup of the regular initial grid, it
    * thus is reasonable to invoke enforceRefine in the parallel case if the
    * result it true.
+   *
+   * Please consult the Peano cookbook (Sect. 6.3.2) for details/rationale.
    */
   bool refineInitialGridInCreationalEvents() const;
 
+  /**
+   *
+   * Please consult the Peano cookbook (Sect. 6.3.2) for details/rationale.
+   */
   bool refineInitialGridInTouchVertexLastTime() const;
 };
 

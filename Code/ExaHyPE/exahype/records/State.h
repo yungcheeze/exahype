@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   22/08/2016 18:26
+    * @date   23/08/2016 18:14
     */
    class exahype::records::State { 
       
@@ -42,10 +42,6 @@ namespace exahype {
          typedef exahype::records::StatePacked Packed;
          
          struct PersistentRecords {
-            double _previousMinTimeStepSize;
-            double _currentMinTimeStepSize;
-            double _nextMinTimeStepSize;
-            double _currentMinTimeStamp;
             bool _hasRefined;
             bool _hasTriggeredRefinementForNextIteration;
             bool _hasErased;
@@ -61,87 +57,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
-            
-            
-            inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _previousMinTimeStepSize;
-            }
-            
-            
-            
-            inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _previousMinTimeStepSize = previousMinTimeStepSize;
-            }
-            
-            
-            
-            inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _currentMinTimeStepSize;
-            }
-            
-            
-            
-            inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _currentMinTimeStepSize = currentMinTimeStepSize;
-            }
-            
-            
-            
-            inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _nextMinTimeStepSize;
-            }
-            
-            
-            
-            inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _nextMinTimeStepSize = nextMinTimeStepSize;
-            }
-            
-            
-            
-            inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _currentMinTimeStamp;
-            }
-            
-            
-            
-            inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _currentMinTimeStamp = currentMinTimeStamp;
-            }
-            
+            PersistentRecords(const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             
             inline bool getHasRefined() const 
@@ -303,92 +219,12 @@ namespace exahype {
          /**
           * Generated
           */
-         State(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+         State(const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
          
          /**
           * Generated
           */
          virtual ~State();
-         
-         
-         inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._previousMinTimeStepSize;
-         }
-         
-         
-         
-         inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._previousMinTimeStepSize = previousMinTimeStepSize;
-         }
-         
-         
-         
-         inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._currentMinTimeStepSize;
-         }
-         
-         
-         
-         inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._currentMinTimeStepSize = currentMinTimeStepSize;
-         }
-         
-         
-         
-         inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._nextMinTimeStepSize;
-         }
-         
-         
-         
-         inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._nextMinTimeStepSize = nextMinTimeStepSize;
-         }
-         
-         
-         
-         inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._currentMinTimeStamp;
-         }
-         
-         
-         
-         inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._currentMinTimeStamp = currentMinTimeStamp;
-         }
-         
          
          
          inline bool getHasRefined() const 
@@ -607,17 +443,13 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   22/08/2016 18:26
+       * @date   23/08/2016 18:14
        */
       class exahype::records::StatePacked { 
          
          public:
             
             struct PersistentRecords {
-               double _previousMinTimeStepSize;
-               double _currentMinTimeStepSize;
-               double _nextMinTimeStepSize;
-               double _currentMinTimeStamp;
                bool _isTraversalInverted;
                
                /** mapping of records:
@@ -639,87 +471,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
-               
-               
-               inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _previousMinTimeStepSize;
-               }
-               
-               
-               
-               inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _previousMinTimeStepSize = previousMinTimeStepSize;
-               }
-               
-               
-               
-               inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _currentMinTimeStepSize;
-               }
-               
-               
-               
-               inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _currentMinTimeStepSize = currentMinTimeStepSize;
-               }
-               
-               
-               
-               inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _nextMinTimeStepSize;
-               }
-               
-               
-               
-               inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _nextMinTimeStepSize = nextMinTimeStepSize;
-               }
-               
-               
-               
-               inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _currentMinTimeStamp;
-               }
-               
-               
-               
-               inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _currentMinTimeStamp = currentMinTimeStamp;
-               }
-               
+               PersistentRecords(const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                
                
                inline bool getHasRefined() const 
@@ -899,92 +651,12 @@ namespace exahype {
             /**
              * Generated
              */
-            StatePacked(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            StatePacked(const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             /**
              * Generated
              */
             virtual ~StatePacked();
-            
-            
-            inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _persistentRecords._previousMinTimeStepSize;
-            }
-            
-            
-            
-            inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _persistentRecords._previousMinTimeStepSize = previousMinTimeStepSize;
-            }
-            
-            
-            
-            inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _persistentRecords._currentMinTimeStepSize;
-            }
-            
-            
-            
-            inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _persistentRecords._currentMinTimeStepSize = currentMinTimeStepSize;
-            }
-            
-            
-            
-            inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _persistentRecords._nextMinTimeStepSize;
-            }
-            
-            
-            
-            inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _persistentRecords._nextMinTimeStepSize = nextMinTimeStepSize;
-            }
-            
-            
-            
-            inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _persistentRecords._currentMinTimeStamp;
-            }
-            
-            
-            
-            inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _persistentRecords._currentMinTimeStamp = currentMinTimeStamp;
-            }
-            
             
             
             inline bool getHasRefined() const 
@@ -1218,7 +890,7 @@ namespace exahype {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   22/08/2016 18:26
+          * @date   23/08/2016 18:14
           */
          class exahype::records::State { 
             
@@ -1231,10 +903,6 @@ namespace exahype {
                };
                
                struct PersistentRecords {
-                  double _previousMinTimeStepSize;
-                  double _currentMinTimeStepSize;
-                  double _nextMinTimeStepSize;
-                  double _currentMinTimeStamp;
                   GridConstructionState _gridConstructionState;
                   #ifdef UseManualAlignment
                   tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
@@ -1275,87 +943,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
-                  
-                  
-                  inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _previousMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _previousMinTimeStepSize = previousMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _currentMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _currentMinTimeStepSize = currentMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _nextMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _nextMinTimeStepSize = nextMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _currentMinTimeStamp;
-                  }
-                  
-                  
-                  
-                  inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _currentMinTimeStamp = currentMinTimeStamp;
-                  }
-                  
+                  PersistentRecords(const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                   
                   
                   inline GridConstructionState getGridConstructionState() const 
@@ -1933,92 +1521,12 @@ namespace exahype {
                /**
                 * Generated
                 */
-               State(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               State(const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                /**
                 * Generated
                 */
                virtual ~State();
-               
-               
-               inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._previousMinTimeStepSize;
-               }
-               
-               
-               
-               inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._previousMinTimeStepSize = previousMinTimeStepSize;
-               }
-               
-               
-               
-               inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._currentMinTimeStepSize;
-               }
-               
-               
-               
-               inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._currentMinTimeStepSize = currentMinTimeStepSize;
-               }
-               
-               
-               
-               inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._nextMinTimeStepSize;
-               }
-               
-               
-               
-               inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._nextMinTimeStepSize = nextMinTimeStepSize;
-               }
-               
-               
-               
-               inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  return _persistentRecords._currentMinTimeStamp;
-               }
-               
-               
-               
-               inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                  _persistentRecords._currentMinTimeStamp = currentMinTimeStamp;
-               }
-               
                
                
                inline GridConstructionState getGridConstructionState() const 
@@ -2715,7 +2223,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   22/08/2016 18:26
+             * @date   23/08/2016 18:14
              */
             class exahype::records::StatePacked { 
                
@@ -2724,10 +2232,6 @@ namespace exahype {
                   typedef exahype::records::State::GridConstructionState GridConstructionState;
                   
                   struct PersistentRecords {
-                     double _previousMinTimeStepSize;
-                     double _currentMinTimeStepSize;
-                     double _nextMinTimeStepSize;
-                     double _currentMinTimeStamp;
                      GridConstructionState _gridConstructionState;
                      tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
                      tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
@@ -2766,87 +2270,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
-                     
-                     
-                     inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _previousMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _previousMinTimeStepSize = previousMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _currentMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _currentMinTimeStepSize = currentMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _nextMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _nextMinTimeStepSize = nextMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _currentMinTimeStamp;
-                     }
-                     
-                     
-                     
-                     inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _currentMinTimeStamp = currentMinTimeStamp;
-                     }
-                     
+                     PersistentRecords(const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                      
                      
                      inline GridConstructionState getGridConstructionState() const 
@@ -3451,92 +2875,12 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  StatePacked(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                  StatePacked(const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                   
                   /**
                    * Generated
                    */
                   virtual ~StatePacked();
-                  
-                  
-                  inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._previousMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._previousMinTimeStepSize = previousMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._currentMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._currentMinTimeStepSize = currentMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._nextMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._nextMinTimeStepSize = nextMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._currentMinTimeStamp;
-                  }
-                  
-                  
-                  
-                  inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._currentMinTimeStamp = currentMinTimeStamp;
-                  }
-                  
                   
                   
                   inline GridConstructionState getGridConstructionState() const 
@@ -4258,7 +3602,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   22/08/2016 18:26
+             * @date   23/08/2016 18:14
              */
             class exahype::records::State { 
                
@@ -4267,10 +3611,6 @@ namespace exahype {
                   typedef exahype::records::StatePacked Packed;
                   
                   struct PersistentRecords {
-                     double _previousMinTimeStepSize;
-                     double _currentMinTimeStepSize;
-                     double _nextMinTimeStepSize;
-                     double _currentMinTimeStamp;
                      #ifdef UseManualAlignment
                      tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
                      #else
@@ -4307,87 +3647,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
-                     
-                     
-                     inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _previousMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _previousMinTimeStepSize = previousMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _currentMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _currentMinTimeStepSize = currentMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _nextMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _nextMinTimeStepSize = nextMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _currentMinTimeStamp;
-                     }
-                     
-                     
-                     
-                     inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _currentMinTimeStamp = currentMinTimeStamp;
-                     }
-                     
+                     PersistentRecords(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                      
                      
                      /**
@@ -4885,92 +4145,12 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  State(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                  State(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                   
                   /**
                    * Generated
                    */
                   virtual ~State();
-                  
-                  
-                  inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._previousMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._previousMinTimeStepSize = previousMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._currentMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._currentMinTimeStepSize = currentMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._nextMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._nextMinTimeStepSize = nextMinTimeStepSize;
-                  }
-                  
-                  
-                  
-                  inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._currentMinTimeStamp;
-                  }
-                  
-                  
-                  
-                  inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._currentMinTimeStamp = currentMinTimeStamp;
-                  }
-                  
                   
                   
                   /**
@@ -5577,17 +4757,13 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   22/08/2016 18:26
+                * @date   23/08/2016 18:14
                 */
                class exahype::records::StatePacked { 
                   
                   public:
                      
                      struct PersistentRecords {
-                        double _previousMinTimeStepSize;
-                        double _currentMinTimeStepSize;
-                        double _nextMinTimeStepSize;
-                        double _currentMinTimeStamp;
                         tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
                         tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
                         double _numberOfInnerVertices;
@@ -5622,87 +4798,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
-                        
-                        
-                        inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _previousMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _previousMinTimeStepSize = previousMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _currentMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _currentMinTimeStepSize = currentMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _nextMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _nextMinTimeStepSize = nextMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _currentMinTimeStamp;
-                        }
-                        
-                        
-                        
-                        inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _currentMinTimeStamp = currentMinTimeStamp;
-                        }
-                        
+                        PersistentRecords(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                         
                         
                         /**
@@ -6218,92 +5314,12 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     StatePacked(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                     StatePacked(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                      
                      /**
                       * Generated
                       */
                      virtual ~StatePacked();
-                     
-                     
-                     inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._previousMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._previousMinTimeStepSize = previousMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._currentMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._currentMinTimeStepSize = currentMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._nextMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._nextMinTimeStepSize = nextMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._currentMinTimeStamp;
-                     }
-                     
-                     
-                     
-                     inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._currentMinTimeStamp = currentMinTimeStamp;
-                     }
-                     
                      
                      
                      /**
@@ -6926,7 +5942,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   22/08/2016 18:26
+                * @date   23/08/2016 18:14
                 */
                class exahype::records::State { 
                   
@@ -6939,10 +5955,6 @@ namespace exahype {
                      };
                      
                      struct PersistentRecords {
-                        double _previousMinTimeStepSize;
-                        double _currentMinTimeStepSize;
-                        double _nextMinTimeStepSize;
-                        double _currentMinTimeStamp;
                         GridConstructionState _gridConstructionState;
                         bool _hasRefined;
                         bool _hasTriggeredRefinementForNextIteration;
@@ -6962,87 +5974,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const GridConstructionState& gridConstructionState, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
-                        
-                        
-                        inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _previousMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _previousMinTimeStepSize = previousMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _currentMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _currentMinTimeStepSize = currentMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _nextMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _nextMinTimeStepSize = nextMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _currentMinTimeStamp;
-                        }
-                        
-                        
-                        
-                        inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _currentMinTimeStamp = currentMinTimeStamp;
-                        }
-                        
+                        PersistentRecords(const GridConstructionState& gridConstructionState, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                         
                         
                         inline GridConstructionState getGridConstructionState() const 
@@ -7284,92 +6216,12 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     State(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const GridConstructionState& gridConstructionState, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                     State(const GridConstructionState& gridConstructionState, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                      
                      /**
                       * Generated
                       */
                      virtual ~State();
-                     
-                     
-                     inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._previousMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._previousMinTimeStepSize = previousMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._currentMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._currentMinTimeStepSize = currentMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._nextMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._nextMinTimeStepSize = nextMinTimeStepSize;
-                     }
-                     
-                     
-                     
-                     inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _persistentRecords._currentMinTimeStamp;
-                     }
-                     
-                     
-                     
-                     inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _persistentRecords._currentMinTimeStamp = currentMinTimeStamp;
-                     }
-                     
                      
                      
                      inline GridConstructionState getGridConstructionState() const 
@@ -7678,7 +6530,7 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   22/08/2016 18:26
+                   * @date   23/08/2016 18:14
                    */
                   class exahype::records::StatePacked { 
                      
@@ -7687,10 +6539,6 @@ namespace exahype {
                         typedef exahype::records::State::GridConstructionState GridConstructionState;
                         
                         struct PersistentRecords {
-                           double _previousMinTimeStepSize;
-                           double _currentMinTimeStepSize;
-                           double _nextMinTimeStepSize;
-                           double _currentMinTimeStamp;
                            GridConstructionState _gridConstructionState;
                            bool _isTraversalInverted;
                            
@@ -7716,87 +6564,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const GridConstructionState& gridConstructionState, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
-                           
-                           
-                           inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _previousMinTimeStepSize;
-                           }
-                           
-                           
-                           
-                           inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _previousMinTimeStepSize = previousMinTimeStepSize;
-                           }
-                           
-                           
-                           
-                           inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _currentMinTimeStepSize;
-                           }
-                           
-                           
-                           
-                           inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _currentMinTimeStepSize = currentMinTimeStepSize;
-                           }
-                           
-                           
-                           
-                           inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _nextMinTimeStepSize;
-                           }
-                           
-                           
-                           
-                           inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _nextMinTimeStepSize = nextMinTimeStepSize;
-                           }
-                           
-                           
-                           
-                           inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _currentMinTimeStamp;
-                           }
-                           
-                           
-                           
-                           inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _currentMinTimeStamp = currentMinTimeStamp;
-                           }
-                           
+                           PersistentRecords(const GridConstructionState& gridConstructionState, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                            
                            
                            inline GridConstructionState getGridConstructionState() const 
@@ -8065,92 +6833,12 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        StatePacked(const double& previousMinTimeStepSize, const double& currentMinTimeStepSize, const double& nextMinTimeStepSize, const double& currentMinTimeStamp, const GridConstructionState& gridConstructionState, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                        StatePacked(const GridConstructionState& gridConstructionState, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                         
                         /**
                          * Generated
                          */
                         virtual ~StatePacked();
-                        
-                        
-                        inline double getPreviousMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._previousMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline void setPreviousMinTimeStepSize(const double& previousMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._previousMinTimeStepSize = previousMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline double getCurrentMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._currentMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline void setCurrentMinTimeStepSize(const double& currentMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._currentMinTimeStepSize = currentMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline double getNextMinTimeStepSize() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._nextMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline void setNextMinTimeStepSize(const double& nextMinTimeStepSize) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._nextMinTimeStepSize = nextMinTimeStepSize;
-                        }
-                        
-                        
-                        
-                        inline double getCurrentMinTimeStamp() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           return _persistentRecords._currentMinTimeStamp;
-                        }
-                        
-                        
-                        
-                        inline void setCurrentMinTimeStamp(const double& currentMinTimeStamp) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                           _persistentRecords._currentMinTimeStamp = currentMinTimeStamp;
-                        }
-                        
                         
                         
                         inline GridConstructionState getGridConstructionState() const 

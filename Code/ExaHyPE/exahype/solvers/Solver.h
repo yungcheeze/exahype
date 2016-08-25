@@ -279,6 +279,9 @@ class exahype::solvers::Solver {
   static double getMaxSolverTimeStampOfAllSolvers();
 
   static bool allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping scheme);
+
+  static double getCoarsestMeshSizeOfAllSolvers();
+  static double getFinestMaximumMeshSizeOfAllSolvers();
 };
 
 #endif
