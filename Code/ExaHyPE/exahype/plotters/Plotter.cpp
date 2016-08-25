@@ -127,9 +127,10 @@ exahype::plotters::Plotter::Plotter(
   else {
     logError(
       "Plotter(...)",
-      "unknown plotter type " << _identifier << " for "
-      << solvers::RegisteredSolvers[_solver]->getIdentifier()
-      << ". Plotter configuration=" << toString()
+      "unknown plotter type "
+          << _identifier << " for "
+          << solvers::RegisteredSolvers[_solver]->getIdentifier()
+	  << ". Potential reasons: you have not specified a valid identifier following the plot keyword or you have specified a plotter in the ExaHyPE toolkit and later removed this plotter from the config"
     );
   }
 }
