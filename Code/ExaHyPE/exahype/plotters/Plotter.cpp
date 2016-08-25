@@ -39,19 +39,17 @@ exahype::plotters::Plotter::Plotter(
       _device(nullptr) {
   if (_time < 0.0) {
     logError("Plotter(...)",
-             "plotter's first snapshot time is set to negative value "
-                 << _time);
+      "plotter's first snapshot time is set to negative value "
+      << _time << ". Plotter configuration=" << toString() );
   }
   if (_repeat < 0.0) {
     logError("Plotter(...)", "plotter's repeat time is set to negative value "
-                                 << _repeat);
+      << _repeat << ". Plotter configuration=" << toString() );
   }
   logInfo("Plotter(...)", "write snapshot to file "
-                              << _filename << " every " << _repeat
-                              << " time units with first snapshot at " << _time
-                              << ". plotter type is " << _identifier);
-
-  std::cout << std::endl << "(a)" << std::endl; std::cout.flush();
+    << _filename << " every " << _repeat
+    << " time units with first snapshot at " << _time
+    << ". plotter type is " << _identifier << ". Plotter configuration=" << toString() );
 
   assertion(_solver < static_cast<int>(solvers::RegisteredSolvers.size()));
   switch (solvers::RegisteredSolvers[_solver]->getType()) {
@@ -117,14 +115,40 @@ exahype::plotters::Plotter::Plotter(
         _select
     );
   }
+  else if (_identifier=="notoken") {
+    logError(
+      "Plotter(...)",
+      "unable to set up " << (plotterCount+1) << "th plotter for the "
+      << (_solver+1) << "th solver. Ensure number of plot sections "
+      << "equals number of plotters originally passed to toolkit and "
+      << "validate that plot syntax is correct"
+    );
+  }
   else {
     logError(
       "Plotter(...)",
-      "unknown plotter type "
-          << _identifier << " for "
-          << solvers::RegisteredSolvers[_solver]->getIdentifier()
+      "unknown plotter type " << _identifier << " for "
+      << solvers::RegisteredSolvers[_solver]->getIdentifier()
+      << ". Plotter configuration=" << toString()
     );
   }
+}
+
+
+std::string exahype::plotters::Plotter::toString() const {
+  std::ostringstream msg;
+
+  msg << "(solver no=" << _solver
+      << ",plotter identifier (type)=" << _identifier
+      << ",written unknowns=" << _writtenUnknowns
+      << ",time=" << _time
+      << ",repeat=" << _repeat
+      << ",file name=" << _filename
+      << ",select statement=" << _select
+      << ",device configured=" << (_device!=nullptr)
+      << ")";
+
+  return msg.str();
 }
 
 
@@ -149,11 +173,12 @@ bool exahype::plotters::Plotter::checkWetherSolverBecomesActive(double currentTi
         "checkWetherSolverBecomesActive(double)",
         "unknown plotter type " << _identifier << " piping into file " << _filename
       );
-      
     }
-    assertion(_device!=nullptr);
-    _isActive = true;
-    _device->startPlotting(currentTimeStamp);
+    else {
+      assertion(_device!=nullptr);
+      _isActive = true;
+      _device->startPlotting(currentTimeStamp);
+    }
   }
 
   return isActive();
