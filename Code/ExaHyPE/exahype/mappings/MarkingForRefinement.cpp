@@ -80,14 +80,19 @@ void exahype::mappings::MarkingForRefinement::beginIteration(
     exahype::State& solverState) {
   _state = solverState;
 
+#ifdef Parallel
   MetadataHeap::getInstance().startToSendSynchronousData();
   DataHeap::getInstance().startToSendSynchronousData();
+#endif
 }
 
 void exahype::mappings::MarkingForRefinement::endIteration(
     exahype::State& solverState) {
+
+#ifdef Parallel
   MetadataHeap::getInstance().finishedToSendSynchronousData();
   DataHeap::getInstance().finishedToSendSynchronousData();
+#endif
 }
 
 void exahype::mappings::MarkingForRefinement::enterCell(
@@ -223,7 +228,7 @@ void exahype::mappings::MarkingForRefinement::prepareCopyToRemoteNode(
     exahype::Cell& localCell, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-//  return;
+  return;
 
   if (localCell.isInside()) {
     if (localCell.isInitialised()) {
@@ -316,7 +321,7 @@ void exahype::mappings::MarkingForRefinement::
         exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
         int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
         const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-//  return;
+  return;
 
   if (localCell.isInside()) {
     // 1. First receive the metadata

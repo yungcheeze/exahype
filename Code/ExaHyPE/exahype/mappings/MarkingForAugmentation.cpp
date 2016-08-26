@@ -349,7 +349,7 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
                            fromRank, fineGridX, fineGridH, level);
 
   // TODO(Dominic): remove
-    return;
+  return;
 
   // TODO(Dominic): AMR + MPI
   // 1. Get metadata,
