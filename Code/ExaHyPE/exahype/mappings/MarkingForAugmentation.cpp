@@ -76,25 +76,10 @@ exahype::mappings::MarkingForAugmentation::descendSpecification() {
 tarch::logging::Log exahype::mappings::MarkingForAugmentation::_log(
     "exahype::mappings::MarkingForAugmentation");
 
-exahype::mappings::MarkingForAugmentation::MarkingForAugmentation() {
-  // do nothing
+void exahype::mappings::MarkingForAugmentation::beginIteration(
+    exahype::State& solverState) {
+  _state = &solverState; // Pointer to rank's state.
 }
-
-exahype::mappings::MarkingForAugmentation::~MarkingForAugmentation() {
-  // do nothing
-}
-
-#if defined(SharedMemoryParallelisation)
-exahype::mappings::MarkingForAugmentation::MarkingForAugmentation(
-    const MarkingForAugmentation& masterThread) {
-  // do nothing
-}
-
-void exahype::mappings::MarkingForAugmentation::mergeWithWorkerThread(
-    const MarkingForAugmentation& workerThread) {
-  // do nothing
-}
-#endif
 
 void exahype::mappings::MarkingForAugmentation::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -285,11 +270,6 @@ exahype::mappings::MarkingForAugmentation::augmentationCriterion(
   }
   // Erase otherwise.
   return AugmentationControl::Default;
-}
-
-void exahype::mappings::MarkingForAugmentation::beginIteration(
-    exahype::State& solverState) {
-  _state = &solverState; // Pointer to rank's state.
 }
 
 #ifdef Parallel
@@ -681,6 +661,26 @@ void exahype::mappings::MarkingForAugmentation::mergeWithWorker(
     exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // do nothing
+}
+#endif
+
+exahype::mappings::MarkingForAugmentation::MarkingForAugmentation() {
+  // do nothing
+}
+
+exahype::mappings::MarkingForAugmentation::~MarkingForAugmentation() {
+  // do nothing
+}
+
+#if defined(SharedMemoryParallelisation)
+exahype::mappings::MarkingForAugmentation::MarkingForAugmentation(
+    const MarkingForAugmentation& masterThread) {
+  // do nothing
+}
+
+void exahype::mappings::MarkingForAugmentation::mergeWithWorkerThread(
+    const MarkingForAugmentation& workerThread) {
   // do nothing
 }
 #endif
