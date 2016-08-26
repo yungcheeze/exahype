@@ -14,8 +14,10 @@
 #include "exahype/runners/Runner.h"
 
 #include "../../../Peano/mpibalancing/HotspotBalancing.h"
+
 #include "exahype/repositories/Repository.h"
 #include "exahype/repositories/RepositoryFactory.h"
+#include "exahype/mappings/GlobalTimeStepComputation.h"
 
 #include "tarch/Assertions.h"
 
@@ -59,7 +61,7 @@ exahype::runners::Runner::Runner(const Parser& parser) : _parser(parser) {}
 exahype::runners::Runner::~Runner() {}
 
 void exahype::runners::Runner::initDistributedMemoryConfiguration() {
-#ifdef Parallel
+  #ifdef Parallel
   std::string configuration = _parser.getMPIConfiguration();
   if (_parser.getMPILoadBalancingType()==Parser::MPILoadBalancingType::Static) {
     if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
@@ -124,7 +126,16 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
   peano::parallel::SendReceiveBufferPool::getInstance().setBufferSize(bufferSize);
   peano::parallel::JoinDataBufferPool::getInstance().setBufferSize(bufferSize);
   logInfo("initDistributedMemoryConfiguration()", "use MPI buffer size of " << bufferSize);
-#endif
+
+  if ( _parser.getSkipReductionInBatchedTimeSteps() ) {
+    logInfo("initDistributedMemoryConfiguration()", "allow ranks to skip reduction" );
+    exahype::mappings::GlobalTimeStepComputation::SkipReductionInBatchedTimeSteps = true;
+  }
+  else {
+    logWarning("initDistributedMemoryConfiguration()", "ranks are not allowed to skip any reduction (might harm performance). Use optimisation section to switch feature on" );
+    exahype::mappings::GlobalTimeStepComputation::SkipReductionInBatchedTimeSteps = false;
+  }
+  #endif
 }
 
 

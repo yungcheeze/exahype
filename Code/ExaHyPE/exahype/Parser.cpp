@@ -362,6 +362,11 @@ double exahype::Parser::getTimestepBatchFactor() const {
 bool   exahype::Parser::getSkipReductionInBatchedTimeSteps() const {
   std::string token = getTokenAfter("optimisation", "skip-reduction-in-batched-time-steps");
   logDebug("getSkipReductionInBatchedTimeSteps()", "found skip-reduction-in-batched-time-steps " << token);
+  if (token!="on" && token!="off" && token!="notoken") {
+    logError("getSkipReductionInBatchedTimeSteps()","skip-reduction-in-batched-time-steps is required in the optimisation segment and has to be either on or off: " << token);
+    _interpretationErrorOccured = true;
+  }
+
   return token.compare("on") == 0;
 }
 
