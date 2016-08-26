@@ -328,11 +328,13 @@ bool exahype::Parser::getFuseAlgorithmicSteps() const {
 
 double exahype::Parser::getFuseAlgorithmicStepsFactor() const {
   std::string token = getTokenAfter("optimisation", "fuse-algorithmic-steps-factor");
-  double result = atof(token.c_str());
+
+  char* pEnd;
+  double result = std::strtod(token.c_str(),&pEnd);
   logDebug("getFuseAlgorithmicStepsFactor()", "found fuse-algorithmic-steps-factor " << token);
 
-  if (result < 0.0 || result > 1.0) {
-    logError("getFuseAlgorithmicStepsFactor()","'fuse-algorithmic-steps-factor': Value must be greater than zero and smaller than one.");
+  if (result < 0.0 || result > 1.0 || pEnd==token.c_str() ) {
+    logError("getFuseAlgorithmicStepsFactor()","'fuse-algorithmic-steps-factor': Value must be greater than zero and smaller than one: " << result );
     result = 0.0;
     _interpretationErrorOccured = true;
   }
@@ -343,15 +345,16 @@ double exahype::Parser::getFuseAlgorithmicStepsFactor() const {
 
 double exahype::Parser::getTimestepBatchFactor() const {
   std::string token = getTokenAfter("optimisation", "timestep-batch-factor");
-  double result = atof(token.c_str());
+  char* pEnd;
+  double result = std::strtod(token.c_str(),&pEnd);
   logDebug("getFuseAlgorithmicStepsFactor()", "found timestep-batch-factor " << token);
 
-  if (result < 0.0 || result > 1.0) {
-    logError("getFuseAlgorithmicStepsFactor()","'timestep-batch-factor': Value must be greater than zero and smaller than one.");
+  if (result < 0.0 || result > 1.0 || pEnd==token.c_str() ) {
+    logError("getFuseAlgorithmicStepsFactor()","'timestep-batch-factor': Value is required in optimisation section and must be greater than zero and smaller than one: " << result);
     result = 0.0;
     _interpretationErrorOccured = true;
   }
-    
+
   return result;
 }
 
