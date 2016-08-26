@@ -30,6 +30,10 @@
 #include <limits>
 
 
+bool exahype::mappings::GlobalTimeStepComputation::SkipReductionInBatchedTimeSteps = false;
+
+
+
 peano::CommunicationSpecification
 exahype::mappings::GlobalTimeStepComputation::communicationSpecification() {
   return peano::CommunicationSpecification(
@@ -260,6 +264,7 @@ void exahype::mappings::GlobalTimeStepComputation::mergeWithMaster(
   }
 }
 
+
 bool exahype::mappings::GlobalTimeStepComputation::prepareSendToWorker(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -268,9 +273,16 @@ bool exahype::mappings::GlobalTimeStepComputation::prepareSendToWorker(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker) {
-  // do nothing
-  return true;
+  if (
+    !peano::parallel::loadbalancing::Oracle::getInstance().isLoadBalancingActivated()
+    &&
+    SkipReductionInBatchedTimeSteps
+  ) {
+    return false;
+  }
+  else return true;
 }
+
 
 void exahype::mappings::GlobalTimeStepComputation::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,

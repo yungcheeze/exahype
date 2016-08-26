@@ -686,8 +686,7 @@ bool exahype::mappings::RiemannSolver::prepareSendToWorker(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker) {
   // do nothing but please consult header documentation.
-
-  return true;
+  return false;
 }
 
 void exahype::mappings::RiemannSolver::prepareSendToMaster(

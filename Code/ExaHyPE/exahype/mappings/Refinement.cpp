@@ -202,6 +202,16 @@ void exahype::mappings::Refinement::ascend(
   logTraceInWith2Arguments("ascend(...)", coarseGridCell.toString(),
                            coarseGridVerticesEnumerator.toString());
 
+  // TODO(Dominic,25.08.2016): Might nearly work now thanks to
+  // the new adjacency inf. consistency check. Mesh is however oscillating if MPI is
+  // active. Have to consider MPI boundaries.
+  // I found that some of the cells have the ErasingRequested refinement event set
+  // after the initial grid setup. This should be set to None after the refinement.
+  // Not sure if my refinement crit. was wrong or if there is a bug in this routine.
+#ifdef Parallel
+  return;
+#endif
+
   if (coarseGridCell.isInitialised()) {
     for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(
              coarseGridCell.getCellDescriptionsIndex())) {
