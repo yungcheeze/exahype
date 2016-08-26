@@ -35,7 +35,7 @@ class exahype::records::FiniteVolumesCellDescription {
   parallelise persistent int solution;
   
   /**
-   * Space-tree level of the cell this FiniteVolumesCellDescription is associated
+   * Space-tree level of the cell this ADERDGCellDescription is associated
    * with.
    */
   parallelise persistent int level;
@@ -45,7 +45,7 @@ class exahype::records::FiniteVolumesCellDescription {
    */
   parallelise persistent double offset[DIMENSIONS];
   /**
-   * Dimension of the cell associated with this FiniteVolumesCellDescription in the
+   * Dimension of the cell associated with this ADERDGCellDescription in the
    * respective dimension.
    */
   parallelise persistent double size[DIMENSIONS];
@@ -65,7 +65,7 @@ class exahype::records::FiniteVolumesCellDescription {
   };
 
   /**
-   * The type of this FiniteVolumesCellDescription. See the documentation of Cell for
+   * The type of this ADERDGCellDescription. See the documentation of Cell for
    * more details.
    */
   parallelise persistent Type type;

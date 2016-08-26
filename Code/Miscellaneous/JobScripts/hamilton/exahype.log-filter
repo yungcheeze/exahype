@@ -29,6 +29,3 @@ info             exahype::runners::Runner::init    -1   black
 info             mpibalancing                      -1   white
 info             exahype::mappings::LoadBalancing::endIteration  -1 black
 
-info             ::InitialData                     -1   black
-info             ::main                            -1   black
-

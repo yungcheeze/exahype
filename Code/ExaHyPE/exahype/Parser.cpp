@@ -23,6 +23,7 @@
 #include "tarch/la/ScalarOperations.h"
 
 tarch::logging::Log exahype::Parser::_log("exahype::Parser");
+bool exahype::Parser::_interpretationErrorOccured(false);
 
 
 double exahype::Parser::getValueFromPropertyString( const std::string& parameterString, const std::string& key ) {
@@ -69,6 +70,7 @@ void exahype::Parser::readFile(const std::string& filename) {
   if (!inputFile.good()) {
     logError("readFile(String)", "can not open file " << filename);
     _tokenStream.clear();
+    _interpretationErrorOccured = true;
     return;
   }
 
@@ -101,7 +103,9 @@ void exahype::Parser::readFile(const std::string& filename) {
 }
 
 
-bool exahype::Parser::isValid() const { return !_tokenStream.empty(); }
+bool exahype::Parser::isValid() const {
+  return !_tokenStream.empty() && !_interpretationErrorOccured;
+}
 
 
 std::string exahype::Parser::getTokenAfter(std::string token,
@@ -191,6 +195,7 @@ int exahype::Parser::getNumberOfThreads() const {
              "Invalid number of cores set: "
              << token << ". Use one core, i.e. switch off multithreading");
     result = 1;
+    _interpretationErrorOccured = true;
   }
   return result;
 }
@@ -249,6 +254,7 @@ exahype::Parser::MPILoadBalancingType exahype::Parser::getMPILoadBalancingType()
   }
   else {
     logError("getMPILoadBalancingType()", "Invalid distributed memory identifier " << token );
+    _interpretationErrorOccured = true;
   }
   return result;
 }
@@ -263,8 +269,9 @@ int exahype::Parser::getMPIBufferSize() const {
   std::string token = getTokenAfter("distributed-memory", "buffer-size");
   int result = atoi(token.c_str());
   if (result<=0) {
-    logError("getMPIBufferSize()", "Invalid MPI buffer size " << token << ". reset to 64");
+    logError("getMPIBufferSize()", "Invalid MPI buffer size " << token );
     result = 64;
+    _interpretationErrorOccured = true;
   }
   return result;
 }
@@ -274,8 +281,9 @@ int exahype::Parser::getMPITimeOut() const {
   std::string token = getTokenAfter("distributed-memory", "timeout");
   int result = atoi(token.c_str());
   if (result<=0) {
-    logError("getMPIBufferSize()", "Invalid MPI timeout value " << token << ". reset to 0, i.e. no timeout");
+    logError("getMPIBufferSize()", "Invalid MPI timeout value " << token );
     result = 0;
+    _interpretationErrorOccured = true;
   }
   return result;
 }
@@ -294,8 +302,9 @@ const {
   } else {
     logError("getMulticoreOracleType()",
              "Invalid shared memory identifier "
-             << token << ". Use dummy, autotuning, sampling. Set to dummy");
+             << token );
     result = MulticoreOracleType::Dummy;
+    _interpretationErrorOccured = true;
   }
   return result;
 }
@@ -307,8 +316,9 @@ double exahype::Parser::getSimulationEndTime() const {
   double result = atof(token.c_str());
   if (result <= 0) {
     logError("getSimulationEndTime()",
-             "Invalid simulation end-time: " << token << ". Use 1.0");
+             "Invalid simulation end-time: " << token );
     result = 1.0;
+    _interpretationErrorOccured = true;
   }
   return result;
 }
@@ -321,38 +331,60 @@ bool exahype::Parser::getFuseAlgorithmicSteps() const {
 }
 
 double exahype::Parser::getFuseAlgorithmicStepsFactor() const {
-  assertion(isValid());
   std::string token = getTokenAfter("optimisation", "fuse-algorithmic-steps-factor");
   double result = atof(token.c_str());
   logDebug("getFuseAlgorithmicStepsFactor()", "found fuse-algorithmic-steps-factor " << token);
 
   if (result < 0.0 || result > 1.0) {
     logError("getFuseAlgorithmicStepsFactor()","'fuse-algorithmic-steps-factor': Value must be greater than zero and smaller than one.");
-    std::cerr.flush();
-    assert(false);
-    exit(ASSERTION_EXIT_CODE);
+    result = 0.0;
+    _interpretationErrorOccured = true;
   }
 
   return result;
 }
 
+
+double exahype::Parser::getTimestepBatchFactor() const {
+  assertion(isValid());
+  std::string token = getTokenAfter("optimisation", "timestep-batch-factor");
+  double result = atof(token.c_str());
+  logDebug("getFuseAlgorithmicStepsFactor()", "found timestep-batch-factor " << token);
+
+  if (result < 0.0 || result > 1.0) {
+    logError("getFuseAlgorithmicStepsFactor()","'timestep-batch-factor': Value must be greater than zero and smaller than one.");
+    result = 0.0;
+    _interpretationErrorOccured = true;
+  }
+    
+  return result;
+}
+
+
+bool   exahype::Parser::getSkipReductionInBatchedTimeSteps() const {
+  assertion(isValid());
+  std::string token = getTokenAfter("optimisation", "skip-reduction-in-batched-time-steps");
+  logDebug("getSkipReductionInBatchedTimeSteps()", "found skip-reduction-in-batched-time-steps " << token);
+  return token.compare("on") == 0;
+}
+
+
 exahype::solvers::Solver::Type exahype::Parser::getType(int solverNumber) const {
   assertion(isValid());
   std::string token;
-  exahype::solvers::Solver::Type result;
+  exahype::solvers::Solver::Type result = exahype::solvers::Solver::Type::ADER_DG;
   token = getTokenAfter("solver", solverNumber * 2 + 1, 0);
   if (_identifier2Type.find(token)!=_identifier2Type.end()) {
     result = _identifier2Type.at(token);
     // logDebug("getType()", "found type " << result);
     logDebug("getType()", "found type ");
-    return result;
   } else {
     logError("getType()","'" << getIdentifier(solverNumber) << "': 'type': Value '" << token << "' is invalid. See the ExaHyPE documentation for valid values.");
-    std::cerr.flush();
-    assert(false);
-    exit(ASSERTION_EXIT_CODE);
+    _interpretationErrorOccured = true;
   }
+  return result;
 }
+
 
 std::string exahype::Parser::getIdentifier(int solverNumber) const {
   assertion(isValid());
@@ -371,9 +403,7 @@ int exahype::Parser::getVariables(int solverNumber) const {
 
   if (result < 1) {
     logError("getVariables()","'" << getIdentifier(solverNumber) << "': 'variables': Value must be greater than zero.");
-    std::cerr.flush();
-    assert(false);
-    exit(ASSERTION_EXIT_CODE);
+    _interpretationErrorOccured = true;
   }
 
   logDebug("getVariables()", "found variables " << result);
@@ -389,9 +419,7 @@ int exahype::Parser::getParameters(int solverNumber) const {
 
   if (result < 0) {
     logError("getParameters()","'" << getIdentifier(solverNumber) << "': 'parameters': Value must not be negative.");
-    std::cerr.flush();
-    assert(false);
-    exit(ASSERTION_EXIT_CODE);
+    _interpretationErrorOccured = true;
   }
 
   logDebug("getParameters()", "found parameters " << result);
@@ -407,9 +435,7 @@ int exahype::Parser::getOrder(int solverNumber) const {
 
   if (result < 0) {
     logError("getOrder()","'" << getIdentifier(solverNumber) << "': 'order': Value must not be negative.");
-    std::cerr.flush();
-    assert(false);
-    exit(ASSERTION_EXIT_CODE);
+    _interpretationErrorOccured = true;
   }
 
   logDebug("getOrder()", "found order " << result);
@@ -424,9 +450,7 @@ double exahype::Parser::getMaximumMeshSize(int solverNumber) const {
   result = atof(token.c_str());
   if (tarch::la::smallerEquals(result,0.0)) {
     logError("getMaximumMeshSize()","'" << getIdentifier(solverNumber) << "': 'maximum-mesh-size': Value must be greater than zero.");
-    std::cerr.flush();
-    assert(false);
-    exit(ASSERTION_EXIT_CODE);
+    _interpretationErrorOccured = true;
   }
 
   logDebug("getMaximumMeshSize()", "found maximum mesh size " << result);
@@ -445,9 +469,7 @@ exahype::solvers::Solver::TimeStepping exahype::Parser::getTimeStepping(int solv
     return result;
   } else {
     logError("getTimeStepping()","'" << getIdentifier(solverNumber) << "': 'time-stepping': Value '" << token << "' is invalid. See the ExaHyPE documentation for valid values.");
-    std::cerr.flush();
-    assert(false);
-    exit(ASSERTION_EXIT_CODE);
+    _interpretationErrorOccured = true;
   }
   return exahype::solvers::Solver::TimeStepping::Global;
 }
@@ -560,6 +582,7 @@ void exahype::Parser::checkSolverConsistency(int solverNumber) const {
              "': Solver type in specification file" <<
              "differs from implementation solver type.");
     recompile = true;
+    _interpretationErrorOccured = true;
   }
 
   if (solver->getIdentifier().compare(getIdentifier(solverNumber))) {
@@ -567,6 +590,7 @@ void exahype::Parser::checkSolverConsistency(int solverNumber) const {
              "': Identifier in specification file " <<
              "('" << getIdentifier(solverNumber) << "') differs from identifier used in implementation ('" << solver->getIdentifier() << "').");
     recompile = true;
+    _interpretationErrorOccured = true;
   }
 
   if (solver->getNumberOfVariables() != getVariables(solverNumber)) {
@@ -574,6 +598,7 @@ void exahype::Parser::checkSolverConsistency(int solverNumber) const {
              "': Value for 'variables' in specification file" <<
              "('" << getVariables(solverNumber) << "') differs from number of variables used in implementation file ('" << solver->getNumberOfVariables() << "').");
     recompile = true;
+    _interpretationErrorOccured = true;
   }
 
   if (solver->getNumberOfParameters() != getParameters(solverNumber)) {
@@ -581,6 +606,7 @@ void exahype::Parser::checkSolverConsistency(int solverNumber) const {
              "': Value for field 'parameters' in specification file" <<
              "('" << getParameters(solverNumber) << "') differs from  number of parameters used in implementation file ('" << solver->getNumberOfParameters() << "').");
     recompile = true;
+    _interpretationErrorOccured = true;
   }
 
   if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG && solver->getNodesPerCoordinateAxis() != getOrder(solverNumber)+1) {
@@ -588,20 +614,19 @@ void exahype::Parser::checkSolverConsistency(int solverNumber) const {
              "': Value for field 'order' in specification file " <<
              "('" << getOrder(solverNumber) << "') differs from value used in implementation file ('" << solver->getNodesPerCoordinateAxis()-1 << "'). ");
     runToolkitAgain = true;
+    _interpretationErrorOccured = true;
   }
 
   // @todo We should add checks for FV as well
 
   if (runToolkitAgain) {
     logError("checkSolverConsistency","Please (1) run the Toolkit again, and (2) recompile!");
-    std::cerr.flush();
-    exit(1);
+    _interpretationErrorOccured = true;
   }
 
   if (recompile) {
     logError("checkSolverConsistency","Please (1) adjust the specification file (*.exahype) or the file '" << solver->getIdentifier() << ".cpp' accordingly, and (2) recompile!");
-    std::cerr.flush();
-    exit(1);
+    _interpretationErrorOccured = true;
   }
 }
 

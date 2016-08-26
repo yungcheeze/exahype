@@ -115,6 +115,14 @@ class exahype::Parser {
   std::map<std::string,exahype::solvers::Solver::TimeStepping> _identifier2TimeStepping;
 
   /**
+   * Has to be static. If it is not static, then we can't modify it inside
+   * const functions, i.e. all getters have to become non-const. This would
+   * be reasonable but then in turn enforce all operations accepting parsers
+   * to accept them as non-const.
+   */
+  static bool _interpretationErrorOccured;
+
+  /**
    * \return "notoken" if not found.
    */
   std::string getTokenAfter(std::string token,
@@ -194,6 +202,9 @@ class exahype::Parser {
    * \return Time step size underestimation factor for the fused ADER-DG time stepping variant.
    */
   double getFuseAlgorithmicStepsFactor() const;
+
+  double getTimestepBatchFactor() const;
+  bool   getSkipReductionInBatchedTimeSteps() const;
 
   /**
    * \return The type of a solver.

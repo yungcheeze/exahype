@@ -66,7 +66,6 @@ void exahype::Cell::shutdownMetaData() {
   _cellData.setCellDescriptionsIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 }
 
-#ifdef Parallel
 std::vector<peano::heap::records::IntegerHeapData> exahype::Cell::encodeMetadata(int cellDescriptionsIndex) {
   assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
   const int nADERDG = ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndex).size();
@@ -88,14 +87,6 @@ std::vector<peano::heap::records::IntegerHeapData> exahype::Cell::encodeMetadata
   }
   return encodedMetaData;
 }
-
-std::vector<peano::heap::records::IntegerHeapData> exahype::Cell::createEncodedMetadataSequenceForInvalidCellDescriptionsIndex() {
-  std::vector<peano::heap::records::IntegerHeapData> metadata(0,2);
-  metadata.push_back(0); // ADER-DG
-  metadata.push_back(0); // FV
-  return metadata;
-}
-#endif
 
 bool exahype::Cell::isInitialised() const {
   if (_cellData.getCellDescriptionsIndex()!=multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
@@ -155,10 +146,6 @@ void exahype::Cell::addNewCellDescription(
   newCellDescription.setSize(size);
   newCellDescription.setOffset(cellCentre);
 
-  // Initialise helper variables
-//  // TODO(Dominic):
-//  newCellDescription.setHelperCellNeedsToStoreFaceData(false);
-
   // Default field data indices
   newCellDescription.setSolution(-1);
 
@@ -217,9 +204,6 @@ void exahype::Cell::addNewCellDescription(
   // Pass geometry information to the cellDescription description
   newCellDescription.setSize(size);
   newCellDescription.setOffset(cellCentre);
-
-  // Initialise helper variables
-  newCellDescription.setHelperCellNeedsToStoreFaceData(false);
 
   // Default field data indices
   newCellDescription.setSpaceTimePredictor(-1);

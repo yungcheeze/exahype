@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   25/08/2016 15:01
+    * @date   23/08/2016 18:14
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -56,7 +56,6 @@ namespace exahype {
             #else
             std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
             #endif
-            bool _helperCellNeedsToStoreFaceData;
             #ifdef UseManualAlignment
             std::bitset<DIMENSIONS_TIMES_TWO> _faceDataSentToNeighbouringRank __attribute__((aligned(VectorisationAlignment)));
             #else
@@ -107,7 +106,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
+            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
             
             
             inline int getSolverNumber() const 
@@ -184,26 +183,6 @@ namespace exahype {
  #endif 
  {
                _riemannSolvePerformed = (riemannSolvePerformed);
-            }
-            
-            
-            
-            inline bool getHelperCellNeedsToStoreFaceData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _helperCellNeedsToStoreFaceData;
-            }
-            
-            
-            
-            inline void setHelperCellNeedsToStoreFaceData(const bool& helperCellNeedsToStoreFaceData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _helperCellNeedsToStoreFaceData = helperCellNeedsToStoreFaceData;
             }
             
             
@@ -857,7 +836,7 @@ namespace exahype {
          /**
           * Generated
           */
-         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
+         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
          
          /**
           * Generated
@@ -977,26 +956,6 @@ namespace exahype {
             assertion(elementIndex>=0);
             assertion(elementIndex<DIMENSIONS_TIMES_TWO);
             _persistentRecords._riemannSolvePerformed.flip(elementIndex);
-         }
-         
-         
-         
-         inline bool getHelperCellNeedsToStoreFaceData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._helperCellNeedsToStoreFaceData;
-         }
-         
-         
-         
-         inline void setHelperCellNeedsToStoreFaceData(const bool& helperCellNeedsToStoreFaceData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._helperCellNeedsToStoreFaceData = helperCellNeedsToStoreFaceData;
          }
          
          
@@ -1865,7 +1824,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   25/08/2016 15:01
+             * @date   23/08/2016 18:14
              */
             class exahype::records::ADERDGCellDescriptionPacked { 
                
@@ -1878,7 +1837,6 @@ namespace exahype {
                   struct PersistentRecords {
                      int _solverNumber;
                      std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
-                     bool _helperCellNeedsToStoreFaceData;
                      std::bitset<DIMENSIONS_TIMES_TWO> _faceDataSentToNeighbouringRank;
                      double _correctorTimeStepSize;
                      double _correctorTimeStamp;
@@ -1909,7 +1867,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
+                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
                      
                      
                      inline int getSolverNumber() const 
@@ -1986,26 +1944,6 @@ namespace exahype {
  #endif 
  {
                         _riemannSolvePerformed = (riemannSolvePerformed);
-                     }
-                     
-                     
-                     
-                     inline bool getHelperCellNeedsToStoreFaceData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _helperCellNeedsToStoreFaceData;
-                     }
-                     
-                     
-                     
-                     inline void setHelperCellNeedsToStoreFaceData(const bool& helperCellNeedsToStoreFaceData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _helperCellNeedsToStoreFaceData = helperCellNeedsToStoreFaceData;
                      }
                      
                      
@@ -2659,7 +2597,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
+                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
                   
                   /**
                    * Generated
@@ -2779,26 +2717,6 @@ namespace exahype {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                      _persistentRecords._riemannSolvePerformed.flip(elementIndex);
-                  }
-                  
-                  
-                  
-                  inline bool getHelperCellNeedsToStoreFaceData() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._helperCellNeedsToStoreFaceData;
-                  }
-                  
-                  
-                  
-                  inline void setHelperCellNeedsToStoreFaceData(const bool& helperCellNeedsToStoreFaceData) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._helperCellNeedsToStoreFaceData = helperCellNeedsToStoreFaceData;
                   }
                   
                   
@@ -3664,7 +3582,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   25/08/2016 15:01
+                      * @date   23/08/2016 18:14
                       */
                      class exahype::records::ADERDGCellDescription { 
                         
@@ -5296,7 +5214,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   25/08/2016 15:01
+                               * @date   23/08/2016 18:14
                                */
                               class exahype::records::ADERDGCellDescriptionPacked { 
                                  

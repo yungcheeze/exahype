@@ -4,7 +4,7 @@
 #@ node = NODES
 #@ tasks_per_node = NTASKS_PER_NODE
 #@ wall_clock_limit = 08:00:00
-#@ job_name = euler-NODES-NTASKS_PER_NODE-EXPERIMENT
+#@ job_name = euler-2-16
 #@ network.MPI = sn_all,not_shared,us
 ##@ initialdir = $(home)/mydir
 ##@ output = job.$(schedd_host).$(jobid).out
@@ -16,6 +16,9 @@
 . /etc/profile.d/modules.sh
 module load gcc/4.9
 
-output=$LOADL_TOTAL_TASKS"xNTASKS_PER_NODE-EXPERIMENT.results"
-poe ./ExaHyPE-Euler eulerflow-EXPERIMENT.exahype > $output
+for ARRAY_TASK_ID in 0 1 2 3 4 5
+do
+  output=$LOADL_TOTAL_TASKS"xNTASKS_PER_NODE-"$ARRAY_TASK_ID".results"
+  poe ./ExaHyPE-Euler eulerflow-$ARRAY_TASK_ID.exahype > $output
+done
 
