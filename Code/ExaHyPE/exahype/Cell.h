@@ -160,6 +160,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    */
   void shutdownMetaData();
 
+  #ifdef Parallel
   /**
    * Encodes the metadata as integer sequence.
    *
@@ -167,18 +168,46 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * ADERDGCellDescriptions associated with this cell (nADERG).
    * The next 2*nADERG elements store a pair of
    * solver number, and cell description type (encoded as int)
-   * for each ADERDGCellDescription associated with this cell.
+   * for each ADERDGCellDescription associated with this cell (description).
    *
    * The element 1+2*nADERDG refers to the number of
    * FiniteVolumesCellDescriptions associated with this cell (nFV).
    * The remaining 2*nFV elements store a pair of
    * solver number, and cell description type (encoded as int)
-   * for each FiniteVolumesCellDescription associated with this cell.
+   * for each FiniteVolumesCellDescription associated with this cell
+   * (description).
    *
-   * @todo(Dominic): Not directly associated with a cell. Consider
+   * @developers:
+   * TODO(Dominic): Does it make sense to also encode the
+   *                refinement event?
+   * TODO(Dominic): Not directly associated with a cell. Consider
    * to move this function somewhere else.
    */
   static std::vector<peano::heap::records::IntegerHeapData> encodeMetadata(const int cellDescriptionsIndex);
+
+  /**
+   * Returns an encoded metadata sequence for invalid cell descriptions indices.
+   * The sequence holds the values {0,0}.
+   *
+   * The first element refers to the number of
+   * ADERDGCellDescriptions associated with this cell (nADERG).
+   * The second element refers to the number of
+   * FiniteVolumesCellDescriptions associated with this cell (nFV).
+   *
+   * @developers:
+   * TODO(Dominic): Not directly associated with a cell. Consider
+   * to move this function somewhere else.
+   */
+  static std::vector<peano::heap::records::IntegerHeapData> createEncodedMetadataSequenceForInvalidCellDescriptionsIndex();
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void decodeADERDGMetadataInMergeWithRemoteDataDueToForkOrJoin(
+      const exahype::Cell& localCell,
+      const int receivedMetaDataIndex) const;
+
+  #endif
 
   /**
    * Checks if no unnecessary memory is allocated for the ADERDGCellDescription.

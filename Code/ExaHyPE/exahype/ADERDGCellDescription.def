@@ -28,6 +28,19 @@ class exahype::records::ADERDGCellDescription {
   ///@}
   
   #ifdef Parallel
+  
+  /**
+   * If a neighbouring cell belonging to another rank
+   * functions as a compute cell for the same solver (Type::Cell)
+   * that this cell description is linked to and this
+   * cell description is further a helper cell (Type::Ancestor/EmptyAncestor/
+   * Descendant/EmptyDescendany), this helper cell needs to store face data.
+   * This flag is used indicate these scenarios.
+   *
+   * \note This flag should be only set in MarkingForAugmentation::mergeWithNeighbour(...).
+   * It should be read and be reseted afterwards in MarkingForAugmentation::mergeWithNeighbour(...).
+   */
+  parallelise persistent bool helperCellNeedsToStoreFaceData;
   /**
    * Face data exchange in ExaHyPE is realised in vertices: each vertex checks
    * whether one of its adjacent faces should go to another rank. As a result, 
