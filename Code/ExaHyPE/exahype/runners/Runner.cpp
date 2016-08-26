@@ -266,14 +266,20 @@ int exahype::runners::Runner::run() {
   initSharedMemoryConfiguration();
 
   int result = 0;
-  if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
-    result = runAsMaster(*repository);
+  if ( _parser.isValid() ) {
+    if (tarch::parallel::Node::getInstance().isGlobalMaster()) {
+      result = runAsMaster(*repository);
+    }
+    #ifdef Parallel
+    else {
+      result = runAsWorker(*repository);
+    }
+    #endif
   }
-#ifdef Parallel
   else {
-    result = runAsWorker(*repository);
+    logError( "run(...)", "do not run code as parser reported errors" );
+    result = 1;
   }
-#endif
 
   shutdownSharedMemoryConfiguration();
   shutdownDistributedMemoryConfiguration();
