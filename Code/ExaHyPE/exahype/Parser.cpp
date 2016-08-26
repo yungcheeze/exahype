@@ -321,20 +321,41 @@ bool exahype::Parser::getFuseAlgorithmicSteps() const {
 }
 
 double exahype::Parser::getFuseAlgorithmicStepsFactor() const {
-  assertion(isValid());
   std::string token = getTokenAfter("optimisation", "fuse-algorithmic-steps-factor");
   double result = atof(token.c_str());
   logDebug("getFuseAlgorithmicStepsFactor()", "found fuse-algorithmic-steps-factor " << token);
 
   if (result < 0.0 || result > 1.0) {
     logError("getFuseAlgorithmicStepsFactor()","'fuse-algorithmic-steps-factor': Value must be greater than zero and smaller than one.");
-    std::cerr.flush();
-    assert(false);
-    exit(ASSERTION_EXIT_CODE);
+    result = 0.0;
   }
 
   return result;
 }
+
+
+double exahype::Parser::getTimestepBatchFactor() const {
+  assertion(isValid());
+  std::string token = getTokenAfter("optimisation", "timestep-batch-factor");
+  double result = atof(token.c_str());
+  logDebug("getFuseAlgorithmicStepsFactor()", "found timestep-batch-factor " << token);
+
+  if (result < 0.0 || result > 1.0) {
+    logError("getFuseAlgorithmicStepsFactor()","'timestep-batch-factor': Value must be greater than zero and smaller than one.");
+    result = 0.0;
+  }
+    
+  return result;
+}
+
+
+bool   exahype::Parser::getSkipReductionInBatchedTimeSteps() const {
+  assertion(isValid());
+  std::string token = getTokenAfter("optimisation", "skip-reduction-in-batched-time-steps");
+  logDebug("getSkipReductionInBatchedTimeSteps()", "found skip-reduction-in-batched-time-steps " << token);
+  return token.compare("on") == 0;
+}
+
 
 exahype::solvers::Solver::Type exahype::Parser::getType(int solverNumber) const {
   assertion(isValid());

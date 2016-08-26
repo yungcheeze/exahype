@@ -195,6 +195,9 @@ class exahype::Parser {
    */
   double getFuseAlgorithmicStepsFactor() const;
 
+  double getTimestepBatchFactor() const;
+  bool   getSkipReductionInBatchedTimeSteps() const;
+
   /**
    * \return The type of a solver.
    */

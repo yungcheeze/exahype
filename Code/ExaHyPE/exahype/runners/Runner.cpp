@@ -446,12 +446,11 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
          * use the max solver time step size. However, this is not necessary
          * here, as we half the time steps anyway.
          */
-    	if (solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers()>0.0) {
-    	  const double timeIntervalTillNextPlot = std::min(exahype::plotters::getTimeOfNextPlot(),simulationEndTime) - solvers::Solver::getMaxSolverTimeStampOfAllSolvers();
-          numberOfStepsToRun = std::floor( timeIntervalTillNextPlot / solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() );
-          logDebug("runAsMaster(...)", "number of possible time steps=" << numberOfStepsToRun << " with time till next plot=" << timeIntervalTillNextPlot );
-    	}
-        numberOfStepsToRun = numberOfStepsToRun<2 ? 1 : numberOfStepsToRun/2;
+        if (solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers()>0.0) {
+          const double timeIntervalTillNextPlot = std::min(exahype::plotters::getTimeOfNextPlot(),simulationEndTime) - solvers::Solver::getMaxSolverTimeStampOfAllSolvers();
+          numberOfStepsToRun = std::floor( timeIntervalTillNextPlot / solvers::Solver::getMinSolverTimeStepSizeOfAllSolvers() * _parser.getTimestepBatchFactor() );
+        }
+        numberOfStepsToRun = numberOfStepsToRun<1 ? 1 : numberOfStepsToRun;
       }
 
       runOneTimeStampWithFusedAlgorithmicSteps(repository, numberOfStepsToRun);
