@@ -676,7 +676,7 @@ bool exahype::mappings::FaceUnknownsProjection::prepareSendToWorker(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker) {
   // do nothing
-  return true;
+  return false;
 }
 
 void exahype::mappings::FaceUnknownsProjection::prepareSendToMaster(
