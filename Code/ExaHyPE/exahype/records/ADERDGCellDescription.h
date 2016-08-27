@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   26/08/2016 10:54
+    * @date   26/08/2016 16:08
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -58,9 +58,9 @@ namespace exahype {
             #endif
             bool _helperCellNeedsToStoreFaceData;
             #ifdef UseManualAlignment
-            std::bitset<DIMENSIONS_TIMES_TWO> _faceDataSentToNeighbouringRank __attribute__((aligned(VectorisationAlignment)));
+            tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _faceDataExchangeCounter __attribute__((aligned(VectorisationAlignment)));
             #else
-            std::bitset<DIMENSIONS_TIMES_TWO> _faceDataSentToNeighbouringRank;
+            tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _faceDataExchangeCounter;
             #endif
             double _correctorTimeStepSize;
             double _correctorTimeStamp;
@@ -107,7 +107,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
+            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
             
             
             inline int getSolverNumber() const 
@@ -227,12 +227,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline std::bitset<DIMENSIONS_TIMES_TWO> getFaceDataSentToNeighbouringRank() const 
+            inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFaceDataExchangeCounter() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _faceDataSentToNeighbouringRank;
+               return _faceDataExchangeCounter;
             }
             
             
@@ -256,12 +256,12 @@ namespace exahype {
              * 
              * @see convert()
              */
-            inline void setFaceDataSentToNeighbouringRank(const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank) 
+            inline void setFaceDataExchangeCounter(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _faceDataSentToNeighbouringRank = (faceDataSentToNeighbouringRank);
+               _faceDataExchangeCounter = (faceDataExchangeCounter);
             }
             
             
@@ -857,7 +857,7 @@ namespace exahype {
          /**
           * Generated
           */
-         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
+         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
          
          /**
           * Generated
@@ -1020,12 +1020,12 @@ namespace exahype {
           * 
           * @see convert()
           */
-         inline std::bitset<DIMENSIONS_TIMES_TWO> getFaceDataSentToNeighbouringRank() const 
+         inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFaceDataExchangeCounter() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _persistentRecords._faceDataSentToNeighbouringRank;
+            return _persistentRecords._faceDataExchangeCounter;
          }
          
          
@@ -1049,50 +1049,38 @@ namespace exahype {
           * 
           * @see convert()
           */
-         inline void setFaceDataSentToNeighbouringRank(const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank) 
+         inline void setFaceDataExchangeCounter(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _persistentRecords._faceDataSentToNeighbouringRank = (faceDataSentToNeighbouringRank);
+            _persistentRecords._faceDataExchangeCounter = (faceDataExchangeCounter);
          }
          
          
          
-         inline bool getFaceDataSentToNeighbouringRank(int elementIndex) const 
+         inline int getFaceDataExchangeCounter(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
             assertion(elementIndex>=0);
             assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            return _persistentRecords._faceDataSentToNeighbouringRank[elementIndex];
+            return _persistentRecords._faceDataExchangeCounter[elementIndex];
             
          }
          
          
          
-         inline void setFaceDataSentToNeighbouringRank(int elementIndex, const bool& faceDataSentToNeighbouringRank) 
+         inline void setFaceDataExchangeCounter(int elementIndex, const int& faceDataExchangeCounter) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
             assertion(elementIndex>=0);
             assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            _persistentRecords._faceDataSentToNeighbouringRank[elementIndex]= faceDataSentToNeighbouringRank;
+            _persistentRecords._faceDataExchangeCounter[elementIndex]= faceDataExchangeCounter;
             
-         }
-         
-         
-         
-         inline void flipFaceDataSentToNeighbouringRank(int elementIndex) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            assertion(elementIndex>=0);
-            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-            _persistentRecords._faceDataSentToNeighbouringRank.flip(elementIndex);
          }
          
          
@@ -1865,7 +1853,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   26/08/2016 10:54
+             * @date   26/08/2016 16:08
              */
             class exahype::records::ADERDGCellDescriptionPacked { 
                
@@ -1879,7 +1867,7 @@ namespace exahype {
                      int _solverNumber;
                      std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
                      bool _helperCellNeedsToStoreFaceData;
-                     std::bitset<DIMENSIONS_TIMES_TWO> _faceDataSentToNeighbouringRank;
+                     tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _faceDataExchangeCounter;
                      double _correctorTimeStepSize;
                      double _correctorTimeStamp;
                      double _predictorTimeStepSize;
@@ -1909,7 +1897,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
+                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
                      
                      
                      inline int getSolverNumber() const 
@@ -2029,12 +2017,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline std::bitset<DIMENSIONS_TIMES_TWO> getFaceDataSentToNeighbouringRank() const 
+                     inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFaceDataExchangeCounter() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _faceDataSentToNeighbouringRank;
+                        return _faceDataExchangeCounter;
                      }
                      
                      
@@ -2058,12 +2046,12 @@ namespace exahype {
                       * 
                       * @see convert()
                       */
-                     inline void setFaceDataSentToNeighbouringRank(const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank) 
+                     inline void setFaceDataExchangeCounter(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _faceDataSentToNeighbouringRank = (faceDataSentToNeighbouringRank);
+                        _faceDataExchangeCounter = (faceDataExchangeCounter);
                      }
                      
                      
@@ -2659,7 +2647,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
+                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMin, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,double>& solutionMax);
                   
                   /**
                    * Generated
@@ -2822,12 +2810,12 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline std::bitset<DIMENSIONS_TIMES_TWO> getFaceDataSentToNeighbouringRank() const 
+                  inline tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> getFaceDataExchangeCounter() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._faceDataSentToNeighbouringRank;
+                     return _persistentRecords._faceDataExchangeCounter;
                   }
                   
                   
@@ -2851,50 +2839,38 @@ namespace exahype {
                    * 
                    * @see convert()
                    */
-                  inline void setFaceDataSentToNeighbouringRank(const std::bitset<DIMENSIONS_TIMES_TWO>& faceDataSentToNeighbouringRank) 
+                  inline void setFaceDataExchangeCounter(const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._faceDataSentToNeighbouringRank = (faceDataSentToNeighbouringRank);
+                     _persistentRecords._faceDataExchangeCounter = (faceDataExchangeCounter);
                   }
                   
                   
                   
-                  inline bool getFaceDataSentToNeighbouringRank(int elementIndex) const 
+                  inline int getFaceDataExchangeCounter(int elementIndex) const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                     return _persistentRecords._faceDataSentToNeighbouringRank[elementIndex];
+                     return _persistentRecords._faceDataExchangeCounter[elementIndex];
                      
                   }
                   
                   
                   
-                  inline void setFaceDataSentToNeighbouringRank(int elementIndex, const bool& faceDataSentToNeighbouringRank) 
+                  inline void setFaceDataExchangeCounter(int elementIndex, const int& faceDataExchangeCounter) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                     _persistentRecords._faceDataSentToNeighbouringRank[elementIndex]= faceDataSentToNeighbouringRank;
+                     _persistentRecords._faceDataExchangeCounter[elementIndex]= faceDataExchangeCounter;
                      
-                  }
-                  
-                  
-                  
-                  inline void flipFaceDataSentToNeighbouringRank(int elementIndex) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     assertion(elementIndex>=0);
-                     assertion(elementIndex<DIMENSIONS_TIMES_TWO);
-                     _persistentRecords._faceDataSentToNeighbouringRank.flip(elementIndex);
                   }
                   
                   
@@ -3664,7 +3640,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   26/08/2016 10:54
+                      * @date   26/08/2016 16:08
                       */
                      class exahype::records::ADERDGCellDescription { 
                         
@@ -5296,7 +5272,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   26/08/2016 10:54
+                               * @date   26/08/2016 16:08
                                */
                               class exahype::records::ADERDGCellDescriptionPacked { 
                                  

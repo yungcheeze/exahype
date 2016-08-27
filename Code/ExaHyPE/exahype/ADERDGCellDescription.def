@@ -47,7 +47,7 @@ class exahype::records::ADERDGCellDescription {
    * a face might be exchanged up to 2^{d-1} times. We use this flag to avoid 
    * this. See prepareSendToNeighbour() in SpaceTimePredictor.
    */
-  parallelise persistent bool faceDataSentToNeighbouringRank[DIMENSIONS_TIMES_TWO];
+  parallelise persistent int faceDataExchangeCounter[DIMENSIONS_TIMES_TWO];
   #endif
 
   /**
