@@ -468,7 +468,7 @@ bool exahype::mappings::SpaceTimePredictor::prepareSendToWorker(
     p->sendToRank(worker, _mpiTag);
   }
 
-  return true;
+  return false;
 }
 
 void exahype::mappings::SpaceTimePredictor::receiveDataFromMaster(

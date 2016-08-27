@@ -127,7 +127,6 @@ std::string exahype::Parser::getTokenAfter(std::string token,
 std::string exahype::Parser::getTokenAfter(std::string token0,
                                            std::string token1,
                                            int additionalTokensToSkip) const {
-  assertion(isValid());
   int currentToken = 0;
   while (currentToken < static_cast<int>(_tokenStream.size()) &&
       _tokenStream[currentToken] != token0) {
@@ -192,8 +191,7 @@ int exahype::Parser::getNumberOfThreads() const {
   int result = atoi(token.c_str());
   if (result == 0) {
     logError("getNumberOfThreads()",
-             "Invalid number of cores set: "
-             << token << ". Use one core, i.e. switch off multithreading");
+             "Invalid number of cores set or token shared-memory missing: " << token);
     result = 1;
     _interpretationErrorOccured = true;
   }
@@ -310,7 +308,6 @@ const {
 }
 
 double exahype::Parser::getSimulationEndTime() const {
-  assertion(isValid());
   std::string token = getTokenAfter("computational-domain", "end-time");
   logDebug("getSimulationEndTime()", "found token " << token);
   double result = atof(token.c_str());
@@ -324,7 +321,6 @@ double exahype::Parser::getSimulationEndTime() const {
 }
 
 bool exahype::Parser::getFuseAlgorithmicSteps() const {
-  assertion(isValid());
   std::string token = getTokenAfter("optimisation", "fuse-algorithmic-steps");
   logDebug("getFuseAlgorithmicSteps()", "found fuse-algorithmic-steps" << token);
   return token.compare("on") == 0;
@@ -332,11 +328,13 @@ bool exahype::Parser::getFuseAlgorithmicSteps() const {
 
 double exahype::Parser::getFuseAlgorithmicStepsFactor() const {
   std::string token = getTokenAfter("optimisation", "fuse-algorithmic-steps-factor");
-  double result = atof(token.c_str());
+
+  char* pEnd;
+  double result = std::strtod(token.c_str(),&pEnd);
   logDebug("getFuseAlgorithmicStepsFactor()", "found fuse-algorithmic-steps-factor " << token);
 
-  if (result < 0.0 || result > 1.0) {
-    logError("getFuseAlgorithmicStepsFactor()","'fuse-algorithmic-steps-factor': Value must be greater than zero and smaller than one.");
+  if (result < 0.0 || result > 1.0 || pEnd==token.c_str() ) {
+    logError("getFuseAlgorithmicStepsFactor()","'fuse-algorithmic-steps-factor': Value must be greater than zero and smaller than one: " << result );
     result = 0.0;
     _interpretationErrorOccured = true;
   }
@@ -346,31 +344,34 @@ double exahype::Parser::getFuseAlgorithmicStepsFactor() const {
 
 
 double exahype::Parser::getTimestepBatchFactor() const {
-  assertion(isValid());
   std::string token = getTokenAfter("optimisation", "timestep-batch-factor");
-  double result = atof(token.c_str());
+  char* pEnd;
+  double result = std::strtod(token.c_str(),&pEnd);
   logDebug("getFuseAlgorithmicStepsFactor()", "found timestep-batch-factor " << token);
 
-  if (result < 0.0 || result > 1.0) {
-    logError("getFuseAlgorithmicStepsFactor()","'timestep-batch-factor': Value must be greater than zero and smaller than one.");
+  if (result < 0.0 || result > 1.0 || pEnd==token.c_str() ) {
+    logError("getFuseAlgorithmicStepsFactor()","'timestep-batch-factor': Value is required in optimisation section and must be greater than zero and smaller than one: " << result);
     result = 0.0;
     _interpretationErrorOccured = true;
   }
-    
+
   return result;
 }
 
 
 bool   exahype::Parser::getSkipReductionInBatchedTimeSteps() const {
-  assertion(isValid());
   std::string token = getTokenAfter("optimisation", "skip-reduction-in-batched-time-steps");
   logDebug("getSkipReductionInBatchedTimeSteps()", "found skip-reduction-in-batched-time-steps " << token);
+  if (token!="on" && token!="off" && token!="notoken") {
+    logError("getSkipReductionInBatchedTimeSteps()","skip-reduction-in-batched-time-steps is required in the optimisation segment and has to be either on or off: " << token);
+    _interpretationErrorOccured = true;
+  }
+
   return token.compare("on") == 0;
 }
 
 
 exahype::solvers::Solver::Type exahype::Parser::getType(int solverNumber) const {
-  assertion(isValid());
   std::string token;
   exahype::solvers::Solver::Type result = exahype::solvers::Solver::Type::ADER_DG;
   token = getTokenAfter("solver", solverNumber * 2 + 1, 0);
@@ -387,7 +388,6 @@ exahype::solvers::Solver::Type exahype::Parser::getType(int solverNumber) const 
 
 
 std::string exahype::Parser::getIdentifier(int solverNumber) const {
-  assertion(isValid());
   std::string token;
   token = getTokenAfter("solver", solverNumber * 2 + 1, 1);
   logDebug("getIdentifier()", "found identifier " << token);
@@ -395,7 +395,6 @@ std::string exahype::Parser::getIdentifier(int solverNumber) const {
 }
 
 int exahype::Parser::getVariables(int solverNumber) const {
-  assertion(isValid());
   std::string token;
   int result;
   token = getTokenAfter("solver", solverNumber * 2 + 1, "variables", 1);
@@ -411,7 +410,6 @@ int exahype::Parser::getVariables(int solverNumber) const {
 }
 
 int exahype::Parser::getParameters(int solverNumber) const {
-  assertion(isValid());
   std::string token;
   int result;
   token = getTokenAfter("solver", solverNumber * 2 + 1, "parameters", 1);
@@ -427,7 +425,6 @@ int exahype::Parser::getParameters(int solverNumber) const {
 }
 
 int exahype::Parser::getOrder(int solverNumber) const {
-  assertion(isValid());
   std::string token;
   int result;
   token = getTokenAfter("solver", solverNumber * 2 + 1, "order", 1);
@@ -443,7 +440,6 @@ int exahype::Parser::getOrder(int solverNumber) const {
 }
 
 double exahype::Parser::getMaximumMeshSize(int solverNumber) const {
-  assertion(isValid());
   std::string token;
   double result;
   token = getTokenAfter("solver", solverNumber * 2 + 1, "maximum-mesh-size", 1, 0);
@@ -458,7 +454,6 @@ double exahype::Parser::getMaximumMeshSize(int solverNumber) const {
 }
 
 exahype::solvers::Solver::TimeStepping exahype::Parser::getTimeStepping(int solverNumber) const {
-  assertion(isValid());
   std::string token;
   exahype::solvers::Solver::TimeStepping result;
   token = getTokenAfter("solver", solverNumber * 2 + 1, "time-stepping", 1);
@@ -477,7 +472,6 @@ exahype::solvers::Solver::TimeStepping exahype::Parser::getTimeStepping(int solv
 
 int exahype::Parser::getUnknownsForPlotter(
     int solverNumber, int plotterNumber) const {
-  assertion(isValid());
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
@@ -490,7 +484,6 @@ int exahype::Parser::getUnknownsForPlotter(
 
 double exahype::Parser::getFirstSnapshotTimeForPlotter(
     int solverNumber, int plotterNumber) const {
-  assertion(isValid());
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
@@ -502,7 +495,6 @@ double exahype::Parser::getFirstSnapshotTimeForPlotter(
 
 double exahype::Parser::getRepeatTimeForPlotter(int solverNumber,
                                                 int plotterNumber) const {
-  assertion(isValid());
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
@@ -514,7 +506,6 @@ double exahype::Parser::getRepeatTimeForPlotter(int solverNumber,
 
 std::string exahype::Parser::getIdentifierForPlotter(int solverNumber,
                                                      int plotterNumber) const {
-  assertion(isValid());
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
@@ -526,7 +517,6 @@ std::string exahype::Parser::getIdentifierForPlotter(int solverNumber,
 
 std::string exahype::Parser::getFilenameForPlotter(int solverNumber,
                                                    int plotterNumber) const {
-  assertion(isValid());
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
@@ -537,7 +527,6 @@ std::string exahype::Parser::getFilenameForPlotter(int solverNumber,
 }
 
 std::string exahype::Parser::getSelectorForPlotter(int solverNumber, int plotterNumber) const {
-  assertion(isValid());
   // We have to multiply with two as the token solver occurs twice (to open and
   // close the section)
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
@@ -548,14 +537,12 @@ std::string exahype::Parser::getSelectorForPlotter(int solverNumber, int plotter
 }
 
 std::string exahype::Parser::getProfilerIdentifier() const {
-  assertion(isValid());
   std::string token = getTokenAfter("profiling", "profiler");
   logDebug("getProfilerIdentifier()", "found token" << token);
   return (token != "notoken") ? token : "NoOpProfiler";
 }
 
 std::string exahype::Parser::getMetricsIdentifierList() const {
-  assertion(isValid());
   std::string token = getTokenAfter("profiling", "metrics");
   logDebug("getMetricsIdentifierList()", "found token " << token);
   return (token != "notoken") ? token : "{}";

@@ -48,6 +48,8 @@ exahype-project  Euler
   optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99    
+    timestep-batch-factor           = 0.8
+    skip-reduction-in-batched-time-steps = on
   end optimisation
 
   solver ADER-DG MyEulerSolver
