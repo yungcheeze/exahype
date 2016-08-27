@@ -228,7 +228,7 @@ void exahype::mappings::MarkingForRefinement::prepareCopyToRemoteNode(
     exahype::Cell& localCell, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  return;
+//  return;
 
   if (localCell.isInside()) {
     if (localCell.isInitialised()) {
@@ -321,7 +321,7 @@ void exahype::mappings::MarkingForRefinement::
         exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
         int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
         const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  return;
+//  return;
 
   if (localCell.isInside()) {
     // 1. First receive the metadata
@@ -372,7 +372,7 @@ bool exahype::mappings::MarkingForRefinement::geometryInfoDoesMatch(
     const int cellDescriptionsIndex,
     const tarch::la::Vector<DIMENSIONS,double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS,double>& cellSize,
-    const int level) const {
+    const int level) {
   if (!ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndex)) {
     assertion1(!FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndex),
         cellDescriptionsIndex);
@@ -504,7 +504,7 @@ void exahype::mappings::MarkingForRefinement::receiveFiniteVolumesMetadataInMerg
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize,
     const int level,
-    const int receivedMetadataIndex) const {
+    const int receivedMetadataIndex) {
   std::vector<peano::heap::records::IntegerHeapData>::const_iterator metadataIterator=
       MetadataHeap::getInstance().getData(receivedMetadataIndex).begin();
 

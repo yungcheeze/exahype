@@ -100,33 +100,33 @@ class exahype::mappings::MarkingForRefinement {
    *
    * Returns true otherwise.
    */
-  bool geometryInfoDoesMatch(
+  static bool geometryInfoDoesMatch(
       const int cellDescriptionsIndex,
       const tarch::la::Vector<DIMENSIONS,double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS,double>& cellSize,
-      const int level) const;
+      const int level);
 
   /**
    * TODO(Dominic): Add docu.
    */
-  void receiveFiniteVolumesMetadataInMergeWithRemoteDataDueToForkOrJoin(
+  static void receiveFiniteVolumesMetadataInMergeWithRemoteDataDueToForkOrJoin(
       exahype::Cell& localCell,
       const int fromRank,
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize,
       const int level,
-      const int receivedMetadataIndex) const;
+      const int receivedMetadataIndex);
 
   /**
    * TODO(Dominic): Add docu + implement.
    */
-  void receiveFiniteVolumesCellDescriptionsDataDueToForkOrJoin(
+  static void receiveFiniteVolumesCellDescriptionsDataDueToForkOrJoin(
       exahype::Cell& localCell,
       const int fromRank,
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize,
       const int level,
-      const int receivedMetadataIndex) const {}
+      const int receivedMetadataIndex){}
 #endif
 
  public:
