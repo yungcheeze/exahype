@@ -109,23 +109,23 @@ class exahype::mappings::MarkingForAugmentation {
    * If none of the previous is the case, this function returns
    * AugmentationControl::Default.
    */
-  AugmentationControl augmentationCriterion(
+  static AugmentationControl augmentationCriterion(
       const int solverNumber,
       const exahype::records::ADERDGCellDescription::Type type, const int level,
       const tarch::la::Vector<THREE_POWER_D, int>&
-          neighbourCellDescriptionIndices) const;
+          neighbourCellDescriptionIndices);
 
 
 #ifdef Parallel
   /**
    * TODO(Dominic): Add docu.
    */
-  void decodeADERDGMetadataInMergeWithNeigbour(const int destCellDescriptionIndex,const int receivedMetadataIndex) const;
+  static void receiveADERDGMetadataInMergeWithNeigbour(const int destCellDescriptionIndex,const int receivedMetadataIndex);
 
   /**
    * TODO(Dominic): Add docu.
    */
-  void decodeFiniteVolumesMetadataInMergeWithNeigbour(const int destCellDescriptionIndex,const int receivedMetadataIndex) const;
+  static void receiveFiniteVolumesMetadataInMergeWithNeigbour(const int destCellDescriptionIndex,const int receivedMetadataIndex);
 #endif
 
  public:
@@ -183,6 +183,8 @@ class exahype::mappings::MarkingForAugmentation {
 
 #ifdef Parallel
   /**
+   * * Currently we do not exchange metadata with rank 0.
+   *
    * TODO(Dominic): Add docu.
    */
   void mergeWithNeighbour(exahype::Vertex& vertex,
@@ -192,6 +194,8 @@ class exahype::mappings::MarkingForAugmentation {
                           int level);
 
   /**
+   * Currently we do not exchange metadata with rank 0.
+   *
    * TODO(Dominic): Add docu.
    */
   void prepareSendToNeighbour(exahype::Vertex& vertex, int toRank,

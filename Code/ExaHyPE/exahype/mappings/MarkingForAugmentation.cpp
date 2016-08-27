@@ -124,8 +124,7 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
             pFine.setType(exahype::records::ADERDGCellDescription::Ancestor);
           }
           if (fineGridCell.isAssignedToRemoteRank() ||
-              coarseGridCell.getCellDescriptionsIndex()==
-                  multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex) { // TODO(Dominic): Add to docu.
+              pFine.getParentIndex()==multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex) { // TODO(Dominic): Add to docu.
             pFine.setType(exahype::records::ADERDGCellDescription::Ancestor);
           }
 
@@ -143,8 +142,7 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
             pFine.setType(exahype::records::ADERDGCellDescription::Descendant);
           }
           if (fineGridCell.isAssignedToRemoteRank() ||
-              coarseGridCell.getCellDescriptionsIndex()==
-                  multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex) { // TODO(Dominic): Add to docu.
+              pFine.getParentIndex()==multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex) { // TODO(Dominic): Add to docu.
             pFine.setType(exahype::records::ADERDGCellDescription::Descendant);
           }
           if (augmentationControl==AugmentationControl::NextToCell ||
@@ -224,7 +222,7 @@ exahype::mappings::MarkingForAugmentation::augmentationCriterion(
     const int solverNumber,
     const exahype::records::ADERDGCellDescription::Type type, const int level,
     const tarch::la::Vector<THREE_POWER_D, int>&
-        neighbourCellDescriptionIndices) const {
+        neighbourCellDescriptionIndices) {
 // left,right,front,back,(front,back)
 #if DIMENSIONS == 2
   constexpr int neighbourPositions[4] = {3, 5, 1, 7};
@@ -281,7 +279,7 @@ void exahype::mappings::MarkingForAugmentation::prepareSendToNeighbour(
                            toRank, x, h, level);
 
   // TODO(Dominic): remove
-  return;
+  //  return;
 
   #if !defined(PeriodicBC)
   if (vertex.isBoundary()) return;
@@ -349,7 +347,7 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
                            fromRank, fineGridX, fineGridH, level);
 
   // TODO(Dominic): remove
-  return;
+//  return;
 
   // TODO(Dominic): AMR + MPI
   // 1. Get metadata,
@@ -359,9 +357,9 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
 #if !defined(PeriodicBC)
   if (vertex.isBoundary()) return;
 #endif
-  // TODO (Dominic): Add to docu: mergeWithNeighbour(..) happens before vertex creation events.
-  // but is an existing one.
-  // Only interior vertices are sending, no explicit check required.
+  // TODO(Dominic): Add to docu: mergeWithNeighbour(..) happens before vertex creation events.
+  // TODO(Dominic): Might need to change this (Periodic BC). Might need to send data between
+  // rank 0 and other ranks too. So vertex.isOutside() must be possible too.
   if (vertex.isInside()) {
     assertion1(vertex.isInside(),vertex.toString());
     assertion1(neighbour.isInside(),neighbour.toString());
@@ -384,7 +382,6 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
 
           int receivedMetadataIndex = MetadataHeap::getInstance().createData(0,0);
           assertion(MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
-
           MetadataHeap::getInstance().receiveData(
               receivedMetadataIndex,
               fromRank, fineGridX, level,
@@ -397,8 +394,8 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
             // We do not have to invert the order here since we receive the solver metadata in correct
             // order and perform local actions according to these metadata. No further messages need
             // to be handled by this vertex.
-            decodeADERDGMetadataInMergeWithNeigbour       (destCellDescriptionIndex,receivedMetadataIndex);
-            decodeFiniteVolumesMetadataInMergeWithNeigbour(destCellDescriptionIndex,receivedMetadataIndex);
+            receiveADERDGMetadataInMergeWithNeigbour       (destCellDescriptionIndex,receivedMetadataIndex);
+//            receiveFiniteVolumesMetadataInMergeWithNeigbour(destCellDescriptionIndex,receivedMetadataIndex);
           }
           // Clean up
           MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
@@ -411,9 +408,9 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
 }
 
 
-void exahype::mappings::MarkingForAugmentation::decodeADERDGMetadataInMergeWithNeigbour(
+void exahype::mappings::MarkingForAugmentation::receiveADERDGMetadataInMergeWithNeigbour(
     const int destCellDescriptionIndex,
-    const int receivedMetadataIndex) const {
+    const int receivedMetadataIndex) {
   std::vector<peano::heap::records::IntegerHeapData>::const_iterator metadataIterator=
       MetadataHeap::getInstance().getData(receivedMetadataIndex).begin();
   const int nADERDG = metadataIterator->getU(); ++metadataIterator;
@@ -482,80 +479,11 @@ void exahype::mappings::MarkingForAugmentation::decodeADERDGMetadataInMergeWithN
   }
 }
 
-void exahype::mappings::MarkingForAugmentation::decodeFiniteVolumesMetadataInMergeWithNeigbour(
+void exahype::mappings::MarkingForAugmentation::receiveFiniteVolumesMetadataInMergeWithNeigbour(
     const int destCellDescriptionIndex,
-    const int receivedMetadataIndex) const {
-// TODO(Dominic): This code needs editing.
-//  std::vector<peano::heap::records::IntegerHeapData>::const_iterator metadataIterator=
-//      MetadataHeap::getInstance().getData(receivedMetadataIndex).begin();
-//  const int nADERDG = metadataIterator->getU();
-//  metadataIterator += 1+2*nADERDG;
-//  const int nFV    = metadataIterator->getU();
-//
-//  if (nFV > 0) {
-//    logDebug("mergeWithNeighbour(...)","nFV: " << nADERDG);
-//    while (metadataIterator!=MetadataHeap::getInstance().getData(receivedMetadataIndex).begin()+1+2*nADERDG) {
-//      const int solverNumber = metadataIterator->getU(); ++metadataIterator;
-//      const int typeAsInt    = metadataIterator->getU();
-//      ++metadataIterator;
-//      logDebug("mergeWithNeighbour(...)","solverNumber: " << solverNumber);
-//      logDebug("mergeWithNeighbour(...)","typeAsInt: "    << typeAsInt);
-//
-//      for (auto& p : FiniteVolumesCellDescriptionHeap::getInstance().getData(destCellDescriptionIndex)) {
-//        if (p.getSolverNumber()==solverNumber) {
-//          assertionMsg(false,"Dominic please implement!");
-//
-//          switch(p.getType()) {
-//          case exahype::records::ADERDGCellDescription::Cell:
-//            if (
-//                p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None
-//                &&
-//                (typeAsInt==static_cast<int>(exahype::records::ADERDGCellDescription::Ancestor) ||
-//                    typeAsInt==static_cast<int>(exahype::records::ADERDGCellDescription::EmptyAncestor))
-//            ) {
-//              p.setRefinementEvent(exahype::records::ADERDGCellDescription::AugmentingRequested);
-//            }
-//            break;
-//          case exahype::records::ADERDGCellDescription::Descendant:
-//          case exahype::records::ADERDGCellDescription::EmptyDescendant:
-//            // 1. Adjust the type
-//            // TODO(Dominic): Here, we could introduce some flagging that allows
-//            // us to change the type of Descendant to EmptyDescendany if we are
-//            // on a MPI boundary such that multiple faces of a cell belong to the boundary.
-//            // For the moment, we set the type of a Descendant or EmptyDescendant to
-//            // Descendant if at least one face is part of the MPI boundary.
-//            // TODO(Dominic): Change type here; let the enterCell method do the memory allocation.
-//            p.setType(exahype::records::ADERDGCellDescription::Descendant);
-//
-//            // 2. Request further augmentation if necessary (this might get reseted if the traversal
-//            // is able to descend and finds existing descendants).
-//            if (p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None
-//                &&
-//                (typeAsInt==static_cast<int>(exahype::records::ADERDGCellDescription::Ancestor) ||
-//                    typeAsInt==static_cast<int>(exahype::records::ADERDGCellDescription::EmptyAncestor))
-//            ) {
-//              p.setRefinementEvent(exahype::records::ADERDGCellDescription::AugmentingRequested);
-//            }
-//            break;
-//          case exahype::records::ADERDGCellDescription::Ancestor:
-//          case exahype::records::ADERDGCellDescription::EmptyAncestor:
-//            // 1. Adjust the type
-//            // TODO(Dominic): Here, we could introduce some flagging that allows
-//            // us to change the type of Ancestor to EmptyDescendany if we are
-//            // on a MPI boundary such that multiple faces of a cell belong to the boundary.
-//            // For the moment, we set the type of a Ancestor or EmptyAncestor to
-//            // Ancestor if at least one face is part of the MPI boundary.
-//            // TODO(Dominic): Change type here; let the enterCell method do the memory allocation.
-//            p.setType(exahype::records::ADERDGCellDescription::Ancestor);
-//            break;
-//          default:
-//            assertionMsg(false,"Should never be entered!");
-//            break;
-//          }
-//        }
-//      }
-//    }
-//  }
+    const int receivedMetadataIndex) {
+// TODO(Dominic): Implement.
+  assertionMsg(false,"Dominic please implement!");
 }
 
 
