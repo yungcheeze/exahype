@@ -383,6 +383,10 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
   delete[] fluxOut;
 }
 
+/**
+ * TODO(Dominic): Add docu. Returns zero otherwise.
+ */
+
 void exahype::mappings::RiemannSolver::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -390,34 +394,16 @@ void exahype::mappings::RiemannSolver::enterCell(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  logTraceInWith4Arguments("enterCell(...)", fineGridCell,
-      fineGridVerticesEnumerator.toString(),
-      coarseGridCell, fineGridPositionOfCell);
-
-  if (fineGridCell.isInitialised()) {
-    const int numberOfADERDGCellDescriptions = static_cast<int>(
-        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size());
-    // please use a different UserDefined per mapping/event
-    const peano::datatraversal::autotuning::MethodTrace methodTrace =
-        peano::datatraversal::autotuning::UserDefined3;
-    const int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(
-            numberOfADERDGCellDescriptions, methodTrace);
-    pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      records::ADERDGCellDescription& p =
-          ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
-
-      std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed; // All bits are initialised to 'off'.
-      p.setRiemannSolvePerformed(riemannSolvePerformed);
-    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-    .parallelSectionHasTerminated(methodTrace);
-  }
-
-  logTraceOutWith1Argument("enterCell(...)", fineGridCell);
+  // do nothing
 }
 
 void exahype::mappings::RiemannSolver::beginIteration(
     exahype::State& solverState) {
   logTraceInWith1Argument("beginIteration(State)", solverState);
+
+  #ifdef Parallel
+  _state = &solverState;
+  #endif
 
   #ifdef Debug
   _interiorFaceSolves = 0;
@@ -434,139 +420,298 @@ void exahype::mappings::RiemannSolver::endIteration(
 }
 
 #ifdef Parallel
+// TODO(Dominic): Add to docu: We receive metadata on all vertices.
+// We receive only for Cell/Ancestor/Descendants cell descriptions face data.
+// EmptyAncestor/EmptyDescendants/InvalidAdjacencyIndices drop face data
+// that was sent to them by Cells/Ancestors/Descendants.
+// TODO(Dominic): Add to docu: The following invariant must hold:
+// A cell holding Cell/Ancestor/Descendant cell descriptions
+// next to a remote cell with cellDescriptionsIndex==InvalidAdjacencyIndex.
 void exahype::mappings::RiemannSolver::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
-#if !defined(PeriodicBC)
-  if (vertex.isBoundary()) return;
-#endif
 
-  tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
-      vertex.getCellDescriptionsIndex();
+// TODO(Dominic): This is a bug or needs to be documented.
+// see discussion in SpaceTimePredictor
+//#if !defined(PeriodicBC)
+//  if (vertex.isBoundary()) return;
+//#endif
+
+  // TODO(Dominic): Add to docu why we remove the vertex.isInside() constraint here.
+  // We might also consider to remove it from the grid setup mapping functions.
+  // fineGridCell.isInside does not imply that all adjacent vertices are
+  // inside. If we count down the counter only on
+  // fineGridVertices that are inside we might not send out all faces
+  // of a cell that is close to the boundary.
 
   dfor2(myDest)
     dfor2(mySrc)
-      tarch::la::Vector<DIMENSIONS, int>
-          dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
-      tarch::la::Vector<DIMENSIONS, int> src =
-          tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
+      tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
+      tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
 
       int destScalar = TWO_POWER_D - myDestScalar - 1;
-      int srcScalar = TWO_POWER_D - mySrcScalar - 1;
+      int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
-      if (vertex.getAdjacentRanks()(destScalar)   == tarch::parallel::Node::getInstance().getRank() &&
-          vertex.getAdjacentRanks()(srcScalar)    == fromRank &&
-          tarch::la::countEqualEntries(dest, src) == 1) {  // we are solely exchanging faces
-        const int destCellDescriptionIndex =
-            adjacentADERDGCellDescriptionsIndices(destScalar);
+      if (vertex.hasToReceiveMetadata(_state,src,dest,fromRank)) {
+        // 1. Receive metadata.
+        int receivedMetadataIndex = MetadataHeap::getInstance().createData(0,0);
+        assertion(MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
+        MetadataHeap::getInstance().receiveData(
+            receivedMetadataIndex,
+            fromRank, fineGridX, level,
+            peano::heap::MessageType::NeighbourCommunication);
+
+        const int destCellDescriptionIndex = vertex.getCellDescriptionsIndex()[destScalar];
 
         if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex)) {
-          std::vector<records::ADERDGCellDescription>& cellDescriptions =
-              ADERDGCellDescriptionHeap::getInstance().getData(
-                  destCellDescriptionIndex);
+          logDebug(
+              "mergeWithNeighbour(...)", "[data] " <<
+              fromRank << " for vertex x=" << fineGridX << ", level=" << level <<
+              ", src type=" << multiscalelinkedcell::indexToString(destCellDescriptionIndex) <<
+              ", src=" << src << ", dest=" << dest);
 
-          for (int currentSolver = 0;
-               currentSolver < static_cast<int>(cellDescriptions.size());
-               currentSolver++) {
-            if (cellDescriptions[currentSolver].getType() == exahype::records::ADERDGCellDescription::Cell) {
+          // TODO(Dominic): Add to docu: Order is important.
+//            receiveFiniteVolumesFaceData(
+//                fromRank,fineGridX,level,src,dest,
+//                vertex.getCellDescriptionsIndex()[srcScalar],
+//                vertex.getCellDescriptionsIndex()[destScalar],
+//                receivedMetadataIndex);
+
+          receiveADERDGFaceData(
+              fromRank,fineGridX,level,src,dest,
+              vertex.getCellDescriptionsIndex()[srcScalar],
+              vertex.getCellDescriptionsIndex()[destScalar],
+              receivedMetadataIndex);
+
+
+        } else {
+          // TODO (Dominic): Drop the incoming messages if necessary.
+          // We only send non trivial metadata out if we
+          // send face data. See SpaceTimePredictor for details.
+          // We can thus interpret from the received metadata
+          // if the current vertex needs to receive and drop
+          // facedata.
+          if (!isEncodedMetadataSequenceForInvalidCellDescriptionsIndex(receivedMetadataIndex)) {
+            dropADERDGFaceData(
+                fromRank,fineGridX,level,src,dest,
+                vertex.getCellDescriptionsIndex()[srcScalar],
+                vertex.getCellDescriptionsIndex()[destScalar],
+                receivedMetadataIndex);
+          }
+        }
+        // Clean up
+        MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
+      }
+    enddforx
+  enddforx
+}
+
+void exahype::mappings::RiemannSolver::receiveADERDGFaceData(
+    int fromRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    int level,
+    const tarch::la::Vector<DIMENSIONS,int>& src,
+    const tarch::la::Vector<DIMENSIONS,int>& dest,
+    int srcCellDescriptionIndex,
+    int destCellDescriptionIndex,
+    int receivedMetadataIndex) {
+  ADERDGCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex);
+  FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex);
+
+  std::vector<peano::heap::records::IntegerHeapData>::const_iterator metadataIterator=
+      MetadataHeap::getInstance().getData(receivedMetadataIndex).begin();
+  const int nADERDG = metadataIterator->getU();
+
+  if (nADERDG > 0) {
+    logDebug("receiveADERDGFaceData(...)","nADERDG: " << nADERDG);
+    const int endOfADERDGMetadata = 2*nADERDG;
+    metadataIterator += endOfADERDGMetadata;
+
+    const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
+    assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
+    const int faceIndex = 2 * normalOfExchangedFace +
+        (src(normalOfExchangedFace) > dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
+
+    // TODO(Dominic): Add to docu why we need to invert the order.
+    while (metadataIterator!=MetadataHeap::getInstance().getData(receivedMetadataIndex).begin()) {
+      const int neighbourTypeAsInt    = metadataIterator->getU(); --metadataIterator;
+      const int neighbourSolverNumber = metadataIterator->getU(); --metadataIterator;
+      exahype::records::ADERDGCellDescription::Type neighbourType =
+          static_cast<exahype::records::ADERDGCellDescription::Type>(neighbourTypeAsInt);
+      logDebug("receiveADERDGFaceData(...)","neighbourSolverNumber: " << neighbourSolverNumber);
+      logDebug("receiveADERDGFaceData(...)","neighbourTypeAsInt: "    << neighbourTypeAsInt);
+
+      if (neighbourType==exahype::records::ADERDGCellDescription::Cell ||
+          neighbourType==exahype::records::ADERDGCellDescription::Ancestor ||
+          neighbourType==exahype::records::ADERDGCellDescription::Descendant) {
+        for (auto& p : ADERDGCellDescriptionHeap::getInstance().getData(destCellDescriptionIndex)) {
+          if (p.getSolverNumber()==neighbourSolverNumber) {
+            if (p.getFaceDataExchangeCounter(faceIndex)==0) {
+              p.setFaceDataExchangeCounter(faceIndex,TWO_POWER_D); // TODO(Dominic): Add to docu what we do here with the counter.
+              assertion1(!p.getRiemannSolvePerformed(faceIndex),p.toString());
+
               exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
-                  exahype::solvers::RegisteredSolvers
-                  [cellDescriptions[currentSolver].getSolverNumber()]);
+                  exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
 
-              const int numberOfFaceDof = solver->getUnknownsPerFace();
-              const int normalOfExchangedFace =
-                  tarch::la::equalsReturnIndex(src, dest);
-              assertion(normalOfExchangedFace >= 0 &&
-                        normalOfExchangedFace < DIMENSIONS);
+              if (p.getType()==exahype::records::ADERDGCellDescription::Cell ||
+                  p.getType()==exahype::records::ADERDGCellDescription::Ancestor ||
+                  p.getType()==exahype::records::ADERDGCellDescription::Descendant){
+                assertion(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()));
+                assertion(DataHeap::getInstance().isValidIndex(p.getFluctuation()));
 
-              assertion(DataHeap::getInstance().isValidIndex(
-                  cellDescriptions[currentSolver].getExtrapolatedPredictor()));
-              assertion(DataHeap::getInstance().isValidIndex(
-                  cellDescriptions[currentSolver].getFluctuation()));
-
-              if (adjacentADERDGCellDescriptionsIndices(destScalar) == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
-                #if defined(PeriodicBC)
-                assertionMsg(false, "Vasco, we have to implement this");
-                #else
-                assertionMsg(false, "should never been entered");
-                #endif
-              } else {
-                logDebug("mergeWithNeighbour(...)", "receive two arrays from rank "
-                        << fromRank << " for vertex " << vertex.toString()
-                        << ", src type=" << multiscalelinkedcell::indexToString(adjacentADERDGCellDescriptionsIndices(srcScalar))
-                        << ", src=" << src << ", dest=" << dest);
-
-                int receivedlQhbndIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
-                int receivedlFhbndIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
-                int receivedMinMax      = DataHeap::getInstance().createData(0, 2);
-
-                assertion(DataHeap::getInstance().getData(receivedlQhbndIndex).empty());
-                assertion(DataHeap::getInstance().getData(receivedlFhbndIndex).empty());
-
-                DataHeap::getInstance().receiveData(receivedlFhbndIndex, fromRank, fineGridX, level,
-                    peano::heap::MessageType::NeighbourCommunication);
-                DataHeap::getInstance().receiveData(receivedlQhbndIndex, fromRank, fineGridX, level,
-                    peano::heap::MessageType::NeighbourCommunication);
-                DataHeap::getInstance().receiveData(receivedMinMax,  fromRank, fineGridX, level,
-                    peano::heap::MessageType::NeighbourCommunication);
-
-                int faceIndexForCell = -1;
-                if ((normalOfExchangedFace == 0) &
-                    (src(normalOfExchangedFace) < dest(normalOfExchangedFace))) {
-                  faceIndexForCell = 0;
-                } else if ((normalOfExchangedFace == 0) &
-                           (src(normalOfExchangedFace) > dest(normalOfExchangedFace))) {
-                  faceIndexForCell = 1;
-                } else if ((normalOfExchangedFace == 1) &
-                           (src(normalOfExchangedFace) < dest(normalOfExchangedFace))) {
-                  faceIndexForCell = 2;
-                } else if ((normalOfExchangedFace == 1) &
-                           (src(normalOfExchangedFace) > dest(normalOfExchangedFace))) {
-                  faceIndexForCell = 3;
-                } else if ((normalOfExchangedFace == 2) &
-                           (src(normalOfExchangedFace) < dest(normalOfExchangedFace))) {
-                  faceIndexForCell = 4;
-                } else if ((normalOfExchangedFace == 2) &
-                           (src(normalOfExchangedFace) > dest(normalOfExchangedFace))) {
-                  faceIndexForCell = 5;
+                if (srcCellDescriptionIndex == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
+                  #if defined(PeriodicBC)
+                  assertionMsg(false, "Vasco, we have to implement this");
+                  #else
+                  assertionMsg(false, "should never been entered");
+                  #endif
                 } else {
-                  assertionMsg(false, "should not be entered");
-                }
+                  logDebug(
+                      "receiveADERDGFaceData(...)", "receive three arrays from rank " <<
+                       fromRank << " for vertex x=" << x << ", level=" << level <<
+                       ", src type=" << multiscalelinkedcell::indexToString(srcCellDescriptionIndex) <<
+                      ", src=" << src << ", dest=" << dest <<
+                      ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
+                    );
 
-                if (!cellDescriptions[currentSolver].getRiemannSolvePerformed(faceIndexForCell)) {
-                  logDebug("mergeWithNeighbour(...)", "solve Riemann problem with received data."
-                               << " cellDescription=" << cellDescriptions[currentSolver].toString()
-                               << ",faceIndexForCell=" << faceIndexForCell
-                               << ",normalOfExchangedFac=" << normalOfExchangedFace
-                               << ",vertex=" << vertex.toString());
+                  const int numberOfFaceDof = solver->getUnknownsPerFace();
+                  int receivedlQhbndIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
+                  int receivedlFhbndIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
+                  int receivedMinMax      = DataHeap::getInstance().createData(0, 2);
+
+                  assertion(DataHeap::getInstance().getData(receivedlQhbndIndex).empty());
+                  assertion(DataHeap::getInstance().getData(receivedlFhbndIndex).empty());
+                  assertion(DataHeap::getInstance().getData(receivedMinMax).empty());
+
+                  // Send order: minMax,lQhbnd,lFhbnd
+                  // Receive order: lFhbnd,lQhbnd,minMax
+                  DataHeap::getInstance().receiveData(receivedlFhbndIndex, fromRank, x, level,
+                      peano::heap::MessageType::NeighbourCommunication);
+                  DataHeap::getInstance().receiveData(receivedlQhbndIndex, fromRank, x, level,
+                      peano::heap::MessageType::NeighbourCommunication);
+                  DataHeap::getInstance().receiveData(receivedMinMax,  fromRank, x, level,
+                      peano::heap::MessageType::NeighbourCommunication);
+
+                  logDebug(
+                      "receiveADERDGFaceData(...)", "[pre] solve Riemann problem with received data." <<
+                      " cellDescription=" << p.toString() <<
+                      ",faceIndexForCell=" << faceIndex <<
+                      ",normalOfExchangedFac=" << normalOfExchangedFace <<
+                      ",x=" << x.toString() << ", level=" << level <<
+                      ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
+                  );
 
                   solveRiemannProblemAtInterface(
-                      cellDescriptions[currentSolver],
-                      faceIndexForCell,
+                      p,
+                      faceIndex,
                       normalOfExchangedFace,
                       receivedlQhbndIndex,
                       receivedlFhbndIndex);
 
                   Cell::mergeSolutionMinMaxOnFace(
-                      cellDescriptions[currentSolver],
-                      faceIndexForCell,
+                      p,
+                      faceIndex,
                       DataHeap::getInstance().getData(receivedMinMax)[0],
                       DataHeap::getInstance().getData(receivedMinMax)[1]);
-                }
 
-                DataHeap::getInstance().deleteData(receivedlQhbndIndex);
-                DataHeap::getInstance().deleteData(receivedlFhbndIndex);
-                DataHeap::getInstance().deleteData(receivedMinMax);
+                  // TODO(Dominic): If anarchic time stepping, receive the time step too.
+
+                  DataHeap::getInstance().deleteData(receivedlQhbndIndex);
+                  DataHeap::getInstance().deleteData(receivedlFhbndIndex);
+                  DataHeap::getInstance().deleteData(receivedMinMax);
+                }
+              } else { // TODO(Dominic): just drop the data. Add to docu.
+                if (srcCellDescriptionIndex == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
+                  #if defined(PeriodicBC)
+                  assertionMsg(false, "Vasco, we have to implement this");
+                  #else
+                  assertionMsg(false, "should never been entered");
+                  #endif
+                } else {
+                  assertion(p.getType()!=exahype::records::ADERDGCellDescription::Erased);
+                  // TODO(Dominic): Revise this for dyn. AMR.
+
+                  logDebug(
+                      "receiveADERDGFaceData(...)", "drop three arrays from rank " <<
+                      fromRank << " for vertex x=" << x << ", level=" << level <<
+                      ", src type=" << multiscalelinkedcell::indexToString(srcCellDescriptionIndex) <<
+                      ", src=" << src << ", dest=" << dest <<
+                      ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
+                  );
+
+                  DataHeap::getInstance().receiveData(fromRank, x, level,
+                      peano::heap::MessageType::NeighbourCommunication);
+                  DataHeap::getInstance().receiveData(fromRank, x, level,
+                      peano::heap::MessageType::NeighbourCommunication);
+                  DataHeap::getInstance().receiveData(fromRank, x, level,
+                      peano::heap::MessageType::NeighbourCommunication);
+                }
               }
-            } else {
-              assertionMsg(false, "Dominic, please implement");
             }
           }
         }
       }
-    enddforx
-  enddforx
+    }
+  }
+}
+
+bool exahype::mappings::RiemannSolver::isEncodedMetadataSequenceForInvalidCellDescriptionsIndex(int receivedMetadataIndex) {
+  return MetadataHeap::getInstance().getData(receivedMetadataIndex).size()==2    &&
+         MetadataHeap::getInstance().getData(receivedMetadataIndex)[0].getU()==0 &&
+         MetadataHeap::getInstance().getData(receivedMetadataIndex)[1].getU()==0;
+}
+
+void exahype::mappings::RiemannSolver::dropADERDGFaceData(
+    int fromRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    int level,
+    const tarch::la::Vector<DIMENSIONS,int>& src,
+    const tarch::la::Vector<DIMENSIONS,int>& dest,
+    int srcCellDescriptionIndex,
+    int destCellDescriptionIndex,
+    int receivedMetadataIndex) {
+  ADERDGCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex);
+  FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex);
+
+  std::vector<peano::heap::records::IntegerHeapData>::const_iterator metadataIterator=
+      MetadataHeap::getInstance().getData(receivedMetadataIndex).begin();
+  const int nADERDG = metadataIterator->getU();
+
+  if (nADERDG > 0) {
+    logDebug("dropADERDGFaceData(...)","nADERDG: " << nADERDG);
+    const int endOfADERDGMetadata = 2*nADERDG;
+    metadataIterator += endOfADERDGMetadata;
+
+    // TODO(Dominic): Add to docu why we need to invert the order.
+    while (metadataIterator!=MetadataHeap::getInstance().getData(receivedMetadataIndex).begin()) {
+      const int neighbourTypeAsInt    = metadataIterator->getU();
+      metadataIterator-=2;
+      exahype::records::ADERDGCellDescription::Type neighbourType =
+          static_cast<exahype::records::ADERDGCellDescription::Type>(neighbourTypeAsInt);
+      logDebug("dropADERDGFaceData(...)","neighbourSolverNumber: " << neighbourSolverNumber);
+      logDebug("dropADERDGFaceData(...)","neighbourTypeAsInt: "    << neighbourTypeAsInt);
+
+      if (neighbourType==exahype::records::ADERDGCellDescription::Cell ||
+          neighbourType==exahype::records::ADERDGCellDescription::Ancestor ||
+          neighbourType==exahype::records::ADERDGCellDescription::Descendant) {
+        logDebug(
+            "dropADERDGFaceData(...)", "drop three arrays from rank " <<
+            fromRank << " for vertex x=" << x << ", level=" << level <<
+            ", src type=" << multiscalelinkedcell::indexToString(srcCellDescriptionIndex) <<
+            ", src=" << src << ", dest=" << dest <<
+            ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
+        );
+
+        DataHeap::getInstance().receiveData(fromRank, x, level,
+            peano::heap::MessageType::NeighbourCommunication);
+        DataHeap::getInstance().receiveData(fromRank, x, level,
+            peano::heap::MessageType::NeighbourCommunication);
+        DataHeap::getInstance().receiveData(fromRank, x, level,
+            peano::heap::MessageType::NeighbourCommunication);
+      }
+    }
+  }
 }
 
 void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(

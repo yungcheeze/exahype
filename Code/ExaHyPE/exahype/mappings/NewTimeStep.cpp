@@ -115,9 +115,6 @@ void exahype::mappings::NewTimeStep::enterCell(
       exahype::solvers::ADERDGSolver* solver =
           static_cast<exahype::solvers::ADERDGSolver*>(exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
 
-      std::bitset<DIMENSIONS_TIMES_TWO> riemannSolvePerformed; // all bits are initialised to 'off'
-      p.setRiemannSolvePerformed(riemannSolvePerformed);
-
       if(p.getType()==exahype::records::ADERDGCellDescription::Cell) {
         solver->synchroniseTimeStepping(p);
       }

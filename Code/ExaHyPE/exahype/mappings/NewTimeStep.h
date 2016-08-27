@@ -101,13 +101,13 @@ class exahype::mappings::NewTimeStep {
 #endif
 
   /**
-   * Resets the Riemann solve flags on compute cells.
-   * Further synchronises the time step sizes and time
+   * Synchronises the time step sizes and time
    * stamps on the compute cells with the solver ones.
    *
    * @developers
    * TODO(Dominic): It probably does not make sense that we parallelise this
    * operation over the cell descriptions since the computational intensity is quite low.
+   * This mapping is further only used in the initialisation of the timestepping.
    */
   void enterCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
