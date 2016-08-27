@@ -95,6 +95,7 @@ std::vector<peano::heap::records::IntegerHeapData> exahype::Cell::createEncodedM
   metadata.push_back(0); // FV
   return metadata;
 }
+
 #endif
 
 bool exahype::Cell::isInitialised() const {
@@ -158,6 +159,7 @@ void exahype::Cell::addNewCellDescription(
   // Initialise helper variables
 //  // TODO(Dominic):
 //  newCellDescription.setHelperCellNeedsToStoreFaceData(false);
+//  newCellDescription.setHelperCellNeedsToStoreFaceData(false);
 
   // Default field data indices
   newCellDescription.setSolution(-1);
@@ -220,6 +222,9 @@ void exahype::Cell::addNewCellDescription(
 
   // Initialise helper variables
   newCellDescription.setHelperCellNeedsToStoreFaceData(false);
+  for (int i = 0; i < DIMENSIONS_TIMES_TWO; i++) {
+    newCellDescription.setFaceDataExchangeCounter(i,TWO_POWER_D);
+  }
 
   // Default field data indices
   newCellDescription.setSpaceTimePredictor(-1);
