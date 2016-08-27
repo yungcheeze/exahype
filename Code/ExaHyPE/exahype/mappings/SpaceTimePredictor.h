@@ -73,10 +73,105 @@ class exahype::mappings::SpaceTimePredictor {
    */
   static tarch::logging::Log _log;
 
+
+
+  #ifdef Parallel
+  /**
+   * We need read access to the state.
+   *
+   * \note While currently no forking and joining will happen after the initial
+   * grid setup, this will happen in the dynamic AMR case. It thus doesn't hurt to
+   * use work with the _state already in the static AMR case.
+   * TODO(Dominic): Delete this comment as soon as we have dynamic AMR+MPI.
+   *
+   * \note Do not set values on the state. Write access to the state is not thread-safe.
+   */
+  exahype::State* _state;
   /**
    * Tag that is used to exchange all the solver instances in MPI
    */
   static int _mpiTag;
+
+  /**
+   * Count the listings of remote ranks that share a vertex
+   * adjacent to the face \p faceIndex of a cell.
+   * This value is either 0 or 2^{d-1}.
+   *
+   * If we count 2^{d-1} listings, this implies that this rank
+   * shares a whole face with a remote rank and not just
+   * corner points or an edge of the face.
+   *
+   * More interestingly, we know from this number how
+   * many vertices will try to exchange neighbour information
+   * that is related to this face.
+   *
+   * @developers:
+   * TODO(Dominic): We currently check for uniqueness of the
+   * remote rank. This might however not be necessary.
+   */
+  static int countListingsOfRemoteRankAtFace(
+      const int faceIndex,
+      exahype::Vertex* const verticesAroundCell,
+      const peano::grid::VertexEnumerator& verticesEnumerator);
+
+  /**
+   * Checks for all cell descriptions (ADER-DG, FV, ...)
+   * corresponding to the heap index \p cellDescriptionsIndex
+   * if now is the time to send out face data to a
+   * neighbouring rank.
+   *
+   * <h2>Details<\h2>
+   * On every cell description, we hold a field of 2*d
+   * counters. If a face is part of the MPI boundary,
+   * we initialise the corresponding counter with
+   * value 2^{d-1}.
+   *
+   * In the mergeWithNeighbour(...) routine,
+   * we then decrement the counters for the face
+   * every time one of the 2^{d-1}
+   * adjacent vertices touches the face.
+   *
+   * If the counters hold the value zero, this function returns true.
+   * Otherwise it returns false
+   *
+   * @see decrementCounters
+   */
+  bool needToSendFaceData(
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest,
+      int cellDescriptionsIndex);
+
+
+  /**
+   * Every call of this function decrements the
+   * faceDataExchangeCounter for the face corresponding
+   * to the source and destination position pair \p src and \p dest
+   * for all cell descriptions corresponding to \p cellDescriptionsIndex.
+   *
+   * @see hasToSendFace
+   */
+  void decrementCounters(
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest,
+      int cellDescriptionsIndex);
+
+  /**
+   * TODO(Dominic): Docu.
+   *
+   * TODO(Dominic): Make messaging solver functionality?
+   *
+   * \note Not thread-safe.
+   */
+  static void sentADERDGFaceData(
+      int toRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      int level,
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest,
+      int srcCellDescriptionIndex,
+      int destCellDescriptionIndex);
+  #endif
+
 
  public:
   static peano::MappingSpecification touchVertexLastTimeSpecification();
@@ -93,6 +188,8 @@ class exahype::mappings::SpaceTimePredictor {
 
   /**
    * Enter a cell
+   *
+   * Resets the Riemann solve flags and the face data exchange counter for all cells types.
    *
    * Run through all solvers assigned to a (real) cell and invoke the solver's
    * spaceTimePredictor(...).
