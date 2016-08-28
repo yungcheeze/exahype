@@ -60,7 +60,6 @@ def addData(table,normalisation,plotLabels,experimentSetCounter,label):
 
   
 def initGlobalPlotterSettings():
-  pylab.ylabel( "time [t]=s" )
   pylab.xlabel( args.xaxislabel )
   pylab.grid(True)
   pylab.legend(loc='best',fontsize='%d' % int(args.fontsize))  
@@ -77,12 +76,16 @@ def switchToLogScales():
   pylab.loglog( basex=2, basey=2 )
   XTicks  = [ int(args.singlecore) ]
   XLabels = [ "serial" ]
+  #XTicks  = [ int(args.singlecore), int(args.singlecore) ]
+  #XLabels = [ "no MPI", "serial" ]
+  #XTicks  = [ int(args.singlecore) ]
+  #XLabels = [ "no MPI" ]
   for i in range(1,int(xDataMax)+2):
     if i>1 and ((i & (i - 1)) == 0) and i>int(args.singlecore):
       XTicks.append( i )
       XLabels.append( str(i) ) 
   pylab.xticks(XTicks,XLabels)
-  pylab.xlim(int(args.singlecore),xDataMax)
+  pylab.xlim(int(args.singlecore)-1,xDataMax)
 
   #and i>int(args.singlecore)
 
@@ -138,6 +141,8 @@ for (table,label) in zip(args.table,args.experimentdescription):
 
 initGlobalPlotterSettings()
 
+pylab.ylabel( "time per time step [t]=s" )
+
 pylab.savefig( outputFile + ".png" )
 pylab.savefig( outputFile + ".pdf" )
 switchToLogScales()
@@ -170,6 +175,8 @@ for (table,label) in zip(args.table,args.experimentdescription):
   experimentSetCounter = experimentSetCounter + 1
 
 initGlobalPlotterSettings()
+
+pylab.ylabel( "time per cell per time step [t]=s" )
 
 pylab.savefig( outputFile + ".png" )
 pylab.savefig( outputFile + ".pdf" )
