@@ -115,7 +115,9 @@ void exahype::mappings::NewTimeStep::enterCell(
       exahype::solvers::ADERDGSolver* solver =
           static_cast<exahype::solvers::ADERDGSolver*>(exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
 
-      if(p.getType()==exahype::records::ADERDGCellDescription::Cell) {
+      if(p.getType()==exahype::records::ADERDGCellDescription::Cell ||
+         p.getType()==exahype::records::ADERDGCellDescription::Ancestor ||
+         p.getType()==exahype::records::ADERDGCellDescription::Descendant) {
         solver->synchroniseTimeStepping(p);
       }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
@@ -126,6 +128,7 @@ void exahype::mappings::NewTimeStep::enterCell(
 }
 
 #ifdef Parallel
+// This is master-worker comm. part 1. See SpaceTimePredictor for time stepping equivalents.
 bool exahype::mappings::NewTimeStep::prepareSendToWorker(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -135,12 +138,13 @@ bool exahype::mappings::NewTimeStep::prepareSendToWorker(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker) {
   for (auto& p : exahype::solvers::RegisteredSolvers) {
-    p->sendToRank(worker, _mpiTag);
+    p->sendToRank(worker, _mpiTag); // TODO(Dominic) change this; call start to send here.
   }
 
   return true;
 }
 
+// This is master-worker comm. part 2. See SpaceTimePredictor for time stepping equivalents.
 void exahype::mappings::NewTimeStep::receiveDataFromMaster(
     exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
     const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
@@ -153,7 +157,7 @@ void exahype::mappings::NewTimeStep::receiveDataFromMaster(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   for (auto& p : exahype::solvers::RegisteredSolvers) {
     p->receiveFromMasterRank(
-        tarch::parallel::NodePool::getInstance().getMasterRank(), _mpiTag);
+        tarch::parallel::NodePool::getInstance().getMasterRank(), _mpiTag); // TODO(Dominic) change this; call finish to send here.
   }
 }
 
