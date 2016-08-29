@@ -227,10 +227,12 @@ void exahype::Cell::addNewCellDescription(
   newCellDescription.setOffset(cellCentre);
 
   // Initialise helper variables
+  #ifdef Parallel
   newCellDescription.setHelperCellNeedsToStoreFaceData(false);
   for (int i = 0; i < DIMENSIONS_TIMES_TWO; i++) {
     newCellDescription.setFaceDataExchangeCounter(i,TWO_POWER_D);
   }
+  #endif
 
   // Default field data indices
   newCellDescription.setSpaceTimePredictor(-1);
@@ -784,9 +786,13 @@ void exahype::Cell::mergeSolutionMinMaxOnFace(
     for (auto& leftCellDescription: ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndexOfLeftCell))
     for (auto& rightCellDescription: ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndexOfRightCell)) {
       if (
-        leftCellDescription.getType() == exahype::records::ADERDGCellDescription::Cell
+        (leftCellDescription.getType() == exahype::records::ADERDGCellDescription::Cell ||
+        leftCellDescription.getType() == exahype::records::ADERDGCellDescription::Ancestor ||
+        leftCellDescription.getType() == exahype::records::ADERDGCellDescription::Descendant)
         &&
-        rightCellDescription.getType() == exahype::records::ADERDGCellDescription::Cell
+        (rightCellDescription.getType() == exahype::records::ADERDGCellDescription::Cell ||
+         rightCellDescription.getType() == exahype::records::ADERDGCellDescription::Ancestor ||
+         rightCellDescription.getType() == exahype::records::ADERDGCellDescription::Descendant)
       ) {
         double min = std::min( leftCellDescription.getSolutionMin(faceIndexForLeftCell), rightCellDescription.getSolutionMin(faceIndexForRightCell) );
         double max = std::max( leftCellDescription.getSolutionMax(faceIndexForLeftCell), rightCellDescription.getSolutionMax(faceIndexForRightCell) );
@@ -795,10 +801,7 @@ void exahype::Cell::mergeSolutionMinMaxOnFace(
         rightCellDescription.setSolutionMin(faceIndexForRightCell,min);
         leftCellDescription.setSolutionMax(faceIndexForLeftCell,max);
         rightCellDescription.setSolutionMax(faceIndexForRightCell,max);
-      }
-      else {
-        assertionMsg( false, "Dominic, please implement" );
-      }
+      } // else: do nothing.
     }
   }
 }
