@@ -40,10 +40,14 @@ exahype::mappings::FaceUnknownsProjection::communicationSpecification() {
       true);
 }
 
-int exahype::mappings::FaceUnknownsProjection::_parentOfCellOrAncestorNotFound =
-    0;
-int exahype::mappings::FaceUnknownsProjection::_parentOfCellOrAncestorFound = 0;
-int exahype::mappings::FaceUnknownsProjection::_parentOfDescendantFound = 0;
+#if defined(Debug)
+int exahype::mappings::FaceUnknownsProjection::
+_parentOfCellOrAncestorNotFound = 0;
+int exahype::mappings::FaceUnknownsProjection::
+_parentOfCellOrAncestorFound    = 0;
+int exahype::mappings::FaceUnknownsProjection::
+_parentOfDescendantFound        = 0;
+#endif
 
 peano::MappingSpecification
 exahype::mappings::FaceUnknownsProjection::touchVertexLastTimeSpecification() {
@@ -157,7 +161,9 @@ void exahype::mappings::FaceUnknownsProjection::prolongateADERDGFaceData(
       ADERDGCellDescriptionHeap::getInstance().getData(
           parentIndex)[cellDescription.getSolverNumber()];
 
+#if defined(Debug)
   _parentOfDescendantFound += 1;
+#endif
 
   assertion(cellDescriptionParent.getSolverNumber() ==
             cellDescription.getSolverNumber());
@@ -230,7 +236,9 @@ void exahype::mappings::FaceUnknownsProjection::prolongateFiniteVolumesFaceData(
       FiniteVolumesCellDescriptionHeap::getInstance().getData(
           parentIndex)[cellDescription.getSolverNumber()];
 
+#if defined(Debug)
   _parentOfDescendantFound += 1;
+#endif
 
   assertion(cellDescriptionParent.getSolverNumber() ==
             cellDescription.getSolverNumber());
@@ -372,7 +380,9 @@ void exahype::mappings::FaceUnknownsProjection::restrictADERDGFaceData(
 
   // Only do something if parent is an ancestor that holds data.
   if (cellDescriptionParent.getType() == exahype::records::ADERDGCellDescription::Ancestor) {
+    #if defined(Debug)
     _parentOfCellOrAncestorFound += 1;
+    #endif
 
     const int levelFine = cellDescription.getLevel();
     const int levelCoarse = cellDescriptionParent.getLevel();
@@ -429,7 +439,9 @@ void exahype::mappings::FaceUnknownsProjection::restrictADERDGFaceData(
       }
     }
   } else {
+    #if defined(Debug)
     _parentOfCellOrAncestorNotFound += 1;
+    #endif
   }
 }
 
@@ -511,9 +523,12 @@ void exahype::mappings::FaceUnknownsProjection::restrictFiniteVolumesSolution(
 
 void exahype::mappings::FaceUnknownsProjection::beginIteration(
     exahype::State& solverState) {
+
+#if defined(Debug)
   _parentOfCellOrAncestorNotFound = 0;
   _parentOfCellOrAncestorFound    = 0;
   _parentOfDescendantFound        = 0;
+#endif
 }
 
 void exahype::mappings::FaceUnknownsProjection::endIteration(
@@ -525,6 +540,117 @@ void exahype::mappings::FaceUnknownsProjection::endIteration(
   logDebug("endIteration(...)",
            "_parentOfDescendantFound: " << _parentOfDescendantFound);
 }
+
+#ifdef Parallel
+void exahype::mappings::FaceUnknownsProjection::prepareSendToMaster(
+    exahype::Cell& localCell, exahype::Vertex* vertices,
+    const peano::grid::VertexEnumerator& verticesEnumerator,
+    const exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    const exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
+void exahype::mappings::FaceUnknownsProjection::mergeWithMaster(
+    const exahype::Cell& workerGridCell,
+    exahype::Vertex* const workerGridVertices,
+    const peano::grid::VertexEnumerator& workerEnumerator,
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker, const exahype::State& workerState,
+    exahype::State& masterState) {
+  // do nothing
+}
+
+void exahype::mappings::FaceUnknownsProjection::receiveDataFromMaster(
+    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
+    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
+    exahype::Vertex* const receivedCoarseGridVertices,
+    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
+    exahype::Cell& receivedCoarseGridCell,
+    exahype::Vertex* const workersCoarseGridVertices,
+    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
+    exahype::Cell& workersCoarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
+void exahype::mappings::FaceUnknownsProjection::mergeWithWorker(
+    exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
+  // do nothing
+}
+
+void exahype::mappings::FaceUnknownsProjection::mergeWithNeighbour(
+    exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
+  // do nothing
+}
+
+void exahype::mappings::FaceUnknownsProjection::prepareSendToNeighbour(
+    exahype::Vertex& vertex, int toRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // do nothing
+}
+
+void exahype::mappings::FaceUnknownsProjection::prepareCopyToRemoteNode(
+    exahype::Vertex& localVertex, int toRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // do nothing
+}
+
+void exahype::mappings::FaceUnknownsProjection::prepareCopyToRemoteNode(
+    exahype::Cell& localCell, int toRank,
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
+  // do nothing
+}
+
+void exahype::mappings::FaceUnknownsProjection::
+    mergeWithRemoteDataDueToForkOrJoin(
+        exahype::Vertex& localVertex,
+        const exahype::Vertex& masterOrWorkerVertex, int fromRank,
+        const tarch::la::Vector<DIMENSIONS, double>& x,
+        const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // do nothing
+}
+
+void exahype::mappings::FaceUnknownsProjection::
+    mergeWithRemoteDataDueToForkOrJoin(
+        exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
+        int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+        const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
+  // do nothing
+}
+
+bool exahype::mappings::FaceUnknownsProjection::prepareSendToWorker(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker) {
+  // do nothing
+  return false;
+}
+
+void exahype::mappings::FaceUnknownsProjection::mergeWithWorker(
+    exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // do nothing
+}
+#endif
 
 exahype::mappings::FaceUnknownsProjection::FaceUnknownsProjection() {
   // do nothing
@@ -620,117 +746,6 @@ void exahype::mappings::FaceUnknownsProjection::destroyCell(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   // do nothing
 }
-
-#ifdef Parallel
-void exahype::mappings::FaceUnknownsProjection::mergeWithNeighbour(
-    exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
-  // do nothing
-}
-
-void exahype::mappings::FaceUnknownsProjection::prepareSendToNeighbour(
-    exahype::Vertex& vertex, int toRank,
-    const tarch::la::Vector<DIMENSIONS, double>& x,
-    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // do nothing
-}
-
-void exahype::mappings::FaceUnknownsProjection::prepareCopyToRemoteNode(
-    exahype::Vertex& localVertex, int toRank,
-    const tarch::la::Vector<DIMENSIONS, double>& x,
-    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // do nothing
-}
-
-void exahype::mappings::FaceUnknownsProjection::prepareCopyToRemoteNode(
-    exahype::Cell& localCell, int toRank,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  // do nothing
-}
-
-void exahype::mappings::FaceUnknownsProjection::
-    mergeWithRemoteDataDueToForkOrJoin(
-        exahype::Vertex& localVertex,
-        const exahype::Vertex& masterOrWorkerVertex, int fromRank,
-        const tarch::la::Vector<DIMENSIONS, double>& x,
-        const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // do nothing
-}
-
-void exahype::mappings::FaceUnknownsProjection::
-    mergeWithRemoteDataDueToForkOrJoin(
-        exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
-        int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-        const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  // do nothing
-}
-
-bool exahype::mappings::FaceUnknownsProjection::prepareSendToWorker(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    int worker) {
-  // do nothing
-  return false;
-}
-
-void exahype::mappings::FaceUnknownsProjection::prepareSendToMaster(
-    exahype::Cell& localCell, exahype::Vertex* vertices,
-    const peano::grid::VertexEnumerator& verticesEnumerator,
-    const exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    const exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
-}
-
-void exahype::mappings::FaceUnknownsProjection::mergeWithMaster(
-    const exahype::Cell& workerGridCell,
-    exahype::Vertex* const workerGridVertices,
-    const peano::grid::VertexEnumerator& workerEnumerator,
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    int worker, const exahype::State& workerState,
-    exahype::State& masterState) {
-  // do nothing
-}
-
-void exahype::mappings::FaceUnknownsProjection::receiveDataFromMaster(
-    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
-    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
-    exahype::Vertex* const receivedCoarseGridVertices,
-    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
-    exahype::Cell& receivedCoarseGridCell,
-    exahype::Vertex* const workersCoarseGridVertices,
-    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
-    exahype::Cell& workersCoarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
-}
-
-void exahype::mappings::FaceUnknownsProjection::mergeWithWorker(
-    exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  // do nothing
-}
-
-void exahype::mappings::FaceUnknownsProjection::mergeWithWorker(
-    exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& x,
-    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // do nothing
-}
-#endif
 
 void exahype::mappings::FaceUnknownsProjection::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,

@@ -47,9 +47,12 @@ class FaceUnknownsProjection;
  * @developers:
  * TODO(Dominic): Need to propagate face data
  * from master to worker (prolongation).
+ * Correct face data on Ancestor and Descendant is
+ * made available by the functions provided in this mapping.
+ * This mapping should therefore be merged with the
+ * space-time predictor mapping.
  * Need to propagate face data from worker to master
  * (erasing,joins).
- * (Multilevel stuff is going to be tricky.)
  */
 class exahype::mappings::FaceUnknownsProjection {
  private:
@@ -64,12 +67,14 @@ class exahype::mappings::FaceUnknownsProjection {
    */
   static tarch::multicore::BooleanSemaphore _semaphoreForRestriction;
 
+#if defined(Debug)
   /**
    * Some counters for debugging purposes.
    */
   static int _parentOfCellOrAncestorNotFound;
   static int _parentOfCellOrAncestorFound;
   static int _parentOfDescendantFound;
+#endif
 
   /**
    * Prolongates face data from a parent ADERDGCellDescription to
@@ -140,7 +145,7 @@ class exahype::mappings::FaceUnknownsProjection {
       const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) const;
 
   /**
-   * Picks out the subcell indices that are not at position \p.
+   * Picks out the subcell indices that are not at position \p d.
    */
   tarch::la::Vector<DIMENSIONS - 1, int> getSubfaceIndex(
       const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
@@ -205,16 +210,6 @@ class exahype::mappings::FaceUnknownsProjection {
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
-
-
-  //
-  // Below all methods are nop.
-  //
-  // ==================================
-
-
-
-
   /**
    * Nop.
    */
@@ -240,6 +235,102 @@ class exahype::mappings::FaceUnknownsProjection {
 #endif
 
 #ifdef Parallel
+  /**
+   * worker->master I: worker sends.
+   *
+   * TODO(Dominic): Add docu and implement.
+   * Be aware of master<->worker comm. in SpaceTimePredictor/NewTimeStep/GlobalTimeStepComp.
+   */
+  void prepareSendToMaster(
+      exahype::Cell& localCell, exahype::Vertex* vertices,
+      const peano::grid::VertexEnumerator& verticesEnumerator,
+      const exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      const exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
+  /**
+   * worker->master II: master receives.
+   *
+   * TODO(Dominic): Add docu and implement.
+   * Be aware of master<->worker comm. in SpaceTimePredictor/NewTimeStep/GlobalTimeStepComp.
+   */
+  void mergeWithMaster(
+      const exahype::Cell& workerGridCell,
+      exahype::Vertex* const workerGridVertices,
+      const peano::grid::VertexEnumerator& workerEnumerator,
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      int worker, const exahype::State& workerState,
+      exahype::State& masterState);
+
+
+  /**
+   * master->worker I: master sends.
+   *
+   * return:
+   *
+   * TODO(Dominic): Add docu and implement.
+   * Be aware of master<->worker comm. in SpaceTimePredictor/NewTimeStep/GlobalTimeStepComp.
+   */
+  bool prepareSendToWorker(
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      int worker);
+
+  /**
+   * master->worker II: master receives.
+   *
+   * cumulative method. The other mergeWithWorker methods are per vertex, cell.
+   *
+   * TODO(Dominic): Add docu and implement.
+   * Be aware of master<->worker comm. in SpaceTimePredictor/NewTimeStep/GlobalTimeStepComp.
+   */
+  void receiveDataFromMaster(
+      exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
+      const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
+      exahype::Vertex* const receivedCoarseGridVertices,
+      const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
+      exahype::Cell& receivedCoarseGridCell,
+      exahype::Vertex* const workersCoarseGridVertices,
+      const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
+      exahype::Cell& workersCoarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
+  /**
+   * Nop.
+   */
+  void mergeWithWorker(exahype::Cell& localCell,
+                       const exahype::Cell& receivedMasterCell,
+                       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+                       const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+                       int level);
+
+  /**
+   * Nop.
+   */
+  void mergeWithWorker(exahype::Vertex& localVertex,
+                       const exahype::Vertex& receivedMasterVertex,
+                       const tarch::la::Vector<DIMENSIONS, double>& x,
+                       const tarch::la::Vector<DIMENSIONS, double>& h,
+                       int level);
+
+
+  //
+  // Below all methods are nop.
+  //
+  // ==================================
+
+
+
   /**
    * Nop.
    */
@@ -288,77 +379,6 @@ class exahype::mappings::FaceUnknownsProjection {
       exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
       int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
-
-  /**
-   * Nop.
-   */
-  bool prepareSendToWorker(
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-      int worker);
-
-  /**
-   * Nop.
-   */
-  void mergeWithMaster(
-      const exahype::Cell& workerGridCell,
-      exahype::Vertex* const workerGridVertices,
-      const peano::grid::VertexEnumerator& workerEnumerator,
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-      int worker, const exahype::State& workerState,
-      exahype::State& masterState);
-
-  /**
-   * Nop.
-   */
-  void prepareSendToMaster(
-      exahype::Cell& localCell, exahype::Vertex* vertices,
-      const peano::grid::VertexEnumerator& verticesEnumerator,
-      const exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      const exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
-   * Nop.
-   */
-  void receiveDataFromMaster(
-      exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
-      const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
-      exahype::Vertex* const receivedCoarseGridVertices,
-      const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
-      exahype::Cell& receivedCoarseGridCell,
-      exahype::Vertex* const workersCoarseGridVertices,
-      const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
-      exahype::Cell& workersCoarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
-   * Nop.
-   */
-  void mergeWithWorker(exahype::Cell& localCell,
-                       const exahype::Cell& receivedMasterCell,
-                       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-                       const tarch::la::Vector<DIMENSIONS, double>& cellSize,
-                       int level);
-
-  /**
-   * Nop.
-   */
-  void mergeWithWorker(exahype::Vertex& localVertex,
-                       const exahype::Vertex& receivedMasterVertex,
-                       const tarch::la::Vector<DIMENSIONS, double>& x,
-                       const tarch::la::Vector<DIMENSIONS, double>& h,
-                       int level);
 #endif
 
   /**
