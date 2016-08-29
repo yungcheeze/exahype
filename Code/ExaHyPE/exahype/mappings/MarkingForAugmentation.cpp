@@ -120,9 +120,11 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
         case exahype::records::ADERDGCellDescription::Ancestor:
         case exahype::records::ADERDGCellDescription::EmptyAncestor:
           pFine.setType(exahype::records::ADERDGCellDescription::EmptyAncestor);
+          #ifdef Parallel
           if (pFine.getHelperCellNeedsToStoreFaceData()) { // TODO(Dominic): Add to docu.
             pFine.setType(exahype::records::ADERDGCellDescription::Ancestor);
           }
+          #endif
           if (fineGridCell.isAssignedToRemoteRank() ||
               pFine.getParentIndex()==multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex) { // TODO(Dominic): Add to docu.
             pFine.setType(exahype::records::ADERDGCellDescription::Ancestor);
@@ -138,9 +140,11 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
         case exahype::records::ADERDGCellDescription::Descendant:
         case exahype::records::ADERDGCellDescription::EmptyDescendant:
           pFine.setType(exahype::records::ADERDGCellDescription::EmptyDescendant);
+          #ifdef Parallel
           if (pFine.getHelperCellNeedsToStoreFaceData()) { // TODO(Dominic): Add to docu.
             pFine.setType(exahype::records::ADERDGCellDescription::Descendant);
           }
+          #endif
           if (fineGridCell.isAssignedToRemoteRank() ||
               pFine.getParentIndex()==multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex) { // TODO(Dominic): Add to docu.
             pFine.setType(exahype::records::ADERDGCellDescription::Descendant);
@@ -199,7 +203,9 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
       }
 
       // TODO(Dominic): Add to docu why we reset this flag here, and where it initialised (Cell.addNew...).
+      #ifdef Parallel
       pFine.setHelperCellNeedsToStoreFaceData(false);
+      #endif
     }
 
     // Refine the vertices
