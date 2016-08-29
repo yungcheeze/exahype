@@ -54,6 +54,20 @@ bool exahype::Vertex::hasToSendMetadata(
          state->isForkTriggeredForRank(adjacentRanks(srcScalar)));
 }
 
+
+bool exahype::Vertex::hasToSendMetadataIgnoreForksJoins(
+    const tarch::la::Vector<DIMENSIONS,int>& src,
+    const tarch::la::Vector<DIMENSIONS,int>& dest,
+    const int toRank) {
+  const int srcScalar  = peano::utils::dLinearisedWithoutLookup(src,2);
+  const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
+  const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
+
+  return tarch::la::countEqualEntries(dest, src)  == 1 &&
+         adjacentRanks(destScalar) == toRank &&
+         adjacentRanks(srcScalar)  == tarch::parallel::Node::getInstance().getRank();
+}
+
 bool exahype::Vertex::hasToReceiveMetadata(
     const exahype::State* state,
     const tarch::la::Vector<DIMENSIONS,int>& src,
@@ -67,5 +81,18 @@ bool exahype::Vertex::hasToReceiveMetadata(
       adjacentRanks(srcScalar)    == fromRank &&
       (adjacentRanks(destScalar)  == tarch::parallel::Node::getInstance().getRank() ||
        state->isForkingRank(adjacentRanks(destScalar)));
+}
+
+bool exahype::Vertex::hasToReceiveMetadataIgnoreForksJoins(
+    const tarch::la::Vector<DIMENSIONS,int>& src,
+    const tarch::la::Vector<DIMENSIONS,int>& dest,
+    const int fromRank) {
+  const int srcScalar  = peano::utils::dLinearisedWithoutLookup(src,2);
+  const int destScalar = peano::utils::dLinearisedWithoutLookup(dest,2);
+  const tarch::la::Vector<TWO_POWER_D,int> adjacentRanks = getAdjacentRanks();
+
+  return tarch::la::countEqualEntries(dest, src) == 1 &&
+      adjacentRanks(srcScalar)   == fromRank &&
+      adjacentRanks(destScalar)  == tarch::parallel::Node::getInstance().getRank();
 }
 #endif
