@@ -17,7 +17,7 @@
 
 #include "exahype/repositories/Repository.h"
 #include "exahype/repositories/RepositoryFactory.h"
-#include "exahype/mappings/GlobalTimeStepComputation.h"
+#include "exahype/mappings/TimeStepSizeComputation.h"
 
 #include "tarch/Assertions.h"
 
@@ -129,11 +129,11 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
 
   if ( _parser.getSkipReductionInBatchedTimeSteps() ) {
     logInfo("initDistributedMemoryConfiguration()", "allow ranks to skip reduction" );
-    exahype::mappings::GlobalTimeStepComputation::SkipReductionInBatchedTimeSteps = true;
+    exahype::mappings::TimeStepSizeComputation::SkipReductionInBatchedTimeSteps = true;
   }
   else {
     logWarning("initDistributedMemoryConfiguration()", "ranks are not allowed to skip any reduction (might harm performance). Use optimisation section to switch feature on" );
-    exahype::mappings::GlobalTimeStepComputation::SkipReductionInBatchedTimeSteps = false;
+    exahype::mappings::TimeStepSizeComputation::SkipReductionInBatchedTimeSteps = false;
   }
   #endif
 }
@@ -389,7 +389,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    * that was sent in the last iteration of the grid setup.
    */
   initSolverTimeStamps();
-  repository.switchToInitialConditionAndGlobalTimeStepComputation();
+  repository.switchToInitialConditionAndTimeStepSizeComputation();
   repository.iterate();
 
   #if defined(Dim2) && defined(Asserts)
@@ -417,10 +417,10 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
   bool plot = exahype::plotters::isAPlotterActive(
       solvers::Solver::getMinSolverTimeStampOfAllSolvers());
   if (plot) {
-    repository.switchToPredictorAndPlotAndGlobalTimeStepComputation();
+    repository.switchToPredictionAndPlotAndTimeStepSizeComputation();
   }
   else {
-    repository.switchToPredictorAndGlobalTimeStepComputation();
+    repository.switchToPredictionAndTimeStepSizeComputation();
   }
   repository.iterate();
   /*
@@ -608,7 +608,7 @@ void exahype::runners::Runner::recomputePredictorIfNecessary(
     logInfo("startNewTimeStep(...)",
         "\t\t Space-time predictor must be recomputed.");
 
-    repository.switchToPredictorRerun();
+    repository.switchToPredictionRerun();
     repository.iterate();
   }
 }
@@ -620,12 +620,12 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   repository.iterate();
 
   if (plot) {
-    repository.switchToCorrectorAndPlot();  // Face to cell + Inside cell
+    repository.switchToCorrectionAndPlot();  // Face to cell + Inside cell
   } else {
-    repository.switchToCorrector();  // Face to cell + Inside cell
+    repository.switchToCorrection();  // Face to cell + Inside cell
   }
   repository.iterate();
 
-  repository.switchToPredictor();  // Cell onto faces
+  repository.switchToPrediction();  // Cell onto faces
   repository.iterate();
 }
