@@ -67,13 +67,13 @@ void exahype::Cell::shutdownMetaData() {
 }
 
 #ifdef Parallel
-std::vector<peano::heap::records::IntegerHeapData> exahype::Cell::encodeMetadata(int cellDescriptionsIndex) {
+exahype::MetadataHeap::HeapEntries exahype::Cell::encodeMetadata(int cellDescriptionsIndex) {
   assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
   const int nADERDG = ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndex).size();
   const int nFV     = FiniteVolumesCellDescriptionHeap::getInstance().getData(cellDescriptionsIndex).size();
   const int length  = 2 + 2*(nADERDG+nFV);
 
-  std::vector<peano::heap::records::IntegerHeapData> encodedMetaData(0,length);
+  exahype::MetadataHeap::HeapEntries encodedMetaData(0,length);
   // ADER-DG
   encodedMetaData.push_back(nADERDG); // Implicit conversion.
   for (auto& p : ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndex)) {
@@ -89,11 +89,17 @@ std::vector<peano::heap::records::IntegerHeapData> exahype::Cell::encodeMetadata
   return encodedMetaData;
 }
 
-std::vector<peano::heap::records::IntegerHeapData> exahype::Cell::createEncodedMetadataSequenceForInvalidCellDescriptionsIndex() {
-  std::vector<peano::heap::records::IntegerHeapData> metadata(0,2);
+exahype::MetadataHeap::HeapEntries exahype::Cell::createEncodedMetadataSequenceForInvalidCellDescriptionsIndex() {
+  exahype::MetadataHeap::HeapEntries metadata(0,2);
   metadata.push_back(0); // ADER-DG
   metadata.push_back(0); // FV
   return metadata;
+}
+
+bool exahype::Cell::isEncodedMetadataSequenceForInvalidCellDescriptionsIndex(exahype::MetadataHeap::HeapEntries& sequence) {
+  return sequence.size()==2    &&
+         sequence[0].getU()==0 && // ADER-DG
+         sequence[1].getU()==0;   // FV
 }
 
 #endif

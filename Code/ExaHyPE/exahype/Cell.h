@@ -183,7 +183,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * TODO(Dominic): Not directly associated with a cell. Consider
    * to move this function somewhere else.
    */
-  static std::vector<peano::heap::records::IntegerHeapData> encodeMetadata(const int cellDescriptionsIndex);
+  static exahype::MetadataHeap::HeapEntries encodeMetadata(const int cellDescriptionsIndex);
 
   /**
    * Returns an encoded metadata sequence for invalid cell descriptions indices.
@@ -198,7 +198,13 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * TODO(Dominic): Not directly associated with a cell. Consider
    * to move this function somewhere else.
    */
-  static std::vector<peano::heap::records::IntegerHeapData> createEncodedMetadataSequenceForInvalidCellDescriptionsIndex();
+  static exahype::MetadataHeap::HeapEntries createEncodedMetadataSequenceForInvalidCellDescriptionsIndex();
+
+  /**
+   * Checks if the sequence encodes zero solvers, i.e., has length 2 (number of solver types: ADER-DG, FV)
+   * and contains only zeros.
+   */
+  static bool isEncodedMetadataSequenceForInvalidCellDescriptionsIndex(exahype::MetadataHeap::HeapEntries& sequence);
 
   /**
    * TODO(Dominic): Add docu.
