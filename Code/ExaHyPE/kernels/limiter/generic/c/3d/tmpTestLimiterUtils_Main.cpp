@@ -1,4 +1,4 @@
-// g++ -c -DDIMENSIONS=3 limiterUtils.cpp && g++ -c tmpTestLimiterUtils_Main.cpp && g++ -o main tmpTestLimiterUtils_Main.o ../../../../GaussLegendreQuadrature.o limiterUtils.o 
+// g++ -c -DDIMENSIONS=3 ../limiterUtilsCommon.cpp && g++ -c -DDIMENSIONS=3 limiterUtils.cpp && g++ -c tmpTestLimiterUtils_Main.cpp && g++ -o main tmpTestLimiterUtils_Main.o ../../../../GaussLegendreQuadrature.o limiterUtils.o limiterUtilsCommon.o
 
 // 
 #include <iostream>
@@ -16,7 +16,6 @@ void getTestData(double* &luh, int& numberOfVariable, int& basisSize) {
     luh[i] = i+ 0.5;
   }
 }
-
 
 /*
 int main() {
@@ -89,4 +88,5 @@ int main() {
   
   return 0;
 }
+/*
 */
