@@ -12,7 +12,7 @@
  **/
 
 #include "../Limiter.h"
- 
+
 namespace kernels {
 namespace limiter {
 namespace generic {
@@ -117,7 +117,8 @@ void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVa
  
   // process lob
   int basisSizeLob = 0;
-  double* lob = getGaussLobattoData(luh, numberOfVariables, basisSize, basisSizeLob);
+  double* lob = 0; // getGaussLobattoData(luh, numberOfVariables, basisSize, basisSizeLob); // TODO JMG, please fix!
+  assertionMsg(false,"JMG, the above line doesn't compile. Please fix!");
   index = 0;
   iiEnd =  basisSizeLob*basisSizeLob;
   if(DIMENSIONS == 3)
@@ -137,7 +138,8 @@ void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVa
   // process lim
   
   int basisSizeLim = 0;
-  double* lim = getFVMData(luh, numberOfVariables, basisSize, basisSizeLim);
+  double* lim = 0; // getFVMData(luh, numberOfVariables, basisSize, basisSizeLim);  // TODO JMG, please fix!
+  assertionMsg(false,"JMG, the above line doesn't compile. Please fix!");
   index = 0;
   iiEnd =  basisSizeLim*basisSizeLim;
   if(DIMENSIONS == 3)
