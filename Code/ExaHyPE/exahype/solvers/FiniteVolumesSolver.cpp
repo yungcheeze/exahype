@@ -83,13 +83,7 @@ double exahype::solvers::FiniteVolumesSolver::getNextMinTimeStepSize() const {
   return _nextMinTimeStepSize;
 }
 
-void exahype::solvers::FiniteVolumesSolver::sendToRank(int rank, int tag) {
-  assertionMsg(false, "not implemented yet");
-}
 
-void exahype::solvers::FiniteVolumesSolver::receiveFromMasterRank(int rank, int tag) {
-  assertionMsg(false, "not implemented yet");
-}
 
 std::string exahype::solvers::FiniteVolumesSolver::toString() const {
   std::ostringstream stringstr;
@@ -126,3 +120,13 @@ void exahype::solvers::FiniteVolumesSolver::toString (std::ostream& out) const {
   out << "_nextMinTimeStepSize:" << _nextMinTimeStepSize;
   out <<  ")";
 }
+
+#ifdef Parallel
+void exahype::solvers::FiniteVolumesSolver::sendToRank(int rank, int tag) {
+  assertionMsg(false, "not implemented yet");
+}
+
+void exahype::solvers::FiniteVolumesSolver::receiveFromMasterRank(int rank, int tag) {
+  assertionMsg(false, "not implemented yet");
+}
+#endif
