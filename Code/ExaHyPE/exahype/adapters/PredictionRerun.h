@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_Corrector_H_
-#define EXAHYPE_ADAPTERS_Corrector_H_
+#ifndef EXAHYPE_ADAPTERS_PredictionRerun_H_
+#define EXAHYPE_ADAPTERS_PredictionRerun_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,15 +18,15 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/SolutionUpdate.h"
- #include "exahype/mappings/GlobalTimeStepComputation.h"
- #include "exahype/mappings/LoadBalancing.h"
+ #include "exahype/mappings/DropIncomingMPIMessages.h"
+ #include "exahype/mappings/Synchronisation.h"
+ #include "exahype/mappings/Prediction.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class Corrector;
+        class PredictionRerun;
       } 
 }
 
@@ -38,15 +38,15 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::Corrector {
+class exahype::adapters::PredictionRerun {
   private:
-    typedef mappings::SolutionUpdate Mapping0;
-    typedef mappings::GlobalTimeStepComputation Mapping1;
-    typedef mappings::LoadBalancing Mapping2;
+    typedef mappings::DropIncomingMPIMessages Mapping0;
+    typedef mappings::Synchronisation Mapping1;
+    typedef mappings::Prediction Mapping2;
 
-     Mapping0  _map2SolutionUpdate;
-     Mapping1  _map2GlobalTimeStepComputation;
-     Mapping2  _map2LoadBalancing;
+     Mapping0  _map2DropIncomingMPIMessages;
+     Mapping1  _map2Synchronisation;
+     Mapping2  _map2Prediction;
 
 
   public:
@@ -58,16 +58,16 @@ class exahype::adapters::Corrector {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    Corrector();
+    PredictionRerun();
 
     #if defined(SharedMemoryParallelisation)
-    Corrector(const Corrector& masterThread);
+    PredictionRerun(const PredictionRerun& masterThread);
     #endif
 
-    virtual ~Corrector();
+    virtual ~PredictionRerun();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const Corrector& workerThread);
+    void mergeWithWorkerThread(const PredictionRerun& workerThread);
     #endif
 
     void createInnerVertex(

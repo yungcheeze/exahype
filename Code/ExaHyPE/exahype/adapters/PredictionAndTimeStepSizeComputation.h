@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_PredictorRerun_H_
-#define EXAHYPE_ADAPTERS_PredictorRerun_H_
+#ifndef EXAHYPE_ADAPTERS_PredictionAndTimeStepSizeComputation_H_
+#define EXAHYPE_ADAPTERS_PredictionAndTimeStepSizeComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,15 +18,16 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/DropIncomingMPIMessages.h"
- #include "exahype/mappings/NewTimeStep.h"
- #include "exahype/mappings/SpaceTimePredictor.h"
+ #include "exahype/mappings/Synchronisation.h"
+ #include "exahype/mappings/Prediction.h"
+ #include "exahype/mappings/TimeStepSizeComputation.h"
+ #include "exahype/mappings/Reduction.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class PredictorRerun;
+        class PredictionAndTimeStepSizeComputation;
       } 
 }
 
@@ -38,15 +39,17 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::PredictorRerun {
+class exahype::adapters::PredictionAndTimeStepSizeComputation {
   private:
-    typedef mappings::DropIncomingMPIMessages Mapping0;
-    typedef mappings::NewTimeStep Mapping1;
-    typedef mappings::SpaceTimePredictor Mapping2;
+    typedef mappings::Synchronisation Mapping0;
+    typedef mappings::Prediction Mapping1;
+    typedef mappings::TimeStepSizeComputation Mapping2;
+    typedef mappings::Reduction Mapping3;
 
-     Mapping0  _map2DropIncomingMPIMessages;
-     Mapping1  _map2NewTimeStep;
-     Mapping2  _map2SpaceTimePredictor;
+     Mapping0  _map2Synchronisation;
+     Mapping1  _map2Prediction;
+     Mapping2  _map2TimeStepSizeComputation;
+     Mapping3  _map2Reduction;
 
 
   public:
@@ -58,16 +61,16 @@ class exahype::adapters::PredictorRerun {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    PredictorRerun();
+    PredictionAndTimeStepSizeComputation();
 
     #if defined(SharedMemoryParallelisation)
-    PredictorRerun(const PredictorRerun& masterThread);
+    PredictionAndTimeStepSizeComputation(const PredictionAndTimeStepSizeComputation& masterThread);
     #endif
 
-    virtual ~PredictorRerun();
+    virtual ~PredictionAndTimeStepSizeComputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const PredictorRerun& workerThread);
+    void mergeWithWorkerThread(const PredictionAndTimeStepSizeComputation& workerThread);
     #endif
 
     void createInnerVertex(

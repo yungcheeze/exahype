@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_PredictorAndPlotAndGlobalTimeStepComputation_H_
-#define EXAHYPE_ADAPTERS_PredictorAndPlotAndGlobalTimeStepComputation_H_
+#ifndef EXAHYPE_ADAPTERS_Correction_H_
+#define EXAHYPE_ADAPTERS_Correction_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,16 +18,16 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/NewTimeStep.h"
- #include "exahype/mappings/SpaceTimePredictor.h"
- #include "exahype/mappings/Plot.h"
- #include "exahype/mappings/GlobalTimeStepComputation.h"
+ #include "exahype/mappings/SolutionUpdate.h"
+ #include "exahype/mappings/TimeStepSizeComputation.h"
+ #include "exahype/mappings/LoadBalancing.h"
+ #include "exahype/mappings/Reduction.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class PredictorAndPlotAndGlobalTimeStepComputation;
+        class Correction;
       } 
 }
 
@@ -39,17 +39,17 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::PredictorAndPlotAndGlobalTimeStepComputation {
+class exahype::adapters::Correction {
   private:
-    typedef mappings::NewTimeStep Mapping0;
-    typedef mappings::SpaceTimePredictor Mapping1;
-    typedef mappings::Plot Mapping2;
-    typedef mappings::GlobalTimeStepComputation Mapping3;
+    typedef mappings::SolutionUpdate Mapping0;
+    typedef mappings::TimeStepSizeComputation Mapping1;
+    typedef mappings::LoadBalancing Mapping2;
+    typedef mappings::Reduction Mapping3;
 
-     Mapping0  _map2NewTimeStep;
-     Mapping1  _map2SpaceTimePredictor;
-     Mapping2  _map2Plot;
-     Mapping3  _map2GlobalTimeStepComputation;
+     Mapping0  _map2SolutionUpdate;
+     Mapping1  _map2TimeStepSizeComputation;
+     Mapping2  _map2LoadBalancing;
+     Mapping3  _map2Reduction;
 
 
   public:
@@ -61,16 +61,16 @@ class exahype::adapters::PredictorAndPlotAndGlobalTimeStepComputation {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    PredictorAndPlotAndGlobalTimeStepComputation();
+    Correction();
 
     #if defined(SharedMemoryParallelisation)
-    PredictorAndPlotAndGlobalTimeStepComputation(const PredictorAndPlotAndGlobalTimeStepComputation& masterThread);
+    Correction(const Correction& masterThread);
     #endif
 
-    virtual ~PredictorAndPlotAndGlobalTimeStepComputation();
+    virtual ~Correction();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const PredictorAndPlotAndGlobalTimeStepComputation& workerThread);
+    void mergeWithWorkerThread(const Correction& workerThread);
     #endif
 
     void createInnerVertex(

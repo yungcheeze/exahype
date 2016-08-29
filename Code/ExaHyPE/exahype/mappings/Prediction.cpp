@@ -118,7 +118,7 @@ void exahype::mappings::Prediction::enterCell(
       auto& pFine = fineGridCell.getADERDGCellDescription(i);
       // TODO(Dominic): Might need to only allow a certain
       // number of refinement events for Dyn. AMR.
-      // In static AMR, we assume always that the refinement event is None.
+      // For static AMR we assume always that the refinement event is None.
 
       // Reset helper variables
       for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
@@ -134,14 +134,16 @@ void exahype::mappings::Prediction::enterCell(
         #endif
       }
 
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+        exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()]);
+      solver->synchroniseTimeStepping(pFine); // Time step synchr. might be done multiple times per traversal; but this is no issue.
       exahype::Cell::SubcellPosition subcellPosition;
       switch (pFine.getType()) {
       case exahype::records::ADERDGCellDescription::Cell:
         assertion1(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pFine.toString());
-
-        fineGridCell.validateNoNansInADERDGSolver(i,fineGridCell,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[pre]");
+        fineGridCell.validateNoNansInADERDGSolver(i,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[pre]");
         computePredictionAndVolumeIntegral(pFine);
-        fineGridCell.validateNoNansInADERDGSolver(i,fineGridCell,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[pre]");
+        fineGridCell.validateNoNansInADERDGSolver(i,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
         break;
       case exahype::records::ADERDGCellDescription::Ancestor:
         assertion1(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pFine.toString());
@@ -171,7 +173,7 @@ void exahype::mappings::Prediction::computePredictionAndVolumeIntegral(
               exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
 
   assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
-  assertion1(DataHeap::getInstance().isValidIndex(p.getPrediction()),p.toString());
+  assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimePredictor()),p.toString());
   assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimeVolumeFlux()),p.toString());
   assertion1(DataHeap::getInstance().isValidIndex(p.getSolution()),p.toString());
   assertion1(DataHeap::getInstance().isValidIndex(p.getUpdate()),p.toString());
@@ -181,7 +183,7 @@ void exahype::mappings::Prediction::computePredictionAndVolumeIntegral(
   assertion1(DataHeap::getInstance().isValidIndex(p.getFluctuation()),p.toString());
 
   // space-time DoF (basisSize**(DIMENSIONS+1))
-  double* lQi = DataHeap::getInstance().getData(p.getPrediction()).data();
+  double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
   double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
 
   // volume DoF (basisSize**(DIMENSIONS))
@@ -194,12 +196,12 @@ void exahype::mappings::Prediction::computePredictionAndVolumeIntegral(
   double* lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
   double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
-  solver->Prediction(
+  solver->spaceTimePredictor(
       lQi, lFi, lQhi, lFhi,
       lQhbnd,
       lFhbnd,
       luh, p.getSize(),
-      p.getPredictorTimeStepSize());
+      p.getPredictorTimeStepSize()); // TODO(Dominic): Generates segfault.
   solver->volumeIntegral(lduh, lFhi, p.getSize());
 }
 
@@ -209,9 +211,9 @@ void exahype::mappings::Prediction::prepareAncestor(
       exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
 
   assertion1(p.getType()==exahype::records::ADERDGCellDescription::Ancestor,p.toString());
-  std::fill_n(DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data(),
+  std::fill_n(DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).begin(),
       solver->getUnknownsPerCellBoundary(), 0.0);
-  std::fill_n(DataHeap::getInstance().getData(p.getFluctuation()).data(),
+  std::fill_n(DataHeap::getInstance().getData(p.getFluctuation()).begin(),
       solver->getUnknownsPerCellBoundary(), 0.0);
 }
 

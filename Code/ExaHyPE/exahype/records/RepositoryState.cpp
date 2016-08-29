@@ -39,17 +39,17 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case RunOnAllNodes: return "RunOnAllNodes";
       case UseAdapterAugmentedAMRGrid: return "UseAdapterAugmentedAMRGrid";
       case UseAdapterPlotAugmentedAMRGrid: return "UseAdapterPlotAugmentedAMRGrid";
-      case UseAdapterInitialConditionAndGlobalTimeStepComputation: return "UseAdapterInitialConditionAndGlobalTimeStepComputation";
-      case UseAdapterPredictorAndPlotAndGlobalTimeStepComputation: return "UseAdapterPredictorAndPlotAndGlobalTimeStepComputation";
-      case UseAdapterPredictorAndGlobalTimeStepComputation: return "UseAdapterPredictorAndGlobalTimeStepComputation";
+      case UseAdapterInitialConditionAndTimeStepSizeComputation: return "UseAdapterInitialConditionAndTimeStepSizeComputation";
+      case UseAdapterPredictionAndPlotAndTimeStepSizeComputation: return "UseAdapterPredictionAndPlotAndTimeStepSizeComputation";
+      case UseAdapterPredictionAndTimeStepSizeComputation: return "UseAdapterPredictionAndTimeStepSizeComputation";
       case UseAdapterGridErasing: return "UseAdapterGridErasing";
       case UseAdapterADERDGTimeStep: return "UseAdapterADERDGTimeStep";
       case UseAdapterADERDGTimeStepAndPlot: return "UseAdapterADERDGTimeStepAndPlot";
-      case UseAdapterPredictorRerun: return "UseAdapterPredictorRerun";
+      case UseAdapterPredictionRerun: return "UseAdapterPredictionRerun";
       case UseAdapterRiemannSolver: return "UseAdapterRiemannSolver";
-      case UseAdapterPredictor: return "UseAdapterPredictor";
-      case UseAdapterCorrector: return "UseAdapterCorrector";
-      case UseAdapterCorrectorAndPlot: return "UseAdapterCorrectorAndPlot";
+      case UseAdapterPrediction: return "UseAdapterPrediction";
+      case UseAdapterCorrection: return "UseAdapterCorrection";
+      case UseAdapterCorrectionAndPlot: return "UseAdapterCorrectionAndPlot";
       case UseAdapterPlot: return "UseAdapterPlot";
       case NumberOfAdapters: return "NumberOfAdapters";
    }
@@ -57,7 +57,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterAugmentedAMRGrid=4,UseAdapterPlotAugmentedAMRGrid=5,UseAdapterInitialConditionAndGlobalTimeStepComputation=6,UseAdapterPredictorAndPlotAndGlobalTimeStepComputation=7,UseAdapterPredictorAndGlobalTimeStepComputation=8,UseAdapterGridErasing=9,UseAdapterADERDGTimeStep=10,UseAdapterADERDGTimeStepAndPlot=11,UseAdapterPredictorRerun=12,UseAdapterRiemannSolver=13,UseAdapterPredictor=14,UseAdapterCorrector=15,UseAdapterCorrectorAndPlot=16,UseAdapterPlot=17,NumberOfAdapters=18)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterAugmentedAMRGrid=4,UseAdapterPlotAugmentedAMRGrid=5,UseAdapterInitialConditionAndTimeStepSizeComputation=6,UseAdapterPredictionAndPlotAndTimeStepSizeComputation=7,UseAdapterPredictionAndTimeStepSizeComputation=8,UseAdapterGridErasing=9,UseAdapterADERDGTimeStep=10,UseAdapterADERDGTimeStepAndPlot=11,UseAdapterPredictionRerun=12,UseAdapterRiemannSolver=13,UseAdapterPrediction=14,UseAdapterCorrection=15,UseAdapterCorrectionAndPlot=16,UseAdapterPlot=17,NumberOfAdapters=18)";
 }
 
 

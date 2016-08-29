@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_Predictor_H_
-#define EXAHYPE_ADAPTERS_Predictor_H_
+#ifndef EXAHYPE_ADAPTERS_PredictionAndPlotAndTimeStepSizeComputation_H_
+#define EXAHYPE_ADAPTERS_PredictionAndPlotAndTimeStepSizeComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,13 +18,16 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/SpaceTimePredictor.h"
+ #include "exahype/mappings/Synchronisation.h"
+ #include "exahype/mappings/Prediction.h"
+ #include "exahype/mappings/Plot.h"
+ #include "exahype/mappings/TimeStepSizeComputation.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class Predictor;
+        class PredictionAndPlotAndTimeStepSizeComputation;
       } 
 }
 
@@ -36,11 +39,17 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::Predictor {
+class exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation {
   private:
-    typedef mappings::SpaceTimePredictor Mapping0;
+    typedef mappings::Synchronisation Mapping0;
+    typedef mappings::Prediction Mapping1;
+    typedef mappings::Plot Mapping2;
+    typedef mappings::TimeStepSizeComputation Mapping3;
 
-     Mapping0  _map2SpaceTimePredictor;
+     Mapping0  _map2Synchronisation;
+     Mapping1  _map2Prediction;
+     Mapping2  _map2Plot;
+     Mapping3  _map2TimeStepSizeComputation;
 
 
   public:
@@ -52,16 +61,16 @@ class exahype::adapters::Predictor {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    Predictor();
+    PredictionAndPlotAndTimeStepSizeComputation();
 
     #if defined(SharedMemoryParallelisation)
-    Predictor(const Predictor& masterThread);
+    PredictionAndPlotAndTimeStepSizeComputation(const PredictionAndPlotAndTimeStepSizeComputation& masterThread);
     #endif
 
-    virtual ~Predictor();
+    virtual ~PredictionAndPlotAndTimeStepSizeComputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const Predictor& workerThread);
+    void mergeWithWorkerThread(const PredictionAndPlotAndTimeStepSizeComputation& workerThread);
     #endif
 
     void createInnerVertex(

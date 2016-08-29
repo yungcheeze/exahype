@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_CorrectorAndPlot_H_
-#define EXAHYPE_ADAPTERS_CorrectorAndPlot_H_
+#ifndef EXAHYPE_ADAPTERS_InitialConditionAndTimeStepSizeComputation_H_
+#define EXAHYPE_ADAPTERS_InitialConditionAndTimeStepSizeComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,15 +18,16 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/SolutionUpdate.h"
- #include "exahype/mappings/Plot.h"
- #include "exahype/mappings/GlobalTimeStepComputation.h"
+ #include "exahype/mappings/Synchronisation.h"
+ #include "exahype/mappings/DropIncomingMPIMetadataMessages.h"
+ #include "exahype/mappings/InitialCondition.h"
+ #include "exahype/mappings/TimeStepSizeComputation.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class CorrectorAndPlot;
+        class InitialConditionAndTimeStepSizeComputation;
       } 
 }
 
@@ -38,15 +39,17 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::CorrectorAndPlot {
+class exahype::adapters::InitialConditionAndTimeStepSizeComputation {
   private:
-    typedef mappings::SolutionUpdate Mapping0;
-    typedef mappings::Plot Mapping1;
-    typedef mappings::GlobalTimeStepComputation Mapping2;
+    typedef mappings::Synchronisation Mapping0;
+    typedef mappings::DropIncomingMPIMetadataMessages Mapping1;
+    typedef mappings::InitialCondition Mapping2;
+    typedef mappings::TimeStepSizeComputation Mapping3;
 
-     Mapping0  _map2SolutionUpdate;
-     Mapping1  _map2Plot;
-     Mapping2  _map2GlobalTimeStepComputation;
+     Mapping0  _map2Synchronisation;
+     Mapping1  _map2DropIncomingMPIMetadataMessages;
+     Mapping2  _map2InitialCondition;
+     Mapping3  _map2TimeStepSizeComputation;
 
 
   public:
@@ -58,16 +61,16 @@ class exahype::adapters::CorrectorAndPlot {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    CorrectorAndPlot();
+    InitialConditionAndTimeStepSizeComputation();
 
     #if defined(SharedMemoryParallelisation)
-    CorrectorAndPlot(const CorrectorAndPlot& masterThread);
+    InitialConditionAndTimeStepSizeComputation(const InitialConditionAndTimeStepSizeComputation& masterThread);
     #endif
 
-    virtual ~CorrectorAndPlot();
+    virtual ~InitialConditionAndTimeStepSizeComputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const CorrectorAndPlot& workerThread);
+    void mergeWithWorkerThread(const InitialConditionAndTimeStepSizeComputation& workerThread);
     #endif
 
     void createInnerVertex(

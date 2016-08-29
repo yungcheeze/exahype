@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#ifndef EXAHYPE_MAPPINGS_TimeStepComputation_H_
-#define EXAHYPE_MAPPINGS_TimeStepComputation_H_
+#ifndef EXAHYPE_MAPPINGS_TimeStepSizeComputation_H_
+#define EXAHYPE_MAPPINGS_TimeStepSizeComputation_H_
 
 #include "tarch/la/Vector.h"
 #include "tarch/logging/Log.h"
@@ -30,7 +30,7 @@
 
 namespace exahype {
   namespace mappings {
-    class TimeStepComputation;
+    class TimeStepSizeComputation;
   }
 }
 
@@ -58,7 +58,7 @@ namespace exahype {
  *
  * @author Dominic Charrier, Tobias Weinzierl
  */
-class exahype::mappings::TimeStepComputation {
+class exahype::mappings::TimeStepSizeComputation {
  public:
    static bool SkipReductionInBatchedTimeSteps;
 
@@ -284,22 +284,22 @@ class exahype::mappings::TimeStepComputation {
   /**
     * Nop.
     */
-   TimeStepComputation();
+   TimeStepSizeComputation();
  #if defined(SharedMemoryParallelisation)
    /**
     * Nop.
     */
-   TimeStepComputation(const TimeStepComputation& masterThread);
+   TimeStepSizeComputation(const TimeStepSizeComputation& masterThread);
  #endif
    /**
     * Nop.
     */
-   virtual ~TimeStepComputation();
+   virtual ~TimeStepSizeComputation();
  #if defined(SharedMemoryParallelisation)
    /**
     * Nop.
     */
-   void mergeWithWorkerThread(const TimeStepComputation& workerThread);
+   void mergeWithWorkerThread(const TimeStepSizeComputation& workerThread);
  #endif
    /**
     * Nop.

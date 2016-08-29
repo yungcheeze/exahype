@@ -39,8 +39,9 @@ class Prediction;
  * This mapping realises the space-time predictor
  *
  * We do run through all the cells and, per solver, run the space-time
- * prediction and the volume integral. As a result, most of the interesting stuff is
- * done in enterCell().
+ * prediction and the volume integral.
+ * Most of the interesting stuff is done in enterCell().
+ *
  * The other methods despite leaveCell(...) as well as MPI- and Shared-Mem-specific methods
  * perform no operation.
  *
@@ -311,12 +312,13 @@ class exahype::mappings::Prediction {
   /**
    * Enter a cell
    *
-   * Resets the Riemann solve flags and the face data exchange counter for all cells types.
+   * This method first synchronises the time step sizes and time stamps, and
+   * then resets the Riemann solve flags and the face data exchange counter for all
+   * solvers for which a valid cell description was registered on this cell.
    *
-   * Run through all solvers assigned to a (real) cell and invoke the solver's
-   * Prediction(...).
-   *
-   * Directly after invoke the solver's volumeIntegral(...) routine.
+   * Directly after, it runs through all solvers assigned to a cell and invoke the solver's
+   * spaceTimePredictor(...) as well as the solver's volumeIntegral(...) routines if
+   * the the fine grid cell functions as a compute cell (Cell) for the solver.
    * Please see the discussion in the class header.
    *
    * <h2>MPI</h2>

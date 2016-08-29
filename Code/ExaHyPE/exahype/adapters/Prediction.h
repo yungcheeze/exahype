@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_InitialConditionAndGlobalTimeStepComputation_H_
-#define EXAHYPE_ADAPTERS_InitialConditionAndGlobalTimeStepComputation_H_
+#ifndef EXAHYPE_ADAPTERS_Prediction_H_
+#define EXAHYPE_ADAPTERS_Prediction_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,16 +18,13 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/NewTimeStep.h"
- #include "exahype/mappings/DropIncomingMPIMetadataMessages.h"
- #include "exahype/mappings/InitialCondition.h"
- #include "exahype/mappings/GlobalTimeStepComputation.h"
+ #include "exahype/mappings/Prediction.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class InitialConditionAndGlobalTimeStepComputation;
+        class Prediction;
       } 
 }
 
@@ -39,17 +36,11 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::InitialConditionAndGlobalTimeStepComputation {
+class exahype::adapters::Prediction {
   private:
-    typedef mappings::NewTimeStep Mapping0;
-    typedef mappings::DropIncomingMPIMetadataMessages Mapping1;
-    typedef mappings::InitialCondition Mapping2;
-    typedef mappings::GlobalTimeStepComputation Mapping3;
+    typedef mappings::Prediction Mapping0;
 
-     Mapping0  _map2NewTimeStep;
-     Mapping1  _map2DropIncomingMPIMetadataMessages;
-     Mapping2  _map2InitialCondition;
-     Mapping3  _map2GlobalTimeStepComputation;
+     Mapping0  _map2Prediction;
 
 
   public:
@@ -61,16 +52,16 @@ class exahype::adapters::InitialConditionAndGlobalTimeStepComputation {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    InitialConditionAndGlobalTimeStepComputation();
+    Prediction();
 
     #if defined(SharedMemoryParallelisation)
-    InitialConditionAndGlobalTimeStepComputation(const InitialConditionAndGlobalTimeStepComputation& masterThread);
+    Prediction(const Prediction& masterThread);
     #endif
 
-    virtual ~InitialConditionAndGlobalTimeStepComputation();
+    virtual ~Prediction();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const InitialConditionAndGlobalTimeStepComputation& workerThread);
+    void mergeWithWorkerThread(const Prediction& workerThread);
     #endif
 
     void createInnerVertex(
