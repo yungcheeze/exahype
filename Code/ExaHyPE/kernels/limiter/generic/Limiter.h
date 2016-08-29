@@ -16,6 +16,7 @@
 
 #include <algorithm>
 #include "../../GaussLegendreQuadrature.h"
+#include "../../GaussLobattoQuadrature.h"
 #include "../../KernelUtils.h"
 
 

@@ -1,6 +1,13 @@
-// g++ -c -DDIMENSIONS=3 ../limiterUtilsCommon.cpp && g++ -c -DDIMENSIONS=3 limiterUtils.cpp && g++ -c tmpTestLimiterUtils_Main.cpp && g++ -o main tmpTestLimiterUtils_Main.o ../../../../GaussLegendreQuadrature.o limiterUtils.o limiterUtilsCommon.o
+/*
+rm -f *.o main
+g++ -c -std=c++11 -DDIMENSIONS=3 -I ../../../../../ ../../../../GaussLegendreQuadrature.cpp 
+g++ -c -std=c++11 -DDIMENSIONS=3 -I ../../../../../ ../../../../GaussLobattoQuadrature.cpp 
+g++ -c -DDIMENSIONS=3 ../limiterUtilsCommon.cpp 
+g++ -c -DDIMENSIONS=3 limiterUtils.cpp 
+g++ -c tmpTestLimiterUtils_Main.cpp 
+g++ -o main tmpTestLimiterUtils_Main.o GaussLegendreQuadrature.o GaussLobattoQuadrature.o limiterUtils.o limiterUtilsCommon.o
+*/
 
-// 
 #include <iostream>
 #include <iomanip>
 #include <set>
@@ -34,6 +41,11 @@ int main() {
   for(int i=0; i< basisSize; i++)
     std::cout << kernels::gaussLegendreNodes[basisSize-1][i] << " ";
   std::cout <<std::endl;
+  kernels::initGaussLobattoNodesAndWeights(orders);
+  std::cout << "gaussLobattoNodes: ";
+  for(int i=0; i< basisSize; i++)
+    std::cout << kernels::gaussLobattoNodes[basisSize-1][i] << " ";
+  std::cout <<std::endl;
   
   //test BaseFunc1D
   double xi = 0.37;
@@ -45,6 +57,8 @@ int main() {
   std::cout <<std::endl;
   
   kernels::limiter::generic::c::initProjectionMatrices(basisSize);
+  
+  std::cout << "uh2lim: " << std::endl;
   int bLim = 2*(basisSize-1)+1;
   for(int i=0; i< basisSize; i++) {
     for(int j=0; j<bLim; j++)
@@ -53,6 +67,15 @@ int main() {
   }
   std::cout <<std::endl;
   std::cout << "uh2lim[1][1]: " <<kernels::limiter::generic::c::uh2lim[1*bLim+1] << std::endl;
+  
+  std::cout << "uh2lob: " << std::endl;
+  for(int i=0; i< basisSize; i++) {
+    for(int j=0; j<basisSize; j++)
+      std::cout << kernels::limiter::generic::c::uh2lob[i*basisSize+j] << " ";
+    std::cout <<std::endl;
+  }
+  std::cout <<std::endl;
+  std::cout << "uh2lob[1][1]: " <<kernels::limiter::generic::c::uh2lob[1*basisSize+1] << std::endl;
   
   kernels::limiter::generic::c::findCellLocallocalMinlocalMax(luh, numberOfVariable, basisSize, localMin, localMax);
   
