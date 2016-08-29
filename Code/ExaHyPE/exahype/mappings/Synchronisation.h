@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#ifndef EXAHYPE_MAPPINGS_NewTimeStep_H_
-#define EXAHYPE_MAPPINGS_NewTimeStep_H_
+#ifndef EXAHYPE_MAPPINGS_Synchronisation_H_
+#define EXAHYPE_MAPPINGS_Synchronisation_H_
 
 #include "tarch/la/Vector.h"
 #include "tarch/logging/Log.h"
@@ -29,7 +29,7 @@
 
 namespace exahype {
 namespace mappings {
-class NewTimeStep;
+class Synchronisation;
 }
 }
 
@@ -45,7 +45,7 @@ class NewTimeStep;
  *
  * @author Dominic Etienne Charrier
  */
-class exahype::mappings::NewTimeStep {
+class exahype::mappings::Synchronisation {
  private:
   /**
    * Logging device for the trace macros.
@@ -79,25 +79,25 @@ class exahype::mappings::NewTimeStep {
   /**
    * Nop.
    */
-  NewTimeStep();
+  Synchronisation();
 
 #if defined(SharedMemoryParallelisation)
   /**
    * Nop.
    */
-  NewTimeStep(const NewTimeStep& masterThread);
+  Synchronisation(const Synchronisation& masterThread);
 #endif
 
   /**
    * Nop.
    */
-  virtual ~NewTimeStep();
+  virtual ~Synchronisation();
 
 #if defined(SharedMemoryParallelisation)
   /**
    * Nop.
    */
-  void mergeWithWorkerThread(const NewTimeStep& workerThread);
+  void mergeWithWorkerThread(const Synchronisation& workerThread);
 #endif
 
   /**

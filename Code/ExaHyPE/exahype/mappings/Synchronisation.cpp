@@ -11,7 +11,7 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#include "exahype/mappings/NewTimeStep.h"
+#include "exahype/mappings/Synchronisation.h"
 
 #include "exahype/solvers/ADERDGSolver.h"
 
@@ -20,7 +20,7 @@
 #include "tarch/multicore/Loop.h"
 
 peano::CommunicationSpecification
-exahype::mappings::NewTimeStep::communicationSpecification() {
+exahype::mappings::Synchronisation::communicationSpecification() {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::SendDataAndStateBeforeFirstTouchVertexFirstTime,
       peano::CommunicationSpecification::ExchangeWorkerMasterData::MaskOutWorkerMasterDataAndStateExchange,
@@ -29,7 +29,7 @@ exahype::mappings::NewTimeStep::communicationSpecification() {
 
 
 peano::MappingSpecification
-exahype::mappings::NewTimeStep::enterCellSpecification() {
+exahype::mappings::Synchronisation::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
@@ -37,7 +37,7 @@ exahype::mappings::NewTimeStep::enterCellSpecification() {
 
 
 peano::MappingSpecification
-exahype::mappings::NewTimeStep::touchVertexLastTimeSpecification() {
+exahype::mappings::Synchronisation::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
@@ -45,14 +45,14 @@ exahype::mappings::NewTimeStep::touchVertexLastTimeSpecification() {
 
 
 peano::MappingSpecification
-exahype::mappings::NewTimeStep::touchVertexFirstTimeSpecification() {
+exahype::mappings::Synchronisation::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 peano::MappingSpecification
-exahype::mappings::NewTimeStep::leaveCellSpecification() {
+exahype::mappings::Synchronisation::leaveCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces);
@@ -60,7 +60,7 @@ exahype::mappings::NewTimeStep::leaveCellSpecification() {
 
 
 peano::MappingSpecification
-exahype::mappings::NewTimeStep::ascendSpecification() {
+exahype::mappings::Synchronisation::ascendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces);
@@ -68,28 +68,28 @@ exahype::mappings::NewTimeStep::ascendSpecification() {
 
 
 peano::MappingSpecification
-exahype::mappings::NewTimeStep::descendSpecification() {
+exahype::mappings::Synchronisation::descendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
-tarch::logging::Log exahype::mappings::NewTimeStep::_log(
-    "exahype::mappings::NewTimeStep");
-int exahype::mappings::NewTimeStep::_mpiTag =
-    tarch::parallel::Node::reserveFreeTag("exahype::mappings::NewTimeStep");
+tarch::logging::Log exahype::mappings::Synchronisation::_log(
+    "exahype::mappings::Synchronisation");
+int exahype::mappings::Synchronisation::_mpiTag =
+    tarch::parallel::Node::reserveFreeTag("exahype::mappings::Synchronisation");
 
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::NewTimeStep::NewTimeStep(const NewTimeStep& masterThread) {}
+exahype::mappings::Synchronisation::Synchronisation(const Synchronisation& masterThread) {}
 
-void exahype::mappings::NewTimeStep::mergeWithWorkerThread(
-    const NewTimeStep& workerThread) {
+void exahype::mappings::Synchronisation::mergeWithWorkerThread(
+    const Synchronisation& workerThread) {
   // do nothing
 }
 #endif
 
-void exahype::mappings::NewTimeStep::enterCell(
+void exahype::mappings::Synchronisation::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -125,7 +125,7 @@ void exahype::mappings::NewTimeStep::enterCell(
 
 #ifdef Parallel
 // This is master-worker comm. part 1. See SpaceTimePredictor for time stepping equivalents.
-bool exahype::mappings::NewTimeStep::prepareSendToWorker(
+bool exahype::mappings::Synchronisation::prepareSendToWorker(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -141,7 +141,7 @@ bool exahype::mappings::NewTimeStep::prepareSendToWorker(
 }
 
 // This is master-worker comm. part 2. See SpaceTimePredictor for time stepping equivalents.
-void exahype::mappings::NewTimeStep::receiveDataFromMaster(
+void exahype::mappings::Synchronisation::receiveDataFromMaster(
     exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
     const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
     exahype::Vertex* const receivedCoarseGridVertices,
@@ -164,49 +164,49 @@ void exahype::mappings::NewTimeStep::receiveDataFromMaster(
 // ====================================
 
 
-void exahype::mappings::NewTimeStep::mergeWithNeighbour(
+void exahype::mappings::Synchronisation::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::prepareSendToNeighbour(
+void exahype::mappings::Synchronisation::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::prepareCopyToRemoteNode(
+void exahype::mappings::Synchronisation::prepareCopyToRemoteNode(
     exahype::Vertex& localVertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::prepareCopyToRemoteNode(
+void exahype::mappings::Synchronisation::prepareCopyToRemoteNode(
     exahype::Cell& localCell, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::Synchronisation::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::Synchronisation::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::prepareSendToMaster(
+void exahype::mappings::Synchronisation::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
     const exahype::Vertex* const coarseGridVertices,
@@ -216,7 +216,7 @@ void exahype::mappings::NewTimeStep::prepareSendToMaster(
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::mergeWithMaster(
+void exahype::mappings::Synchronisation::mergeWithMaster(
     const exahype::Cell& workerGridCell,
     exahype::Vertex* const workerGridVertices,
     const peano::grid::VertexEnumerator& workerEnumerator,
@@ -231,14 +231,14 @@ void exahype::mappings::NewTimeStep::mergeWithMaster(
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::mergeWithWorker(
+void exahype::mappings::Synchronisation::mergeWithWorker(
     exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::mergeWithWorker(
+void exahype::mappings::Synchronisation::mergeWithWorker(
     exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
@@ -246,15 +246,15 @@ void exahype::mappings::NewTimeStep::mergeWithWorker(
 }
 #endif
 
-exahype::mappings::NewTimeStep::NewTimeStep() {
+exahype::mappings::Synchronisation::Synchronisation() {
   // do nothing
 }
 
-exahype::mappings::NewTimeStep::~NewTimeStep() {
+exahype::mappings::Synchronisation::~Synchronisation() {
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::createHangingVertex(
+void exahype::mappings::Synchronisation::createHangingVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -265,7 +265,7 @@ void exahype::mappings::NewTimeStep::createHangingVertex(
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::destroyHangingVertex(
+void exahype::mappings::Synchronisation::destroyHangingVertex(
     const exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -276,7 +276,7 @@ void exahype::mappings::NewTimeStep::destroyHangingVertex(
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::createInnerVertex(
+void exahype::mappings::Synchronisation::createInnerVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -287,7 +287,7 @@ void exahype::mappings::NewTimeStep::createInnerVertex(
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::createBoundaryVertex(
+void exahype::mappings::Synchronisation::createBoundaryVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -298,7 +298,7 @@ void exahype::mappings::NewTimeStep::createBoundaryVertex(
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::destroyVertex(
+void exahype::mappings::Synchronisation::destroyVertex(
     const exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -309,7 +309,7 @@ void exahype::mappings::NewTimeStep::destroyVertex(
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::createCell(
+void exahype::mappings::Synchronisation::createCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -319,7 +319,7 @@ void exahype::mappings::NewTimeStep::createCell(
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::destroyCell(
+void exahype::mappings::Synchronisation::destroyCell(
     const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -329,7 +329,7 @@ void exahype::mappings::NewTimeStep::destroyCell(
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::touchVertexFirstTime(
+void exahype::mappings::Synchronisation::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -340,7 +340,7 @@ void exahype::mappings::NewTimeStep::touchVertexFirstTime(
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::touchVertexLastTime(
+void exahype::mappings::Synchronisation::touchVertexLastTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -351,7 +351,7 @@ void exahype::mappings::NewTimeStep::touchVertexLastTime(
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::leaveCell(
+void exahype::mappings::Synchronisation::leaveCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -361,16 +361,16 @@ void exahype::mappings::NewTimeStep::leaveCell(
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::beginIteration(
+void exahype::mappings::Synchronisation::beginIteration(
     exahype::State& solverState) {
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::endIteration(exahype::State& solverState) {
+void exahype::mappings::Synchronisation::endIteration(exahype::State& solverState) {
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::descend(
+void exahype::mappings::Synchronisation::descend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -379,7 +379,7 @@ void exahype::mappings::NewTimeStep::descend(
   // do nothing
 }
 
-void exahype::mappings::NewTimeStep::ascend(
+void exahype::mappings::Synchronisation::ascend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,

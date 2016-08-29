@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/
  
-#ifndef EXAHYPE_MAPPINGS_SpaceTimePredictor_H_
-#define EXAHYPE_MAPPINGS_SpaceTimePredictor_H_
+#ifndef EXAHYPE_MAPPINGS_Prediction_H_
+#define EXAHYPE_MAPPINGS_Prediction_H_
 
 #include "tarch/la/Vector.h"
 #include "tarch/logging/Log.h"
@@ -31,7 +31,7 @@
 
 namespace exahype {
 namespace mappings {
-class SpaceTimePredictor;
+class Prediction;
 }
 }
 
@@ -82,7 +82,7 @@ class SpaceTimePredictor;
  * Need to propagate face data from worker to master
  * (erasing,joins).
  */
-class exahype::mappings::SpaceTimePredictor {
+class exahype::mappings::Prediction {
  private:
   /**
    * Logging device for the trace macros.
@@ -109,11 +109,11 @@ class exahype::mappings::SpaceTimePredictor {
    * and (space-time) predictor values to the boundary and
    * computes the volume integral.
    *
-   * TODO(Dominic): Dedicate each thread a fixed size spaceTimePredictor and
-   * spaceTimePredictorVolumeFlux field. No need to store these massive
+   * TODO(Dominic): Dedicate each thread a fixed size Prediction and
+   * PredictionVolumeFlux field. No need to store these massive
    * quantities on the heap for each cell.
    */
-  static void computeSpaceTimePredictorAndVolumeIntegral(exahype::records::ADERDGCellDescription& p);
+  static void computePredictionAndVolumeIntegral(exahype::records::ADERDGCellDescription& p);
 
   /**
    * Sets the extrapolated predictor and fluctuations of an Ancestor to zero.
@@ -314,7 +314,7 @@ class exahype::mappings::SpaceTimePredictor {
    * Resets the Riemann solve flags and the face data exchange counter for all cells types.
    *
    * Run through all solvers assigned to a (real) cell and invoke the solver's
-   * spaceTimePredictor(...).
+   * Prediction(...).
    *
    * Directly after invoke the solver's volumeIntegral(...) routine.
    * Please see the discussion in the class header.
@@ -357,14 +357,14 @@ class exahype::mappings::SpaceTimePredictor {
   /**
    * Access the states mapping in a read-only fashion.
    */
-  SpaceTimePredictor(const SpaceTimePredictor& masterThread);
+  Prediction(const Prediction& masterThread);
 #endif
 
 #if defined(SharedMemoryParallelisation)
   /**
    * Nop
    */
-  void mergeWithWorkerThread(const SpaceTimePredictor& workerThread);
+  void mergeWithWorkerThread(const Prediction& workerThread);
 #endif
 
   /**
@@ -622,12 +622,12 @@ class exahype::mappings::SpaceTimePredictor {
   /**
    * Nop
    */
-  SpaceTimePredictor();
+  Prediction();
 
   /**
    * Nop
    */
-  virtual ~SpaceTimePredictor();
+  virtual ~Prediction();
 
   /**
    * Nop
