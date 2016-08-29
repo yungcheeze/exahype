@@ -162,7 +162,7 @@ class exahype::mappings::SpaceTimePredictor {
    *
    * \note Not thread-safe.
    */
-  static void sentADERDGFaceData(
+  static void sendADERDGFaceData(
       int toRank,
       const tarch::la::Vector<DIMENSIONS, double>& x,
       int level,

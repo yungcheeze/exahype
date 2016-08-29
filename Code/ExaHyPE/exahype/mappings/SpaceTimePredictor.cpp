@@ -129,63 +129,47 @@ void exahype::mappings::SpaceTimePredictor::enterCell(
         #endif
       }
 
-      // space-time DoF (basisSize**(DIMENSIONS+1))
-      double* lQi = 0;
-      double* lFi = 0;
+      if (p.getType()==exahype::records::ADERDGCellDescription::Cell) {
+        assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
+        assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimePredictor()),p.toString());
+        assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimeVolumeFlux()),p.toString());
+        assertion1(DataHeap::getInstance().isValidIndex(p.getSolution()),p.toString());
+        assertion1(DataHeap::getInstance().isValidIndex(p.getUpdate()),p.toString());
+        assertion1(DataHeap::getInstance().isValidIndex(p.getPredictor()),p.toString());
+        assertion1(DataHeap::getInstance().isValidIndex(p.getVolumeFlux()),p.toString());
+        assertion1(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()),p.toString());
+        assertion1(DataHeap::getInstance().isValidIndex(p.getFluctuation()),p.toString());
 
-      // volume DoF (basisSize**(DIMENSIONS))
-      double* luh = 0;
-      double* lduh = 0;
-      double* lQhi = 0;
-      double* lFhi = 0;
+        // space-time DoF (basisSize**(DIMENSIONS+1))
+        double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
+        double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
 
-      // face DoF (basisSize**(DIMENSIONS-1))
-      double* lQhbnd = 0;
-      double* lFhbnd = 0;
+        // volume DoF (basisSize**(DIMENSIONS))
+        double* luh  = DataHeap::getInstance().getData(p.getSolution()).data();
+        double* lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
+        double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
+        double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
 
-      switch (p.getType()) {
-        case exahype::records::ADERDGCellDescription::Cell:
-          assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimePredictor()),p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimeVolumeFlux()),p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getSolution()),p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getUpdate()),p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getPredictor()),p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getVolumeFlux()),p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()),p.toString());
-          assertion1(DataHeap::getInstance().isValidIndex(p.getFluctuation()),p.toString());
+        // face DoF (basisSize**(DIMENSIONS-1))
+        double* lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
+        double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
-          lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
-          lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
+        fineGridCell.validateNoNansInADERDGSolver(i,fineGridCell,fineGridVerticesEnumerator,"exahype::mappings::SpaceTimePredictor::enterCell[pre]");
 
-          luh  = DataHeap::getInstance().getData(p.getSolution()).data();
-          lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
-          lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
-          lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
+        solver->spaceTimePredictor(
+            lQi, lFi, lQhi, lFhi,
+            lQhbnd,
+            lFhbnd,
+            luh, fineGridVerticesEnumerator.getCellSize(),
+            p.getPredictorTimeStepSize());
 
-          lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
-          lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
+        // Perform volume integral
+        // TODO(Dominic): This should move into touchVertexLastTime/prepareSendToNeighbour.
+        // Here it should be performed directly after we have sent out all the face data
+        // to give the network some time to deliver the MPI messages (theoretically).
+        solver->volumeIntegral(lduh, lFhi, fineGridVerticesEnumerator.getCellSize());
 
-          fineGridCell.validateNoNansInADERDGSolver(i,fineGridCell,fineGridVerticesEnumerator,"exahype::mappings::SpaceTimePredictor::enterCell[pre]");
-
-          solver->spaceTimePredictor(
-              lQi, lFi, lQhi, lFhi,
-              lQhbnd,
-              lFhbnd,
-              luh, fineGridVerticesEnumerator.getCellSize(),
-              p.getPredictorTimeStepSize());
-
-          // Perform volume integral
-          // TODO(Dominic): This should move into touchVertexLastTime/prepareSendToNeighbour.
-          // Here it should be performed directly after we have sent out all the face data
-          // to give the network some time to deliver the MPI messages (theoretically).
-          solver->volumeIntegral(lduh, lFhi, fineGridVerticesEnumerator.getCellSize());
-
-          fineGridCell.validateNoNansInADERDGSolver(i,fineGridCell,fineGridVerticesEnumerator,"exahype::mappings::SpaceTimePredictor::enterCell[post]");
-
-          break;
-        default:
-          break;
+        fineGridCell.validateNoNansInADERDGSolver(i,fineGridCell,fineGridVerticesEnumerator,"exahype::mappings::SpaceTimePredictor::enterCell[post]");
       }
     endpfor
 
@@ -278,7 +262,7 @@ void exahype::mappings::SpaceTimePredictor::prepareSendToNeighbour(
 
           decrementCounters(src,dest,srcCellDescriptionIndex);
           if (needToSendFaceData(src,dest,srcCellDescriptionIndex)) {
-            sentADERDGFaceData(toRank,x,level,src,dest,srcCellDescriptionIndex,adjacentADERDGCellDescriptionsIndices(destScalar));
+            sendADERDGFaceData(toRank,x,level,src,dest,srcCellDescriptionIndex,adjacentADERDGCellDescriptionsIndices(destScalar));
             //            sentFiniteVolumesFaceData(toRank,x,level,src,dest,srcCellDescriptionIndex,adjacentADERDGCellDescriptionsIndices(destScalar));
             auto encodedMetadata = exahype::Cell::encodeMetadata(srcCellDescriptionIndex);
             MetadataHeap::getInstance().sendData(
@@ -363,7 +347,7 @@ void exahype::mappings::SpaceTimePredictor::decrementCounters(
 //  }
 }
 
-void exahype::mappings::SpaceTimePredictor::sentADERDGFaceData(
+void exahype::mappings::SpaceTimePredictor::sendADERDGFaceData(
     int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     int level,
@@ -425,8 +409,8 @@ void exahype::mappings::SpaceTimePredictor::sentADERDGFaceData(
         assertionMsg(false, "should never been entered");
 #endif
       } else {
-        logInfo( //  TODO(Dominic): Change to logDebug.
-            "sentADERDGFaceData(...)",
+        logDebug(
+            "sendADERDGFaceData(...)",
             "send three arrays to rank " <<
             toRank << " for vertex x=" << x << ", level=" << level <<
             ", dest type=" << multiscalelinkedcell::indexToString(destCellDescriptionIndex) <<
