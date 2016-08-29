@@ -389,13 +389,13 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    * that was sent in the last iteration of the grid setup.
    */
   initSolverTimeStamps();
-  repository.switchToSolutionAdjustmentAndGlobalTimeStepComputation();
+  repository.switchToInitialConditionAndGlobalTimeStepComputation();
   repository.iterate();
 
-#if defined(Dim2) && defined(Asserts)
+  #if defined(Dim2) && defined(Asserts)
   repository.switchToPlotAugmentedAMRGrid();
   repository.iterate();
-#endif
+  #endif
 
   /*
    * Set the time stamps of the solvers to the initial value again.
