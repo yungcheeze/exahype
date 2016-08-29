@@ -8,10 +8,10 @@ from SLURM import runMultipleSlURMjobs
 #modes = ["Profile", "Release"]
 
 processes = [2, 64, 128]
-pdegrees = [3, 8]
-hmaxs = ["0.04"]
+threads = [1]
+h_p_ts = [["0.04", 3, 0.001], ["0.04", 8, 0.001]]
 compilers = ["GNU", "Intel"]
-dimensions = ["2D", "3D"]
+dimensions = ["2D"]
 modes = ["Profile"]
 
-runMultipleSlURMjobs(dimensions, processes, pdegrees, hmaxs, compilers, modes, "profilingRun")
+runMultipleSlURMjobs(dimensions, processes, threads, h_p_ts, compilers, modes, "profilingRun")
