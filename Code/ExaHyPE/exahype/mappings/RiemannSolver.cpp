@@ -683,7 +683,6 @@ void exahype::mappings::RiemannSolver::dropADERDGFaceData(
       metadataIterator-=2;
       exahype::records::ADERDGCellDescription::Type neighbourType =
           static_cast<exahype::records::ADERDGCellDescription::Type>(neighbourTypeAsInt);
-      logDebug("dropADERDGFaceData(...)","neighbourSolverNumber: " << neighbourSolverNumber);
       logDebug("dropADERDGFaceData(...)","neighbourTypeAsInt: "    << neighbourTypeAsInt);
 
       if (neighbourType==exahype::records::ADERDGCellDescription::Cell ||
@@ -693,8 +692,7 @@ void exahype::mappings::RiemannSolver::dropADERDGFaceData(
             "dropADERDGFaceData(...)", "drop three arrays from rank " <<
             fromRank << " for vertex x=" << x << ", level=" << level <<
             ", src type=" << multiscalelinkedcell::indexToString(srcCellDescriptionIndex) <<
-            ", src=" << src << ", dest=" << dest <<
-            ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
+            ", src=" << src << ", dest=" << dest
         );
 
         DataHeap::getInstance().receiveData(fromRank, x, level,
