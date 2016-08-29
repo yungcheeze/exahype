@@ -24,7 +24,7 @@ event-mapping:
   name: SolutionUpdate
   
 event-mapping:
-  name: SolutionAdjustment
+  name: InitialCondition
 
 event-mapping: // -DEC: consider to move the computation of boundary extrapolated values out of the space-time predictor mapping
   name: SpaceTimePredictor
@@ -75,13 +75,14 @@ event-mapping:
   
 adapter:
   name: AugmentedAMRGrid
-  merge-with-user-defined-mapping: NewTimeStep        // (createInner/BoundaryVertex,enterCell,serial)
-  merge-with-user-defined-mapping: RegularMesh        // (createInner/BoundaryVertex,enterCell,serial)
-  merge-with-user-defined-mapping: MarkingForRefinement      // (enterCell,runconcurrently)
-  merge-with-user-defined-mapping: Refinement                // (touchVertexLastTime,enterCell,serial)
-  merge-with-user-defined-mapping: SolutionAdjustment        // (enterCell,runconcurrently)             
-  merge-with-user-defined-mapping: MarkingForAugmentation    // (enterCell,runconcurrently)
-  merge-with-user-defined-mapping: Augmentation              // (touchVertexLastTime,enterCell,serial)
+  merge-with-user-defined-mapping: RegularMesh             // (createInner/BoundaryVertex,enterCell,serial)
+  // Initial Condition comes after RegularMesh since we refine here in a fast manner down to the 
+  // first layer of cells we initialise. Afterwards refinement is done per iteration.
+  merge-with-user-defined-mapping: InitialCondition        // (enterCell,runconcurrently);   
+  merge-with-user-defined-mapping: MarkingForRefinement    // (enterCell,runconcurrently)
+  merge-with-user-defined-mapping: Refinement              // (touchVertexLastTime,enterCell,serial)          
+  merge-with-user-defined-mapping: MarkingForAugmentation  // (enterCell,runconcurrently)
+  merge-with-user-defined-mapping: Augmentation            // (touchVertexLastTime,enterCell,serial)
   merge-with-user-defined-mapping: LoadBalancing
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)       
   
@@ -92,10 +93,10 @@ adapter:
 
 // Adapters for initialisation of time stepping
 adapter:
-  name: SolutionAdjustmentAndGlobalTimeStepComputation
-  merge-with-user-defined-mapping: DropIncomingMPIMetadataMessages
+  name: InitialConditionAndGlobalTimeStepComputation
   merge-with-user-defined-mapping: NewTimeStep
-  merge-with-user-defined-mapping: SolutionAdjustment
+  merge-with-user-defined-mapping: DropIncomingMPIMetadataMessages
+  merge-with-user-defined-mapping: InitialCondition
   // needs current time step size
   merge-with-user-defined-mapping: GlobalTimeStepComputation
 

@@ -15,7 +15,7 @@
 
  #include "exahype/adapters/AugmentedAMRGrid.h" 
  #include "exahype/adapters/PlotAugmentedAMRGrid.h" 
- #include "exahype/adapters/SolutionAdjustmentAndGlobalTimeStepComputation.h" 
+ #include "exahype/adapters/InitialConditionAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndPlotAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/GridErasing.h" 

@@ -32,7 +32,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   26/08/2016 16:08
+ * @date   29/08/2016 01:38
  */
 class exahype::records::FiniteVolumesCellDescription { 
    
@@ -705,7 +705,7 @@ class exahype::records::FiniteVolumesCellDescription {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   26/08/2016 16:08
+          * @date   29/08/2016 01:38
           */
          class exahype::records::FiniteVolumesCellDescriptionPacked { 
             

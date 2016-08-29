@@ -11,7 +11,7 @@
  * For the full license text, see LICENSE.txt
  **/
 
-#include "exahype/mappings/SolutionAdjustment.h"
+#include "exahype/mappings/InitialCondition.h"
 
 #include <cmath>
 
@@ -20,10 +20,11 @@
 #include "peano/datatraversal/autotuning/Oracle.h"
 #include "tarch/multicore/Loop.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
+#include "exahype/solvers/FiniteVolumesSolver.h"
 
 peano::CommunicationSpecification
-exahype::mappings::SolutionAdjustment::communicationSpecification() {
+exahype::mappings::InitialCondition::communicationSpecification() {
   return peano::CommunicationSpecification(
       peano::CommunicationSpecification::ExchangeMasterWorkerData::
       MaskOutMasterWorkerDataAndStateExchange,
@@ -33,51 +34,51 @@ exahype::mappings::SolutionAdjustment::communicationSpecification() {
 }
 
 peano::MappingSpecification
-exahype::mappings::SolutionAdjustment::touchVertexLastTimeSpecification() {
+exahype::mappings::InitialCondition::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 peano::MappingSpecification
-exahype::mappings::SolutionAdjustment::touchVertexFirstTimeSpecification() {
+exahype::mappings::InitialCondition::touchVertexFirstTimeSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 peano::MappingSpecification
-exahype::mappings::SolutionAdjustment::enterCellSpecification() {
+exahype::mappings::InitialCondition::enterCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::WholeTree,
       peano::MappingSpecification::RunConcurrentlyOnFineGrid);
 }
 
 peano::MappingSpecification
-exahype::mappings::SolutionAdjustment::leaveCellSpecification() {
+exahype::mappings::InitialCondition::leaveCellSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidFineGridRaces);
 }
 
 peano::MappingSpecification
-exahype::mappings::SolutionAdjustment::ascendSpecification() {
+exahype::mappings::InitialCondition::ascendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
 peano::MappingSpecification
-exahype::mappings::SolutionAdjustment::descendSpecification() {
+exahype::mappings::InitialCondition::descendSpecification() {
   return peano::MappingSpecification(
       peano::MappingSpecification::Nop,
       peano::MappingSpecification::AvoidCoarseGridRaces);
 }
 
-tarch::logging::Log exahype::mappings::SolutionAdjustment::_log(
-    "exahype::mappings::SolutionAdjustment");
+tarch::logging::Log exahype::mappings::InitialCondition::_log(
+    "exahype::mappings::InitialCondition");
 
-void exahype::mappings::SolutionAdjustment::enterCell(
+void exahype::mappings::InitialCondition::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -97,10 +98,12 @@ void exahype::mappings::SolutionAdjustment::enterCell(
     int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions, methodTrace);
     // clang-format off
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      auto& pFine = fineGridCell.getADERDGCellDescription(i);
+      auto& pFine  = fineGridCell.getADERDGCellDescription(i);
+      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
+          exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()]);
+      assertion2(solver->getType()==exahype::solvers::Solver::Type::ADER_DG,pFine.toString(),solver->toString());
 
-      auto* solver = exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
-
+      solver->synchroniseTimeStepping(pFine);
       // Unlike the other ADERDG mappings, this mapping is used
       // in the adaptive mesh refinement routine.
       // We thus make sure here that only cells with stable
@@ -176,49 +179,49 @@ void exahype::mappings::SolutionAdjustment::enterCell(
 //===================================
 
 #ifdef Parallel
-void exahype::mappings::SolutionAdjustment::mergeWithNeighbour(
+void exahype::mappings::InitialCondition::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::prepareSendToNeighbour(
+void exahype::mappings::InitialCondition::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::prepareCopyToRemoteNode(
+void exahype::mappings::InitialCondition::prepareCopyToRemoteNode(
     exahype::Vertex& localVertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::prepareCopyToRemoteNode(
+void exahype::mappings::InitialCondition::prepareCopyToRemoteNode(
     exahype::Cell& localCell, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::InitialCondition::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::InitialCondition::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-bool exahype::mappings::SolutionAdjustment::prepareSendToWorker(
+bool exahype::mappings::InitialCondition::prepareSendToWorker(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -230,7 +233,7 @@ bool exahype::mappings::SolutionAdjustment::prepareSendToWorker(
   return true;
 }
 
-void exahype::mappings::SolutionAdjustment::prepareSendToMaster(
+void exahype::mappings::InitialCondition::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
     const exahype::Vertex* const coarseGridVertices,
@@ -240,7 +243,7 @@ void exahype::mappings::SolutionAdjustment::prepareSendToMaster(
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::mergeWithMaster(
+void exahype::mappings::InitialCondition::mergeWithMaster(
     const exahype::Cell& workerGridCell,
     exahype::Vertex* const workerGridVertices,
     const peano::grid::VertexEnumerator& workerEnumerator,
@@ -255,7 +258,7 @@ void exahype::mappings::SolutionAdjustment::mergeWithMaster(
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::receiveDataFromMaster(
+void exahype::mappings::InitialCondition::receiveDataFromMaster(
     exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
     const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
     exahype::Vertex* const receivedCoarseGridVertices,
@@ -268,14 +271,14 @@ void exahype::mappings::SolutionAdjustment::receiveDataFromMaster(
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::mergeWithWorker(
+void exahype::mappings::InitialCondition::mergeWithWorker(
     exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::mergeWithWorker(
+void exahype::mappings::InitialCondition::mergeWithWorker(
     exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
@@ -283,26 +286,26 @@ void exahype::mappings::SolutionAdjustment::mergeWithWorker(
 }
 #endif
 
-exahype::mappings::SolutionAdjustment::SolutionAdjustment() {
+exahype::mappings::InitialCondition::InitialCondition() {
   // do nothing
 }
 
-exahype::mappings::SolutionAdjustment::~SolutionAdjustment() {
+exahype::mappings::InitialCondition::~InitialCondition() {
   // do nothing
 }
 
 #if defined(SharedMemoryParallelisation)
-exahype::mappings::SolutionAdjustment::SolutionAdjustment(
-    const SolutionAdjustment& masterThread) {
+exahype::mappings::InitialCondition::InitialCondition(
+    const InitialCondition& masterThread) {
   // do nothing
 }
-void exahype::mappings::SolutionAdjustment::mergeWithWorkerThread(
-    const SolutionAdjustment& workerThread) {
+void exahype::mappings::InitialCondition::mergeWithWorkerThread(
+    const InitialCondition& workerThread) {
   // do nothing
 }
 #endif
 
-void exahype::mappings::SolutionAdjustment::createHangingVertex(
+void exahype::mappings::InitialCondition::createHangingVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -313,7 +316,7 @@ void exahype::mappings::SolutionAdjustment::createHangingVertex(
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::destroyHangingVertex(
+void exahype::mappings::InitialCondition::destroyHangingVertex(
     const exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -324,7 +327,7 @@ void exahype::mappings::SolutionAdjustment::destroyHangingVertex(
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::createInnerVertex(
+void exahype::mappings::InitialCondition::createInnerVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -335,7 +338,7 @@ void exahype::mappings::SolutionAdjustment::createInnerVertex(
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::createBoundaryVertex(
+void exahype::mappings::InitialCondition::createBoundaryVertex(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -346,7 +349,7 @@ void exahype::mappings::SolutionAdjustment::createBoundaryVertex(
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::destroyVertex(
+void exahype::mappings::InitialCondition::destroyVertex(
     const exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -357,7 +360,7 @@ void exahype::mappings::SolutionAdjustment::destroyVertex(
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::createCell(
+void exahype::mappings::InitialCondition::createCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -367,7 +370,7 @@ void exahype::mappings::SolutionAdjustment::createCell(
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::destroyCell(
+void exahype::mappings::InitialCondition::destroyCell(
     const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -378,7 +381,7 @@ void exahype::mappings::SolutionAdjustment::destroyCell(
 }
 
 
-void exahype::mappings::SolutionAdjustment::touchVertexFirstTime(
+void exahype::mappings::InitialCondition::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -389,7 +392,7 @@ void exahype::mappings::SolutionAdjustment::touchVertexFirstTime(
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::touchVertexLastTime(
+void exahype::mappings::InitialCondition::touchVertexLastTime(
     exahype::Vertex& fineGridVertex,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -400,7 +403,7 @@ void exahype::mappings::SolutionAdjustment::touchVertexLastTime(
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::leaveCell(
+void exahype::mappings::InitialCondition::leaveCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -410,17 +413,17 @@ void exahype::mappings::SolutionAdjustment::leaveCell(
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::beginIteration(
+void exahype::mappings::InitialCondition::beginIteration(
     exahype::State& solverState) {
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::endIteration(
+void exahype::mappings::InitialCondition::endIteration(
     exahype::State& solverState) {
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::descend(
+void exahype::mappings::InitialCondition::descend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
@@ -429,7 +432,7 @@ void exahype::mappings::SolutionAdjustment::descend(
   // do nothing
 }
 
-void exahype::mappings::SolutionAdjustment::ascend(
+void exahype::mappings::InitialCondition::ascend(
     exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,

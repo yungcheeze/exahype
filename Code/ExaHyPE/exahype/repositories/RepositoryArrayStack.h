@@ -18,7 +18,7 @@
 
  #include "exahype/adapters/AugmentedAMRGrid.h" 
  #include "exahype/adapters/PlotAugmentedAMRGrid.h" 
- #include "exahype/adapters/SolutionAdjustmentAndGlobalTimeStepComputation.h" 
+ #include "exahype/adapters/InitialConditionAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndPlotAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/PredictorAndGlobalTimeStepComputation.h" 
  #include "exahype/adapters/GridErasing.h" 
@@ -57,7 +57,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
 
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::AugmentedAMRGrid> _gridWithAugmentedAMRGrid;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAugmentedAMRGrid> _gridWithPlotAugmentedAMRGrid;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionAdjustmentAndGlobalTimeStepComputation> _gridWithSolutionAdjustmentAndGlobalTimeStepComputation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialConditionAndGlobalTimeStepComputation> _gridWithInitialConditionAndGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictorAndPlotAndGlobalTimeStepComputation> _gridWithPredictorAndPlotAndGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictorAndGlobalTimeStepComputation> _gridWithPredictorAndGlobalTimeStepComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GridErasing> _gridWithGridErasing;
@@ -75,7 +75,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
    
     tarch::timing::Measurement _measureAugmentedAMRGridCPUTime;
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCPUTime;
-    tarch::timing::Measurement _measureSolutionAdjustmentAndGlobalTimeStepComputationCPUTime;
+    tarch::timing::Measurement _measureInitialConditionAndGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measurePredictorAndPlotAndGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measurePredictorAndGlobalTimeStepComputationCPUTime;
     tarch::timing::Measurement _measureGridErasingCPUTime;
@@ -90,7 +90,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
 
     tarch::timing::Measurement _measureAugmentedAMRGridCalendarTime;
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCalendarTime;
-    tarch::timing::Measurement _measureSolutionAdjustmentAndGlobalTimeStepComputationCalendarTime;
+    tarch::timing::Measurement _measureInitialConditionAndGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measurePredictorAndPlotAndGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measurePredictorAndGlobalTimeStepComputationCalendarTime;
     tarch::timing::Measurement _measureGridErasingCalendarTime;
@@ -149,7 +149,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
 
     virtual void switchToAugmentedAMRGrid();    
     virtual void switchToPlotAugmentedAMRGrid();    
-    virtual void switchToSolutionAdjustmentAndGlobalTimeStepComputation();    
+    virtual void switchToInitialConditionAndGlobalTimeStepComputation();    
     virtual void switchToPredictorAndPlotAndGlobalTimeStepComputation();    
     virtual void switchToPredictorAndGlobalTimeStepComputation();    
     virtual void switchToGridErasing();    
@@ -164,7 +164,7 @@ class exahype::repositories::RepositoryArrayStack: public exahype::repositories:
 
     virtual bool isActiveAdapterAugmentedAMRGrid() const;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const;
-    virtual bool isActiveAdapterSolutionAdjustmentAndGlobalTimeStepComputation() const;
+    virtual bool isActiveAdapterInitialConditionAndGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterPredictorAndPlotAndGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterPredictorAndGlobalTimeStepComputation() const;
     virtual bool isActiveAdapterGridErasing() const;

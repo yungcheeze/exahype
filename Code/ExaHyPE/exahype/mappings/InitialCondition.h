@@ -11,8 +11,8 @@
  * For the full license text, see LICENSE.txt
  **/
 
-#ifndef EXAHYPE_MAPPINGS_SolutionAdjustment_H_
-#define EXAHYPE_MAPPINGS_SolutionAdjustment_H_
+#ifndef EXAHYPE_MAPPINGS_InitialCondition_H_
+#define EXAHYPE_MAPPINGS_InitialCondition_H_
 
 #include "tarch/la/Vector.h"
 #include "tarch/logging/Log.h"
@@ -29,7 +29,7 @@
 
 namespace exahype {
 namespace mappings {
-class SolutionAdjustment;
+class InitialCondition;
 }
 }
 
@@ -41,7 +41,7 @@ class SolutionAdjustment;
  *
  * @author Dominic Charrier Tobias Weinzierl
  */
-class exahype::mappings::SolutionAdjustment {
+class exahype::mappings::InitialCondition {
  private:
   /**
    * Logging device for the trace macros.
@@ -86,6 +86,12 @@ class exahype::mappings::SolutionAdjustment {
    * we ask the solver if we need to adjust its solution values within the
    * fine grid cell (at a given time). If so, we call the corresponding solver routine
    * that adjusts the solvers' solution values within the fine grid cell.
+   *
+   * Further synchronises the time step on a fine grid cell with the solver time step size
+   * if cell functions as compute cell (Cell) or face data holding helper cell
+   * (Ancestor or Descendant).
+   *
+   * TODO(Dominic): This mapping should be renamed to InitialCondition.
    */
   void enterCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -107,25 +113,25 @@ class exahype::mappings::SolutionAdjustment {
   /**
    * Nop
    */
-  SolutionAdjustment();
+  InitialCondition();
 
 #if defined(SharedMemoryParallelisation)
   /**
    * Nop.
    */
-  SolutionAdjustment(const SolutionAdjustment& masterThread);
+  InitialCondition(const InitialCondition& masterThread);
 #endif
 
   /**
    * Nop.
    */
-  virtual ~SolutionAdjustment();
+  virtual ~InitialCondition();
 
 #if defined(SharedMemoryParallelisation)
   /**
    * Nop.
    */
-  void mergeWithWorkerThread(const SolutionAdjustment& workerThread);
+  void mergeWithWorkerThread(const InitialCondition& workerThread);
 #endif
 
   /**

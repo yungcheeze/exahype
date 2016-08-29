@@ -64,7 +64,7 @@ class exahype::repositories::Repository {
      */
     virtual void switchToAugmentedAMRGrid() = 0;    
     virtual void switchToPlotAugmentedAMRGrid() = 0;    
-    virtual void switchToSolutionAdjustmentAndGlobalTimeStepComputation() = 0;    
+    virtual void switchToInitialConditionAndGlobalTimeStepComputation() = 0;    
     virtual void switchToPredictorAndPlotAndGlobalTimeStepComputation() = 0;    
     virtual void switchToPredictorAndGlobalTimeStepComputation() = 0;    
     virtual void switchToGridErasing() = 0;    
@@ -79,7 +79,7 @@ class exahype::repositories::Repository {
 
     virtual bool isActiveAdapterAugmentedAMRGrid() const = 0;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const = 0;
-    virtual bool isActiveAdapterSolutionAdjustmentAndGlobalTimeStepComputation() const = 0;
+    virtual bool isActiveAdapterInitialConditionAndGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterPredictorAndPlotAndGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterPredictorAndGlobalTimeStepComputation() const = 0;
     virtual bool isActiveAdapterGridErasing() const = 0;
