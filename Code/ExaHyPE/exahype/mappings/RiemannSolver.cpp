@@ -880,7 +880,9 @@ void exahype::mappings::RiemannSolver::mergeWithWorker(
 #endif
 
 exahype::mappings::RiemannSolver::RiemannSolver() {
-  // do nothing
+  #ifdef Parallel
+  _state = 0;
+  #endif
 }
 
 exahype::mappings::RiemannSolver::~RiemannSolver() {
