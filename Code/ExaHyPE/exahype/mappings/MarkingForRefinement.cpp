@@ -80,19 +80,19 @@ void exahype::mappings::MarkingForRefinement::beginIteration(
     exahype::State& solverState) {
   _state = solverState;
 
-#ifdef Parallel
+  #ifdef Parallel
   MetadataHeap::getInstance().startToSendSynchronousData();
   DataHeap::getInstance().startToSendSynchronousData();
-#endif
+  #endif
 }
 
 void exahype::mappings::MarkingForRefinement::endIteration(
     exahype::State& solverState) {
 
-#ifdef Parallel
+  #ifdef Parallel
   MetadataHeap::getInstance().finishedToSendSynchronousData();
   DataHeap::getInstance().finishedToSendSynchronousData();
-#endif
+  #endif
 }
 
 void exahype::mappings::MarkingForRefinement::enterCell(
@@ -290,9 +290,8 @@ void exahype::mappings::MarkingForRefinement::prepareCopyToRemoteNode(
 //      }
 
       // 2. Finally, send out the metadata as last message.
-      std::vector<peano::heap::records::IntegerHeapData> metadata =
+      exahype::MetadataHeap::HeapEntries metadata =
           exahype::Cell::encodeMetadata(localCell.getCellDescriptionsIndex());
-
       MetadataHeap::getInstance().sendData(
           metadata, toRank, cellCentre, level,
           peano::heap::MessageType::ForkOrJoinCommunication);
@@ -303,9 +302,8 @@ void exahype::mappings::MarkingForRefinement::prepareCopyToRemoteNode(
 
       logDebug("prepareCopyToRemoteNode(...)","[empty] sent to rank "<<toRank<<", cell: "<<localCell.toString());
 
-      std::vector<peano::heap::records::IntegerHeapData> metadata =
+      exahype::MetadataHeap::HeapEntries metadata =
           exahype::Cell::createEncodedMetadataSequenceForInvalidCellDescriptionsIndex();
-
       MetadataHeap::getInstance().sendData(
           metadata, toRank, cellCentre, level,
           peano::heap::MessageType::ForkOrJoinCommunication);
@@ -407,7 +405,7 @@ void exahype::mappings::MarkingForRefinement::addNewADERDGCellDescriptionsDueToF
     const tarch::la::Vector<DIMENSIONS, double>& cellSize,
     const int level,
     const int receivedMetadataIndex) const {
-  std::vector<peano::heap::records::IntegerHeapData>::const_iterator metadataIterator=
+  exahype::MetadataHeap::HeapEntries::const_iterator metadataIterator=
       MetadataHeap::getInstance().getData(receivedMetadataIndex).begin();
 
   // 2. Read in the number of active solvers on the master rank.
@@ -454,7 +452,7 @@ void exahype::mappings::MarkingForRefinement::receiveADERDGCellDescriptionsDataD
     const tarch::la::Vector<DIMENSIONS, double>& cellSize,
     const int level,
     const int receivedMetadataIndex) const {
-  std::vector<peano::heap::records::IntegerHeapData>::const_iterator metadataIterator=
+  exahype::MetadataHeap::HeapEntries::const_iterator metadataIterator=
       MetadataHeap::getInstance().getData(receivedMetadataIndex).begin();
 
   // 2. Read in the number of active solvers on the master rank.
@@ -505,7 +503,7 @@ void exahype::mappings::MarkingForRefinement::receiveFiniteVolumesMetadataInMerg
     const tarch::la::Vector<DIMENSIONS, double>& cellSize,
     const int level,
     const int receivedMetadataIndex) {
-  std::vector<peano::heap::records::IntegerHeapData>::const_iterator metadataIterator=
+  exahype::MetadataHeap::HeapEntries::const_iterator metadataIterator=
       MetadataHeap::getInstance().getData(receivedMetadataIndex).begin();
 
   // 2. Read in the number of active solvers on the master rank.

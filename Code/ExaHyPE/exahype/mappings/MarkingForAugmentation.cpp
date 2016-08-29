@@ -278,9 +278,9 @@ void exahype::mappings::MarkingForAugmentation::prepareSendToNeighbour(
   logTraceInWith5Arguments("prepareSendToNeighbour(...)", vertex,
                            toRank, x, h, level);
 
-  // TODO(Dominic): remove
-  //  return;
-
+  // TODO(Dominic): remove; We should be able to remove this and vertex.isInside()
+  // We should further use (first touch decrements; decrement only once) the same counters
+  // as for the spaceTimePredictor to reduce the number of long messages!={0.0} by a factor of four.
   #if !defined(PeriodicBC)
   if (vertex.isBoundary()) return;
   #endif
@@ -293,9 +293,6 @@ void exahype::mappings::MarkingForAugmentation::prepareSendToNeighbour(
       dfor2(src)
       if (vertex.hasToSendMetadata(_state,src,dest,toRank)) {
           const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
-          // TODO(Dominic): Encountered situation where srcCellDescriptionsIndex > 0 but
-          // index was not valid. I assume this happens if a fork was triggered. In this
-          // case I sent out an empty message. Add to docu.
           if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(srcCellDescriptionIndex)) {
             logDebug("prepareSendToNeighbour(...)","[data] sent to rank "<<toRank<<", x:"<<
                 x.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
@@ -303,9 +300,8 @@ void exahype::mappings::MarkingForAugmentation::prepareSendToNeighbour(
                 ", src forking: "
                 << _state->isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
 
-            std::vector<peano::heap::records::IntegerHeapData> metadata =
+            exahype::MetadataHeap::HeapEntries metadata =
                 exahype::Cell::encodeMetadata(srcCellDescriptionIndex);
-
             MetadataHeap::getInstance().sendData(
                 metadata, toRank, x, level,
                 peano::heap::MessageType::NeighbourCommunication);
@@ -314,8 +310,11 @@ void exahype::mappings::MarkingForAugmentation::prepareSendToNeighbour(
               assertion2(false,"Should not happen!",srcCellDescriptionIndex);
             } // Dead code elimination will remove this code section if Asserts/Debug flag not set.
             if (srcCellDescriptionIndex>0) {
-              // TODO(Dominic): This can happen. Ignoring this case seems to work fine so far.
-            } // Dead code elimination will remove this code section if Asserts/Debug flag not set.
+              // TODO(Dominic): Encountered situation where srcCellDescriptionsIndex > 0 but
+              // index was not valid. I assume this happens if a fork was triggered. In this
+              // case I sent out an empty message. Add to docu.
+              // Just sending empty data out seems to work fine so far.
+            }
 
             logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<", x:"<<
                 x.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
@@ -323,7 +322,7 @@ void exahype::mappings::MarkingForAugmentation::prepareSendToNeighbour(
                 ", src forking: "
                 << _state->isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
 
-            std::vector<peano::heap::records::IntegerHeapData> metadata =
+            exahype::MetadataHeap::HeapEntries metadata =
                 exahype::Cell::createEncodedMetadataSequenceForInvalidCellDescriptionsIndex();
 
             MetadataHeap::getInstance().sendData(
@@ -338,7 +337,6 @@ void exahype::mappings::MarkingForAugmentation::prepareSendToNeighbour(
   logTraceOut("prepareSendToNeighbour(...)");
 }
 
-// Before touchVertexFirstTime.
 void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -359,7 +357,7 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
 #endif
   // TODO(Dominic): Add to docu: mergeWithNeighbour(..) happens before vertex creation events.
   // TODO(Dominic): Might need to change this (Periodic BC). Might need to send data between
-  // rank 0 and other ranks too. So vertex.isOutside() must be possible too.
+  // rank 0 and other ranks too. So vertex.isOutside()/Boundary() must be possible too.
   if (vertex.isInside()) {
     assertion1(vertex.isInside(),vertex.toString());
     assertion1(neighbour.isInside(),neighbour.toString());
@@ -411,7 +409,7 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
 void exahype::mappings::MarkingForAugmentation::receiveADERDGMetadataInMergeWithNeigbour(
     const int destCellDescriptionIndex,
     const int receivedMetadataIndex) {
-  std::vector<peano::heap::records::IntegerHeapData>::const_iterator metadataIterator=
+  exahype::MetadataHeap::HeapEntries::const_iterator metadataIterator=
       MetadataHeap::getInstance().getData(receivedMetadataIndex).begin();
   const int nADERDG = metadataIterator->getU(); ++metadataIterator;
 
@@ -438,12 +436,7 @@ void exahype::mappings::MarkingForAugmentation::receiveADERDGMetadataInMergeWith
             break;
           case exahype::records::ADERDGCellDescription::Descendant:
           case exahype::records::ADERDGCellDescription::EmptyDescendant:
-            // 1. Adjust the type
-            // TODO(Dominic): Here, we could introduce some flagging that allows
-            // us to change the type of Descendant to EmptyDescendany if we are
-            // on a MPI boundary such that multiple faces of a cell belong to the boundary.
-            // For the moment, we set the type of a Descendant or EmptyDescendant to
-            // Descendant if at least one face is part of the MPI boundary.
+            // TODO(Dominic): Add to docu what we do here.
             if (type==exahype::records::ADERDGCellDescription::Cell) {
               p.setHelperCellNeedsToStoreFaceData(true);
             }
@@ -458,13 +451,7 @@ void exahype::mappings::MarkingForAugmentation::receiveADERDGMetadataInMergeWith
             break;
           case exahype::records::ADERDGCellDescription::Ancestor:
           case exahype::records::ADERDGCellDescription::EmptyAncestor:
-            // 1. Adjust the type
-            // TODO(Dominic): Here, we could introduce some flagging that allows
-            // us to change the type of Ancestor to EmptyDescendany if we are
-            // on a MPI boundary such that multiple faces of a cell belong to the boundary.
-            // For the moment, we set the type of a Ancestor or EmptyAncestor to
-            // Ancestor if at least one face is part of the MPI boundary.
-            // DEL: TODO(Dominic): Change type here; let the enterCell method do the memory allocation.
+            // TODO(Dominic): Add to docu what we do here.
             if (type==exahype::records::ADERDGCellDescription::Cell) {
               p.setHelperCellNeedsToStoreFaceData(true);
             }
