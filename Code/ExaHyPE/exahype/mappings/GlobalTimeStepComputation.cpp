@@ -98,6 +98,22 @@ void exahype::mappings::GlobalTimeStepComputation::
   }
 }
 
+#if defined(SharedMemoryParallelisation)
+exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(
+    const GlobalTimeStepComputation& masterThread) {
+  prepareEmptyLocalTimeStepData();
+}
+
+// Merge over threads
+void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(
+    const GlobalTimeStepComputation& workerThread) {
+  for (int i = 0; i < static_cast<int>(exahype::solvers::RegisteredSolvers.size()); i++) {
+    _minTimeStepSizes[i] =
+        std::min(_minTimeStepSizes[i], workerThread._minTimeStepSizes[i]);
+  }
+}
+#endif
+
 void exahype::mappings::GlobalTimeStepComputation::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -141,16 +157,6 @@ void exahype::mappings::GlobalTimeStepComputation::enterCell(
          p.setPredictorTimeStamp(p.getPredictorTimeStamp() +
                                  admissibleTimeStepSize);
          p.setPredictorTimeStepSize(admissibleTimeStepSize);
-
-         // todo 16/02/27:Dominic Etienne Charrier
-         // in case we use optimistic time stepping:
-         // if last predictor time step size is larger
-         // as admissibleTimeStepSize + tolerance:
-         // make sure that corrector time step size
-         // will equal predictor time step size in next
-         // sweep.
-         // Extra attention must be paid to time stamps.
-         // All this should be done by the solver.
 
          // indirect update of the solver time step sizes
          _minTimeStepSizes[p.getSolverNumber()] = std::min(
@@ -227,6 +233,7 @@ void exahype::mappings::GlobalTimeStepComputation::endIteration(
 }
 
 #ifdef Parallel
+// Worker-master comm. Send to master.
 void exahype::mappings::GlobalTimeStepComputation::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
@@ -234,11 +241,22 @@ void exahype::mappings::GlobalTimeStepComputation::prepareSendToMaster(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     const exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  MPI_Send(_minTimeStepSizes.data(), _minTimeStepSizes.size(), MPI_DOUBLE,
-           tarch::parallel::NodePool::getInstance().getMasterRank(), _mpiTag,
-           tarch::parallel::Node::getInstance().getCommunicator());
+  // TODO(Dominic): Merge with other Master-Worker exchanges: FaceUnknownsProjection
+  DataHeap::getInstance().startToSendSynchronousData(); // See method documentation.
+
+  for (auto dt : _minTimeStepSizes) {
+    assertion1(dt>0,dt);
+  }
+
+  DataHeap::getInstance().sendData(
+      _minTimeStepSizes.data(),_minTimeStepSizes.size(),
+      tarch::parallel::NodePool::getInstance().getMasterRank(),
+      verticesEnumerator.getCellCenter(),
+      verticesEnumerator.getLevel(),
+      peano::heap::MessageType::MasterWorkerCommunication);
 }
 
+// Worker-master comm. Receive from worker.
 void exahype::mappings::GlobalTimeStepComputation::mergeWithMaster(
     const exahype::Cell& workerGridCell,
     exahype::Vertex* const workerGridVertices,
@@ -251,17 +269,31 @@ void exahype::mappings::GlobalTimeStepComputation::mergeWithMaster(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker, const exahype::State& workerState,
     exahype::State& masterState) {
-  std::vector<double> receivedMinTimeStepSizes(_minTimeStepSizes.size());
+  for (auto dt : _minTimeStepSizes) {
+    assertion1(dt>0.0,dt);
+  } // Dead code elimination will get rid of this loop if Debug/Asserts flag is not set.
 
-  MPI_Recv(receivedMinTimeStepSizes.data(), receivedMinTimeStepSizes.size(),
-           MPI_DOUBLE, worker, _mpiTag,
-           tarch::parallel::Node::getInstance().getCommunicator(),
-           MPI_STATUS_IGNORE);
+  std::vector<double> receivedMinTimeStepSizes(_minTimeStepSizes.size());
+  DataHeap::getInstance().receiveData(
+      receivedMinTimeStepSizes.data(),receivedMinTimeStepSizes.size(),
+      worker,
+      fineGridVerticesEnumerator.getCellCenter(),
+      fineGridVerticesEnumerator.getLevel(),
+      peano::heap::MessageType::MasterWorkerCommunication);
+
+  DataHeap::getInstance().finishedToSendSynchronousData(); // See method documentation.
 
   for (int i = 0; i < static_cast<int>(_minTimeStepSizes.size()); i++) {
     _minTimeStepSizes[i] =
         std::min(_minTimeStepSizes[i], receivedMinTimeStepSizes[i]);
   }
+
+  for (auto dt : receivedMinTimeStepSizes) {
+    assertion1(dt>0.0,dt);
+  } // Dead code elimination will get rid of this.
+  for (auto dt : _minTimeStepSizes) {
+    assertion1(dt>0.0,dt);
+  } // Dead code elimination will get rid of this loop if Debug/Asserts flag is not set.
 }
 
 
@@ -364,22 +396,6 @@ exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation() {
 exahype::mappings::GlobalTimeStepComputation::~GlobalTimeStepComputation() {
   // do nothing
 }
-
-#if defined(SharedMemoryParallelisation)
-exahype::mappings::GlobalTimeStepComputation::GlobalTimeStepComputation(
-    const GlobalTimeStepComputation& masterThread) {
-  prepareEmptyLocalTimeStepData();
-}
-
-void exahype::mappings::GlobalTimeStepComputation::mergeWithWorkerThread(
-    const GlobalTimeStepComputation& workerThread) {
-  for (int i = 0;
-       i < static_cast<int>(exahype::solvers::RegisteredSolvers.size()); i++) {
-    _minTimeStepSizes[i] =
-        std::min(_minTimeStepSizes[i], workerThread._minTimeStepSizes[i]);
-  }
-}
-#endif
 
 void exahype::mappings::GlobalTimeStepComputation::createHangingVertex(
     exahype::Vertex& fineGridVertex,

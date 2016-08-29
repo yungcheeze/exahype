@@ -159,6 +159,8 @@ class exahype::mappings::GlobalTimeStepComputation {
   void endIteration(exahype::State& solverState);
 #ifdef Parallel
   /**
+   * This routine is called on the worker.
+   *
    * Send the local array of minimal time step sizes up to the master. This is
    * one MPI_Send on the whole array.
    */
@@ -169,6 +171,43 @@ class exahype::mappings::GlobalTimeStepComputation {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       const exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
+  /**
+   * Through the result of this routine, we can skip worker-master data
+   * transfer as all other mappings return false. Such a skip is advantageous
+   * if the runner has decided to trigger multiple grid traversals in one
+   * batch. This in turn automatically disables the load balancing.
+   *
+   * Our strategy thus is as follows: If we may skip the reduction, i.e. the
+   * user has enabled this optimisation in the ExaHyPE spec file, then we
+   * return false if load balancing is disabled.
+   */
+  bool prepareSendToWorker(
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      int worker);
+
+  /**
+   * This routine is called on the master.
+   * TODO(Dominic): Docu.
+   */
+  void mergeWithMaster(
+      const exahype::Cell& workerGridCell,
+      exahype::Vertex* const workerGridVertices,
+      const peano::grid::VertexEnumerator& workerEnumerator,
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+      int worker, const exahype::State& workerState,
+      exahype::State& masterState);
+
   /**
    * Nop.
    */
@@ -212,43 +251,6 @@ class exahype::mappings::GlobalTimeStepComputation {
       exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
       int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
-
-
-  /**
-   * Through the result of this routine, we can skip worker-master data
-   * transfer as all other mappings return false. Such a skip is advantageous
-   * if the runner has decided to trigger multiple grid traversals in one
-   * batch. This in turn automatically disables the load balancing.
-   *
-   * Our strategy thus is as follows: If we may skip the reduction, i.e. the
-   * user has enabled this optimisation in the ExaHyPE spec file, then we
-   * return false if load balancing is disabled.
-   */
-  bool prepareSendToWorker(
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-      int worker);
-
-
-  /**
-   * Nop.
-   */
-  void mergeWithMaster(
-      const exahype::Cell& workerGridCell,
-      exahype::Vertex* const workerGridVertices,
-      const peano::grid::VertexEnumerator& workerEnumerator,
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-      int worker, const exahype::State& workerState,
-      exahype::State& masterState);
   /**
    * Nop.
    */
