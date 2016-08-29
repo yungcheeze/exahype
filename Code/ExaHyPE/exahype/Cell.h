@@ -327,7 +327,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    */
   void validateNoNansInADERDGSolver(
     int                                  number,
-    exahype::Cell&                       fineGridCell,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     const std::string&                   methodTraceOfCaller
   );

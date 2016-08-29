@@ -481,7 +481,6 @@ void exahype::Cell::ensureNoUnnecessaryMemoryIsAllocated(const int solverNumber)
 
 void exahype::Cell::validateNoNansInADERDGSolver(
   int                                  number,
-  exahype::Cell&                       fineGridCell,
   const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
   const std::string&                   methodTraceOfCaller
 ) {
@@ -492,7 +491,7 @@ void exahype::Cell::validateNoNansInADERDGSolver(
   int unknownsPerCellBoundary      = 0;
 
 #if defined(Debug) || defined(Asserts)
-  auto& p = fineGridCell.getADERDGCellDescription(number);
+  auto& p = getADERDGCellDescription(number);
   double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
   double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
   double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
@@ -525,37 +524,37 @@ void exahype::Cell::validateNoNansInADERDGSolver(
 
   assertionEquals4(p.getPredictorTimeStepSize(),p.getPredictorTimeStepSize(),
                    fineGridVerticesEnumerator.toString(),
-                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
+                   p.toString(),toString(),methodTraceOfCaller);
 
   for (int i=0; i<spaceTimeUnknownsPerCell; i++) {
     assertion5(std::isfinite(lQi[i]), fineGridVerticesEnumerator.toString(),
-            p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+            p.toString(),toString(),methodTraceOfCaller,i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   for (int i=0; i<spaceTimeFluxUnknownsPerCell; i++) {
     assertion5(std::isfinite(lFi[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+        p.toString(),toString(),methodTraceOfCaller,i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   for (int i=0; i<unknownsPerCell; i++) {
     assertion5(std::isfinite(luh[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+        p.toString(),toString(),methodTraceOfCaller,i);
     assertion5(std::isfinite(lduh[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+        p.toString(),toString(),methodTraceOfCaller,i);
     assertion5(std::isfinite(lQhi[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+        p.toString(),toString(),methodTraceOfCaller,i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   for (int i=0; i<fluxUnknownsPerCell; i++) {
     assertion5(std::isfinite(lFhi[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+        p.toString(),toString(),methodTraceOfCaller,i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   for (int i=0; i<unknownsPerCellBoundary; i++) {
     assertion5(std::isfinite(lQhbnd[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+        p.toString(),toString(),methodTraceOfCaller,i);
     assertion5(std::isfinite(lFhbnd[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+        p.toString(),toString(),methodTraceOfCaller,i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 }
 
