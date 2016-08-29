@@ -35,7 +35,7 @@ void getFVMData(const double* const luh, const int numberOfVariables, const int 
  */
 void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVariables, const int basisSize, double* localMin, double* localMax) {      
 
-  int index, ii, iVar;
+  int index, ii;
   
   // initialize and process luh
   index = 0;
