@@ -115,11 +115,7 @@ void exahype::mappings::NewTimeStep::enterCell(
       exahype::solvers::ADERDGSolver* solver =
           static_cast<exahype::solvers::ADERDGSolver*>(exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
 
-      if(p.getType()==exahype::records::ADERDGCellDescription::Cell ||
-         p.getType()==exahype::records::ADERDGCellDescription::Ancestor ||
-         p.getType()==exahype::records::ADERDGCellDescription::Descendant) {
-        solver->synchroniseTimeStepping(p);
-      }
+      solver->synchroniseTimeStepping(p);
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
         .parallelSectionHasTerminated(methodTrace);
   }
