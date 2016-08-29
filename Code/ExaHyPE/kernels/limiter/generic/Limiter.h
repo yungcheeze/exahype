@@ -19,6 +19,7 @@
 #include "../../GaussLobattoQuadrature.h"
 #include "../../KernelUtils.h"
 
+#include "peano/utils/Globals.h"
 
 namespace kernels {
 namespace limiter {
