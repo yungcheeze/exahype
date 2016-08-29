@@ -461,6 +461,7 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
             receivedMetadataIndex,
             fromRank, fineGridX, level,
             peano::heap::MessageType::NeighbourCommunication);
+        MetadataHeap::HeapEntries receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
 
         const int destCellDescriptionIndex = vertex.getCellDescriptionsIndex()[destScalar];
 
@@ -482,7 +483,7 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
               fromRank,fineGridX,level,src,dest,
               vertex.getCellDescriptionsIndex()[srcScalar],
               vertex.getCellDescriptionsIndex()[destScalar],
-              receivedMetadataIndex);
+              receivedMetadata);
 
 
         } else {
@@ -492,12 +493,12 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
           // We can thus interpret from the received metadata
           // if the current vertex needs to receive and drop
           // facedata.
-          if (!isEncodedMetadataSequenceForInvalidCellDescriptionsIndex(receivedMetadataIndex)) {
+          if (!exahype::Cell::isEncodedMetadataSequenceForInvalidCellDescriptionsIndex(receivedMetadata)) {
             dropADERDGFaceData(
                 fromRank,fineGridX,level,src,dest,
                 vertex.getCellDescriptionsIndex()[srcScalar],
                 vertex.getCellDescriptionsIndex()[destScalar],
-                receivedMetadataIndex);
+                receivedMetadata);
           }
         }
         // Clean up
@@ -515,12 +516,11 @@ void exahype::mappings::RiemannSolver::receiveADERDGFaceData(
     const tarch::la::Vector<DIMENSIONS,int>& dest,
     int srcCellDescriptionIndex,
     int destCellDescriptionIndex,
-    int receivedMetadataIndex) {
+    exahype::MetadataHeap::HeapEntries& receivedMetadata) {
   ADERDGCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex);
   FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex);
 
-  std::vector<peano::heap::records::IntegerHeapData>::const_iterator metadataIterator=
-      MetadataHeap::getInstance().getData(receivedMetadataIndex).begin();
+  MetadataHeap::HeapEntries::const_iterator metadataIterator=receivedMetadata.begin();
   const int nADERDG = metadataIterator->getU();
 
   if (nADERDG > 0) {
@@ -534,7 +534,7 @@ void exahype::mappings::RiemannSolver::receiveADERDGFaceData(
         (src(normalOfExchangedFace) > dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
 
     // TODO(Dominic): Add to docu why we need to invert the order.
-    while (metadataIterator!=MetadataHeap::getInstance().getData(receivedMetadataIndex).begin()) {
+    while (metadataIterator!=receivedMetadata.begin()) {
       const int neighbourTypeAsInt    = metadataIterator->getU(); --metadataIterator;
       const int neighbourSolverNumber = metadataIterator->getU(); --metadataIterator;
       exahype::records::ADERDGCellDescription::Type neighbourType =
@@ -656,12 +656,6 @@ void exahype::mappings::RiemannSolver::receiveADERDGFaceData(
   }
 }
 
-bool exahype::mappings::RiemannSolver::isEncodedMetadataSequenceForInvalidCellDescriptionsIndex(int receivedMetadataIndex) {
-  return MetadataHeap::getInstance().getData(receivedMetadataIndex).size()==2    &&
-         MetadataHeap::getInstance().getData(receivedMetadataIndex)[0].getU()==0 &&
-         MetadataHeap::getInstance().getData(receivedMetadataIndex)[1].getU()==0;
-}
-
 void exahype::mappings::RiemannSolver::dropADERDGFaceData(
     int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
@@ -670,12 +664,12 @@ void exahype::mappings::RiemannSolver::dropADERDGFaceData(
     const tarch::la::Vector<DIMENSIONS,int>& dest,
     int srcCellDescriptionIndex,
     int destCellDescriptionIndex,
-    int receivedMetadataIndex) {
+    exahype::MetadataHeap::HeapEntries& receivedMetadata) {
   ADERDGCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex);
   FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex);
 
-  std::vector<peano::heap::records::IntegerHeapData>::const_iterator metadataIterator=
-      MetadataHeap::getInstance().getData(receivedMetadataIndex).begin();
+  exahype::MetadataHeap::HeapEntries::const_iterator metadataIterator=
+      receivedMetadata.begin();
   const int nADERDG = metadataIterator->getU();
 
   if (nADERDG > 0) {
@@ -684,7 +678,7 @@ void exahype::mappings::RiemannSolver::dropADERDGFaceData(
     metadataIterator += endOfADERDGMetadata;
 
     // TODO(Dominic): Add to docu why we need to invert the order.
-    while (metadataIterator!=MetadataHeap::getInstance().getData(receivedMetadataIndex).begin()) {
+    while (metadataIterator!=receivedMetadata.begin()) {
       const int neighbourTypeAsInt    = metadataIterator->getU();
       metadataIterator-=2;
       exahype::records::ADERDGCellDescription::Type neighbourType =

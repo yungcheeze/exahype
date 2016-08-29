@@ -193,29 +193,7 @@ class exahype::mappings::RiemannSolver {
       const tarch::la::Vector<DIMENSIONS,int>& dest,
       int srcCellDescriptionIndex,
       int destCellDescriptionIndex,
-      int receivedMetadataIndex);
-
-  /**
-   *
-   */
-  static bool isEncodedMetadataSequenceForInvalidCellDescriptionsIndex(int receivedMetadataIndex);
-  /**
-   * TODO(Dominic): Add docu.
-   *
-   * \note Not thread-safe.
-   */
-  static void dropADERDGFaceData(
-      int fromRank,
-      const tarch::la::Vector<DIMENSIONS, double>& x,
-      int level,
-      const tarch::la::Vector<DIMENSIONS,int>& src,
-      const tarch::la::Vector<DIMENSIONS,int>& dest,
-      int srcCellDescriptionIndex,
-      int destCellDescriptionIndex,
-      int receivedMetadataIndex);
-
-
-
+      exahype::MetadataHeap::HeapEntries& receivedMetadata);
 #endif
 
  public:
@@ -345,6 +323,22 @@ class exahype::mappings::RiemannSolver {
                           const tarch::la::Vector<DIMENSIONS, double>& x,
                           const tarch::la::Vector<DIMENSIONS, double>& h,
                           int level);
+
+  /**
+   * TODO(Dominic): Add docu.
+   *
+   * \note Not thread-safe.
+   */
+  static void dropADERDGFaceData(
+      int fromRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      int level,
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest,
+      int srcCellDescriptionIndex,
+      int destCellDescriptionIndex,
+      exahype::MetadataHeap::HeapEntries& receivedMetadata);
+
   /**
    * Receive kick-off message from master
    *
@@ -369,6 +363,7 @@ class exahype::mappings::RiemannSolver {
       const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
       exahype::Cell& workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
 
 
   //
