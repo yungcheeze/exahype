@@ -129,6 +129,17 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
     void sendToRank(int rank, int tag) override;
 
     void receiveFromMasterRank(int rank, int tag) override;
+
+    /**
+     * Returns a string representation of this solver.
+     */
+    virtual std::string toString() const;
+
+    /**
+     * Writes a string representation of this solver
+     * to \p out.
+     */
+    virtual void toString (std::ostream& out) const;
 };
 
 

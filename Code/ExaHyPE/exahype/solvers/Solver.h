@@ -16,6 +16,7 @@
 
 #include <memory>
 #include <string>
+#include <iostream>
 #include <vector>
 
 #include "peano/utils/Globals.h"
@@ -154,6 +155,16 @@ class exahype::solvers::Solver {
   Solver& operator=(const Solver& other) = delete;
 
   /**
+   * Return a string representation for the type \p param.
+   */
+  static std::string toString(const exahype::solvers::Solver::Type& param);
+
+  /**
+   * Return a string representation for the time stepping mode \p param.
+   */
+  static std::string toString(const exahype::solvers::Solver::TimeStepping& param);
+
+  /**
    * Returns the maximum extent a mesh cell is allowed to have
    * in all coordinate directions.
    * This maximum mesh size is used both as a
@@ -233,13 +244,14 @@ class exahype::solvers::Solver {
    */
   virtual void sendToRank(int rank, int tag) = 0;
 
-
   /**
    * Receive solver copy from remote node
    */
   virtual void receiveFromMasterRank(int rank, int tag) = 0;
 
-  void toString();
+  virtual std::string toString() const;
+
+  virtual void toString(std::ostream& out) const;
 
   /**
    * Run over all solvers and identify the minimal time stamp.

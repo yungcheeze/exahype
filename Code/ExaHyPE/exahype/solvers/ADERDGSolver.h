@@ -16,6 +16,7 @@
 
 #include <memory>
 #include <string>
+#include <iostream>
 #include <vector>
 
 #include "exahype/solvers/Solver.h"
@@ -462,8 +463,21 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    */
   void updateNextPredictorTimeStepSize(double nextPredictorTimeStepSize);
 
+  #ifdef Parallel
   /**
-   * This operation has to different branches: one for the master and one for
+   * Collect the ADER-DG corrector and predictor time stamps and time
+   * step sizes in a vector of length 5.
+   */
+  std::vector<double> collectTimeStampsAndStepSizes();
+
+  /**
+   * Set the ADER-DG corrector and predictor time stamps and time
+   * step sizes according to a vector of length 5.
+   */
+  void setTimeStampsAndStepSizes(std::vector<double>& timeSteppingData);
+
+  /**
+   * This operation has two different branches: one for the master and one for
    * the worker. If we are in the master, we basically do only send out all
    * the solver data to the worker. If we are on the worker, we do overwrite
    * all solver data accordingly.
@@ -471,8 +485,7 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
   void sendToRank(int rank, int tag) override;
 
   void receiveFromMasterRank(int rank, int tag) override;
-
-  void toString();
+  #endif
 
   virtual double getMinTimeStamp() const {
     return getMinCorrectorTimeStamp();
@@ -494,6 +507,17 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
     setMinPredictorTimeStamp(0.0);
     setMinCorrectorTimeStamp(0.0);
   }
+
+  /**
+   * Returns a string representation of this solver.
+   */
+  virtual std::string toString() const;
+
+  /**
+   * Writes a string representation of this solver
+   * to \p out.
+   */
+  virtual void toString (std::ostream& out) const;
 };
 
 #endif
