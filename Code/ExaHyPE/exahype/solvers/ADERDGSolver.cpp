@@ -113,18 +113,6 @@ int exahype::solvers::ADERDGSolver::getDataPerCell() const {
 
 void exahype::solvers::ADERDGSolver::synchroniseTimeStepping(
     exahype::records::ADERDGCellDescription& p) const {
-  // todo 16/02/27:Dominic Etienne Charrier
-  // in case we use optimistic time stepping:
-  // if last predictor time step size is larger
-  // as admissibleTimeStepSize + tolerance:
-  // make sure that corrector time step size
-  // will equal predictor time step size in next
-  // sweep.
-  // Extra attention must be paid to time stamps.
-  // All this should be done by the solver.
-
-  //  if (p.getNextPredictorTimeStepSize() < )
-
   switch (_timeStepping) {
     case TimeStepping::Global:
       p.setCorrectorTimeStamp(_minCorrectorTimeStamp);
