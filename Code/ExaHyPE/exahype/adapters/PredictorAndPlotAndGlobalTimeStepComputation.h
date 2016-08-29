@@ -22,7 +22,6 @@
  #include "exahype/mappings/SpaceTimePredictor.h"
  #include "exahype/mappings/Plot.h"
  #include "exahype/mappings/GlobalTimeStepComputation.h"
- #include "exahype/mappings/FaceUnknownsProjection.h"
 
 
 
@@ -46,13 +45,11 @@ class exahype::adapters::PredictorAndPlotAndGlobalTimeStepComputation {
     typedef mappings::SpaceTimePredictor Mapping1;
     typedef mappings::Plot Mapping2;
     typedef mappings::GlobalTimeStepComputation Mapping3;
-    typedef mappings::FaceUnknownsProjection Mapping4;
 
      Mapping0  _map2NewTimeStep;
      Mapping1  _map2SpaceTimePredictor;
      Mapping2  _map2Plot;
      Mapping3  _map2GlobalTimeStepComputation;
-     Mapping4  _map2FaceUnknownsProjection;
 
 
   public:

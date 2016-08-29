@@ -21,7 +21,6 @@
  #include "exahype/mappings/DropIncomingMPIMessages.h"
  #include "exahype/mappings/NewTimeStep.h"
  #include "exahype/mappings/SpaceTimePredictor.h"
- #include "exahype/mappings/FaceUnknownsProjection.h"
 
 
 
@@ -44,12 +43,10 @@ class exahype::adapters::PredictorRerun {
     typedef mappings::DropIncomingMPIMessages Mapping0;
     typedef mappings::NewTimeStep Mapping1;
     typedef mappings::SpaceTimePredictor Mapping2;
-    typedef mappings::FaceUnknownsProjection Mapping3;
 
      Mapping0  _map2DropIncomingMPIMessages;
      Mapping1  _map2NewTimeStep;
      Mapping2  _map2SpaceTimePredictor;
-     Mapping3  _map2FaceUnknownsProjection;
 
 
   public:

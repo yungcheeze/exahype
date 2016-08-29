@@ -19,7 +19,6 @@
 
 
  #include "exahype/mappings/SpaceTimePredictor.h"
- #include "exahype/mappings/FaceUnknownsProjection.h"
 
 
 
@@ -40,10 +39,8 @@ namespace exahype {
 class exahype::adapters::Predictor {
   private:
     typedef mappings::SpaceTimePredictor Mapping0;
-    typedef mappings::FaceUnknownsProjection Mapping1;
 
      Mapping0  _map2SpaceTimePredictor;
-     Mapping1  _map2FaceUnknownsProjection;
 
 
   public:

@@ -41,9 +41,6 @@ event-mapping:
 event-mapping:
   name: Plot
 
-event-mapping:
-  name: FaceUnknownsProjection  
-
 // GridUpdate   
 event-mapping:
   name: GridErasing
@@ -107,7 +104,6 @@ adapter:
   merge-with-user-defined-mapping: SpaceTimePredictor // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: GlobalTimeStepComputation
-  merge-with-user-defined-mapping: FaceUnknownsProjection
 
 adapter:
   name: PredictorAndGlobalTimeStepComputation
@@ -115,7 +111,6 @@ adapter:
   // needs current time step size
   merge-with-user-defined-mapping: SpaceTimePredictor // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: GlobalTimeStepComputation
-  merge-with-user-defined-mapping: FaceUnknownsProjection
 
 // Adapters for clean up (to be extended)
 adapter:
@@ -132,7 +127,6 @@ adapter:
   // needs predictor time step size
   merge-with-user-defined-mapping: SpaceTimePredictor  // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: GlobalTimeStepComputation
-  merge-with-user-defined-mapping: FaceUnknownsProjection 
   merge-with-user-defined-mapping: LoadBalancing
  
  
@@ -145,7 +139,6 @@ adapter:
   // needs predictor time step size
   merge-with-user-defined-mapping: SpaceTimePredictor  // DEC: after predictor we can start the face data exchange 
   merge-with-user-defined-mapping: GlobalTimeStepComputation
-  merge-with-user-defined-mapping: FaceUnknownsProjection
  
 /**
  * In a serial version, running the predictor is the same for optimistic time 
@@ -158,7 +151,6 @@ adapter:
   merge-with-user-defined-mapping: DropIncomingMPIMessages
   merge-with-user-defined-mapping: NewTimeStep
   merge-with-user-defined-mapping: SpaceTimePredictor 
-  merge-with-user-defined-mapping: FaceUnknownsProjection
  
 // Additional adapters for 4 phase time stepping
 adapter: 
@@ -168,7 +160,6 @@ adapter:
 adapter:
   name: Predictor
   merge-with-user-defined-mapping: SpaceTimePredictor 
-  merge-with-user-defined-mapping: FaceUnknownsProjection
 
 adapter:
   name: Corrector

@@ -22,7 +22,6 @@
  #include "exahype/mappings/SolutionUpdate.h"
  #include "exahype/mappings/SpaceTimePredictor.h"
  #include "exahype/mappings/GlobalTimeStepComputation.h"
- #include "exahype/mappings/FaceUnknownsProjection.h"
  #include "exahype/mappings/LoadBalancing.h"
 
 
@@ -47,15 +46,13 @@ class exahype::adapters::ADERDGTimeStep {
     typedef mappings::SolutionUpdate Mapping1;
     typedef mappings::SpaceTimePredictor Mapping2;
     typedef mappings::GlobalTimeStepComputation Mapping3;
-    typedef mappings::FaceUnknownsProjection Mapping4;
-    typedef mappings::LoadBalancing Mapping5;
+    typedef mappings::LoadBalancing Mapping4;
 
      Mapping0  _map2RiemannSolver;
      Mapping1  _map2SolutionUpdate;
      Mapping2  _map2SpaceTimePredictor;
      Mapping3  _map2GlobalTimeStepComputation;
-     Mapping4  _map2FaceUnknownsProjection;
-     Mapping5  _map2LoadBalancing;
+     Mapping4  _map2LoadBalancing;
 
 
   public:

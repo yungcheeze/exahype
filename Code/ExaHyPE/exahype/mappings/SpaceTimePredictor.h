@@ -23,6 +23,8 @@
 
 #include "tarch/multicore/MulticoreDefinitions.h"
 
+#include "tarch/multicore/BooleanSemaphore.h"
+
 #include "exahype/Cell.h"
 #include "exahype/State.h"
 #include "exahype/Vertex.h"
@@ -37,9 +39,14 @@ class SpaceTimePredictor;
  * This mapping realises the space-time predictor
  *
  * We do run through all the cells and, per solver, run the space-time
- * prediction. As a result, all the interesting stuff is done in enterCell().
- * The other events are, despite MPI- and Shared-Mem-specific stuff, all
- * empty.
+ * prediction and the volume integral. As a result, most of the interesting stuff is
+ * done in enterCell().
+ * The other methods despite leaveCell(...) as well as MPI- and Shared-Mem-specific methods
+ * perform no operation.
+ *
+ * This mapping's enterCell(...) and leaveCell(...) methods are further used to
+ * prolongate coarse grid face unknowns down to fine grid cells and to
+ * restrict coarse grid face unknowns up to coarse grid cells.
  *
  * As all state data is encoded in the global solver states and as all data
  * accesses are read-only, the mapping has no object attributes.
@@ -51,20 +58,29 @@ class SpaceTimePredictor;
  * ranks when we start them up. See prepareSendToWorker() and the corresponding
  * receiveDataFromMaster().
  *
+ * TODO(Comment):
+ *
  * <h2>Shared Memory</h2>
  *
  * As the mapping accesses the state data in a read-only fashion, no special
  * attention is required here.
  *
- * <h2>Missing bug fixes and optimisations<h2>
+ * <h2>Bug fixes and optimisations we have not yet performed<h2>
  *
- * 1. We currently send out and receive 2^{d-1} messages per face. This will become an even bigger issue
+ * 1. Solved: We currently send out and receive 2^{d-1} messages per face. This will become an even bigger issue
  *    when we introduce space-time face data.
- * 2. Volume integral of volume fluxes should move into touchVertexLastTime/prepareSendToNeighbour.
- *    Here it should be performed directly after we have sent out all the face data
- *    to give the network some time to deliver the MPI messages (theoretically).
  *
  * @author Dominic E. Charrier and Tobias Weinzierl
+ *
+ * @developers:
+ * TODO(Dominic): Need to propagate face data
+ * from master to worker (prolongation).
+ * Correct face data on Ancestor and Descendant is
+ * made available by the functions provided in this mapping.
+ * This mapping should therefore be merged with the
+ * space-time predictor mapping.
+ * Need to propagate face data from worker to master
+ * (erasing,joins).
  */
 class exahype::mappings::SpaceTimePredictor {
  private:
@@ -73,6 +89,113 @@ class exahype::mappings::SpaceTimePredictor {
    */
   static tarch::logging::Log _log;
 
+  /**
+   * A semaphore that is locked if a thread performs a restriction
+   * operation.
+   */
+  static tarch::multicore::BooleanSemaphore _semaphoreForRestriction;
+
+#if defined(Debug)
+  /**
+   * Some counters for debugging purposes.
+   */
+  static int _parentOfCellOrAncestorNotFound;
+  static int _parentOfCellOrAncestorFound;
+  static int _parentOfDescendantFound;
+#endif
+
+  /**
+   * Computes the space-time predictor quantities, extrapolates fluxes
+   * and (space-time) predictor values to the boundary and
+   * computes the volume integral.
+   *
+   * TODO(Dominic): Dedicate each thread a fixed size spaceTimePredictor and
+   * spaceTimePredictorVolumeFlux field. No need to store these massive
+   * quantities on the heap for each cell.
+   */
+  static void computeSpaceTimePredictorAndVolumeIntegral(exahype::records::ADERDGCellDescription& p);
+
+  /**
+   * Sets the extrapolated predictor and fluctuations of an Ancestor to zero.
+   */
+  static void prepareAncestor(
+      exahype::records::ADERDGCellDescription& p);
+
+
+  /**
+   * Prolongates face data from a parent ADERDGCellDescription to
+   * \p cellDescription if the fine grid cell associated with
+   * \p cellDescription is adjacent to a boundary of the
+   * coarse grid cell associated with the parent cell description.
+   *
+   * \note This function assumes a top-down traversal of the grid and must thus
+   * be called from the enterCell(...) or descend(...) functions.
+   *
+   * \note This method makes only sense if \p cellDescription is of type
+   * Descendant and EmptyDescendant.
+   */
+  static void prolongateADERDGFaceData(
+      const exahype::records::ADERDGCellDescription& cellDescription,
+      const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex);
+
+  /**
+   * Prolongates the boundary layer (or the complete solution) from a parent FiniteVolumesCellDescription to
+   * \p cellDescription if the fine grid cell associated with
+   * \p cellDescription is adjacent to a boundary of the
+   * coarse grid cell associated with the parent cell description.
+   *
+   * \note This function assumes a top-down traversal of the grid and must thus
+   * be called from the enterCell(...) or descend(...) functions.
+   *
+   * \note This method makes only sense if \p cellDescription is of type
+   * Descendant and EmptyDescendant.
+   */
+  static void prolongateFiniteVolumesFaceData(
+      const exahype::records::FiniteVolumesCellDescription& cellDescription,
+      const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex);
+
+  /**
+   * Restricts face data from \p cellDescription to
+   * a parent ADERDGCellDescription if the fine grid cell associated with
+   * \p cellDescription is adjacent to a boundary of the
+   * coarse grid cell associated with the parent cell description.
+   *
+   * \note This function assumes a bottom-up traversal of the grid and must thus
+   * be called from the leaveCell(...) or ascend(...) functions.
+   *
+   * \note This method makes only sense if \p cellDescription is of type Cell.
+   *
+   * \note We use a semaphore to make this operation thread-safe.
+   */
+  static void restrictADERDGFaceData(
+      const exahype::records::ADERDGCellDescription& cellDescription,
+      const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex);
+
+  /**
+   * Restricts the finite volume solution values (volume data) from \p cellDescription to
+   * a parent FiniteVolumesCellDescription if the fine grid cell associated with
+   * \p cellDescription is adjacent to a boundary of the
+   * coarse grid cell associated with the parent cell description.
+   *
+   * \note This function assumes a bottom-up traversal of the grid and must thus
+   * be called from the leaveCell(...) or ascend(...) functions.
+   *
+   * \note This method makes only sense if \p cellDescription is of type Cell.
+   */
+  static void restrictFiniteVolumesSolution(
+      const exahype::records::FiniteVolumesCellDescription& cellDescription,
+      const int parentIndex,
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex);
+
+  /**
+   * Picks out the subcell indices that are not at position \p d.
+   */
+  static tarch::la::Vector<DIMENSIONS - 1, int> getSubfaceIndex(
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
+      const int d);
 
 
   #ifdef Parallel
@@ -98,8 +221,7 @@ class exahype::mappings::SpaceTimePredictor {
    * This value is either 0 or 2^{d-1}.
    *
    * If we count 2^{d-1} listings, this implies that this rank
-   * shares a whole face with a remote rank and not just
-   * corner points or an edge of the face.
+   * shares a whole face with a remote rank.
    *
    * More interestingly, we know from this number how
    * many vertices will try to exchange neighbour information
@@ -136,7 +258,7 @@ class exahype::mappings::SpaceTimePredictor {
    *
    * @see decrementCounters
    */
-  bool needToSendFaceData(
+  static bool needToSendFaceData(
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest,
       int cellDescriptionsIndex);
@@ -150,7 +272,7 @@ class exahype::mappings::SpaceTimePredictor {
    *
    * @see hasToSendFace
    */
-  void decrementCounters(
+  static void decrementCounters(
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest,
       int cellDescriptionsIndex);
@@ -202,6 +324,12 @@ class exahype::mappings::SpaceTimePredictor {
    * The predictor writes something into the boundary arrays lQhbnd and lFhbnd.
    * These values are write-only and have to exchanged with neighbouring ranks.
    *
+   * <h2>AMR</h2>
+   *
+   * If the fine grid cell functions as a helper cell of type Descendant for a solver, this method invokes
+   * prolongateFaceData(...).
+   * Further clears the face data of helper cells of type Ancestor.
+   *
    * @see enterCellSpecification()
    */
   void enterCell(
@@ -211,6 +339,19 @@ class exahype::mappings::SpaceTimePredictor {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
+  /**
+   * If the fine grid cell functions as Cell or Ancestor for a solver, this function method
+   * restrictFaceData(...).
+   */
+  void leaveCell(
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
 
 #if defined(SharedMemoryParallelisation)
   /**
@@ -511,17 +652,6 @@ class exahype::mappings::SpaceTimePredictor {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Nop
-   */
-  void leaveCell(
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
    * Nop
