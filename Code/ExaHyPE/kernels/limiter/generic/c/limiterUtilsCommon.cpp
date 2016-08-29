@@ -66,13 +66,25 @@ void initProjectionMatrices(const int basisSize) {
     }
   }
   
-  //TODO JMG init uh2lob and lim2uh
+  {
+    idx2 idx(basisSize, basisSize);
+    uh2lob = new double[basisSize*basisSize];
+    for(i=0; i<basisSize; i++) {
+      BaseFunc1D(phi, gaussLobattoNodes[basisSize-1][i], basisSize);
+      for(j=0; j<basisSize; j++) {
+        uh2lob[idx(j,i)] = phi[j]; //Fortran: uh2lob(ii,:) = phi(:) 
+      }
+    }
+  }
+
+  //TODO JMG init and lim2uh
   
   delete[] phi;
 }
 
 void freeProjectionMatrices(const int basisSize) {
   delete[] uh2lim;
+  delete[] uh2lob;
 }
 
 /**
