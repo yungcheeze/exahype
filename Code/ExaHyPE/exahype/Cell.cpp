@@ -260,15 +260,12 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCel
   switch (cellDescription.getType()) {
     case exahype::records::ADERDGCellDescription::Cell:
       if (!DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
-        assertion(!DataHeap::getInstance().isValidIndex(
-            cellDescription.getSpaceTimePredictor()));
-        assertion(!DataHeap::getInstance().isValidIndex(
-            cellDescription.getSpaceTimeVolumeFlux()));
-        assertion(
-            !DataHeap::getInstance().isValidIndex(cellDescription.getPredictor()));
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
-        assertion(
-            !DataHeap::getInstance().isValidIndex(cellDescription.getVolumeFlux()));
+
+//        assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getSpaceTimePredictor())); // TODO(Dominic): Remove from cell descr.
+//        assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getPredictor())); // TODO(Dominic): Remove from cell descr.
+//        assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getSpaceTimeVolumeFlux())); // TODO(Dominic): Remove from cell descr.
+//        assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getVolumeFlux())); TODO(Dominic): Remove from cell descr.
 
         const int spaceTimeUnknownsPerCell =
             static_cast<const exahype::solvers::ADERDGSolver*>(solver)->getSpaceTimeUnknownsPerCell();
@@ -280,17 +277,20 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCel
             static_cast<const exahype::solvers::ADERDGSolver*>(solver)->getFluxUnknownsPerCell();
 
         // Allocate space-time DoF
+//        cellDescription.setSpaceTimePredictor(DataHeap::getInstance().createData(
+//            spaceTimeUnknownsPerCell, spaceTimeUnknownsPerCell));
+//        cellDescription.setSpaceTimeVolumeFlux(DataHeap::getInstance().createData(
+//            spaceTimeFluxUnknownsPerCell, spaceTimeFluxUnknownsPerCell));
         cellDescription.setSpaceTimePredictor(DataHeap::getInstance().createData(
-            spaceTimeUnknownsPerCell, spaceTimeUnknownsPerCell));
+            0, 0)); // TODO(Dominic): Remove from cell descr.
         cellDescription.setSpaceTimeVolumeFlux(DataHeap::getInstance().createData(
-            spaceTimeFluxUnknownsPerCell,
-            spaceTimeFluxUnknownsPerCell));
+            0, 0)); // TODO(Dominic): Remove from cell descr.
+        cellDescription.setPredictor(DataHeap::getInstance().createData(
+            0, 0)); // TODO(Dominic): Remove from cell descr.
+        cellDescription.setVolumeFlux(DataHeap::getInstance().createData(
+            0, 0)); // TODO(Dominic): Remove from cell descr.
 
         // Allocate volume DoF
-        cellDescription.setPredictor(DataHeap::getInstance().createData(
-            unknownsPerCell, unknownsPerCell));
-        cellDescription.setVolumeFlux(DataHeap::getInstance().createData(
-            fluxUnknownsPerCell, fluxUnknownsPerCell));
         cellDescription.setUpdate(DataHeap::getInstance().createData(
             unknownsPerCell, unknownsPerCell));
         cellDescription.setSolution(DataHeap::getInstance().createData(
@@ -338,24 +338,19 @@ void exahype::Cell::ensureNoUnnecessaryMemoryIsAllocated(exahype::records::ADERD
       case exahype::records::ADERDGCellDescription::EmptyDescendant:
       case exahype::records::ADERDGCellDescription::Ancestor:
       case exahype::records::ADERDGCellDescription::Descendant:
-        assertion1(
-            DataHeap::getInstance().isValidIndex(cellDescription.getSolution()),
-            cellDescription.getSolution());
-        assertion1(DataHeap::getInstance().isValidIndex(
-            cellDescription.getSpaceTimePredictor()),
-            cellDescription.getSpaceTimePredictor());
-        assertion(DataHeap::getInstance().isValidIndex(
-            cellDescription.getSpaceTimeVolumeFlux()));
-        assertion(
-            DataHeap::getInstance().isValidIndex(cellDescription.getPredictor()));
-        assertion(
-            DataHeap::getInstance().isValidIndex(cellDescription.getVolumeFlux()));
+        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolution()));
         assertion(DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
 
-        DataHeap::getInstance().deleteData(cellDescription.getSpaceTimePredictor());
-        DataHeap::getInstance().deleteData(cellDescription.getSpaceTimeVolumeFlux());
-        DataHeap::getInstance().deleteData(cellDescription.getPredictor());
-        DataHeap::getInstance().deleteData(cellDescription.getVolumeFlux());
+//        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSpaceTimePredictor())); // TODO(Dominic): Remove from cell descr.
+//        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSpaceTimeVolumeFlux())); // TODO(Dominic): Remove from cell descr.
+//        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getPredictor())); // TODO(Dominic): Remove from cell descr.
+//        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getVolumeFlux())); // TODO(Dominic): Remove from cell descr.
+
+        DataHeap::getInstance().deleteData(cellDescription.getSpaceTimePredictor()); // TODO(Dominic): Remove from cell descr.
+        DataHeap::getInstance().deleteData(cellDescription.getSpaceTimeVolumeFlux()); // TODO(Dominic): Remove from cell descr.
+        DataHeap::getInstance().deleteData(cellDescription.getPredictor()); // TODO(Dominic): Remove from cell descr.
+        DataHeap::getInstance().deleteData(cellDescription.getVolumeFlux()); // TODO(Dominic): Remove from cell descr.
+
         DataHeap::getInstance().deleteData(cellDescription.getUpdate());
         DataHeap::getInstance().deleteData(cellDescription.getSolution());
 
@@ -486,18 +481,20 @@ void exahype::Cell::validateNoNansInADERDGSolver(
 ) {
   int unknownsPerCell              = 0;
   int fluxUnknownsPerCell          = 0;
-  int spaceTimeUnknownsPerCell     = 0;
-  int spaceTimeFluxUnknownsPerCell = 0;
+//  int spaceTimeUnknownsPerCell     = 0; // TODO(Dominic): Remove from cell descr.
+//  int spaceTimeFluxUnknownsPerCell = 0; // TODO(Dominic): Remove from cell descr.
   int unknownsPerCellBoundary      = 0;
 
 #if defined(Debug) || defined(Asserts)
   auto& p = getADERDGCellDescription(number);
-  double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
-  double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
+//  double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data(); // TODO(Dominic): Remove from cell descr.
+//  double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data(); // TODO(Dominic): Remove from cell descr.
+//  double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data(); // TODO(Dominic): Remove from cell descr.
+//  double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data(); // TODO(Dominic): Remove from cell descr.
+
   double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
   double* lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
-  double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
-  double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
+
   double* lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
   double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
@@ -513,12 +510,13 @@ void exahype::Cell::validateNoNansInADERDGSolver(
 
   assertion1(solver->getType()==exahype::solvers::Solver::Type::ADER_DG,p.toString());
 
-  assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimePredictor()),p.toString());
-  assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimeVolumeFlux()),p.toString());
+//  assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimePredictor()),p.toString()); // TODO(Dominic): Remove from cell descr.
+//  assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimeVolumeFlux()),p.toString()); // TODO(Dominic): Remove from cell descr.
+//  assertion1(DataHeap::getInstance().isValidIndex(p.getPredictor()),p.toString()); // TODO(Dominic): Remove from cell descr.
+//  assertion1(DataHeap::getInstance().isValidIndex(p.getVolumeFlux()),p.toString()); // TODO(Dominic): Remove from cell descr.
+
   assertion1(DataHeap::getInstance().isValidIndex(p.getSolution()),p.toString());
   assertion1(DataHeap::getInstance().isValidIndex(p.getUpdate()),p.toString());
-  assertion1(DataHeap::getInstance().isValidIndex(p.getPredictor()),p.toString());
-  assertion1(DataHeap::getInstance().isValidIndex(p.getVolumeFlux()),p.toString());
   assertion1(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()),p.toString());
   assertion1(DataHeap::getInstance().isValidIndex(p.getFluctuation()),p.toString());
 
@@ -526,29 +524,29 @@ void exahype::Cell::validateNoNansInADERDGSolver(
                    fineGridVerticesEnumerator.toString(),
                    p.toString(),toString(),methodTraceOfCaller);
 
-  for (int i=0; i<spaceTimeUnknownsPerCell; i++) {
-    assertion5(std::isfinite(lQi[i]), fineGridVerticesEnumerator.toString(),
-            p.toString(),toString(),methodTraceOfCaller,i);
-  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-
-  for (int i=0; i<spaceTimeFluxUnknownsPerCell; i++) {
-    assertion5(std::isfinite(lFi[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),toString(),methodTraceOfCaller,i);
-  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+//  for (int i=0; i<spaceTimeUnknownsPerCell; i++) { // TODO(Dominic): Remove from cell descr.
+//    assertion5(std::isfinite(lQi[i]), fineGridVerticesEnumerator.toString(),
+//            p.toString(),toString(),methodTraceOfCaller,i);
+//  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+//
+//  for (int i=0; i<spaceTimeFluxUnknownsPerCell; i++) { // TODO(Dominic): Remove from cell descr.
+//    assertion5(std::isfinite(lFi[i]), fineGridVerticesEnumerator.toString(),
+//        p.toString(),toString(),methodTraceOfCaller,i);
+//  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   for (int i=0; i<unknownsPerCell; i++) {
     assertion5(std::isfinite(luh[i]), fineGridVerticesEnumerator.toString(),
         p.toString(),toString(),methodTraceOfCaller,i);
     assertion5(std::isfinite(lduh[i]), fineGridVerticesEnumerator.toString(),
         p.toString(),toString(),methodTraceOfCaller,i);
-    assertion5(std::isfinite(lQhi[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),toString(),methodTraceOfCaller,i);
+//    assertion5(std::isfinite(lQhi[i]), fineGridVerticesEnumerator.toString(),
+//        p.toString(),toString(),methodTraceOfCaller,i); // TODO(Dominic): Remove from cell descr.
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
-  for (int i=0; i<fluxUnknownsPerCell; i++) {
-    assertion5(std::isfinite(lFhi[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),toString(),methodTraceOfCaller,i);
-  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+//  for (int i=0; i<fluxUnknownsPerCell; i++) { // TODO(Dominic): Remove from cell descr.
+//    assertion5(std::isfinite(lFhi[i]), fineGridVerticesEnumerator.toString(),
+//        p.toString(),toString(),methodTraceOfCaller,i);
+//  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   for (int i=0; i<unknownsPerCellBoundary; i++) {
     assertion5(std::isfinite(lQhbnd[i]), fineGridVerticesEnumerator.toString(),
