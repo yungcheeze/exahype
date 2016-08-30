@@ -182,16 +182,24 @@ void exahype::mappings::Prediction::computePredictionAndVolumeIntegral(
   assertion1(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()),p.toString());
   assertion1(DataHeap::getInstance().isValidIndex(p.getFluctuation()),p.toString());
 
+  // temporary fields
   // space-time DoF (basisSize**(DIMENSIONS+1))
-  double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
-  double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
+//  double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
+//  double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
+//  // volume DoF (basisSize**(DIMENSIONS))
+//  double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
+//  double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
+  // TODO(Dominic): Replace by more elegant solution.
+  double* lQi = new double[solver->getSpaceTimeUnknownsPerCell()];
+  double* lFi = new double[solver->getSpaceTimeFluxUnknownsPerCell()];
+  // volume DoF (basisSize**(DIMENSIONS))
+  double* lQhi = new double[solver->getUnknownsPerCell()];
+  double* lFhi = new double[solver->getFluxUnknownsPerCell()];
 
+  // persistent fields
   // volume DoF (basisSize**(DIMENSIONS))
   double* luh  = DataHeap::getInstance().getData(p.getSolution()).data();
   double* lduh = DataHeap::getInstance().getData(p.getUpdate()).data();
-  double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
-  double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
-
   // face DoF (basisSize**(DIMENSIONS-1))
   double* lQhbnd = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
   double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
@@ -203,6 +211,11 @@ void exahype::mappings::Prediction::computePredictionAndVolumeIntegral(
       luh, p.getSize(),
       p.getPredictorTimeStepSize()); // TODO(Dominic): Generates segfault.
   solver->volumeIntegral(lduh, lFhi, p.getSize());
+
+  delete[] lQi;
+  delete[] lFi;
+  delete[] lQhi;
+  delete[] lFhi;
 }
 
 void exahype::mappings::Prediction::prepareAncestor(
