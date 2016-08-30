@@ -17,10 +17,12 @@
 #include <algorithm>
 #include <stdexcept>
 #include <stdlib.h>
+
 #include "../../GaussLegendreQuadrature.h"
 #include "../../GaussLobattoQuadrature.h"
 #include "../../KernelUtils.h"
 
+#include "tarch/logging/Log.h"
 #include "peano/utils/Globals.h"
 
 namespace kernels {
