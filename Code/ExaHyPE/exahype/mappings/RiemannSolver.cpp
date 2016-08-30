@@ -181,8 +181,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
     const int normalNonZero) {
   // Only continue if this is an internal face, i.e.,
   // both cell description indices are valid
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfLeftCell)
-      &&
+  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfLeftCell) &&
       ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfRightCell)) {
     logDebug("touchVertexLastTime(...)::solveRiemannProblemAtInterface(...)",
              "Performing Riemann solve. "
@@ -262,19 +261,35 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
                        cellDescriptionOfRightCell.getCorrectorTimeStepSize()),
               normalNonZero);
 
-          for(int ii=0; ii<numberOfFaceDof; ++ii) {
-            assertion(std::isfinite(FL[ii]));
-            assertion(std::isfinite(FR[ii]));
+          for(int i=0; i<numberOfFaceDof; ++i) {
+            assertion(std::isfinite(FL[i]));
+            assertion(std::isfinite(FR[i]));
           }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
         }
       }
     }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
         .parallelSectionHasTerminated(methodTrace);
-  } else if ((ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfLeftCell) &&
-      cellDescriptionsIndexOfRightCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) ||
+  } else if (
+      (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfLeftCell) &&
+          (cellDescriptionsIndexOfRightCell == multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex ||
+          cellDescriptionsIndexOfRightCell == multiscalelinkedcell::HangingVertexBookkeeper::RemoteAndDomainBoundaryAdjacencyIndex))
+          ||
           (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfRightCell) &&
-              cellDescriptionsIndexOfLeftCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex)) {
+              (cellDescriptionsIndexOfLeftCell == multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex ||
+              cellDescriptionsIndexOfLeftCell == multiscalelinkedcell::HangingVertexBookkeeper::RemoteAndDomainBoundaryAdjacencyIndex))
+
+  ) {
+    #if defined(PeriodicBC)
+      assertionMsg(false,"PeriodicBC: Please implement!");
+      return;
+    #endif
+      // TODO(Dominic): Previous code for reference:
+  //  } else if ((ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfLeftCell) &&
+  //      cellDescriptionsIndexOfRightCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) ||
+  //          (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfRightCell) &&
+  //              cellDescriptionsIndexOfLeftCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex)) {
+
     int cellDescriptionsIndex = cellDescriptionsIndexOfLeftCell;
     int faceIndex             = faceIndexForLeftCell;
 
@@ -310,7 +325,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
       applyBoundaryConditions(cellDescriptions[i], faceIndex, normalNonZero);
     }
     endpfor
-  }
+  } // else do nothing
 }
 
 // Verified correct calling of this method for 9x9 grid on [0,1]x[0,1].
@@ -338,9 +353,7 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
   double* stateOut = new double[numberOfFaceDof];
   double* fluxOut  = new double[numberOfFaceDof];
 
-  tarch::la::Vector<DIMENSIONS,double> cellCentre = cellDescription.getSize();
-  cellCentre*=0.5;
-  cellCentre += cellDescription.getOffset();
+  tarch::la::Vector<DIMENSIONS,double> cellCentre = cellDescription.getOffset() + 0.5*cellDescription.getSize();
 
   logDebug("applyBoundaryConditions(...)", "face index: " << faceIndexForCell <<
       ", cell lower-left corner " << cellDescription.getOffset() <<
@@ -453,7 +466,8 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
       int destScalar = TWO_POWER_D - myDestScalar - 1;
       int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
-      if (vertex.hasToReceiveMetadata(_state,src,dest,fromRank)) {
+      if (vertex.isInside() && // TODO(Dominic): Discuss with Tobias what to do for PeriodicBC
+          vertex.hasToReceiveMetadata(_state,src,dest,fromRank)) {
         // 1. Receive metadata.
         int receivedMetadataIndex = MetadataHeap::getInstance().createData(0,0);
         assertion(MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
@@ -494,6 +508,9 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
           // if the current vertex needs to receive and drop
           // facedata.
           if (!exahype::Cell::isEncodedMetadataSequenceForInvalidCellDescriptionsIndex(receivedMetadata)) {
+            assertion1(destCellDescriptionIndex==multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
+                destCellDescriptionIndex);
+
             dropADERDGFaceData(
                 fromRank,fineGridX,level,src,dest,
                 vertex.getCellDescriptionsIndex()[srcScalar],
@@ -567,15 +584,13 @@ void exahype::mappings::RiemannSolver::receiveADERDGFaceData(
                   assertionMsg(false, "should never been entered");
                   #endif
                 } else {
-                  logInfo( // TODO >Debug
+                  logDebug(
                       "receiveADERDGFaceData(...)", "receive three arrays from rank " <<
                        fromRank << " for vertex x=" << x << ", level=" << level <<
                        ", src type=" << multiscalelinkedcell::indexToString(srcCellDescriptionIndex) <<
                       ", src=" << src << ", dest=" << dest <<
                       ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
                     );
-
-                  std::cerr << "|||||||||||||||" << std::endl;
                   const int numberOfFaceDof = solver->getUnknownsPerFace();
                   int receivedlQhbndIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
                   int receivedlFhbndIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
@@ -594,7 +609,7 @@ void exahype::mappings::RiemannSolver::receiveADERDGFaceData(
                   DataHeap::getInstance().receiveData(receivedMinMax,  fromRank, x, level,
                       peano::heap::MessageType::NeighbourCommunication);
 
-                  logInfo( // TODO >Debug
+                  logDebug(
                       "receiveADERDGFaceData(...)", "[pre] solve Riemann problem with received data." <<
                       " cellDescription=" << p.toString() <<
                       ",faceIndexForCell=" << faceIndex <<
@@ -689,7 +704,7 @@ void exahype::mappings::RiemannSolver::dropADERDGFaceData(
       if (neighbourType==exahype::records::ADERDGCellDescription::Cell ||
           neighbourType==exahype::records::ADERDGCellDescription::Ancestor ||
           neighbourType==exahype::records::ADERDGCellDescription::Descendant) {
-        logInfo( // TODO >Debug
+        logDebug(
             "dropADERDGFaceData(...)", "drop three arrays from rank " <<
             fromRank << " for vertex x=" << x << ", level=" << level <<
             ", src type=" << multiscalelinkedcell::indexToString(srcCellDescriptionIndex) <<

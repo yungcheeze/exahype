@@ -101,19 +101,29 @@ class exahype::mappings::RiemannSolver {
    * thus need these counters as a Riemann problem on a face either could be
    * triggered by the left cell or by the right cell.
    *
+   * \note The current implementation might classify cells with vertices that are part of the
+   * boundary of the domain or outside to be classified as inside of the domain (volume-ratio based).
+   *
+   * \note We cannot solely check for indices of value
+   * multiscalelinked::HangingVertexBookkepper::DomainBoundaryAdjacencyIndex
+   * in vertex.getCellDescriptions() to determine if we are on the boundary of the domain
+   * since these values are overwritten by multiscalelinked::HangingVertexBookkepper::RemoteAdjacencyIndex
+   * if the domain boundary aligns with an MPI boundary
+   * (see multiscalelinkedcell::HangingVertexBookkeeper::updateCellIndicesInMergeWithNeighbour(...)).
+   *
    * \note Not thread-safe.
    *
    * @param[in] cellDescriptionIndexOfLeftCell
    * @param[in] cellDescriptionIndexOfRightCell
    * @param[in] faceIndexForLeftCell    The index of the interface
    *                                    from the perspective of the "left" cell.
-   * One out of
+   *                                     One out of
    *                                    (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
    * @param[in] faceIndexForRightCell   The index of the interface from the
    *                                    perspective of the "right" cell.
    * @param[in] normalNonZero           Non zero component of the
    *                                    normal vector orthogonal to the
-   * interface.
+   *                                    interface.
    */
   void solveRiemannProblemAtInterface(const int cellDescriptionIndexOfLeftCell,
                                       const int cellDescriptionIndexOfRightCell,
@@ -138,7 +148,7 @@ class exahype::mappings::RiemannSolver {
    *                                    (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
    * @param[in] normalNonZero           Non zero component of the
    *                                    normal vector orthogonal to the
-   * interface.
+   *                                    interface.
    * \note Not thread-safe.
    */
   void applyBoundaryConditions(records::ADERDGCellDescription& cellDescription,
