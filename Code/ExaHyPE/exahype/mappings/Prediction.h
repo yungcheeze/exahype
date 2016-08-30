@@ -218,21 +218,27 @@ class exahype::mappings::Prediction {
 
   /**
    * Count the listings of remote ranks that share a vertex
-   * adjacent to the face \p faceIndex of a cell.
-   * This value is either 0 or 2^{d-1}.
+   * adjacent to the face \p faceIndex of a cell inside of the domain.
+   * This value is either 0, 2^{d-2}, or 2^{d-1}.
    *
-   * If we count 2^{d-1} listings, this implies that this rank
+   * If we count 2^{d-1} listings, we directly know that this rank
    * shares a whole face with a remote rank.
+   * If we count 2^{d-2} listings, we know that this
+   * rank shares a face with a remote rank
+   * but half of the vertices are outside.
+   * If we count 0 listings, that we might not
+   * have a remote rank adjacent to this face or
+   * all the vertices are outside.
    *
-   * More interestingly, we know from this number how
+   * We know from the result of this funcion how
    * many vertices will try to exchange neighbour information
-   * that is related to this face.
+   * on this face.
    *
    * @developers:
    * TODO(Dominic): We currently check for uniqueness of the
    * remote rank. This might however not be necessary.
    */
-  static int countListingsOfRemoteRankAtFace(
+  static int countListingsOfRemoteRankByInsideVerticesAtFace(
       const int faceIndex,
       exahype::Vertex* const verticesAroundCell,
       const peano::grid::VertexEnumerator& verticesEnumerator);
@@ -291,6 +297,7 @@ class exahype::mappings::Prediction {
       int level,
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest,
+      const exahype::Vertex& vertex, // TODO(remove):
       int srcCellDescriptionIndex,
       int destCellDescriptionIndex);
   #endif

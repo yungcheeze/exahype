@@ -93,6 +93,29 @@ int exahype::mappings::Prediction::
 _parentOfDescendantFound        = 0;
 #endif
 
+void exahype::mappings::Prediction::beginIteration(
+    exahype::State& solverState) {
+  #ifdef Parallel
+  _state = &solverState;
+  #endif
+
+  #if defined(Debug)
+  _parentOfCellOrAncestorNotFound = 0;
+  _parentOfCellOrAncestorFound    = 0;
+  _parentOfDescendantFound        = 0;
+  #endif
+}
+
+void exahype::mappings::Prediction::endIteration(
+    exahype::State& solverState) {
+  logDebug("endIteration(...)", "_parentOfCellOrAncestorNotFound: "
+      << _parentOfCellOrAncestorNotFound);
+  logDebug("endIteration(...)",
+      "_parentOfCellOrAncestorFound: " << _parentOfCellOrAncestorFound);
+  logDebug("endIteration(...)",
+      "_parentOfDescendantFound: " << _parentOfDescendantFound);
+}
+
 void exahype::mappings::Prediction::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -132,7 +155,7 @@ void exahype::mappings::Prediction::enterCell(
         // send at time of 2^{d-2}-th touch of face.
         // We require that #ifdef vertex.isBoundary() is set.
         #ifdef Parallel
-        int listingsOfRemoteRank = countListingsOfRemoteRankAtFace(faceIndex,fineGridVertices,fineGridVerticesEnumerator);
+        int listingsOfRemoteRank = countListingsOfRemoteRankByInsideVerticesAtFace(faceIndex,fineGridVertices,fineGridVerticesEnumerator);
         if (listingsOfRemoteRank==0) {
           listingsOfRemoteRank = TWO_POWER_D;
         }
@@ -611,7 +634,7 @@ void exahype::mappings::Prediction::restrictFiniteVolumesSolution(
 }
 
 #ifdef Parallel
-int exahype::mappings::Prediction::countListingsOfRemoteRankAtFace(
+int exahype::mappings::Prediction::countListingsOfRemoteRankByInsideVerticesAtFace(
     const int faceIndex,
     exahype::Vertex* const verticesAroundCell,
     const peano::grid::VertexEnumerator& verticesEnumerator) {
@@ -628,7 +651,8 @@ int exahype::mappings::Prediction::countListingsOfRemoteRankAtFace(
   dfor2(v) // Loop over vertices.
     if (verticesAroundCell[ verticesEnumerator(v) ].isAdjacentToRemoteRank()) {
       dfor2(a) // Loop over adjacent ranks. Does also include own rank.
-        if (tarch::la::equals(v+a,pos) &&
+        if (verticesAroundCell[ verticesEnumerator(v) ].isInside() &&
+            tarch::la::equals(v+a,pos) &&
             verticesAroundCell[ verticesEnumerator(v) ].getAdjacentRanks()[aScalar]!=
             tarch::parallel::Node::getInstance().getRank()) {
           // Increment
@@ -685,7 +709,8 @@ void exahype::mappings::Prediction::prepareSendToNeighbour(
 
   dfor2(dest)
     dfor2(src)
-      if (vertex.hasToSendMetadata(_state,src,dest,toRank)) {
+      if (vertex.isInside() && // TODO(Dominic): Discuss with Tobias what to do for PeriodicBC
+          vertex.hasToSendMetadata(_state,src,dest,toRank)) {
         assertion(!_state->isForkTriggeredForRank(toRank));
         assertion(!_state->isForkingRank(toRank));
         // we are solely exchanging faces
@@ -713,6 +738,8 @@ void exahype::mappings::Prediction::prepareSendToNeighbour(
                 peano::heap::MessageType::NeighbourCommunication);
           }
         } else {
+          assertion1(srcCellDescriptionIndex==multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
+              srcCellDescriptionIndex);
           logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<", "
               " from vertex x=" << x << ", level=" << level <<
               ", vertex.adjacentRanks: " << vertex.getAdjacentRanks());
@@ -849,7 +876,7 @@ void exahype::mappings::Prediction::sendADERDGFaceData(
         assertionMsg(false, "should never been entered");
         #endif
       } else {
-        logInfo( // TODO >Debug
+        logDebug(
             "sendADERDGFaceData(...)",
             "send three arrays to rank " <<
             toRank << " for cell="<<p.getOffset()<< " and face=" << faceIndex << " from vertex x=" << x << ", level=" << level <<
@@ -1116,29 +1143,6 @@ void exahype::mappings::Prediction::touchVertexLastTime(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
   // do nothing
-}
-
-void exahype::mappings::Prediction::beginIteration(
-    exahype::State& solverState) {
-  #ifdef Parallel
-  _state = &solverState;
-  #endif
-
-  #if defined(Debug)
-  _parentOfCellOrAncestorNotFound = 0;
-  _parentOfCellOrAncestorFound    = 0;
-  _parentOfDescendantFound        = 0;
-  #endif
-}
-
-void exahype::mappings::Prediction::endIteration(
-    exahype::State& solverState) {
-  logDebug("endIteration(...)", "_parentOfCellOrAncestorNotFound: "
-      << _parentOfCellOrAncestorNotFound);
-  logDebug("endIteration(...)",
-      "_parentOfCellOrAncestorFound: " << _parentOfCellOrAncestorFound);
-  logDebug("endIteration(...)",
-      "_parentOfDescendantFound: " << _parentOfDescendantFound);
 }
 
 void exahype::mappings::Prediction::descend(
