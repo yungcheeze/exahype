@@ -168,12 +168,14 @@ def writeJobscript_GenerateUserSpecFile(file, name, dimension, process, thread, 
     file.write("echo \"    identifier               = static_load_balancing                \" >> myUserSpec.exahype"                 + "\n")
     file.write("echo \"    configure                = {hotspot,fair,ranks_per_node:28}                       \" >> myUserSpec.exahype"                 + "\n")
     file.write("echo \"    buffer-size              = 64                                   \" >> myUserSpec.exahype"                 + "\n")
-    file.write("echo \"    timeout                  = 120                                  \" >> myUserSpec.exahype"                 + "\n")
+    file.write("echo \"    timeout                  = 1200                                 \" >> myUserSpec.exahype"                 + "\n")
     file.write("echo \"  end distributed-memory                                            \" >> myUserSpec.exahype"                 + "\n")
     file.write("echo \"                                                                    \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"  optimisation                                                      \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"    fuse-algorithmic-steps        = on                              \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"    fuse-algorithmic-steps-factor = 0.99                            \" >> myUserSpec.exahype"                 + "\n")
+  file.write("echo \"    timestep-batch-factor           = 0.8                           \" >> myUserSpec.exahype"                 + "\n")
+  file.write("echo \"    skip-reduction-in-batched-time-steps = on                       \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"  end optimisation                                                  \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"                                                                    \" >> myUserSpec.exahype"                 + "\n")
   file.write("echo \"  solver ADER-DG MyEulerSolver                                      \" >> myUserSpec.exahype"                 + "\n")
@@ -226,6 +228,7 @@ def writeJobscript_FilterOutput(file, name, dimension, process, thread, h_p_t, c
   if mode != "Profile":
     file.write("echo \"\"                                                                       >> exahype.log-filter" + "\n")
     file.write("echo \"info peano::parallel::SendReceiveBufferAbstractImplementation -1 black\" >> exahype.log-filter" + "\n")
+  file.write("echo \"info mpibalancing::HotspotBalancing -1 black\"                                                  >> exahype.log-filter" + "\n")
   
 def writeJobscriptBody_RunExecutable(file, name, dimension, process, thread, h_p_t, compiler, mode, directory):
   if process == 1:
