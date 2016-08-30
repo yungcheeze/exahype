@@ -257,24 +257,12 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCel
     case exahype::records::ADERDGCellDescription::Cell:
       if (!DataHeap::getInstance().isValidIndex(cellDescription.getSolution())) {
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
+        // Allocate volume DoF for limiter
         const int unknownsPerCell = static_cast<const exahype::solvers::ADERDGSolver*>(solver)->getUnknownsPerCell();
-
-        // Allocate volume DoF
         cellDescription.setUpdate(DataHeap::getInstance().createData(
             unknownsPerCell, unknownsPerCell));
         cellDescription.setSolution(DataHeap::getInstance().createData(
             unknownsPerCell, unknownsPerCell));
-
-
-        cellDescription.setSolutionMin(DataHeap::getInstance().createData(
-            unknownsPerCell * 2 * DIMENSIONS, unknownsPerCell * 2 * DIMENSIONS));
-        cellDescription.setSolutionMax(DataHeap::getInstance().createData(
-            unknownsPerCell * 2 * DIMENSIONS, unknownsPerCell * 2 * DIMENSIONS));
-
-        for (int i=0; i<unknownsPerCell * 2 * DIMENSIONS; i++) {
-          DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[i] = std::numeric_limits<double>::max();
-          DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i] = std::numeric_limits<double>::min();
-        }
       }
       break;
     default:
@@ -288,16 +276,25 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCel
     case exahype::records::ADERDGCellDescription::Descendant:
       if (!DataHeap::getInstance().isValidIndex(
           cellDescription.getExtrapolatedPredictor())) {
-        assertion(
-            !DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
+        assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
 
-        const int unknownsPerCellBoundary =
-            static_cast<const exahype::solvers::ADERDGSolver*>(solver)->getUnknownsPerCellBoundary();
-
+        // Allocate face DoF
+        const int unknownsPerCellBoundary = static_cast<const exahype::solvers::ADERDGSolver*>(solver)->getUnknownsPerCellBoundary();
         cellDescription.setExtrapolatedPredictor(DataHeap::getInstance().createData(
             unknownsPerCellBoundary, unknownsPerCellBoundary));
         cellDescription.setFluctuation(DataHeap::getInstance().createData(
             unknownsPerCellBoundary, unknownsPerCellBoundary));
+
+        // Allocate volume DoF for limiter
+        const int unknownsPerCell = static_cast<const exahype::solvers::ADERDGSolver*>(solver)->getUnknownsPerCell();
+        cellDescription.setSolutionMin(DataHeap::getInstance().createData(
+            unknownsPerCell * 2 * DIMENSIONS, unknownsPerCell * 2 * DIMENSIONS));
+        cellDescription.setSolutionMax(DataHeap::getInstance().createData(
+            unknownsPerCell * 2 * DIMENSIONS, unknownsPerCell * 2 * DIMENSIONS));
+        for (int i=0; i<unknownsPerCell * 2 * DIMENSIONS; i++) {
+          DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[i] = std::numeric_limits<double>::max();
+          DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i] = std::numeric_limits<double>::min();
+        }
       }
       break;
     default:
@@ -763,7 +760,10 @@ void exahype::Cell::mergeSolutionMinMaxOnFace(
   int                              faceNumber,
   double* min, double* max
 ) {
-  if (cellDescription.getType() == exahype::records::ADERDGCellDescription::Cell) {
+  if (cellDescription.getType() == exahype::records::ADERDGCellDescription::Cell ||
+      cellDescription.getType() == exahype::records::ADERDGCellDescription::Ancestor ||
+      cellDescription.getType() == exahype::records::ADERDGCellDescription::Descendant
+      ) {
     assertion( exahype::solvers::RegisteredSolvers[ cellDescription.getSolverNumber() ]->getType()==exahype::solvers::Solver::Type::ADER_DG );
     const int numberOfVariables = exahype::solvers::RegisteredSolvers[ cellDescription.getSolverNumber() ]->getNumberOfVariables();
 
