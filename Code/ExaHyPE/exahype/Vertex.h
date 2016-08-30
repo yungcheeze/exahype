@@ -19,8 +19,6 @@
 #include "peano/grid/VertexEnumerator.h"
 #include "peano/utils/Globals.h"
 
-#include "exahype/State.h"
-
 namespace exahype {
 class Vertex;
 
@@ -113,7 +111,6 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    *                forking at the same time.
    */
   bool hasToSendMetadata(
-      const exahype::State* state,
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest,
       const int toRank);
@@ -159,7 +156,6 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    *
    */
   bool hasToReceiveMetadata(
-      const exahype::State* state,
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest,
       const int fromRank);

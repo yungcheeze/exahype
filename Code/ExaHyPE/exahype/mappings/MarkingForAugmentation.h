@@ -32,9 +32,9 @@
 #include "peano/utils/Globals.h"
 
 namespace exahype {
-namespace mappings {
-class MarkingForAugmentation;
-}
+  namespace mappings {
+    class MarkingForAugmentation;
+  }
 }
 
 /**
@@ -53,14 +53,6 @@ class exahype::mappings::MarkingForAugmentation {
   static tarch::logging::Log _log;
 
 //  #define logInfoM(a,b) std::cout << "[dominic-acer],rank:" << tarch::parallel::Node::getInstance().getRank() << " info         exahype::mappings::MarkingForAugmentation::" << a << " " << b << std::endl;
-
-  /**
-   * Pointer to the state.
-   * We need direct read access to the state to identify during the
-   * traversal for which neighbouring ranks forking was triggered
-   * and which ranks are forking.
-   */
-  const exahype::State* _state;
 
   /**
    * The augmentation control states.

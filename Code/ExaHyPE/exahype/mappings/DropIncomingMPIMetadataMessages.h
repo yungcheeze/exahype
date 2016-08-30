@@ -28,9 +28,9 @@
 #include "exahype/Vertex.h"
 
 namespace exahype {
-namespace mappings {
-class DropIncomingMPIMetadataMessages;
-}
+  namespace mappings {
+    class DropIncomingMPIMetadataMessages;
+  }
 }
 
 /**
@@ -54,14 +54,6 @@ class exahype::mappings::DropIncomingMPIMetadataMessages {
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
-
-  /**
-   * Pointer to the state.
-   * We need direct read access to the state to identify during the
-   * traversal for which neighbouring ranks forking was triggered
-   * and which ranks are forking.
-   */
-  const exahype::State* _state;
 
  public:
   /**
