@@ -765,13 +765,13 @@ void exahype::mappings::Prediction::decrementCounters(
 }
 
 void exahype::mappings::Prediction::sendADERDGFaceData(
-    int toRank,
-    const tarch::la::Vector<DIMENSIONS, double>& x,
-    int level,
-    const tarch::la::Vector<DIMENSIONS,int>& src,
-    const tarch::la::Vector<DIMENSIONS,int>& dest,
-    int srcCellDescriptionIndex,
-    int destCellDescriptionIndex) {
+    int                                           toRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    int                                           level,
+    const tarch::la::Vector<DIMENSIONS,int>&      src,
+    const tarch::la::Vector<DIMENSIONS,int>&      dest,
+    int                                           srcCellDescriptionIndex,
+    int                                           destCellDescriptionIndex) {
   const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
   assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
   const int faceIndex = 2 * normalOfExchangedFace +
@@ -835,9 +835,12 @@ void exahype::mappings::Prediction::sendADERDGFaceData(
             ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
           );
 
-        std::vector<double> sentMinMax(2);
-        sentMinMax[0] = p.getSolutionMin(faceIndex);
-        sentMinMax[1] = p.getSolutionMax(faceIndex);
+        const int numberOfVariables = exahype::solvers::RegisteredSolvers[ p.getSolverNumber() ]->getNumberOfVariables();
+        std::vector<double> sentMinMax( numberOfVariables );
+        for (int i=0; i<numberOfVariables; i++) {
+          sentMinMax[i]                   = DataHeap::getInstance().getData( p.getSolutionMin() )[faceIndex+i];
+          sentMinMax[i+numberOfVariables] = DataHeap::getInstance().getData( p.getSolutionMax() )[faceIndex+i];
+        }
 
         // Send order: minMax,lQhbnd,lFhbnd
         // Receive order: lFhbnd,lQhbnd,minMax

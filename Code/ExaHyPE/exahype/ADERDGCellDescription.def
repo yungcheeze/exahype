@@ -258,7 +258,13 @@ class exahype::records::ADERDGCellDescription {
    */
   parallelise persistent RefinementEvent refinementEvent;
   ///@}
-
-  parallelise persistent double solutionMin[DIMENSIONS_TIMES_TWO];
-  parallelise persistent double solutionMax[DIMENSIONS_TIMES_TWO];
+  
+  /**
+   * Pointer to DIMENSIONS_TIMES_TWO \times _numberOfUnknowns doubles.
+   *
+   * First, all the _numberOfUnknowns entries of the left face are stored, then
+   * the _numberOfUnknowns of the right face and so forth.
+   */
+  parallelise persistent int solutionMin;
+  parallelise persistent int solutionMax;
 };

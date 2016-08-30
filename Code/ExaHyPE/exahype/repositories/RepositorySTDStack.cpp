@@ -208,13 +208,8 @@ void exahype::repositories::RepositorySTDStack::iterate(int numberOfIterations, 
   
   peano::parallel::SendReceiveBufferPool::getInstance().exchangeBoundaryVertices(_repositoryState.getExchangeBoundaryVertices());
 
-  if ( numberOfIterations > 1 && _solverState.isInvolvedInJoinOrFork() ) {
-    logWarning( "iterate()", "iterate invoked for multiple traversals though load balancing still does redistribute data" );
-  }
-  bool switchedLoadBalancingTemporarilyOff = false;
-  if ( numberOfIterations > 1 && peano::parallel::loadbalancing::Oracle::getInstance().isLoadBalancingActivated() ) {
-    switchedLoadBalancingTemporarilyOff = true;
-    peano::parallel::loadbalancing::Oracle::getInstance().activateLoadBalancing(false);
+  if ( numberOfIterations > 1 && ( peano::parallel::loadbalancing::Oracle::getInstance().isLoadBalancingActivated() || _solverState.isInvolvedInJoinOrFork() )) {
+    logWarning( "iterate()", "iterate invoked for multiple traversals though load balancing is switched on or grid is not balanced globally. Use activateLoadBalancing(false) to deactivate the load balancing before" );
   }
 
   peano::datatraversal::autotuning::Oracle::getInstance().switchToOracle(_repositoryState.getAction());
@@ -259,11 +254,6 @@ void exahype::repositories::RepositorySTDStack::iterate(int numberOfIterations, 
         assertionMsg( false, "not implemented yet" );
         break;
     }
-    #ifdef Parallel
-    if ( switchedLoadBalancingTemporarilyOff && i==numberOfIterations-1) {
-      peano::parallel::loadbalancing::Oracle::getInstance().activateLoadBalancing(true);
-    }
-    #endif
   }
   
   #ifdef Parallel

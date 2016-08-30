@@ -359,14 +359,15 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * stores the data for the subsequent time step, but it also propagates the
    * min/max information into the face-connected neighbours.
    *
-   * @param  min          New minimum value within the cell
-   * @param  max          New maximum value within the cell
+   * @param  min          New minimum values within the cell. Array of length
+   *                      _numberOfUnknowns.
+   * @param  max          New maximum values within the cell
    * @param  solverIndex  Number of the solver within the cell. Please ensure
-   *   that solverIndex refers to an ADER-DG solver.
+   *                      that solverIndex refers to an ADER-DG solver.
    * @return True if the new min and max values fit into the restricted min
    *   max solutions. Return false if we seem to run into oscillations.
    */
-  bool setSolutionMinMaxAndAnalyseValidity( double min, double max, int solverIndex );
+  bool setSolutionMinMaxAndAnalyseValidity( double* min, double* max, int solverIndex );
 
   /**
    * Merge the solution min and max values on a face between two cell
@@ -386,7 +387,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   static void mergeSolutionMinMaxOnFace(
     records::ADERDGCellDescription&  cellDescription,
     int                              faceNumber,
-    double min, double max
+    double* min, double* max
   );
 };
 
