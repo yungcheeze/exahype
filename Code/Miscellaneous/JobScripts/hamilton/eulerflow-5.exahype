@@ -42,7 +42,7 @@ exahype-project  Euler
     identifier               = static_load_balancing
     configure                = {hotspot,fair,ranks_per_node:4}  
     buffer-size              = 64
-    timeout                  = 120
+    timeout                  = 1200
   end distributed-memory
  
   optimisation
