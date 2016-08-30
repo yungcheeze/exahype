@@ -183,12 +183,6 @@ void exahype::mappings::Prediction::computePredictionAndVolumeIntegral(
   assertion1(DataHeap::getInstance().isValidIndex(p.getFluctuation()),p.toString());
 
   // temporary fields
-  // space-time DoF (basisSize**(DIMENSIONS+1))
-//  double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
-//  double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
-//  // volume DoF (basisSize**(DIMENSIONS))
-//  double* lQhi = DataHeap::getInstance().getData(p.getPredictor()).data();
-//  double* lFhi = DataHeap::getInstance().getData(p.getVolumeFlux()).data();
   // TODO(Dominic): Replace by more elegant solution.
   double* lQi = new double[solver->getSpaceTimeUnknownsPerCell()];
   double* lFi = new double[solver->getSpaceTimeFluxUnknownsPerCell()];
@@ -209,7 +203,7 @@ void exahype::mappings::Prediction::computePredictionAndVolumeIntegral(
       lQhbnd,
       lFhbnd,
       luh, p.getSize(),
-      p.getPredictorTimeStepSize()); // TODO(Dominic): Generates segfault.
+      p.getPredictorTimeStepSize());
   solver->volumeIntegral(lduh, lFhi, p.getSize());
 
   delete[] lQi;
