@@ -678,7 +678,7 @@ void exahype::mappings::Prediction::prepareSendToNeighbour(
 
   dfor2(dest)
     dfor2(src)
-      if (vertex.hasToSendMetadata(_state,src,dest,toRank)) {
+      if (vertex.hasToSendMetadata(src,dest,toRank)) {
         // we are solely exchanging faces
         const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
 
@@ -1105,9 +1105,6 @@ void exahype::mappings::Prediction::touchVertexLastTime(
 
 void exahype::mappings::Prediction::beginIteration(
     exahype::State& solverState) {
-  #ifdef Parallel
-  _state = &solverState;
-  #endif
 
   #if defined(Debug)
   _parentOfCellOrAncestorNotFound = 0;
