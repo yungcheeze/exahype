@@ -575,12 +575,11 @@ void exahype::mappings::RiemannSolver::receiveADERDGFaceData(
                       ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
                     );
 
+                  std::cerr << "|||||||||||||||" << std::endl;
                   const int numberOfFaceDof = solver->getUnknownsPerFace();
                   int receivedlQhbndIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
                   int receivedlFhbndIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
-
-                  // Message to receive holds min and max values.
-                  int receivedMinMax      = DataHeap::getInstance().createData(0, 2*solver->getUnknownsPerCell());
+                  int receivedMinMax      = DataHeap::getInstance().createData(0, 2*solver->getNumberOfVariables());
 
                   assertion(DataHeap::getInstance().getData(receivedlQhbndIndex).empty());
                   assertion(DataHeap::getInstance().getData(receivedlFhbndIndex).empty());
@@ -615,7 +614,7 @@ void exahype::mappings::RiemannSolver::receiveADERDGFaceData(
                       p,
                       faceIndex,
                       DataHeap::getInstance().getData(receivedMinMax).data(),
-                      DataHeap::getInstance().getData(receivedMinMax).data() + solver->getUnknownsPerCell() );
+                      DataHeap::getInstance().getData(receivedMinMax).data() + solver->getNumberOfVariables() );
 
                   // TODO(Dominic): If anarchic time stepping, receive the time step too.
 
