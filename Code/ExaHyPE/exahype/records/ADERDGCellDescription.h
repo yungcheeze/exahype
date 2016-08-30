@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   30/08/2016 12:14
+    * @date   30/08/2016 12:54
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -67,12 +67,8 @@ namespace exahype {
             double _predictorTimeStepSize;
             double _predictorTimeStamp;
             double _nextPredictorTimeStepSize;
-            int _spaceTimePredictor;
-            int _spaceTimeVolumeFlux;
             int _solution;
             int _update;
-            int _predictor;
-            int _volumeFlux;
             int _extrapolatedPredictor;
             int _fluctuation;
             int _level;
@@ -99,7 +95,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
             
             
             inline int getSolverNumber() const 
@@ -358,46 +354,6 @@ namespace exahype {
             
             
             
-            inline int getSpaceTimePredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _spaceTimePredictor;
-            }
-            
-            
-            
-            inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _spaceTimePredictor = spaceTimePredictor;
-            }
-            
-            
-            
-            inline int getSpaceTimeVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _spaceTimeVolumeFlux;
-            }
-            
-            
-            
-            inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _spaceTimeVolumeFlux = spaceTimeVolumeFlux;
-            }
-            
-            
-            
             inline int getSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -434,46 +390,6 @@ namespace exahype {
  #endif 
  {
                _update = update;
-            }
-            
-            
-            
-            inline int getPredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _predictor;
-            }
-            
-            
-            
-            inline void setPredictor(const int& predictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _predictor = predictor;
-            }
-            
-            
-            
-            inline int getVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               return _volumeFlux;
-            }
-            
-            
-            
-            inline void setVolumeFlux(const int& volumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-               _volumeFlux = volumeFlux;
             }
             
             
@@ -773,7 +689,7 @@ namespace exahype {
          /**
           * Generated
           */
-         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
          
          /**
           * Generated
@@ -1101,46 +1017,6 @@ namespace exahype {
          
          
          
-         inline int getSpaceTimePredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._spaceTimePredictor;
-         }
-         
-         
-         
-         inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._spaceTimePredictor = spaceTimePredictor;
-         }
-         
-         
-         
-         inline int getSpaceTimeVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._spaceTimeVolumeFlux;
-         }
-         
-         
-         
-         inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._spaceTimeVolumeFlux = spaceTimeVolumeFlux;
-         }
-         
-         
-         
          inline int getSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -1177,46 +1053,6 @@ namespace exahype {
  #endif 
  {
             _persistentRecords._update = update;
-         }
-         
-         
-         
-         inline int getPredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._predictor;
-         }
-         
-         
-         
-         inline void setPredictor(const int& predictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._predictor = predictor;
-         }
-         
-         
-         
-         inline int getVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            return _persistentRecords._volumeFlux;
-         }
-         
-         
-         
-         inline void setVolumeFlux(const int& volumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-            _persistentRecords._volumeFlux = volumeFlux;
          }
          
          
@@ -1641,7 +1477,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   30/08/2016 12:14
+             * @date   30/08/2016 12:54
              */
             class exahype::records::ADERDGCellDescriptionPacked { 
                
@@ -1661,12 +1497,8 @@ namespace exahype {
                      double _predictorTimeStepSize;
                      double _predictorTimeStamp;
                      double _nextPredictorTimeStepSize;
-                     int _spaceTimePredictor;
-                     int _spaceTimeVolumeFlux;
                      int _solution;
                      int _update;
-                     int _predictor;
-                     int _volumeFlux;
                      int _extrapolatedPredictor;
                      int _fluctuation;
                      int _level;
@@ -1685,7 +1517,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
                      
                      
                      inline int getSolverNumber() const 
@@ -1944,46 +1776,6 @@ namespace exahype {
                      
                      
                      
-                     inline int getSpaceTimePredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _spaceTimePredictor;
-                     }
-                     
-                     
-                     
-                     inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _spaceTimePredictor = spaceTimePredictor;
-                     }
-                     
-                     
-                     
-                     inline int getSpaceTimeVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _spaceTimeVolumeFlux;
-                     }
-                     
-                     
-                     
-                     inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _spaceTimeVolumeFlux = spaceTimeVolumeFlux;
-                     }
-                     
-                     
-                     
                      inline int getSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -2020,46 +1812,6 @@ namespace exahype {
  #endif 
  {
                         _update = update;
-                     }
-                     
-                     
-                     
-                     inline int getPredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _predictor;
-                     }
-                     
-                     
-                     
-                     inline void setPredictor(const int& predictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _predictor = predictor;
-                     }
-                     
-                     
-                     
-                     inline int getVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        return _volumeFlux;
-                     }
-                     
-                     
-                     
-                     inline void setVolumeFlux(const int& volumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                        _volumeFlux = volumeFlux;
                      }
                      
                      
@@ -2359,7 +2111,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
                   
                   /**
                    * Generated
@@ -2687,46 +2439,6 @@ namespace exahype {
                   
                   
                   
-                  inline int getSpaceTimePredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._spaceTimePredictor;
-                  }
-                  
-                  
-                  
-                  inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._spaceTimePredictor = spaceTimePredictor;
-                  }
-                  
-                  
-                  
-                  inline int getSpaceTimeVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._spaceTimeVolumeFlux;
-                  }
-                  
-                  
-                  
-                  inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._spaceTimeVolumeFlux = spaceTimeVolumeFlux;
-                  }
-                  
-                  
-                  
                   inline int getSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -2763,46 +2475,6 @@ namespace exahype {
  #endif 
  {
                      _persistentRecords._update = update;
-                  }
-                  
-                  
-                  
-                  inline int getPredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._predictor;
-                  }
-                  
-                  
-                  
-                  inline void setPredictor(const int& predictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._predictor = predictor;
-                  }
-                  
-                  
-                  
-                  inline int getVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     return _persistentRecords._volumeFlux;
-                  }
-                  
-                  
-                  
-                  inline void setVolumeFlux(const int& volumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                     _persistentRecords._volumeFlux = volumeFlux;
                   }
                   
                   
@@ -3224,7 +2896,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   30/08/2016 12:14
+                      * @date   30/08/2016 12:54
                       */
                      class exahype::records::ADERDGCellDescription { 
                         
@@ -3252,12 +2924,8 @@ namespace exahype {
                               double _predictorTimeStepSize;
                               double _predictorTimeStamp;
                               double _nextPredictorTimeStepSize;
-                              int _spaceTimePredictor;
-                              int _spaceTimeVolumeFlux;
                               int _solution;
                               int _update;
-                              int _predictor;
-                              int _volumeFlux;
                               int _extrapolatedPredictor;
                               int _fluctuation;
                               int _level;
@@ -3284,7 +2952,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+                              PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
                               
                               
                               inline int getSolverNumber() const 
@@ -3465,46 +3133,6 @@ namespace exahype {
                               
                               
                               
-                              inline int getSpaceTimePredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _spaceTimePredictor;
-                              }
-                              
-                              
-                              
-                              inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _spaceTimePredictor = spaceTimePredictor;
-                              }
-                              
-                              
-                              
-                              inline int getSpaceTimeVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _spaceTimeVolumeFlux;
-                              }
-                              
-                              
-                              
-                              inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _spaceTimeVolumeFlux = spaceTimeVolumeFlux;
-                              }
-                              
-                              
-                              
                               inline int getSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -3541,46 +3169,6 @@ namespace exahype {
  #endif 
  {
                                  _update = update;
-                              }
-                              
-                              
-                              
-                              inline int getPredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _predictor;
-                              }
-                              
-                              
-                              
-                              inline void setPredictor(const int& predictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _predictor = predictor;
-                              }
-                              
-                              
-                              
-                              inline int getVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 return _volumeFlux;
-                              }
-                              
-                              
-                              
-                              inline void setVolumeFlux(const int& volumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                 _volumeFlux = volumeFlux;
                               }
                               
                               
@@ -3880,7 +3468,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
                            
                            /**
                             * Generated
@@ -4104,46 +3692,6 @@ namespace exahype {
                            
                            
                            
-                           inline int getSpaceTimePredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._spaceTimePredictor;
-                           }
-                           
-                           
-                           
-                           inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._spaceTimePredictor = spaceTimePredictor;
-                           }
-                           
-                           
-                           
-                           inline int getSpaceTimeVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._spaceTimeVolumeFlux;
-                           }
-                           
-                           
-                           
-                           inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._spaceTimeVolumeFlux = spaceTimeVolumeFlux;
-                           }
-                           
-                           
-                           
                            inline int getSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -4180,46 +3728,6 @@ namespace exahype {
  #endif 
  {
                               _persistentRecords._update = update;
-                           }
-                           
-                           
-                           
-                           inline int getPredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._predictor;
-                           }
-                           
-                           
-                           
-                           inline void setPredictor(const int& predictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._predictor = predictor;
-                           }
-                           
-                           
-                           
-                           inline int getVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              return _persistentRecords._volumeFlux;
-                           }
-                           
-                           
-                           
-                           inline void setVolumeFlux(const int& volumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                              _persistentRecords._volumeFlux = volumeFlux;
                            }
                            
                            
@@ -4644,7 +4152,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   30/08/2016 12:14
+                               * @date   30/08/2016 12:54
                                */
                               class exahype::records::ADERDGCellDescriptionPacked { 
                                  
@@ -4662,12 +4170,8 @@ namespace exahype {
                                        double _predictorTimeStepSize;
                                        double _predictorTimeStamp;
                                        double _nextPredictorTimeStepSize;
-                                       int _spaceTimePredictor;
-                                       int _spaceTimeVolumeFlux;
                                        int _solution;
                                        int _update;
-                                       int _predictor;
-                                       int _volumeFlux;
                                        int _extrapolatedPredictor;
                                        int _fluctuation;
                                        int _level;
@@ -4686,7 +4190,7 @@ namespace exahype {
                                        /**
                                         * Generated
                                         */
-                                       PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+                                       PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
                                        
                                        
                                        inline int getSolverNumber() const 
@@ -4867,46 +4371,6 @@ namespace exahype {
                                        
                                        
                                        
-                                       inline int getSpaceTimePredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          return _spaceTimePredictor;
-                                       }
-                                       
-                                       
-                                       
-                                       inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          _spaceTimePredictor = spaceTimePredictor;
-                                       }
-                                       
-                                       
-                                       
-                                       inline int getSpaceTimeVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          return _spaceTimeVolumeFlux;
-                                       }
-                                       
-                                       
-                                       
-                                       inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          _spaceTimeVolumeFlux = spaceTimeVolumeFlux;
-                                       }
-                                       
-                                       
-                                       
                                        inline int getSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -4943,46 +4407,6 @@ namespace exahype {
  #endif 
  {
                                           _update = update;
-                                       }
-                                       
-                                       
-                                       
-                                       inline int getPredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          return _predictor;
-                                       }
-                                       
-                                       
-                                       
-                                       inline void setPredictor(const int& predictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          _predictor = predictor;
-                                       }
-                                       
-                                       
-                                       
-                                       inline int getVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          return _volumeFlux;
-                                       }
-                                       
-                                       
-                                       
-                                       inline void setVolumeFlux(const int& volumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                          _volumeFlux = volumeFlux;
                                        }
                                        
                                        
@@ -5282,7 +4706,7 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& spaceTimePredictor, const int& spaceTimeVolumeFlux, const int& solution, const int& update, const int& predictor, const int& volumeFlux, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
                                     
                                     /**
                                      * Generated
@@ -5506,46 +4930,6 @@ namespace exahype {
                                     
                                     
                                     
-                                    inline int getSpaceTimePredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       return _persistentRecords._spaceTimePredictor;
-                                    }
-                                    
-                                    
-                                    
-                                    inline void setSpaceTimePredictor(const int& spaceTimePredictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       _persistentRecords._spaceTimePredictor = spaceTimePredictor;
-                                    }
-                                    
-                                    
-                                    
-                                    inline int getSpaceTimeVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       return _persistentRecords._spaceTimeVolumeFlux;
-                                    }
-                                    
-                                    
-                                    
-                                    inline void setSpaceTimeVolumeFlux(const int& spaceTimeVolumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       _persistentRecords._spaceTimeVolumeFlux = spaceTimeVolumeFlux;
-                                    }
-                                    
-                                    
-                                    
                                     inline int getSolution() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
@@ -5582,46 +4966,6 @@ namespace exahype {
  #endif 
  {
                                        _persistentRecords._update = update;
-                                    }
-                                    
-                                    
-                                    
-                                    inline int getPredictor() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       return _persistentRecords._predictor;
-                                    }
-                                    
-                                    
-                                    
-                                    inline void setPredictor(const int& predictor) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       _persistentRecords._predictor = predictor;
-                                    }
-                                    
-                                    
-                                    
-                                    inline int getVolumeFlux() const 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       return _persistentRecords._volumeFlux;
-                                    }
-                                    
-                                    
-                                    
-                                    inline void setVolumeFlux(const int& volumeFlux) 
- #ifdef UseManualInlining
- __attribute__((always_inline))
- #endif 
- {
-                                       _persistentRecords._volumeFlux = volumeFlux;
                                     }
                                     
                                     

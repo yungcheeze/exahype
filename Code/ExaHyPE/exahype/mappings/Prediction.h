@@ -114,7 +114,7 @@ class exahype::mappings::Prediction {
    * PredictionVolumeFlux field. No need to store these massive
    * quantities on the heap for each cell.
    */
-  static void computePredictionAndVolumeIntegral(exahype::records::ADERDGCellDescription& p);
+  static void performPredictionAndVolumeIntegral(exahype::records::ADERDGCellDescription& p);
 
   /**
    * Sets the extrapolated predictor and fluctuations of an Ancestor to zero.

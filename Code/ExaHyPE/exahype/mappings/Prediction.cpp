@@ -142,7 +142,7 @@ void exahype::mappings::Prediction::enterCell(
       case exahype::records::ADERDGCellDescription::Cell:
         assertion1(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pFine.toString());
         fineGridCell.validateNoNansInADERDGSolver(i,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[pre]");
-        computePredictionAndVolumeIntegral(pFine);
+        performPredictionAndVolumeIntegral(pFine);
         fineGridCell.validateNoNansInADERDGSolver(i,fineGridVerticesEnumerator,"exahype::mappings::Prediction::enterCell[post]");
         break;
       case exahype::records::ADERDGCellDescription::Ancestor:
@@ -167,18 +167,14 @@ void exahype::mappings::Prediction::enterCell(
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }
 
-void exahype::mappings::Prediction::computePredictionAndVolumeIntegral(
+void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
     exahype::records::ADERDGCellDescription& p) {
   exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
               exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
 
   assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
-  assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimePredictor()),p.toString());
-  assertion1(DataHeap::getInstance().isValidIndex(p.getSpaceTimeVolumeFlux()),p.toString());
   assertion1(DataHeap::getInstance().isValidIndex(p.getSolution()),p.toString());
   assertion1(DataHeap::getInstance().isValidIndex(p.getUpdate()),p.toString());
-  assertion1(DataHeap::getInstance().isValidIndex(p.getPredictor()),p.toString());
-  assertion1(DataHeap::getInstance().isValidIndex(p.getVolumeFlux()),p.toString());
   assertion1(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()),p.toString());
   assertion1(DataHeap::getInstance().isValidIndex(p.getFluctuation()),p.toString());
 
@@ -205,6 +201,21 @@ void exahype::mappings::Prediction::computePredictionAndVolumeIntegral(
       luh, p.getSize(),
       p.getPredictorTimeStepSize());
   solver->volumeIntegral(lduh, lFhi, p.getSize());
+
+    for (int i=0; i<solver->getSpaceTimeUnknownsPerCell(); i++) {
+      assertion3(std::isfinite(lQi[i]),p.toString(),"performPredictionAndVolumeIntegral(...)",i);
+    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+
+    for (int i=0; i<solver->getSpaceTimeFluxUnknownsPerCell(); i++) {
+      assertion3(std::isfinite(lFi[i]), p.toString(),"performPredictionAndVolumeIntegral",i);
+    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+      for (int i=0; i<solver->getUnknownsPerCell(); i++) {
+      assertion3(std::isfinite(lQhi[i]),p.toString(),"performPredictionAndVolumeIntegral(...)",i);
+    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
+
+    for (int i=0; i<solver->getFluxUnknownsPerCell(); i++) {
+      assertion3(std::isfinite(lFhi[i]),p.toString(),"performPredictionAndVolumeIntegral(...)",i);
+    } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   delete[] lQi;
   delete[] lFi;

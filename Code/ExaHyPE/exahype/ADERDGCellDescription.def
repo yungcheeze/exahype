@@ -82,39 +82,6 @@ class exahype::records::ADERDGCellDescription {
    */
   parallelise persistent double nextPredictorTimeStepSize;
   ///@}
-
-  /**
-   * @defgroup SpaceTimeDataIndices Space Time Data Indices
-   *
-   * Index pointing to an array of size \f$ N_\mathrm{var}\,(N+1)^{d+1} \f$.
-   *
-   * \note Only for local time stepping we really need to keep the entire
-   *       space-time degrees of freedom of the ADER approach.
-   */
-  ///@{
-  /**
-   * Index pointing to the space-time predictor DoF belonging to this cell.
-   * Symbol: \f$ q \f$.
-   */
-  parallelise persistent int spaceTimePredictor;
-  ///@}
-
-  /**
-   * @defgroup SpaceTimeDataIndices Space Time Data Indices
-   *
-   * Index pointing to an array of size \f$ d\,N_\mathrm{var}\,(N+1)^{d+1} \f$
-   *
-   * \note Only for local time stepping we really need to keep the entire
-   * space-time degrees of freedom of the ADER approach.
-   * */
-  ///@{
-  /**
-   * Index pointing to the space-time volume fluxes DoF belonging to this cell.
-   * Symbol: \f$ \textbf{F} \f$.
-   */
-  parallelise persistent int spaceTimeVolumeFlux;
-  ///@}
-
   /**
    * @defgroup VolumeDataIndices Volume Data Indices
    *
@@ -135,26 +102,6 @@ class exahype::records::ADERDGCellDescription {
    * \f$ \Delta u_h \f$.
    */
   parallelise persistent int update;
-
-  /**
-   * Index pointing to the predictor DoF belonging to this cell, i.e., the time
-   * integrated space-time DoF. Symbol: \f$q_h\f$.
-  */
-  parallelise persistent int predictor;
-  ///@}
-
-  /**
-   * @defgroup VolumeFluxDataIndices Volume Flux Data Indices
-   *
-   * Index pointing to an array of size \f$ d\,N_\mathrm{var}\,(N+1)^{d} \f$.
-   */
-  ///@{
-  /**
-   * Index pointing to the volume flux DoF belonging to this cell, i.e., the
-   * time
-   * integrated space-time DoF. Symbol: \f$ \textbf{F}_h \f$.
-   */
-  parallelise persistent int volumeFlux;
   ///@}
 
   /**
