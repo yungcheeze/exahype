@@ -13,59 +13,73 @@
 
 #include "../../Limiter.h"
  
-#if DIMENSIONS == 3 
+#if DIMENSIONS == 3
  
 namespace kernels {
 namespace limiter {
 namespace generic {
 namespace c {
 
-        
-//TODO JMG
-double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize, int& basisSizeLob) {
-  basisSizeLob = 0;
+//Fortran (Limiter.f90): GetLobattoData
+double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize) {
   
-  return new double[1];
+  idx4 idx(basisSize, basisSize, basisSize, numberOfVariables);
+  idx2 idxConv(basisSize, basisSize);
+  
+  double* lob = new double[basisSize*basisSize*basisSize*numberOfVariables]; //Fortran ref: lob(nVar,nDOF(1),nDOF(2),nDOF(3))
+  
+  double* tmpZ = new double[basisSize*basisSize*basisSize*numberOfVariables]; //Fortran ref: lobz(nVar,nDOF(1),nDOF(2),nDOF(3))
+  double* tmpY = new double[basisSize*basisSize*basisSize*numberOfVariables]; //Fortran ref: loby(nVar,nDOF(1),nDOF(2),nDOF(3))
+  int x,y,z,v,k;
+  
+  for(y=0; y<basisSize; y++) {
+    for(x=0; x<basisSize; x++) {
+      //lobz(:,iii,jjj,:) = MATMUL( luh(:,iii,jjj,:), TRANSPOSE(uh2lob) )
+      for(z=0; z<basisSize; z++) {
+        for(v=0; v<numberOfVariables; v++) {
+          tmpZ[idx(z,y,x,v)] = 0;
+          for(k=0; k<basisSize; k++) {
+            tmpZ[idx(z,y,x,v)] += luh[idx(k,y,x,v)] * uh2lob[idxConv(k,z)];
+          }
+        }
+      }
+    }
+  }
+  
+  for(z=0; z<basisSize; z++) {
+    for(x=0; x<basisSize; x++) {
+      //loby(:,iii,:,jjj) = MATMUL( lobz(:,iii,:,jjj), TRANSPOSE(uh2lob) ) 
+      for(y=0; y<basisSize; y++) {
+        for(v=0; v<numberOfVariables; v++) {
+          tmpY[idx(z,y,x,v)] = 0;
+          for(k=0; k<basisSize; k++) {
+            tmpY[idx(z,y,x,v)] += tmpZ[idx(z,k,x,v)] * uh2lob[idxConv(k,y)];
+          }
+        }
+      }
+    }
+  }
+  
+  for(z=0; z<basisSize; z++) {
+    for(y=0; y<basisSize; y++) {
+      //lob(:,:,iii,jjj) = MATMUL( loby(:,:,iii,jjj), TRANSPOSE(uh2lob) )
+      for(x=0; x<basisSize; x++) {
+        for(v=0; v<numberOfVariables; v++) {
+          lob[idx(z,y,x,v)] = 0;
+          for(k=0; k<basisSize; k++) {
+            lob[idx(z,y,x,v)] += tmpY[idx(z,y,k,v)] * uh2lob[idxConv(k,x)];
+          }
+        }
+      }
+    }
+  }
+  delete[] tmpZ;
+  delete[] tmpY;
+  
+  return lob;
 }
 
-/*
-REAL :: limz(nVar,nDOF(1),nDOF(2),nSubLimV(3)), limy(nVar,nDOF(1),nSubLimV(2),nSubLimV(3))
-IF (nDim == 3) THEN
-        DO jjj = 1, nDOF(2)  ! y
-            DO iii = 1, nDOF(1) ! x
-                limz(:,iii,jjj,:) = MATMUL( luh(:,iii,jjj,:), TRANSPOSE(uh2lim) ) 
-            ENDDO
-        ENDDO
-    ELSE
-        limz = 0. 
-        DO jjj = 1, nDOF(2)  ! y
-            DO iii = 1, nDOF(1) ! x
-                limz(:,iii,jjj,1) = luh(:,iii,jjj,1) 
-            ENDDO
-        ENDDO
-    ENDIF
-    ! mapping of uh to the sub-cell limiter along y direction
-    IF( nDim >= 2 ) THEN
-        limy = 0. 
-        DO jjj = 1, nSubLimV(3)  ! z 
-            DO iii = 1, nDOF(1) ! x
-                limy(:,iii,:,jjj) = MATMUL( limz(:,iii,:,jjj), TRANSPOSE(uh2lim) ) 
-            ENDDO
-        ENDDO
-    ELSE
-        limy = 0. 
-        DO iii = 1, nDOF(1) ! x
-            limy(:,iii,1,1) = luh(:,iii,1,1) 
-        ENDDO
-    ENDIF    
-    ! mapping of uh to the sub-cell limiter along x direction 
-    lim = 0. 
-    DO jjj = 1, nSubLimV(3)  ! z 
-        DO iii = 1, nSubLimV(2) ! y
-            lim(:,:,iii,jjj) = MATMUL( limy(:,:,iii,jjj), TRANSPOSE(uh2lim) )  
-        ENDDO
-    ENDDO   
-*/
+//Fortran (Limiter.f90): GetSubcellData
 double* getFVMData(const double* const luh, const int numberOfVariables, const int basisSize, int& basisSizeLim) {
   
   basisSizeLim = getLimBasisSize(basisSize);

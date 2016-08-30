@@ -39,7 +39,7 @@ void initProjectionMatrices(const int basisSize);
 
 void freeProjectionMatrices(const int basisSize);
 
-double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize, int& basisSizeLob);
+double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize);
 
 double* getFVMData(const double* const luh, const int numberOfVariables, const int basisSize, int& basisSizeLim);
 

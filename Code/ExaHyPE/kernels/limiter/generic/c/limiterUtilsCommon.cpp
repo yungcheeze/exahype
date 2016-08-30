@@ -77,7 +77,7 @@ void initProjectionMatrices(const int basisSize) {
     }
   }
 
-  //TODO JMG init and lim2uh
+  //TODO JMG init lim2uh
   
   delete[] phi;
 }
@@ -116,13 +116,11 @@ void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVa
   }
  
   // process lob
-  int basisSizeLob = 0;
-  double* lob = 0; // getGaussLobattoData(luh, numberOfVariables, basisSize, basisSizeLob); // TODO JMG, please fix!
-  assertionMsg(false,"JMG, the above line doesn't compile. Please fix!");
+  double* lob = getGaussLobattoData(luh, numberOfVariables, basisSize);
   index = 0;
-  iiEnd =  basisSizeLob*basisSizeLob;
+  iiEnd =  basisSize*basisSize;
   if(DIMENSIONS == 3)
-     iiEnd *= basisSizeLob;
+     iiEnd *= basisSize;
   for(ii = 0; ii < iiEnd; ii++) {
     for(int iVar = 0; iVar < numberOfVariables; iVar++) {
       if(lob[index] < localMin[iVar]) {
@@ -138,8 +136,7 @@ void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVa
   // process lim
   
   int basisSizeLim = 0;
-  double* lim = 0; // getFVMData(luh, numberOfVariables, basisSize, basisSizeLim);  // TODO JMG, please fix!
-  assertionMsg(false,"JMG, the above line doesn't compile. Please fix!");
+  double* lim = getFVMData(luh, numberOfVariables, basisSize, basisSizeLim);
   index = 0;
   iiEnd =  basisSizeLim*basisSizeLim;
   if(DIMENSIONS == 3)
