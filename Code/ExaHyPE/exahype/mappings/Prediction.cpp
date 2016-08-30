@@ -125,6 +125,12 @@ void exahype::mappings::Prediction::enterCell(
         pFine.setRiemannSolvePerformed(faceIndex,false);
 
         // TODO(Dominic): Add to docu.
+        // 0 - no connection: no send. Set to unreachable value.
+        // 2^{d-2} - full face connection where cell is inside but half of face vertices are outside:
+        // send at time of 2^{d-2}-th touch of face.
+        // 4^{d-2} - full face connection where cell is inside and face vertices are all inside:
+        // send at time of 2^{d-2}-th touch of face.
+        // We require that #ifdef vertex.isBoundary() is set.
         #ifdef Parallel
         int listingsOfRemoteRank = countListingsOfRemoteRankAtFace(faceIndex,fineGridVertices,fineGridVerticesEnumerator);
         if (listingsOfRemoteRank==0) {
@@ -637,7 +643,8 @@ int exahype::mappings::Prediction::countListingsOfRemoteRankAtFace(
     }
   enddforx // v
 
-  assertion2(result==0||result==TWO_POWER_D_DIVIDED_BY_TWO,result,faceIndex);
+  // result must be either no connection, edge connection, or whole face connection.
+  assertion2(result==0||result==TWO_POWER_D_DIVIDED_BY_TWO/2||result==TWO_POWER_D_DIVIDED_BY_TWO,result,faceIndex);
 
   return result;
 }
@@ -679,6 +686,8 @@ void exahype::mappings::Prediction::prepareSendToNeighbour(
   dfor2(dest)
     dfor2(src)
       if (vertex.hasToSendMetadata(_state,src,dest,toRank)) {
+        assertion(!_state->isForkTriggeredForRank(toRank));
+        assertion(!_state->isForkingRank(toRank));
         // we are solely exchanging faces
         const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
 
@@ -687,25 +696,26 @@ void exahype::mappings::Prediction::prepareSendToNeighbour(
 
           decrementCounters(src,dest,srcCellDescriptionIndex);
           if (needToSendFaceData(src,dest,srcCellDescriptionIndex)) {
-            sendADERDGFaceData(toRank,x,level,src,dest,srcCellDescriptionIndex,adjacentADERDGCellDescriptionsIndices(destScalar));
+            sendADERDGFaceData(toRank,x,level,src,dest,vertex,srcCellDescriptionIndex,adjacentADERDGCellDescriptionsIndices(destScalar));
             //            sentFiniteVolumesFaceData(toRank,x,level,src,dest,srcCellDescriptionIndex,adjacentADERDGCellDescriptionsIndices(destScalar));
+
             auto encodedMetadata = exahype::Cell::encodeMetadata(srcCellDescriptionIndex);
             MetadataHeap::getInstance().sendData(
                 encodedMetadata, toRank, x, level,
                 peano::heap::MessageType::NeighbourCommunication);
           } else {
-            logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<", x:"<<
-                x.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
-                << vertex.getAdjacentRanks());
+            logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<
+                " from vertex x=" << x << ", level=" << level <<
+                ", vertex.adjacentRanks: " << vertex.getAdjacentRanks());
             auto encodedMetadata = exahype::Cell::createEncodedMetadataSequenceForInvalidCellDescriptionsIndex();
             MetadataHeap::getInstance().sendData(
                 encodedMetadata, toRank, x, level,
                 peano::heap::MessageType::NeighbourCommunication);
           }
         } else {
-          logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<", x:"<<
-              x.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
-              << vertex.getAdjacentRanks());
+          logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<", "
+              " from vertex x=" << x << ", level=" << level <<
+              ", vertex.adjacentRanks: " << vertex.getAdjacentRanks());
           auto encodedMetadata = exahype::Cell::createEncodedMetadataSequenceForInvalidCellDescriptionsIndex();
           MetadataHeap::getInstance().sendData(
               encodedMetadata, toRank, x, level,
@@ -778,6 +788,7 @@ void exahype::mappings::Prediction::sendADERDGFaceData(
     int                                           level,
     const tarch::la::Vector<DIMENSIONS,int>&      src,
     const tarch::la::Vector<DIMENSIONS,int>&      dest,
+    const exahype::Vertex& vertex, // TODO(Dominic): Remvoe.
     int                                           srcCellDescriptionIndex,
     int                                           destCellDescriptionIndex) {
   const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
@@ -821,8 +832,10 @@ void exahype::mappings::Prediction::sendADERDGFaceData(
       // be done by the same periodic neighbour rank resolving and exchanging metadata.
       // PeriodicBC might be easier to implement in a MPI scenario than
       // in a non-MPI scenario.
+
+      // TODO(Dominic): If Domain Boundary aligns with Remote Boundary, Remote Boundary Index is set.
       if (destCellDescriptionIndex == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
-#ifdef PeriodicBC
+        #ifdef PeriodicBC
         assertionMsg(false, "Vasco, we have to implement this");
         DataHeap::getInstance().sendData(
             sentMinMax, toRank, x, level, peano::heap::MessageType::NeighbourCommunication);
@@ -832,16 +845,18 @@ void exahype::mappings::Prediction::sendADERDGFaceData(
         DataHeap::getInstance().sendData(
             lFhbnd, numberOfFaceDof, toRank, x, level,
             peano::heap::MessageType::NeighbourCommunication);
-#else
+        #else
         assertionMsg(false, "should never been entered");
-#endif
+        #endif
       } else {
-        logDebug(
+        logInfo( // TODO >Debug
             "sendADERDGFaceData(...)",
             "send three arrays to rank " <<
-            toRank << " for vertex x=" << x << ", level=" << level <<
+            toRank << " for cell="<<p.getOffset()<< " and face=" << faceIndex << " from vertex x=" << x << ", level=" << level <<
+            ", dest type=" << multiscalelinkedcell::indexToString(destCellDescriptionIndex) <<
             ", dest type=" << multiscalelinkedcell::indexToString(destCellDescriptionIndex) <<
             ", src=" << src << ", dest=" << dest <<
+            ", adjacent ranks=" << vertex.getAdjacentRanks() <<
             ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
           );
 

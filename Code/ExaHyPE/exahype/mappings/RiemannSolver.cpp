@@ -567,7 +567,7 @@ void exahype::mappings::RiemannSolver::receiveADERDGFaceData(
                   assertionMsg(false, "should never been entered");
                   #endif
                 } else {
-                  logDebug(
+                  logInfo( // TODO >Debug
                       "receiveADERDGFaceData(...)", "receive three arrays from rank " <<
                        fromRank << " for vertex x=" << x << ", level=" << level <<
                        ", src type=" << multiscalelinkedcell::indexToString(srcCellDescriptionIndex) <<
@@ -595,7 +595,7 @@ void exahype::mappings::RiemannSolver::receiveADERDGFaceData(
                   DataHeap::getInstance().receiveData(receivedMinMax,  fromRank, x, level,
                       peano::heap::MessageType::NeighbourCommunication);
 
-                  logDebug(
+                  logInfo( // TODO >Debug
                       "receiveADERDGFaceData(...)", "[pre] solve Riemann problem with received data." <<
                       " cellDescription=" << p.toString() <<
                       ",faceIndexForCell=" << faceIndex <<
@@ -690,7 +690,7 @@ void exahype::mappings::RiemannSolver::dropADERDGFaceData(
       if (neighbourType==exahype::records::ADERDGCellDescription::Cell ||
           neighbourType==exahype::records::ADERDGCellDescription::Ancestor ||
           neighbourType==exahype::records::ADERDGCellDescription::Descendant) {
-        logDebug(
+        logInfo( // TODO >Debug
             "dropADERDGFaceData(...)", "drop three arrays from rank " <<
             fromRank << " for vertex x=" << x << ", level=" << level <<
             ", src type=" << multiscalelinkedcell::indexToString(srcCellDescriptionIndex) <<
