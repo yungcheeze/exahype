@@ -240,7 +240,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
       _parser.getOffset());
 
   logDebug(
-      "run(...)",
+      "createRepository(...)",
       "create computational domain at " << _parser.getOffset() <<
       " of width/size " << _parser.getDomainSize() <<
       ". bounding box has size " << _parser.getBoundingBoxSize() <<
@@ -252,7 +252,7 @@ exahype::repositories::Repository* exahype::runners::Runner::createRepository() 
   assertion5(boundingBoxShift<=0.0, boundingBoxScaling, getCoarsestGridLevelOfAllSolvers(), _parser.getDomainSize(), _parser.getBoundingBoxSize(), boundingBoxScaling );
 
   logInfo(
-      "run(...)",
+      "createRepository(...)",
       "increase domain artificially by " << boundingBoxScaling << " and shift bounding box by " << boundingBoxShift << " to simplify load balancing along boundary");
   return exahype::repositories::RepositoryFactory::getInstance().createWithSTDStackImplementation(
       geometry,
