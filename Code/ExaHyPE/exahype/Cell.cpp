@@ -513,8 +513,8 @@ void exahype::Cell::validateNoNansInADERDGSolver(
       exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
   unknownsPerCell              = solver->getUnknownsPerCell();
   fluxUnknownsPerCell          = solver->getFluxUnknownsPerCell();
-  spaceTimeUnknownsPerCell     = solver->getSpaceTimeUnknownsPerCell();
-  spaceTimeFluxUnknownsPerCell = solver->getSpaceTimeFluxUnknownsPerCell();
+  //spaceTimeUnknownsPerCell     = solver->getSpaceTimeUnknownsPerCell();    // TODO does not compile
+  //spaceTimeFluxUnknownsPerCell = solver->getSpaceTimeFluxUnknownsPerCell();  // TODO does not compile
   unknownsPerCellBoundary      = solver->getUnknownsPerCellBoundary();
   #endif
 
