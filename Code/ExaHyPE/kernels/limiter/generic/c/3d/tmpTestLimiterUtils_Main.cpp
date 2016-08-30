@@ -84,6 +84,18 @@ int main() {
   // std::cout <<std::endl;
   // std::cout << "uh2lob[1][1]: " <<kernels::limiter::generic::c::uh2lob[1*basisSize+1] << std::endl;
   
+  //lim2uh
+  //------
+  // std::cout << "lim2uh: " << std::endl;
+  // int bLim = 2*(basisSize-1)+1;
+  // for(int i=0; i< bLim; i++) {
+    // for(int j=0; j<basisSize; j++)
+      // std::cout << kernels::limiter::generic::c::lim2uh[i*basisSize+j] << " ";
+    // std::cout <<std::endl;
+  // }
+  // std::cout <<std::endl;
+  // std::cout << "lim2uh[1][1]: " <<kernels::limiter::generic::c::lim2uh[1*basisSize+1] << std::endl; 
+  
   //local min max
   //-------------
   // kernels::limiter::generic::c::findCellLocallocalMinlocalMax(luh, numberOfVariable, basisSize, localMin, localMax);
@@ -116,9 +128,25 @@ int main() {
   
   //luh -> lob
   //----------
-  double* lob = kernels::limiter::generic::c::getGaussLobattoData(luh, numberOfVariable, basisSize);
-  kernels::idx4 idxLob(basisSize,basisSize,basisSize,numberOfVariable);
-  std::cout << "lob[iVar=0][x=0][y=1][z=3]: " << std::setprecision (15) << lob[idxLob(3,1,0,0)] << std::endl;
+  // double* lob = kernels::limiter::generic::c::getGaussLobattoData(luh, numberOfVariable, basisSize);
+  // kernels::idx4 idxLob(basisSize,basisSize,basisSize,numberOfVariable);
+  // std::cout << "lob[iVar=0][x=0][y=1][z=3]: " << std::setprecision (15) << lob[idxLob(3,1,0,0)] << std::endl;
+  
+  // int n = 3;
+  // double* a = new double[n*n]();
+  // a[0] = 1;
+  // a[2] = 3;
+  // a[3] = 7;
+  // a[4] = 2;
+  // a[7] = 3;
+  // a[8] = 4;
+  // double* ia = kernels::limiter::generic::c::matrixInverse(n,a);
+  // for(int i=0; i< n; i++) {
+    // for(int j=0; j<n; j++)
+      // std::cout << ia[i*n+j] << " ";
+    // std::cout <<std::endl;
+  // }
+  // std::cout <<std::endl;
   
   return 0;
 }
