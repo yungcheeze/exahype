@@ -74,7 +74,23 @@ exahype::plotters::ADERDG2LegendreVTK::ADERDG2LegendreVTK(exahype::plotters::Plo
   Device(postProcessing),
   _fileCounter(-1),
   _isBinary(isBinary),
-  _plotCells(plotCells) {
+  _plotCells(plotCells),
+/*
+  _filename( "" ),
+  _order(-1),
+  _solverUnknowns(-1),
+  _writtenUnknowns(-1),
+  _select(""),
+  _regionOfInterestLeftBottomFront(0.0),
+  _regionOfInterestRightTopBack(0.0),
+*/
+  _gridWriter(nullptr),
+  _vertexWriter(nullptr),
+  _cellWriter(nullptr),
+  _timeStampDataWriter(nullptr),
+  _cellTimeStampDataWriter(nullptr),
+  _vertexDataWriter(nullptr),
+  _cellDataWriter(nullptr) {
 }
 
 
@@ -151,7 +167,7 @@ void exahype::plotters::ADERDG2LegendreVTK::startPlotting( double time ) {
 void exahype::plotters::ADERDG2LegendreVTK::finishPlotting() {
   _postProcessing->finishPlotting();
 
-  if (_writtenUnknowns>0) {
+  if ( _writtenUnknowns>0 ) {
     assertion( _gridWriter!=nullptr );
     assertion( _timeStampDataWriter!=nullptr );
 
@@ -172,21 +188,21 @@ void exahype::plotters::ADERDG2LegendreVTK::finishPlotting() {
     // _patchWriter should raise/throw the C++ Exception or return something in case
     // of failure.
     _gridWriter->writeToFile(snapshotFileName.str());
-
-    if (_vertexDataWriter!=nullptr) delete _vertexDataWriter;
-    if (_cellDataWriter!=nullptr)   delete _cellDataWriter;
-    delete _vertexWriter;
-    delete _cellWriter;
-    delete _timeStampDataWriter;
-    delete _gridWriter;
-
-    _vertexDataWriter    = nullptr;
-    _cellDataWriter      = nullptr;
-    _vertexWriter         = nullptr;
-    _cellWriter         = nullptr;
-    _timeStampDataWriter = nullptr;
-    _gridWriter          = nullptr;
   }
+
+  if (_vertexDataWriter!=nullptr)    delete _vertexDataWriter;
+  if (_cellDataWriter!=nullptr)      delete _cellDataWriter;
+  if (_vertexWriter!=nullptr)        delete _vertexWriter;
+  if (_cellWriter!=nullptr)          delete _cellWriter;
+  if (_timeStampDataWriter!=nullptr) delete _timeStampDataWriter;
+  if (_gridWriter!=nullptr)          delete _gridWriter;
+
+  _vertexDataWriter     = nullptr;
+  _cellDataWriter       = nullptr;
+  _vertexWriter         = nullptr;
+  _cellWriter           = nullptr;
+  _timeStampDataWriter  = nullptr;
+  _gridWriter           = nullptr;
 }
 
 
