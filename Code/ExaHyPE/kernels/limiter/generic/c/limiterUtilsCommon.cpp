@@ -79,7 +79,7 @@ double* matrixInverse(int n, double* a) {
       c[idxC(i,k)] = tmp;
     }
     if(c[idxC(i,i)] == 0) {
-      throw std::invalid_argument( "Matrix is singular!" );
+      assertionMsg( false, "Jean-Matthieu, please fix" );
     }
     piv = 1. / c[idxC(i,i)];
     for(k=0; k<2*n; k++) {
@@ -211,7 +211,7 @@ void freeProjectionMatrices(const int basisSize) {
  */
 void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVariables, const int basisSize, double* localMin, double* localMax) {      
 
-  int index, ii, iVar, iiEnd;
+  int index, ii, iiEnd;
   
   // initialize and process luh
   index = 0;
