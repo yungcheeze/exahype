@@ -251,12 +251,9 @@ void exahype::mappings::Prediction::prolongateADERDGFaceData(
   _parentOfDescendantFound += 1;
 #endif
 
-  assertion(cellDescriptionParent.getSolverNumber() ==
-            cellDescription.getSolverNumber());
-  assertion(cellDescriptionParent.getType() ==
-                exahype::records::ADERDGCellDescription::Cell ||
-            cellDescriptionParent.getType() ==
-                exahype::records::ADERDGCellDescription::Descendant);
+  assertion(cellDescriptionParent.getSolverNumber() == cellDescription.getSolverNumber());
+  assertion(cellDescriptionParent.getType() == exahype::records::ADERDGCellDescription::Cell ||
+            cellDescriptionParent.getType() == exahype::records::ADERDGCellDescription::Descendant);
 
   const int levelFine = cellDescription.getLevel();
   const int levelCoarse = cellDescriptionParent.getLevel();
@@ -799,6 +796,8 @@ void exahype::mappings::Prediction::sendADERDGFaceData(
 
       assertion(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()));
       assertion(DataHeap::getInstance().isValidIndex(p.getFluctuation()));
+      assertion(DataHeap::getInstance().isValidIndex(p.getSolutionMin()));
+      assertion(DataHeap::getInstance().isValidIndex(p.getSolutionMax()));
 
       const int numberOfFaceDof = solver->getUnknownsPerFace();
       const double* lQhbnd = DataHeap::getInstance().getData(
@@ -846,11 +845,13 @@ void exahype::mappings::Prediction::sendADERDGFaceData(
             ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
           );
 
-        const int numberOfVariables = exahype::solvers::RegisteredSolvers[ p.getSolverNumber() ]->getNumberOfVariables();
-        std::vector<double> sentMinMax( numberOfVariables );
-        for (int i=0; i<numberOfVariables; i++) {
-          sentMinMax[i]                   = DataHeap::getInstance().getData( p.getSolutionMin() )[faceIndex+i];
-          sentMinMax[i+numberOfVariables] = DataHeap::getInstance().getData( p.getSolutionMax() )[faceIndex+i];
+        // TODO(Dominic): Why do we append the messages for minMax? Reduce MPI metadata overhead?
+        const int unknownsPerCell = static_cast<exahype::solvers::ADERDGSolver*>(
+            exahype::solvers::RegisteredSolvers[ p.getSolverNumber() ])->getUnknownsPerCell();
+        std::vector<double> sentMinMax( 2*unknownsPerCell );
+        for (int i=0; i<solver->getUnknownsPerCell(); i++) {
+          sentMinMax[i]                 = DataHeap::getInstance().getData( p.getSolutionMin() )[faceIndex*unknownsPerCell+i];
+          sentMinMax[i+unknownsPerCell] = DataHeap::getInstance().getData( p.getSolutionMax() )[faceIndex*unknownsPerCell+i];
         }
 
         // Send order: minMax,lQhbnd,lFhbnd
