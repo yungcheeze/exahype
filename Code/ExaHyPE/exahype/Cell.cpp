@@ -245,8 +245,8 @@ void exahype::Cell::addNewCellDescription(
   newCellDescription.setFluctuation(-1);
 
   // Limiter meta data (oscillations identificator)
-  newCellDescription.setSolutionMin(std::numeric_limits<double>::min());
-  newCellDescription.setSolutionMax(std::numeric_limits<double>::max());
+  newCellDescription.setSolutionMin(-1);
+  newCellDescription.setSolutionMax(-1);
 
   ADERDGCellDescriptionHeap::getInstance()
       .getData(_cellData.getCellDescriptionsIndex())
@@ -295,6 +295,17 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCel
             unknownsPerCell, unknownsPerCell));
         cellDescription.setSolution(DataHeap::getInstance().createData(
             unknownsPerCell, unknownsPerCell));
+
+
+        cellDescription.setSolutionMin(DataHeap::getInstance().createData(
+            unknownsPerCell * 2 * DIMENSIONS, unknownsPerCell * 2 * DIMENSIONS));
+        cellDescription.setSolutionMax(DataHeap::getInstance().createData(
+            unknownsPerCell * 2 * DIMENSIONS, unknownsPerCell * 2 * DIMENSIONS));
+
+        for (int i=0; i<unknownsPerCell * 2 * DIMENSIONS; i++) {
+          DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[i] = std::numeric_limits<double>::max();
+          DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i] = std::numeric_limits<double>::min();
+        }
       }
       break;
     default:
@@ -744,27 +755,35 @@ double exahype::Cell::getGlobalWorkload() const {
 #endif
 
 
-bool exahype::Cell::setSolutionMinMaxAndAnalyseValidity( double min, double max, int solverIndex ) {
+bool exahype::Cell::setSolutionMinMaxAndAnalyseValidity( double* min, double* max, int solverIndex ) {
   assertion( ADERDGCellDescriptionHeap::getInstance().isValidIndex( getCellDescriptionsIndex() ) ) ;
   assertion( ADERDGCellDescriptionHeap::getInstance().getData( getCellDescriptionsIndex() ).size()>static_cast<unsigned int>(solverIndex) ) ;
   assertion( max>=min );
 
   exahype::records::ADERDGCellDescription& cellDescription = ADERDGCellDescriptionHeap::getInstance().getData(getCellDescriptionsIndex())[solverIndex];
 
-  double cellMinimum = std::numeric_limits<double>::max();
-  double cellMaximum = std::numeric_limits<double>::min();
+  assertion( exahype::solvers::RegisteredSolvers[ cellDescription.getSolverNumber() ]->getType()==exahype::solvers::Solver::Type::ADER_DG );
+  const int numberOfVariables = exahype::solvers::RegisteredSolvers[ cellDescription.getSolverNumber() ]->getNumberOfVariables();
 
-  for (int faceNumber = 0; faceNumber<DIMENSIONS_TIMES_TWO; faceNumber++ ) {
-    cellMinimum = std::min(cellMinimum,cellDescription.getSolutionMin(faceNumber));
-    cellMaximum = std::max(cellMaximum,cellDescription.getSolutionMax(faceNumber));
+  std::vector<double> cellMinimum( numberOfVariables , std::numeric_limits<double>::max() );
+  std::vector<double> cellMaximum( numberOfVariables , std::numeric_limits<double>::min() );
+
+  for (int faceNumber = 0; faceNumber<DIMENSIONS_TIMES_TWO; faceNumber++ )
+  for (int i=0; i<numberOfVariables; i++) {
+    cellMinimum[i] = std::min(cellMinimum[i], DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i+faceNumber*numberOfVariables] );
+    cellMaximum[i] = std::max(cellMinimum[i], DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[i+faceNumber*numberOfVariables] );
   }
 
-  bool isValidNewCombination = tarch::la::greater(min,cellMinimum)
-                             & tarch::la::greater(cellMaximum,max);
+  bool isValidNewCombination = true;
+  for (int i=0; i<numberOfVariables; i++) {
+    isValidNewCombination &= tarch::la::greater(min[i],cellMinimum[i]);
+    isValidNewCombination &= tarch::la::greater(cellMaximum[i],max[i]);
+  }
 
-  for (int faceNumber = 0; faceNumber<DIMENSIONS_TIMES_TWO; faceNumber++ ) {
-    cellDescription.setSolutionMin(min);
-    cellDescription.setSolutionMax(max);
+  for (int faceNumber = 0; faceNumber<DIMENSIONS_TIMES_TWO; faceNumber++ )
+  for (int i=0; i<numberOfVariables; i++) {
+    DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i+faceNumber*numberOfVariables] = min[i];
+    DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[i+faceNumber*numberOfVariables] = max[i];
   }
 
   return isValidNewCombination;
@@ -793,14 +812,26 @@ void exahype::Cell::mergeSolutionMinMaxOnFace(
          rightCellDescription.getType() == exahype::records::ADERDGCellDescription::Ancestor ||
          rightCellDescription.getType() == exahype::records::ADERDGCellDescription::Descendant)
       ) {
-        double min = std::min( leftCellDescription.getSolutionMin(faceIndexForLeftCell), rightCellDescription.getSolutionMin(faceIndexForRightCell) );
-        double max = std::max( leftCellDescription.getSolutionMax(faceIndexForLeftCell), rightCellDescription.getSolutionMax(faceIndexForRightCell) );
+        assertion( leftCellDescription.getSolverNumber() == rightCellDescription.getSolverNumber() );
+        assertion( exahype::solvers::RegisteredSolvers[ leftCellDescription.getSolverNumber() ]->getType()==exahype::solvers::Solver::Type::ADER_DG );
+        const int numberOfVariables = exahype::solvers::RegisteredSolvers[ leftCellDescription.getSolverNumber() ]->getNumberOfVariables();
+        for (int i=0; i<numberOfVariables; i++) {
+          double min = std::min(
+            DataHeap::getInstance().getData( leftCellDescription.getSolutionMin() )[i+faceIndexForLeftCell*numberOfVariables],
+            DataHeap::getInstance().getData( leftCellDescription.getSolutionMin() )[i+faceIndexForRightCell*numberOfVariables]
+          );
+          double max = std::min(
+            DataHeap::getInstance().getData( leftCellDescription.getSolutionMax() )[i+faceIndexForLeftCell*numberOfVariables],
+            DataHeap::getInstance().getData( leftCellDescription.getSolutionMax() )[i+faceIndexForRightCell*numberOfVariables]
+	  );
 
-        leftCellDescription.setSolutionMin(faceIndexForLeftCell,min);
-        rightCellDescription.setSolutionMin(faceIndexForRightCell,min);
-        leftCellDescription.setSolutionMax(faceIndexForLeftCell,max);
-        rightCellDescription.setSolutionMax(faceIndexForRightCell,max);
-      } // else: do nothing.
+          DataHeap::getInstance().getData( leftCellDescription.getSolutionMin()  )[i+faceIndexForLeftCell*numberOfVariables]  = min;
+          DataHeap::getInstance().getData( rightCellDescription.getSolutionMin() )[i+faceIndexForRightCell*numberOfVariables] = min;
+
+          DataHeap::getInstance().getData( leftCellDescription.getSolutionMax()  )[i+faceIndexForLeftCell*numberOfVariables]  = max;
+          DataHeap::getInstance().getData( rightCellDescription.getSolutionMax() )[i+faceIndexForRightCell*numberOfVariables] = max;
+        }
+      }
     }
   }
 }
@@ -809,12 +840,18 @@ void exahype::Cell::mergeSolutionMinMaxOnFace(
 void exahype::Cell::mergeSolutionMinMaxOnFace(
   records::ADERDGCellDescription&  cellDescription,
   int                              faceNumber,
-  double min, double max
+  double* min, double* max
 ) {
-  assertion( max>=min );
-
   if (cellDescription.getType() == exahype::records::ADERDGCellDescription::Cell) {
-    cellDescription.setSolutionMin( faceNumber, std::min( cellDescription.getSolutionMin(faceNumber),min ) );
-    cellDescription.setSolutionMax( faceNumber, std::max( cellDescription.getSolutionMax(faceNumber),max ) );
+    assertion( exahype::solvers::RegisteredSolvers[ cellDescription.getSolverNumber() ]->getType()==exahype::solvers::Solver::Type::ADER_DG );
+    const int numberOfVariables = exahype::solvers::RegisteredSolvers[ cellDescription.getSolverNumber() ]->getNumberOfVariables();
+
+    for (int i=0; i<numberOfVariables; i++) {
+      DataHeap::getInstance().getData( cellDescription.getSolutionMin()  )[i+faceNumber*numberOfVariables]  = min[i];
+      DataHeap::getInstance().getData( cellDescription.getSolutionMax()  )[i+faceNumber*numberOfVariables]  = max[i];
+    }
+  }
+  else {
+    assertionMsg(false, "Dominic, please have a look whether we have to do something different here" );
   }
 }
