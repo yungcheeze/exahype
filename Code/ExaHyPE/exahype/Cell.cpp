@@ -737,23 +737,23 @@ void exahype::Cell::mergeSolutionMinMaxOnFace(
       ) {
         assertion( leftCellDescription.getSolverNumber() == rightCellDescription.getSolverNumber() );
         assertion( exahype::solvers::RegisteredSolvers[ leftCellDescription.getSolverNumber() ]->getType()==exahype::solvers::Solver::Type::ADER_DG );
-        const int unknownsPerCell = static_cast<exahype::solvers::ADERDGSolver*>(
-            exahype::solvers::RegisteredSolvers[ leftCellDescription.getSolverNumber() ])->getUnknownsPerCell();
-        for (int i=0; i<unknownsPerCell; i++) {
+        const int numberOfVariables = static_cast<exahype::solvers::ADERDGSolver*>(
+            exahype::solvers::RegisteredSolvers[ leftCellDescription.getSolverNumber() ])->getNumberOfVariables();
+        for (int i=0; i<numberOfVariables; i++) {
           double min = std::min(
-            DataHeap::getInstance().getData( leftCellDescription.getSolutionMin() )[i+faceIndexForLeftCell*unknownsPerCell],
-            DataHeap::getInstance().getData( leftCellDescription.getSolutionMin() )[i+faceIndexForRightCell*unknownsPerCell]
+            DataHeap::getInstance().getData( leftCellDescription.getSolutionMin() )[i+faceIndexForLeftCell*numberOfVariables],
+            DataHeap::getInstance().getData( leftCellDescription.getSolutionMin() )[i+faceIndexForRightCell*numberOfVariables]
           );
           double max = std::min(
-            DataHeap::getInstance().getData( leftCellDescription.getSolutionMax() )[i+faceIndexForLeftCell*unknownsPerCell],
-            DataHeap::getInstance().getData( leftCellDescription.getSolutionMax() )[i+faceIndexForRightCell*unknownsPerCell]
+            DataHeap::getInstance().getData( leftCellDescription.getSolutionMax() )[i+faceIndexForLeftCell*numberOfVariables],
+            DataHeap::getInstance().getData( leftCellDescription.getSolutionMax() )[i+faceIndexForRightCell*numberOfVariables]
           );
 
-          DataHeap::getInstance().getData( leftCellDescription.getSolutionMin()  )[i+faceIndexForLeftCell*unknownsPerCell]  = min;
-          DataHeap::getInstance().getData( rightCellDescription.getSolutionMin() )[i+faceIndexForRightCell*unknownsPerCell] = min;
+          DataHeap::getInstance().getData( leftCellDescription.getSolutionMin()  )[i+faceIndexForLeftCell*numberOfVariables]  = min;
+          DataHeap::getInstance().getData( rightCellDescription.getSolutionMin() )[i+faceIndexForRightCell*numberOfVariables] = min;
 
-          DataHeap::getInstance().getData( leftCellDescription.getSolutionMax()  )[i+faceIndexForLeftCell*unknownsPerCell]  = max;
-          DataHeap::getInstance().getData( rightCellDescription.getSolutionMax() )[i+faceIndexForRightCell*unknownsPerCell] = max;
+          DataHeap::getInstance().getData( leftCellDescription.getSolutionMax()  )[i+faceIndexForLeftCell*numberOfVariables]  = max;
+          DataHeap::getInstance().getData( rightCellDescription.getSolutionMax() )[i+faceIndexForRightCell*numberOfVariables] = max;
         }
       } // else do nothing
     }
@@ -771,12 +771,12 @@ void exahype::Cell::mergeSolutionMinMaxOnFace(
       cellDescription.getType() == exahype::records::ADERDGCellDescription::Descendant
       ) {
     assertion( exahype::solvers::RegisteredSolvers[ cellDescription.getSolverNumber() ]->getType()==exahype::solvers::Solver::Type::ADER_DG );
-    const int unknownsPerCell = static_cast<exahype::solvers::ADERDGSolver*>(
-        exahype::solvers::RegisteredSolvers[ cellDescription.getSolverNumber() ])->getUnknownsPerCell();
+    const int numberOfVariables = static_cast<exahype::solvers::ADERDGSolver*>(
+        exahype::solvers::RegisteredSolvers[ cellDescription.getSolverNumber() ])->getNumberOfVariables();
 
-    for (int i=0; i<unknownsPerCell; i++) {
-      DataHeap::getInstance().getData( cellDescription.getSolutionMin()  )[i+faceNumber*unknownsPerCell]  = min[i];
-      DataHeap::getInstance().getData( cellDescription.getSolutionMax()  )[i+faceNumber*unknownsPerCell]  = max[i];
+    for (int i=0; i<numberOfVariables; i++) {
+      DataHeap::getInstance().getData( cellDescription.getSolutionMin()  )[i+faceNumber*numberOfVariables]  = min[i];
+      DataHeap::getInstance().getData( cellDescription.getSolutionMax()  )[i+faceNumber*numberOfVariables]  = max[i];
     }
-  } // else do nothing
+  }
 }

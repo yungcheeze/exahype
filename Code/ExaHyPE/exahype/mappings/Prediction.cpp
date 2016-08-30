@@ -860,13 +860,12 @@ void exahype::mappings::Prediction::sendADERDGFaceData(
             ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
           );
 
-        // TODO(Dominic): Why do we append the messages for minMax? Reduce MPI metadata overhead?
-        const int unknownsPerCell = static_cast<exahype::solvers::ADERDGSolver*>(
-            exahype::solvers::RegisteredSolvers[ p.getSolverNumber() ])->getUnknownsPerCell();
-        std::vector<double> sentMinMax( 2*unknownsPerCell );
-        for (int i=0; i<solver->getUnknownsPerCell(); i++) {
-          sentMinMax[i]                 = DataHeap::getInstance().getData( p.getSolutionMin() )[faceIndex*unknownsPerCell+i];
-          sentMinMax[i+unknownsPerCell] = DataHeap::getInstance().getData( p.getSolutionMax() )[faceIndex*unknownsPerCell+i];
+        // We append all the max values to the min values to reduce the MPI
+        // metadata overhead
+        std::vector<double> sentMinMax( 2*solver->getNumberOfVariables() );
+        for (int i=0; i<solver->getNumberOfVariables(); i++) {
+          sentMinMax[i]                                = DataHeap::getInstance().getData( p.getSolutionMin() )[faceIndex*solver->getNumberOfVariables()+i];
+          sentMinMax[i+solver->getNumberOfVariables()] = DataHeap::getInstance().getData( p.getSolutionMax() )[faceIndex*solver->getNumberOfVariables()+i];
         }
 
         // Send order: minMax,lQhbnd,lFhbnd

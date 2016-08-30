@@ -27,7 +27,11 @@ tarch::logging::Log exahype::plotters::FiniteVolumes2VTKAscii::_log("exahype::pl
 
 exahype::plotters::FiniteVolumes2VTKAscii::FiniteVolumes2VTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
   Device(postProcessing),
-  _fileCounter(-1) {
+  _fileCounter(-1),
+  _patchWriter(nullptr),
+  _gridWriter(nullptr),
+  _timeStampDataWriter(nullptr),
+  _cellDataWriter(nullptr) {
 }
 
 
@@ -97,7 +101,7 @@ void exahype::plotters::FiniteVolumes2VTKAscii::startPlotting( double time ) {
 
 void exahype::plotters::FiniteVolumes2VTKAscii::finishPlotting() {
   _postProcessing->finishPlotting();
-  if (_writtenUnknowns>0) {
+  if ( _writtenUnknowns>0 ) {
     assertion( _patchWriter!=nullptr );
     assertion( _gridWriter!=nullptr );
     assertion( _timeStampDataWriter!=nullptr );
@@ -117,17 +121,17 @@ void exahype::plotters::FiniteVolumes2VTKAscii::finishPlotting() {
     // _patchWriter should raise/throw the C++ Exception or return something in case
     // of failure.
     _patchWriter->writeToFile(snapshotFileName.str());
-
-    delete _cellDataWriter;
-    delete _timeStampDataWriter;
-    delete _gridWriter;
-    delete _patchWriter;
-
-    _cellDataWriter      = nullptr;
-    _patchWriter         = nullptr;
-    _timeStampDataWriter = nullptr;
-    _gridWriter          = nullptr;
   }
+
+  if (_cellDataWriter!=nullptr)       delete _cellDataWriter;
+  if (_timeStampDataWriter!=nullptr)  delete _timeStampDataWriter;
+  if (_gridWriter!=nullptr)           delete _gridWriter;
+  if (_patchWriter!=nullptr)          delete _patchWriter;
+
+  _cellDataWriter      = nullptr;
+  _patchWriter         = nullptr;
+  _timeStampDataWriter = nullptr;
+  _gridWriter          = nullptr;
 }
 
 

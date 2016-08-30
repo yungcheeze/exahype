@@ -73,8 +73,8 @@ else ifeq ($(call tolower,$(MODE)),profile)
 else ifeq ($(call tolower,$(MODE)),asserts)
   # Settings for the Adderst mode
   # --------------------------------------------
-  COMPILER_CFLAGS += -DAsserts -g
-  COMPILER_LFLAGS += -g
+  COMPILER_CFLAGS += -DAsserts -g3
+  COMPILER_LFLAGS += -g3
 
 else
   # Option not recognized
