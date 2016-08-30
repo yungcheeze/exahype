@@ -66,13 +66,14 @@ void exahype::Cell::shutdownMetaData() {
   _cellData.setCellDescriptionsIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex);
 }
 
-std::vector<peano::heap::records::IntegerHeapData> exahype::Cell::encodeMetadata(int cellDescriptionsIndex) {
+#ifdef Parallel
+exahype::MetadataHeap::HeapEntries exahype::Cell::encodeMetadata(int cellDescriptionsIndex) {
   assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
   const int nADERDG = ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndex).size();
   const int nFV     = FiniteVolumesCellDescriptionHeap::getInstance().getData(cellDescriptionsIndex).size();
   const int length  = 2 + 2*(nADERDG+nFV);
 
-  std::vector<peano::heap::records::IntegerHeapData> encodedMetaData(0,length);
+  exahype::MetadataHeap::HeapEntries encodedMetaData(0,length);
   // ADER-DG
   encodedMetaData.push_back(nADERDG); // Implicit conversion.
   for (auto& p : ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndex)) {
@@ -87,6 +88,21 @@ std::vector<peano::heap::records::IntegerHeapData> exahype::Cell::encodeMetadata
   }
   return encodedMetaData;
 }
+
+exahype::MetadataHeap::HeapEntries exahype::Cell::createEncodedMetadataSequenceForInvalidCellDescriptionsIndex() {
+  exahype::MetadataHeap::HeapEntries metadata(0,2);
+  metadata.push_back(0); // ADER-DG
+  metadata.push_back(0); // FV
+  return metadata;
+}
+
+bool exahype::Cell::isEncodedMetadataSequenceForInvalidCellDescriptionsIndex(exahype::MetadataHeap::HeapEntries& sequence) {
+  return sequence.size()==2    &&
+         sequence[0].getU()==0 && // ADER-DG
+         sequence[1].getU()==0;   // FV
+}
+
+#endif
 
 bool exahype::Cell::isInitialised() const {
   if (_cellData.getCellDescriptionsIndex()!=multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex) {
@@ -146,6 +162,11 @@ void exahype::Cell::addNewCellDescription(
   newCellDescription.setSize(size);
   newCellDescription.setOffset(cellCentre);
 
+  // Initialise helper variables
+//  // TODO(Dominic):
+//  newCellDescription.setHelperCellNeedsToStoreFaceData(false);
+//  newCellDescription.setHelperCellNeedsToStoreFaceData(false);
+
   // Default field data indices
   newCellDescription.setSolution(-1);
 
@@ -204,6 +225,14 @@ void exahype::Cell::addNewCellDescription(
   // Pass geometry information to the cellDescription description
   newCellDescription.setSize(size);
   newCellDescription.setOffset(cellCentre);
+
+  // Initialise helper variables
+  #ifdef Parallel
+  newCellDescription.setHelperCellNeedsToStoreFaceData(false);
+  for (int i = 0; i < DIMENSIONS_TIMES_TWO; i++) {
+    newCellDescription.setFaceDataExchangeCounter(i,TWO_POWER_D);
+  }
+  #endif
 
   // Default field data indices
   newCellDescription.setSpaceTimePredictor(-1);
@@ -452,7 +481,6 @@ void exahype::Cell::ensureNoUnnecessaryMemoryIsAllocated(const int solverNumber)
 
 void exahype::Cell::validateNoNansInADERDGSolver(
   int                                  number,
-  exahype::Cell&                       fineGridCell,
   const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
   const std::string&                   methodTraceOfCaller
 ) {
@@ -463,7 +491,7 @@ void exahype::Cell::validateNoNansInADERDGSolver(
   int unknownsPerCellBoundary      = 0;
 
 #if defined(Debug) || defined(Asserts)
-  auto& p = fineGridCell.getADERDGCellDescription(number);
+  auto& p = getADERDGCellDescription(number);
   double* lQi = DataHeap::getInstance().getData(p.getSpaceTimePredictor()).data();
   double* lFi = DataHeap::getInstance().getData(p.getSpaceTimeVolumeFlux()).data();
   double* luh = DataHeap::getInstance().getData(p.getSolution()).data();
@@ -496,37 +524,37 @@ void exahype::Cell::validateNoNansInADERDGSolver(
 
   assertionEquals4(p.getPredictorTimeStepSize(),p.getPredictorTimeStepSize(),
                    fineGridVerticesEnumerator.toString(),
-                   p.toString(),fineGridCell.toString(),methodTraceOfCaller);
+                   p.toString(),toString(),methodTraceOfCaller);
 
   for (int i=0; i<spaceTimeUnknownsPerCell; i++) {
     assertion5(std::isfinite(lQi[i]), fineGridVerticesEnumerator.toString(),
-            p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+            p.toString(),toString(),methodTraceOfCaller,i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   for (int i=0; i<spaceTimeFluxUnknownsPerCell; i++) {
     assertion5(std::isfinite(lFi[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+        p.toString(),toString(),methodTraceOfCaller,i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   for (int i=0; i<unknownsPerCell; i++) {
     assertion5(std::isfinite(luh[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+        p.toString(),toString(),methodTraceOfCaller,i);
     assertion5(std::isfinite(lduh[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+        p.toString(),toString(),methodTraceOfCaller,i);
     assertion5(std::isfinite(lQhi[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+        p.toString(),toString(),methodTraceOfCaller,i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   for (int i=0; i<fluxUnknownsPerCell; i++) {
     assertion5(std::isfinite(lFhi[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+        p.toString(),toString(),methodTraceOfCaller,i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
   for (int i=0; i<unknownsPerCellBoundary; i++) {
     assertion5(std::isfinite(lQhbnd[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+        p.toString(),toString(),methodTraceOfCaller,i);
     assertion5(std::isfinite(lFhbnd[i]), fineGridVerticesEnumerator.toString(),
-        p.toString(),fineGridCell.toString(),methodTraceOfCaller,i);
+        p.toString(),toString(),methodTraceOfCaller,i);
   } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 }
 
@@ -757,9 +785,13 @@ void exahype::Cell::mergeSolutionMinMaxOnFace(
     for (auto& leftCellDescription: ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndexOfLeftCell))
     for (auto& rightCellDescription: ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndexOfRightCell)) {
       if (
-        leftCellDescription.getType() == exahype::records::ADERDGCellDescription::Cell
+        (leftCellDescription.getType() == exahype::records::ADERDGCellDescription::Cell ||
+        leftCellDescription.getType() == exahype::records::ADERDGCellDescription::Ancestor ||
+        leftCellDescription.getType() == exahype::records::ADERDGCellDescription::Descendant)
         &&
-        rightCellDescription.getType() == exahype::records::ADERDGCellDescription::Cell
+        (rightCellDescription.getType() == exahype::records::ADERDGCellDescription::Cell ||
+         rightCellDescription.getType() == exahype::records::ADERDGCellDescription::Ancestor ||
+         rightCellDescription.getType() == exahype::records::ADERDGCellDescription::Descendant)
       ) {
         double min = std::min( leftCellDescription.getSolutionMin(faceIndexForLeftCell), rightCellDescription.getSolutionMin(faceIndexForRightCell) );
         double max = std::max( leftCellDescription.getSolutionMax(faceIndexForLeftCell), rightCellDescription.getSolutionMax(faceIndexForRightCell) );
@@ -768,10 +800,7 @@ void exahype::Cell::mergeSolutionMinMaxOnFace(
         rightCellDescription.setSolutionMin(faceIndexForRightCell,min);
         leftCellDescription.setSolutionMax(faceIndexForLeftCell,max);
         rightCellDescription.setSolutionMax(faceIndexForRightCell,max);
-      }
-      else {
-        assertionMsg( false, "Dominic, please implement" );
-      }
+      } // else: do nothing.
     }
   }
 }

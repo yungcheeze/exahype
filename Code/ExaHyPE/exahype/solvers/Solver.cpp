@@ -42,6 +42,21 @@ std::string exahype::solvers::Solver::getIdentifier() const {
   return _identifier;
 }
 
+std::string exahype::solvers::Solver::toString(const exahype::solvers::Solver::Type& param) {
+  switch (param) {
+    case Type::ADER_DG:       return "ADER-DG";
+    case Type::FiniteVolumes: return "Finite Volumes";
+  }
+  return "undefined";
+}
+
+std::string exahype::solvers::Solver::toString(const exahype::solvers::Solver::TimeStepping& param) {
+  switch (param) {
+    case TimeStepping::Global:      return "global";
+    case TimeStepping::GlobalFixed: return "globalfixed";
+  }
+  return "undefined";
+}
 
 exahype::solvers::Solver::Type exahype::solvers::Solver::getType() const {
   return _type;
@@ -129,4 +144,28 @@ double exahype::solvers::Solver::getFinestMaximumMeshSizeOfAllSolvers() {
   }
 
   return result;
+}
+
+std::string exahype::solvers::Solver::toString() const {
+  std::ostringstream stringstr;
+  toString(stringstr);
+  return stringstr.str();
+}
+
+void exahype::solvers::Solver::toString(std::ostream& out) const {
+  out << "(";
+  out << "_identifier:" << _identifier;
+  out << ",";
+  out << "_type:" << toString(_type);
+  out << ",";
+  out << "_numberOfVariables:" << _numberOfVariables;
+  out << ",";
+  out << "_numberOfParameters:" << _numberOfParameters;
+  out << ",";
+  out << "_nodesPerCoordinateAxis:" << _nodesPerCoordinateAxis;
+  out << ",";
+  out << "_maximumMeshSize:" << _maximumMeshSize;
+  out << ",";
+  out << "_timeStepping:" << toString(_timeStepping);
+  out <<  ")";
 }

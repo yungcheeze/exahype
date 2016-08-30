@@ -83,6 +83,45 @@ double exahype::solvers::FiniteVolumesSolver::getNextMinTimeStepSize() const {
   return _nextMinTimeStepSize;
 }
 
+
+
+std::string exahype::solvers::FiniteVolumesSolver::toString() const {
+  std::ostringstream stringstr;
+  toString(stringstr);
+  return stringstr.str();
+}
+
+void exahype::solvers::FiniteVolumesSolver::toString (std::ostream& out) const {
+  out << "(";
+  out << "_identifier:" << _identifier;
+  out << ",";
+  out << "_type:" << exahype::solvers::Solver::toString(_type);
+  out << ",";
+  out << "_numberOfVariables:" << _numberOfVariables;
+  out << ",";
+  out << "_numberOfParameters:" << _numberOfParameters;
+  out << ",";
+  out << "_nodesPerCoordinateAxis:" << _nodesPerCoordinateAxis;
+  out << ",";
+  out << "_maximumMeshSize:" << _maximumMeshSize;
+  out << ",";
+  out << "_timeStepping:" << exahype::solvers::Solver::toString(_timeStepping); // only solver attributes
+  out << ",";
+  out << "_unknownsPerFace:" << _unknownsPerFace;
+  out << ",";
+  out << "_unknownsPerCellBoundary:" << _unknownsPerCellBoundary;
+  out << ",";
+  out << "_unknownsPerCell:" << _unknownsPerCell;
+  out << ",";
+  out << "_minTimeStamp:" << _minTimeStamp;
+  out << ",";
+  out << "_minTimeStepSize:" << _minTimeStepSize;
+  out << ",";
+  out << "_nextMinTimeStepSize:" << _nextMinTimeStepSize;
+  out <<  ")";
+}
+
+#ifdef Parallel
 void exahype::solvers::FiniteVolumesSolver::sendToRank(int rank, int tag) {
   assertionMsg(false, "not implemented yet");
 }
@@ -90,3 +129,4 @@ void exahype::solvers::FiniteVolumesSolver::sendToRank(int rank, int tag) {
 void exahype::solvers::FiniteVolumesSolver::receiveFromMasterRank(int rank, int tag) {
   assertionMsg(false, "not implemented yet");
 }
+#endif

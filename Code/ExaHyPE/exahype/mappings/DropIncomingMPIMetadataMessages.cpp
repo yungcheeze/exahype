@@ -101,7 +101,7 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithNeighbour(
                            fromRank, fineGridX, fineGridH, level);
 
 // TODO(Dominic): Remove
-  return;
+//  return;
 
   // TODO(Dominic): AMR + MPI
   // 1. Get metadata,

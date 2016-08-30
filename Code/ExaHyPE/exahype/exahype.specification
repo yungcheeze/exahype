@@ -18,16 +18,16 @@ state:
   dastgen-file: State.def
   
 event-mapping:
-  name: GlobalTimeStepComputation
+  name: TimeStepSizeComputation
   
 event-mapping:
   name: SolutionUpdate
   
 event-mapping:
-  name: SolutionAdjustment
+  name: InitialCondition
 
 event-mapping: // -DEC: consider to move the computation of boundary extrapolated values out of the space-time predictor mapping
-  name: SpaceTimePredictor
+  name: Prediction
 
 event-mapping: 
   name: LoadBalancing
@@ -36,13 +36,13 @@ event-mapping:
   name: RiemannSolver
  
 event-mapping:
-  name: NewTimeStep
+  name: Synchronisation
+
+event-mapping:
+  name: Reduction
  
 event-mapping:
   name: Plot
-
-event-mapping:
-  name: FaceUnknownsProjection  
 
 // GridUpdate   
 event-mapping:
@@ -75,13 +75,14 @@ event-mapping:
   
 adapter:
   name: AugmentedAMRGrid
-  merge-with-user-defined-mapping: NewTimeStep        // (createInner/BoundaryVertex,enterCell,serial)
-  merge-with-user-defined-mapping: RegularMesh        // (createInner/BoundaryVertex,enterCell,serial)
-  merge-with-user-defined-mapping: MarkingForRefinement      // (enterCell,runconcurrently)
-  merge-with-user-defined-mapping: Refinement                // (touchVertexLastTime,enterCell,serial)
-  merge-with-user-defined-mapping: SolutionAdjustment        // (enterCell,runconcurrently)             
-  merge-with-user-defined-mapping: MarkingForAugmentation    // (enterCell,runconcurrently)
-  merge-with-user-defined-mapping: Augmentation              // (touchVertexLastTime,enterCell,serial)
+  merge-with-user-defined-mapping: RegularMesh             // (createInner/BoundaryVertex,enterCell,serial)
+  // Initial Condition comes after RegularMesh since we refine here in a fast manner down to the 
+  // first layer of cells we initialise. Afterwards refinement is done per iteration.
+  merge-with-user-defined-mapping: InitialCondition        // (enterCell,runconcurrently);   
+  merge-with-user-defined-mapping: MarkingForRefinement    // (enterCell,runconcurrently,forkjoin)
+  merge-with-user-defined-mapping: Refinement              // (touchVertexLastTime,enterCell,serial)          
+  merge-with-user-defined-mapping: MarkingForAugmentation  // (enterCell,runconcurrently,neighbour)
+  merge-with-user-defined-mapping: Augmentation            // (touchVertexLastTime,enterCell,serial)
   merge-with-user-defined-mapping: LoadBalancing
   merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)       
   
@@ -92,33 +93,31 @@ adapter:
 
 // Adapters for initialisation of time stepping
 adapter:
-  name: SolutionAdjustmentAndGlobalTimeStepComputation
+  name: InitialConditionAndTimeStepSizeComputation
+  merge-with-user-defined-mapping: Synchronisation
   merge-with-user-defined-mapping: DropIncomingMPIMetadataMessages
-  merge-with-user-defined-mapping: NewTimeStep
-  merge-with-user-defined-mapping: SolutionAdjustment
+  merge-with-user-defined-mapping: InitialCondition
   // needs current time step size
-  merge-with-user-defined-mapping: GlobalTimeStepComputation
+  merge-with-user-defined-mapping: TimeStepSizeComputation
 
 adapter:
-  name: PredictorAndPlotAndGlobalTimeStepComputation
-  merge-with-user-defined-mapping: NewTimeStep
-  // needs current time step size
-  merge-with-user-defined-mapping: SpaceTimePredictor // DEC: after predictor we can start the face data exchange
+  name: PredictionAndPlotAndTimeStepSizeComputation
+  merge-with-user-defined-mapping: Synchronisation
+  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: Plot
-  merge-with-user-defined-mapping: GlobalTimeStepComputation
-  merge-with-user-defined-mapping: FaceUnknownsProjection
+  merge-with-user-defined-mapping: TimeStepSizeComputation
 
 adapter:
-  name: PredictorAndGlobalTimeStepComputation
-  merge-with-user-defined-mapping: NewTimeStep
-  // needs current time step size
-  merge-with-user-defined-mapping: SpaceTimePredictor // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: GlobalTimeStepComputation
-  merge-with-user-defined-mapping: FaceUnknownsProjection
+  name: PredictionAndTimeStepSizeComputation
+  merge-with-user-defined-mapping: Synchronisation
+  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
+  merge-with-user-defined-mapping: TimeStepSizeComputation
+  merge-with-user-defined-mapping: Reduction
 
 // Adapters for clean up (to be extended)
 adapter:
   name: GridErasing
+  merge-with-user-defined-mapping: Synchronisation
   merge-with-user-defined-mapping: DropIncomingMPIMessages
   merge-with-user-defined-mapping: GridErasing
 
@@ -126,25 +125,27 @@ adapter:
 adapter: 
   name: ADERDGTimeStep
   // needs corrector time step size
+  merge-with-user-defined-mapping: Synchronisation
   merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
   merge-with-user-defined-mapping: SolutionUpdate
   // needs predictor time step size
-  merge-with-user-defined-mapping: SpaceTimePredictor  // DEC: after predictor we can start the face data exchange
-  merge-with-user-defined-mapping: GlobalTimeStepComputation
-  merge-with-user-defined-mapping: FaceUnknownsProjection 
+  merge-with-user-defined-mapping: Prediction  // DEC: after predictor we can start the face data exchange
+  merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: LoadBalancing
+  merge-with-user-defined-mapping: Reduction
  
  
 adapter: 
   name: ADERDGTimeStepAndPlot
   // needs corrector time step size
+  merge-with-user-defined-mapping: Synchronisation
   merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: Plot
   // needs predictor time step size
-  merge-with-user-defined-mapping: SpaceTimePredictor  // DEC: after predictor we can start the face data exchange 
-  merge-with-user-defined-mapping: GlobalTimeStepComputation
-  merge-with-user-defined-mapping: FaceUnknownsProjection
+  merge-with-user-defined-mapping: Prediction  // DEC: after predictor we can start the face data exchange 
+  merge-with-user-defined-mapping: TimeStepSizeComputation
+  merge-with-user-defined-mapping: Reduction
  
 /**
  * In a serial version, running the predictor is the same for optimistic time 
@@ -153,33 +154,34 @@ adapter:
  * and re-send the updated boundary values, so it is slightly different
  */
 adapter:
-  name: PredictorRerun
+  name: PredictionRerun
   merge-with-user-defined-mapping: DropIncomingMPIMessages
-  merge-with-user-defined-mapping: NewTimeStep
-  merge-with-user-defined-mapping: SpaceTimePredictor 
-  merge-with-user-defined-mapping: FaceUnknownsProjection
+  merge-with-user-defined-mapping: Synchronisation
+  merge-with-user-defined-mapping: Prediction 
  
 // Additional adapters for 4 phase time stepping
 adapter: 
   name: RiemannSolver
+  merge-with-user-defined-mapping: Synchronisation
   merge-with-user-defined-mapping: RiemannSolver
 
 adapter:
-  name: Predictor
-  merge-with-user-defined-mapping: SpaceTimePredictor 
-  merge-with-user-defined-mapping: FaceUnknownsProjection
+  name: Prediction
+  merge-with-user-defined-mapping: Prediction 
 
 adapter:
-  name: Corrector
+  name: Correction
   merge-with-user-defined-mapping: SolutionUpdate
-  merge-with-user-defined-mapping: GlobalTimeStepComputation
+  merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: LoadBalancing
+  merge-with-user-defined-mapping: Reduction
 
 adapter:
-  name: CorrectorAndPlot
+  name: CorrectionAndPlot
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: Plot
-  merge-with-user-defined-mapping: GlobalTimeStepComputation
+  merge-with-user-defined-mapping: TimeStepSizeComputation
+  merge-with-user-defined-mapping: Reduction
 
 adapter:
   name: Plot

@@ -44,11 +44,11 @@ class MarkingForRefinement;
  * are initialised in mapping Refinement.
  *
  * @developers:
- * 1. TODO(Dominic): Need to propagate refinement events, cell type
+ * 2. TODO(Dominic): Need to propagate refinement events, cell type
  * changes, and volume data from master to worker (refinement,forks).
  * Need to propagate refinement events, cell type changes,
  * and volume data from worker to master (erasing,joins).
- * 2. TODO(Dominic): The mapping in the current form does not
+ * 3. TODO(Dominic): The mapping in the current form does not
  * require communication between neighbouring cells. However
  * if we consider non-local refinement criteria
  * as in M. Dumbser's papers, this will be necessary.
@@ -58,9 +58,76 @@ class MarkingForRefinement;
 class exahype::mappings::MarkingForRefinement {
  private:
   /**
-   * Nop.
+   * The logging device of this mapping.
    */
   static tarch::logging::Log _log;
+
+  /**
+   * Local copy of the state.
+   */
+  exahype::State _state;
+
+#ifdef Parallel
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void addNewADERDGCellDescriptionsDueToForkOrJoin(
+      exahype::Cell& localCell,
+      const int fromRank,
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+      const int level,
+      const int receivedMetadataIndex) const;
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  void receiveADERDGCellDescriptionsDataDueToForkOrJoin(
+      exahype::Cell& localCell,
+      const int fromRank,
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+      const int level,
+      const int receivedMetadataIndex) const;
+
+  /**
+   * Returns false if the \p cellDescriptionsIndex is invalid,
+   * or if no cell descriptions is registered for this cellDescriptionsIndex,
+   * i.e., the vector is empty.
+   * Further returns false if the geometry information on the cell descriptions
+   * the \p cellDescriptionsIndex is pointing at does not match
+   * with \p cellCentre and \p cellSize.
+   *
+   * Returns true otherwise.
+   */
+  static bool geometryInfoDoesMatch(
+      const int cellDescriptionsIndex,
+      const tarch::la::Vector<DIMENSIONS,double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS,double>& cellSize,
+      const int level);
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  static void receiveFiniteVolumesMetadataInMergeWithRemoteDataDueToForkOrJoin(
+      exahype::Cell& localCell,
+      const int fromRank,
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+      const int level,
+      const int receivedMetadataIndex);
+
+  /**
+   * TODO(Dominic): Add docu + implement.
+   */
+  static void receiveFiniteVolumesCellDescriptionsDataDueToForkOrJoin(
+      exahype::Cell& localCell,
+      const int fromRank,
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize,
+      const int level,
+      const int receivedMetadataIndex){}
+#endif
 
  public:
 
@@ -86,6 +153,16 @@ class exahype::mappings::MarkingForRefinement {
 
 
   /**
+   * Copy the state and start to send synchronous data.
+   */
+  void beginIteration(exahype::State& solverState);
+
+  /**
+   * Finish sending synchronous data.
+   */
+  void endIteration(exahype::State& solverState);
+
+  /**
    * If the fine grid cell functions as compute cell of a solver:
    * Mark the compute cell as candidates for refinement or erasing
    * if no other refinement event is set.
@@ -100,114 +177,52 @@ class exahype::mappings::MarkingForRefinement {
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
-  /**
-   * Nop.
-   */
-  MarkingForRefinement();
-
-#if defined(SharedMemoryParallelisation)
-  /**
-   * Nop.
-   */
-  MarkingForRefinement(const MarkingForRefinement& masterThread);
-#endif
-
-  /**
-   * Nop.
-   */
-  virtual ~MarkingForRefinement();
-
-#if defined(SharedMemoryParallelisation)
-  /**
-   * Nop.
-   */
-  void mergeWithWorkerThread(const MarkingForRefinement& workerThread);
-#endif
-
-  /**
-   * Nop.
-   */
-  void createInnerVertex(
-      exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Nop.
-   */
-  void createBoundaryVertex(
-      exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Nop.
-   */
-  void createHangingVertex(
-      exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Nop.
-   */
-  void destroyHangingVertex(
-      const exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Nop.
-   */
-  void destroyVertex(
-      const exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Nop.
-   */
-  void createCell(
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
-   * Nop.
-   */
-  void destroyCell(
-      const exahype::Cell& fineGridCell,
-      exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
 #ifdef Parallel
+  /**
+   * TODO(Dominic): Implement & add docu.
+   *
+   * Move data to neighbour
+   *
+   * Throughout the joins or forks of subdomains, data has to be moved
+   * between the nodes. This operation allows the user to plug into these
+   * movements. Different to the neighbour communciation, a move always
+   * implies that Peano is copying the data structure bit-wise to the
+   * remote node. However, if you have heap data and pointers, e.g.,
+   * associated to your vertices/cells you have to take care yourself that
+   * this data is moved as well.
+   *
+   * If data is inside your computational domain, you fork, and this data
+   * now is located at the new boundary, Peano moves the data as well, i.e.
+   * the move also can be a (global) copy operation.
+   *
+   * @param localCell The local cell. This is not a copy, i.e. you may
+   *                    modify the cell before a copy of it is sent away.
+   */
+  void prepareCopyToRemoteNode(
+      exahype::Cell& localCell, int toRank,
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
+
+  /**
+   * TODO(Dominic): Implement & add docu.
+   *
+   * Merge with remote data due to fork or join
+   *
+   * This operation takes remote data and merges it into the local copy, as
+   * data is moved from one rank to another, e.g. Do not use an assignment
+   * operator on the whole record, as you may overwrite only PDE-specific
+   * fields in localVertex.
+   *
+   * @param localCell    Local cell data. Some information here is already
+   *                     set: Adjacency information from the master, e.g.,
+   *                     already is merged. Thus, do not overwrite
+   *                     non-PDE-specific data.
+   */
+  void mergeWithRemoteDataDueToForkOrJoin(
+      exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
+      int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
+
   /**
    * Nop.
    */
@@ -236,26 +251,10 @@ class exahype::mappings::MarkingForRefinement {
   /**
    * Nop.
    */
-  void prepareCopyToRemoteNode(
-      exahype::Cell& localCell, int toRank,
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
-
-  /**
-   * Nop.
-   */
   void mergeWithRemoteDataDueToForkOrJoin(
       exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
       int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
       const tarch::la::Vector<DIMENSIONS, double>& h, int level);
-
-  /**
-   * Nop.
-   */
-  void mergeWithRemoteDataDueToForkOrJoin(
-      exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
-      int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
 
   /**
    * Nop.
@@ -330,6 +329,113 @@ class exahype::mappings::MarkingForRefinement {
 #endif
 
   /**
+    * Nop.
+    */
+   MarkingForRefinement();
+
+ #if defined(SharedMemoryParallelisation)
+   /**
+    * Nop.
+    */
+   MarkingForRefinement(const MarkingForRefinement& masterThread);
+ #endif
+
+   /**
+    * Nop.
+    */
+   virtual ~MarkingForRefinement();
+
+ #if defined(SharedMemoryParallelisation)
+   /**
+    * Nop.
+    */
+   void mergeWithWorkerThread(const MarkingForRefinement& workerThread);
+ #endif
+
+   /**
+    * Nop.
+    */
+   void createInnerVertex(
+       exahype::Vertex& fineGridVertex,
+       const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+       const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+       exahype::Vertex* const coarseGridVertices,
+       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+       exahype::Cell& coarseGridCell,
+       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+
+   /**
+    * Nop.
+    */
+   void createBoundaryVertex(
+       exahype::Vertex& fineGridVertex,
+       const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+       const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+       exahype::Vertex* const coarseGridVertices,
+       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+       exahype::Cell& coarseGridCell,
+       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+
+   /**
+    * Nop.
+    */
+   void createHangingVertex(
+       exahype::Vertex& fineGridVertex,
+       const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+       const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+       exahype::Vertex* const coarseGridVertices,
+       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+       exahype::Cell& coarseGridCell,
+       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+
+   /**
+    * Nop.
+    */
+   void destroyHangingVertex(
+       const exahype::Vertex& fineGridVertex,
+       const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+       const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+       exahype::Vertex* const coarseGridVertices,
+       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+       exahype::Cell& coarseGridCell,
+       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+
+   /**
+    * Nop.
+    */
+   void destroyVertex(
+       const exahype::Vertex& fineGridVertex,
+       const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+       const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+       exahype::Vertex* const coarseGridVertices,
+       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+       exahype::Cell& coarseGridCell,
+       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+
+   /**
+    * Nop.
+    */
+   void createCell(
+       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+       exahype::Vertex* const coarseGridVertices,
+       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+       exahype::Cell& coarseGridCell,
+       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
+   /**
+    * Nop.
+    */
+   void destroyCell(
+       const exahype::Cell& fineGridCell,
+       exahype::Vertex* const fineGridVertices,
+       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+       exahype::Vertex* const coarseGridVertices,
+       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+       exahype::Cell& coarseGridCell,
+       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
+  /**
    * Nop.
    */
   void touchVertexFirstTime(
@@ -363,16 +469,6 @@ class exahype::mappings::MarkingForRefinement {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
-   * Nop.
-   */
-  void beginIteration(exahype::State& solverState);
-
-  /**
-   * Nop.
-   */
-  void endIteration(exahype::State& solverState);
 
   /**
    * Nop.

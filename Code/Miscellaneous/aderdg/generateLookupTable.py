@@ -16,6 +16,7 @@ import errno
 
 from fileWriter import writeMatrixLookupTableInitToFile, writeVectorLookupTableInitToFile
 from aderdg import *
+import gaussLobattoQuadrature as lob
 
 #-----------------------------------------------------------
 # main
@@ -51,6 +52,7 @@ for fileName in os.listdir(outputDirectory):
 # one for each padding scheme
 filename=outputDirectory+"/matrices.cpp"
 filename2=outputDirectory+"/gausPoints.cpp"
+filename3=outputDirectory+"/lobPoints.cpp"
 
 
 # we process one order after another
@@ -60,6 +62,7 @@ filename2=outputDirectory+"/gausPoints.cpp"
 
 out = open("generatedCode/lookupTableInit.csnippet", "w")
 out2 = open("generatedCode/gausPoints.csnippet", "w")
+out3 = open("generatedCode/lobPoints.csnippet", "w")
 
 order = minOrder
 while (order <= maxOrder):    
@@ -87,6 +90,29 @@ while (order <= maxOrder):
 	
     out2.write("\n")
     
+    #Gauss-Lobatto nodes and weights
+    if(order+1 == 1):
+        out3.write("//Gauss-Lobatto isn't defined for n=1, using Gauss-Legendre instead\n")
+        out3.write("gaussLobattoWeights[0][0] = 1;   //should not be used\n")
+        out3.write("gaussLobattoNodes  [0][0] = 0.5; //should not be used\n")
+        out3.write("\n")
+    elif(order+1 > 1):
+        x, w = lob.gaulob(0., 1., order+1)
+        text = ""
+        for l in range(0,order+1):
+            line = "gaussLobattoWeights[%d][%d] = %.16g;\n" % (order,l,w[l])
+            text += line
+        out3.write(text)
+
+        text = ""
+        for l in range(0,order+1):
+            line = "gaussLobattoNodes  [%d][%d] = %.16g;\n" % (order,l,x[l])
+            text += line
+        out3.write(text)
+
+        out3.write("\n")
+
+
     #----------------------------------------------------------------
     # compute matrices and export
     #----------------------------------------------------------------

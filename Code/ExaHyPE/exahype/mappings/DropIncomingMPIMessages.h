@@ -247,7 +247,7 @@ class exahype::mappings::DropIncomingMPIMessages {
       int worker);
 
   /**
-   * Nop
+   * Drop the global time step computation data sent by the workers.
    */
   void mergeWithMaster(
       const exahype::Cell& workerGridCell,

@@ -146,6 +146,18 @@ class exahype::mappings::RiemannSolver {
 
 #ifdef Parallel
   /**
+   * We need read access to the state.
+   *
+   * \note While currently no forking and joining will happen after the initial
+   * grid setup, this will happen in the dynamic AMR case. It thus doesn't hurt to
+   * use work with the _state already in the static AMR case.
+   * TODO(Dominic): Delete this comment as soon as we have dynamic AMR+MPI.
+   *
+   * \note Do not set values on the state. Write access to the state is not thread-safe.
+   */
+  exahype::State* _state;
+
+  /**
    * Single-sided version of the other solveRiemannProblemAtInterface(). It
    * works only on one cell and one solver within this cell and in return
    * hands in the F and Q values explicitly through  indexOfQValues and
@@ -162,12 +174,26 @@ class exahype::mappings::RiemannSolver {
    *
    * \note Not thread-safe.
    */
-  void solveRiemannProblemAtInterface(
+  static void solveRiemannProblemAtInterface(
       records::ADERDGCellDescription& cellDescription,
       const int faceIndexForCell,
-      const int normalNonZero,  // @todo is redundant. We should be able to // derive this from faceIndexForCell
-      const int indexOfQValues, const int indexOfFValues
-  );
+      const int normalNonZero,  // TODO(Tobias): is redundant. We should be able to // derive this from faceIndexForCell
+      const int indexOfQValues, const int indexOfFValues);
+
+  /**
+   * TODO(Dominic): Add docu.
+   *
+   * \note Not thread-safe.
+   */
+  static void receiveADERDGFaceData(
+      int fromRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      int level,
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest,
+      int srcCellDescriptionIndex,
+      int destCellDescriptionIndex,
+      exahype::MetadataHeap::HeapEntries& receivedMetadata);
 #endif
 
  public:
@@ -253,20 +279,6 @@ class exahype::mappings::RiemannSolver {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
 
   /**
-   * Resets the Riemann solve flags on compute cells.
-   *
-   * @developers
-   * TODO(Dominic): It probably does not make sense that we parallelise this
-   * operation over the cell descriptions since the computational intensity is quite low.
-   */
-  void enterCell(
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-  /**
    * Resets counters that are solely used for debugging.
    */
   void beginIteration(exahype::State& solverState);
@@ -311,6 +323,22 @@ class exahype::mappings::RiemannSolver {
                           const tarch::la::Vector<DIMENSIONS, double>& x,
                           const tarch::la::Vector<DIMENSIONS, double>& h,
                           int level);
+
+  /**
+   * TODO(Dominic): Add docu.
+   *
+   * \note Not thread-safe.
+   */
+  static void dropADERDGFaceData(
+      int fromRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      int level,
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest,
+      int srcCellDescriptionIndex,
+      int destCellDescriptionIndex,
+      exahype::MetadataHeap::HeapEntries& receivedMetadata);
+
   /**
    * Receive kick-off message from master
    *
@@ -335,6 +363,7 @@ class exahype::mappings::RiemannSolver {
       const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
       exahype::Cell& workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
 
 
   //
@@ -452,6 +481,17 @@ class exahype::mappings::RiemannSolver {
    */
   void mergeWithWorkerThread(const RiemannSolver& workerThread);
 #endif
+  /**
+   * Nop
+   */
+  void enterCell(
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
   /**
    * Nop.
    */

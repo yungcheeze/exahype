@@ -113,18 +113,6 @@ int exahype::solvers::ADERDGSolver::getDataPerCell() const {
 
 void exahype::solvers::ADERDGSolver::synchroniseTimeStepping(
     exahype::records::ADERDGCellDescription& p) const {
-  // todo 16/02/27:Dominic Etienne Charrier
-  // in case we use optimistic time stepping:
-  // if last predictor time step size is larger
-  // as admissibleTimeStepSize + tolerance:
-  // make sure that corrector time step size
-  // will equal predictor time step size in next
-  // sweep.
-  // Extra attention must be paid to time stamps.
-  // All this should be done by the solver.
-
-  //  if (p.getNextPredictorTimeStepSize() < )
-
   switch (_timeStepping) {
     case TimeStepping::Global:
       p.setCorrectorTimeStamp(_minCorrectorTimeStamp);
@@ -211,29 +199,47 @@ double exahype::solvers::ADERDGSolver::getMinPredictorTimeStepSize() const {
   return _minPredictorTimeStepSize;
 }
 
-void exahype::solvers::ADERDGSolver::sendToRank(int rank, int tag) {
 #ifdef Parallel
+std::vector<double> exahype::solvers::ADERDGSolver::collectTimeStampsAndStepSizes() {
+  std::vector<double> timeStampsAndStepSizes(0,5);
+
+  timeStampsAndStepSizes.push_back(_minCorrectorTimeStamp);
+  timeStampsAndStepSizes.push_back(_minCorrectorTimeStepSize);
+  timeStampsAndStepSizes.push_back(_minPredictorTimeStepSize);
+  timeStampsAndStepSizes.push_back(_minPredictorTimeStamp);
+  timeStampsAndStepSizes.push_back(_minNextPredictorTimeStepSize);
+  return timeStampsAndStepSizes;
+}
+
+void exahype::solvers::ADERDGSolver::setTimeStampsAndStepSizes(
+    std::vector<double>& timeSteppingData) {
+  _minCorrectorTimeStamp        = timeSteppingData[0];
+  _minCorrectorTimeStepSize     = timeSteppingData[1];
+  _minPredictorTimeStepSize     = timeSteppingData[2];
+  _minPredictorTimeStamp        = timeSteppingData[3];
+  _minNextPredictorTimeStepSize = timeSteppingData[4];
+}
+
+void exahype::solvers::ADERDGSolver::sendToRank(int rank, int tag) {
   MPI_Send(&_minCorrectorTimeStamp, 1, MPI_DOUBLE, rank, tag,
-           tarch::parallel::Node::getInstance().getCommunicator());
+      tarch::parallel::Node::getInstance().getCommunicator()); // This is necessary since we might have performed a predictor rerun.
   MPI_Send(&_minCorrectorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
-           tarch::parallel::Node::getInstance().getCommunicator());
+      tarch::parallel::Node::getInstance().getCommunicator()); // This is necessary since we might have performed a predictor rerun.
   MPI_Send(&_minPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
-           tarch::parallel::Node::getInstance().getCommunicator());
+      tarch::parallel::Node::getInstance().getCommunicator());
   MPI_Send(&_minPredictorTimeStamp, 1, MPI_DOUBLE, rank, tag,
-           tarch::parallel::Node::getInstance().getCommunicator());
+      tarch::parallel::Node::getInstance().getCommunicator());
   MPI_Send(&_minNextPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
-           tarch::parallel::Node::getInstance().getCommunicator());
-#endif
+      tarch::parallel::Node::getInstance().getCommunicator());
 }
 
 void exahype::solvers::ADERDGSolver::receiveFromMasterRank(int rank, int tag) {
-#ifdef Parallel
   MPI_Recv(&_minCorrectorTimeStamp, 1, MPI_DOUBLE, rank, tag,
            tarch::parallel::Node::getInstance().getCommunicator(),
-           MPI_STATUS_IGNORE);
+           MPI_STATUS_IGNORE); // This is necessary since we might have performed a predictor rerun.
   MPI_Recv(&_minCorrectorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
            tarch::parallel::Node::getInstance().getCommunicator(),
-           MPI_STATUS_IGNORE);
+           MPI_STATUS_IGNORE); // This is necessary since we might have performed a predictor rerun.
   MPI_Recv(&_minPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
            tarch::parallel::Node::getInstance().getCommunicator(),
            MPI_STATUS_IGNORE);
@@ -243,5 +249,51 @@ void exahype::solvers::ADERDGSolver::receiveFromMasterRank(int rank, int tag) {
   MPI_Recv(&_minNextPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
            tarch::parallel::Node::getInstance().getCommunicator(),
            MPI_STATUS_IGNORE);
+}
 #endif
+
+std::string exahype::solvers::ADERDGSolver::toString() const {
+  std::ostringstream stringstr;
+  toString(stringstr);
+  return stringstr.str();
+}
+
+void exahype::solvers::ADERDGSolver::toString (std::ostream& out) const {
+  out << "(";
+  out << "_identifier:" << _identifier;
+  out << ",";
+  out << "_type:" << exahype::solvers::Solver::toString(_type);
+  out << ",";
+  out << "_numberOfVariables:" << _numberOfVariables;
+  out << ",";
+  out << "_numberOfParameters:" << _numberOfParameters;
+  out << ",";
+  out << "_nodesPerCoordinateAxis:" << _nodesPerCoordinateAxis;
+  out << ",";
+  out << "_maximumMeshSize:" << _maximumMeshSize;
+  out << ",";
+  out << "_timeStepping:" << exahype::solvers::Solver::toString(_timeStepping); // only solver attributes
+  out << ",";
+  out << "_unknownsPerFace:" << _unknownsPerFace;
+  out << ",";
+  out << "_unknownsPerCellBoundary:" << _unknownsPerCellBoundary;
+  out << ",";
+  out << "_unknownsPerCell:" << _unknownsPerCell;
+  out << ",";
+  out << "_fluxUnknownsPerCell:" << _fluxUnknownsPerCell;
+  out << ",";
+  out << "_spaceTimeUnknownsPerCell:" << _spaceTimeUnknownsPerCell;
+  out << ",";
+  out << "_spaceTimeFluxUnknownsPerCell:" << _spaceTimeFluxUnknownsPerCell;
+  out << ",";
+  out << "_minCorrectorTimeStamp:" << _minCorrectorTimeStamp;
+  out << ",";
+  out << "_minPredictorTimeStamp:" << _minPredictorTimeStamp;
+  out << ",";
+  out << "_minCorrectorTimeStepSize:" << _minCorrectorTimeStepSize;
+  out << ",";
+  out << "_minPredictorTimeStepSize:" << _minPredictorTimeStepSize;
+  out << ",";
+  out << "_minNextPredictorTimeStepSize:" << _minNextPredictorTimeStepSize;
+  out <<  ")";
 }

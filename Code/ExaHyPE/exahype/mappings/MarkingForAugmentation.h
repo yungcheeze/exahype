@@ -39,6 +39,11 @@ class MarkingForAugmentation;
 
 /**
  * TODO(Dominic): Docu.
+ *
+ * @developers:
+ * 1. TODO(Dominic): We need to add a veto that the cell type
+ * of an ancestor/descendant can only be Ancestor/Descendant
+ * if the cell is a worker root or a master leaf at the fork boundary.
  */
 class exahype::mappings::MarkingForAugmentation {
  private:
@@ -104,11 +109,24 @@ class exahype::mappings::MarkingForAugmentation {
    * If none of the previous is the case, this function returns
    * AugmentationControl::Default.
    */
-  AugmentationControl augmentationCriterion(
+  static AugmentationControl augmentationCriterion(
       const int solverNumber,
       const exahype::records::ADERDGCellDescription::Type type, const int level,
       const tarch::la::Vector<THREE_POWER_D, int>&
-          neighbourCellDescriptionIndices) const;
+          neighbourCellDescriptionIndices);
+
+
+#ifdef Parallel
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  static void receiveADERDGMetadataInMergeWithNeigbour(const int destCellDescriptionIndex,const int receivedMetadataIndex);
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  static void receiveFiniteVolumesMetadataInMergeWithNeigbour(const int destCellDescriptionIndex,const int receivedMetadataIndex);
+#endif
 
  public:
   /**
@@ -130,33 +148,9 @@ class exahype::mappings::MarkingForAugmentation {
   static peano::CommunicationSpecification communicationSpecification();
 
   /**
-   * Nop.
+   * TODO(Dominic): Add docu.
    */
-  MarkingForAugmentation();
-
-#if defined(SharedMemoryParallelisation)
-  /**
-   * Nop.
-   */
-  MarkingForAugmentation(const MarkingForAugmentation& masterThread);
-#endif
-
-  /**
-   * Nop.
-   */
-  virtual ~MarkingForAugmentation();
-
-#if defined(SharedMemoryParallelisation)
-  /**
-   * Nop.
-   */
-  void mergeWithWorkerThread(const MarkingForAugmentation& workerThread);
-#endif
-
-  /**
-   * Nop.
-   */
-  void createInnerVertex(
+  void touchVertexLastTime(
       exahype::Vertex& fineGridVertex,
       const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
       const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
@@ -166,57 +160,9 @@ class exahype::mappings::MarkingForAugmentation {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
 
   /**
-   * Nop.
+   * TODO(Dominic): Add docu.
    */
-  void createBoundaryVertex(
-      exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Nop.
-   */
-  void createHangingVertex(
-      exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Nop.
-   */
-  void destroyHangingVertex(
-      const exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Nop.
-   */
-  void destroyVertex(
-      const exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Nop.
-   */
-  void createCell(
+  void enterCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
       exahype::Vertex* const coarseGridVertices,
@@ -225,11 +171,10 @@ class exahype::mappings::MarkingForAugmentation {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
-   * Nop.
+   * TODO(Dominic): Add docu.
    */
-  void destroyCell(
-      const exahype::Cell& fineGridCell,
-      exahype::Vertex* const fineGridVertices,
+  void leaveCell(
+      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
       exahype::Vertex* const coarseGridVertices,
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
@@ -238,6 +183,8 @@ class exahype::mappings::MarkingForAugmentation {
 
 #ifdef Parallel
   /**
+   * * Currently we do not exchange metadata with rank 0.
+   *
    * TODO(Dominic): Add docu.
    */
   void mergeWithNeighbour(exahype::Vertex& vertex,
@@ -247,12 +194,23 @@ class exahype::mappings::MarkingForAugmentation {
                           int level);
 
   /**
+   * Currently we do not exchange metadata with rank 0.
+   *
    * TODO(Dominic): Add docu.
    */
   void prepareSendToNeighbour(exahype::Vertex& vertex, int toRank,
                               const tarch::la::Vector<DIMENSIONS, double>& x,
                               const tarch::la::Vector<DIMENSIONS, double>& h,
                               int level);
+
+
+
+  //
+  // Below all methods are nop.
+  //
+  // ==================================
+
+
 
   /**
    * Nop.
@@ -359,6 +317,114 @@ class exahype::mappings::MarkingForAugmentation {
 #endif
 
   /**
+     * Nop.
+     */
+    MarkingForAugmentation();
+
+  #if defined(SharedMemoryParallelisation)
+    /**
+     * Nop.
+     */
+    MarkingForAugmentation(const MarkingForAugmentation& masterThread);
+  #endif
+
+    /**
+     * Nop.
+     */
+    virtual ~MarkingForAugmentation();
+
+  #if defined(SharedMemoryParallelisation)
+    /**
+     * Nop.
+     */
+    void mergeWithWorkerThread(const MarkingForAugmentation& workerThread);
+  #endif
+
+    /**
+     * Nop.
+     */
+    void createInnerVertex(
+        exahype::Vertex& fineGridVertex,
+        const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+        const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+        exahype::Vertex* const coarseGridVertices,
+        const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+        exahype::Cell& coarseGridCell,
+        const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+
+    /**
+     * Nop.
+     */
+    void createBoundaryVertex(
+        exahype::Vertex& fineGridVertex,
+        const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+        const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+        exahype::Vertex* const coarseGridVertices,
+        const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+        exahype::Cell& coarseGridCell,
+        const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+
+    /**
+     * Nop.
+     */
+    void createHangingVertex(
+        exahype::Vertex& fineGridVertex,
+        const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+        const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+        exahype::Vertex* const coarseGridVertices,
+        const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+        exahype::Cell& coarseGridCell,
+        const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+
+    /**
+     * Nop.
+     */
+    void destroyHangingVertex(
+        const exahype::Vertex& fineGridVertex,
+        const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+        const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+        exahype::Vertex* const coarseGridVertices,
+        const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+        exahype::Cell& coarseGridCell,
+        const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+
+    /**
+     * Nop.
+     */
+    void destroyVertex(
+        const exahype::Vertex& fineGridVertex,
+        const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+        const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+        exahype::Vertex* const coarseGridVertices,
+        const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+        exahype::Cell& coarseGridCell,
+        const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
+
+    /**
+     * Nop.
+     */
+    void createCell(
+        exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+        exahype::Vertex* const coarseGridVertices,
+        const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+        exahype::Cell& coarseGridCell,
+        const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
+    /**
+     * Nop.
+     */
+    void destroyCell(
+        const exahype::Cell& fineGridCell,
+        exahype::Vertex* const fineGridVertices,
+        const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+        exahype::Vertex* const coarseGridVertices,
+        const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+        exahype::Cell& coarseGridCell,
+        const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
+
+
+  /**
    * Nop.
    */
   void touchVertexFirstTime(
@@ -369,40 +435,6 @@ class exahype::mappings::MarkingForAugmentation {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * Nop.
-   */
-  void touchVertexLastTime(
-      exahype::Vertex& fineGridVertex,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-      const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex);
-
-  /**
-   * TODO(Dominic): Docu
-   */
-  void enterCell(
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-  /**
-   * Nop.
-   */
-  void leaveCell(
-      exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-      exahype::Vertex* const coarseGridVertices,
-      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-      exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
    * Nop.

@@ -88,6 +88,8 @@ Tokens
   token_optimisation                = 'optimisation';
   token_fuse_algorithm_steps        = 'fuse-algorithmic-steps';
   token_fuse_algorithm_steps_factor = 'fuse-algorithmic-steps-factor';
+  token_batch_timesteps             = 'timestep-batch-factor';
+  token_skip_reduction              = 'skip-reduction-in-batched-time-steps';
 
   token_profiling                   = 'profiling';
   token_profiler                    = 'profiler';
@@ -208,10 +210,12 @@ Productions
 
    optimisation {->optimisation} =
       [begin_token]:token_optimisation
-        token_fuse_algorithm_steps        [token_fuse_algorithm_steps_equals]:token_equals [fuse_algorithm_steps]:token_on_off
+        token_fuse_algorithm_steps        [token_fuse_algorithm_steps_equals]:token_equals        [fuse_algorithm_steps]:token_on_off
         token_fuse_algorithm_steps_factor [token_fuse_algorithm_steps_factor_equals]:token_equals [fuse_algorithm_steps_factor]:float_number
+        token_batch_timesteps             [token_batch_timesteps_equals]:token_equals             [batch_timesteps]:float_number 
+        token_skip_reduction              [token_skip_reduction_equals]:token_equals              [skip_reduction]:token_on_off
       token_end [end_token]:token_optimisation
-        { -> New optimisation(fuse_algorithm_steps, fuse_algorithm_steps_factor) }
+        { -> New optimisation(fuse_algorithm_steps, fuse_algorithm_steps_factor,batch_timesteps,skip_reduction) }
       ;
 
    profiling {->profiling} =
@@ -350,7 +354,11 @@ Abstract Syntax Tree
      [dimension]:int_number [width_x]:float_number [width_y]:float_number [width_z]:float_number? [offset_x]:float_number [offset_y]:float_number [offset_z]:float_number? [end_time]:float_number;
 
    optimisation =
-     [fuse_algorithm_steps]:token_on_off [fuse_algorithm_steps_factor]:float_number;
+     [fuse_algorithm_steps]:token_on_off 
+     [fuse_algorithm_steps_factor]:float_number
+     [batch_timesteps]:float_number 
+     [skip_reduction]:token_on_off
+     ;
 
    profiling =
      [profiler]:identifier [metrics]:parameter_list [likwid_inc]:filename? [likwid_lib]:filename? [ipcm_inc]:filename? [ipcm_lib]:filename?;

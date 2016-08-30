@@ -29,7 +29,7 @@ exahype-project  Euler
     dimension                = 2
     width                    = 15.0, 15.0
     offset                   = 0.0, 0.0
-    end-time                 = 0.02
+    end-time                 = 0.05
   end computational-domain
 
   shared-memory
@@ -40,7 +40,7 @@ exahype-project  Euler
  
   distributed-memory
     identifier               = static_load_balancing
-    configure                = {hotspot,fair,ranks_per_node:16} 
+    configure                = {hotspot,fair,ranks_per_node:4} 
     buffer-size              = 64
     timeout                  = 120
   end distributed-memory
@@ -48,6 +48,8 @@ exahype-project  Euler
   optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99    
+    timestep-batch-factor           = 0.8
+    skip-reduction-in-batched-time-steps = on
   end optimisation
 
   solver ADER-DG MyEulerSolver

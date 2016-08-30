@@ -119,6 +119,16 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
       const int toRank);
 
   /**
+   * Similar to hasToSendMetadata. However ignores
+   * that the dest rank in the adjacency information
+   * might be a forking/joining one.
+   */
+  bool hasToSendMetadataIgnoreForksJoins(
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest,
+      const int toRank);
+
+  /**
    * Returns if this vertex needs to receive a metadata message from a remote rank \p fromRank.
    *
    * We need to receive a message from remote rank \p fromRank if both ranks
@@ -150,6 +160,16 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    */
   bool hasToReceiveMetadata(
       const exahype::State* state,
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest,
+      const int fromRank);
+
+  /**
+   * Similar to hasToReceiveMetadata. However ignores
+   * that the src rank in the adjacency information
+   * might be a forking/joining one.
+   */
+  bool hasToReceiveMetadataIgnoreForksJoins(
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest,
       const int fromRank);
