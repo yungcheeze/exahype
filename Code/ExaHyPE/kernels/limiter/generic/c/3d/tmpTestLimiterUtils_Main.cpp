@@ -132,6 +132,8 @@ int main() {
   // kernels::idx4 idxLob(basisSize,basisSize,basisSize,numberOfVariable);
   // std::cout << "lob[iVar=0][x=0][y=1][z=3]: " << std::setprecision (15) << lob[idxLob(3,1,0,0)] << std::endl;
   
+  // matrixInverse
+  //--------------
   // int n = 3;
   // double* a = new double[n*n]();
   // a[0] = 1;
@@ -150,4 +152,5 @@ int main() {
   
   return 0;
 }
+/*
 */

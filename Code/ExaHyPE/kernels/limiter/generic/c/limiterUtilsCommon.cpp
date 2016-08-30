@@ -12,7 +12,6 @@
  **/
 
 #include "../Limiter.h"
-#include <iostream>
 
 namespace kernels {
 namespace limiter {
