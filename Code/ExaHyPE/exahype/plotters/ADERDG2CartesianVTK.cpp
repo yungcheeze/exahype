@@ -78,6 +78,7 @@ exahype::plotters::ADERDG2CartesianVTK::ADERDG2CartesianVTK(exahype::plotters::P
   _vertexDataWriter(nullptr),
   _cellDataWriter(nullptr),
   _timeStampDataWriter(nullptr),
+  _cellTimeStampDataWriter(nullptr),
   _gridWriter(nullptr),
   _patchWriter(nullptr) {
 }

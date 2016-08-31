@@ -226,11 +226,12 @@ void exahype::Cell::addNewCellDescription(
   newCellDescription.setSize(size);
   newCellDescription.setOffset(cellCentre);
 
-  // Initialise helper variables
+  // Initialise MPI helper variables
   #ifdef Parallel
   newCellDescription.setHelperCellNeedsToStoreFaceData(false);
-  for (int i = 0; i < DIMENSIONS_TIMES_TWO; i++) {
-    newCellDescription.setFaceDataExchangeCounter(i,TWO_POWER_D);
+  for (int faceIndex = 0; faceIndex < DIMENSIONS_TIMES_TWO; faceIndex++) {
+    newCellDescription.setFaceDataExchangeCounter(faceIndex,TWO_POWER_D);
+//    newCellDescription.setIsInside(faceIndex,)
   }
   #endif
 
@@ -259,10 +260,10 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCel
         assertion(!DataHeap::getInstance().isValidIndex(cellDescription.getUpdate()));
         // Allocate volume DoF for limiter
         const int unknownsPerCell = static_cast<const exahype::solvers::ADERDGSolver*>(solver)->getUnknownsPerCell();
-        cellDescription.setUpdate(DataHeap::getInstance().createData(
-            unknownsPerCell, unknownsPerCell));
-        cellDescription.setSolution(DataHeap::getInstance().createData(
-            unknownsPerCell, unknownsPerCell));
+        cellDescription.setUpdate(
+            DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
+        cellDescription.setSolution(
+            DataHeap::getInstance().createData(unknownsPerCell, unknownsPerCell));
       }
       break;
     default:
@@ -291,6 +292,10 @@ void exahype::Cell::ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCel
             unknownsPerCell * 2 * DIMENSIONS, unknownsPerCell * 2 * DIMENSIONS));
         cellDescription.setSolutionMax(DataHeap::getInstance().createData(
             unknownsPerCell * 2 * DIMENSIONS, unknownsPerCell * 2 * DIMENSIONS));
+
+        // !!!
+        // TODO(Dominic): Make sure this everywhere initialised correctly.
+        // !!!
         for (int i=0; i<unknownsPerCell * 2 * DIMENSIONS; i++) {
           DataHeap::getInstance().getData( cellDescription.getSolutionMax() )[i] = std::numeric_limits<double>::max();
           DataHeap::getInstance().getData( cellDescription.getSolutionMin() )[i] = std::numeric_limits<double>::min();
@@ -329,18 +334,19 @@ void exahype::Cell::ensureNoUnnecessaryMemoryIsAllocated(exahype::records::ADERD
     }
   }
 
-  if (DataHeap::getInstance().isValidIndex(
-      cellDescription.getExtrapolatedPredictor())) {
+  if (DataHeap::getInstance().isValidIndex(cellDescription.getExtrapolatedPredictor())) {
     switch (cellDescription.getType()) {
       case exahype::records::ADERDGCellDescription::Erased:
       case exahype::records::ADERDGCellDescription::EmptyAncestor:
       case exahype::records::ADERDGCellDescription::EmptyDescendant:
-        assertion(
-            DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
+        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getFluctuation()));
+        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMin()));
+        assertion(DataHeap::getInstance().isValidIndex(cellDescription.getSolutionMax()));
 
-        DataHeap::getInstance().deleteData(
-            cellDescription.getExtrapolatedPredictor());
+        DataHeap::getInstance().deleteData(cellDescription.getExtrapolatedPredictor());
         DataHeap::getInstance().deleteData(cellDescription.getFluctuation());
+        DataHeap::getInstance().deleteData(cellDescription.getSolutionMin());
+        DataHeap::getInstance().deleteData(cellDescription.getSolutionMax());
 
         cellDescription.setExtrapolatedPredictor(-1);
         cellDescription.setFluctuation(-1);

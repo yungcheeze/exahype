@@ -18,8 +18,9 @@
 #include "peano/utils/Globals.h"
 
 #include "tarch/multicore/Loop.h"
-
 #include "tarch/multicore/Lock.h"
+
+#include "peano/utils/Loop.h"
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
@@ -93,6 +94,25 @@ int exahype::mappings::Prediction::
 _parentOfDescendantFound        = 0;
 #endif
 
+void exahype::mappings::Prediction::beginIteration(
+    exahype::State& solverState) {
+  #if defined(Debug)
+  _parentOfCellOrAncestorNotFound = 0;
+  _parentOfCellOrAncestorFound    = 0;
+  _parentOfDescendantFound        = 0;
+  #endif
+}
+
+void exahype::mappings::Prediction::endIteration(
+    exahype::State& solverState) {
+  logDebug("endIteration(...)", "_parentOfCellOrAncestorNotFound: "
+      << _parentOfCellOrAncestorNotFound);
+  logDebug("endIteration(...)",
+      "_parentOfCellOrAncestorFound: " << _parentOfCellOrAncestorFound);
+  logDebug("endIteration(...)",
+      "_parentOfDescendantFound: " << _parentOfDescendantFound);
+}
+
 void exahype::mappings::Prediction::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -120,13 +140,22 @@ void exahype::mappings::Prediction::enterCell(
       // number of refinement events for Dyn. AMR.
       // For static AMR we assume always that the refinement event is None.
 
-      // Reset helper variables
+      // Update helper variables
       for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
         pFine.setRiemannSolvePerformed(faceIndex,false);
-
+        // TODO(Dominic): Normally, isFaceInside has not to be called everytime here
+        // but only once when the cell is initialised. Problem: Call addNewCellDescr.. from  merge..DueToForkOrJoin(...),
+        // where no vertices are given.
+        pFine.setIsInside(faceIndex,isFaceInside(faceIndex,fineGridVertices,fineGridVerticesEnumerator));
         // TODO(Dominic): Add to docu.
+        // 0 - no connection: no send. Set to unreachable value.
+        // 2^{d-2} - full face connection where cell is inside but half of face vertices are outside:
+        // send at time of 2^{d-2}-th touch of face.
+        // 4^{d-2} - full face connection where cell is inside and face vertices are all inside:
+        // send at time of 2^{d-2}-th touch of face.
+        // We require that #ifdef vertex.isBoundary() is set.
         #ifdef Parallel
-        int listingsOfRemoteRank = countListingsOfRemoteRankAtFace(faceIndex,fineGridVertices,fineGridVerticesEnumerator);
+        int listingsOfRemoteRank = countListingsOfRemoteRankByInsideVerticesAtFace(faceIndex,fineGridVertices,fineGridVerticesEnumerator);
         if (listingsOfRemoteRank==0) {
           listingsOfRemoteRank = TWO_POWER_D;
         }
@@ -165,6 +194,21 @@ void exahype::mappings::Prediction::enterCell(
         .parallelSectionHasTerminated(methodTrace);
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
+}
+
+bool exahype::mappings::Prediction::isFaceInside(
+    const int faceIndex,
+    exahype::Vertex* const verticesAroundCell,
+    const peano::grid::VertexEnumerator& verticesEnumerator) {
+  const int f = faceIndex % 2;   // "0" indicates a left face, "1" indicates a right face.
+  const int d = (faceIndex-f)/2; // The normal direction: 0: x, 1: y, 1: z.
+
+  dfor2(v) // Loop over vertices.
+    if (v(d) == f && verticesAroundCell[ verticesEnumerator(v) ].isInside()) {
+      return true;
+    }
+  enddforx // v
+  return false;
 }
 
 void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
@@ -605,7 +649,7 @@ void exahype::mappings::Prediction::restrictFiniteVolumesSolution(
 }
 
 #ifdef Parallel
-int exahype::mappings::Prediction::countListingsOfRemoteRankAtFace(
+int exahype::mappings::Prediction::countListingsOfRemoteRankByInsideVerticesAtFace(
     const int faceIndex,
     exahype::Vertex* const verticesAroundCell,
     const peano::grid::VertexEnumerator& verticesEnumerator) {
@@ -622,7 +666,8 @@ int exahype::mappings::Prediction::countListingsOfRemoteRankAtFace(
   dfor2(v) // Loop over vertices.
     if (verticesAroundCell[ verticesEnumerator(v) ].isAdjacentToRemoteRank()) {
       dfor2(a) // Loop over adjacent ranks. Does also include own rank.
-        if (tarch::la::equals(v+a,pos) &&
+        if (verticesAroundCell[ verticesEnumerator(v) ].isInside() &&
+            tarch::la::equals(v+a,pos) &&
             verticesAroundCell[ verticesEnumerator(v) ].getAdjacentRanks()[aScalar]!=
             tarch::parallel::Node::getInstance().getRank()) {
           // Increment
@@ -637,7 +682,8 @@ int exahype::mappings::Prediction::countListingsOfRemoteRankAtFace(
     }
   enddforx // v
 
-  assertion2(result==0||result==TWO_POWER_D_DIVIDED_BY_TWO,result,faceIndex);
+  // result must be either no connection, edge connection, or whole face connection.
+  assertion2(result==0||result==TWO_POWER_D_DIVIDED_BY_TWO/2||result==TWO_POWER_D_DIVIDED_BY_TWO,result,faceIndex);
 
   return result;
 }
@@ -678,7 +724,8 @@ void exahype::mappings::Prediction::prepareSendToNeighbour(
 
   dfor2(dest)
     dfor2(src)
-      if (vertex.hasToSendMetadata(src,dest,toRank)) {
+      if (vertex.isInside() &&
+          vertex.hasToSendMetadata(src,dest,toRank)) {
         // we are solely exchanging faces
         const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
 
@@ -687,25 +734,28 @@ void exahype::mappings::Prediction::prepareSendToNeighbour(
 
           decrementCounters(src,dest,srcCellDescriptionIndex);
           if (needToSendFaceData(src,dest,srcCellDescriptionIndex)) {
-            sendADERDGFaceData(toRank,x,level,src,dest,srcCellDescriptionIndex,adjacentADERDGCellDescriptionsIndices(destScalar));
+            sendADERDGFaceData(toRank,x,level,src,dest,vertex,srcCellDescriptionIndex,adjacentADERDGCellDescriptionsIndices(destScalar));
             //            sentFiniteVolumesFaceData(toRank,x,level,src,dest,srcCellDescriptionIndex,adjacentADERDGCellDescriptionsIndices(destScalar));
+
             auto encodedMetadata = exahype::Cell::encodeMetadata(srcCellDescriptionIndex);
             MetadataHeap::getInstance().sendData(
                 encodedMetadata, toRank, x, level,
                 peano::heap::MessageType::NeighbourCommunication);
           } else {
-            logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<", x:"<<
-                x.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
-                << vertex.getAdjacentRanks());
+            logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<
+                " from vertex x=" << x << ", level=" << level <<
+                ", vertex.adjacentRanks: " << vertex.getAdjacentRanks());
             auto encodedMetadata = exahype::Cell::createEncodedMetadataSequenceForInvalidCellDescriptionsIndex();
             MetadataHeap::getInstance().sendData(
                 encodedMetadata, toRank, x, level,
                 peano::heap::MessageType::NeighbourCommunication);
           }
         } else {
-          logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<", x:"<<
-              x.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
-              << vertex.getAdjacentRanks());
+          assertion1(srcCellDescriptionIndex==multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
+              srcCellDescriptionIndex);
+          logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<", "
+              " from vertex x=" << x << ", level=" << level <<
+              ", vertex.adjacentRanks: " << vertex.getAdjacentRanks());
           auto encodedMetadata = exahype::Cell::createEncodedMetadataSequenceForInvalidCellDescriptionsIndex();
           MetadataHeap::getInstance().sendData(
               encodedMetadata, toRank, x, level,
@@ -778,6 +828,7 @@ void exahype::mappings::Prediction::sendADERDGFaceData(
     int                                           level,
     const tarch::la::Vector<DIMENSIONS,int>&      src,
     const tarch::la::Vector<DIMENSIONS,int>&      dest,
+    const exahype::Vertex& vertex, // TODO(Dominic): Remvoe.
     int                                           srcCellDescriptionIndex,
     int                                           destCellDescriptionIndex) {
   const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
@@ -821,8 +872,10 @@ void exahype::mappings::Prediction::sendADERDGFaceData(
       // be done by the same periodic neighbour rank resolving and exchanging metadata.
       // PeriodicBC might be easier to implement in a MPI scenario than
       // in a non-MPI scenario.
+
+      // TODO(Dominic): If Domain Boundary aligns with Remote Boundary, Remote Boundary Index is set.
       if (destCellDescriptionIndex == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
-#ifdef PeriodicBC
+        #ifdef PeriodicBC
         assertionMsg(false, "Vasco, we have to implement this");
         DataHeap::getInstance().sendData(
             sentMinMax, toRank, x, level, peano::heap::MessageType::NeighbourCommunication);
@@ -832,16 +885,18 @@ void exahype::mappings::Prediction::sendADERDGFaceData(
         DataHeap::getInstance().sendData(
             lFhbnd, numberOfFaceDof, toRank, x, level,
             peano::heap::MessageType::NeighbourCommunication);
-#else
+        #else
         assertionMsg(false, "should never been entered");
-#endif
+        #endif
       } else {
-        logInfo(
+        logDebug(
             "sendADERDGFaceData(...)",
             "send three arrays to rank " <<
-            toRank << " for vertex x=" << x << ", level=" << level <<
+            toRank << " for cell="<<p.getOffset()<< " and face=" << faceIndex << " from vertex x=" << x << ", level=" << level <<
+            ", dest type=" << multiscalelinkedcell::indexToString(destCellDescriptionIndex) <<
             ", dest type=" << multiscalelinkedcell::indexToString(destCellDescriptionIndex) <<
             ", src=" << src << ", dest=" << dest <<
+            ", adjacent ranks=" << vertex.getAdjacentRanks() <<
             ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
           );
 
@@ -1101,26 +1156,6 @@ void exahype::mappings::Prediction::touchVertexLastTime(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
   // do nothing
-}
-
-void exahype::mappings::Prediction::beginIteration(
-    exahype::State& solverState) {
-
-  #if defined(Debug)
-  _parentOfCellOrAncestorNotFound = 0;
-  _parentOfCellOrAncestorFound    = 0;
-  _parentOfDescendantFound        = 0;
-  #endif
-}
-
-void exahype::mappings::Prediction::endIteration(
-    exahype::State& solverState) {
-  logDebug("endIteration(...)", "_parentOfCellOrAncestorNotFound: "
-      << _parentOfCellOrAncestorNotFound);
-  logDebug("endIteration(...)",
-      "_parentOfCellOrAncestorFound: " << _parentOfCellOrAncestorFound);
-  logDebug("endIteration(...)",
-      "_parentOfDescendantFound: " << _parentOfDescendantFound);
 }
 
 void exahype::mappings::Prediction::descend(
