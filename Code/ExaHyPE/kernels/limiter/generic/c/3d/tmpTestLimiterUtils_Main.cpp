@@ -2,9 +2,9 @@
 rm -f *.o main
 g++ -c -std=c++11 -DDIMENSIONS=3 -I ../../../../../ ../../../../GaussLegendreQuadrature.cpp 
 g++ -c -std=c++11 -DDIMENSIONS=3 -I ../../../../../ ../../../../GaussLobattoQuadrature.cpp 
-g++ -c -DDIMENSIONS=3 ../limiterUtilsCommon.cpp 
-g++ -c -DDIMENSIONS=3 limiterUtils.cpp 
-g++ -c tmpTestLimiterUtils_Main.cpp 
+g++ -c -std=c++11 -DDIMENSIONS=3 ../limiterUtilsCommon.cpp 
+g++ -c -std=c++11 -DDIMENSIONS=3 limiterUtils.cpp 
+g++ -c -std=c++11 tmpTestLimiterUtils_Main.cpp 
 g++ -o main tmpTestLimiterUtils_Main.o GaussLegendreQuadrature.o GaussLobattoQuadrature.o limiterUtils.o limiterUtilsCommon.o
 */
 
@@ -14,10 +14,10 @@ g++ -o main tmpTestLimiterUtils_Main.o GaussLegendreQuadrature.o GaussLobattoQua
 
 #include "../../Limiter.h"
 
-void getTestData(double* &luh, int& numberOfVariable, int& basisSize) { 
-  numberOfVariable = 5;
+void getTestData(double* &luh, int& numberOfVariables, int& basisSize) { 
+  numberOfVariables = 5;
   basisSize = 4;
-  int luhSize = numberOfVariable*basisSize*basisSize*basisSize;
+  int luhSize = numberOfVariables*basisSize*basisSize*basisSize;
   luh = new double[luhSize];
   for(int i=0; i<luhSize; i++) {
     luh[i] = i+ 0.5;
@@ -27,11 +27,11 @@ void getTestData(double* &luh, int& numberOfVariable, int& basisSize) {
 /*
 int main() {
   double* luh;
-  int numberOfVariable, basisSize;
-  getTestData(luh, numberOfVariable, basisSize);
+  int numberOfVariables, basisSize;
+  getTestData(luh, numberOfVariables, basisSize);
   
-  double* localMin = new double[numberOfVariable];
-  double* localMax = new double[numberOfVariable];
+  double* localMin = new double[numberOfVariables];
+  double* localMax = new double[numberOfVariables];
   
   std::cout << "Hello World: " << luh[10] << std::endl;
   
@@ -98,19 +98,19 @@ int main() {
   
   //local min max
   //-------------
-  // kernels::limiter::generic::c::findCellLocallocalMinlocalMax(luh, numberOfVariable, basisSize, localMin, localMax);
+  // kernels::limiter::generic::c::findCellLocallocalMinlocalMax(luh, numberOfVariables, basisSize, localMin, localMax);
   // std::cout << localMin[4] << std::endl;
   // std::cout << localMax[4] << std::endl;
-  // double* troubledMin = new double[numberOfVariable];
-  // double* troubledMax = new double[numberOfVariable];
+  // double* troubledMin = new double[numberOfVariables];
+  // double* troubledMax = new double[numberOfVariables];
   // double tMin = 0;
   // double tMax = 319.499;
   // std::cout << "troubled cell limit: " << tMin << " - " << tMax <<std::endl;
-  // for(int i=0;i<numberOfVariable;i++) {
+  // for(int i=0;i<numberOfVariables;i++) {
     // troubledMin[i] = tMin;
     // troubledMax[i] = tMax;
   // }
-  // if(kernels::limiter::generic::c::isTroubledCell(luh, numberOfVariable, basisSize, troubledMin, troubledMax))
+  // if(kernels::limiter::generic::c::isTroubledCell(luh, numberOfVariables, basisSize, troubledMin, troubledMax))
   // {
     // std::cout << "troubled cell" << std::endl;
   // } 
@@ -121,16 +121,28 @@ int main() {
   //luh -> lim
   //----------
   // int basisSizeLim = 0;
-  // double* lim = kernels::limiter::generic::c::getFVMData(luh, numberOfVariable, basisSize, basisSizeLim);
+  // double* lim = kernels::limiter::generic::c::getFVMData(luh, numberOfVariables, basisSize, basisSizeLim);
   // std::cout << "basisSizeLim: " << basisSizeLim << std::endl;  
-  // kernels::idx4 idxLim(basisSizeLim,basisSizeLim,basisSizeLim,numberOfVariable);
+  // kernels::idx4 idxLim(basisSizeLim,basisSizeLim,basisSizeLim,numberOfVariables);
   // std::cout << "lim[iVar=0][x=0][y=1][z=3]: " << std::setprecision (15) << lim[idxLim(3,1,0,0)] << std::endl;
   
   //luh -> lob
   //----------
-  // double* lob = kernels::limiter::generic::c::getGaussLobattoData(luh, numberOfVariable, basisSize);
-  // kernels::idx4 idxLob(basisSize,basisSize,basisSize,numberOfVariable);
+  // double* lob = kernels::limiter::generic::c::getGaussLobattoData(luh, numberOfVariables, basisSize);
+  // kernels::idx4 idxLob(basisSize,basisSize,basisSize,numberOfVariables);
   // std::cout << "lob[iVar=0][x=0][y=1][z=3]: " << std::setprecision (15) << lob[idxLob(3,1,0,0)] << std::endl;
+  
+  //lim -> luh
+  //----------
+  // int basisSizeLim = 2*(basisSize-1)+1;
+  // double* tlim = new double[basisSizeLim*basisSizeLim*basisSizeLim*numberOfVariables];
+  // for(int i=0; i<basisSizeLim*basisSizeLim*basisSizeLim*numberOfVariables; i++) {
+    // tlim[i] = i+ 0.1;
+  // }
+  // double* tmp_luh = new double[basisSize*basisSize*basisSize*numberOfVariables]();
+  // kernels::limiter::generic::c::updateSubcellWithLimiterData(tlim, numberOfVariables, basisSizeLim, basisSize, tmp_luh);
+  // kernels::idx4 idxLuh2(basisSize,basisSize,basisSize,numberOfVariables);
+  // std::cout << "tmp_luh[iVar=0][x=0][y=1][z=3]: " << std::setprecision (15) << tmp_luh[idxLuh2(3,1,0,0)] << std::endl;
   
   // matrixInverse
   //--------------

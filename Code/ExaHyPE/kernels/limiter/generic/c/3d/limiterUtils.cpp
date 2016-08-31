@@ -73,6 +73,7 @@ double* getGaussLobattoData(const double* const luh, const int numberOfVariables
       }
     }
   }
+  
   delete[] tmpZ;
   delete[] tmpY;
   
@@ -137,11 +138,72 @@ double* getFVMData(const double* const luh, const int numberOfVariables, const i
       }
     }
   }
+  
   delete[] tmpZ;
   delete[] tmpY;
   
   return lim;
 }
+
+void updateSubcellWithLimiterData(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh) {
+  
+  idx4 idxLuh(basisSize, basisSize, basisSize, numberOfVariables);
+  idx4 idxLim(basisSizeLim, basisSizeLim, basisSizeLim, numberOfVariables);
+  idx2 idxConv(basisSizeLim, basisSize);
+  
+  double* tmpZ = new double[basisSize*basisSizeLim*basisSizeLim*numberOfVariables]; //Fortran ref: luhz(nVar,nSubLimV(1),nSubLimV(2),N+1)
+  idx4 idxZ(basisSize, basisSizeLim, basisSizeLim, numberOfVariables);
+  double* tmpY = new double[basisSize*basisSize*basisSizeLim*numberOfVariables]; //Fortran ref: luhy(nVar,nSubLimV(1),N+1,N+1)
+  idx4 idxY(basisSize, basisSize, basisSizeLim, numberOfVariables);
+  int x,y,z,v,k;
+  
+  for(y=0; y<basisSizeLim; y++) {
+    for(x=0; x<basisSizeLim; x++) {
+      //luhz(:,iii,jjj,:) = MATMUL( lim(:,iii,jjj,:), TRANSPOSE(lim2uh) ) 
+      for(z=0; z<basisSize; z++) {
+        for(v=0; v<numberOfVariables; v++) {
+          tmpZ[idxZ(z,y,x,v)] = 0;
+          for(k=0; k<basisSizeLim; k++) {
+            tmpZ[idxZ(z,y,x,v)] += lim[idxLim(k,y,x,v)] * lim2uh[idxConv(k,z)];
+          }
+          
+        }
+      }
+    }
+  }
+  
+  for(z=0; z<basisSize; z++) {
+    for(x=0; x<basisSizeLim; x++) {
+      //luhy(:,iii,:,jjj) = MATMUL( luhz(:,iii,:,jjj), TRANSPOSE(lim2uh) )
+      for(y=0; y<basisSize; y++) {
+        for(v=0; v<numberOfVariables; v++) {
+          tmpY[idxY(z,y,x,v)] = 0;
+          for(k=0; k<basisSizeLim; k++) {
+            tmpY[idxY(z,y,x,v)] += tmpZ[idxZ(z,k,x,v)] * lim2uh[idxConv(k,y)];
+          }
+        }
+      }
+    }
+  }
+  
+  for(z=0; z<basisSize; z++) {
+    for(y=0; y<basisSize; y++) {
+      //luh(:,:,iii,jjj) = MATMUL( luhy(:,:,iii,jjj), TRANSPOSE(lim2uh) )  
+      for(x=0; x<basisSize; x++) {
+        for(v=0; v<numberOfVariables; v++) {
+          luh[idxLuh(z,y,x,v)] = 0;
+          for(k=0; k<basisSizeLim; k++) {
+            luh[idxLuh(z,y,x,v)] += tmpY[idxY(z,y,k,v)] * lim2uh[idxConv(k,x)];
+          }
+        }
+      }
+    }
+  }
+  
+  delete[] tmpZ;
+  delete[] tmpY;
+  
+} 
 
 
 } // namespace c

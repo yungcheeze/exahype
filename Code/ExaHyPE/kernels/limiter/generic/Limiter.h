@@ -49,6 +49,9 @@ double* getFVMData(const double* const luh, const int numberOfVariables, const i
 void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVariables, const int basisSize, double* localMin, double* localMax);
 bool isTroubledCell(const double* const luh, const int numberOfVariables, const int basisSize, const double* const troubledMin, const double* const troubledMax);
 
+void updateSubcellWithLimiterData(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh);
+  
+
 } // namespace c
 } // namespace generic
 } // namespace limiter
