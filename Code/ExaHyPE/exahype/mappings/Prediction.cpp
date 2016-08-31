@@ -18,8 +18,9 @@
 #include "peano/utils/Globals.h"
 
 #include "tarch/multicore/Loop.h"
-
 #include "tarch/multicore/Lock.h"
+
+#include "peano/utils/Loop.h"
 
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
