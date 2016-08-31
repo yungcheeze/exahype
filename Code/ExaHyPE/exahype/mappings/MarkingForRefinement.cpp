@@ -310,12 +310,25 @@ void exahype::mappings::MarkingForRefinement::prepareCopyToRemoteNode(
     }
   }
 }
+
+void exahype::mappings::MarkingForRefinement::receiveDataFromMaster(
+    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
+    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
+    exahype::Vertex* const receivedCoarseGridVertices,
+    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
+    exahype::Cell& receivedCoarseGridCell,
+    exahype::Vertex* const workersCoarseGridVertices,
+    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
+    exahype::Cell& workersCoarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
 // TODO(Dominic): How to deal with cell descriptions index that
 // is copied from the remote rank but is a valid index on the local
-// remote rank?
+// remote rank? Currently use geometryInfoDoesMatch! Not best idea.
 
-void exahype::mappings::MarkingForRefinement::
-    mergeWithRemoteDataDueToForkOrJoin(
+void exahype::mappings::MarkingForRefinement::mergeWithRemoteDataDueToForkOrJoin(
         exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
         int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
         const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
@@ -330,6 +343,8 @@ void exahype::mappings::MarkingForRefinement::
         receivedMetadataIndex,
         fromRank, cellCentre, level,
         peano::heap::MessageType::ForkOrJoinCommunication);
+
+    logInfo("mergeWithRemoteDataDueToForkOrJoin(...)","index="<<localCell.getCellDescriptionsIndex());
 
     // TODO(Dominic): Check if the cellDescriptionsIndex does really belong to this cell
     // and is not a copy from the cell on the remote rank.
@@ -629,19 +644,6 @@ void exahype::mappings::MarkingForRefinement::mergeWithMaster(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker, const exahype::State& workerState,
     exahype::State& masterState) {
-  // do nothing
-}
-
-void exahype::mappings::MarkingForRefinement::receiveDataFromMaster(
-    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
-    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
-    exahype::Vertex* const receivedCoarseGridVertices,
-    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
-    exahype::Cell& receivedCoarseGridCell,
-    exahype::Vertex* const workersCoarseGridVertices,
-    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
-    exahype::Cell& workersCoarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   // do nothing
 }
 
