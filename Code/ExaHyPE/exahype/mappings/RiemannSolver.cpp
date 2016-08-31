@@ -456,7 +456,8 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
       int destScalar = TWO_POWER_D - myDestScalar - 1;
       int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
-      if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
+      if (vertex.isInside() &&
+          vertex.hasToReceiveMetadata(src,dest,fromRank)) {
         // 1. Receive metadata.
         int receivedMetadataIndex = MetadataHeap::getInstance().createData(0,0);
         assertion(MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());

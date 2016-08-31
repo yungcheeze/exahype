@@ -723,7 +723,8 @@ void exahype::mappings::Prediction::prepareSendToNeighbour(
 
   dfor2(dest)
     dfor2(src)
-      if (vertex.hasToSendMetadata(src,dest,toRank)) {
+      if (vertex.isInside() &&
+          vertex.hasToSendMetadata(src,dest,toRank)) {
         // we are solely exchanging faces
         const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
 
