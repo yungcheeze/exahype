@@ -22,6 +22,8 @@ double* uh2lim;
 double* uh2lob;
 double* lim2uh;
 
+tarch::logging::Log _log("");
+
 // TODO JMG get true basisSize from spec file
 int getLimBasisSize(const int basisSize) {
   return 2*(basisSize-1) +1;
@@ -79,7 +81,8 @@ double* matrixInverse(int n, double* a) {
       c[idxC(i,k)] = tmp;
     }
     if(c[idxC(i,i)] == 0) {
-      throw std::invalid_argument( "Matrix is singular!" );
+      logError("matrixInverse()", "Matrix is singular" );
+      return nullptr;
     }
     piv = 1. / c[idxC(i,i)];
     for(k=0; k<2*n; k++) {
@@ -224,7 +227,7 @@ void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVa
     index++;
   }
   for(ii = 1; ii < iiEnd; ii++) {
-    for(int iVar = 0; iVar < numberOfVariables; iVar++) {
+    for(iVar = 0; iVar < numberOfVariables; iVar++) {
       if(luh[index] < localMin[iVar]) {
         localMin[iVar] = luh[index];
       } else if(luh[index] > localMax[iVar]) {
@@ -241,7 +244,7 @@ void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVa
   if(DIMENSIONS == 3)
      iiEnd *= basisSize;
   for(ii = 0; ii < iiEnd; ii++) {
-    for(int iVar = 0; iVar < numberOfVariables; iVar++) {
+    for(iVar = 0; iVar < numberOfVariables; iVar++) {
       if(lob[index] < localMin[iVar]) {
         localMin[iVar] = lob[index];
       } else if(lob[index] > localMax[iVar]) {
@@ -253,7 +256,6 @@ void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVa
   delete[] lob;
   
   // process lim
-  
   int basisSizeLim = 0;
   double* lim = getFVMData(luh, numberOfVariables, basisSize, basisSizeLim);
   index = 0;
@@ -261,7 +263,7 @@ void findCellLocallocalMinlocalMax(const double* const luh, const int numberOfVa
   if(DIMENSIONS == 3)
      iiEnd *= basisSizeLim;
   for(ii = 0; ii < iiEnd; ii++) {
-    for(int iVar = 0; iVar < numberOfVariables; iVar++) {
+    for(iVar = 0; iVar < numberOfVariables; iVar++) {
       if(lim[index] < localMin[iVar]) {
         localMin[iVar] = lim[index];
       } else if(lim[index] > localMax[iVar]) {

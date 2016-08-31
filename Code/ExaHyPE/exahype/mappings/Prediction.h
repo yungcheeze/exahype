@@ -30,9 +30,9 @@
 #include "exahype/Vertex.h"
 
 namespace exahype {
-namespace mappings {
-class Prediction;
-}
+  namespace mappings {
+    class Prediction;
+  }
 }
 
 /**
@@ -96,14 +96,14 @@ class exahype::mappings::Prediction {
    */
   static tarch::multicore::BooleanSemaphore _semaphoreForRestriction;
 
-#if defined(Debug)
+  #if defined(Debug)
   /**
    * Some counters for debugging purposes.
    */
   static int _parentOfCellOrAncestorNotFound;
   static int _parentOfCellOrAncestorFound;
   static int _parentOfDescendantFound;
-#endif
+  #endif
 
   /**
    * Returns if the face is inside. Inside for
@@ -215,17 +215,6 @@ class exahype::mappings::Prediction {
 
 
   #ifdef Parallel
-  /**
-   * We need read access to the state.
-   *
-   * \note While currently no forking and joining will happen after the initial
-   * grid setup, this will happen in the dynamic AMR case. It thus doesn't hurt to
-   * use work with the _state already in the static AMR case.
-   * TODO(Dominic): Delete this comment as soon as we have dynamic AMR+MPI.
-   *
-   * \note Do not set values on the state. Write access to the state is not thread-safe.
-   */
-  exahype::State* _state;
   /**
    * Tag that is used to exchange all the solver instances in MPI
    */

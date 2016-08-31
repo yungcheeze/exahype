@@ -95,10 +95,6 @@ _parentOfDescendantFound        = 0;
 
 void exahype::mappings::Prediction::beginIteration(
     exahype::State& solverState) {
-  #ifdef Parallel
-  _state = &solverState;
-  #endif
-
   #if defined(Debug)
   _parentOfCellOrAncestorNotFound = 0;
   _parentOfCellOrAncestorFound    = 0;
@@ -727,10 +723,7 @@ void exahype::mappings::Prediction::prepareSendToNeighbour(
 
   dfor2(dest)
     dfor2(src)
-      if (vertex.isInside() && // TODO(Dominic): Discuss with Tobias what to do for PeriodicBC
-          vertex.hasToSendMetadata(_state,src,dest,toRank)) {
-        assertion(!_state->isForkTriggeredForRank(toRank));
-        assertion(!_state->isForkingRank(toRank));
+      if (vertex.hasToSendMetadata(src,dest,toRank)) {
         // we are solely exchanging faces
         const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
 

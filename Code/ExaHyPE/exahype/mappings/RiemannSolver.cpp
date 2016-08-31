@@ -456,8 +456,7 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
       int destScalar = TWO_POWER_D - myDestScalar - 1;
       int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
-      if (vertex.isInside() && // TODO(Dominic): Discuss with Tobias what to do for PeriodicBC
-          vertex.hasToReceiveMetadata(_state,src,dest,fromRank)) {
+      if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
         // 1. Receive metadata.
         int receivedMetadataIndex = MetadataHeap::getInstance().createData(0,0);
         assertion(MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
@@ -605,6 +604,7 @@ void exahype::mappings::RiemannSolver::receiveADERDGFaceData(
                       ", src=" << src << ", dest=" << dest <<
                       ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
                     );
+
                   const int numberOfFaceDof = solver->getUnknownsPerFace();
                   int receivedlQhbndIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);
                   int receivedlFhbndIndex = DataHeap::getInstance().createData(0, numberOfFaceDof);

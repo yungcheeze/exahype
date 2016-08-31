@@ -84,10 +84,10 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithWorkerThread(
     const DropIncomingMPIMetadataMessages& workerThread) {}
 #endif
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::beginIteration(
-    exahype::State& solverState) {
-  _state = &solverState; // Copy address of rank's state.
+
+void exahype::mappings::DropIncomingMPIMetadataMessages::beginIteration(exahype::State& solverState) {
 }
+
 
 void exahype::mappings::DropIncomingMPIMetadataMessages::endIteration(
     exahype::State& solverState) {}
@@ -130,23 +130,21 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithNeighbour(
             vertex.getAdjacentRanks()(srcScalar)    == fromRank &&
             (vertex.getAdjacentRanks()(destScalar)  == tarch::parallel::Node::getInstance().getRank()))
             &&
-            vertex.hasToReceiveMetadata(_state,src,dest,fromRank))
+            vertex.hasToReceiveMetadata(src,dest,fromRank))
             ||
             (!(tarch::la::countEqualEntries(dest, src) == 1 &&
             vertex.getAdjacentRanks()(srcScalar)    == fromRank &&
             (vertex.getAdjacentRanks()(destScalar)  == tarch::parallel::Node::getInstance().getRank()))
             &&
-            !vertex.hasToReceiveMetadata(_state,src,dest,fromRank))
+            !vertex.hasToReceiveMetadata(src,dest,fromRank))
         );
 
-        assertion1(!_state->isForkTriggeredForRank(vertex.getAdjacentRanks()(destScalar)), _state->toString());
-        assertion1(!_state->isForkingRank(vertex.getAdjacentRanks()(destScalar)),          _state->toString());
-        assertion1(!_state->isForkTriggeredForRank(vertex.getAdjacentRanks()(srcScalar)), _state->toString());
-        assertion1(!_state->isForkingRank(vertex.getAdjacentRanks()(srcScalar)),          _state->toString());
+        assertion(!State::isForkTriggeredForRank(vertex.getAdjacentRanks()(destScalar)));
+        assertion(!State::isForkingRank(vertex.getAdjacentRanks()(destScalar)));
+        assertion(!State::isForkTriggeredForRank(vertex.getAdjacentRanks()(srcScalar)));
+        assertion(!State::isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
 
-        if (
-            vertex.hasToReceiveMetadata(_state,src,dest,fromRank)
-        ) {  // we are solely exchanging faces
+        if ( vertex.hasToReceiveMetadata(src,dest,fromRank) ) {  // we are solely exchanging faces
           logDebug("mergeWithNeighbour(...)","drop message.");
 
           // After the grid setup, we still have to receive all
@@ -158,7 +156,6 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithNeighbour(
         }
       enddforx
     enddforx
-
   }
 
   logTraceOut("mergeWithNeighbour(...)");

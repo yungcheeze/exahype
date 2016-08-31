@@ -77,8 +77,7 @@ tarch::logging::Log exahype::mappings::MarkingForAugmentation::_log(
     "exahype::mappings::MarkingForAugmentation");
 
 void exahype::mappings::MarkingForAugmentation::beginIteration(
-    exahype::State& solverState) {
-  _state = &solverState; // Pointer to rank's state.
+  exahype::State& solverState) {
 }
 
 void exahype::mappings::MarkingForAugmentation::enterCell(
@@ -297,14 +296,14 @@ void exahype::mappings::MarkingForAugmentation::prepareSendToNeighbour(
   if (vertex.isInside()) { // TODO(Dominic): Add to docu: This prevents metadata exchange with rank 0.
     dfor2(dest)
       dfor2(src)
-      if (vertex.hasToSendMetadata(_state,src,dest,toRank)) {
+      if (vertex.hasToSendMetadata(src,dest,toRank)) {
           const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
           if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(srcCellDescriptionIndex)) {
             logDebug("prepareSendToNeighbour(...)","[data] sent to rank "<<toRank<<", x:"<<
                 x.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
-                << vertex.getAdjacentRanks() <<
-                ", src forking: "
-                << _state->isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
+                << vertex.getAdjacentRanks()
+                << ", src forking: "
+                << State::isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
 
             exahype::MetadataHeap::HeapEntries metadata =
                 exahype::Cell::encodeMetadata(srcCellDescriptionIndex);
@@ -324,9 +323,9 @@ void exahype::mappings::MarkingForAugmentation::prepareSendToNeighbour(
 
             logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<", x:"<<
                 x.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
-                << vertex.getAdjacentRanks() <<
-                ", src forking: "
-                << _state->isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
+                << vertex.getAdjacentRanks()
+                << ", src forking: "
+                << State::isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
 
             exahype::MetadataHeap::HeapEntries metadata =
                 exahype::Cell::createEncodedMetadataSequenceForInvalidCellDescriptionsIndex();
@@ -379,7 +378,7 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
         tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
         int destScalar = TWO_POWER_D - myDestScalar - 1;
 
-        if (vertex.hasToReceiveMetadata(_state,src,dest,fromRank)) {
+        if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
           logDebug("mergeWithNeighbour(...)","[pre] rec. from rank "<<fromRank<<", x:"<<
                                           fineGridX.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
                                           << vertex.getAdjacentRanks());
