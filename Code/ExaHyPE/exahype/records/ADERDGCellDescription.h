@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   30/08/2016 12:54
+    * @date   31/08/2016 00:53
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -55,6 +55,11 @@ namespace exahype {
             std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed __attribute__((aligned(VectorisationAlignment)));
             #else
             std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
+            #endif
+            #ifdef UseManualAlignment
+            std::bitset<DIMENSIONS_TIMES_TWO> _isInside __attribute__((aligned(VectorisationAlignment)));
+            #else
+            std::bitset<DIMENSIONS_TIMES_TWO> _isInside;
             #endif
             bool _helperCellNeedsToStoreFaceData;
             #ifdef UseManualAlignment
@@ -95,7 +100,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
             
             
             inline int getSolverNumber() const 
@@ -172,6 +177,64 @@ namespace exahype {
  #endif 
  {
                _riemannSolvePerformed = (riemannSolvePerformed);
+            }
+            
+            
+            
+            /**
+             * Generated and optimized
+             * 
+             * If you realise a for loop using exclusively arrays (vectors) and compile 
+             * with -DUseManualAlignment you may add 
+             * \code
+             #pragma vector aligned
+             #pragma simd
+             \endcode to this for loop to enforce your compiler to use SSE/AVX.
+             * 
+             * The alignment is tied to the unpacked records, i.e. for packed class
+             * variants the machine's natural alignment is switched off to recude the  
+             * memory footprint. Do not use any SSE/AVX operations or 
+             * vectorisation on the result for the packed variants, as the data is misaligned. 
+             * If you rely on vectorisation, convert the underlying record 
+             * into the unpacked version first. 
+             * 
+             * @see convert()
+             */
+            inline std::bitset<DIMENSIONS_TIMES_TWO> getIsInside() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _isInside;
+            }
+            
+            
+            
+            /**
+             * Generated and optimized
+             * 
+             * If you realise a for loop using exclusively arrays (vectors) and compile 
+             * with -DUseManualAlignment you may add 
+             * \code
+             #pragma vector aligned
+             #pragma simd
+             \endcode to this for loop to enforce your compiler to use SSE/AVX.
+             * 
+             * The alignment is tied to the unpacked records, i.e. for packed class
+             * variants the machine's natural alignment is switched off to recude the  
+             * memory footprint. Do not use any SSE/AVX operations or 
+             * vectorisation on the result for the packed variants, as the data is misaligned. 
+             * If you rely on vectorisation, convert the underlying record 
+             * into the unpacked version first. 
+             * 
+             * @see convert()
+             */
+            inline void setIsInside(const std::bitset<DIMENSIONS_TIMES_TWO>& isInside) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _isInside = (isInside);
             }
             
             
@@ -689,7 +752,7 @@ namespace exahype {
          /**
           * Generated
           */
-         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
          
          /**
           * Generated
@@ -809,6 +872,102 @@ namespace exahype {
             assertion(elementIndex>=0);
             assertion(elementIndex<DIMENSIONS_TIMES_TWO);
             _persistentRecords._riemannSolvePerformed.flip(elementIndex);
+         }
+         
+         
+         
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline std::bitset<DIMENSIONS_TIMES_TWO> getIsInside() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._isInside;
+         }
+         
+         
+         
+         /**
+          * Generated and optimized
+          * 
+          * If you realise a for loop using exclusively arrays (vectors) and compile 
+          * with -DUseManualAlignment you may add 
+          * \code
+          #pragma vector aligned
+          #pragma simd
+          \endcode to this for loop to enforce your compiler to use SSE/AVX.
+          * 
+          * The alignment is tied to the unpacked records, i.e. for packed class
+          * variants the machine's natural alignment is switched off to recude the  
+          * memory footprint. Do not use any SSE/AVX operations or 
+          * vectorisation on the result for the packed variants, as the data is misaligned. 
+          * If you rely on vectorisation, convert the underlying record 
+          * into the unpacked version first. 
+          * 
+          * @see convert()
+          */
+         inline void setIsInside(const std::bitset<DIMENSIONS_TIMES_TWO>& isInside) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._isInside = (isInside);
+         }
+         
+         
+         
+         inline bool getIsInside(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            assertion(elementIndex>=0);
+            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+            return _persistentRecords._isInside[elementIndex];
+            
+         }
+         
+         
+         
+         inline void setIsInside(int elementIndex, const bool& isInside) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            assertion(elementIndex>=0);
+            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+            _persistentRecords._isInside[elementIndex]= isInside;
+            
+         }
+         
+         
+         
+         inline void flipIsInside(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            assertion(elementIndex>=0);
+            assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+            _persistentRecords._isInside.flip(elementIndex);
          }
          
          
@@ -1477,7 +1636,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   30/08/2016 12:54
+             * @date   31/08/2016 00:53
              */
             class exahype::records::ADERDGCellDescriptionPacked { 
                
@@ -1490,6 +1649,7 @@ namespace exahype {
                   struct PersistentRecords {
                      int _solverNumber;
                      std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
+                     std::bitset<DIMENSIONS_TIMES_TWO> _isInside;
                      bool _helperCellNeedsToStoreFaceData;
                      tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _faceDataExchangeCounter;
                      double _correctorTimeStepSize;
@@ -1517,7 +1677,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
                      
                      
                      inline int getSolverNumber() const 
@@ -1594,6 +1754,64 @@ namespace exahype {
  #endif 
  {
                         _riemannSolvePerformed = (riemannSolvePerformed);
+                     }
+                     
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline std::bitset<DIMENSIONS_TIMES_TWO> getIsInside() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _isInside;
+                     }
+                     
+                     
+                     
+                     /**
+                      * Generated and optimized
+                      * 
+                      * If you realise a for loop using exclusively arrays (vectors) and compile 
+                      * with -DUseManualAlignment you may add 
+                      * \code
+                      #pragma vector aligned
+                      #pragma simd
+                      \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                      * 
+                      * The alignment is tied to the unpacked records, i.e. for packed class
+                      * variants the machine's natural alignment is switched off to recude the  
+                      * memory footprint. Do not use any SSE/AVX operations or 
+                      * vectorisation on the result for the packed variants, as the data is misaligned. 
+                      * If you rely on vectorisation, convert the underlying record 
+                      * into the unpacked version first. 
+                      * 
+                      * @see convert()
+                      */
+                     inline void setIsInside(const std::bitset<DIMENSIONS_TIMES_TWO>& isInside) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _isInside = (isInside);
                      }
                      
                      
@@ -2111,7 +2329,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
                   
                   /**
                    * Generated
@@ -2231,6 +2449,102 @@ namespace exahype {
                      assertion(elementIndex>=0);
                      assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                      _persistentRecords._riemannSolvePerformed.flip(elementIndex);
+                  }
+                  
+                  
+                  
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline std::bitset<DIMENSIONS_TIMES_TWO> getIsInside() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._isInside;
+                  }
+                  
+                  
+                  
+                  /**
+                   * Generated and optimized
+                   * 
+                   * If you realise a for loop using exclusively arrays (vectors) and compile 
+                   * with -DUseManualAlignment you may add 
+                   * \code
+                   #pragma vector aligned
+                   #pragma simd
+                   \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                   * 
+                   * The alignment is tied to the unpacked records, i.e. for packed class
+                   * variants the machine's natural alignment is switched off to recude the  
+                   * memory footprint. Do not use any SSE/AVX operations or 
+                   * vectorisation on the result for the packed variants, as the data is misaligned. 
+                   * If you rely on vectorisation, convert the underlying record 
+                   * into the unpacked version first. 
+                   * 
+                   * @see convert()
+                   */
+                  inline void setIsInside(const std::bitset<DIMENSIONS_TIMES_TWO>& isInside) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._isInside = (isInside);
+                  }
+                  
+                  
+                  
+                  inline bool getIsInside(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion(elementIndex>=0);
+                     assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                     return _persistentRecords._isInside[elementIndex];
+                     
+                  }
+                  
+                  
+                  
+                  inline void setIsInside(int elementIndex, const bool& isInside) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion(elementIndex>=0);
+                     assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                     _persistentRecords._isInside[elementIndex]= isInside;
+                     
+                  }
+                  
+                  
+                  
+                  inline void flipIsInside(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     assertion(elementIndex>=0);
+                     assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                     _persistentRecords._isInside.flip(elementIndex);
                   }
                   
                   
@@ -2896,7 +3210,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   30/08/2016 12:54
+                      * @date   31/08/2016 00:53
                       */
                      class exahype::records::ADERDGCellDescription { 
                         
@@ -2918,6 +3232,11 @@ namespace exahype {
                               std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed __attribute__((aligned(VectorisationAlignment)));
                               #else
                               std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
+                              #endif
+                              #ifdef UseManualAlignment
+                              std::bitset<DIMENSIONS_TIMES_TWO> _isInside __attribute__((aligned(VectorisationAlignment)));
+                              #else
+                              std::bitset<DIMENSIONS_TIMES_TWO> _isInside;
                               #endif
                               double _correctorTimeStepSize;
                               double _correctorTimeStamp;
@@ -2952,7 +3271,7 @@ namespace exahype {
                               /**
                                * Generated
                                */
-                              PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+                              PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
                               
                               
                               inline int getSolverNumber() const 
@@ -3029,6 +3348,64 @@ namespace exahype {
  #endif 
  {
                                  _riemannSolvePerformed = (riemannSolvePerformed);
+                              }
+                              
+                              
+                              
+                              /**
+                               * Generated and optimized
+                               * 
+                               * If you realise a for loop using exclusively arrays (vectors) and compile 
+                               * with -DUseManualAlignment you may add 
+                               * \code
+                               #pragma vector aligned
+                               #pragma simd
+                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                               * 
+                               * The alignment is tied to the unpacked records, i.e. for packed class
+                               * variants the machine's natural alignment is switched off to recude the  
+                               * memory footprint. Do not use any SSE/AVX operations or 
+                               * vectorisation on the result for the packed variants, as the data is misaligned. 
+                               * If you rely on vectorisation, convert the underlying record 
+                               * into the unpacked version first. 
+                               * 
+                               * @see convert()
+                               */
+                              inline std::bitset<DIMENSIONS_TIMES_TWO> getIsInside() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 return _isInside;
+                              }
+                              
+                              
+                              
+                              /**
+                               * Generated and optimized
+                               * 
+                               * If you realise a for loop using exclusively arrays (vectors) and compile 
+                               * with -DUseManualAlignment you may add 
+                               * \code
+                               #pragma vector aligned
+                               #pragma simd
+                               \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                               * 
+                               * The alignment is tied to the unpacked records, i.e. for packed class
+                               * variants the machine's natural alignment is switched off to recude the  
+                               * memory footprint. Do not use any SSE/AVX operations or 
+                               * vectorisation on the result for the packed variants, as the data is misaligned. 
+                               * If you rely on vectorisation, convert the underlying record 
+                               * into the unpacked version first. 
+                               * 
+                               * @see convert()
+                               */
+                              inline void setIsInside(const std::bitset<DIMENSIONS_TIMES_TWO>& isInside) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                 _isInside = (isInside);
                               }
                               
                               
@@ -3468,7 +3845,7 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+                           ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
                            
                            /**
                             * Generated
@@ -3588,6 +3965,102 @@ namespace exahype {
                               assertion(elementIndex>=0);
                               assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                               _persistentRecords._riemannSolvePerformed.flip(elementIndex);
+                           }
+                           
+                           
+                           
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline std::bitset<DIMENSIONS_TIMES_TWO> getIsInside() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _persistentRecords._isInside;
+                           }
+                           
+                           
+                           
+                           /**
+                            * Generated and optimized
+                            * 
+                            * If you realise a for loop using exclusively arrays (vectors) and compile 
+                            * with -DUseManualAlignment you may add 
+                            * \code
+                            #pragma vector aligned
+                            #pragma simd
+                            \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                            * 
+                            * The alignment is tied to the unpacked records, i.e. for packed class
+                            * variants the machine's natural alignment is switched off to recude the  
+                            * memory footprint. Do not use any SSE/AVX operations or 
+                            * vectorisation on the result for the packed variants, as the data is misaligned. 
+                            * If you rely on vectorisation, convert the underlying record 
+                            * into the unpacked version first. 
+                            * 
+                            * @see convert()
+                            */
+                           inline void setIsInside(const std::bitset<DIMENSIONS_TIMES_TWO>& isInside) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _persistentRecords._isInside = (isInside);
+                           }
+                           
+                           
+                           
+                           inline bool getIsInside(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              assertion(elementIndex>=0);
+                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                              return _persistentRecords._isInside[elementIndex];
+                              
+                           }
+                           
+                           
+                           
+                           inline void setIsInside(int elementIndex, const bool& isInside) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              assertion(elementIndex>=0);
+                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                              _persistentRecords._isInside[elementIndex]= isInside;
+                              
+                           }
+                           
+                           
+                           
+                           inline void flipIsInside(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              assertion(elementIndex>=0);
+                              assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                              _persistentRecords._isInside.flip(elementIndex);
                            }
                            
                            
@@ -4152,7 +4625,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   30/08/2016 12:54
+                               * @date   31/08/2016 00:53
                                */
                               class exahype::records::ADERDGCellDescriptionPacked { 
                                  
@@ -4165,6 +4638,7 @@ namespace exahype {
                                     struct PersistentRecords {
                                        int _solverNumber;
                                        std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
+                                       std::bitset<DIMENSIONS_TIMES_TWO> _isInside;
                                        double _correctorTimeStepSize;
                                        double _correctorTimeStamp;
                                        double _predictorTimeStepSize;
@@ -4190,7 +4664,7 @@ namespace exahype {
                                        /**
                                         * Generated
                                         */
-                                       PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+                                       PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
                                        
                                        
                                        inline int getSolverNumber() const 
@@ -4267,6 +4741,64 @@ namespace exahype {
  #endif 
  {
                                           _riemannSolvePerformed = (riemannSolvePerformed);
+                                       }
+                                       
+                                       
+                                       
+                                       /**
+                                        * Generated and optimized
+                                        * 
+                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                        * with -DUseManualAlignment you may add 
+                                        * \code
+                                        #pragma vector aligned
+                                        #pragma simd
+                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                        * 
+                                        * The alignment is tied to the unpacked records, i.e. for packed class
+                                        * variants the machine's natural alignment is switched off to recude the  
+                                        * memory footprint. Do not use any SSE/AVX operations or 
+                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                        * If you rely on vectorisation, convert the underlying record 
+                                        * into the unpacked version first. 
+                                        * 
+                                        * @see convert()
+                                        */
+                                       inline std::bitset<DIMENSIONS_TIMES_TWO> getIsInside() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          return _isInside;
+                                       }
+                                       
+                                       
+                                       
+                                       /**
+                                        * Generated and optimized
+                                        * 
+                                        * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                        * with -DUseManualAlignment you may add 
+                                        * \code
+                                        #pragma vector aligned
+                                        #pragma simd
+                                        \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                        * 
+                                        * The alignment is tied to the unpacked records, i.e. for packed class
+                                        * variants the machine's natural alignment is switched off to recude the  
+                                        * memory footprint. Do not use any SSE/AVX operations or 
+                                        * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                        * If you rely on vectorisation, convert the underlying record 
+                                        * into the unpacked version first. 
+                                        * 
+                                        * @see convert()
+                                        */
+                                       inline void setIsInside(const std::bitset<DIMENSIONS_TIMES_TWO>& isInside) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                          _isInside = (isInside);
                                        }
                                        
                                        
@@ -4706,7 +5238,7 @@ namespace exahype {
                                     /**
                                      * Generated
                                      */
-                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+                                    ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
                                     
                                     /**
                                      * Generated
@@ -4826,6 +5358,102 @@ namespace exahype {
                                        assertion(elementIndex>=0);
                                        assertion(elementIndex<DIMENSIONS_TIMES_TWO);
                                        _persistentRecords._riemannSolvePerformed.flip(elementIndex);
+                                    }
+                                    
+                                    
+                                    
+                                    /**
+                                     * Generated and optimized
+                                     * 
+                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                     * with -DUseManualAlignment you may add 
+                                     * \code
+                                     #pragma vector aligned
+                                     #pragma simd
+                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                     * 
+                                     * The alignment is tied to the unpacked records, i.e. for packed class
+                                     * variants the machine's natural alignment is switched off to recude the  
+                                     * memory footprint. Do not use any SSE/AVX operations or 
+                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                     * If you rely on vectorisation, convert the underlying record 
+                                     * into the unpacked version first. 
+                                     * 
+                                     * @see convert()
+                                     */
+                                    inline std::bitset<DIMENSIONS_TIMES_TWO> getIsInside() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       return _persistentRecords._isInside;
+                                    }
+                                    
+                                    
+                                    
+                                    /**
+                                     * Generated and optimized
+                                     * 
+                                     * If you realise a for loop using exclusively arrays (vectors) and compile 
+                                     * with -DUseManualAlignment you may add 
+                                     * \code
+                                     #pragma vector aligned
+                                     #pragma simd
+                                     \endcode to this for loop to enforce your compiler to use SSE/AVX.
+                                     * 
+                                     * The alignment is tied to the unpacked records, i.e. for packed class
+                                     * variants the machine's natural alignment is switched off to recude the  
+                                     * memory footprint. Do not use any SSE/AVX operations or 
+                                     * vectorisation on the result for the packed variants, as the data is misaligned. 
+                                     * If you rely on vectorisation, convert the underlying record 
+                                     * into the unpacked version first. 
+                                     * 
+                                     * @see convert()
+                                     */
+                                    inline void setIsInside(const std::bitset<DIMENSIONS_TIMES_TWO>& isInside) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       _persistentRecords._isInside = (isInside);
+                                    }
+                                    
+                                    
+                                    
+                                    inline bool getIsInside(int elementIndex) const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       assertion(elementIndex>=0);
+                                       assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                                       return _persistentRecords._isInside[elementIndex];
+                                       
+                                    }
+                                    
+                                    
+                                    
+                                    inline void setIsInside(int elementIndex, const bool& isInside) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       assertion(elementIndex>=0);
+                                       assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                                       _persistentRecords._isInside[elementIndex]= isInside;
+                                       
+                                    }
+                                    
+                                    
+                                    
+                                    inline void flipIsInside(int elementIndex) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                                       assertion(elementIndex>=0);
+                                       assertion(elementIndex<DIMENSIONS_TIMES_TWO);
+                                       _persistentRecords._isInside.flip(elementIndex);
                                     }
                                     
                                     

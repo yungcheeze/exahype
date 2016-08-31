@@ -231,6 +231,7 @@ void exahype::Cell::addNewCellDescription(
   newCellDescription.setHelperCellNeedsToStoreFaceData(false);
   for (int faceIndex = 0; faceIndex < DIMENSIONS_TIMES_TWO; faceIndex++) {
     newCellDescription.setFaceDataExchangeCounter(faceIndex,TWO_POWER_D);
+//    newCellDescription.setIsInside(faceIndex,)
   }
   #endif
 

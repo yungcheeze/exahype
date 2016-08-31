@@ -3,10 +3,9 @@
 #include "peano/utils/Loop.h"
 #include "tarch/parallel/Node.h"
 
-const int multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex                  = -1;
-const int multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex                   = -2;
-const int multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex           = -3;
-const int multiscalelinkedcell::HangingVertexBookkeeper::RemoteAndDomainBoundaryAdjacencyIndex  = -4;
+const int multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex         = -1;
+const int multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex          = -2;
+const int multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex  = -3;
 
 
 tarch::logging::Log  multiscalelinkedcell::HangingVertexBookkeeper::_log( "multiscalelinkedcell::HangingVertexBookkeeper" );
@@ -23,9 +22,6 @@ std::string multiscalelinkedcell::indexToString( int index ) {
       break;
     case multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex:
       msg << "boundary";
-      break;
-    case multiscalelinkedcell::HangingVertexBookkeeper::RemoteAndDomainBoundaryAdjacencyIndex:
-      msg << "remote and boundary";
       break;
     default:
       msg << index;
@@ -50,9 +46,6 @@ std::string multiscalelinkedcell::indicesToString( const tarch::la::Vector<THREE
         break;
       case multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex:
         msg << "boundary";
-        break;
-      case multiscalelinkedcell::HangingVertexBookkeeper::RemoteAndDomainBoundaryAdjacencyIndex:
-        msg << "remote and boundary";
         break;
       default:
         msg << indices(i);
@@ -80,9 +73,6 @@ std::string multiscalelinkedcell::indicesToString( const tarch::la::Vector<TWO_P
         break;
       case multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex:
         msg << "boundary";
-        break;
-      case multiscalelinkedcell::HangingVertexBookkeeper::RemoteAndDomainBoundaryAdjacencyIndex:
-        msg << "remote and boundary";
         break;
       default:
         msg << indices(i);
@@ -375,8 +365,6 @@ tarch::la::Vector<TWO_POWER_D,int> multiscalelinkedcell::HangingVertexBookkeeper
       (_vertexMap[key].indicesOfAdjacentCells(kScalar)==InvalidAdjacencyIndex)
       ||
       (_vertexMap[key].indicesOfAdjacentCells(kScalar)==DomainBoundaryAdjacencyIndex)
-      ||
-      (_vertexMap[key].indicesOfAdjacentCells(kScalar)==RemoteAndDomainBoundaryAdjacencyIndex) // TODO(Domninic): Not sure about this.
      ) {
       _vertexMap[key].indicesOfAdjacentCells(kScalar) = adjacencyEntries(
         peano::utils::dLinearised(fromCoarseGridVertex,2) * TWO_POWER_D +
@@ -397,12 +385,8 @@ tarch::la::Vector<TWO_POWER_D,int> multiscalelinkedcell::HangingVertexBookkeeper
 ) {
   tarch::la::Vector<TWO_POWER_D,int> result;
   for (int i=0; i<TWO_POWER_D; i++) {
-    if (adjacentRanks(i)!=tarch::parallel::Node::getInstance().getRank()) { // TODO(Dominic): Verify this.
+    if (adjacentRanks(i)!=tarch::parallel::Node::getInstance().getRank()) {
       result(i) = RemoteAdjacencyIndex;
-      if (oldAdjacencyEntries(i)==DomainBoundaryAdjacencyIndex ||
-          oldAdjacencyEntries(i)==RemoteAndDomainBoundaryAdjacencyIndex) {
-        result(i) = RemoteAndDomainBoundaryAdjacencyIndex;
-      }
     }
     else {
       result(i) = oldAdjacencyEntries(i);

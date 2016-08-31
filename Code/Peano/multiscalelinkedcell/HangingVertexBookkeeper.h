@@ -100,19 +100,8 @@ class multiscalelinkedcell::HangingVertexBookkeeper {
      * Every index greater is valid
      */
     static const int InvalidAdjacencyIndex;
-    /**
-     * Indicates that we are at an MPI boundary.
-     */
     static const int RemoteAdjacencyIndex;
-    /**
-     * Indicates that we are at the domain boundary.
-     */
     static const int DomainBoundaryAdjacencyIndex;
-    /**
-     * Indicates that we are at the domain boundary
-     * which is an MPI boundary at the same time.
-     */
-    static const int RemoteAndDomainBoundaryAdjacencyIndex;
 
     static HangingVertexBookkeeper&  getInstance();
 
@@ -158,7 +147,7 @@ class multiscalelinkedcell::HangingVertexBookkeeper {
      * node. If they are unknown, the operation inherits from the coarser
      * grid. We do not only inherit in the very first iteration, but we
      * update the entries permanently. This way, we ensure that the
-     * adjacency lists are updated, even if the coarser grid has not been
+     * adjacency lists are updates, even if the coarser grid has not been
      * initialised completely before.
      *
      * !!! Overwrite adjacency information
