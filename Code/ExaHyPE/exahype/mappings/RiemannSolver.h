@@ -317,6 +317,9 @@ class exahype::mappings::RiemannSolver {
    * Peano inverts the traversal direction after each grid sweep, we have to
    * invert the order in which data is received, too.
    *
+   * \note It happens or is possible that this operation is performed
+   * after touchVertexLastTime(...) was invoked.
+   *
    * <h2>Send</h2>
    * Sending out data corresponds logically to a projection of cell data onto
    * the faces. Therefore, I realise it within

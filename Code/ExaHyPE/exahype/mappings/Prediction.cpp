@@ -143,10 +143,13 @@ void exahype::mappings::Prediction::enterCell(
       // number of refinement events for Dyn. AMR.
       // For static AMR we assume always that the refinement event is None.
 
-      // Reset helper variables
+      // Update helper variables
       for (int faceIndex=0; faceIndex<DIMENSIONS_TIMES_TWO; faceIndex++) {
         pFine.setRiemannSolvePerformed(faceIndex,false);
-
+        // TODO(Dominic): Normally, isFaceInside has not to be called everytime here
+        // but only once when the cell is initialised. Problem: Call addNewCellDescr.. from  merge..DueToForkOrJoin(...),
+        // where no vertices are given.
+        pFine.setIsInside(faceIndex,isFaceInside(faceIndex,fineGridVertices,fineGridVerticesEnumerator));
         // TODO(Dominic): Add to docu.
         // 0 - no connection: no send. Set to unreachable value.
         // 2^{d-2} - full face connection where cell is inside but half of face vertices are outside:
@@ -194,6 +197,21 @@ void exahype::mappings::Prediction::enterCell(
         .parallelSectionHasTerminated(methodTrace);
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
+}
+
+bool exahype::mappings::Prediction::isFaceInside(
+    const int faceIndex,
+    exahype::Vertex* const verticesAroundCell,
+    const peano::grid::VertexEnumerator& verticesEnumerator) {
+  const int f = faceIndex % 2;   // "0" indicates a left face, "1" indicates a right face.
+  const int d = (faceIndex-f)/2; // The normal direction: 0: x, 1: y, 1: z.
+
+  dfor2(v) // Loop over vertices.
+    if (v(d) == f && verticesAroundCell[ verticesEnumerator(v) ].isInside()) {
+      return true;
+    }
+  enddforx // v
+  return false;
 }
 
 void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(

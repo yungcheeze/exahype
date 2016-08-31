@@ -183,14 +183,6 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
   // both cell description indices are valid
   if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfLeftCell) &&
       ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfRightCell)) {
-    logDebug("touchVertexLastTime(...)::solveRiemannProblemAtInterface(...)",
-             "Performing Riemann solve. "
-                 << "faceIndexForLeftCell:" << faceIndexForLeftCell
-                 << " faceIndexForRightCell:" << faceIndexForRightCell);
-                 // << " indexOfLeftCell:"
-                 // << adjacentADERDGCellDescriptionsIndices[indexOfLeftCell]
-                 // << " indexOfRightCell:"
-                 // << adjacentADERDGCellDescriptionsIndices[indexOfRightCell]);
     std::vector<records::ADERDGCellDescription>& cellDescriptionsOfLeftCell =
         ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndexOfLeftCell);
     int numberOfADERDGCellDescriptionsLeft =
@@ -225,8 +217,8 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
 
 
         if (!cellDescriptionsOfLeftCell[i].getRiemannSolvePerformed(faceIndexForLeftCell)) {
-          cellDescriptionsOfLeftCell [i].setRiemannSolvePerformed(faceIndexForLeftCell,  true);
-          cellDescriptionOfRightCell.setRiemannSolvePerformed(faceIndexForRightCell, true);
+          cellDescriptionsOfLeftCell [i].setRiemannSolvePerformed(faceIndexForLeftCell,true);
+          cellDescriptionOfRightCell.setRiemannSolvePerformed(faceIndexForRightCell,true);
           #ifdef Debug
           _interiorFaceSolves++;
           #endif
@@ -253,6 +245,18 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
           solver->synchroniseTimeStepping(cellDescriptionsOfLeftCell[i]);
           solver->synchroniseTimeStepping(cellDescriptionOfRightCell);
 
+          logDebug("solveRiemannProblemAtInterface(...)",
+              "Performing Riemann solve with"
+              << " left=" << cellDescriptionsOfLeftCell[i].getOffset().toString()
+              << " right=" << cellDescriptionOfRightCell.getOffset().toString()
+              << " face index left=" << faceIndexForLeftCell
+              << " face index right=" << faceIndexForRightCell);
+//              << " indexOfLeftCell="
+//              << adjacentADERDGCellDescriptionsIndices[indexOfLeftCell]
+//              << " indexOfRightCell="
+//              << adjacentADERDGCellDescriptionsIndices[indexOfRightCell]);
+
+
           // todo Time step must be interpolated in local time stepping case
           // both time step sizes are the same, so the min has no effect here.
           solver->riemannSolver(
@@ -272,27 +276,20 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
         .parallelSectionHasTerminated(methodTrace);
   } else if (
       (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfLeftCell) &&
-          (cellDescriptionsIndexOfRightCell == multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex ||
-          cellDescriptionsIndexOfRightCell == multiscalelinkedcell::HangingVertexBookkeeper::RemoteAndDomainBoundaryAdjacencyIndex))
+          (cellDescriptionsIndexOfRightCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex ||
+          cellDescriptionsIndexOfRightCell == multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex))
           ||
           (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfRightCell) &&
-              (cellDescriptionsIndexOfLeftCell == multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex ||
-              cellDescriptionsIndexOfLeftCell == multiscalelinkedcell::HangingVertexBookkeeper::RemoteAndDomainBoundaryAdjacencyIndex))
-
+              (cellDescriptionsIndexOfLeftCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex ||
+              cellDescriptionsIndexOfLeftCell == multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex))
   ) {
     #if defined(PeriodicBC)
       assertionMsg(false,"PeriodicBC: Please implement!");
       return;
     #endif
-      // TODO(Dominic): Previous code for reference:
-  //  } else if ((ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfLeftCell) &&
-  //      cellDescriptionsIndexOfRightCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) ||
-  //          (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfRightCell) &&
-  //              cellDescriptionsIndexOfLeftCell == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex)) {
 
     int cellDescriptionsIndex = cellDescriptionsIndexOfLeftCell;
     int faceIndex             = faceIndexForLeftCell;
-
     if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndexOfRightCell)) {
       cellDescriptionsIndex = cellDescriptionsIndexOfRightCell;
       faceIndex             = faceIndexForRightCell;
@@ -316,8 +313,19 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
             numberOfADERDGCellDescriptions, methodTrace);
 
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-    if (!cellDescriptions[i].getRiemannSolvePerformed(faceIndex) &&
+    if (!cellDescriptions[i].getIsInside(faceIndex) &&
+        !cellDescriptions[i].getRiemannSolvePerformed(faceIndex) &&
         cellDescriptions[i].getType() == exahype::records::ADERDGCellDescription::Cell) {
+      logDebug("applyBoundaryConditions(...)",
+          "Applying boundary conditions for"
+          << " cell offset=" << cellDescriptions[i].getOffset().toString()
+          << " level=" << cellDescriptions[i].getLevel()
+          << " face index=" << faceIndex
+          << " left index=" << cellDescriptionsIndexOfLeftCell
+          << " right index=" << cellDescriptionsIndexOfRightCell
+          << " isInside="<<cellDescriptions[i].getIsInside()
+          << " isInside(faceIndex)=" <<cellDescriptions[i].getIsInside(faceIndex));
+
       #ifdef Debug
       _boundaryFaceSolves++;
       #endif
@@ -330,7 +338,7 @@ void exahype::mappings::RiemannSolver::solveRiemannProblemAtInterface(
 
 // Verified correct calling of this method for 9x9 grid on [0,1]x[0,1].
 void exahype::mappings::RiemannSolver::applyBoundaryConditions(
-    records::ADERDGCellDescription& cellDescription, const int faceIndexForCell,
+    records::ADERDGCellDescription& cellDescription, const int faceIndex,
     const int normalNonZero) {
   assertion1(cellDescription.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,cellDescription.toString());
   exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
@@ -339,25 +347,21 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
   const int numberOfFaceDof = solver->getUnknownsPerFace();
 
   double* stateIn = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data() +
-      (faceIndexForCell * numberOfFaceDof);
+      (faceIndex * numberOfFaceDof);
   double* fluxIn = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data() +
-      (faceIndexForCell * numberOfFaceDof);
+      (faceIndex * numberOfFaceDof);
 
   for(int ii=0; ii<numberOfFaceDof; ++ii) {
     assertion5(std::isfinite(stateIn[ii]), cellDescription.toString(),
-        faceIndexForCell, normalNonZero, ii, stateIn[ii]);
+        faceIndex, normalNonZero, ii, stateIn[ii]);
     assertion5(std::isfinite(fluxIn[ii]), cellDescription.toString(),
-        faceIndexForCell, normalNonZero, ii, fluxIn[ii]);
+        faceIndex, normalNonZero, ii, fluxIn[ii]);
   }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
 
   double* stateOut = new double[numberOfFaceDof];
   double* fluxOut  = new double[numberOfFaceDof];
 
   tarch::la::Vector<DIMENSIONS,double> cellCentre = cellDescription.getOffset() + 0.5*cellDescription.getSize();
-
-  logDebug("applyBoundaryConditions(...)", "face index: " << faceIndexForCell <<
-      ", cell lower-left corner " << cellDescription.getOffset() <<
-      ", cell upper-right corner " << (cellDescription.getOffset()+cellDescription.getSize()));
 
   // Synchronise time stepping.
   solver->synchroniseTimeStepping(cellDescription);
@@ -367,15 +371,15 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
                              cellCentre,cellDescription.getSize(),
                              cellDescription.getCorrectorTimeStamp(),
                              cellDescription.getCorrectorTimeStepSize(),
-                             faceIndexForCell,normalNonZero);
+                             faceIndex,normalNonZero);
 
   for(int ii=0; ii<numberOfFaceDof; ++ii) {
-    assertion5(std::isfinite(stateOut[ii]), cellDescription.toString(), faceIndexForCell, normalNonZero, ii, stateOut[ii]);
-    assertion5(std::isfinite(fluxOut[ii]), cellDescription.toString(), faceIndexForCell, normalNonZero, ii, fluxOut[ii]);
+    assertion5(std::isfinite(stateOut[ii]), cellDescription.toString(), faceIndex, normalNonZero, ii, stateOut[ii]);
+    assertion5(std::isfinite(fluxOut[ii]), cellDescription.toString(), faceIndex, normalNonZero, ii, fluxOut[ii]);
   }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
 
-  // @todo(Dominic): Add to docu why we need this.
-  if (faceIndexForCell % 2 == 0) {
+  // @todo(Dominic): Add to docu why we need this. Left or right input
+  if (faceIndex % 2 == 0) {
     solver->riemannSolver(fluxOut, fluxIn, stateOut, stateIn,
         cellDescription.getCorrectorTimeStepSize(),
         normalNonZero);
@@ -387,27 +391,13 @@ void exahype::mappings::RiemannSolver::applyBoundaryConditions(
 
   for(int ii=0; ii<numberOfFaceDof; ++ii) {
     assertion5(std::isfinite(fluxIn[ii]), cellDescription.toString(),
-               faceIndexForCell, normalNonZero, ii, fluxIn[ii]);
+               faceIndex, normalNonZero, ii, fluxIn[ii]);
     assertion5(std::isfinite(fluxOut[ii]), cellDescription.toString(),
-               faceIndexForCell, normalNonZero, ii, fluxOut[ii]);
+               faceIndex, normalNonZero, ii, fluxOut[ii]);
   }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
 
   delete[] stateOut;
   delete[] fluxOut;
-}
-
-/**
- * TODO(Dominic): Add docu. Returns zero otherwise.
- */
-
-void exahype::mappings::RiemannSolver::enterCell(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
 }
 
 void exahype::mappings::RiemannSolver::beginIteration(
@@ -507,7 +497,25 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
           // We can thus interpret from the received metadata
           // if the current vertex needs to receive and drop
           // facedata.
+          // We can thus interpret from the received metadata
+          // if the current vertex needs to receive and drop
+          // facedata.
+          //
+          // Unfortunately this currently not possible to do
+          // thanks to the assertions in the heap which
+          // assume that we must receive as much data
+          // as we have sent out. I think we
+          // should have a receiveDataUnchecked(...)
+          // version with which we can perform a drop without
+          // having to send the same number of times.
+          //
+          // These scenarios will occur if we have Ancestors
+          // that need to hold data next to invalid cell
+          // description indices on a remote rank. Then, the Ancestor sends
+          // out data but does not receive. The remote rank
+          // can however not drop data because of the heap constraint.
           if (!exahype::Cell::isEncodedMetadataSequenceForInvalidCellDescriptionsIndex(receivedMetadata)) {
+            assertionMsg(false,"This can happen for adaptive grids but is not implemented yet!");
             assertion1(destCellDescriptionIndex==multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
                 destCellDescriptionIndex);
 
@@ -564,9 +572,14 @@ void exahype::mappings::RiemannSolver::receiveADERDGFaceData(
           neighbourType==exahype::records::ADERDGCellDescription::Descendant) {
         for (auto& p : ADERDGCellDescriptionHeap::getInstance().getData(destCellDescriptionIndex)) {
           if (p.getSolverNumber()==neighbourSolverNumber) {
-            if (p.getFaceDataExchangeCounter(faceIndex)==0) {
+            if (
+                p.getFaceDataExchangeCounter(faceIndex)==0 &&
+                p.getIsInside(faceIndex)
+              ) {
               p.setFaceDataExchangeCounter(faceIndex,TWO_POWER_D); // TODO(Dominic): Add to docu what we do here with the counter.
-              assertion1(!p.getRiemannSolvePerformed(faceIndex),p.toString());
+              assertion4(!p.getRiemannSolvePerformed(faceIndex),
+                  faceIndex,
+                  srcCellDescriptionIndex,p.getOffset().toString(),p.getLevel());
 
               exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
                   exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
@@ -577,7 +590,8 @@ void exahype::mappings::RiemannSolver::receiveADERDGFaceData(
                 assertion(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()));
                 assertion(DataHeap::getInstance().isValidIndex(p.getFluctuation()));
 
-                if (srcCellDescriptionIndex == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
+                // TODO(Dominic): Index can never be obtained due to HangingVertexBookkeeper behaviour
+                if (srcCellDescriptionIndex== multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
                   #if defined(PeriodicBC)
                   assertionMsg(false, "Vasco, we have to implement this");
                   #else
@@ -923,6 +937,16 @@ void exahype::mappings::RiemannSolver::touchVertexLastTime(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::RiemannSolver::enterCell(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   // do nothing
 }
 

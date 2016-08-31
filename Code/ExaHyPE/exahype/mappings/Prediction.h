@@ -106,6 +106,21 @@ class exahype::mappings::Prediction {
 #endif
 
   /**
+   * Returns if the face is inside. Inside for
+   * a face means that at least one vertex
+   * of the 2^{d-1} vertices building up
+   * the face must be inside of the domain.
+   *
+   * Otherwise the face might be on the
+   * boundary of the domain or outside of
+   * the domain.
+   */
+  static bool isFaceInside(
+      const int faceIndex,
+      exahype::Vertex* const verticesAroundCell,
+      const peano::grid::VertexEnumerator& verticesEnumerator);
+
+  /**
    * Computes the space-time predictor quantities, extrapolates fluxes
    * and (space-time) predictor values to the boundary and
    * computes the volume integral.
