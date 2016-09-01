@@ -39,6 +39,10 @@ double* getFVMData(const double* const luh, const int numberOfVariables, const i
   return lim;
 }
 
+void updateSubcellWithLimiterData(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, double* const luh) {
+  return;
+}
+
 
 } // namespace c
 } // namespace generic
