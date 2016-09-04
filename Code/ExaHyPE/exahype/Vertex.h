@@ -379,7 +379,7 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    *
    * \see decrementCounters
    */
-  bool hasToMergeNeighbourData(
+  bool hasToMergeWithNeighbourData(
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest) const;
 

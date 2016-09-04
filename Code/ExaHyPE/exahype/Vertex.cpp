@@ -303,7 +303,7 @@ bool exahype::Vertex::hasToSendDataToNeighbour(
   return true;
 }
 
-bool exahype::Vertex::hasToMergeNeighbourData(
+bool exahype::Vertex::hasToMergeWithNeighbourData(
     const tarch::la::Vector<DIMENSIONS,int>& src,
     const tarch::la::Vector<DIMENSIONS,int>& dest) const {
   const int destScalar  = peano::utils::dLinearisedWithoutLookup(dest,2);

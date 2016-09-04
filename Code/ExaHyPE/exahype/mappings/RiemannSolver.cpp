@@ -215,7 +215,7 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
         exahype::MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
         assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
 
-        if(vertex.hasToMergeNeighbourData(src,dest)) {
+        if(vertex.hasToMergeWithNeighbourData(src,dest)) {
           mergeWithNeighbourData(
               fromRank,
               vertex.getCellDescriptionsIndex()[srcScalar],

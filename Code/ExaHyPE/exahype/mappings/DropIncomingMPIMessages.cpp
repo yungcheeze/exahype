@@ -104,7 +104,7 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
         exahype::MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
         assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
 
-        if(vertex.hasToMergeNeighbourData(src,dest)) {
+        if(vertex.hasToMergeWithNeighbourData(src,dest)) {
           vertex.setFaceDataExchangeCountersOfDestination(src,dest,TWO_POWER_D);
           vertex.setMergePerformed(src,dest,true);
 
