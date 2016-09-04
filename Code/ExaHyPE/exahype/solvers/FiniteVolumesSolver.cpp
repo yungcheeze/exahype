@@ -83,7 +83,57 @@ double exahype::solvers::FiniteVolumesSolver::getNextMinTimeStepSize() const {
   return _nextMinTimeStepSize;
 }
 
+int exahype::solvers::FiniteVolumesSolver::tryGetElement(
+    const int cellDescriptionsIndex,
+    const int solverNumber) const {
+  if (Heap::getInstance().isValidIndex(cellDescriptionsIndex)) {
+    int element=0;
+    for (auto& p : Heap::getInstance().getData(cellDescriptionsIndex)) {
+      if (p.getSolverNumber()==solverNumber) {
+        return element;
+      }
+      ++element;
+    }
+  }
+  return NotFound;
+}
 
+#ifdef Parallel
+const int exahype::solvers::FiniteVolumesSolver::DataMessagesPerNeighbour = 1;
+
+void exahype::solvers::FiniteVolumesSolver::sendToRank(int rank, int tag) {
+  assertionMsg(false, "not implemented yet");
+}
+
+void exahype::solvers::FiniteVolumesSolver::receiveFromMasterRank(int rank, int tag) {
+  assertionMsg(false, "not implemented yet");
+}
+
+void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToNeighbour(
+    const int                                     toRank,
+    const tarch::la::Vector<DIMENSIONS, int>&     src,
+    const tarch::la::Vector<DIMENSIONS, int>&     dest,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    int                                           level) {
+  std::vector<double> emptyMessage(0,0);
+  for(int sends=0; sends<DataMessagesPerNeighbour; ++sends)
+    DataHeap::getInstance().sendData(
+        emptyMessage, toRank, x, level,
+        peano::heap::MessageType::NeighbourCommunication);
+}
+
+void exahype::solvers::FiniteVolumesSolver::dropNeighbourData(
+    const int                                     fromRank,
+    const tarch::la::Vector<DIMENSIONS, int>&     src,
+    const tarch::la::Vector<DIMENSIONS, int>&     dest,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    int                                           level) {
+  for(int receives=0; receives<DataMessagesPerNeighbour; ++receives)
+    DataHeap::getInstance().receiveData(
+        fromRank, x, level,
+        peano::heap::MessageType::NeighbourCommunication);
+}
+#endif
 
 std::string exahype::solvers::FiniteVolumesSolver::toString() const {
   std::ostringstream stringstr;
@@ -120,13 +170,3 @@ void exahype::solvers::FiniteVolumesSolver::toString (std::ostream& out) const {
   out << "_nextMinTimeStepSize:" << _nextMinTimeStepSize;
   out <<  ")";
 }
-
-#ifdef Parallel
-void exahype::solvers::FiniteVolumesSolver::sendToRank(int rank, int tag) {
-  assertionMsg(false, "not implemented yet");
-}
-
-void exahype::solvers::FiniteVolumesSolver::receiveFromMasterRank(int rank, int tag) {
-  assertionMsg(false, "not implemented yet");
-}
-#endif

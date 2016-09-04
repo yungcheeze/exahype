@@ -14,17 +14,21 @@
 #ifndef _EXAHYPE_SOLVERS_ADERDG_SOLVER_H_
 #define _EXAHYPE_SOLVERS_ADERDG_SOLVER_H_
 
+#include "exahype/solvers/Solver.h"
+
 #include <memory>
 #include <string>
 #include <iostream>
 #include <vector>
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/records/ADERDGCellDescription.h"
 
 namespace exahype {
   namespace solvers {
     class ADERDGSolver;
   }  // namespace solvers
+
+
 }  // namespace exahype
 
 /**
@@ -105,7 +109,172 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    */
   double _minNextPredictorTimeStepSize;
 
+  /**
+   * Solve the Riemann problem at the interface between two cells ("left" and
+   * "right"). This method only performs a Riemann solve if at least one of the
+   * cell descriptions (per solver) associated with the two cells is of type
+   * ::Cell and none of the two cells belongs to the boundary.
+   * In case a Riemann problem is solved,
+   * the method further sets the ::riemannSolvePerformed
+   * flags for the particular faces on both cell descriptions (per solver).
+   *
+   * This method further synchronises the ADERDGCellDescription
+   * with the corresponding solver if this is required by the time stepping scheme.
+   * This operation must be performed in mergeWithNeighbour(...) and
+   * touchVertexFirstTime(...) since both callbacks touch the
+   * ADERDGCellDescriptions before the other callbacks.
+   *
+   * <h2>Rationale</h2>
+   *
+   * We did originally split up the boundary condition handling and the Riemann
+   * updates into two mappings. This offers a functional decomposition. However,
+   * both mappings then need a significiant number of technical administrative
+   * code (cmp all the loops in touchVertexFirstTime and the redundant code to
+   * manage the semaphores). We thus decided to merge both aspects. This also
+   * should make sense from a performance point of view.
+   *
+   * We could potentially remove the face indices here if we had normals that
+   * point outwards. However, we don't evaluate the direction of the normal and
+   * thus need these counters as a Riemann problem on a face either could be
+   * triggered by the left cell or by the right cell.
+   *
+   * \note The current implementation might classify cells with vertices that are part of the
+   * boundary of the domain or outside to be classified as inside of the domain (volume-ratio based).
+   *
+   * \note We cannot solely check for indices of value
+   * multiscalelinked::HangingVertexBookkepper::DomainBoundaryAdjacencyIndex
+   * in vertex.getCellDescriptions() to determine if we are on the boundary of the domain
+   * since these values are overwritten by multiscalelinked::HangingVertexBookkepper::RemoteAdjacencyIndex
+   * if the domain boundary aligns with an MPI boundary
+   * (see multiscalelinkedcell::HangingVertexBookkeeper::updateCellIndicesInMergeWithNeighbour(...)).
+   *
+   * \note Not thread-safe.
+   */
+  void solveRiemannProblemAtInterface(
+      exahype::records::ADERDGCellDescription& pLeft,
+      exahype::records::ADERDGCellDescription& pRight,
+      const int faceIndexLeft,
+      const int faceIndexRight);
+
+  /**
+    * Apply the boundary conditions at the face with index \p faceIndex.
+    *
+    * This method further synchronises the ADERDGCellDescription
+    * with the corresponding solver if this is required by the time stepping scheme.
+    * This operation must be performed in mergeWithNeighbour(...) and
+    * touchVertexFirstTime(...) since both callbacks touch the
+    * ADERDGCellDescriptions before the other callbacks.
+    *
+    * \note Not thread-safe.
+    *
+    * @param[in] cellDescription         The cell description
+    * @param[in] faceIndex               The index of the interface
+    *                                    from the perspective of the cell/cell
+    * description. One out of (EXAHYPE_FACE_LEFT=0,EXAHYPE_FACE_RIGHT=1,...,EXAHYPE_FACE_TOP=5).
+    * \note Not thread-safe.
+    */
+   void applyBoundaryConditions(
+       exahype::records::ADERDGCellDescription& p,
+       const int faceIndex);
+
+   /**
+    * This operation sets the solutions' minimum and maximum value on a cell.
+    * The routine is to be invoked after the code has determined the new minimum
+    * and maximum value within a cell. In turn, it evaluates whether the new
+    * minimum and maximum value have decreased or grown, respectively.
+    *
+    * If the new min/max values indicate that the new solution comprises
+    * oscillations, the routine returns false. This is an indicator that the
+    * solution should be limited.
+    *
+    * If the new min/max values fit, the routine returns true.
+    *
+    * <h2>Implementation</h2>
+    * We hold the min/max information exclusively on the faces. The first thing
+    * the routine does is to project the min/max values into the cell. For this
+    * it evaluates the 2d faces. The projected value then is compared to the
+    * arguments. Once the results of the operation is determined, the routine
+    * writes the new arguments onto the 2d face entries. This, on the one hand,
+    * stores the data for the subsequent time step, but it also propagates the
+    * min/max information into the face-connected neighbours.
+    *
+    * @param  min          New minimum values within the cell. Array of length
+    *                      _numberOfUnknowns.
+    * @param  max          New maximum values within the cell
+    * @param  solverIndex  Number of the solver within the cell. Please ensure
+    *                      that solverIndex refers to an ADER-DG solver.
+    * @return True if the new min and max values fit into the restricted min
+    *   max solutions. Return false if we seem to run into oscillations.
+    */
+   bool setSolutionMinMaxAndAnalyseValidity(double* min, double* max, int solverIndex) const;
+
+   /**
+    * Merge the solution min and max values on a face between two cell
+    * descriptions. Signature is similar to the solver of a Riemann problem.
+    */
+   void mergeSolutionMinMaxOnFace(
+       exahype::records::ADERDGCellDescription& pLeft,
+       exahype::records::ADERDGCellDescription& pRight,
+       const int faceIndexLeft,
+       const int faceIndexRight) const;
+
+#ifdef Parallel
+  static const int DataMessagesPerNeighbour;
+
+  /**
+   * Single-sided version of the other solveRiemannProblemAtInterface(). It
+   * works only on one cell and one solver within this cell and in return
+   * hands in the F and Q values explicitly through  indexOfQValues and
+   * indexOfFValues. The Riemann solver is invoked and the bits are set
+   * accordingly no matter of what they did hold before, i.e. different to
+   * the standard solveRiemannProblemAtInterface() operation, we do not
+   * check whether we shall run a Riemann solver or not.
+   *
+   * This method further synchronises the ADERDGCellDescription
+   * with the corresponding solver if this is required by the time stepping scheme.
+   * This operation must be performed in mergeWithNeighbour(...) and
+   * touchVertexFirstTime(...) since both callbacks touch the
+   * ADERDGCellDescriptions before the other callbacks.
+   *
+   * \note Not thread-safe.
+   */
+  void solveRiemannProblemAtInterface(
+          records::ADERDGCellDescription& cellDescription,
+          const int faceIndex,
+          const int indexOfQValues,
+          const int indexOfFValues);
+
+  /**
+   * Single-sided variant of mergeSolutionMinMaxOnFace() that is required
+   * for MPI where min and max value are explicitly exchanged through messages.
+   */
+  void mergeSolutionMinMaxOnFace(
+    exahype::records::ADERDGCellDescription&  cellDescription,
+    int                              faceIndex,
+    double* min, double* max) const;
+#endif
+
  public:
+  typedef Solver::DataHeap DataHeap;
+
+  /**
+   * Rank-local heap that stores ADERDGCellDescription instances.
+   *
+   * \note This heap might be shared by multiple ADERDGSolver instances
+     that differ in their solver number and other attributes.
+     @see solvers::Solver::RegisteredSolvers.
+   */
+  typedef peano::heap::PlainHeap<exahype::records::ADERDGCellDescription> Heap;
+
+  /**
+   * Returns if a ADERDGCellDescription type holds face data.
+   */
+  static bool holdsFaceData(const exahype::records::ADERDGCellDescription::Type& cellDescriptionType) {
+    return cellDescriptionType==exahype::records::ADERDGCellDescription::Cell       ||
+           cellDescriptionType==exahype::records::ADERDGCellDescription::Ancestor   ||
+           cellDescriptionType==exahype::records::ADERDGCellDescription::Descendant;
+  }
+
   ADERDGSolver(
     const std::string& identifier,
          int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis,
@@ -463,7 +632,74 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    */
   void updateNextPredictorTimeStepSize(double nextPredictorTimeStepSize);
 
-  #ifdef Parallel
+  virtual double getMinTimeStamp() const {
+    return getMinCorrectorTimeStamp();
+  }
+
+  virtual double getMinTimeStepSize() const {
+    return getMinCorrectorTimeStepSize();
+  }
+
+  virtual double getNextMinTimeStepSize() const {
+    return getMinPredictorTimeStepSize();
+  }
+
+  void updateNextTimeStepSize( double value ) override {
+    updateMinNextPredictorTimeStepSize(value);
+  }
+
+  void initInitialTimeStamp(double value) override {
+    setMinPredictorTimeStamp(0.0);
+    setMinCorrectorTimeStamp(0.0);
+  }
+
+  /**
+   * If an entry for solver \p solverNumber exists,
+   * return the element index of the cell description
+   * in the array at address \p cellDescriptionsIndex.
+   * Otherwise return \p Solver::NotFound.
+   */
+  int tryGetElement(
+      const int cellDescriptionsIndex,
+      const int solverNumber) const override;
+
+  int getNumberOfCellDescriptionsForSolverType(
+      const int cellDescriptionsIndex) const;
+
+  /**
+   * Take the cell descriptions \p element1
+   * and \p element2 from the arrays stored at \p
+   * cellDescriptionsIndex1 \p cellDescriptionsIndex2
+   * and merge data.
+   *
+   * \param[in] element1 Index of the cell description in
+   *                     the array at address \p cellDescriptionsIndex1.
+   * \param[in] element2 Index of the cell description in
+   *                     the array at address \p cellDescriptionsIndex2.
+   */
+  void mergeNeighbours(
+        const int                                     cellDescriptionsIndex1,
+        const int                                     element1,
+        const int                                     cellDescriptionsIndex2,
+        const int                                     element2,
+        const tarch::la::Vector<DIMENSIONS, int>&     pos1,
+        const tarch::la::Vector<DIMENSIONS, int>&     pos2) override;
+
+  /**
+   * Take the cell description with index \p element
+   * from the array at address \p cellDescriptionsIndex
+   * and merge it with boundary data.
+   *
+   * \param[in] element  Index of the cell description in
+   *                     the array at address \p cellDescriptionsIndex.
+   */
+  void mergeWithBoundaryData(
+        const int                                     cellDescriptionsIndex,
+        const int                                     element,
+        const tarch::la::Vector<DIMENSIONS, int>&     posCell,
+        const tarch::la::Vector<DIMENSIONS, int>&     posBoundary) override;
+
+#ifdef Parallel
   /**
    * Collect the ADER-DG corrector and predictor time stamps and time
    * step sizes in a vector of length 5.
@@ -485,28 +721,65 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
   void sendToRank(int rank, int tag) override;
 
   void receiveFromMasterRank(int rank, int tag) override;
-  #endif
 
-  virtual double getMinTimeStamp() const {
-    return getMinCorrectorTimeStamp();
-  }
+  /**
+   * Send solver data to neighbour rank. Read the data from
+   * the cell description \p elementIndex in
+   * the cell descriptions vector stored at \p
+   * cellDescriptionsIndex.
+   *
+   * \param[in] element Index of the ADERDGCellDescription
+   *                    holding the data to send out in
+   *                    the heap vector at \p cellDescriptionsIndex.
+   */
+  void sendDataToNeighbour(
+      const int                                     toRank,
+      const int                                     cellDescriptionsIndex,
+      const int                                     element,
+      const tarch::la::Vector<DIMENSIONS, int>&     src,
+      const tarch::la::Vector<DIMENSIONS, int>&     dest,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      int                                           level) override;
 
-  virtual double getMinTimeStepSize() const {
-    return getMinCorrectorTimeStepSize();
-  }
+  /**
+   * Send empty solver data to neighbour rank.
+   */
+  void sendEmptyDataToNeighbour(
+      const int                                     toRank,
+      const tarch::la::Vector<DIMENSIONS, int>&     src,
+      const tarch::la::Vector<DIMENSIONS, int>&     dest,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      int                                           level) override;
 
-  virtual double getNextMinTimeStepSize() const {
-    return getMinPredictorTimeStepSize();
-  }
+  /**
+   * Receive solver data from neighbour rank and write
+   * it on the cell description \p elementIndex in
+   * the cell descriptions vector stored at \p
+   * cellDescriptionsIndex.
+   *
+   * \param[in] element Index of the ADERDGCellDescription
+   *                    holding the data to send out in
+   *                    the heap vector at \p cellDescriptionsIndex.
+   */
+  void mergeWithNeighbourData(
+      const int                                     fromRank,
+      const int                                     cellDescriptionsIndex,
+      const int                                     element,
+      const tarch::la::Vector<DIMENSIONS, int>&     src,
+      const tarch::la::Vector<DIMENSIONS, int>&     dest,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      int                                           level) override;
 
-  void updateNextTimeStepSize( double value ) override {
-    updateMinNextPredictorTimeStepSize(value);
-  }
-
-  void initInitialTimeStamp(double value) override {
-    setMinPredictorTimeStamp(0.0);
-    setMinCorrectorTimeStamp(0.0);
-  }
+  /**
+   * Drop solver data from neighbour rank.
+   */
+  void dropNeighbourData(
+      const int                                     fromRank,
+      const tarch::la::Vector<DIMENSIONS, int>&     src,
+      const tarch::la::Vector<DIMENSIONS, int>&     dest,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      int                                           level) override;
+#endif
 
   /**
    * Returns a string representation of this solver.

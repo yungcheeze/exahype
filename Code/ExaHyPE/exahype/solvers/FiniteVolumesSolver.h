@@ -17,6 +17,8 @@
 
 #include "exahype/solvers/Solver.h"
 
+#include "exahype/records/FiniteVolumesCellDescription.h"
+
 namespace exahype {
   namespace solvers {
     class FiniteVolumesSolver;
@@ -57,7 +59,22 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
      */
     double _nextMinTimeStepSize;
 
+#ifdef Parallel
+    static const int DataMessagesPerNeighbour;
+#endif
+
   public:
+    typedef Solver::DataHeap DataHeap;
+
+    /**
+     * Rank-local heap that stores FiniteVolumesCellDescription instances.
+     *
+     * \note This heap might be shared by multiple FiniteVolumesSolver instances
+     * that differ in their solver number and other attributes.
+     * @see solvers::Solver::RegisteredSolvers.
+     */
+    typedef peano::heap::PlainHeap<exahype::records::FiniteVolumesCellDescription> Heap;
+
     FiniteVolumesSolver(
       const std::string& identifier,
       int numberOfVariables,
@@ -126,11 +143,67 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
 
     virtual double getNextMinTimeStepSize() const override;
 
-    #ifdef Parallel
+    virtual int tryGetElement(
+        const int cellDescriptionsIndex,
+        const int solverNumber) const;
+
+#ifdef Parallel
     void sendToRank(int rank, int tag) override;
 
     void receiveFromMasterRank(int rank, int tag) override;
-    #endif
+
+    /**
+     * Send solver data to neighbour rank.
+     */
+    void sendDataToNeighbour(
+        const int                                     toRank,
+        const int                                     cellDescriptionsIndex,
+        const int                                     elementIndex,
+        const tarch::la::Vector<DIMENSIONS, int>&     src,
+        const tarch::la::Vector<DIMENSIONS, int>&     dest,
+        const tarch::la::Vector<DIMENSIONS, double>&  x,
+        int                                           level) override {
+      assertionMsg(false,"Please implement!");
+    }
+
+    /**
+     * Send empty solver data to neighbour rank.
+     */
+    void sendEmptyDataToNeighbour(
+        const int                                     toRank,
+        const tarch::la::Vector<DIMENSIONS, int>&     src,
+        const tarch::la::Vector<DIMENSIONS, int>&     dest,
+        const tarch::la::Vector<DIMENSIONS, double>&  x,
+        int                                           level) override;
+
+    /**
+     * Receive solver data from neighbour rank.
+     *
+     * \param[in] elementIndex Index of the ADERDGCellDescription
+     *                         holding the data to send out in
+     *                         the heap vector at \p cellDescriptionsIndex.
+     */
+    void mergeWithNeighbourData(
+        const int                                     fromRank,
+        const int                                     cellDescriptionsIndex,
+        const int                                     elementIndex,
+        const tarch::la::Vector<DIMENSIONS, int>&     src,
+        const tarch::la::Vector<DIMENSIONS, int>&     dest,
+        const tarch::la::Vector<DIMENSIONS, double>&  x,
+        int                                           level) override {
+      assertionMsg(false,"Please implement!");
+    }
+
+    /**
+     * Drop solver data from neighbour rank.
+     */
+    void dropNeighbourData(
+          const int                                     fromRank,
+          const tarch::la::Vector<DIMENSIONS, int>&     src,
+          const tarch::la::Vector<DIMENSIONS, int>&     dest,
+          const tarch::la::Vector<DIMENSIONS, double>&  x,
+          int                                           level) override;
+#endif
 
     /**
      * Returns a string representation of this solver.

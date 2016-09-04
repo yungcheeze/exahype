@@ -25,8 +25,10 @@
 
 #include "exahype/profilers/Profiler.h"
 #include "exahype/profilers/simple/NoOpProfiler.h"
-#include "exahype/records/ADERDGCellDescription.h"
 
+#include "peano/heap/DoubleHeap.h"
+
+// TODO(Dominic): Change to enum
 #define EXAHYPE_FACE_LEFT 0
 #define EXAHYPE_FACE_RIGHT 1
 #define EXAHYPE_FACE_FRONT 2
@@ -55,12 +57,13 @@ namespace exahype {
   namespace solvers {
     class Solver;
 
-/**
- * All the registered solvers. Has to be declared extern in C++ standard as
- * it is instantiated in the corresponding cpp file.
- */
-// TODO: std::vector<std::unique_ptr<Solver>> ?!
-extern std::vector<Solver*> RegisteredSolvers;
+    typedef std::vector<Solver*> RegisteredSolversEntries;
+    /**
+     * All the registered solvers. Has to be declared extern in C++ standard as
+     * it is instantiated in the corresponding cpp file.
+     */
+    // TODO: std::vector<std::unique_ptr<Solver>> ?!
+    extern std::vector<Solver*> RegisteredSolvers;
 }  // namespace solvers
 }  // namespace exahype
 
@@ -70,12 +73,19 @@ extern std::vector<Solver*> RegisteredSolvers;
 class exahype::solvers::Solver {
  public:
   /**
-   * The type of this solver.
+   * We store the degrees of freedom associated with the ADERDGCellDescription and FiniteVolumesCellDescription
+   * instances on this heap.
+   * We further use this heap to send and receive face data from one MPI rank to the other.
+   */
+  typedef peano::heap::PlainDoubleHeap DataHeap;
+
+  /**
+   * The type of a solver.
    */
   enum class Type { ADER_DG, FiniteVolumes };
 
   /**
-   * The time stepping modus.
+   * The time stepping mode.
    */
   enum class TimeStepping {
     /**
@@ -94,6 +104,14 @@ class exahype::solvers::Solver {
    * The refinement controls a solver can use.
    */
   enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
+
+
+  /**
+   * Default return value of function getElement(...)
+   * If we do not find the element in a vector
+   * stored at a heap address.
+   */
+  static const int NotFound;
 
  protected:
   /**
@@ -280,6 +298,48 @@ class exahype::solvers::Solver {
   static double getCoarsestMeshSizeOfAllSolvers();
   static double getFinestMaximumMeshSizeOfAllSolvers();
 
+  /**
+   * If an entry for this solver exists,
+   * return the element index of the cell description
+   * in the array at address \p cellDescriptionsIndex.
+   * Otherwise return Solver::NotFound.
+   */
+  virtual int tryGetElement(
+      const int cellDescriptionsIndex,
+      const int solverNumber) const = 0;
+
+  /**
+   * Receive solver data from neighbour rank and write
+   * it on the cell description \p elementIndex in
+   * the cell descriptions vector stored at \p
+   * cellDescriptionsIndex.
+   *
+   * \param[in] element Index of the cell description
+   *                    holding the data to send out in
+   *                    the array at address \p cellDescriptionsIndex.
+   */
+  virtual void mergeNeighbours(
+        const int                                     cellDescriptionsIndex1,
+        const int                                     element1,
+        const int                                     cellDescriptionsIndex2,
+        const int                                     element2,
+        const tarch::la::Vector<DIMENSIONS, int>&     pos1,
+        const tarch::la::Vector<DIMENSIONS, int>&     pos2) = 0;
+
+  /**
+   * Take the cell descriptions \p element
+   * from array at address \p cellDescriptionsIndex
+   * and merge it with boundary data.
+   *
+   * \param[in] element Index of the cell description
+   *                    at address \p cellDescriptionsIndex.
+   */
+  virtual void mergeWithBoundaryData(
+        const int                                     cellDescriptionsIndex,
+        const int                                     element,
+        const tarch::la::Vector<DIMENSIONS, int>&     posCell,
+        const tarch::la::Vector<DIMENSIONS, int>&     posBoundary) =0;
+
   #ifdef Parallel
   /**
    * Send solver copy to remote node
@@ -295,6 +355,64 @@ class exahype::solvers::Solver {
    * Receive solver copy from remote node
    */
   virtual void receiveFromMasterRank(int rank, int tag) = 0;
+
+  /**
+   * Send solver data to neighbour rank. Read the data from
+   * the cell description \p elementIndex in
+   * the cell descriptions vector stored at \p
+   * cellDescriptionsIndex.
+   *
+   * \param[in] elementIndex Index of the ADERDGCellDescription
+   *                         holding the data to send out in
+   *                         the heap vector at \p cellDescriptionsIndex.
+   */
+  virtual void sendDataToNeighbour(
+      const int                                     toRank,
+      const int                                     cellDescriptionsIndex,
+      const int                                     elementIndex,
+      const tarch::la::Vector<DIMENSIONS, int>&     src,
+      const tarch::la::Vector<DIMENSIONS, int>&     dest,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      int                                           level) = 0;
+
+  /**
+   * Send empty solver data to neighbour rank.
+   */
+  virtual void sendEmptyDataToNeighbour(
+      const int                                     toRank,
+      const tarch::la::Vector<DIMENSIONS, int>&     src,
+      const tarch::la::Vector<DIMENSIONS, int>&     dest,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      int                                           level) = 0;
+
+  /**
+   * Receive solver data from neighbour rank and write
+   * it on the cell description \p elementIndex in
+   * the cell descriptions vector stored at \p
+   * cellDescriptionsIndex.
+   *
+   * \param[in] element Index of the cell description
+   *                    holding the data to send out in
+   *                    the array with address \p cellDescriptionsIndex.
+   */
+  virtual void mergeWithNeighbourData(
+      const int                                     fromRank,
+      const int                                     cellDescriptionsIndex,
+      const int                                     element,
+      const tarch::la::Vector<DIMENSIONS, int>&     src,
+      const tarch::la::Vector<DIMENSIONS, int>&     dest,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      int                                           level) = 0;
+
+  /**
+   * Drop solver data from neighbour rank.
+   */
+  virtual void dropNeighbourData(
+      const int                                     fromRank,
+      const tarch::la::Vector<DIMENSIONS, int>&     src,
+      const tarch::la::Vector<DIMENSIONS, int>&     dest,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      int                                           level) = 0;
   #endif
 };
 
