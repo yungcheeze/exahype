@@ -42,8 +42,7 @@ class exahype::records::ADERDGCellDescription {
   parallelise persistent bool isInside[DIMENSIONS_TIMES_TWO];
   ///@}
   
-  #ifdef Parallel
-  
+  #ifdef Parallel  
   /**
    * If a neighbouring cell belonging to another rank
    * functions as a compute cell for the same solver (Type::Cell)
@@ -55,7 +54,7 @@ class exahype::records::ADERDGCellDescription {
    * \note This flag should be only set in MarkingForAugmentation::mergeWithNeighbour(...).
    * It should be read and be reseted afterwards in MarkingForAugmentation::mergeWithNeighbour(...).
    */
-  parallelise persistent bool helperCellNeedsToStoreFaceData;
+  parallelise persistent bool helperCellNeedsToStoreFaceData; // TODO(Dominic_: Remove this flag again
   /**
    * Face data exchange in ExaHyPE is realised in vertices: each vertex checks
    * whether one of its adjacent faces should go to another rank. As a result, 
@@ -167,20 +166,33 @@ class exahype::records::ADERDGCellDescription {
   /**
    * Type of a cell description.
    * Cell descriptions of type \p Cell hold cell and face data,
-   * while the ones of type \p Shell hold only face data.
+   * while the ones of type \p Ancestor hold only face data.
    * Both belong to the original spacetree that
    * is constructed according to solver-based refinement criteria.
-   * Virtual shells hold also only face data but belong to
-   * the virtual part of the augmented spacetree that
+   * Helper cells of type Descendant also hold face data 
+   * but belong to the virtual part of the augmented spacetree that
    * is created to store prolongated face data.
+   *
+   * ADERDGCellDescriptions of type \p EmptyAncestor and \p EmptyDescendant
+   * do not hold face data. These types are set if the cell
+   * associated to this cell description is not neighbouring
+   * a cell that holds a cell description of type \p
+   * Cell.
+   *
+   * RemoteBoundaryDescendant and RemoteBoundaryAncestor are set
+   * as type of an ADERDGCellDescription if the ADERDGCellDescription
+   * needs to communicate data to a neighbour process, or a worker/master
+   * process.
    */
 
   enum Type {
     Erased,
     Ancestor,
+    RemoteBoundaryAncestor,
     EmptyAncestor,
     Cell,
     Descendant,
+    RemoteBoundaryDescendant,
     EmptyDescendant
   };
 
