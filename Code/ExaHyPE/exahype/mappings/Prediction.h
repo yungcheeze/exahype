@@ -66,10 +66,17 @@ namespace exahype {
  * As the mapping accesses the state data in a read-only fashion, no special
  * attention is required here.
  *
- * <h2>Bug fixes and optimisations we have not yet performed<h2>
- *
- * 1. Solved: We currently send out and receive 2^{d-1} messages per face. This will become an even bigger issue
- *    when we introduce space-time face data.
+ * <h2>Optimisations</h2>
+ * We dedicate each thread a fixed size space-time predictor,
+ * space-time volume flux, predictor, and volume flux
+ * field. There is no need to store these massive
+ * quantities on the heap for each cell as it was done
+ * in the baseline code.
+ * This massively reduces the memory footprint of
+ * the method and might lead to a more
+ * cache-friendly code since we reuse
+ * the temporary variables multiple times
+ * per grid traversal (unverified).
  *
  * @author Dominic E. Charrier and Tobias Weinzierl
  *
@@ -96,6 +103,27 @@ class exahype::mappings::Prediction {
    */
   static tarch::multicore::BooleanSemaphore _semaphoreForRestriction;
 
+  /**
+   * Temporary variable: Degrees of freedom of the space-time predictor
+   * for all solvers in case we parallelise over the cell descriptions associated with a cell.
+   */
+  double** _lQi=0;
+  /**
+   * Temporary variable: Degrees of freedom of the space-time predictor volume flux
+   * for all solvers in case we parallelise over the cell descriptions associated with a cell.
+   */
+  double** _lFi=0;
+  /**
+   * Temporary variable: Degrees of freedom of time averaged space-time predictor
+   * for all solvers in case we parallelise over the cell descriptions associated with a cell.
+   */
+  double** _lQhi=0;
+  /**
+   * Temporary variable: Degrees of freedom of the time averaged space-time predictor volume flux
+   * for all solvers in case we parallelise over the cell descriptions associated with a cell.
+   */
+  double** _lFhi=0;
+
   #if defined(Debug)
   /**
    * Some counters for debugging purposes.
@@ -104,6 +132,37 @@ class exahype::mappings::Prediction {
   static int _parentOfCellOrAncestorFound;
   static int _parentOfDescendantFound;
   #endif
+
+  /**
+   * Initialises the temporary variables.
+   *
+   * \note We parallelise over the domain
+   * (mapping is copied for each thread) and
+   * over the solvers registered on a cell.
+   *
+   * \note We need to initialise the temporary variables
+   * in this mapping and not in the solvers since the
+   * solvers in exahype::solvers::RegisteredSolvers
+   * are not copied for every thread.
+   */
+  void initTemporaryVariables();
+
+  /**
+   * Deletes the temporary variables.
+   *
+   * \note We need to initialise the temporary variables
+   * in this mapping and not in the solvers since the
+   * solvers in exahype::solvers::RegisteredSolvers
+   * are not copied for every thread.
+   */
+  void deleteTemporaryVariables();
+
+  /**
+   * Computes the space-time predictor quantities, extrapolates fluxes
+   * and (space-time) predictor values to the boundary and
+   * computes the volume integral.
+   */
+  void performPredictionAndVolumeIntegral(exahype::records::ADERDGCellDescription& p);
 
   /**
    * Returns if the face is inside. Inside for
@@ -121,22 +180,10 @@ class exahype::mappings::Prediction {
       const peano::grid::VertexEnumerator& verticesEnumerator);
 
   /**
-   * Computes the space-time predictor quantities, extrapolates fluxes
-   * and (space-time) predictor values to the boundary and
-   * computes the volume integral.
-   *
-   * TODO(Dominic): Dedicate each thread a fixed size Prediction and
-   * PredictionVolumeFlux field. No need to store these massive
-   * quantities on the heap for each cell.
-   */
-  static void performPredictionAndVolumeIntegral(exahype::records::ADERDGCellDescription& p);
-
-  /**
    * Sets the extrapolated predictor and fluctuations of an Ancestor to zero.
    */
   static void prepareAncestor(
       exahype::records::ADERDGCellDescription& p);
-
 
   /**
    * Prolongates face data from a parent ADERDGCellDescription to
@@ -248,62 +295,95 @@ class exahype::mappings::Prediction {
       const peano::grid::VertexEnumerator& verticesEnumerator);
 
   /**
-   * Checks for all cell descriptions (ADER-DG, FV, ...)
-   * corresponding to the heap index \p cellDescriptionsIndex
-   * if now is the time to send out face data to a
-   * neighbouring rank.
+   * Loop over all the solvers and check
+   * if a cell description (ADERDGCellDescription,
+   * FiniteVolumesCellDescription,...) is registered
+   * for the solver type. If so, send
+   * out data or empty messages to the rank \p toRank that
+   * owns the neighbouring domain.
    *
-   * <h2>Details<\h2>
-   * On every cell description, we hold a field of 2*d
-   * counters. If a face is part of the MPI boundary,
-   * we initialise the corresponding counter with
-   * value 2^{d-1}.
-   *
-   * In the mergeWithNeighbour(...) routine,
-   * we then decrement the counters for the face
-   * every time one of the 2^{d-1}
-   * adjacent vertices touches the face.
-   *
-   * If the counters hold the value zero, this function returns true.
-   * Otherwise it returns false
-   *
-   * @see decrementCounters
-   */
-  static bool needToSendFaceData(
-      const tarch::la::Vector<DIMENSIONS,int>& src,
-      const tarch::la::Vector<DIMENSIONS,int>& dest,
-      int cellDescriptionsIndex);
-
-
-  /**
-   * Every call of this function decrements the
-   * faceDataExchangeCounter for the face corresponding
-   * to the source and destination position pair \p src and \p dest
-   * for all cell descriptions corresponding to \p cellDescriptionsIndex.
-   *
-   * @see hasToSendFace
-   */
-  static void decrementCounters(
-      const tarch::la::Vector<DIMENSIONS,int>& src,
-      const tarch::la::Vector<DIMENSIONS,int>& dest,
-      int cellDescriptionsIndex);
-
-  /**
-   * TODO(Dominic): Docu.
+   * If not so, send out empty messages for the particular
+   * solver.
    *
    * TODO(Dominic): Make messaging solver functionality?
    *
    * \note Not thread-safe.
    */
-  static void sendADERDGFaceData(
-      int toRank,
+  static void sendSolverData(
+      const int                                    toRank,
+      const tarch::la::Vector<DIMENSIONS,int>&     src,
+      const tarch::la::Vector<DIMENSIONS,int>&     dest,
+      const int                                    srcCellDescriptionIndex,
+      const int                                    destCellDescriptionIndex,
       const tarch::la::Vector<DIMENSIONS, double>& x,
-      int level,
-      const tarch::la::Vector<DIMENSIONS,int>& src,
-      const tarch::la::Vector<DIMENSIONS,int>& dest,
-      const exahype::Vertex& vertex, // TODO(remove):
-      int srcCellDescriptionIndex,
-      int destCellDescriptionIndex);
+      const int                                    level);
+
+  /**
+   * Loop over all the solvers and check
+   * send out empty messages for the particular
+   * solver.
+   *
+   * TODO(Dominic): Make messaging solver functionality?
+   *
+   * \note Not thread-safe.
+   */
+  static void sendEmptySolverData(
+      const int                                     toRank,
+      const tarch::la::Vector<DIMENSIONS,int>&      src,
+      const tarch::la::Vector<DIMENSIONS,int>&      dest,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level);
+
+
+  /**
+   * Send out ADERDG data to the rank of a neighbouring
+   * domain if a ADERDGCellDescription for the solver with number
+   * \p solverNumber can be found in the heap vector
+   * with index \p srcCellDescriptionIndex.
+   *
+   * If the ADERDGCellDescription does not hold
+   * the required data, we sent out an empty array
+   * for each required data.
+   *
+   * TODO(Dominic): Make messaging solver functionality?
+   *
+   * \note Not thread-safe.
+   */
+  static bool sendSolverDataIfRegistered(
+      const int                                     solverNumber,
+      const int                                     toRank,
+      const tarch::la::Vector<DIMENSIONS,int>&      src,
+      const tarch::la::Vector<DIMENSIONS,int>&      dest,
+      const int                                     srcCellDescriptionIndex,
+      const int                                     destCellDescriptionIndex,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const  int                                    level);
+
+  /**
+   * Send out Finite Volumes data to the rank of a neighbouring
+   * domain if a FiniteVolumesCellDescription for the solver with number
+   * \p solverNumber can be found in the heap vector
+   * with index \p srcCellDescriptionIndex.
+   *
+   * If the FiniteVolumesCellDescription does not hold
+   * the required data, we sent out an empty array
+   * for each required data.
+   *
+   * TODO(Dominic): Make messaging solver functionality?
+   *
+   * \note Not thread-safe.
+   */
+  static bool sendFiniteVolumesDataIfSolverIsRegistered(
+        const int                                     solverNumber,
+        const int                                     toRank,
+        const tarch::la::Vector<DIMENSIONS,int>&      src,
+        const tarch::la::Vector<DIMENSIONS,int>&      dest,
+        const int                                     srcCellDescriptionIndex,
+        const int                                     destCellDescriptionIndex,
+        const tarch::la::Vector<DIMENSIONS, double>&  x,
+        const  int                                    level) {
+    assertionMsg(false,"Dominic please implement!"); return false;
+  }
   #endif
 
 
@@ -319,6 +399,30 @@ class exahype::mappings::Prediction {
    * Please consult the specification's documentation in NewTimeStep.
    */
   static peano::CommunicationSpecification communicationSpecification();
+
+  /**
+   * Initialise the temporary variables (of the master thread
+   * in a shared memory build).
+   */
+  Prediction();
+
+  /**
+   * Delete the temporary variables (for
+   * master and worker threads in a shared memory build).
+   */
+  ~Prediction();
+
+  #if defined(SharedMemoryParallelisation)
+  /**
+   * Initialise the temporary variables of a
+   * worker thread.
+   */
+  Prediction(const Prediction& masterThread);
+  /**
+   * Nop
+   */
+  void mergeWithWorkerThread(const Prediction& workerThread);
+  #endif
 
   /**
    * Enter a cell
@@ -364,21 +468,6 @@ class exahype::mappings::Prediction {
       const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-
-#if defined(SharedMemoryParallelisation)
-  /**
-   * Access the states mapping in a read-only fashion.
-   */
-  Prediction(const Prediction& masterThread);
-#endif
-
-#if defined(SharedMemoryParallelisation)
-  /**
-   * Nop
-   */
-  void mergeWithWorkerThread(const Prediction& workerThread);
-#endif
 
   /**
    * Nop
@@ -632,16 +721,6 @@ class exahype::mappings::Prediction {
                        const tarch::la::Vector<DIMENSIONS, double>& h,
                        int level);
 #endif
-  /**
-   * Nop
-   */
-  Prediction();
-
-  /**
-   * Nop
-   */
-  virtual ~Prediction();
-
   /**
    * Nop
    */

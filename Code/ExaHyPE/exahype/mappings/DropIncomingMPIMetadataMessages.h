@@ -54,7 +54,6 @@ class exahype::mappings::DropIncomingMPIMetadataMessages {
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
-
  public:
   /**
    * These flags are used to inform Peano about your operation. It tells the

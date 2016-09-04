@@ -75,13 +75,6 @@ tarch::logging::Log exahype::mappings::DropIncomingMPIMessages::_log(
     "exahype::mappings::DropIncomingMPIMessages");
 
 #ifdef Parallel
-// TODO(Dominic): Add to docu: We receive metadata on all vertices.
-// We receive only for Cell/Ancestor/Descendants cell descriptions face data.
-// EmptyAncestor/EmptyDescendants/InvalidAdjacencyIndices drop face data
-// that was sent to them by Cells/Ancestors/Descendants.
-// TODO(Dominic): Add to docu: The following invariant must hold:
-// A cell holding Cell/Ancestor/Descendant cell descriptions
-// next to a remote cell with cellDescriptionsIndex==InvalidAdjacencyIndex.
 void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -89,16 +82,9 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
 
 // TODO(Dominic): This is a bug or needs to be documented.
 // see discussion in SpaceTimePredictor
-//#if !defined(PeriodicBC)
-//  if (vertex.isBoundary()) return;
-//#endif
-
-  // TODO(Dominic): Add to docu why we remove the vertex.isInside() constraint here.
-  // We might also consider to remove it from the grid setup mapping functions.
-  // fineGridCell.isInside does not imply that all adjacent vertices are
-  // inside. If we count down the counter only on
-  // fineGridVertices that are inside we might not send out all faces
-  // of a cell that is close to the boundary.
+#if !defined(PeriodicBC)
+  if (vertex.isBoundary()) return;
+#endif
 
   dfor2(myDest)
     dfor2(mySrc)
@@ -108,27 +94,34 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
       int destScalar = TWO_POWER_D - myDestScalar - 1;
       int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
-      if (vertex.hasToReceiveMetadataIgnoreForksJoins(src,dest,fromRank)) {
-        // 1. Receive metadata.
+      if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
         int receivedMetadataIndex = MetadataHeap::getInstance().createData(0,0);
         assertion(MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
         MetadataHeap::getInstance().receiveData(
             receivedMetadataIndex,
             fromRank, fineGridX, level,
             peano::heap::MessageType::NeighbourCommunication);
-        MetadataHeap::HeapEntries receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
+        exahype::MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
+        assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
 
-        // TODO (Dominic): Drop the incoming messages if necessary.
-        // We only send non trivial metadata out if we
-        // send face data. See SpaceTimePredictor for details.
-        // We can thus interpret from the received metadata
-        // if the current vertex needs to receive and drop
-        // facedata.
-        if (!exahype::Cell::isEncodedMetadataSequenceForInvalidCellDescriptionsIndex(receivedMetadata)) {
-          exahype::mappings::RiemannSolver::dropADERDGFaceData(
-              fromRank,fineGridX,level,src,dest,
+        if(vertex.hasToMergeNeighbourData(src,dest)) {
+          vertex.setFaceDataExchangeCountersOfDestination(src,dest,TWO_POWER_D);
+          vertex.setMergePerformed(src,dest,true);
+
+          dropNeighbourData(
+              fromRank,
               vertex.getCellDescriptionsIndex()[srcScalar],
               vertex.getCellDescriptionsIndex()[destScalar],
+              src,dest,
+              fineGridX,level,
+              receivedMetadata);
+        } else {
+          dropNeighbourData(
+              fromRank,
+              vertex.getCellDescriptionsIndex()[srcScalar],
+              vertex.getCellDescriptionsIndex()[destScalar],
+              src,dest,
+              fineGridX,level,
               receivedMetadata);
         }
         // Clean up
@@ -136,6 +129,29 @@ void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
       }
     enddforx
   enddforx
+}
+
+
+void exahype::mappings::DropIncomingMPIMessages::dropNeighbourData(
+    const int fromRank,
+    const int srcCellDescriptionIndex,
+    const int destCellDescriptionIndex,
+    const tarch::la::Vector<DIMENSIONS,int>& src,
+    const tarch::la::Vector<DIMENSIONS,int>& dest,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int level,
+    const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
+  logDebug(
+      "mergeWithNeighbour(...)", "[drop] " <<
+      fromRank << " for vertex x=" << fineGridX << ", level=" << level <<
+      ", src type=" << multiscalelinkedcell::indexToString(destCellDescriptionIndex) <<
+      ", src=" << src << ", dest=" << dest);
+
+  assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
+
+  for(auto solver : solvers::RegisteredSolvers) {
+    solver->dropNeighbourData(fromRank,src,dest,x,level);
+  }
 }
 
 void exahype::mappings::DropIncomingMPIMessages::mergeWithMaster(

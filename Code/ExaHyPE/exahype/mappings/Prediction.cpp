@@ -94,6 +94,80 @@ int exahype::mappings::Prediction::
 _parentOfDescendantFound        = 0;
 #endif
 
+exahype::mappings::Prediction::Prediction() {
+  initTemporaryVariables();
+}
+
+exahype::mappings::Prediction::~Prediction() {
+  deleteTemporaryVariables();
+}
+
+#if defined(SharedMemoryParallelisation)
+exahype::mappings::Prediction::Prediction(
+    const Prediction& masterThread) {
+  initTemporaryVariables();
+}
+void exahype::mappings::Prediction::mergeWithWorkerThread(
+    const Prediction& workerThread) {
+}
+#endif
+
+void exahype::mappings::Prediction::initTemporaryVariables() {
+  assertion1(_lQi ==0,_lQi );
+  assertion1(_lFi ==0,_lFi );
+  assertion1(_lQhi==0,_lQhi);
+  assertion1(_lFhi==0,_lFhi);
+
+  int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
+  _lQi  = new double*[numberOfSolvers];
+  _lFi  = new double*[numberOfSolvers];
+  _lQhi = new double*[numberOfSolvers];
+  _lFhi = new double*[numberOfSolvers];
+
+  int solverNumber=0;
+  for (auto& solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+      _lQi [solverNumber]  =
+          new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getSpaceTimeUnknownsPerCell()];
+      _lFi [solverNumber]  =
+          new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getSpaceTimeFluxUnknownsPerCell()];
+      _lQhi[solverNumber] =
+          new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getUnknownsPerCell()];
+      _lFhi[solverNumber] =
+          new double[static_cast<exahype::solvers::ADERDGSolver*>(solver)->getFluxUnknownsPerCell()];
+    } else {
+      _lQi[solverNumber]  = 0;
+      _lFi[solverNumber]  = 0;
+      _lQhi[solverNumber] = 0;
+      _lFhi[solverNumber] = 0;
+    }
+    ++solverNumber;
+  }
+}
+
+void exahype::mappings::Prediction::deleteTemporaryVariables() {
+  int solverNumber=0;
+  for (auto& solver : exahype::solvers::RegisteredSolvers) {
+    if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+      delete[]_lQi[solverNumber];
+      delete[]_lFi[solverNumber];
+      delete[]_lQhi[solverNumber];
+      delete[]_lFhi[solverNumber];
+    }
+    _lQi [solverNumber] = 0;
+    _lFi [solverNumber] = 0;
+    _lQhi[solverNumber] = 0;
+    _lFhi[solverNumber] = 0;
+
+    ++solverNumber;
+  }
+
+  delete[] _lQi;
+  delete[] _lFi;
+  delete[]_lQhi;
+  delete[]_lFhi;
+}
+
 void exahype::mappings::Prediction::beginIteration(
     exahype::State& solverState) {
   #if defined(Debug)
@@ -126,7 +200,7 @@ void exahype::mappings::Prediction::enterCell(
 
   if (fineGridCell.isInitialised()) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
-        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size());
+        exahype::solvers::ADERDGSolver::Heap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size());
 
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace =
@@ -145,7 +219,8 @@ void exahype::mappings::Prediction::enterCell(
         pFine.setRiemannSolvePerformed(faceIndex,false);
         // TODO(Dominic): Normally, isFaceInside has not to be called everytime here
         // but only once when the cell is initialised. Problem: Call addNewCellDescr.. from  merge..DueToForkOrJoin(...),
-        // where no vertices are given.
+        // where no vertices are given. [Solved] - We send out the cellDescriptions from
+        // the ADERDG/FV cell descr. heaps.
         pFine.setIsInside(faceIndex,isFaceInside(faceIndex,fineGridVertices,fineGridVerticesEnumerator));
         // TODO(Dominic): Add to docu.
         // 0 - no connection: no send. Set to unreachable value.
@@ -154,6 +229,8 @@ void exahype::mappings::Prediction::enterCell(
         // 4^{d-2} - full face connection where cell is inside and face vertices are all inside:
         // send at time of 2^{d-2}-th touch of face.
         // We require that #ifdef vertex.isBoundary() is set.
+        // These are counter values that have to be reinitialised every
+        // iteration. They can stay here.
         #ifdef Parallel
         int listingsOfRemoteRank = countListingsOfRemoteRankByInsideVerticesAtFace(faceIndex,fineGridVertices,fineGridVerticesEnumerator);
         if (listingsOfRemoteRank==0) {
@@ -180,7 +257,7 @@ void exahype::mappings::Prediction::enterCell(
         break;
       case exahype::records::ADERDGCellDescription::Descendant:
         assertion1(pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,pFine.toString());
-        assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(pFine.getParentIndex()),pFine.toString());
+        assertion1(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(pFine.getParentIndex()),pFine.toString());
         subcellPosition = fineGridCell.computeSubcellPositionOfDescendant(pFine);
         prolongateADERDGFaceData(pFine, subcellPosition.parentIndex,
             subcellPosition.subcellIndex);
@@ -189,7 +266,6 @@ void exahype::mappings::Prediction::enterCell(
         break;
       }
     endpfor
-
     peano::datatraversal::autotuning::Oracle::getInstance()
         .parallelSectionHasTerminated(methodTrace);
   }
@@ -222,14 +298,6 @@ void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
   assertion1(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()),p.toString());
   assertion1(DataHeap::getInstance().isValidIndex(p.getFluctuation()),p.toString());
 
-  // temporary fields
-  // TODO(Dominic): Replace by more elegant solution.
-  double* lQi = new double[solver->getSpaceTimeUnknownsPerCell()];
-  double* lFi = new double[solver->getSpaceTimeFluxUnknownsPerCell()];
-  // volume DoF (basisSize**(DIMENSIONS))
-  double* lQhi = new double[solver->getUnknownsPerCell()];
-  double* lFhi = new double[solver->getFluxUnknownsPerCell()];
-
   // persistent fields
   // volume DoF (basisSize**(DIMENSIONS))
   double* luh  = DataHeap::getInstance().getData(p.getSolution()).data();
@@ -239,32 +307,34 @@ void exahype::mappings::Prediction::performPredictionAndVolumeIntegral(
   double* lFhbnd = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
   solver->spaceTimePredictor(
-      lQi, lFi, lQhi, lFhi,
+      _lQi[p.getSolverNumber()],
+      _lFi[p.getSolverNumber()],
+      _lQhi[p.getSolverNumber()],
+      _lFhi[p.getSolverNumber()],
       lQhbnd,
       lFhbnd,
       luh, p.getSize(),
       p.getPredictorTimeStepSize());
-  solver->volumeIntegral(lduh, lFhi, p.getSize());
+
+  solver->volumeIntegral(
+      lduh,
+      _lFhi[p.getSolverNumber()],
+      p.getSize());
 
     for (int i=0; i<solver->getSpaceTimeUnknownsPerCell(); i++) {
-      assertion3(std::isfinite(lQi[i]),p.toString(),"performPredictionAndVolumeIntegral(...)",i);
+      assertion3(std::isfinite(_lQi[p.getSolverNumber()][i]),p.toString(),"performPredictionAndVolumeIntegral(...)",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
     for (int i=0; i<solver->getSpaceTimeFluxUnknownsPerCell(); i++) {
-      assertion3(std::isfinite(lFi[i]), p.toString(),"performPredictionAndVolumeIntegral",i);
+      assertion3(std::isfinite(_lFi[p.getSolverNumber()][i]), p.toString(),"performPredictionAndVolumeIntegral",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
       for (int i=0; i<solver->getUnknownsPerCell(); i++) {
-      assertion3(std::isfinite(lQhi[i]),p.toString(),"performPredictionAndVolumeIntegral(...)",i);
+      assertion3(std::isfinite(_lQhi[p.getSolverNumber()][i]),p.toString(),"performPredictionAndVolumeIntegral(...)",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
 
     for (int i=0; i<solver->getFluxUnknownsPerCell(); i++) {
-      assertion3(std::isfinite(lFhi[i]),p.toString(),"performPredictionAndVolumeIntegral(...)",i);
+      assertion3(std::isfinite(_lFhi[p.getSolverNumber()][i]),p.toString(),"performPredictionAndVolumeIntegral(...)",i);
     } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-
-  delete[] lQi;
-  delete[] lFi;
-  delete[] lQhi;
-  delete[] lFhi;
 }
 
 void exahype::mappings::Prediction::prepareAncestor(
@@ -284,11 +354,11 @@ void exahype::mappings::Prediction::prolongateADERDGFaceData(
     const int parentIndex,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {
   // todo not dynamic with respect to the solver registry
-  assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(parentIndex),
+  assertion1(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(parentIndex),
              cellDescription.toString());
 
   exahype::records::ADERDGCellDescription& cellDescriptionParent =
-      ADERDGCellDescriptionHeap::getInstance().getData(
+      exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
           parentIndex)[cellDescription.getSolverNumber()];
 
 #if defined(Debug)
@@ -356,11 +426,11 @@ void exahype::mappings::Prediction::prolongateFiniteVolumesFaceData(
     const int parentIndex,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {
   // todo not dynamic with respect to the solver registry
-  assertion1(FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(parentIndex),
+  assertion1(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(parentIndex),
              cellDescription.toString());
 
   exahype::records::FiniteVolumesCellDescription& cellDescriptionParent =
-      FiniteVolumesCellDescriptionHeap::getInstance().getData(
+      exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(
           parentIndex)[cellDescription.getSolverNumber()];
 
 #if defined(Debug)
@@ -456,10 +526,10 @@ void exahype::mappings::Prediction::leaveCell(
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
 
-  if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(
+  if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(
           fineGridCell.getCellDescriptionsIndex())) {
     const int numberOfADERDGCellDescriptions = static_cast<int>(
-        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size());
+        exahype::solvers::ADERDGSolver::Heap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size());
     // please use a different UserDefined per mapping/event
     const peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined10;
     const int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions, methodTrace);
@@ -467,8 +537,8 @@ void exahype::mappings::Prediction::leaveCell(
         records::ADERDGCellDescription& pFine = fineGridCell.getADERDGCellDescription(i);
 
     // if we have at least one parent
-    if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(pFine.getParentIndex())) {
-      for (auto& pParent : ADERDGCellDescriptionHeap::getInstance().getData(pFine.getParentIndex())) {
+    if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(pFine.getParentIndex())) {
+      for (auto& pParent : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(pFine.getParentIndex())) {
         exahype::Cell::SubcellPosition subcellPosition;
 
         if (pFine.getSolverNumber() == pParent.getSolverNumber()) {
@@ -497,11 +567,11 @@ void exahype::mappings::Prediction::restrictADERDGFaceData(
     const int parentIndex,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {
   // todo not dynamic with respect to the solver registry
-  assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(parentIndex),
+  assertion1(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(parentIndex),
              cellDescription.toString());
 
   exahype::records::ADERDGCellDescription& cellDescriptionParent =
-      ADERDGCellDescriptionHeap::getInstance().getData(parentIndex)[cellDescription.getSolverNumber()];
+      exahype::solvers::ADERDGSolver::Heap::getInstance().getData(parentIndex)[cellDescription.getSolverNumber()];
 
   assertion(cellDescriptionParent.getSolverNumber() == cellDescription.getSolverNumber());
 
@@ -577,11 +647,11 @@ void exahype::mappings::Prediction::restrictFiniteVolumesSolution(
     const int parentIndex,
     const tarch::la::Vector<DIMENSIONS, int>& subcellIndex) {
   // todo not dynamic with respect to the solver registry
-  assertion1(FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(parentIndex),
+  assertion1(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(parentIndex),
              cellDescription.toString());
 
   exahype::records::FiniteVolumesCellDescription& cellDescriptionParent =
-      FiniteVolumesCellDescriptionHeap::getInstance().getData(parentIndex)[cellDescription.getSolverNumber()];
+      exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(parentIndex)[cellDescription.getSolverNumber()];
 
   assertion(cellDescriptionParent.getSolverNumber() == cellDescription.getSolverNumber());
 
@@ -688,242 +758,84 @@ int exahype::mappings::Prediction::countListingsOfRemoteRankByInsideVerticesAtFa
   return result;
 }
 
+
 void exahype::mappings::Prediction::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // TODO(Dominic): Add to docu.
-  //
-  // Sender:
-  // 1. Send out face data if cell type
-  // is Cell/Ancestor/Descendant AND if the counter says yes
-  // 2. Send out metadata: Send out "empty" metadata if the counters says no
-  // or the src cellDescriptionsIndex is not valid.
-  //
-  // Receiver:
-  // 1. Receive metadata
-  // 2. If neighbour cell type is Cell/Ancestor/Descendant and the metadata is not "empty"
-  // receive face data for cell types Cell/Ancestor/Descendant.
-  // Drop messages for EmptyAncestor/EmptyDescendant and if the
-  // destCellDescriptionsIndex is not valid.
-
-// TODO(Dominic): This does prevent couting down the vertices.
-//#if !defined(PeriodicBC)
-//  if (vertex.isBoundary()) return;
-//#endif
-
-  // TODO(Dominic): Add to docu why we remove the vertex.isInside() constraint here.
-  // We might also consider to remove it from the grid setup mapping functions.
-  // fineGridCell.isInside does not imply that all adjacent vertices are
-  // inside. If we count down the counter only on
-  // fineGridVertices that are inside we might not send out all faces
-  // of a cell that is close to the boundary.
-
-  tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
-      vertex.getCellDescriptionsIndex();
+#if !defined(PeriodicBC)
+  if (vertex.isBoundary()) return;
+#endif
 
   dfor2(dest)
     dfor2(src)
-      if (vertex.isInside() &&
-          vertex.hasToSendMetadata(src,dest,toRank)) {
-        // we are solely exchanging faces
-        const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
-
-        if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(srcCellDescriptionIndex)) {
-          assertion1(FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(srcCellDescriptionIndex),srcCellDescriptionIndex);
-
-          decrementCounters(src,dest,srcCellDescriptionIndex);
-          if (needToSendFaceData(src,dest,srcCellDescriptionIndex)) {
-            sendADERDGFaceData(toRank,x,level,src,dest,vertex,srcCellDescriptionIndex,adjacentADERDGCellDescriptionsIndices(destScalar));
-            //            sentFiniteVolumesFaceData(toRank,x,level,src,dest,srcCellDescriptionIndex,adjacentADERDGCellDescriptionsIndices(destScalar));
-
-            auto encodedMetadata = exahype::Cell::encodeMetadata(srcCellDescriptionIndex);
-            MetadataHeap::getInstance().sendData(
-                encodedMetadata, toRank, x, level,
-                peano::heap::MessageType::NeighbourCommunication);
-          } else {
-            logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<
-                " from vertex x=" << x << ", level=" << level <<
-                ", vertex.adjacentRanks: " << vertex.getAdjacentRanks());
-            auto encodedMetadata = exahype::Cell::createEncodedMetadataSequenceForInvalidCellDescriptionsIndex();
-            MetadataHeap::getInstance().sendData(
-                encodedMetadata, toRank, x, level,
-                peano::heap::MessageType::NeighbourCommunication);
-          }
-        } else {
-          assertion1(srcCellDescriptionIndex==multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
-              srcCellDescriptionIndex);
-          logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<", "
-              " from vertex x=" << x << ", level=" << level <<
-              ", vertex.adjacentRanks: " << vertex.getAdjacentRanks());
-          auto encodedMetadata = exahype::Cell::createEncodedMetadataSequenceForInvalidCellDescriptionsIndex();
-          MetadataHeap::getInstance().sendData(
-              encodedMetadata, toRank, x, level,
-              peano::heap::MessageType::NeighbourCommunication);
-        }
+    if (vertex.hasToSendMetadata(src,dest,toRank)) {
+      vertex.tryDecrementFaceDataExchangeCountersOfSource(src,dest);
+      if (vertex.hasToSendDataToNeighbour(src,dest)) {
+        sendSolverData(
+            toRank,src,dest,
+            vertex.getCellDescriptionsIndex()[srcScalar],
+            vertex.getCellDescriptionsIndex()[destScalar],
+            x,level);
+      } else {
+        sendEmptySolverData(toRank,src,dest,x,level);
       }
+    }
     enddforx
   enddforx
 }
 
-bool exahype::mappings::Prediction::needToSendFaceData(
-    const tarch::la::Vector<DIMENSIONS,int>& src,
-    const tarch::la::Vector<DIMENSIONS,int>& dest,
-    int cellDescriptionsIndex) {
-  assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
-
-  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
-  assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-  const int faceIndex = 2 * normalOfExchangedFace +
-      (src(normalOfExchangedFace) < dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the "<" !!!
-
-  // ADER-DG
-  for (auto& p : ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndex)) {
-    if (p.getFaceDataExchangeCounter(faceIndex)!=0) {
-      return false;
-    }
-  }
-
-//  // TODO(Dominic): Introduce counters to FiniteVolumesCellDescription.
-//  // FV
-//  for (auto& p : FiniteVolumesCellDescriptionHeap::getInstance().getData(cellDescriptionsIndex)) {
-//    if (p.getFaceDataExchangeCounter(faceIndex)!=0) {
-//      return false;
-//    }
-//  }
-
-  return true;
-}
-
-void exahype::mappings::Prediction::decrementCounters(
-    const tarch::la::Vector<DIMENSIONS,int>& src,
-    const tarch::la::Vector<DIMENSIONS,int>& dest,
-    int cellDescriptionsIndex) {
-  assertion1(ADERDGCellDescriptionHeap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
-
-  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
-  assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-  const int faceIndex = 2 * normalOfExchangedFace +
-      (src(normalOfExchangedFace) < dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the "<" !!!
-
-  // ADER-DG
-  for (auto& p : ADERDGCellDescriptionHeap::getInstance().getData(cellDescriptionsIndex)) {
-    int newCounterValue = p.getFaceDataExchangeCounter(faceIndex)-1;
-    assertion1(newCounterValue<TWO_POWER_D,newCounterValue);
-    p.setFaceDataExchangeCounter(faceIndex,newCounterValue);
-  }
-
-//  // TODO(Dominic): Introduce counters to FiniteVolumesCellDescription.
-//  // FV
-//  for (auto& p : FiniteVolumesCellDescriptionHeap::getInstance().getData(cellDescriptionsIndex)) {
-//    int newCounterValue = p.getFaceDataExchangeCounter(faceIndex)-1;
-//    assertion1(newCounterValue<TWO_POWER_D,newCounterValue);
-//    p.setFaceDataExchangeCounter(faceIndex,newCounterValue);
-//  }
-}
-
-void exahype::mappings::Prediction::sendADERDGFaceData(
-    int                                           toRank,
+void exahype::mappings::Prediction::sendEmptySolverData(
+    const int                                     toRank,
+    const tarch::la::Vector<DIMENSIONS, int>&     src,
+    const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    int                                           level,
-    const tarch::la::Vector<DIMENSIONS,int>&      src,
-    const tarch::la::Vector<DIMENSIONS,int>&      dest,
-    const exahype::Vertex& vertex, // TODO(Dominic): Remvoe.
-    int                                           srcCellDescriptionIndex,
-    int                                           destCellDescriptionIndex) {
-  const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
-  assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-  const int faceIndex = 2 * normalOfExchangedFace +
-      (src(normalOfExchangedFace) < dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the "<" !!!
+    const int                                     level) {
+  for (exahype::solvers::Solver* solver : exahype::solvers::RegisteredSolvers) {
+    solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+  }
 
-  for (auto& p : ADERDGCellDescriptionHeap::getInstance().getData(srcCellDescriptionIndex)) {
-    exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
-        exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
-    assertion1(p.getFaceDataExchangeCounter(faceIndex)==0,p.getFaceDataExchangeCounter(faceIndex));
+  auto encodedMetadata = exahype::Vertex::createEncodedMetadataSequenceWithInvalidEntries();
+  MetadataHeap::getInstance().sendData(
+      encodedMetadata, toRank, x, level,
+      peano::heap::MessageType::NeighbourCommunication);
+}
 
-    if (p.getType() == exahype::records::ADERDGCellDescription::Cell     ||
-        p.getType() == exahype::records::ADERDGCellDescription::Ancestor ||
-        p.getType() == exahype::records::ADERDGCellDescription::Descendant) {
+void exahype::mappings::Prediction::sendSolverData(
+    const int                                    toRank,
+    const tarch::la::Vector<DIMENSIONS,int>&     src,
+    const tarch::la::Vector<DIMENSIONS,int>&     dest,
+    const int                                    srcCellDescriptionIndex,
+    const int                                    destCellDescriptionIndex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  assertion(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
+  assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
 
-      assertion(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()));
-      assertion(DataHeap::getInstance().isValidIndex(p.getFluctuation()));
-      assertion(DataHeap::getInstance().isValidIndex(p.getSolutionMin()));
-      assertion(DataHeap::getInstance().isValidIndex(p.getSolutionMax()));
-
-      const int numberOfFaceDof = solver->getUnknownsPerFace();
-      const double* lQhbnd = DataHeap::getInstance().getData(
-          p.getExtrapolatedPredictor()).data() +
-          (faceIndex * numberOfFaceDof);
-      const double* lFhbnd = DataHeap::getInstance().getData(
-          p.getFluctuation()).data() +
-          (faceIndex * numberOfFaceDof);
-
-      // TODO(Dominic) This can only happen if we consider
-      // vertices that are outside in the MPI communication,
-      // i.e. they belong to everyone else. Need to check if we
-      // can drop isInside() in some of the mappings.
-      // Q: If rank 0 is neighbour to every other rank that is on the boundary,
-      // can we use rank 0 to handle the periodic boundary conditions?
-      // If rank 0 is forwarding this will however take one extra iteration.
-      // Can we resolve the periodic neighbour rank and alter the vertex position+-domain size(x,y,z) before/after we push
-      // the metadata and facedata to the heap? The state knows all active ranks? Does he know
-      // their respective subdomains?
-      // We further need augmentation on the periodic neighbour rank. This can
-      // be done by the same periodic neighbour rank resolving and exchanging metadata.
-      // PeriodicBC might be easier to implement in a MPI scenario than
-      // in a non-MPI scenario.
-
-      // TODO(Dominic): If Domain Boundary aligns with Remote Boundary, Remote Boundary Index is set.
-      if (destCellDescriptionIndex == multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
-        #ifdef PeriodicBC
-        assertionMsg(false, "Vasco, we have to implement this");
-        DataHeap::getInstance().sendData(
-            sentMinMax, toRank, x, level, peano::heap::MessageType::NeighbourCommunication);
-        DataHeap::getInstance().sendData(
-            lQhbnd, numberOfFaceDof, toRank, x, level,
-            peano::heap::MessageType::NeighbourCommunication);
-        DataHeap::getInstance().sendData(
-            lFhbnd, numberOfFaceDof, toRank, x, level,
-            peano::heap::MessageType::NeighbourCommunication);
-        #else
-        assertionMsg(false, "should never been entered");
-        #endif
-      } else {
-        logDebug(
-            "sendADERDGFaceData(...)",
-            "send three arrays to rank " <<
-            toRank << " for cell="<<p.getOffset()<< " and face=" << faceIndex << " from vertex x=" << x << ", level=" << level <<
-            ", dest type=" << multiscalelinkedcell::indexToString(destCellDescriptionIndex) <<
-            ", dest type=" << multiscalelinkedcell::indexToString(destCellDescriptionIndex) <<
-            ", src=" << src << ", dest=" << dest <<
-            ", adjacent ranks=" << vertex.getAdjacentRanks() <<
-            ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
-          );
-
-        // We append all the max values to the min values to reduce the MPI
-        // metadata overhead
-        std::vector<double> sentMinMax( 2*solver->getNumberOfVariables() );
-        for (int i=0; i<solver->getNumberOfVariables(); i++) {
-          sentMinMax[i]                                = DataHeap::getInstance().getData( p.getSolutionMin() )[faceIndex*solver->getNumberOfVariables()+i];
-          sentMinMax[i+solver->getNumberOfVariables()] = DataHeap::getInstance().getData( p.getSolutionMax() )[faceIndex*solver->getNumberOfVariables()+i];
-        }
-
-        // Send order: minMax,lQhbnd,lFhbnd
-        // Receive order: lFhbnd,lQhbnd,minMax
-        DataHeap::getInstance().sendData(
-            sentMinMax, toRank, x, level, peano::heap::MessageType::NeighbourCommunication);
-        DataHeap::getInstance().sendData(
-            lQhbnd, numberOfFaceDof, toRank, x, level,
-            peano::heap::MessageType::NeighbourCommunication);
-        DataHeap::getInstance().sendData(
-            lFhbnd, numberOfFaceDof, toRank, x, level,
-            peano::heap::MessageType::NeighbourCommunication);
-
-        // TODO(Dominic): If anarchic time stepping send the time step over too.
+  int solverNumber=0;
+  for (exahype::solvers::Solver* solver : exahype::solvers::RegisteredSolvers) {
+    bool solverIsRegistered = false;
+    int element = 0;
+    for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionIndex)) {
+      if (p.getSolverNumber()==solverNumber) {
+        assertionMsg(!solverIsRegistered,"The solverNumber is a unique key. Every solver is allowed to "
+            "be registered only once on each face description.");
+        solverIsRegistered=true;
+        solver->sendDataToNeighbour(toRank,srcCellDescriptionIndex,element,src,dest,x,level);
       }
+      ++element;
     }
 
+    if (!solverIsRegistered)
+      solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+
+    ++solverNumber;
   }
+
+  auto encodedMetadata = exahype::Vertex::encodeMetadata(srcCellDescriptionIndex);
+  MetadataHeap::getInstance().sendData(
+      encodedMetadata, toRank, x, level,
+      peano::heap::MessageType::NeighbourCommunication);
 }
 
 bool exahype::mappings::Prediction::prepareSendToWorker(
@@ -1037,25 +949,6 @@ void exahype::mappings::Prediction::mergeWithWorker(
     exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // do nothing
-}
-#endif
-
-
-exahype::mappings::Prediction::Prediction() {
-  // do nothing
-}
-
-exahype::mappings::Prediction::~Prediction() {
-  // do nothing
-}
-
-#if defined(SharedMemoryParallelisation)
-exahype::mappings::Prediction::Prediction(
-    const Prediction& masterThread) {
-}
-void exahype::mappings::Prediction::mergeWithWorkerThread(
-    const Prediction& workerThread) {
   // do nothing
 }
 #endif

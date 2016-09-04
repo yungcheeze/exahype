@@ -156,18 +156,6 @@ class exahype::mappings::RiemannSolver {
 
 #ifdef Parallel
   /**
-   * We need read access to the state.
-   *
-   * \note While currently no forking and joining will happen after the initial
-   * grid setup, this will happen in the dynamic AMR case. It thus doesn't hurt to
-   * use work with the _state already in the static AMR case.
-   * TODO(Dominic): Delete this comment as soon as we have dynamic AMR+MPI.
-   *
-   * \note Do not set values on the state. Write access to the state is not thread-safe.
-   */
-  exahype::State* _state;
-
-  /**
    * Single-sided version of the other solveRiemannProblemAtInterface(). It
    * works only on one cell and one solver within this cell and in return
    * hands in the F and Q values explicitly through  indexOfQValues and
@@ -184,31 +172,79 @@ class exahype::mappings::RiemannSolver {
    *
    * \note Not thread-safe.
    */
-  static void solveRiemannProblemAtInterface(
-      records::ADERDGCellDescription& cellDescription,
-      const int faceIndexForCell,
-      const int normalNonZero,  // TODO(Tobias): is redundant. We should be able to // derive this from faceIndexForCell
-      const int indexOfQValues, const int indexOfFValues);
+//  static void solveRiemannProblemAtInterface(
+//      records::ADERDGCellDescription& cellDescription,
+//      const int faceIndexForCell,
+//      const int normalNonZero,  // TODO(Tobias): is redundant. We should be able to // derive this from faceIndexForCell
+//      const int indexOfQValues, const int indexOfFValues);
 
   /**
-   * TODO(Dominic): Add docu.
+   * Iterates over the received metadata and every time
+   * we find a valid entry, we call mergeWithNeighbourData
+   * on the solver corresponding to the metadata.
+   * if we want to receive the neighbour data
+   * or if we just want to drop it.
+   * \note Not thread-safe.
+   */
+  static void mergeWithNeighbourData(
+      const int fromRank,
+      const int srcCellDescriptionIndex,
+      const int destCellDescriptionIndex,
+      const tarch::la::Vector<DIMENSIONS,int>& src,
+      const tarch::la::Vector<DIMENSIONS,int>& dest,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int level,
+      const exahype::MetadataHeap::HeapEntries& receivedMetadata);
+
+  /**
+   * Iterates over the received metadata and
+   * drop the received neighbour data.
    *
    * \note Not thread-safe.
    */
-  static void receiveADERDGFaceData(
-      int fromRank,
-      const tarch::la::Vector<DIMENSIONS, double>& x,
-      int level,
+  static void dropNeighbourData(
+      const int fromRank,
+      const int srcCellDescriptionIndex,
+      const int destCellDescriptionIndex,
       const tarch::la::Vector<DIMENSIONS,int>& src,
       const tarch::la::Vector<DIMENSIONS,int>& dest,
-      int srcCellDescriptionIndex,
-      int destCellDescriptionIndex,
-      exahype::MetadataHeap::HeapEntries& receivedMetadata);
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int level,
+      const exahype::MetadataHeap::HeapEntries& receivedMetadata);
 #endif
 
  public:
   /**
-   * @todo Dominic, warum darf das Zeugs so stehen?
+   * Call the touch vertex first time event on every vertex of
+   * the grid. Run in parallel but avoid fine grid races.
+   *
+   * <h2>Shared Memory</h2>
+   * The AvoidFineGridRaces multithreading specification prevents that
+   * more than one threads write data for the same face of the grid
+   * at the same time.
+   *
+   * The specification is realised by touching the vertices in
+   * a red-black (X and O in the figure below) manner:
+   * We might first process the X-vertices in parallel
+   * and then the O-vertices.
+   * In each step, faces adjacent to the vertices,
+   * do not overlap and race conditions can thus
+   * not occur.
+   *
+   *     |    |
+   *     |    |
+   * ----O----X-----
+   *     |    |
+   *     |    |
+   * ----X----O-----
+   *     |    |
+   *     |    |
+   *
+   * TODO(Dominic): It might be useful to introduce a multithreading specification
+   * "AvoidFineGridRacesOnlyRed" that processes only the red
+   * vertices and not the black ones. De facto, the second sweep only
+   * finds the riemannSolvePerfomed flags set and does nothing in
+   * our current implementation.
    */
   static peano::MappingSpecification touchVertexFirstTimeSpecification();
   /**
@@ -330,28 +366,19 @@ class exahype::mappings::RiemannSolver {
    * The min/max analysis runs analogously. We do send out min and max from
    * either side to the other rank and then merge min and max on both sides
    * into the local data.
+   *
+   * <h2>Face data exchange counters</h2>
+   * Cell::isInside() does not imply that all adjacent vertices are
+   * inside. If we count down the counter only on
+   * vertices that are inside we might not send out all faces
+   * of a cell that is close to the boundary.
+   * @see Prediction::countListingsOfRemoteRankByInsideVerticesAtFace.
    */
   void mergeWithNeighbour(exahype::Vertex& vertex,
                           const exahype::Vertex& neighbour, int fromRank,
                           const tarch::la::Vector<DIMENSIONS, double>& x,
                           const tarch::la::Vector<DIMENSIONS, double>& h,
                           int level);
-
-  /**
-   * TODO(Dominic): Add docu.
-   *
-   * \note Not thread-safe.
-   */
-  static void dropADERDGFaceData(
-      int fromRank,
-      const tarch::la::Vector<DIMENSIONS, double>& x,
-      int level,
-      const tarch::la::Vector<DIMENSIONS,int>& src,
-      const tarch::la::Vector<DIMENSIONS,int>& dest,
-      int srcCellDescriptionIndex,
-      int destCellDescriptionIndex,
-      exahype::MetadataHeap::HeapEntries& receivedMetadata);
-
   /**
    * Receive kick-off message from master
    *
