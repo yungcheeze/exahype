@@ -120,16 +120,15 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
           assertion4(element1>=0,element1,cellDescriptionsIndex1,solverNumber,fineGridX);
 
           solver->mergeNeighbours(cellDescriptionsIndex1,element1,cellDescriptionsIndex2,element2,pos1,pos2);
-          fineGridVertex.setMergePerformed(pos1,pos2,true);
           #ifdef Debug
           _interiorFaceSolves++;
           #endif
         endpfor
         peano::datatraversal::autotuning::Oracle::getInstance()
         .parallelSectionHasTerminated(methodTrace);
-      } else if (fineGridVertex.hasToMergeWithBoundaryData(pos1,pos2)) {
-        fineGridVertex.setMergePerformed(pos1,pos2,true);
 
+        fineGridVertex.setMergePerformed(pos1,pos2,true);
+      } else if (fineGridVertex.hasToMergeWithBoundaryData(pos1,pos2)) {
         const peano::datatraversal::autotuning::MethodTrace methodTrace =
             peano::datatraversal::autotuning::UserDefined4; // TODO(Dominic): Change UserDefined.
         const int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().
@@ -146,7 +145,6 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
           } else { // element2 >= 0
             solver->mergeWithBoundaryData(cellDescriptionsIndex2,element2,pos2,pos1);
           }
-          fineGridVertex.setMergePerformed(pos1,pos2,true);
 
           #ifdef Debug
           _boundaryFaceSolves++;
@@ -154,6 +152,7 @@ void exahype::mappings::RiemannSolver::touchVertexFirstTime(
         endpfor
         peano::datatraversal::autotuning::Oracle::getInstance()
           .parallelSectionHasTerminated(methodTrace);
+        fineGridVertex.setMergePerformed(pos1,pos2,true);
       }
     enddforx
   enddforx
