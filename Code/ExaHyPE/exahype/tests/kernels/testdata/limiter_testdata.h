@@ -25,8 +25,8 @@ namespace limiter {
 
 
 // Declared in cpp for each dim
-// const int arraySize::sizeLuh;
-// const int arraySize::sizeLim;
+extern const int sizeLuh;
+extern const int sizeLim;
 
 
 #ifdef Dim2

@@ -14,17 +14,19 @@
 #ifndef _EXAHYPE_TESTS_LIMITER_KERNEL_TEST_H_
 #define _EXAHYPE_TESTS_LIMITER_KERNEL_TEST_H_
 
+#include <set>
 #include "peano/utils/Globals.h"
 #include "peano/utils/Loop.h"
 #include "tarch/logging/Log.h"
 #include "tarch/tests/TestCaseFactory.h"
 #include "tarch/tests/TestCase.h"
+#include "tarch/tests/TestMacros.h"
 #include "tarch/compiler/CompilerSpecificSettings.h"
 
 
 #include "kernels/DGBasisFunctions.h"
 #include "kernels/limiter/generic/Limiter.h"
-
+#include "../testdata/limiter_testdata.h"
 
 namespace exahype {
 namespace tests {
@@ -40,12 +42,15 @@ class LimiterKernelTest : public tarch::tests::TestCase {
  private:
   static tarch::logging::Log _log;
   static const double eps;  // for quick adaption of the test cases
+  static const int numberOfVariables;
+  static const int basisSize;
+  static const std::string dim; // for log
 
-  static void testGetGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize, const double* const expectedLob);
-  static void testGetFVMData(const double* const luh, const int numberOfVariables, const int basisSize, const int expectedbasisSizeLim, const double* const expectedLim);
-  static void testUpdateSubcellWithLimiterData(const double* const lim, const int numberOfVariables, const int basisSizeLim, const int basisSize, const double* const expectedLuh);
-  static void testFindCellLocallocalMinlocalMax(const double* const luh, const int numberOfVariables, const int basisSize, const double* const expectedLocalMin, const double* const expectedLocalMax);
-  static void testIsTroubledCell(const double* const luh, const int numberOfVariables, const int basisSize, const double* const troubledMin, const double* const troubledMax);
+  void testGetGaussLobattoData();
+  void testGetFVMData();
+  void testUpdateSubcellWithLimiterData();
+  void testFindCellLocallocalMinlocalMax();
+  void testIsTroubledCell();
 
   
 };
