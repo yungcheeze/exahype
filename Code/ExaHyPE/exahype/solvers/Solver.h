@@ -54,6 +54,13 @@ constexpr int addPadding(const int originalSize) {
 #endif
 
 namespace exahype {
+  /**
+   * We store the degrees of freedom associated with the ADERDGCellDescription and FiniteVolumesCellDescription
+   * instances on this heap.
+   * We further use this heap to send and receive face data from one MPI rank to the other.
+   */
+  typedef peano::heap::PlainDoubleHeap DataHeap;
+
   namespace solvers {
     class Solver;
 
@@ -72,13 +79,6 @@ namespace exahype {
  */
 class exahype::solvers::Solver {
  public:
-  /**
-   * We store the degrees of freedom associated with the ADERDGCellDescription and FiniteVolumesCellDescription
-   * instances on this heap.
-   * We further use this heap to send and receive face data from one MPI rank to the other.
-   */
-  typedef peano::heap::PlainDoubleHeap DataHeap;
-
   /**
    * The type of a solver.
    */

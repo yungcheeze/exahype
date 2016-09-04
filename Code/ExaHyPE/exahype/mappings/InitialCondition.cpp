@@ -113,7 +113,7 @@ void exahype::mappings::InitialCondition::enterCell(
           &&
           pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None
       ) {
-        double* luh = DataHeap::getInstance().getData(pFine.getSolution()).data();
+        double* luh = exahype::DataHeap::getInstance().getData(pFine.getSolution()).data();
 
         assertionEquals(luh[0],luh[0]); // assert no nan
         if (solver->hasToAdjustSolution(

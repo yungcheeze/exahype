@@ -127,7 +127,7 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
 
   if (fineGridCell.isInitialised()) {
     // ADER-DG
-    const int numberOfADERDGCellDescriptions = static_cast<int>(ADERDGCellDescriptionHeap::getInstance()
+    const int numberOfADERDGCellDescriptions = static_cast<int>(exahype::solvers::ADERDGSolver::Heap::getInstance()
             .getData(fineGridCell.getCellDescriptionsIndex()).size());
     // please use a different UserDefined per mapping/event
     peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined2;
@@ -135,7 +135,7 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
 
     pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
       records::ADERDGCellDescription& p =
-          ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
+          exahype::solvers::ADERDGSolver::Heap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
       exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
           exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
 
@@ -166,7 +166,7 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
         .parallelSectionHasTerminated(methodTrace);
 
     // FINITE VOLUMES
-    const int numberOfFiniteVolumesCellDescriptions = static_cast<int>(FiniteVolumesCellDescriptionHeap::getInstance()
+    const int numberOfFiniteVolumesCellDescriptions = static_cast<int>(exahype::solvers::FiniteVolumesSolver::Heap::getInstance()
             .getData(fineGridCell.getCellDescriptionsIndex()).size());
     // please use a different UserDefined per mapping/event
     methodTrace = peano::datatraversal::autotuning::UserDefined2;
@@ -174,7 +174,7 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
 
     pfor(i, 0, numberOfFiniteVolumesCellDescriptions, grainSize)
       records::FiniteVolumesCellDescription& p =
-          FiniteVolumesCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
+          exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
       exahype::solvers::FiniteVolumesSolver* solver = static_cast<exahype::solvers::FiniteVolumesSolver*>(
           exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
 
@@ -188,9 +188,9 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
 
         double* finiteVolumesSolutions[THREE_POWER_D];
         for (int nScalar=0; nScalar<THREE_POWER_D; ++nScalar) {
-          if (FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[nScalar])) {
+          if (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[nScalar])) {
             exahype::records::FiniteVolumesCellDescription& pNeighbour =
-                FiniteVolumesCellDescriptionHeap::getInstance().getData(neighbourCellDescriptionsIndices[nScalar])[p.getSolverNumber()]; // todo assumes same number of patches per cell
+                exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(neighbourCellDescriptionsIndices[nScalar])[p.getSolverNumber()]; // todo assumes same number of patches per cell
             finiteVolumesSolutions[nScalar] = DataHeap::getInstance().getData(pNeighbour.getSolution()).data();
           } else {
             finiteVolumesSolutions[nScalar] = DataHeap::getInstance().getData(p.getSolution()).data();

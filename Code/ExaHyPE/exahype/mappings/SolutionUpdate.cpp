@@ -180,9 +180,9 @@ void exahype::mappings::SolutionUpdate::enterCell(
 
         double* finiteVolumeSolutions[THREE_POWER_D];
         for (int nScalar=0; nScalar<THREE_POWER_D; ++nScalar) {
-          if (FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[nScalar])) {
+          if (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[nScalar])) {
             exahype::records::FiniteVolumesCellDescription& pNeighbour =
-                FiniteVolumesCellDescriptionHeap::getInstance().getData(neighbourCellDescriptionsIndices[nScalar])[pFine.getSolverNumber()]; // todo assumes same number of patches per cell
+                exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(neighbourCellDescriptionsIndices[nScalar])[pFine.getSolverNumber()]; // todo assumes same number of patches per cell
             finiteVolumeSolutions[nScalar] = DataHeap::getInstance().getData(pNeighbour.getSolution()).data();
           } else {
             finiteVolumeSolutions[nScalar] = DataHeap::getInstance().getData(pFine.getSolution()).data();

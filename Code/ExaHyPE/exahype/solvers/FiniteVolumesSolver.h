@@ -64,7 +64,7 @@ class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
 #endif
 
   public:
-    typedef Solver::DataHeap DataHeap;
+    typedef exahype::DataHeap DataHeap;
 
     /**
      * Rank-local heap that stores FiniteVolumesCellDescription instances.

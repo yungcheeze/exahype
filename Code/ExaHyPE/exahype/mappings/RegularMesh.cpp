@@ -233,7 +233,7 @@ void exahype::mappings::RegularMesh::enterCell(
 void exahype::mappings::RegularMesh::beginIteration(
   exahype::State& solverState
 ) {
-  ADERDGCellDescriptionHeap::getInstance().setName("ADERDGCellDescriptionHeap");
+  exahype::solvers::ADERDGSolver::Heap::getInstance().setName("ADERDGCellDescriptionHeap");
   DataHeap::getInstance().setName("DataHeap");
 
   _localState = solverState;

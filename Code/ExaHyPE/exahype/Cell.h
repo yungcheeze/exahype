@@ -22,32 +22,12 @@
 
 #include "exahype/records/ADERDGCellDescription.h"
 #include "exahype/records/FiniteVolumesCellDescription.h"
-#include "peano/heap/DoubleHeap.h"
+
+#include "exahype/solvers/ADERDGSolver.h"
+#include "exahype/solvers/FiniteVolumesSolver.h"
 
 namespace exahype {
   class Cell;
-
-  /**
-   * Rank-local heap that stores ADERDGCellDescription instances.
-   */
-  typedef peano::heap::PlainHeap<exahype::records::ADERDGCellDescription>         ADERDGCellDescriptionHeap;
-
-  /**
-   * Rank-local heap that stores FiniteVolumesCellDescription instances.
-   */
-  typedef peano::heap::PlainHeap<exahype::records::FiniteVolumesCellDescription>  FiniteVolumesCellDescriptionHeap;
-  /**
-   * We store the degrees of freedom associated with the ADERDGCellDescription and FiniteVolumesCellDescription
-   * instances on this heap.
-   * We further use this heap to send and receive face data from one MPI rank to the other.
-   */
-  typedef peano::heap::PlainDoubleHeap DataHeap;
-  /**
-   * We abuse this heap to send and receive metadata from one MPI rank to the other.
-   * We never actually store data on this heap.
-   * TODO(Dominic): Change to RLEIntegerHeap that compresses data.
-   */
-  typedef peano::heap::PlainIntegerHeap  MetadataHeap;
 }
 
 /**
@@ -58,20 +38,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   typedef class peano::grid::Cell<exahype::records::Cell> Base;
 
   static tarch::logging::Log _log;
-
-  /**
-   * Each cell points to a series of cell descriptions. The array holding the
-   * series has to be stored on the heap and, consequently, initialised
-   * properly. This is done by create() while destroy() cleans up. Please note
-   * that you have to invoke create() once before you do anything with the cell
-   * at all. You should destroy() in return in the very end.
-   *
-   * The operation shows that each cell in the tree can theoretically hold a
-   * solver though only few do.
-   *
-   * This operation is used by addNewCellDescription().
-   */
-  void setupMetaData();
 
  public:
   typedef struct {
@@ -107,11 +73,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   Cell(const Base::PersistentCell& argument);
 
   /**
-   * TODO(Dominic): Add docu.
-   */
-  void initialiseStorageOnHeap();
-
-  /**
    * Returns meta data describing the surrounding cell descriptions. The
    * routine is notably used by the automated adapters to derive adjacency
    * information on the cell level.
@@ -141,7 +102,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    */
   inline exahype::records::ADERDGCellDescription& getADERDGCellDescription(
       int index) const {
-    return ADERDGCellDescriptionHeap::getInstance().getData(
+    return exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
         getCellDescriptionsIndex())[index];
   }
 
@@ -151,69 +112,28 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    */
   inline exahype::records::FiniteVolumesCellDescription& getFiniteVolumesCellDescription(
       int index) const {
-    return FiniteVolumesCellDescriptionHeap::getInstance().getData(
+    return exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(
         getCellDescriptionsIndex())[index];
   }
+
+  /**
+   * Each cell points to a series of cell descriptions. The array holding the
+   * series has to be stored on the heap and, consequently, initialised
+   * properly. This is done by create() while destroy() cleans up. Please note
+   * that you have to invoke create() once before you do anything with the cell
+   * at all. You should destroy() in return in the very end.
+   *
+   * The operation shows that each cell in the tree can theoretically hold a
+   * solver though only few do.
+   *
+   * This operation is used by addNewCellDescription().
+   */
+  void setupMetaData();
 
   /**
    * @see setupMetaData()
    */
   void shutdownMetaData();
-
-  #ifdef Parallel
-  /**
-   * Encodes the metadata as integer sequence.
-   *
-   * The first element refers to the number of
-   * ADERDGCellDescriptions associated with this cell (nADERG).
-   * The next 2*nADERG elements store a pair of
-   * solver number, and cell description type (encoded as int)
-   * for each ADERDGCellDescription associated with this cell (description).
-   *
-   * The element 1+2*nADERDG refers to the number of
-   * FiniteVolumesCellDescriptions associated with this cell (nFV).
-   * The remaining 2*nFV elements store a pair of
-   * solver number, and cell description type (encoded as int)
-   * for each FiniteVolumesCellDescription associated with this cell
-   * (description).
-   *
-   * @developers:
-   * TODO(Dominic): Does it make sense to also encode the
-   *                refinement event?
-   * TODO(Dominic): Not directly associated with a cell. Consider
-   * to move this function somewhere else.
-   */
-  static exahype::MetadataHeap::HeapEntries encodeMetadata(const int cellDescriptionsIndex);
-
-  /**
-   * Returns an encoded metadata sequence for invalid cell descriptions indices.
-   * The sequence holds the values {0,0}.
-   *
-   * The first element refers to the number of
-   * ADERDGCellDescriptions associated with this cell (nADERG).
-   * The second element refers to the number of
-   * FiniteVolumesCellDescriptions associated with this cell (nFV).
-   *
-   * @developers:
-   * TODO(Dominic): Not directly associated with a cell. Consider
-   * to move this function somewhere else.
-   */
-  static exahype::MetadataHeap::HeapEntries createEncodedMetadataSequenceForInvalidCellDescriptionsIndex();
-
-  /**
-   * Checks if the sequence encodes zero solvers, i.e., has length 2 (number of solver types: ADER-DG, FV)
-   * and contains only zeros.
-   */
-  static bool isEncodedMetadataSequenceForInvalidCellDescriptionsIndex(exahype::MetadataHeap::HeapEntries& sequence);
-
-  /**
-   * TODO(Dominic): Add docu.
-   */
-  void decodeADERDGMetadataInMergeWithRemoteDataDueToForkOrJoin(
-      const exahype::Cell& localCell,
-      const int receivedMetaDataIndex) const;
-
-  #endif
 
   /**
    * Checks if no unnecessary memory is allocated for the ADERDGCellDescription.
@@ -339,6 +259,9 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   #endif
 
   /**
+   * TODO(Dominic,Tobias): Move this operation into the ADERDGSolver class.
+   * Is it called after the minMax merge?
+   *
    * This operation sets the solutions' minimum and maximum value on a cell.
    * The routine is to be invoked after the code has determined the new minimum
    * and maximum value within a cell. In turn, it evaluates whether the new
@@ -383,6 +306,8 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   /**
    * Single-sided variant of mergeSolutionMinMaxOnFace() that is required
    * for MPI where min and max value are explicitly exchanged through messages.
+   *
+   * @deprecated
    */
   static void mergeSolutionMinMaxOnFace(
     records::ADERDGCellDescription&  cellDescription,

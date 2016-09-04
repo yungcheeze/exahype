@@ -43,6 +43,9 @@ class MarkingForRefinement;
  * for refinement or erasing. The newly created cells
  * are initialised in mapping Refinement.
  *
+ * <h2>MPI<h2>
+ * TODO(Dominic): Add docu.
+ *
  * @developers:
  * 2. TODO(Dominic): Need to propagate refinement events, cell type
  * changes, and volume data from master to worker (refinement,forks).
@@ -68,27 +71,64 @@ class exahype::mappings::MarkingForRefinement {
   exahype::State _state;
 
 #ifdef Parallel
-  /**
-   * TODO(Dominic): Add docu.
-   */
-  void addNewADERDGCellDescriptionsDueToForkOrJoin(
-      exahype::Cell& localCell,
-      const int fromRank,
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& cellSize,
-      const int level,
-      const int receivedMetadataIndex) const;
 
   /**
-   * TODO(Dominic): Add docu.
+   * Send out ADER-DG solution values to the master or worker
+   * if a cell description is of type Cell.
+   *
+   * If the cell description is of type Ancestor, Descendant
+   * EmptyAncestor, EmptyDescendant change the type to Ancestor and Descendant and
+   * thus ensure that the cell description holds
+   * face data on the boundary. Later during the traversal,
+   * the MarkingForAugmentation::enterCell(...) method checks if the cell description is part
+   * of the master-worker MPI boundary and does not change the type anymore.
    */
-  void receiveADERDGCellDescriptionsDataDueToForkOrJoin(
-      exahype::Cell& localCell,
+  static void sendADERDGDataToMasterOrWorker(
+      int cellDescriptionsIndex,
+      int toRank,
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
+
+  /**
+   * Send out Finite Volumes solution values to the master or worker
+   * if a cell description is of type Cell.
+   *
+   * If the cell description is of type Ancestor, Descendant
+   * EmptyAncestor, EmptyDescendant
+   * change the type to Ancestor and Descendant and
+   */
+  static void sendFiniteVolumesDataToMasterOrWorker(
+      int cellDescriptionsIndex,
+      int toRank,
+      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
+
+
+  /**
+   * Sets heap indices of all cell descriptions (ADER-DG, FV, ...) that were received due to
+   * a fork or join event to multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
+   * and the parent index of the cell descriptions to the specified \p parentIndex.
+   */
+  static void resetHeapIndices(
+      const int cellDescriptionsIndex,
+      const int parentIndex);
+
+  /**
+   * Receives ADER-DG solution values from the master or worker
+   * if a cell description is of type Cell.
+   *
+   * If the cell description is of type Ancestor, Descendant
+   * EmptyAncestor, EmptyDescendant
+   * change the type to Ancestor and Descendant and
+   */
+  static void receiveADERDGDataFromMasterOrWorker(
+      const int cellDescriptionsIndex,
       const int fromRank,
+      const peano::heap::MessageType& messageType,
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize,
       const int level,
-      const int receivedMetadataIndex) const;
+      const int receivedMetadataIndex);
 
   /**
    * Returns false if the \p cellDescriptionsIndex is invalid,
@@ -107,26 +147,21 @@ class exahype::mappings::MarkingForRefinement {
       const int level);
 
   /**
-   * TODO(Dominic): Add docu.
+   * Receives Finite Volumes solution values from the master or worker
+   * if a cell description is of type Cell.
+   *
+   * If the cell description is of type Ancestor, Descendant
+   * EmptyAncestor, EmptyDescendant
+   * change the type to Ancestor and Descendant and
    */
-  static void receiveFiniteVolumesMetadataInMergeWithRemoteDataDueToForkOrJoin(
-      exahype::Cell& localCell,
+  static void receiveFiniteVolumesDataFromMasterOrWorker(
+      const int cellDescriptionsIndex,
       const int fromRank,
+      const peano::heap::MessageType& messageType,
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize,
       const int level,
       const int receivedMetadataIndex);
-
-  /**
-   * TODO(Dominic): Add docu + implement.
-   */
-  static void receiveFiniteVolumesCellDescriptionsDataDueToForkOrJoin(
-      exahype::Cell& localCell,
-      const int fromRank,
-      const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-      const tarch::la::Vector<DIMENSIONS, double>& cellSize,
-      const int level,
-      const int receivedMetadataIndex){}
 #endif
 
  public:

@@ -76,7 +76,7 @@ void exahype::mappings::Augmentation::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   if (coarseGridCell.isInitialised()) {
-    for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(
+    for (auto& pCoarse : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
         coarseGridCell.getCellDescriptionsIndex())) {
       bool solverNotFound = true;
 
@@ -111,7 +111,7 @@ void exahype::mappings::Augmentation::enterCell(
           solverNotFound = true;
           if (fineGridCell.isInitialised()) {
             assertion( fineGridCell.isInitialised() );
-            for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.
+            for (auto& pFine : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(fineGridCell.
                                                                                 getCellDescriptionsIndex())) {
               if (pCoarse.getSolverNumber() == pFine.getSolverNumber()) {
                 assertion1(pFine.getType()==exahype::records::ADERDGCellDescription::Descendant ||
@@ -152,7 +152,7 @@ void exahype::mappings::Augmentation::leaveCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   if (fineGridCell.isInitialised()) {
-    for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(
+    for (auto& pFine : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
         fineGridCell.getCellDescriptionsIndex())) {
 
       switch (pFine.getRefinementEvent()) {
@@ -183,7 +183,7 @@ void exahype::mappings::Augmentation::ascend(
 #endif
 
   if (coarseGridCell.isInitialised()) {
-    for (auto& pCoarse : ADERDGCellDescriptionHeap::getInstance().getData(
+    for (auto& pCoarse : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
              coarseGridCell.getCellDescriptionsIndex())) {
       bool eraseChildren = true;
 
@@ -196,7 +196,7 @@ void exahype::mappings::Augmentation::ascend(
               eraseChildren = true;
               dfor3(k)
                 if (fineGridCells[kScalar].isInitialised()) {
-                  for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(
+                  for (auto& pFine : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
                           fineGridCells[kScalar].getCellDescriptionsIndex())) {
                     if (pCoarse.getSolverNumber() == pFine.getSolverNumber()) {
                       eraseChildren = eraseChildren &&
@@ -210,9 +210,9 @@ void exahype::mappings::Augmentation::ascend(
               if (eraseChildren) {
                 dfor3(k)
                   if (fineGridCells[kScalar].isInitialised()) {
-                    auto pFine = ADERDGCellDescriptionHeap::getInstance().
+                    auto pFine = exahype::solvers::ADERDGSolver::Heap::getInstance().
                         getData(fineGridCells[kScalar].getCellDescriptionsIndex()).begin();
-                    while (pFine != ADERDGCellDescriptionHeap::getInstance().
+                    while (pFine != exahype::solvers::ADERDGSolver::Heap::getInstance().
                         getData(fineGridCells[kScalar].getCellDescriptionsIndex()).end()) {
                       if (pCoarse.getSolverNumber()==pFine->getSolverNumber()) {
                         assertion1(pFine->getRefinementEvent() == exahype::records::ADERDGCellDescription::DeaugmentingRequested,
@@ -220,14 +220,14 @@ void exahype::mappings::Augmentation::ascend(
                         pFine->setType(exahype::records::ADERDGCellDescription::Erased);
                         pFine->setRefinementEvent(exahype::records::ADERDGCellDescription::Erasing);
                         fineGridCells[kScalar].ensureNoUnnecessaryMemoryIsAllocated(pFine->getSolverNumber());
-                        pFine = ADERDGCellDescriptionHeap::getInstance().
+                        pFine = exahype::solvers::ADERDGSolver::Heap::getInstance().
                             getData(fineGridCells[kScalar].getCellDescriptionsIndex()).erase(pFine);
                       } else {
                         ++pFine;
                       }
                     }
 
-                    if (ADERDGCellDescriptionHeap::getInstance().getData(fineGridCells[kScalar].getCellDescriptionsIndex()).empty()) {
+                    if (exahype::solvers::ADERDGSolver::Heap::getInstance().getData(fineGridCells[kScalar].getCellDescriptionsIndex()).empty()) {
                       fineGridCells[kScalar].shutdownMetaData();
                     }
                   }
@@ -237,7 +237,7 @@ void exahype::mappings::Augmentation::ascend(
               } else {
                 dfor3(k)
                   if (fineGridCells[kScalar].isInitialised()) {
-                  for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(fineGridCells[kScalar]
+                  for (auto& pFine : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(fineGridCells[kScalar]
                                                                .getCellDescriptionsIndex())) {
                     if (pCoarse.getSolverNumber()==pFine.getSolverNumber()) {
                       if (pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::DeaugmentingRequested) {

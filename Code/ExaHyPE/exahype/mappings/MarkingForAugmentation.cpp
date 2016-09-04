@@ -106,7 +106,7 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
                     fineGridVerticesEnumerator, fineGridVertices));
 
     bool refineFineGridCell = false;
-    for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())) {
+    for (auto& pFine : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())) {
       const AugmentationControl augmentationControl =
           augmentationCriterion(pFine.getSolverNumber(), pFine.getType(),
                                 pFine.getLevel(),
@@ -162,7 +162,7 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
       // 2. Further augment or deaugment cells and descendants if no other event
       // or an augmentation event has been triggered.
       switch (pFine.getRefinementEvent()) {
-        case exahype::records::ADERDGCellDescription::AugmentingRequested:
+        case exahype::records::ADERDGCellDescription::AugmentingRequested: // TODO(Dominic): Add to docu that the mergeWithNeighbourCall might set this.
           refineFineGridCell = true;
           break;
         case exahype::records::ADERDGCellDescription::None:
@@ -241,7 +241,7 @@ exahype::mappings::MarkingForAugmentation::augmentationCriterion(
     const int neighbourCellDescriptionIndex =
         neighbourCellDescriptionIndices[neighbourPositions[i]];
     if (DataHeap::getInstance().isValidIndex(neighbourCellDescriptionIndex)) {
-      for (auto& pNeighbour : ADERDGCellDescriptionHeap::getInstance().getData(
+      for (auto& pNeighbour : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
                neighbourCellDescriptionIndex)) {
         if (pNeighbour.getSolverNumber() == solverNumber &&
             pNeighbour.getLevel() == level) {
@@ -293,54 +293,52 @@ void exahype::mappings::MarkingForAugmentation::prepareSendToNeighbour(
   tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
       vertex.getCellDescriptionsIndex();
 
-  if (vertex.isInside()) { // TODO(Dominic): Add to docu: This prevents metadata exchange with rank 0.
-    dfor2(dest)
-      dfor2(src)
-      if (vertex.hasToSendMetadata(src,dest,toRank)) {
-          const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
-          if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(srcCellDescriptionIndex)) {
-            logDebug("prepareSendToNeighbour(...)","[data] sent to rank "<<toRank<<", x:"<<
-                x.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
-                << vertex.getAdjacentRanks()
-                << ", src forking: "
-                << State::isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
+  dfor2(dest)
+    dfor2(src)
+    if (vertex.hasToSendMetadata(src,dest,toRank)) {
+      const int srcCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(srcScalar);
+      if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex)) {
+        logDebug("prepareSendToNeighbour(...)","[data] sent to rank "<<toRank<<", x:"<<
+            x.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
+            << vertex.getAdjacentRanks()
+            << ", src forking: "
+            << State::isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
 
-            exahype::MetadataHeap::HeapEntries metadata =
-                exahype::Cell::encodeMetadata(srcCellDescriptionIndex);
-            MetadataHeap::getInstance().sendData(
-                metadata, toRank, x, level,
-                peano::heap::MessageType::NeighbourCommunication);
-          } else {
-            if (srcCellDescriptionIndex==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
-              assertion2(false,"Should not happen!",srcCellDescriptionIndex);
-            } // Dead code elimination will remove this code section if Asserts/Debug flag not set.
-            if (srcCellDescriptionIndex>0) {
-              // TODO(Dominic): Encountered situation where srcCellDescriptionsIndex > 0 but
-              // index was not valid. I assume this happens if a fork was triggered. In this
-              // case I sent out an empty message. Add to docu.
-              // Just sending empty data out seems to work fine so far.
-            }
-
-            logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<", x:"<<
-                x.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
-                << vertex.getAdjacentRanks()
-                << ", src forking: "
-                << State::isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
-
-            exahype::MetadataHeap::HeapEntries metadata =
-                exahype::Cell::createEncodedMetadataSequenceForInvalidCellDescriptionsIndex();
-
-            MetadataHeap::getInstance().sendData(
-                metadata, toRank, x, level,
-                peano::heap::MessageType::NeighbourCommunication);
-          }
+        exahype::MetadataHeap::HeapEntries metadata =
+            exahype::Vertex::encodeMetadata(srcCellDescriptionIndex);
+        MetadataHeap::getInstance().sendData(
+            metadata, toRank, x, level,
+            peano::heap::MessageType::NeighbourCommunication);
+      } else {
+        if (srcCellDescriptionIndex==multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
+          assertion2(false,"Should not happen!",srcCellDescriptionIndex);
+        } // Dead code elimination will remove this code section if Asserts/Debug flag not set.
+        if (srcCellDescriptionIndex>0) {
+          // TODO(Dominic): Encountered situation where srcCellDescriptionsIndex > 0 but
+          // index was not valid. I assume this happens if a fork was triggered. In this
+          // case I sent out an empty message. Add to docu.
+          // Just sending empty data out seems to work fine so far.
         }
-      enddforx
+
+        logDebug("prepareSendToNeighbour(...)","[empty] sent to rank "<<toRank<<", x:"<<
+            x.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
+            << vertex.getAdjacentRanks()
+            << ", src forking: "
+            << State::isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
+
+        exahype::MetadataHeap::HeapEntries metadata =
+            exahype::Vertex::createEmptyEncodedMetadataSequence();
+        MetadataHeap::getInstance().sendData(
+            metadata, toRank, x, level,
+            peano::heap::MessageType::NeighbourCommunication);
+      }
+    }
     enddforx
-  }
+  enddforx
 
   logTraceOut("prepareSendToNeighbour(...)");
 }
+
 
 void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
@@ -356,16 +354,11 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
   // 1. Get metadata,
   // 2. Set AugmentationRequest if neighbour is of type Ancestor
   // 3. Change cell type of local cell description if neighbour is of type Cell.
+  //    (New) Change it to RemoteBoundaryAncestor/RemoteBoundaryDescendant; remove the flag
   // 4. Delete metadata.
 #if !defined(PeriodicBC)
   if (vertex.isBoundary()) return;
 #endif
-  // TODO(Dominic): Add to docu: mergeWithNeighbour(..) happens before vertex creation events.
-  // TODO(Dominic): Might need to change this (Periodic BC). Might need to send data between
-  // rank 0 and other ranks too. So vertex.isOutside()/Boundary() must be possible too.
-  if (vertex.isInside()) {
-    assertion1(vertex.isInside(),vertex.toString());
-    assertion1(neighbour.isInside(),neighbour.toString());
 
     tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
           vertex.getCellDescriptionsIndex();
@@ -391,13 +384,13 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
               peano::heap::MessageType::NeighbourCommunication);
 
           const int destCellDescriptionIndex = adjacentADERDGCellDescriptionsIndices(destScalar);
-          if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex)) {
-            assertion(FiniteVolumesCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex));
+          if (exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(destCellDescriptionIndex)) {
+            assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(destCellDescriptionIndex));
 
             // We do not have to invert the order here since we receive the solver metadata in correct
             // order and perform local actions according to these metadata. No further messages need
             // to be handled by this vertex.
-            receiveADERDGMetadataInMergeWithNeigbour       (destCellDescriptionIndex,receivedMetadataIndex);
+            receiveADERDGMetadataInMergeWithNeigbour(destCellDescriptionIndex,receivedMetadataIndex);
 //            receiveFiniteVolumesMetadataInMergeWithNeigbour(destCellDescriptionIndex,receivedMetadataIndex);
           }
           // Clean up
@@ -405,7 +398,6 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
         }
       enddforx
     enddforx
-  }
 
   logTraceOut("mergeWithNeighbour(...)");
 }
@@ -414,28 +406,23 @@ void exahype::mappings::MarkingForAugmentation::mergeWithNeighbour(
 void exahype::mappings::MarkingForAugmentation::receiveADERDGMetadataInMergeWithNeigbour(
     const int destCellDescriptionIndex,
     const int receivedMetadataIndex) {
-  exahype::MetadataHeap::HeapEntries::const_iterator metadataIterator=
-      MetadataHeap::getInstance().getData(receivedMetadataIndex).begin();
-  const int nADERDG = metadataIterator->getU(); ++metadataIterator;
+  assertion(!MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
+  exahype::MetadataHeap::HeapEntries neighbourCellTypes =
+      MetadataHeap::getInstance().getData(receivedMetadataIndex);
 
-  if (nADERDG > 0) {
-    logDebug("mergeWithNeighbour(...)","nADERDG: " << nADERDG);
-    while (metadataIterator!=MetadataHeap::getInstance().getData(receivedMetadataIndex).begin()+1+2*nADERDG) {
-      const int solverNumber = metadataIterator->getU(); ++metadataIterator;
-      const int typeAsInt    = metadataIterator->getU(); ++metadataIterator;
-      exahype::records::ADERDGCellDescription::Type type =
-            static_cast<exahype::records::ADERDGCellDescription::Type>(typeAsInt);
-
-      logDebug("mergeWithNeighbour(...)","solverNumber: " << solverNumber);
-      logDebug("mergeWithNeighbour(...)","typeAsInt: "    << typeAsInt);
-
-      for (auto& p : ADERDGCellDescriptionHeap::getInstance().getData(destCellDescriptionIndex)) {
+  // TODO(Dominic): Add to docu why we invert the order.
+  for (int solverNumber=exahype::solvers::RegisteredSolvers.size()-1; solverNumber>0; --solverNumber) {
+    const int typeAsInt = neighbourCellTypes[solverNumber].getU();
+    if (typeAsInt!=exahype::Vertex::InvalidMetadataEntry) {
+      for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(destCellDescriptionIndex)) {
         if (p.getSolverNumber()==solverNumber) {
+          exahype::records::ADERDGCellDescription::Type type =
+              static_cast<exahype::records::ADERDGCellDescription::Type>(typeAsInt);
           switch(p.getType()) {
           case exahype::records::ADERDGCellDescription::Cell:
             if (p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None &&
                 (type==exahype::records::ADERDGCellDescription::Ancestor ||
-                 type==exahype::records::ADERDGCellDescription::EmptyAncestor)) {
+                    type==exahype::records::ADERDGCellDescription::EmptyAncestor)) {
               p.setRefinementEvent(exahype::records::ADERDGCellDescription::AugmentingRequested);
             }
             break;
@@ -450,7 +437,7 @@ void exahype::mappings::MarkingForAugmentation::receiveADERDGMetadataInMergeWith
             // is able to descend and finds existing descendants).
             if (p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None &&
                 (type==exahype::records::ADERDGCellDescription::Ancestor ||
-                type==exahype::records::ADERDGCellDescription::EmptyAncestor)) {
+                    type==exahype::records::ADERDGCellDescription::EmptyAncestor)) {
               p.setRefinementEvent(exahype::records::ADERDGCellDescription::AugmentingRequested);
             }
             break;
@@ -462,12 +449,15 @@ void exahype::mappings::MarkingForAugmentation::receiveADERDGMetadataInMergeWith
             }
             break;
           default:
-            assertionMsg(false,"Should never be entered!");
+            assertionMsg(false,"Should never be entered in static AMR scenarios!");
             break;
           }
         }
       }
     }
+
+    logDebug("mergeWithNeighbour(...)","solverNumber: " << solverNumber);
+    logDebug("mergeWithNeighbour(...)","typeAsInt: "    << typeAsInt);
   }
 }
 
