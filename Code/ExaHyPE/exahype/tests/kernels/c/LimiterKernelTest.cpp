@@ -22,11 +22,11 @@ registerTest(exahype::tests::c::LimiterKernelTest)
 
 tarch::logging::Log exahype::tests::c::LimiterKernelTest::_log( "exahype::tests::c::LimiterKernelTest" );
 
-
 namespace exahype {
 namespace tests {
 namespace c {
 
+const double LimiterKernelTest::eps = 1.0e-9;
 
 LimiterKernelTest::LimiterKernelTest()
     : tarch::tests::TestCase("exahype::tests::c::LimiterKernelTest") {}

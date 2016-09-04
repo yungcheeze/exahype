@@ -39,7 +39,7 @@ class LimiterKernelTest : public tarch::tests::TestCase {
 
  private:
   static tarch::logging::Log _log;
-  static const double eps = 1.0e-9;  // for quick adaption of the test cases
+  static const double eps;  // for quick adaption of the test cases
 
   static void testGetGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize, const double* const expectedLob);
   static void testGetFVMData(const double* const luh, const int numberOfVariables, const int basisSize, const int expectedbasisSizeLim, const double* const expectedLim);
