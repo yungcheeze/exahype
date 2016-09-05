@@ -48,7 +48,7 @@ void LimiterKernelTest::run() {
   
   testMethod(testGetGaussLobattoData);
   testMethod(testGetFVMData);
-  //testMethod(testUpdateSubcellWithLimiterData);
+  testMethod(testUpdateSubcellWithLimiterData);
   //testMethod(testFindCellLocallocalMinlocalMax)
   //testMethod(testIsTroubledCell)
 }
