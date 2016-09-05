@@ -50,6 +50,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _writer.write("#include \"kernels/KernelCalls.h\"\n\n");
 
       _writer.write("#include \"kernels/GaussLegendreQuadrature.h\"\n");
+      _writer.write("#include \"kernels/GaussLobattoQuadrature.h\"\n");
+	  _writer.write("#include \"kernels/LimiterProjectionMatrices.h\"\n");
       _writer.write("#include \"kernels/DGMatrices.h\"\n");
       _writer.write("#include \"kernels/DGBasisFunctions.h\"\n\n");
 
@@ -188,6 +190,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "    orders.insert(p->getNodesPerCoordinateAxis()-1);\n"+
           "  }\n"+
           "  kernels::initGaussLegendreNodesAndWeights(orders);\n"+
+          "  kernels::initGaussLobattoNodesAndWeights(orders);\n"+
+          "  kernels::initLimiterProjectionMatrices(orders);\n"+
           "  kernels::initDGMatrices(orders);\n" +
           "  kernels::initBasisFunctions(orders);\n");
       _methodBodyWriter.write("}\n"); // close initSolvers(...)
@@ -200,6 +204,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
           "    orders.insert(p->getNodesPerCoordinateAxis()-1);\n" +
           "  }\n" +
           "  kernels::freeGaussLegendreNodesAndWeights(orders);\n"+
+          "  kernels::freeGaussLobattoNodesAndWeights(orders);\n"+
+          "  kernels::freeLimiterProjectionMatrices(orders);\n"+
           "  kernels::freeDGMatrices(orders);\n"+
           "  kernels::freeBasisFunctions(orders);\n\n"+
           "  for (auto solver : exahype::solvers::RegisteredSolvers) {\n"+

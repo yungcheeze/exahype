@@ -18,30 +18,17 @@
 #include <stdexcept>
 #include <stdlib.h>
 
-#include "../../GaussLegendreQuadrature.h"
-#include "../../GaussLobattoQuadrature.h"
+#include "../../LimiterProjectionMatrices.h"
 #include "../../KernelUtils.h"
 
-#include "tarch/logging/Log.h"
 #include "peano/utils/Globals.h"
 
 namespace kernels {
 namespace limiter {
 namespace generic {
 namespace c {
-  
-  
-extern double* uh2lim;
-extern double* uh2lob;
-extern double* lim2uh;
 
 int getLimBasisSize(const int basisSize);
-
-void BaseFunc1D(double* phi, double xi, const int basisSize);
-double* matrixInverse(int n, double* a);
-
-void initProjectionMatrices(const int basisSize);
-void freeProjectionMatrices(const int basisSize);
 
 double* getGaussLobattoData(const double* const luh, const int numberOfVariables, const int basisSize);
 double* getFVMData(const double* const luh, const int numberOfVariables, const int basisSize, int& basisSizeLim);
