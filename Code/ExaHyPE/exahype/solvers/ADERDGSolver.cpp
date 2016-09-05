@@ -502,6 +502,10 @@ void exahype::solvers::ADERDGSolver::receiveFromMasterRank(int rank, int tag) {
            MPI_STATUS_IGNORE);
 }
 
+///////////////////////////////////
+// NEIGHBOUR
+///////////////////////////////////
+
 void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
     const int                                     toRank,
     const int                                     cellDescriptionsIndex,
@@ -509,7 +513,7 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, int>&     src,
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    int                                           level) {
+    const int                                     level) {
   if (tarch::la::countEqualEntries(src,dest)!=1) {
     return; // We only consider faces; no corners.
   }
@@ -581,7 +585,7 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, int>&     src,
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    int                                           level) {
+    const int                                     level) {
   std::vector<double> emptyMessage(0,0);
   for(int sends=0; sends<DataMessagesPerNeighbour; ++sends)
     DataHeap::getInstance().sendData(
@@ -596,7 +600,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     const tarch::la::Vector<DIMENSIONS, int>&     src,
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    int                                           level) {
+    const int                                     level) {
   if (tarch::la::countEqualEntries(src,dest)!=1) {
     return; // We only consider faces; no corners.
   }
@@ -770,11 +774,147 @@ void exahype::solvers::ADERDGSolver::dropNeighbourData(
     const tarch::la::Vector<DIMENSIONS, int>&     src,
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    int                                           level) {
+    const int                                     level) {
   for(int receives=0; receives<DataMessagesPerNeighbour; ++receives)
     DataHeap::getInstance().receiveData(
         fromRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
+}
+
+///////////////////////////////////
+// FORK OR JOIN
+///////////////////////////////////
+
+/**
+ * Send solver data to master or worker rank. Read the data from
+ * the cell description \p element in
+ * the cell descriptions vector stored at \p
+ * cellDescriptionsIndex.
+ *
+ * \param[in] element Index of the ADERDGCellDescription
+ *                    holding the data to send out in
+ *                    the heap vector at \p cellDescriptionsIndex.
+ */
+void exahype::solvers::ADERDGSolver::sendDataToWorkerOrMasterDueToForkOrJoin(
+    const int                                     toRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  assertionMsg(false,"Please implement!");
+}
+
+/**
+ * Send empty solver data to master or worker rank
+ * due to fork or join.
+ */
+void exahype::solvers::ADERDGSolver::sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
+    const int                                     toRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  assertionMsg(false,"Please implement!");
+}
+
+/**
+ * Merge with solver data from master or worker rank
+ * that was sent out due to a fork or join. Wrote the data to
+ * the cell description \p element in
+ * the cell descriptions vector stored at \p
+ * cellDescriptionsIndex.
+ */
+void exahype::solvers::ADERDGSolver::mergeWithWorkerOrMasterDataDueToForkOrJoin(
+    const int                                     fromRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  assertionMsg(false,"Please implement!");
+}
+
+/**
+ * Drop solver data from master or worker rank
+ * that was sent out due to a fork or join.
+ */
+void exahype::solvers::ADERDGSolver::dropWorkerOrMasterDataDueToForkOrJoin(
+    const int                                     fromRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  assertionMsg(false,"Please implement!");
+}
+
+///////////////////////////////////
+// WORKER->MASTER
+///////////////////////////////////
+
+void exahype::solvers::ADERDGSolver::sendDataToMaster(
+    const int                                     masterRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::ADERDGSolver::sendEmptyDataToMaster(
+    const int                                     masterRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
+    const int                                     workerRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::ADERDGSolver::dropWorkerData(
+    const int                                     workerRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  assertionMsg(false,"Please implement!");
+}
+
+///////////////////////////////////
+// MASTER->WORKER
+///////////////////////////////////
+
+void exahype::solvers::ADERDGSolver::sendDataToWorker(
+    const int                                     workerRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::ADERDGSolver::sendEmptyDataToWorker(
+    const int                                     workerRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::ADERDGSolver::mergeWithMasterData(
+    const int                                     masterRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  assertionMsg(false,"Please implement!");
+}
+
+/**
+ * Drop solver data from master rank.
+ */
+void exahype::solvers::ADERDGSolver::dropMasterData(
+    const int                                     masterRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+        const int                                     level) {
+  assertionMsg(false,"Please implement!");
 }
 #endif
 

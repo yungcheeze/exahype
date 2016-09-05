@@ -101,7 +101,7 @@ class exahype::solvers::Solver {
   };
 
   /**
-   * The refinement controls a solver can use.
+   * The refinement control.
    */
   enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
 
@@ -112,6 +112,41 @@ class exahype::solvers::Solver {
    * stored at a heap address.
    */
   static const int NotFound;
+
+  /*
+   * The refinement events a cell description can be subject to.
+   *
+   * \note Make sure the bounds in the assertion in convertToRefinementEvent(...)
+   * do always match the order of these enums.
+   */
+  enum RefinementEvent {
+    None = 0,
+    ErasingRequested = 1,
+    Erasing = 2,
+    ChangeToDescendantRequested = 3,
+    RefiningRequested = 4,
+    Refining = 5,
+    DeaugmentingRequested = 6,
+    AugmentingRequested = 7,
+    Augmenting = 8
+  };
+
+  /*
+   * The cell type a cell description can attain.
+   *
+   * \note Make sure the bounds in the assertion in convertToCellType(...)
+   * do always match the order of these enums.
+   */
+  enum CellType {
+    Erased = 0,
+    Ancestor = 1,
+    RemoteBoundaryAncestor = 2,
+    EmptyAncestor = 3,
+    Cell = 4,
+    Descendant = 5,
+    RemoteBoundaryDescendant = 6,
+    EmptyDescendant = 7
+  };
 
  protected:
   /**
@@ -310,7 +345,7 @@ class exahype::solvers::Solver {
 
   /**
    * Receive solver data from neighbour rank and write
-   * it on the cell description \p elementIndex in
+   * it on the cell description \p element in
    * the cell descriptions vector stored at \p
    * cellDescriptionsIndex.
    *
@@ -358,22 +393,22 @@ class exahype::solvers::Solver {
 
   /**
    * Send solver data to neighbour rank. Read the data from
-   * the cell description \p elementIndex in
+   * the cell description \p element in
    * the cell descriptions vector stored at \p
    * cellDescriptionsIndex.
    *
-   * \param[in] elementIndex Index of the ADERDGCellDescription
-   *                         holding the data to send out in
-   *                         the heap vector at \p cellDescriptionsIndex.
+   * \param[in] element Index of the ADERDGCellDescription
+   *                    holding the data to send out in
+   *                    the heap vector at \p cellDescriptionsIndex.
    */
   virtual void sendDataToNeighbour(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
-      const int                                     elementIndex,
+      const int                                     element,
       const tarch::la::Vector<DIMENSIONS, int>&     src,
       const tarch::la::Vector<DIMENSIONS, int>&     dest,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      int                                           level) = 0;
+      const int                                     level) = 0;
 
   /**
    * Send empty solver data to neighbour rank.
@@ -383,11 +418,11 @@ class exahype::solvers::Solver {
       const tarch::la::Vector<DIMENSIONS, int>&     src,
       const tarch::la::Vector<DIMENSIONS, int>&     dest,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      int                                           level) = 0;
+      const int                                     level) = 0;
 
   /**
    * Receive solver data from neighbour rank and write
-   * it on the cell description \p elementIndex in
+   * it on the cell description \p element in
    * the cell descriptions vector stored at \p
    * cellDescriptionsIndex.
    *
@@ -402,7 +437,7 @@ class exahype::solvers::Solver {
       const tarch::la::Vector<DIMENSIONS, int>&     src,
       const tarch::la::Vector<DIMENSIONS, int>&     dest,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      int                                           level) = 0;
+      const int                                     level) = 0;
 
   /**
    * Drop solver data from neighbour rank.
@@ -412,8 +447,202 @@ class exahype::solvers::Solver {
       const tarch::la::Vector<DIMENSIONS, int>&     src,
       const tarch::la::Vector<DIMENSIONS, int>&     dest,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
-      int                                           level) = 0;
+      const int                                     level) = 0;
+
+  /**
+   * Send solver data to master or worker rank. Read the data from
+   * the cell description \p element in
+   * the cell descriptions vector stored at \p
+   * cellDescriptionsIndex.
+   *
+   * \param[in] element Index of the cell description
+   *                    holding the data to send out in
+   *                    the array with address \p cellDescriptionsIndex.
+   */
+  virtual void sendDataToWorkerOrMasterDueToForkOrJoin(
+      const int                                     toRank,
+      const int                                     cellDescriptionsIndex,
+      const int                                     element,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
+
+  /**
+   * Send empty solver data to master or worker rank
+   * due to fork or join.
+   */
+  virtual void sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
+      const int                                     toRank,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
+
+  /**
+   * Merge with solver data from master or worker rank
+   * that was sent out due to a fork or join. Wrote the data to
+   * the cell description \p element in
+   * the cell descriptions vector stored at \p
+   * cellDescriptionsIndex.
+   *
+   * \param[in] element Index of the cell description
+   *                    holding the data to send out in
+   *                    the array with address \p cellDescriptionsIndex.
+   */
+  virtual void mergeWithWorkerOrMasterDataDueToForkOrJoin(
+      const int                                     fromRank,
+      const int                                     cellDescriptionsIndex,
+      const int                                     element,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
+
+  /**
+   * Drop solver data from master or worker rank
+   * that was sent out due to a fork or join.
+   */
+  virtual void dropWorkerOrMasterDataDueToForkOrJoin(
+      const int                                     fromRank,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
+
+  ///////////////////////////////////
+  // WORKER->MASTER
+  ///////////////////////////////////
+
+  /**
+   * Send solver data to master rank. Read the data from
+   * the cell description \p element in
+   * the cell descriptions vector stored at \p
+   * cellDescriptionsIndex.
+   *
+   * \param[in] element Index of the cell description
+   *                    holding the data to send out in
+   *                    the heap vector at \p cellDescriptionsIndex.
+   */
+  virtual void sendDataToMaster(
+      const int                                     masterRank,
+      const int                                     cellDescriptionsIndex,
+      const int                                     element,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
+
+  /**
+   * Send empty solver data to master rank.
+   */
+  virtual void sendEmptyDataToMaster(
+      const int                                     masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
+
+  /**
+   * Merge with solver data from worker rank.
+   * Write the data to the cell description \p element in
+   * the cell descriptions vector stored at \p
+   * cellDescriptionsIndex.
+   *
+   * \param[in] element Index of the cell description
+   *                    holding the data to send out in
+   *                    the array with address \p cellDescriptionsIndex.
+   */
+  virtual void mergeWithWorkerData(
+      const int                                     workerRank,
+      const int                                     cellDescriptionsIndex,
+      const int                                     element,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
+
+  /**
+   * Drop solver data from worker rank.
+   */
+  virtual void dropWorkerData(
+      const int                                     workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
+
+  ///////////////////////////////////
+  // MASTER->WORKER
+  ///////////////////////////////////
+
+  /**
+   * Send solver data to worker rank. Read the data from
+   * the cell description \p element in the cell descriptions
+   * vector stored at \p cellDescriptionsIndex.
+   *
+   * \param[in] element Index of the ADERDGCellDescription
+   *                    holding the data to send out in
+   *                    the heap vector at \p cellDescriptionsIndex.
+   */
+  virtual void sendDataToWorker(
+      const int                                     workerRank,
+      const int                                     cellDescriptionsIndex,
+      const int                                     element,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
+
+  /**
+   * Send empty solver data to worker rank.
+   */
+  virtual void sendEmptyDataToWorker(
+      const int                                     workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
+
+  /**
+   * Merge with solver data from master rank
+   * that was sent out due to a fork or join. Write the data to
+   * the cell description \p element in
+   * the cell descriptions vector stored at \p
+   * cellDescriptionsIndex.
+   *
+   * \param[in] element Index of the cell description
+   *                    holding the data to send out in
+   *                    the array with address \p cellDescriptionsIndex.
+   */
+  virtual void mergeWithMasterData(
+      const int                                     masterRank,
+      const int                                     cellDescriptionsIndex,
+      const int                                     element,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
+
+  /**
+   * Drop solver data from master rank.
+   */
+  virtual void dropMasterData(
+      const int                                     masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
   #endif
+
+ protected:
+  /**
+   * Return the unique int value for \p refinementEvent.
+   */
+  static int asInt(const RefinementEvent& refinementEvent) {
+    return static_cast<int>(refinementEvent);
+  }
+
+  /**
+   * Return the unique int value for \p refinementEvent.
+   */
+  static int asInt(const CellType& cellType) {
+    return static_cast<int>(cellType);
+  }
+
+  /**
+   * Return the unique int value for \p refinementEvent.
+   */
+  static RefinementEvent convertToRefinementEvent(const int& value) {
+    assertion1(value>=static_cast<int>(RefinementEvent::None) &&
+               value<=static_cast<int>(RefinementEvent::Augmenting),value);
+    return static_cast<RefinementEvent>(value);
+  }
+
+  /**
+   * Return the unique int value for \p cellType.
+   */
+  static CellType convertToCellType(const int& value) {
+    assertion1(value>=static_cast<int>(CellType::Erased) &&
+               value<=static_cast<int>(CellType::EmptyDescendant),value);
+    return static_cast<CellType>(value);
+  }
 };
 
 #endif

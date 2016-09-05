@@ -109,12 +109,16 @@ void exahype::solvers::FiniteVolumesSolver::receiveFromMasterRank(int rank, int 
   assertionMsg(false, "not implemented yet");
 }
 
+///////////////////////////////////
+// NEIGHBOUR
+///////////////////////////////////
+
 void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToNeighbour(
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, int>&     src,
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    int                                           level) {
+    const int                                     level) {
   std::vector<double> emptyMessage(0,0);
   for(int sends=0; sends<DataMessagesPerNeighbour; ++sends)
     DataHeap::getInstance().sendData(
@@ -127,11 +131,124 @@ void exahype::solvers::FiniteVolumesSolver::dropNeighbourData(
     const tarch::la::Vector<DIMENSIONS, int>&     src,
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
-    int                                           level) {
+    const int                                     level) {
   for(int receives=0; receives<DataMessagesPerNeighbour; ++receives)
     DataHeap::getInstance().receiveData(
         fromRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
+}
+
+///////////////////////////////////
+// FORK OR JOIN
+///////////////////////////////////
+
+void exahype::solvers::FiniteVolumesSolver::sendDataToWorkerOrMasterDueToForkOrJoin(
+    const int                                     toRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  assertionMsg(false,"Please implement!");
+}
+
+
+void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
+    const int                                     toRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  assertionMsg(false,"Please implement!");
+}
+
+
+void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerOrMasterDataDueToForkOrJoin(
+    const int                                     fromRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::FiniteVolumesSolver::dropWorkerOrMasterDataDueToForkOrJoin(
+    const int                                     fromRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  assertionMsg(false,"Please implement!");
+}
+
+///////////////////////////////////
+// WORKER->MASTER
+///////////////////////////////////
+
+void exahype::solvers::FiniteVolumesSolver::sendDataToMaster(
+    const int                                     masterRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToMaster(
+    const int                                     masterRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
+    const int                                     workerRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::FiniteVolumesSolver::dropWorkerData(
+    const int                                     workerRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  assertionMsg(false,"Please implement!");
+}
+
+///////////////////////////////////
+// MASTER->WORKER
+///////////////////////////////////
+
+void exahype::solvers::FiniteVolumesSolver::sendDataToWorker(
+    const int                                     workerRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToWorker(
+    const int                                     workerRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::FiniteVolumesSolver::mergeWithMasterData(
+    const int                                     masterRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level){
+  assertionMsg(false,"Please implement!");
+}
+
+/**
+ * Drop solver data from master rank.
+ */
+void exahype::solvers::FiniteVolumesSolver::dropMasterData(
+    const int                                     masterRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+        const int                                     level) {
+  assertionMsg(false,"Please implement!");
 }
 #endif
 
