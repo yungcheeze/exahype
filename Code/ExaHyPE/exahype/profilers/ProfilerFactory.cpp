@@ -38,6 +38,7 @@
 #include "ipcm/metrics/IpcmCyclesLostL2MissesMetric.h"
 #include "ipcm/metrics/IpcmCyclesLostL3MissesMetric.h"
 #include "ipcm/metrics/IpcmCyclesMetric.h"
+#include "ipcm/metrics/IpcmDramConsumedJoulesMetric."
 #include "ipcm/metrics/IpcmInstructionsRetiredMetric.h"
 #include "ipcm/metrics/IpcmL2CacheHitsMetric.h"
 #include "ipcm/metrics/IpcmL2CacheMissesMetric.h"
@@ -117,6 +118,12 @@ const std::unordered_map<
            return std::unique_ptr<
                exahype::profilers::ipcm::IpcmConsumedJoulesMetric>(
                new exahype::profilers::ipcm::IpcmConsumedJoulesMetric);
+         }},
+        {"IpcmDramConsumedJoulesMetric",
+         []() {
+           return std::unique_ptr<
+               exahype::profilers::ipcm::IpcmDramConsumedJoulesMetric>(
+               new exahype::profilers::ipcm::IpcmDramConsumedJoulesMetric);
          }},
         {"IpcmCyclesLostL2MissesMetric",
          []() {
