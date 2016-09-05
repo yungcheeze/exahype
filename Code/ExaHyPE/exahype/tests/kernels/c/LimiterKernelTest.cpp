@@ -12,7 +12,6 @@
  **/
 
 #include "exahype/tests/kernels/c/LimiterKernelTest.h"
-#include "tarch/tests/TestMacros.h"
 
 registerTest(exahype::tests::c::LimiterKernelTest)
 
@@ -29,6 +28,7 @@ namespace c {
 const double LimiterKernelTest::eps = 1.0e-13;
 const int LimiterKernelTest::numberOfVariables = 5;
 const int LimiterKernelTest::basisSize = 4;
+const int LimiterKernelTest::basisSizeLim = 7;
 #ifdef Dim2
 const std::string LimiterKernelTest::dim = "2";
 #endif
@@ -45,16 +45,12 @@ LimiterKernelTest::~LimiterKernelTest() {}
 
 void LimiterKernelTest::run() {
   _log.info("LimiterKernelTest::run()", "LimiterKernelTest is active");
-  std::set<int> orders;
-  //kernels::initGaussLegendreNodesAndWeights(orders); //not required
-  kernels::initGaussLobattoNodesAndWeights(orders); //TODO should be done somewhere else
-  kernels::limiter::generic::c::initProjectionMatrices(basisSize); //TODO should be done somewhere else
   
   testMethod(testGetGaussLobattoData);
   testMethod(testGetFVMData);
-  testMethod(testUpdateSubcellWithLimiterData);
-  testMethod(testFindCellLocallocalMinlocalMax)
-  testMethod(testIsTroubledCell)
+  //testMethod(testUpdateSubcellWithLimiterData);
+  //testMethod(testFindCellLocallocalMinlocalMax)
+  //testMethod(testIsTroubledCell)
 }
 
 void LimiterKernelTest::testGetGaussLobattoData() {
@@ -62,25 +58,41 @@ void LimiterKernelTest::testGetGaussLobattoData() {
           "Test luh -> lob, ORDER=4, DIM="+dim);
   
   double* lob = kernels::limiter::generic::c::getGaussLobattoData(exahype::tests::testdata::limiter::testFromLuhConversion::luh_in, numberOfVariables, basisSize);
+  
   for(int i=0; i<exahype::tests::testdata::limiter::sizeLuh; i++) {
     validateNumericalEqualsWithEps(lob[i], exahype::tests::testdata::limiter::testFromLuhConversion::lob_out[i], eps);
   }
+  
+  delete[] lob;
 }
 
 void LimiterKernelTest::testGetFVMData() {
   logInfo("LimiterKernelTest::testGetFVMData()",
           "Test luh -> lim, ORDER=4, DIM="+dim);
           
-  int basisSizeLim;
-  double* lim = kernels::limiter::generic::c::getFVMData(exahype::tests::testdata::limiter::testFromLuhConversion::luh_in, numberOfVariables, basisSize, basisSizeLim);
-  validateEquals(basisSizeLim, 7)
+  int calcBasisSizeLim;
+  double* lim = kernels::limiter::generic::c::getFVMData(exahype::tests::testdata::limiter::testFromLuhConversion::luh_in, numberOfVariables, basisSize, calcBasisSizeLim);
+  
+  validateEquals(calcBasisSizeLim, basisSizeLim)
   for(int i=0; i<exahype::tests::testdata::limiter::sizeLim; i++) {
     validateNumericalEqualsWithEps(lim[i], exahype::tests::testdata::limiter::testFromLuhConversion::lim_out[i], eps);
   }
+  
+  delete[] lim;
 }
 
 void LimiterKernelTest::testUpdateSubcellWithLimiterData(){
+  logInfo("LimiterKernelTest::testUpdateSubcellWithLimiterData()",
+          "Test lim -> luh, ORDER=4, DIM="+dim);
+          
+  double* luh = new double[exahype::tests::testdata::limiter::sizeLuh]();
+  kernels::limiter::generic::c::updateSubcellWithLimiterData(exahype::tests::testdata::limiter::testToLuhConversion::lim_in, numberOfVariables, basisSizeLim, basisSize, luh);
   
+  for(int i=0; i<exahype::tests::testdata::limiter::sizeLuh; i++) {
+    validateNumericalEqualsWithEps(luh[i], exahype::tests::testdata::limiter::testToLuhConversion::luh_out[i], eps);
+  }
+  
+  delete[] luh;
 }
 
 void LimiterKernelTest::testFindCellLocallocalMinlocalMax(){
@@ -99,5 +111,3 @@ void LimiterKernelTest::testIsTroubledCell(){
 #pragma optimize("", on)
 #endif
 
-
-// clang-format on

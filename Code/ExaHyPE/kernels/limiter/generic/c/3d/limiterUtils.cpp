@@ -39,7 +39,7 @@ double* getGaussLobattoData(const double* const luh, const int numberOfVariables
         for(v=0; v<numberOfVariables; v++) {
           tmpZ[idx(z,y,x,v)] = 0;
           for(k=0; k<basisSize; k++) {
-            tmpZ[idx(z,y,x,v)] += luh[idx(k,y,x,v)] * uh2lob[idxConv(k,z)];
+            tmpZ[idx(z,y,x,v)] += luh[idx(k,y,x,v)] * uh2lob[basisSize-1][idxConv(k,z)];
           }
         }
       }
@@ -53,7 +53,7 @@ double* getGaussLobattoData(const double* const luh, const int numberOfVariables
         for(v=0; v<numberOfVariables; v++) {
           tmpY[idx(z,y,x,v)] = 0;
           for(k=0; k<basisSize; k++) {
-            tmpY[idx(z,y,x,v)] += tmpZ[idx(z,k,x,v)] * uh2lob[idxConv(k,y)];
+            tmpY[idx(z,y,x,v)] += tmpZ[idx(z,k,x,v)] * uh2lob[basisSize-1][idxConv(k,y)];
           }
         }
       }
@@ -67,7 +67,7 @@ double* getGaussLobattoData(const double* const luh, const int numberOfVariables
         for(v=0; v<numberOfVariables; v++) {
           lob[idx(z,y,x,v)] = 0;
           for(k=0; k<basisSize; k++) {
-            lob[idx(z,y,x,v)] += tmpY[idx(z,y,k,v)] * uh2lob[idxConv(k,x)];
+            lob[idx(z,y,x,v)] += tmpY[idx(z,y,k,v)] * uh2lob[basisSize-1][idxConv(k,x)];
           }
         }
       }
@@ -104,7 +104,7 @@ double* getFVMData(const double* const luh, const int numberOfVariables, const i
         for(v=0; v<numberOfVariables; v++) {
           tmpZ[idxZ(z,y,x,v)] = 0;
           for(k=0; k<basisSize; k++) {
-            tmpZ[idxZ(z,y,x,v)] += luh[idxLuh(k,y,x,v)] * uh2lim[idxConv(k,z)];
+            tmpZ[idxZ(z,y,x,v)] += luh[idxLuh(k,y,x,v)] * uh2lim[basisSize-1][idxConv(k,z)];
           }
         }
       }
@@ -118,7 +118,7 @@ double* getFVMData(const double* const luh, const int numberOfVariables, const i
         for(v=0; v<numberOfVariables; v++) {
           tmpY[idxY(z,y,x,v)] = 0;
           for(k=0; k<basisSize; k++) {
-            tmpY[idxY(z,y,x,v)] += tmpZ[idxZ(z,k,x,v)] * uh2lim[idxConv(k,y)];
+            tmpY[idxY(z,y,x,v)] += tmpZ[idxZ(z,k,x,v)] * uh2lim[basisSize-1][idxConv(k,y)];
           }
         }
       }
@@ -132,7 +132,7 @@ double* getFVMData(const double* const luh, const int numberOfVariables, const i
         for(v=0; v<numberOfVariables; v++) {
           lim[idxLim(z,y,x,v)] = 0;
           for(k=0; k<basisSize; k++) {
-            lim[idxLim(z,y,x,v)] += tmpY[idxY(z,y,k,v)] * uh2lim[idxConv(k,x)];
+            lim[idxLim(z,y,x,v)] += tmpY[idxY(z,y,k,v)] * uh2lim[basisSize-1][idxConv(k,x)];
           }
         }
       }
@@ -164,7 +164,7 @@ void updateSubcellWithLimiterData(const double* const lim, const int numberOfVar
         for(v=0; v<numberOfVariables; v++) {
           tmpZ[idxZ(z,y,x,v)] = 0;
           for(k=0; k<basisSizeLim; k++) {
-            tmpZ[idxZ(z,y,x,v)] += lim[idxLim(k,y,x,v)] * lim2uh[idxConv(k,z)];
+            tmpZ[idxZ(z,y,x,v)] += lim[idxLim(k,y,x,v)] * lim2uh[basisSize-1][idxConv(k,z)];
           }
           
         }
@@ -179,7 +179,7 @@ void updateSubcellWithLimiterData(const double* const lim, const int numberOfVar
         for(v=0; v<numberOfVariables; v++) {
           tmpY[idxY(z,y,x,v)] = 0;
           for(k=0; k<basisSizeLim; k++) {
-            tmpY[idxY(z,y,x,v)] += tmpZ[idxZ(z,k,x,v)] * lim2uh[idxConv(k,y)];
+            tmpY[idxY(z,y,x,v)] += tmpZ[idxZ(z,k,x,v)] * lim2uh[basisSize-1][idxConv(k,y)];
           }
         }
       }
@@ -193,7 +193,7 @@ void updateSubcellWithLimiterData(const double* const lim, const int numberOfVar
         for(v=0; v<numberOfVariables; v++) {
           luh[idxLuh(z,y,x,v)] = 0;
           for(k=0; k<basisSizeLim; k++) {
-            luh[idxLuh(z,y,x,v)] += tmpY[idxY(z,y,k,v)] * lim2uh[idxConv(k,x)];
+            luh[idxLuh(z,y,x,v)] += tmpY[idxY(z,y,k,v)] * lim2uh[basisSize-1][idxConv(k,x)];
           }
         }
       }

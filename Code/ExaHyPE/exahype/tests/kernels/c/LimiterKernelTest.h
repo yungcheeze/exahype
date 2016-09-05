@@ -14,17 +14,13 @@
 #ifndef _EXAHYPE_TESTS_LIMITER_KERNEL_TEST_H_
 #define _EXAHYPE_TESTS_LIMITER_KERNEL_TEST_H_
 
-#include <set>
 #include "peano/utils/Globals.h"
 #include "peano/utils/Loop.h"
 #include "tarch/logging/Log.h"
 #include "tarch/tests/TestCaseFactory.h"
 #include "tarch/tests/TestCase.h"
-#include "tarch/tests/TestMacros.h"
 #include "tarch/compiler/CompilerSpecificSettings.h"
 
-
-#include "kernels/DGBasisFunctions.h"
 #include "kernels/limiter/generic/Limiter.h"
 #include "../testdata/limiter_testdata.h"
 
@@ -44,6 +40,7 @@ class LimiterKernelTest : public tarch::tests::TestCase {
   static const double eps;  // for quick adaption of the test cases
   static const int numberOfVariables;
   static const int basisSize;
+  static const int basisSizeLim;
   static const std::string dim; // for log
 
   void testGetGaussLobattoData();
@@ -51,8 +48,6 @@ class LimiterKernelTest : public tarch::tests::TestCase {
   void testUpdateSubcellWithLimiterData();
   void testFindCellLocallocalMinlocalMax();
   void testIsTroubledCell();
-
-  
 };
 
 }  // namespace c
