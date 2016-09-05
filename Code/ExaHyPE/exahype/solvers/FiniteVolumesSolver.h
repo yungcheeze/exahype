@@ -60,7 +60,24 @@ private:
   double _nextMinTimeStepSize;
 
 #ifdef Parallel
-  static const int DataMessagesPerNeighbour;
+  /**
+   * Data messages per neighbour communication.
+   * This information is required by the sendEmpty...(...)
+   * method.
+   */
+  static const int DataMessagesPerNeighbourCommunication;
+  /**
+   * Data messages per fork/join communication.
+   * This information is required by the sendEmpty...(...)
+   * method.
+   */
+  static const int DataMessagesPerForkOrJoinCommunication;
+  /**
+   * Data messages per master worker communication.
+   * This information is required by the sendEmpty...(...)
+   * method.
+   */
+  static const int DataMessagesPerMasterWorkerCommunication;
 #endif
 
 public:
@@ -148,6 +165,17 @@ public:
       const int solverNumber) const;
 
 #ifdef Parallel
+  /**
+   * Sends all the cell descriptions at address \p
+   * cellDescriptionsIndex to the rank \p toRank.
+   */
+  static void sendCellDescriptions(
+      const int                                     toRank,
+      const int                                     cellDescriptionsIndex,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level);
+
+
   void sendToRank(int rank, int tag) override;
 
   void receiveFromMasterRank(int rank, int tag) override;

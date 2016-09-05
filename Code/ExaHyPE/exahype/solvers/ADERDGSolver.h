@@ -219,7 +219,24 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
        const int faceIndexRight) const;
 
 #ifdef Parallel
-  static const int DataMessagesPerNeighbour;
+  /**
+   * Data messages per neighbour communication.
+   * This information is required by the sendEmpty...(...)
+   * method.
+   */
+  static const int DataMessagesPerNeighbourCommunication;
+  /**
+   * Data messages per fork/join communication.
+   * This information is required by the sendEmpty...(...)
+   * method.
+   */
+  static const int DataMessagesPerForkOrJoinCommunication;
+  /**
+   * Data messages per master worker communication.
+   * This information is required by the sendEmpty...(...)
+   * method.
+   */
+  static const int DataMessagesPerMasterWorkerCommunication;
 
   /**
    * Single-sided version of the other solveRiemannProblemAtInterface(). It
@@ -700,6 +717,16 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
         const tarch::la::Vector<DIMENSIONS, int>&     posBoundary) override;
 
 #ifdef Parallel
+  /**
+   * Sends all the cell descriptions at address \p
+   * cellDescriptionsIndex to the rank \p toRank.
+   */
+  static void sendCellDescriptions(
+      const int                                     toRank,
+      const int                                     cellDescriptionsIndex,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level);
+
   /**
    * Collect the ADER-DG corrector and predictor time stamps and time
    * step sizes in a vector of length 5.

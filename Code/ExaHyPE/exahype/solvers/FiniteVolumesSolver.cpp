@@ -99,7 +99,17 @@ int exahype::solvers::FiniteVolumesSolver::tryGetElement(
 }
 
 #ifdef Parallel
-const int exahype::solvers::FiniteVolumesSolver::DataMessagesPerNeighbour = 1;
+const int exahype::solvers::FiniteVolumesSolver::DataMessagesPerNeighbourCommunication    = 1;
+const int exahype::solvers::FiniteVolumesSolver::DataMessagesPerForkOrJoinCommunication   = 1;
+const int exahype::solvers::FiniteVolumesSolver::DataMessagesPerMasterWorkerCommunication = 1;
+
+static void sendCellDescriptions(
+    const int                                     toRank,
+    const int                                     cellDescriptionsIndex,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  assertionMsg(false,"Please implement!");
+}
 
 void exahype::solvers::FiniteVolumesSolver::sendToRank(int rank, int tag) {
   assertionMsg(false, "not implemented yet");
@@ -119,8 +129,8 @@ void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  std::vector<double> emptyMessage(0,0);
-  for(int sends=0; sends<DataMessagesPerNeighbour; ++sends)
+  std::vector<double> emptyMessage(0);
+  for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
     DataHeap::getInstance().sendData(
         emptyMessage, toRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
@@ -132,7 +142,7 @@ void exahype::solvers::FiniteVolumesSolver::dropNeighbourData(
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  for(int receives=0; receives<DataMessagesPerNeighbour; ++receives)
+  for(int receives=0; receives<DataMessagesPerNeighbourCommunication; ++receives)
     DataHeap::getInstance().receiveData(
         fromRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
@@ -156,7 +166,11 @@ void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToWorkerOrMasterDueToFo
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  assertionMsg(false,"Please implement!");
+  std::vector<double> emptyMessage(0);
+  for(int sends=0; sends<DataMessagesPerForkOrJoinCommunication; ++sends)
+    DataHeap::getInstance().sendData(
+        emptyMessage, toRank, x, level,
+        peano::heap::MessageType::ForkOrJoinCommunication);
 }
 
 
@@ -173,7 +187,10 @@ void exahype::solvers::FiniteVolumesSolver::dropWorkerOrMasterDataDueToForkOrJoi
     const int                                     fromRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  assertionMsg(false,"Please implement!");
+  for(int receives=0; receives<DataMessagesPerForkOrJoinCommunication; ++receives)
+    DataHeap::getInstance().receiveData(
+        fromRank, x, level,
+        peano::heap::MessageType::ForkOrJoinCommunication);
 }
 
 ///////////////////////////////////
@@ -193,7 +210,11 @@ void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToMaster(
     const int                                     masterRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  assertionMsg(false,"Please implement!");
+  std::vector<double> emptyMessage(0);
+  for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
+    DataHeap::getInstance().sendData(
+        emptyMessage, masterRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
 }
 
 void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
@@ -209,7 +230,10 @@ void exahype::solvers::FiniteVolumesSolver::dropWorkerData(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  assertionMsg(false,"Please implement!");
+  for(int receives=0; receives<DataMessagesPerMasterWorkerCommunication; ++receives)
+    DataHeap::getInstance().receiveData(
+        workerRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
 }
 
 ///////////////////////////////////
@@ -229,7 +253,11 @@ void exahype::solvers::FiniteVolumesSolver::sendEmptyDataToWorker(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  assertionMsg(false,"Please implement!");
+  std::vector<double> emptyMessage(0);
+  for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
+    DataHeap::getInstance().sendData(
+        emptyMessage, workerRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
 }
 
 void exahype::solvers::FiniteVolumesSolver::mergeWithMasterData(
@@ -241,14 +269,14 @@ void exahype::solvers::FiniteVolumesSolver::mergeWithMasterData(
   assertionMsg(false,"Please implement!");
 }
 
-/**
- * Drop solver data from master rank.
- */
 void exahype::solvers::FiniteVolumesSolver::dropMasterData(
     const int                                     masterRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
         const int                                     level) {
-  assertionMsg(false,"Please implement!");
+  for(int receives=0; receives<DataMessagesPerMasterWorkerCommunication; ++receives)
+    DataHeap::getInstance().receiveData(
+        masterRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
 }
 #endif
 

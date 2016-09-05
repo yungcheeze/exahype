@@ -449,7 +449,24 @@ void exahype::solvers::ADERDGSolver::mergeSolutionMinMaxOnFace(
 }
 
 #ifdef Parallel
-const int exahype::solvers::ADERDGSolver::DataMessagesPerNeighbour = 3;
+const int exahype::solvers::ADERDGSolver::DataMessagesPerNeighbourCommunication    = 3;
+const int exahype::solvers::ADERDGSolver::DataMessagesPerForkOrJoinCommunication   = 3;
+const int exahype::solvers::ADERDGSolver::DataMessagesPerMasterWorkerCommunication = 3;
+
+void exahype::solvers::ADERDGSolver::sendCellDescriptions(
+    const int                                     toRank,
+    const int                                     cellDescriptionsIndex,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  if (Heap::getInstance().isValidIndex(cellDescriptionsIndex)) {
+     Heap::getInstance().sendData(cellDescriptionsIndex,
+               toRank,x,level,peano::heap::MessageType::ForkOrJoinCommunication);
+   } else {
+     Heap::HeapEntries emptyMessage(0);
+     Heap::getInstance().sendData(emptyMessage,
+         toRank,x,level,peano::heap::MessageType::ForkOrJoinCommunication);
+   }
+ }
 
 //std::vector<double> exahype::solvers::ADERDGSolver::collectTimeStampsAndStepSizes() {
 //  std::vector<double> timeStampsAndStepSizes(0,5);
@@ -572,7 +589,7 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
   } else {
     std::vector<double> emptyArray(0,0);
 
-    for(int sends=0; sends<DataMessagesPerNeighbour; ++sends) {
+    for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends) {
       DataHeap::getInstance().sendData(
           emptyArray, toRank, x, level,
           peano::heap::MessageType::NeighbourCommunication);
@@ -586,8 +603,8 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToNeighbour(
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  std::vector<double> emptyMessage(0,0);
-  for(int sends=0; sends<DataMessagesPerNeighbour; ++sends)
+  std::vector<double> emptyMessage(0);
+  for(int sends=0; sends<DataMessagesPerNeighbourCommunication; ++sends)
     DataHeap::getInstance().sendData(
         emptyMessage, toRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
@@ -619,7 +636,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     assertion(DataHeap::getInstance().isValidIndex(p.getFluctuation()));
 
     logDebug(
-        "mergeNeighbourData(...)", "receive ">>DataMessagesPerNeighbour>>" arrays from rank " <<
+        "mergeNeighbourData(...)", "receive ">>DataMessagesPerNeighbourCommunication>>" arrays from rank " <<
         fromRank << " for vertex x=" << x << ", level=" << level <<
         ", src type=" << multiscalelinkedcell::indexToString(srcCellDescriptionIndex) <<
         ", src=" << src << ", dest=" << dest <<
@@ -679,7 +696,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
         ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
     );
 
-    for (int receives=0; receives<DataMessagesPerNeighbour; ++receives) {
+    for (int receives=0; receives<DataMessagesPerNeighbourCommunication; ++receives) {
       DataHeap::getInstance().receiveData(fromRank, x, level,
           peano::heap::MessageType::NeighbourCommunication);
     }
@@ -775,7 +792,7 @@ void exahype::solvers::ADERDGSolver::dropNeighbourData(
     const tarch::la::Vector<DIMENSIONS, int>&     dest,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  for(int receives=0; receives<DataMessagesPerNeighbour; ++receives)
+  for(int receives=0; receives<DataMessagesPerNeighbourCommunication; ++receives)
     DataHeap::getInstance().receiveData(
         fromRank, x, level,
         peano::heap::MessageType::NeighbourCommunication);
@@ -785,16 +802,6 @@ void exahype::solvers::ADERDGSolver::dropNeighbourData(
 // FORK OR JOIN
 ///////////////////////////////////
 
-/**
- * Send solver data to master or worker rank. Read the data from
- * the cell description \p element in
- * the cell descriptions vector stored at \p
- * cellDescriptionsIndex.
- *
- * \param[in] element Index of the ADERDGCellDescription
- *                    holding the data to send out in
- *                    the heap vector at \p cellDescriptionsIndex.
- */
 void exahype::solvers::ADERDGSolver::sendDataToWorkerOrMasterDueToForkOrJoin(
     const int                                     toRank,
     const int                                     cellDescriptionsIndex,
@@ -804,24 +811,19 @@ void exahype::solvers::ADERDGSolver::sendDataToWorkerOrMasterDueToForkOrJoin(
   assertionMsg(false,"Please implement!");
 }
 
-/**
- * Send empty solver data to master or worker rank
- * due to fork or join.
- */
+
 void exahype::solvers::ADERDGSolver::sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
     const int                                     toRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  assertionMsg(false,"Please implement!");
+  std::vector<double> emptyMessage(0);
+  for(int sends=0; sends<DataMessagesPerForkOrJoinCommunication; ++sends)
+    DataHeap::getInstance().sendData(
+        emptyMessage, toRank, x, level,
+        peano::heap::MessageType::ForkOrJoinCommunication);
 }
 
-/**
- * Merge with solver data from master or worker rank
- * that was sent out due to a fork or join. Wrote the data to
- * the cell description \p element in
- * the cell descriptions vector stored at \p
- * cellDescriptionsIndex.
- */
+
 void exahype::solvers::ADERDGSolver::mergeWithWorkerOrMasterDataDueToForkOrJoin(
     const int                                     fromRank,
     const int                                     cellDescriptionsIndex,
@@ -831,15 +833,14 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerOrMasterDataDueToForkOrJoin(
   assertionMsg(false,"Please implement!");
 }
 
-/**
- * Drop solver data from master or worker rank
- * that was sent out due to a fork or join.
- */
 void exahype::solvers::ADERDGSolver::dropWorkerOrMasterDataDueToForkOrJoin(
     const int                                     fromRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  assertionMsg(false,"Please implement!");
+  for(int receives=0; receives<DataMessagesPerForkOrJoinCommunication; ++receives)
+    DataHeap::getInstance().receiveData(
+        fromRank, x, level,
+        peano::heap::MessageType::ForkOrJoinCommunication);
 }
 
 ///////////////////////////////////
@@ -859,7 +860,11 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToMaster(
     const int                                     masterRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  assertionMsg(false,"Please implement!");
+  std::vector<double> emptyMessage(0);
+  for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
+    DataHeap::getInstance().sendData(
+        emptyMessage, masterRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
 }
 
 void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
@@ -875,7 +880,10 @@ void exahype::solvers::ADERDGSolver::dropWorkerData(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  assertionMsg(false,"Please implement!");
+  for(int receives=0; receives<DataMessagesPerMasterWorkerCommunication; ++receives)
+    DataHeap::getInstance().receiveData(
+        workerRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
 }
 
 ///////////////////////////////////
@@ -895,7 +903,11 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToWorker(
     const int                                     workerRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  assertionMsg(false,"Please implement!");
+  std::vector<double> emptyMessage(0);
+  for(int sends=0; sends<DataMessagesPerMasterWorkerCommunication; ++sends)
+    DataHeap::getInstance().sendData(
+        emptyMessage, workerRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
 }
 
 void exahype::solvers::ADERDGSolver::mergeWithMasterData(
@@ -907,14 +919,14 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
   assertionMsg(false,"Please implement!");
 }
 
-/**
- * Drop solver data from master rank.
- */
 void exahype::solvers::ADERDGSolver::dropMasterData(
     const int                                     masterRank,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
         const int                                     level) {
-  assertionMsg(false,"Please implement!");
+  for(int receives=0; receives<DataMessagesPerMasterWorkerCommunication; ++receives)
+    DataHeap::getInstance().receiveData(
+        masterRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
 }
 #endif
 

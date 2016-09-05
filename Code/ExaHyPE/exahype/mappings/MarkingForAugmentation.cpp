@@ -327,7 +327,7 @@ void exahype::mappings::MarkingForAugmentation::prepareSendToNeighbour(
             << State::isForkingRank(vertex.getAdjacentRanks()(srcScalar)));
 
         exahype::MetadataHeap::HeapEntries metadata =
-            exahype::Vertex::createEmptyEncodedMetadataSequence();
+            exahype::Vertex::createEncodedMetadataSequenceWithInvalidEntries();
         MetadataHeap::getInstance().sendData(
             metadata, toRank, x, level,
             peano::heap::MessageType::NeighbourCommunication);

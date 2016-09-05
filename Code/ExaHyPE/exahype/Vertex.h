@@ -195,32 +195,6 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
   }
 
   /**
-   * Returns an encoded metadata sequence for invalid cell descriptions indices.
-   * The sequence holds the values {0,0}.
-   *
-   * The first element refers to the number of
-   * ADERDGCellDescriptions associated with this cell (nADERG).
-   * The second element refers to the number of
-   * FiniteVolumesCellDescriptions associated with this cell (nFV).
-   *
-   * @developers:
-   * TODO(Dominic): Not directly associated with a cell. Consider
-   * to move this function somewhere else.
-   */
-  static exahype::MetadataHeap::HeapEntries createEmptyEncodedMetadataSequence() {
-    exahype::MetadataHeap::HeapEntries encodedMetadata(0,0);
-    return encodedMetadata;
-  }
-
-  /**
-   * Checks if the sequence encodes zero solvers, i.e., has length 2 (number of solver types: ADER-DG, FV)
-   * and contains only zeros.
-   */
-  static bool isEmptyEncodedMetadataSequence(exahype::MetadataHeap::HeapEntries& sequence) {
-    return sequence.empty();
-  }
-
-  /**
    * Returns if this vertex needs to send a metadata message to a remote rank \p toRank.
    *
    * We need to send a message to remote rank \p roRank if both ranks
