@@ -51,7 +51,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _writer.write("#include \"kernels/GaussLegendreQuadrature.h\"\n");
       _writer.write("#include \"kernels/GaussLobattoQuadrature.h\"\n");
-	  _writer.write("#include \"kernels/LimiterProjectionMatrices.h\"\n");
+    _writer.write("#include \"kernels/LimiterProjectionMatrices.h\"\n");
       _writer.write("#include \"kernels/DGMatrices.h\"\n");
       _writer.write("#include \"kernels/DGBasisFunctions.h\"\n\n");
 
@@ -70,13 +70,13 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write("  std::string metrics_identifier_list = parser.getMetricsIdentifierList();\n\n");
 
       _methodBodyWriter.write(
-    		  "  assertion1(metrics_identifier_list.find_first_of(\"{\") == 0,\n"+
-    		  "           metrics_identifier_list);\n");
+          "  assertion1(metrics_identifier_list.find_first_of(\"{\") == 0,\n"+
+          "           metrics_identifier_list);\n");
 
       _methodBodyWriter.write(
-    		  "  assertion1(metrics_identifier_list.find_last_of(\"}\") ==\n"+
-    	      "                 metrics_identifier_list.size() - 1,\n"+
-    		  "             metrics_identifier_list);\n\n");
+          "  assertion1(metrics_identifier_list.find_last_of(\"}\") ==\n"+
+            "                 metrics_identifier_list.size() - 1,\n"+
+          "             metrics_identifier_list);\n\n");
 
       _methodBodyWriter.write("  // Split \"{metric1,metric2...}\" into {\"metric1\", \"metric2\", ...}\n");
       _methodBodyWriter.write("  std::vector<std::string> metrics_vector;\n");
@@ -90,8 +90,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _methodBodyWriter.write("  // Create profiler\n");
       _methodBodyWriter.write(
-    		  "  auto profiler = exahype::profilers::ProfilerFactory::getInstance().create(\n"+
-    		  "    profiler_identifier, metrics_vector);\n\n");
+          "  auto profiler = exahype::profilers::ProfilerFactory::getInstance().create(\n"+
+          "    profiler_identifier, metrics_vector);\n\n");
   }
 
   @Override
@@ -108,7 +108,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       
       _methodBodyWriter.write("  // Create and register solver\n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
-    		                  "::" + _solverName + "("+order+"+1, parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)\n");
+                          "::" + _solverName + "(parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)\n");
       if (node.getConstants()!=null) {
           _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
         }
@@ -142,7 +142,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
 
       _methodBodyWriter.write("  // Create and register solver\n");
       _methodBodyWriter.write("  exahype::solvers::RegisteredSolvers.push_back( new " + _projectName +
-    		                  "::" + _solverName + "("+patchSize+", parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)" );
+                          "::" + _solverName + "("+patchSize+", parser.getMaximumMeshSize("+_kernelNumber+"), parser.getTimeStepping("+_kernelNumber+"), std::move(profiler)" );
       if (node.getConstants()!=null) {
         _methodBodyWriter.write( "  , parser.getParserView(" +  _kernelNumber + ")\n");
       }
