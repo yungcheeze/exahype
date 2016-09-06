@@ -46,7 +46,7 @@ exahype-project  Euler
   end distributed-memory
  
   optimisation
-    fuse-algorithmic-steps          = on
+    fuse-algorithmic-steps          = off
     fuse-algorithmic-steps-factor   = 0.99    
     timestep-batch-factor           = 0.8
     skip-reduction-in-batched-time-steps = on
