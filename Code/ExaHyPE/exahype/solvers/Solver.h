@@ -305,6 +305,17 @@ class exahype::solvers::Solver {
 
   virtual void initInitialTimeStamp(double value) = 0;
 
+  /**
+   * Copies the time stepping data from the global solver onto the patch's time
+   * meta data.
+   *
+   * \param[in] element Index of the cell description in
+   *                    the array at address \p cellDescriptionsIndex.
+   */
+  virtual void synchroniseTimeStepping(
+      const int cellDescriptionsIndex,
+      const int element) = 0;
+
   virtual void startNewTimeStep() = 0;
 
   virtual double getNextMinTimeStepSize() const =0;
@@ -383,11 +394,15 @@ class exahype::solvers::Solver {
    *
    * The restrictions of global solver data is not done through the solver
    * objects directly via MPI. See GlobalTimeStepComputation for example.
+   *
+   * @deprecated
    */
   virtual void sendToRank(int rank, int tag) = 0;
 
   /**
    * Receive solver copy from remote node
+   *
+   * @deprecated
    */
   virtual void receiveFromMasterRank(int rank, int tag) = 0;
 

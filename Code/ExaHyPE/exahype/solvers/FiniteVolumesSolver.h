@@ -156,6 +156,10 @@ public:
 
   virtual void initInitialTimeStamp(double value) override;
 
+  void synchroniseTimeStepping(
+          const int cellDescriptionsIndex,
+          const int element) override;
+
   virtual void startNewTimeStep() override;
 
   virtual double getNextMinTimeStepSize() const override;
