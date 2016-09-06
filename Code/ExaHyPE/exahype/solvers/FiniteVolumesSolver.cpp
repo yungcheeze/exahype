@@ -65,6 +65,12 @@ void exahype::solvers::FiniteVolumesSolver::initInitialTimeStamp(double value) {
   _minTimeStamp = value;
 }
 
+void exahype::solvers::FiniteVolumesSolver::synchroniseTimeStepping(
+    const int cellDescriptionsIndex,
+    const int element) {
+  assertionMsg(false,"Please implement!");
+}
+
 void exahype::solvers::FiniteVolumesSolver::startNewTimeStep() {
   switch (_timeStepping) {
     case TimeStepping::Global:
@@ -103,7 +109,7 @@ const int exahype::solvers::FiniteVolumesSolver::DataMessagesPerNeighbourCommuni
 const int exahype::solvers::FiniteVolumesSolver::DataMessagesPerForkOrJoinCommunication   = 1;
 const int exahype::solvers::FiniteVolumesSolver::DataMessagesPerMasterWorkerCommunication = 1;
 
-static void sendCellDescriptions(
+void exahype::solvers::FiniteVolumesSolver::sendCellDescriptions(
     const int                                     toRank,
     const int                                     cellDescriptionsIndex,
     const tarch::la::Vector<DIMENSIONS, double>&  x,

@@ -606,6 +606,17 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
   void synchroniseTimeStepping(
       exahype::records::ADERDGCellDescription& p) const;
 
+  /**
+   * Copies the time stepping data from the global solver onto the patch's time
+   * meta data.
+   *
+   * \param[in] element Index of the cell description in
+   *                    the array at address \p cellDescriptionsIndex.
+   */
+    void synchroniseTimeStepping(
+        const int cellDescriptionsIndex,
+        const int element) override;
+
   void startNewTimeStep() override;
 
   void updateMinNextPredictorTimeStepSize(
