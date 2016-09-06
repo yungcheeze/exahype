@@ -112,9 +112,40 @@ const int exahype::solvers::FiniteVolumesSolver::DataMessagesPerMasterWorkerComm
 void exahype::solvers::FiniteVolumesSolver::sendCellDescriptions(
     const int                                     toRank,
     const int                                     cellDescriptionsIndex,
+    const peano::heap::MessageType&               messageType,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
   assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::FiniteVolumesSolver::sendEmptyCellDescriptions(
+    const int                                     toRank,
+    const peano::heap::MessageType&               messageType,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  Heap::HeapEntries emptyMessage(0);
+  Heap::getInstance().sendData(emptyMessage,
+      toRank,x,level,messageType);
+}
+
+void exahype::solvers::FiniteVolumesSolver::mergeCellDescriptionsWithRemoteData(
+    const int                                     fromRank,
+    const int                                     cellDescriptionsIndex,
+    const peano::heap::MessageType&               messageType,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  assertionMsg(false,"Please implement!");
+}
+
+/**
+ * Drop cell descriptions received from \p fromRank.
+ */
+void exahype::solvers::FiniteVolumesSolver::dropCellDescriptions(
+    const int                                     fromRank,
+    const peano::heap::MessageType&               messageType,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  Heap::getInstance().receiveData(fromRank,x,level,messageType);
 }
 
 void exahype::solvers::FiniteVolumesSolver::sendToRank(int rank, int tag) {

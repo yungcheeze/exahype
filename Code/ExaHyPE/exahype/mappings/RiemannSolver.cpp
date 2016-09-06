@@ -194,7 +194,7 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
 // TODO(Dominic): This is a bug or needs to be documented.
 // see discussion in SpaceTimePredictor
 #if !defined(PeriodicBC)
-  if (vertex.isBoundary()) return;
+  if (vertex.isBoundary()) return; // outside??
 #endif
 
   dfor2(myDest)
@@ -260,17 +260,16 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbourData(
       assertion1(element>=0,element);
 
       logDebug(
-          "mergeWithNeighbour(...)", "[receive] " <<
-          fromRank << " for vertex x=" << fineGridX << ", level=" << level <<
+          "mergeWithNeighbour(...)", "receive data for solver " << solverNumber << " from " <<
+          fromRank << " at vertex x=" << fineGridX << ", level=" << level <<
           ", src=" << src << ", dest=" << dest);
 
       solver->mergeWithNeighbourData(fromRank,destCellDescriptionIndex,element,src,dest,x,level);
     } else {
-
       logDebug(
-          "mergeWithNeighbour(...)", "[drop] " <<
-          fromRank << " for vertex x=" << fineGridX << ", level=" << level <<
-          ", src=" << src << ", dest=" << dest);
+            "mergeWithNeighbour(...)", "drop data for solver " << solverNumber << " from " <<
+            fromRank << " at vertex x=" << fineGridX << ", level=" << level <<
+            ", src=" << src << ", dest=" << dest);
 
       solver->dropNeighbourData(fromRank,src,dest,x,level);
     }
@@ -287,15 +286,14 @@ void exahype::mappings::RiemannSolver::dropNeighbourData(
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int level,
     const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
-  logDebug(
-      "mergeWithNeighbour(...)", "[drop] " <<
-      fromRank << " for vertex x=" << fineGridX << ", level=" << level <<
-      ", src type=" << multiscalelinkedcell::indexToString(destCellDescriptionIndex) <<
-      ", src=" << src << ", dest=" << dest);
-
   assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
 
   for(auto solver : solvers::RegisteredSolvers) {
+    logDebug(
+        "mergeWithNeighbour(...)", "drop data for solver " << solverNumber << " from " <<
+        fromRank << " at vertex x=" << fineGridX << ", level=" << level <<
+        ", src=" << src << ", dest=" << dest);
+
     solver->dropNeighbourData(fromRank,src,dest,x,level);
   }
 }

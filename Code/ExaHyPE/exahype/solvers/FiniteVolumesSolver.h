@@ -176,12 +176,65 @@ public:
   static void sendCellDescriptions(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
+      const peano::heap::MessageType&               messageType,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level);
 
+  /**
+   * Sends an empty message to the rank \p toRank.
+   */
+  static void sendEmptyCellDescriptions(
+      const int                                     toRank,
+      const peano::heap::MessageType&               messageType,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level);
 
+  /**
+   * Receives cell descriptions from rank \p fromRank
+   * and resets the data heap indices to -1.
+   *
+   * If a received cell description has the same
+   * solver number as a cell description in the
+   * array at address \p cellDescriptionsIndex,
+   * we merge the metadata (time stamps, time step size)
+   * of both cell descriptions.
+   *
+   * If no cell description in the array at address
+   * \p cellDescriptionsIndex can be found with the
+   * same solver number than a received cell description,
+   * we push the received cell description to
+   * the back of the array at address \p cellDescriptions
+   * Index.
+   *
+   * This operation is intended to be used in combination
+   * with the solver method mergeWithWorkerOrMasterDataDueToForkOrJoin(...).
+   * Here, we would merge first the cell descriptions sent by the master and worker
+   * and then merge the data that is sent out right after.
+   */
+  static void mergeCellDescriptionsWithRemoteData(
+      const int                                     fromRank,
+      const int                                     cellDescriptionsIndex,
+      const peano::heap::MessageType&               messageType,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level);
+
+  /**
+   * Drop cell descriptions received from \p fromRank.
+   */
+  static void dropCellDescriptions(
+      const int                                     fromRank,
+      const peano::heap::MessageType&               messageType,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level);
+
+  /**
+   * @deprecated
+   */
   void sendToRank(int rank, int tag) override;
 
+  /**
+   * @deprecated
+   */
   void receiveFromMasterRank(int rank, int tag) override;
 
   ///////////////////////////////////

@@ -269,6 +269,15 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
     exahype::records::ADERDGCellDescription&  cellDescription,
     int                              faceIndex,
     double* min, double* max) const;
+
+  /**
+   * Sets heap indices of all cell descriptions (ADER-DG, FV, ...) that were received due to
+   * a fork or join event to multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
+   * and the parent index of the cell descriptions to the specified \p parentIndex.
+   */
+  static void resetDataHeapIndices(
+      const int cellDescriptionsIndex,
+      const int parentIndex);
 #endif
 
  public:
@@ -306,7 +315,6 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
   // Disallow copy and assignment
   ADERDGSolver(const ADERDGSolver& other) = delete;
   ADERDGSolver& operator=(const ADERDGSolver& other) = delete;
-
   /**
    * Returns the maximum extent a mesh cell is allowed to have
    * in all coordinate directions.
@@ -731,10 +739,61 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
   /**
    * Sends all the cell descriptions at address \p
    * cellDescriptionsIndex to the rank \p toRank.
+   *
+   * \note The data heap indices of the cell descriptions are not
+   * valid anymore on rank \p toRank.
    */
   static void sendCellDescriptions(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
+      const peano::heap::MessageType&               messageType,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level);
+
+  /**
+   * Sends an empty message to the rank \p toRank.
+   */
+  static void sendEmptyCellDescriptions(
+      const int                                     toRank,
+      const peano::heap::MessageType&               messageType,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level);
+
+  /**
+   * Receives cell descriptions from rank \p fromRank
+   * and resets the data heap indices to -1.
+   *
+   * If a received cell description has the same
+   * solver number as a cell description in the
+   * array at address \p cellDescriptionsIndex,
+   * we merge the metadata (time stamps, time step size)
+   * of both cell descriptions.
+   *
+   * If no cell description in the array at address
+   * \p cellDescriptionsIndex can be found with the
+   * same solver number than a received cell description,
+   * we push the received cell description to
+   * the back of the array at address \p cellDescriptions
+   * Index.
+   *
+   * This operation is intended to be used in combination
+   * with the solver method mergeWithWorkerOrMasterDataDueToForkOrJoin(...).
+   * Here, we would merge first the cell descriptions sent by the master and worker
+   * and then merge the data that is sent out right after.
+   */
+  static void mergeCellDescriptionsWithRemoteData(
+      const int                                     fromRank,
+      const int                                     cellDescriptionsIndex,
+      const peano::heap::MessageType&               messageType,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level);
+
+  /**
+   * Drop cell descriptions received from \p fromRank.
+   */
+  static void dropCellDescriptions(
+      const int                                     fromRank,
+      const peano::heap::MessageType&               messageType,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level);
 
@@ -755,9 +814,14 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    * the worker. If we are in the master, we basically do only send out all
    * the solver data to the worker. If we are on the worker, we do overwrite
    * all solver data accordingly.
+   *
+   * @deprecated
    */
   void sendToRank(int rank, int tag) override;
 
+  /**
+   * @deprecated
+   */
   void receiveFromMasterRank(int rank, int tag) override;
 
   ///////////////////////////////////

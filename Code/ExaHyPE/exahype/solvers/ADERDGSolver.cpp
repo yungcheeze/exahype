@@ -11,9 +11,13 @@
  * For the full license text, see LICENSE.txt
  **/
  
+#include "exahype/Cell.h"
+
 #include "exahype/solvers/ADERDGSolver.h"
 
 #include "tarch/la/VectorVectorOperations.h"
+
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
 namespace {
 constexpr const char* tags[]{
@@ -462,17 +466,107 @@ const int exahype::solvers::ADERDGSolver::DataMessagesPerMasterWorkerCommunicati
 void exahype::solvers::ADERDGSolver::sendCellDescriptions(
     const int                                     toRank,
     const int                                     cellDescriptionsIndex,
+    const peano::heap::MessageType&               messageType,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level) {
-  if (Heap::getInstance().isValidIndex(cellDescriptionsIndex)) {
-     Heap::getInstance().sendData(cellDescriptionsIndex,
-               toRank,x,level,peano::heap::MessageType::ForkOrJoinCommunication);
-   } else {
-     Heap::HeapEntries emptyMessage(0);
-     Heap::getInstance().sendData(emptyMessage,
-         toRank,x,level,peano::heap::MessageType::ForkOrJoinCommunication);
-   }
- }
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),
+      cellDescriptionsIndex);
+  Heap::getInstance().sendData(cellDescriptionsIndex,
+          toRank,x,level,messageType);
+}
+
+void exahype::solvers::ADERDGSolver::sendEmptyCellDescriptions(
+    const int                                     toRank,
+    const peano::heap::MessageType&               messageType,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  Heap::HeapEntries emptyMessage(0);
+  Heap::getInstance().sendData(emptyMessage,
+      toRank,x,level,messageType);
+}
+
+void exahype::solvers::ADERDGSolver::mergeCellDescriptionsWithRemoteData(
+    const int                                     fromRank,
+    const int                                     cellDescriptionsIndex,
+    const peano::heap::MessageType&               messageType,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),
+      cellDescriptionsIndex);
+
+  int receivedCellDescriptionsIndex =
+      Heap::getInstance().createData(0,exahype::solvers::RegisteredSolvers.size());
+  Heap::getInstance().receiveData(cellDescriptionsIndex,
+      fromRank,x,level,messageType);
+  resetDataHeapIndices(
+      receivedCellDescriptionsIndex,
+      multiscalelinkedcell::HangingVertexBookkeeper::RemoteAdjacencyIndex);
+
+  Heap::getInstance().getData(cellDescriptionsIndex).reserve(
+      std::max(Heap::getInstance().getData(cellDescriptionsIndex).size(),
+               Heap::getInstance().getData(receivedCellDescriptionsIndex).size()));
+
+  for (auto& pReceived : Heap::getInstance().getData(receivedCellDescriptionsIndex)) {
+    bool found = false;
+    for (auto& pLocal : Heap::getInstance().getData(cellDescriptionsIndex)) {
+      if (pReceived.getSolverNumber()==pLocal.getSolverNumber()) {
+        found = true;
+
+        assertion(pReceived.getType()==pLocal.getType());
+        if (pLocal.getType()==exahype::records::ADERDGCellDescription::Type::Cell ||
+            pLocal.getType()==exahype::records::ADERDGCellDescription::Type::Ancestor ||
+//            pLocal.getType()==exahype::records::ADERDGCellDescription::Type::RemoteBoundaryAncestor ||
+//            pLocal.getType()==exahype::records::ADERDGCellDescription::Type::RemoteBoundaryDescendant ||
+            pLocal.getType()==exahype::records::ADERDGCellDescription::Type::Descendant
+            ) {
+          assertionNumericalEquals2(pLocal.getCorrectorTimeStamp(),pReceived.getCorrectorTimeStamp(),
+              pLocal.toString(),pReceived.toString());
+          assertionNumericalEquals2(pLocal.getCorrectorTimeStepSize(),pReceived.getCorrectorTimeStepSize(),
+              pLocal.toString(),pReceived.toString());
+          assertionNumericalEquals2(pLocal.getPredictorTimeStamp(),pReceived.getPredictorTimeStamp(),
+              pLocal.toString(),pReceived.toString());
+          assertionNumericalEquals2(pLocal.getPredictorTimeStepSize(),pReceived.getPredictorTimeStepSize(),
+              pLocal.toString(),pReceived.toString());
+        }
+      }
+    }
+
+    if (!found) {
+      exahype::Cell::ensureNecessaryMemoryIsAllocated(pReceived);
+      Heap::getInstance().getData(cellDescriptionsIndex).
+          push_back(pReceived);
+    }
+  }
+}
+
+void exahype::solvers::ADERDGSolver::resetDataHeapIndices(
+    const int cellDescriptionsIndex,
+    const int parentIndex) {
+  for (auto& p : Heap::getInstance().getData(cellDescriptionsIndex)) {
+    p.setParentIndex(parentIndex);
+
+    // Default field data indices
+    p.setSolution(-1);
+    p.setUpdate(-1);
+    p.setExtrapolatedPredictor(-1);
+    p.setFluctuation(-1);
+
+    // Limiter meta data (oscillations identificator)
+    p.setSolutionMin(-1);
+    p.setSolutionMax(-1);
+  }
+}
+
+/**
+ * Drop cell descriptions received from \p fromRank.
+ */
+void exahype::solvers::ADERDGSolver::dropCellDescriptions(
+    const int                                     fromRank,
+    const peano::heap::MessageType&               messageType,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  Heap::getInstance().receiveData(fromRank,x,level,messageType);
+}
 
 //std::vector<double> exahype::solvers::ADERDGSolver::collectTimeStampsAndStepSizes() {
 //  std::vector<double> timeStampsAndStepSizes(0,5);
@@ -566,7 +660,7 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
         "sendDataToNeighbour(...)",
         "send "<<exahype::Cell::DataExchangesPerADERDGSolver<<" arrays to rank " <<
         toRank << " for cell="<<p.getOffset()<< " and face=" << faceIndex << " from vertex x=" << x << ", level=" << level <<
-        ", dest type=" << multiscalelinkedcell::indexToString(destCellDescriptionIndex) <<
+        ", src type=" << multiscalelinkedcell::indexToString(srcCellDescriptionIndex) <<
         ", dest type=" << multiscalelinkedcell::indexToString(destCellDescriptionIndex) <<
         ", src=" << src << ", dest=" << dest <<
         ", adjacent ranks=" << vertex.getAdjacentRanks() <<
