@@ -120,7 +120,10 @@ class exahype::mappings::Synchronisation {
 
 #ifdef Parallel
   /**
-   * We use this hook to send solver information to a worker.
+   * We use this hook to send solver information to a worker. It is important
+   * that we return false here. Whether or not we need data back from the worker
+   * is solely up to TimeStepSizeComputation::prepareSendToWorker(). This
+   * mapping determines whether we do sync ranks or not.
    */
   bool prepareSendToWorker(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
