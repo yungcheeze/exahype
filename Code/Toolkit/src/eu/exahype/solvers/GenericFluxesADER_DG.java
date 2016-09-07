@@ -27,8 +27,8 @@ public abstract class GenericFluxesADER_DG implements Solver {
     Helpers.writeMinimalADERDGSolverHeader(solverName, writer, projectName, _hasConstants );
 
     writer.write("  private:\n");
-    writer.write(
-        "    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
+    writer.write("    void init();\n");
+    writer.write("    static void eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda);\n");
     writer.write("    static void flux(const double* const Q, double** F);\n");
     writer.write("    static void source(const double* const Q, double* S);\n");
     writer.write("    static void boundaryValues(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut);\n");
@@ -54,6 +54,24 @@ public abstract class GenericFluxesADER_DG implements Solver {
     writer.write("// =============================---==============\n");
     writer.write("#include \"" + solverName + ".h\"\n");
     writer.write("#include \"kernels/aderdg/generic/Kernels.h\"\n");
+    writer.write("\n\n");
+
+    // constructor
+    if (_hasConstants) {
+      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, exahype::Parser::ParserView constants):\n");
+    }
+    else {
+      writer.write(projectName + "::" + solverName + "::" + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
+    }
+
+
+    writer.write("  exahype::solvers::ADERDGSolver("
+        + "\""+solverName+"\", "+_numberOfUnknowns+" /* numberOfUnknowns */, "
+        +_numberOfParameters+"/* numberOfParameters */, " + (_order + 1) +
+        " /* nodesPerCoordinateAxis */, maximumMeshSize, timeStepping, " +
+        "std::move(profiler)) {\n");
+    writer.write("  init();\n");
+    writer.write("}\n");
     writer.write("\n\n\n");
 
     writer.write("void " + projectName + "::" + solverName

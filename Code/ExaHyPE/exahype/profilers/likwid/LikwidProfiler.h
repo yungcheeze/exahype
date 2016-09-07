@@ -3,14 +3,14 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #ifndef _EXAHYPE_PROFILERS_PROFILER_LIKWID_LIKWID_PROFILER_H_
 #define _EXAHYPE_PROFILERS_PROFILER_LIKWID_LIKWID_PROFILER_H_
 
@@ -40,7 +40,8 @@ struct LikwidProfilerState {
 
 class LikwidProfiler : public Profiler {
  public:
-  explicit LikwidProfiler(const std::vector<int>& cpus = {});
+  explicit LikwidProfiler(const std::string& output,
+                          const std::vector<int>& cpus = {});
   virtual ~LikwidProfiler();
 
   const LikwidProfilerState& state() const { return state_; }

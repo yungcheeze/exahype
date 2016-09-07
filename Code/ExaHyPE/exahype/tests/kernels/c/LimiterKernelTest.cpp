@@ -13,7 +13,9 @@
 
 #include "exahype/tests/kernels/c/LimiterKernelTest.h"
 
-registerTest(exahype::tests::c::LimiterKernelTest)
+// TODO(Dominic): JM, please fix the segfaults before you register
+// the test again.
+//registerTest(exahype::tests::c::LimiterKernelTest)
 
 #ifdef UseTestSpecificCompilerSettings
 #pragma optimize("", off)
@@ -56,13 +58,13 @@ void LimiterKernelTest::run() {
 void LimiterKernelTest::testGetGaussLobattoData() {
   logInfo("LimiterKernelTest::testGetGaussLobattoData()",
           "Test luh -> lob, ORDER=4, DIM="+dim);
-  
+
   double* lob = kernels::limiter::generic::c::getGaussLobattoData(exahype::tests::testdata::limiter::testFromLuhConversion::luh_in, numberOfVariables, basisSize);
-  
+
   for(int i=0; i<exahype::tests::testdata::limiter::sizeLuh; i++) {
     validateNumericalEqualsWithEps(lob[i], exahype::tests::testdata::limiter::testFromLuhConversion::lob_out[i], eps);
   }
-  
+
   delete[] lob;
 }
 

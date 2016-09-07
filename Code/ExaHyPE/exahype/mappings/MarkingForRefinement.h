@@ -103,16 +103,6 @@ class exahype::mappings::MarkingForRefinement {
       const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
       const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level);
 
-
-  /**
-   * Sets heap indices of all cell descriptions (ADER-DG, FV, ...) that were received due to
-   * a fork or join event to multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
-   * and the parent index of the cell descriptions to the specified \p parentIndex.
-   */
-  static void resetHeapIndices(
-      const int cellDescriptionsIndex,
-      const int parentIndex);
-
   /**
    * Receives ADER-DG solution values from the master or worker
    * if a cell description is of type Cell.
