@@ -235,7 +235,7 @@ endif
 # -----------------------
 ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 	COMPILER_CFLAGS += -DParallel -DMPICH_IGNORE_CXX_SEEK
-        ifneq ( $(MPICC), )
+        ifdef MPICC
 		CC=$(MPICC)
         else
 		ifeq ($(call tolower,$(COMPILER)),gnu)
