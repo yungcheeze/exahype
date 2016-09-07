@@ -18,37 +18,23 @@
 #include <iostream>
 #include <thread>
 
+#include "../ProfilerUtils.h"
+
 namespace {
-using mean_sec = double;
-using median_sec = double;
-using std_sec = double;
-using min_sec = double;
-using max_sec = double;
-
-static void escape(void* p) { asm volatile("" : : "g"(p) : "memory"); }
-
-static void clobber() { asm volatile("" : : : "memory"); }
+using namespace exahype::profilers::utils;
 
 const uint64_t kNumberOfSamples1 = 1000000;
 const uint64_t kNumberOfSamples2 = 10;
-
-void noop() {}
-
-template <int64_t milli>
-void sleep() {
-  std::this_thread::sleep_for(std::chrono::milliseconds(milli));
-}
 
 std::unordered_map<std::string,
                    std::chrono::time_point<std::chrono::steady_clock>>
     overhead_time_points;
 
 void initOverheadMeasurementMap() {
-  static const int kNumberOfKeys = 13;
-  std::array<std::string, kNumberOfKeys> keys = {"riemannSolver",
-                                                 "boundaryConditions",
+  static const int kNumberOfKeys = 12;
+  std::array<std::string, kNumberOfKeys> keys = {"boundaryConditions",
                                                  "volumeUnknownsRestriction",
-                                                 "riemannADERDGSolver",
+                                                 "riemannSolver",
                                                  "volumeIntegral",
                                                  "surfaceIntegral",
                                                  "solutionUpdate",
@@ -73,98 +59,13 @@ void getCurrentTime() {
   escape(&now);
 }
 
-template <typename type, uint64_t size>
-static double mean(const std::array<type, size>& array) {
-  double sum = static_cast<std::chrono::duration<double, std::ratio<1>>>(
-                   std::accumulate(array.begin(), array.end(), type(0)))
-                   .count();
-  return sum / kNumberOfSamples1;
-}
-
-template <typename type, uint64_t size>
-static double median(const std::array<type, size>& array) {
-  std::array<type, size> copy = array;
-  std::sort(copy.begin(), copy.end());
-
-  if (size & 1) {  // odd
-    return 0.5 *
-           static_cast<std::chrono::duration<double, std::ratio<1>>>(
-               copy[size / 2] + copy[size / 2 + 1])
-               .count();
-  } else {  // even
-    return static_cast<std::chrono::duration<double, std::ratio<1>>>(
-               copy[size / 2])
-        .count();
-  }
-}
-
-template <typename type, uint64_t size>
-static double std(const std::array<type, size>& array, const double mean_sec) {
-  return std::sqrt(
-      std::accumulate(
-          array.begin(), array.end(), 0.0,
-          [mean_sec](const double& sum, const type& xi) {
-            double xi_sec =
-                static_cast<std::chrono::duration<double, std::ratio<1>>>(xi)
-                    .count() *
-                std::chrono::steady_clock::period::num /
-                std::chrono::steady_clock::period::den;
-            return sum + (xi_sec - mean_sec) * (xi_sec - mean_sec);
-          }) /
-      (size - 1));
-}
-
-template <typename type, uint64_t size>
-static double std(const std::array<type, size>& array) {
-  return std<type, size>(array, mean<type, size>(array));
-}
-
-template <void (*f)()>
-static std::chrono::steady_clock::duration durationOf() {
-  auto start = std::chrono::steady_clock::now();
-  f();
-  auto stop = std::chrono::steady_clock::now();
-  escape(&stop);
-  auto duration = stop - start;
-  return duration;
-}
-
-template <uint64_t n, void (*f)()>
-static std::array<std::chrono::steady_clock::duration, n> nTimesDurationOf() {
-  std::array<std::chrono::steady_clock::duration, n> durations;
-  std::generate(durations.begin(), durations.end(), durationOf<f>);
-  return durations;
-}
-
-template <uint64_t n>
-static std::tuple<mean_sec, median_sec, std_sec, min_sec, max_sec>
-meanMedianStdMinMaxOf(
-    const std::array<std::chrono::steady_clock::duration, n> durations) {
-  const double mean_sec =
-      mean<std::chrono::steady_clock::duration, n>(durations);
-  const double median_sec =
-      median<std::chrono::steady_clock::duration, n>(durations);
-  const double std_sec =
-      std<std::chrono::steady_clock::duration, n>(durations, mean_sec);
-  const double min_sec =
-      static_cast<std::chrono::duration<double, std::ratio<1>>>(
-          *std::min_element(durations.begin(), durations.end()))
-          .count();
-  const double max_sec =
-      static_cast<std::chrono::duration<double, std::ratio<1>>>(
-          *std::max_element(durations.begin(), durations.end()))
-          .count();
-
-  return std::make_tuple(mean_sec, median_sec, std_sec, min_sec, max_sec);
-}
-
 static void estimateOverhead(const std::string& output) {
   if (output == "" || output == "cout") {
     return;
   }
 
   std::ofstream file;
-  file.open("out.txt", std::ios::out | std::ios::trunc);
+  file.open(output, std::ios::out | std::ios::trunc);
 
   file << "steady_clock::period = "
        << static_cast<double>(std::chrono::steady_clock::period::num) /
