@@ -14,7 +14,6 @@
 #ifndef _EXAHYPE_SOLVERS_FINITE_VOLUMES_SOLVER_H_
 #define _EXAHYPE_SOLVERS_FINITE_VOLUMES_SOLVER_H_
 
-
 #include "exahype/solvers/Solver.h"
 
 #include "exahype/records/FiniteVolumesCellDescription.h"
@@ -25,10 +24,8 @@ class FiniteVolumesSolver;
 }  // namespace solvers
 }  // namespace exahype
 
-
-
-class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
-private:
+class exahype::solvers::FiniteVolumesSolver : public exahype::solvers::Solver {
+ private:
   /**
    * Total number of unknowns in a cell.
    */
@@ -80,7 +77,7 @@ private:
   static const int DataMessagesPerMasterWorkerCommunication;
 #endif
 
-public:
+ public:
   typedef exahype::DataHeap DataHeap;
 
   /**
@@ -90,18 +87,16 @@ public:
    * that differ in their solver number and other attributes.
    * @see solvers::Solver::RegisteredSolvers.
    */
-  typedef peano::heap::PlainHeap<exahype::records::FiniteVolumesCellDescription> Heap;
+  typedef peano::heap::PlainHeap<exahype::records::FiniteVolumesCellDescription>
+      Heap;
 
-  FiniteVolumesSolver(
-      const std::string& identifier,
-      int numberOfVariables,
-      int numberOfParameters,
-      int nodesPerCoordinateAxis,
-      double maximumMeshSize,
-      exahype::solvers::Solver::TimeStepping timeStepping,
-      std::unique_ptr<profilers::Profiler> profiler =
-          std::unique_ptr<profilers::Profiler>( new profilers::simple::NoOpProfiler)
-  );
+  FiniteVolumesSolver(const std::string& identifier, int numberOfVariables,
+                      int numberOfParameters, int nodesPerCoordinateAxis,
+                      double maximumMeshSize,
+                      exahype::solvers::Solver::TimeStepping timeStepping,
+                      std::unique_ptr<profilers::Profiler> profiler =
+                          std::unique_ptr<profilers::Profiler>(
+                              new profilers::simple::NoOpProfiler("")));
 
   virtual ~FiniteVolumesSolver() {}
 
@@ -119,7 +114,9 @@ public:
   /**
    *
    */
-  virtual void solutionAdjustment( double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) = 0;
+  virtual void solutionAdjustment(
+      double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
+      const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) = 0;
 
   virtual bool hasToAdjustSolution(
       const tarch::la::Vector<DIMENSIONS, double>& center,
@@ -137,7 +134,9 @@ public:
    *        possible. If maxAdmissibleDt<dt, then we know that no time
    *        step has been done.
    */
-  virtual void solutionUpdate(double* luh[THREE_POWER_D], const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt, double& maxAdmissibleDt) = 0;
+  virtual void solutionUpdate(double* luh[THREE_POWER_D],
+                              const tarch::la::Vector<DIMENSIONS, double>& dx,
+                              const double dt, double& maxAdmissibleDt) = 0;
 
   virtual double getMinTimeStamp() const override;
 
@@ -152,21 +151,19 @@ public:
    */
   virtual double getMinTimeStepSize() const override;
 
-  virtual void updateNextTimeStepSize( double value ) override;
+  virtual void updateNextTimeStepSize(double value) override;
 
   virtual void initInitialTimeStamp(double value) override;
 
-  void synchroniseTimeStepping(
-          const int cellDescriptionsIndex,
-          const int element) override;
+  void synchroniseTimeStepping(const int cellDescriptionsIndex,
+                               const int element) override;
 
   virtual void startNewTimeStep() override;
 
   virtual double getNextMinTimeStepSize() const override;
 
-  virtual int tryGetElement(
-      const int cellDescriptionsIndex,
-      const int solverNumber) const;
+  virtual int tryGetElement(const int cellDescriptionsIndex,
+                            const int solverNumber) const;
 
 #ifdef Parallel
   /**
@@ -174,20 +171,16 @@ public:
    * cellDescriptionsIndex to the rank \p toRank.
    */
   static void sendCellDescriptions(
-      const int                                     toRank,
-      const int                                     cellDescriptionsIndex,
-      const peano::heap::MessageType&               messageType,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level);
+      const int toRank, const int cellDescriptionsIndex,
+      const peano::heap::MessageType& messageType,
+      const tarch::la::Vector<DIMENSIONS, double>& x, const int level);
 
   /**
    * Sends an empty message to the rank \p toRank.
    */
   static void sendEmptyCellDescriptions(
-      const int                                     toRank,
-      const peano::heap::MessageType&               messageType,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level);
+      const int toRank, const peano::heap::MessageType& messageType,
+      const tarch::la::Vector<DIMENSIONS, double>& x, const int level);
 
   /**
    * Receives cell descriptions from rank \p fromRank
@@ -208,24 +201,21 @@ public:
    *
    * This operation is intended to be used in combination
    * with the solver method mergeWithWorkerOrMasterDataDueToForkOrJoin(...).
-   * Here, we would merge first the cell descriptions sent by the master and worker
+   * Here, we would merge first the cell descriptions sent by the master and
+   * worker
    * and then merge the data that is sent out right after.
    */
   static void mergeCellDescriptionsWithRemoteData(
-      const int                                     fromRank,
-      const int                                     cellDescriptionsIndex,
-      const peano::heap::MessageType&               messageType,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level);
+      const int fromRank, const int cellDescriptionsIndex,
+      const peano::heap::MessageType& messageType,
+      const tarch::la::Vector<DIMENSIONS, double>& x, const int level);
 
   /**
    * Drop cell descriptions received from \p fromRank.
    */
   static void dropCellDescriptions(
-      const int                                     fromRank,
-      const peano::heap::MessageType&               messageType,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level);
+      const int fromRank, const peano::heap::MessageType& messageType,
+      const tarch::la::Vector<DIMENSIONS, double>& x, const int level);
 
   /**
    * @deprecated
@@ -244,26 +234,23 @@ public:
   /**
    * Send solver data to neighbour rank.
    */
-  void sendDataToNeighbour(
-      const int                                     toRank,
-      const int                                     cellDescriptionsIndex,
-      const int                                     elementIndex,
-      const tarch::la::Vector<DIMENSIONS, int>&     src,
-      const tarch::la::Vector<DIMENSIONS, int>&     dest,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false,"Please implement!");
+  void sendDataToNeighbour(const int toRank, const int cellDescriptionsIndex,
+                           const int elementIndex,
+                           const tarch::la::Vector<DIMENSIONS, int>& src,
+                           const tarch::la::Vector<DIMENSIONS, int>& dest,
+                           const tarch::la::Vector<DIMENSIONS, double>& x,
+                           const int level) override {
+    assertionMsg(false, "Please implement!");
   }
 
   /**
    * Send empty solver data to neighbour rank.
    */
-  void sendEmptyDataToNeighbour(
-      const int                                     toRank,
-      const tarch::la::Vector<DIMENSIONS, int>&     src,
-      const tarch::la::Vector<DIMENSIONS, int>&     dest,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+  void sendEmptyDataToNeighbour(const int toRank,
+                                const tarch::la::Vector<DIMENSIONS, int>& src,
+                                const tarch::la::Vector<DIMENSIONS, int>& dest,
+                                const tarch::la::Vector<DIMENSIONS, double>& x,
+                                const int level) override;
 
   /**
    * Receive solver data from neighbour rank.
@@ -272,26 +259,24 @@ public:
    *                         holding the data to send out in
    *                         the heap vector at \p cellDescriptionsIndex.
    */
-  void mergeWithNeighbourData(
-      const int                                     fromRank,
-      const int                                     cellDescriptionsIndex,
-      const int                                     elementIndex,
-      const tarch::la::Vector<DIMENSIONS, int>&     src,
-      const tarch::la::Vector<DIMENSIONS, int>&     dest,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override {
-    assertionMsg(false,"Please implement!");
+  void mergeWithNeighbourData(const int fromRank,
+                              const int cellDescriptionsIndex,
+                              const int elementIndex,
+                              const tarch::la::Vector<DIMENSIONS, int>& src,
+                              const tarch::la::Vector<DIMENSIONS, int>& dest,
+                              const tarch::la::Vector<DIMENSIONS, double>& x,
+                              const int level) override {
+    assertionMsg(false, "Please implement!");
   }
 
   /**
    * Drop solver data from neighbour rank.
    */
-  void dropNeighbourData(
-      const int                                     fromRank,
-      const tarch::la::Vector<DIMENSIONS, int>&     src,
-      const tarch::la::Vector<DIMENSIONS, int>&     dest,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+  void dropNeighbourData(const int fromRank,
+                         const tarch::la::Vector<DIMENSIONS, int>& src,
+                         const tarch::la::Vector<DIMENSIONS, int>& dest,
+                         const tarch::la::Vector<DIMENSIONS, double>& x,
+                         const int level) override;
 
   ///////////////////////////////////
   // FORK OR JOIN
@@ -308,20 +293,16 @@ public:
    *                    the heap vector at \p cellDescriptionsIndex.
    */
   void sendDataToWorkerOrMasterDueToForkOrJoin(
-      const int                                     toRank,
-      const int                                     cellDescriptionsIndex,
-      const int                                     element,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int toRank, const int cellDescriptionsIndex, const int element,
+      const tarch::la::Vector<DIMENSIONS, double>& x, const int level) override;
 
   /**
    * Send empty solver data to master or worker rank
    * due to fork or join.
    */
   void sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
-      const int                                     toRank,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int toRank, const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int level) override;
 
   /**
    * Merge with solver data from master or worker rank
@@ -331,20 +312,16 @@ public:
    * cellDescriptionsIndex.
    */
   void mergeWithWorkerOrMasterDataDueToForkOrJoin(
-      const int                                     fromRank,
-      const int                                     cellDescriptionsIndex,
-      const int                                     element,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int fromRank, const int cellDescriptionsIndex, const int element,
+      const tarch::la::Vector<DIMENSIONS, double>& x, const int level) override;
 
   /**
    * Drop solver data from master or worker rank
    * that was sent out due to a fork or join.
    */
   void dropWorkerOrMasterDataDueToForkOrJoin(
-      const int                                     fromRank,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+      const int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int level) override;
 
   ///////////////////////////////////
   // WORKER->MASTER
@@ -360,20 +337,17 @@ public:
    *                    holding the data to send out in
    *                    the heap vector at \p cellDescriptionsIndex.
    */
-  void sendDataToMaster(
-      const int                                     masterRank,
-      const int                                     cellDescriptionsIndex,
-      const int                                     element,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+  void sendDataToMaster(const int masterRank, const int cellDescriptionsIndex,
+                        const int element,
+                        const tarch::la::Vector<DIMENSIONS, double>& x,
+                        const int level) override;
 
   /**
    * Send empty solver data to master rank.
    */
-  void sendEmptyDataToMaster(
-      const int                                     masterRank,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+  void sendEmptyDataToMaster(const int masterRank,
+                             const tarch::la::Vector<DIMENSIONS, double>& x,
+                             const int level) override;
 
   /**
    * Merge with solver data from worker rank.
@@ -385,20 +359,17 @@ public:
    *                    holding the data to send out in
    *                    the array with address \p cellDescriptionsIndex.
    */
-  void mergeWithWorkerData(
-      const int                                     workerRank,
-      const int                                     cellDescriptionsIndex,
-      const int                                     element,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+  void mergeWithWorkerData(const int workerRank,
+                           const int cellDescriptionsIndex, const int element,
+                           const tarch::la::Vector<DIMENSIONS, double>& x,
+                           const int level) override;
 
   /**
    * Drop solver data from worker rank.
    */
-  void dropWorkerData(
-      const int                                     workerRank,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+  void dropWorkerData(const int workerRank,
+                      const tarch::la::Vector<DIMENSIONS, double>& x,
+                      const int level) override;
 
   ///////////////////////////////////
   // MASTER->WORKER
@@ -413,20 +384,17 @@ public:
    *                    holding the data to send out in
    *                    the heap vector at \p cellDescriptionsIndex.
    */
-  void sendDataToWorker(
-      const int                                     workerRank,
-      const int                                     cellDescriptionsIndex,
-      const int                                     element,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+  void sendDataToWorker(const int workerRank, const int cellDescriptionsIndex,
+                        const int element,
+                        const tarch::la::Vector<DIMENSIONS, double>& x,
+                        const int level) override;
 
   /**
    * Send empty solver data to worker rank.
    */
-  void sendEmptyDataToWorker(
-      const int                                     workerRank,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+  void sendEmptyDataToWorker(const int workerRank,
+                             const tarch::la::Vector<DIMENSIONS, double>& x,
+                             const int level) override;
 
   /**
    * Merge with solver data from master rank
@@ -439,33 +407,29 @@ public:
    *                    holding the data to send out in
    *                    the array with address \p cellDescriptionsIndex.
    */
-  void mergeWithMasterData(
-      const int                                     masterRank,
-      const int                                     cellDescriptionsIndex,
-      const int                                     element,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+  void mergeWithMasterData(const int masterRank,
+                           const int cellDescriptionsIndex, const int element,
+                           const tarch::la::Vector<DIMENSIONS, double>& x,
+                           const int level) override;
 
   /**
    * Drop solver data from master rank.
    */
-  void dropMasterData(
-      const int                                     masterRank,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level) override;
+  void dropMasterData(const int masterRank,
+                      const tarch::la::Vector<DIMENSIONS, double>& x,
+                      const int level) override;
 #endif
 
-/**
- * Returns a string representation of this solver.
- */
+  /**
+   * Returns a string representation of this solver.
+   */
   virtual std::string toString() const;
 
   /**
    * Writes a string representation of this solver
    * to \p out.
    */
-  virtual void toString (std::ostream& out) const;
+  virtual void toString(std::ostream& out) const;
 };
-
 
 #endif
