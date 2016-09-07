@@ -16,6 +16,11 @@
 
 #include <array>
 #include <chrono>
+#include <thread>
+#include <numeric>
+#include <algorithm>
+
+
 
 namespace exahype {
 namespace profilers {
