@@ -470,7 +470,11 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
         numberOfStepsToRun = numberOfStepsToRun<1 ? 1 : numberOfStepsToRun;
       }
 
-      runOneTimeStampWithFusedAlgorithmicSteps(repository, numberOfStepsToRun);
+      runOneTimeStampWithFusedAlgorithmicSteps(
+        repository,
+        numberOfStepsToRun,
+        _parser.getExchangeBoundaryDataInBatchedTimeSteps() && repository.getState().isGridStationary()
+      );
       recomputePredictorIfNecessary(repository,_parser.getFuseAlgorithmicStepsFactor());
       printTimeStepInfo(numberOfStepsToRun);
     } else {
@@ -542,8 +546,9 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
 #endif
 }
 
+
 void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
-    exahype::repositories::Repository& repository, int numberOfStepsToRun) {
+    exahype::repositories::Repository& repository, int numberOfStepsToRun, bool exchangeBoundaryData) {
   /*
    * The adapter below performs the following steps:
    *
@@ -564,9 +569,10 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
     repository.iterate();
   } else {
     repository.switchToADERDGTimeStep();
-    repository.iterate(numberOfStepsToRun);
+    repository.iterate(numberOfStepsToRun,exchangeBoundaryData);
   }
 }
+
 
 bool exahype::runners::Runner::setStableTimeStepSizesIfStabilityConditionWasHarmed(double factor) {
   assertion1(tarch::la::smallerEquals(factor,1.) && tarch::la::greater(factor,0.),"Factor must be smaller or equal to 1.");
