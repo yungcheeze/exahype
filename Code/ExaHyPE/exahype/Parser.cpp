@@ -322,8 +322,29 @@ bool exahype::Parser::getFuseAlgorithmicSteps() const {
   std::string token = getTokenAfter("optimisation", "fuse-algorithmic-steps");
   logDebug("getFuseAlgorithmicSteps()", "found fuse-algorithmic-steps"
                                             << token);
+  if (token.compare("on")!=0 && token.compare("off")!=0) {
+    logError("getFuseAlgorithmicSteps()",
+             "fuse-algorithmic-steps is required in the "
+             "optimisation segment and has to be either on or off: "
+                 << token);
+    _interpretationErrorOccured = true;
+  }
   return token.compare("on") == 0;
 }
+
+
+bool exahype::Parser::getExchangeBoundaryDataInBatchedTimeSteps() const {
+  std::string token = getTokenAfter("optimisation", "disable-amr-in-batched-time-steps");
+  if (token.compare("on")!=0 && token.compare("off")!=0) {
+    logError("getExchangeBoundaryDataInBatchedTimeSteps()",
+             "disable-amr-in-batched-time-steps is required in the "
+             "optimisation segment and has to be either on or off: "
+                 << token);
+    _interpretationErrorOccured = true;
+  }
+  return token.compare("off") == 0;
+}
+
 
 double exahype::Parser::getFuseAlgorithmicStepsFactor() const {
   std::string token =
@@ -370,7 +391,7 @@ bool exahype::Parser::getSkipReductionInBatchedTimeSteps() const {
       getTokenAfter("optimisation", "skip-reduction-in-batched-time-steps");
   logDebug("getSkipReductionInBatchedTimeSteps()",
            "found skip-reduction-in-batched-time-steps " << token);
-  if (token != "on" && token != "off" && token != "notoken") {
+  if (token.compare("on")!=0 && token.compare("off")!=0) {
     logError("getSkipReductionInBatchedTimeSteps()",
              "skip-reduction-in-batched-time-steps is required in the "
              "optimisation segment and has to be either on or off: "

@@ -217,6 +217,14 @@ class exahype::Parser {
   bool getSkipReductionInBatchedTimeSteps() const;
 
   /**
+   * If we batch time steps, we can in principle switch off the boundary data
+   * exchange, as ExaHyPE's data flow is realised through heaps. However, if we
+   * turn off the boundary exchange, we enforce that no AMR is done in-between
+   * domain boundaries.
+   */
+  bool getExchangeBoundaryDataInBatchedTimeSteps() const;
+
+  /**
    * \return The type of a solver.
    */
   exahype::solvers::Solver::Type getType(int solverNumber) const;
