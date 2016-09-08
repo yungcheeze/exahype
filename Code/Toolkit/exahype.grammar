@@ -90,7 +90,7 @@ Tokens
   token_fuse_algorithm_steps_factor = 'fuse-algorithmic-steps-factor';
   token_batch_timesteps             = 'timestep-batch-factor';
   token_skip_reduction              = 'skip-reduction-in-batched-time-steps';
-  token_disable_amr                 = 'disable-amr-in-batched-time-steps';
+  token_disable_amr                 = 'disable-amr-if-grid-has-been-stationary-in-previous-iteration';
 
   token_profiling                   = 'profiling';
   token_profiler                    = 'profiler';
