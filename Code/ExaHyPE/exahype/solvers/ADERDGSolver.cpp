@@ -460,8 +460,8 @@ void exahype::solvers::ADERDGSolver::mergeSolutionMinMaxOnFace(
 
 #ifdef Parallel
 const int exahype::solvers::ADERDGSolver::DataMessagesPerNeighbourCommunication    = 3;
-const int exahype::solvers::ADERDGSolver::DataMessagesPerForkOrJoinCommunication   = 3;
-const int exahype::solvers::ADERDGSolver::DataMessagesPerMasterWorkerCommunication = 3;
+const int exahype::solvers::ADERDGSolver::DataMessagesPerForkOrJoinCommunication   = 1;
+const int exahype::solvers::ADERDGSolver::DataMessagesPerMasterWorkerCommunication = 2;
 
 void exahype::solvers::ADERDGSolver::sendCellDescriptions(
     const int                                     toRank,
@@ -471,6 +471,27 @@ void exahype::solvers::ADERDGSolver::sendCellDescriptions(
     const int                                     level) {
   assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),
       cellDescriptionsIndex);
+
+  for (auto& p : Heap::getInstance().getData(cellDescriptionsIndex)) {
+    switch(p.getType()) {
+      case exahype::records::ADERDGCellDescription::Descendant:
+      case exahype::records::ADERDGCellDescription::EmptyDescendant:
+        // TODO(Dominic): Change to RemoteBoundaryDescendant
+        p.setType(exahype::records::ADERDGCellDescription::Descendant);
+        exahype::Cell::ensureNecessaryMemoryIsAllocated(p);
+        break;
+      case exahype::records::ADERDGCellDescription::Ancestor:
+      case exahype::records::ADERDGCellDescription::EmptyAncestor:
+        // TODO(Dominic): Change to RemoteBoundaryAncestor if top most parent
+        // is ancestor or RemoteBoundaryAncestor
+        p.setType(exahype::records::ADERDGCellDescription::Ancestor);
+        exahype::Cell::ensureNecessaryMemoryIsAllocated(p);
+        break;
+      default:
+        break;
+    }
+  }
+
   Heap::getInstance().sendData(cellDescriptionsIndex,
           toRank,x,level,messageType);
 }
@@ -620,6 +641,83 @@ void exahype::solvers::ADERDGSolver::receiveFromMasterRank(int rank, int tag) {
 }
 
 ///////////////////////////////////
+// FORK OR JOIN
+///////////////////////////////////
+
+void exahype::solvers::ADERDGSolver::sendDataToWorkerOrMasterDueToForkOrJoin(
+    const int                                     toRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+  assertion1(element>=0,element);
+  assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
+             element,Heap::getInstance().getData(cellDescriptionsIndex).size());
+
+  auto& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+
+  double* solution = 0;
+  switch(p.getType()) {
+    case exahype::records::ADERDGCellDescription::Cell:
+      solution        = DataHeap::getInstance().getData(p.getSolution()).data();
+
+      logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)","solution of solver " << p.getSolverNumber() << " sent to rank "<<toRank<<
+               ", cell: "<< cellCentre << ", level: " << level);
+
+      DataHeap::getInstance().sendData(
+          solution, getUnknownsPerCell(), toRank, x, level,
+          peano::heap::MessageType::ForkOrJoinCommunication);
+      break;
+    default:
+      break;
+  }
+}
+
+
+void exahype::solvers::ADERDGSolver::sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
+    const int                                     toRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  std::vector<double> emptyMessage(0);
+  for(int sends=0; sends<DataMessagesPerForkOrJoinCommunication; ++sends)
+    DataHeap::getInstance().sendData(
+        emptyMessage, toRank, x, level,
+        peano::heap::MessageType::ForkOrJoinCommunication);
+}
+
+
+void exahype::solvers::ADERDGSolver::mergeWithWorkerOrMasterDataDueToForkOrJoin(
+    const int                                     fromRank,
+    const int                                     cellDescriptionsIndex,
+    const int                                     element,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  auto& p = exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)[element];
+  assertion4(tarch::la::equals(x,p.getOffset()+0.5*p.getSize()),x,p.getOffset()+0.5*p.getSize(),level,p.getLevel());
+  assertion2(p.getLevel()==level,p.getLevel(),level);
+
+  if (p.getType()==exahype::records::ADERDGCellDescription::Cell) {
+    logDebug("mergeWithRemoteDataDueToForkOrJoin(...)","[solution] receive from rank "<<fromRank<<
+             ", cell: "<< cellCentre << ", level: " << level);
+
+    DataHeap::getInstance().receiveData(
+        p.getSolution(),fromRank,x,level,
+        peano::heap::MessageType::ForkOrJoinCommunication);
+  }
+}
+
+void exahype::solvers::ADERDGSolver::dropWorkerOrMasterDataDueToForkOrJoin(
+    const int                                     fromRank,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  for(int receives=0; receives<DataMessagesPerForkOrJoinCommunication; ++receives)
+    DataHeap::getInstance().receiveData(
+        fromRank, x, level,
+        peano::heap::MessageType::ForkOrJoinCommunication);
+}
+
+///////////////////////////////////
 // NEIGHBOUR
 ///////////////////////////////////
 
@@ -712,6 +810,7 @@ void exahype::solvers::ADERDGSolver::sendEmptyDataToNeighbour(
 
 void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     const int                                     fromRank,
+    const int                                     neighbourTypeAsInt,
     const int                                     cellDescriptionsIndex,
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, int>&     src,
@@ -724,12 +823,15 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
 
   auto& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
 
+  exahype::records::ADERDGCellDescription::Type neighbourType =
+      static_cast<exahype::records::ADERDGCellDescription::Type>(neighbourTypeAsInt);
+
   const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
   assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
   const int faceIndex = 2 * normalOfExchangedFace +
       (src(normalOfExchangedFace) > dest(normalOfExchangedFace) ? 1 : 0); // !!! Be aware of the ">" !!!
 
-  if(holdsFaceData(p.getType())){
+  if(holdsFaceData(neighbourType) && holdsFaceData(p.getType())){
     assertion4(!p.getRiemannSolvePerformed(faceIndex),
         faceIndex,cellDescriptionsIndex,p.getOffset().toString(),p.getLevel());
     assertion(DataHeap::getInstance().isValidIndex(p.getExtrapolatedPredictor()));
@@ -796,11 +898,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
         ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
     );
 
-    for (int receives=0; receives<DataMessagesPerNeighbourCommunication; ++receives) {
-      DataHeap::getInstance().receiveData(fromRank, x, level,
-          peano::heap::MessageType::NeighbourCommunication);
-    }
-
+    dropNeighbourData(fromRank,src,dest,x,level);
   }
 }
 
@@ -899,51 +997,6 @@ void exahype::solvers::ADERDGSolver::dropNeighbourData(
 }
 
 ///////////////////////////////////
-// FORK OR JOIN
-///////////////////////////////////
-
-void exahype::solvers::ADERDGSolver::sendDataToWorkerOrMasterDueToForkOrJoin(
-    const int                                     toRank,
-    const int                                     cellDescriptionsIndex,
-    const int                                     element,
-    const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
-  assertionMsg(false,"Please implement!");
-}
-
-
-void exahype::solvers::ADERDGSolver::sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
-    const int                                     toRank,
-    const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
-  std::vector<double> emptyMessage(0);
-  for(int sends=0; sends<DataMessagesPerForkOrJoinCommunication; ++sends)
-    DataHeap::getInstance().sendData(
-        emptyMessage, toRank, x, level,
-        peano::heap::MessageType::ForkOrJoinCommunication);
-}
-
-
-void exahype::solvers::ADERDGSolver::mergeWithWorkerOrMasterDataDueToForkOrJoin(
-    const int                                     fromRank,
-    const int                                     cellDescriptionsIndex,
-    const int                                     element,
-    const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
-  assertionMsg(false,"Please implement!");
-}
-
-void exahype::solvers::ADERDGSolver::dropWorkerOrMasterDataDueToForkOrJoin(
-    const int                                     fromRank,
-    const tarch::la::Vector<DIMENSIONS, double>&  x,
-    const int                                     level) {
-  for(int receives=0; receives<DataMessagesPerForkOrJoinCommunication; ++receives)
-    DataHeap::getInstance().receiveData(
-        fromRank, x, level,
-        peano::heap::MessageType::ForkOrJoinCommunication);
-}
-
-///////////////////////////////////
 // WORKER->MASTER
 ///////////////////////////////////
 
@@ -953,7 +1006,33 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  assertionMsg(false,"Please implement!");
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+  assertion1(element>=0,element);
+  assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
+             element,Heap::getInstance().getData(cellDescriptionsIndex).size());
+
+  auto& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+
+  if (p.getType()==exahype::records::ADERDGCellDescription::Ancestor
+      // || exahype::records::ADERDGCellDescription::RemoteBoundaryAncestor: // TODO(Dominic)
+  ) {
+    double* extrapolatedPredictor = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
+    double* fluctuations          = DataHeap::getInstance().getData(p.getFluctuation()).data();
+
+    logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)","solution of solver " << p.getSolverNumber() << " sent to rank "<<masterRank<<
+             ", cell: "<< cellCentre << ", level: " << level);
+
+    // !!! Be aware of inverted receive order !!!
+    // Send order:    extrapolatedPredictor, fluctuations
+    // Receive order: fluctuations, extrapolatedPredictor
+    DataHeap::getInstance().sendData(
+        extrapolatedPredictor, getUnknownsPerCellBoundary(), masterRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
+    DataHeap::getInstance().sendData(
+        fluctuations, getUnknownsPerCellBoundary(), masterRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
+
+  }
 }
 
 void exahype::solvers::ADERDGSolver::sendEmptyDataToMaster(
@@ -973,7 +1052,33 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  assertionMsg(false,"Please implement!");
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+  assertion1(element>=0,element);
+  assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
+             element,Heap::getInstance().getData(cellDescriptionsIndex).size());
+
+  auto& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+
+  // TODO(Dominic): RemoteBoundaryAncestor should be only valid type at
+  // master-worker boundary. Change both ancestor and empty ancestor
+  // to this type if necessary.
+  if (p.getType()==exahype::records::ADERDGCellDescription::Ancestor
+      // || exahype::records::ADERDGCellDescription::RemoteBoundaryAncestor:
+  ) {
+    logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)","solution of solver " << p.getSolverNumber() << " sent to rank "<<masterRank<<
+             ", cell: "<< cellCentre << ", level: " << level);
+
+    // !!! Be aware of inverted receive order !!!
+    // Send order:    extrapolatedPredictor, fluctuations
+    // Receive order: fluctuations, extrapolatedPredictor
+    DataHeap::getInstance().receiveData(
+        p.getFluctuation(), workerRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
+    DataHeap::getInstance().receiveData(
+        p.getExtrapolatedPredictor(), workerRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
+
+  }
 }
 
 void exahype::solvers::ADERDGSolver::dropWorkerData(
@@ -996,7 +1101,33 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  assertionMsg(false,"Please implement!");
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+  assertion1(element>=0,element);
+  assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
+             element,Heap::getInstance().getData(cellDescriptionsIndex).size());
+
+  auto& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+
+  if (p.getType()==exahype::records::ADERDGCellDescription::Descendant
+      // || exahype::records::ADERDGCellDescription::RemoteBoundaryDescendant: // TODO(Dominic)
+  ) {
+    double* extrapolatedPredictor = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
+    double* fluctuations          = DataHeap::getInstance().getData(p.getFluctuation()).data();
+
+    logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)","solution of solver " << p.getSolverNumber() << " sent to rank "<<masterRank<<
+             ", cell: "<< cellCentre << ", level: " << level);
+
+    // !!! Be aware of inverted receive order !!!
+    // Send order:    extrapolatedPredictor, fluctuations
+    // Receive order: fluctuations, extrapolatedPredictor
+    DataHeap::getInstance().sendData(
+        extrapolatedPredictor, getUnknownsPerCellBoundary(), workerRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
+    DataHeap::getInstance().sendData(
+        fluctuations, getUnknownsPerCellBoundary(), workerRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
+
+  }
 }
 
 void exahype::solvers::ADERDGSolver::sendEmptyDataToWorker(
@@ -1016,7 +1147,33 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
     const int                                     element,
     const tarch::la::Vector<DIMENSIONS, double>&  x,
     const int                                     level){
-  assertionMsg(false,"Please implement!");
+  assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+  assertion1(element>=0,element);
+  assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
+             element,Heap::getInstance().getData(cellDescriptionsIndex).size());
+
+  auto& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+
+  // TODO(Dominic): RemoteBoundaryAncestor should be only valid type at
+  // master-worker boundary. Change both ancestor and empty ancestor
+  // to this type if necessary.
+  if (p.getType()==exahype::records::ADERDGCellDescription::Descendant
+      // || exahype::records::ADERDGCellDescription::RemoteBoundaryDescendant:
+  ) {
+    logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)","solution of solver " << p.getSolverNumber() << " sent to rank "<<masterRank<<
+             ", cell: "<< cellCentre << ", level: " << level);
+
+    // !!! Be aware of inverted receive order !!!
+    // Send order:    extrapolatedPredictor, fluctuations
+    // Receive order: fluctuations, extrapolatedPredictor
+    DataHeap::getInstance().receiveData(
+        p.getFluctuation(), masterRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
+    DataHeap::getInstance().receiveData(
+        p.getExtrapolatedPredictor(), masterRank, x, level,
+        peano::heap::MessageType::MasterWorkerCommunication);
+
+  }
 }
 
 void exahype::solvers::ADERDGSolver::dropMasterData(

@@ -447,6 +447,7 @@ class exahype::solvers::Solver {
    */
   virtual void mergeWithNeighbourData(
       const int                                     fromRank,
+      const int                                     neighbourTypeAsInt,
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, int>&     src,

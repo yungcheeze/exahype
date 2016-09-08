@@ -740,6 +740,17 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    * Sends all the cell descriptions at address \p
    * cellDescriptionsIndex to the rank \p toRank.
    *
+   * <h2>Adaptive mesh refinement</h2>
+   * For adaptive meshes, we further fix the type
+   * of a descendant to RemoteBoundaryDescendant
+   * at both sides of master-worker boundaries.
+   *
+   * We further fix the type of an Ancestor
+   * to RemoteBoundaryAncestor if the parent
+   * of the cell description on the master side
+   * is also of type RemoteBoundaryAncestor or an
+   * Ancestor.
+   *
    * \note The data heap indices of the cell descriptions are not
    * valid anymore on rank \p toRank.
    */
@@ -869,6 +880,7 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    */
   void mergeWithNeighbourData(
       const int                                     fromRank,
+      const int                                     neighbourTypeAsInt,
       const int                                     cellDescriptionsIndex,
       const int                                     element,
       const tarch::la::Vector<DIMENSIONS, int>&     src,

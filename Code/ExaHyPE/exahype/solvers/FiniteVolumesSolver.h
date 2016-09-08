@@ -274,6 +274,7 @@ public:
    */
   void mergeWithNeighbourData(
       const int                                     fromRank,
+      const int                                     neighbourTypeAsInt,
       const int                                     cellDescriptionsIndex,
       const int                                     elementIndex,
       const tarch::la::Vector<DIMENSIONS, int>&     src,
