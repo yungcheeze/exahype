@@ -94,6 +94,7 @@ Tokens
   token_profiling                   = 'profiling';
   token_profiler                    = 'profiler';
   token_metrics                     = 'metrics';
+  token_profiling_output            = 'profiling-output';
   token_likwid_inc                  = 'likwid_inc';
   token_likwid_lib                  = 'likwid_lib';
   token_ipcm_inc                    = 'ipcm_inc';
@@ -223,6 +224,7 @@ Productions
        [begin_token]:token_profiling
          token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
          token_metrics [token_metrics_equals]:token_equals [metrics]:parameter_list
+         token_profiling_output [properties_equals]:token_equals [profiling_output]:filename
          token_likwid_inc [token_likwid_inc_equals]:token_equals [likwid_inc]:filename
          token_likwid_lib [token_likwid_lib_equals]:token_equals [likwid_lib]:filename
        token_end [end_token]:token_profiling
@@ -232,6 +234,7 @@ Productions
        [begin_token]:token_profiling
          token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
          token_metrics [token_metrics_equals]:token_equals [metrics]:parameter_list
+         token_profiling_output [properties_equals]:token_equals [profiling_output]:filename
          token_ipcm_inc [token_ipcm_inc_equals]:token_equals [ipcm_inc]:filename
          token_ipcm_lib [token_ipcm_lib_equals]:token_equals [ipcm_lib]:filename
        token_end [end_token]:token_profiling
@@ -241,6 +244,7 @@ Productions
        [begin_token]:token_profiling
          token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
          token_metrics [token_metrics_equals]:token_equals [metrics]:parameter_list
+         token_profiling_output [properties_equals]:token_equals [profiling_output]:filename
        token_end [end_token]:token_profiling
         { -> New profiling(profiler,metrics,Null,Null,Null,Null) }
       ;

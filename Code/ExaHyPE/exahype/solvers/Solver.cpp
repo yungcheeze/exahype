@@ -17,6 +17,7 @@ std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
 
 const int exahype::solvers::Solver::NotFound = -1;
 
+
 exahype::solvers::Solver::Solver(
   const std::string&                     identifier,
   exahype::solvers::Solver::Type         type,

@@ -103,7 +103,7 @@ bool exahype::mappings::Synchronisation::prepareSendToWorker(
     p->sendToRank(worker, _mpiTag); // TODO(Dominic) change this; call start to send here.
   }
 
-  return true;
+  return false;
 }
 
 // This is master-worker comm. part 2. See SpaceTimePredictor for time stepping equivalents.

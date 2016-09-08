@@ -2,12 +2,10 @@
 
 #include <memory>
 
-elasticwaves3d::MyElasticSolver::MyElasticSolver(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):
-  exahype::solvers::ADERDGSolver("MyElasticSolver", 9, 0, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
+elasticwaves3d::MyElasticSolver::init() {
+  // This function is called inside the generated constructor.
   // @todo Please implement/augment if required
 }
-
-
 
 void elasticwaves3d::MyElasticSolver::flux(const double* const Q, double** F) {
   // Dimensions             = 3
@@ -52,12 +50,12 @@ void elasticwaves3d::MyElasticSolver::flux(const double* const Q, double** F) {
   h[8] = 0.0;
 }
 
-
-
-void elasticwaves3d::MyElasticSolver::boundaryConditions(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
+void elasticwaves3d::MyElasticSolver::boundaryConditions(
+    const double* const x, const double t, const int faceIndex,
+    const int normalNonZero, const double* const fluxIn,
+    const double* const stateIn, double* fluxOut, double* stateOut) {
   // Dimensions             = 3
   // Number of variables    = 9 (#unknowns + #parameters)
-
 
   // @todo Please implement
   // fluxOut
@@ -83,9 +81,9 @@ void elasticwaves3d::MyElasticSolver::boundaryConditions(const double* const x,c
   stateOut[8] = stateIn[8];
 }
 
-
-
-void elasticwaves3d::MyElasticSolver::eigenvalues(const double* const Q, const int normalNonZeroIndex, double* lambda) {
+void elasticwaves3d::MyElasticSolver::eigenvalues(const double* const Q,
+                                                  const int normalNonZeroIndex,
+                                                  double* lambda) {
   // Dimensions             = 3
   // Number of variables    = 9 (#unknowns + #parameters)
   // @todo Please implement
@@ -100,16 +98,16 @@ void elasticwaves3d::MyElasticSolver::eigenvalues(const double* const Q, const i
   lambda[8] = 0.0;
 }
 
-
-
-bool elasticwaves3d::MyElasticSolver::hasToAdjustSolution(const tarch::la::Vector<DIMENSIONS, double> &center, const tarch::la::Vector<DIMENSIONS, double> &dx, double t) {
+bool elasticwaves3d::MyElasticSolver::hasToAdjustSolution(
+    const tarch::la::Vector<DIMENSIONS, double>& center,
+    const tarch::la::Vector<DIMENSIONS, double>& dx, double t) {
   // @todo Please implement
   return false;
 }
 
-
-
-void elasticwaves3d::MyElasticSolver::adjustedSolutionValues(const double* const x,const double w,const double t,const double dt,double* Q) {
+void elasticwaves3d::MyElasticSolver::adjustedSolutionValues(
+    const double* const x, const double w, const double t, const double dt,
+    double* Q) {
   // Dimensions             = 3
   // Number of variables    = 9 (#unknowns + #parameters)
   // @todo Please implement
@@ -124,16 +122,18 @@ void elasticwaves3d::MyElasticSolver::adjustedSolutionValues(const double* const
   Q[8] = 0.0;
 }
 
-
-
-exahype::solvers::Solver::RefinementControl elasticwaves3d::MyElasticSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
+exahype::solvers::Solver::RefinementControl
+elasticwaves3d::MyElasticSolver::refinementCriterion(
+    const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
+    const tarch::la::Vector<DIMENSIONS, double>& dx, double t,
+    const int level) {
   // @todo Please implement
   return exahype::solvers::Solver::RefinementControl::Keep;
 }
 
-
-
-void elasticwaves3d::MyElasticSolver::ncp(const double* const Q, const double* const gradQ, double* BgradQ) {
+void elasticwaves3d::MyElasticSolver::ncp(const double* const Q,
+                                          const double* const gradQ,
+                                          double* BgradQ) {
   // Dimensions             = 3
   // Number of variables    = 9 (#unknowns + #parameters)
   // @todo Please implement
@@ -166,93 +166,90 @@ void elasticwaves3d::MyElasticSolver::ncp(const double* const Q, const double* c
   BgradQ[26] = 0.0;
 }
 
-
-
-void elasticwaves3d::MyElasticSolver::matrixb(const double* const Q, const int normalNonZero, double* Bn) {
+void elasticwaves3d::MyElasticSolver::matrixb(const double* const Q,
+                                              const int normalNonZero,
+                                              double* Bn) {
   // Number of variables    = 9 (#unknowns + #parameters)
   // @todo Please implement
-Bn[0] = 0.0;
-Bn[1] = 0.0;
-Bn[2] = 0.0;
-Bn[3] = 0.0;
-Bn[4] = 0.0;
-Bn[5] = 0.0;
-Bn[6] = 0.0;
-Bn[7] = 0.0;
-Bn[8] = 0.0;
-Bn[9] = 0.0;
-Bn[10] = 0.0;
-Bn[11] = 0.0;
-Bn[12] = 0.0;
-Bn[13] = 0.0;
-Bn[14] = 0.0;
-Bn[15] = 0.0;
-Bn[16] = 0.0;
-Bn[17] = 0.0;
-Bn[18] = 0.0;
-Bn[19] = 0.0;
-Bn[20] = 0.0;
-Bn[21] = 0.0;
-Bn[22] = 0.0;
-Bn[23] = 0.0;
-Bn[24] = 0.0;
-Bn[25] = 0.0;
-Bn[26] = 0.0;
-Bn[27] = 0.0;
-Bn[28] = 0.0;
-Bn[29] = 0.0;
-Bn[30] = 0.0;
-Bn[31] = 0.0;
-Bn[32] = 0.0;
-Bn[33] = 0.0;
-Bn[34] = 0.0;
-Bn[35] = 0.0;
-Bn[36] = 0.0;
-Bn[37] = 0.0;
-Bn[38] = 0.0;
-Bn[39] = 0.0;
-Bn[40] = 0.0;
-Bn[41] = 0.0;
-Bn[42] = 0.0;
-Bn[43] = 0.0;
-Bn[44] = 0.0;
-Bn[45] = 0.0;
-Bn[46] = 0.0;
-Bn[47] = 0.0;
-Bn[48] = 0.0;
-Bn[49] = 0.0;
-Bn[50] = 0.0;
-Bn[51] = 0.0;
-Bn[52] = 0.0;
-Bn[53] = 0.0;
-Bn[54] = 0.0;
-Bn[55] = 0.0;
-Bn[56] = 0.0;
-Bn[57] = 0.0;
-Bn[58] = 0.0;
-Bn[59] = 0.0;
-Bn[60] = 0.0;
-Bn[61] = 0.0;
-Bn[62] = 0.0;
-Bn[63] = 0.0;
-Bn[64] = 0.0;
-Bn[65] = 0.0;
-Bn[66] = 0.0;
-Bn[67] = 0.0;
-Bn[68] = 0.0;
-Bn[69] = 0.0;
-Bn[70] = 0.0;
-Bn[71] = 0.0;
-Bn[72] = 0.0;
-Bn[73] = 0.0;
-Bn[74] = 0.0;
-Bn[75] = 0.0;
-Bn[76] = 0.0;
-Bn[77] = 0.0;
-Bn[78] = 0.0;
-Bn[79] = 0.0;
-Bn[80] = 0.0;
+  Bn[0] = 0.0;
+  Bn[1] = 0.0;
+  Bn[2] = 0.0;
+  Bn[3] = 0.0;
+  Bn[4] = 0.0;
+  Bn[5] = 0.0;
+  Bn[6] = 0.0;
+  Bn[7] = 0.0;
+  Bn[8] = 0.0;
+  Bn[9] = 0.0;
+  Bn[10] = 0.0;
+  Bn[11] = 0.0;
+  Bn[12] = 0.0;
+  Bn[13] = 0.0;
+  Bn[14] = 0.0;
+  Bn[15] = 0.0;
+  Bn[16] = 0.0;
+  Bn[17] = 0.0;
+  Bn[18] = 0.0;
+  Bn[19] = 0.0;
+  Bn[20] = 0.0;
+  Bn[21] = 0.0;
+  Bn[22] = 0.0;
+  Bn[23] = 0.0;
+  Bn[24] = 0.0;
+  Bn[25] = 0.0;
+  Bn[26] = 0.0;
+  Bn[27] = 0.0;
+  Bn[28] = 0.0;
+  Bn[29] = 0.0;
+  Bn[30] = 0.0;
+  Bn[31] = 0.0;
+  Bn[32] = 0.0;
+  Bn[33] = 0.0;
+  Bn[34] = 0.0;
+  Bn[35] = 0.0;
+  Bn[36] = 0.0;
+  Bn[37] = 0.0;
+  Bn[38] = 0.0;
+  Bn[39] = 0.0;
+  Bn[40] = 0.0;
+  Bn[41] = 0.0;
+  Bn[42] = 0.0;
+  Bn[43] = 0.0;
+  Bn[44] = 0.0;
+  Bn[45] = 0.0;
+  Bn[46] = 0.0;
+  Bn[47] = 0.0;
+  Bn[48] = 0.0;
+  Bn[49] = 0.0;
+  Bn[50] = 0.0;
+  Bn[51] = 0.0;
+  Bn[52] = 0.0;
+  Bn[53] = 0.0;
+  Bn[54] = 0.0;
+  Bn[55] = 0.0;
+  Bn[56] = 0.0;
+  Bn[57] = 0.0;
+  Bn[58] = 0.0;
+  Bn[59] = 0.0;
+  Bn[60] = 0.0;
+  Bn[61] = 0.0;
+  Bn[62] = 0.0;
+  Bn[63] = 0.0;
+  Bn[64] = 0.0;
+  Bn[65] = 0.0;
+  Bn[66] = 0.0;
+  Bn[67] = 0.0;
+  Bn[68] = 0.0;
+  Bn[69] = 0.0;
+  Bn[70] = 0.0;
+  Bn[71] = 0.0;
+  Bn[72] = 0.0;
+  Bn[73] = 0.0;
+  Bn[74] = 0.0;
+  Bn[75] = 0.0;
+  Bn[76] = 0.0;
+  Bn[77] = 0.0;
+  Bn[78] = 0.0;
+  Bn[79] = 0.0;
+  Bn[80] = 0.0;
 }
-
-
-

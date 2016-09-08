@@ -37,7 +37,7 @@ double* getGaussLobattoData(const double* const luh, const int numberOfVariables
       for(v=0; v<numberOfVariables; v++) {
         tmpY[idx(y,x,v)] = 0;
         for(k=0; k<basisSize; k++) {
-          tmpY[idx(y,x,v)] += luh[idx(k,x,v)] * uh2lob[idxConv(k,y)];
+          tmpY[idx(y,x,v)] += luh[idx(k,x,v)] * uh2lob[basisSize-1][idxConv(k,y)];
         }
       }
     }
@@ -49,7 +49,7 @@ double* getGaussLobattoData(const double* const luh, const int numberOfVariables
       for(v=0; v<numberOfVariables; v++) {
         lob[idx(y,x,v)] = 0;
         for(k=0; k<basisSize; k++) {
-          lob[idx(y,x,v)] += tmpY[idx(y,k,v)] * uh2lob[idxConv(k,x)];
+          lob[idx(y,x,v)] += tmpY[idx(y,k,v)] * uh2lob[basisSize-1][idxConv(k,x)];
         }
       }
     }
@@ -81,7 +81,7 @@ double* getFVMData(const double* const luh, const int numberOfVariables, const i
       for(v=0; v<numberOfVariables; v++) {
         tmpY[idxY(y,x,v)] = 0;
         for(k=0; k<basisSize; k++) {
-          tmpY[idxY(y,x,v)] += luh[idxLuh(k,x,v)] * uh2lim[idxConv(k,y)];
+          tmpY[idxY(y,x,v)] += luh[idxLuh(k,x,v)] * uh2lim[basisSize-1][idxConv(k,y)];
         }
       }
     }
@@ -93,7 +93,7 @@ double* getFVMData(const double* const luh, const int numberOfVariables, const i
       for(v=0; v<numberOfVariables; v++) {
         lim[idxLim(y,x,v)] = 0;
         for(k=0; k<basisSize; k++) {
-          lim[idxLim(y,x,v)] += tmpY[idxY(y,k,v)] * uh2lim[idxConv(k,x)];
+          lim[idxLim(y,x,v)] += tmpY[idxY(y,k,v)] * uh2lim[basisSize-1][idxConv(k,x)];
         }
       }
     }
@@ -121,7 +121,7 @@ void updateSubcellWithLimiterData(const double* const lim, const int numberOfVar
       for(v=0; v<numberOfVariables; v++) {
         tmpY[idxY(y,x,v)] = 0;
         for(k=0; k<basisSizeLim; k++) {
-          tmpY[idxY(y,x,v)] += lim[idxLim(k,x,v)] * lim2uh[idxConv(k,y)];
+          tmpY[idxY(y,x,v)] += lim[idxLim(k,x,v)] * lim2uh[basisSize-1][idxConv(k,y)];
         }
       }
     }
@@ -133,7 +133,7 @@ void updateSubcellWithLimiterData(const double* const lim, const int numberOfVar
       for(v=0; v<numberOfVariables; v++) {
         luh[idxLuh(y,x,v)] = 0;
         for(k=0; k<basisSizeLim; k++) {
-          luh[idxLuh(y,x,v)] += tmpY[idxY(y,k,v)] * lim2uh[idxConv(k,x)];
+          luh[idxLuh(y,x,v)] += tmpY[idxY(y,k,v)] * lim2uh[basisSize-1][idxConv(k,x)];
         }
       }
     }

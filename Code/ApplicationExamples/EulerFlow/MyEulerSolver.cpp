@@ -16,13 +16,8 @@
 
 #include <memory>
 
-Euler::MyEulerSolver::MyEulerSolver(
-    int nodesPerCoordinateAxis, double maximumMeshSize,
-    exahype::solvers::Solver::TimeStepping timeStepping,
-    std::unique_ptr<exahype::profilers::Profiler> profiler)
-    : exahype::solvers::ADERDGSolver("MyEulerSolver", 5, 0,
-                                     nodesPerCoordinateAxis, maximumMeshSize,
-                                     timeStepping, std::move(profiler)) {
+void Euler::MyEulerSolver::init() {
+  // This function is called inside the generated constructor.
   // @todo Please implement/augment if required
 }
 

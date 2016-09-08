@@ -15,7 +15,7 @@
 
  Euler Flow
 
- A simple project. (well, it was simple, in the beginning).
+ A simple project
 
  */
 exahype-project  Euler
@@ -29,40 +29,37 @@ exahype-project  Euler
     dimension                = 2
     width                    = 15.0, 15.0
     offset                   = 0.0, 0.0
-    end-time                 = 0.5
+    end-time                 = 0.05
   end computational-domain
 
-/*
   shared-memory
-    identifier               = dummy
-    cores                    = 4
+    identifier               = autotuning
+    cores                    = 2
     properties-file          = sharedmemory.properties
   end shared-memory
- */
  
-
   distributed-memory
     identifier               = static_load_balancing
-    configure                = {hotspot,FCFS}
+    configure                = {hotspot,fair,ranks_per_node:4} 
     buffer-size              = 64
-    timeout                  = 120
+    timeout                  = 1200
   end distributed-memory
-
  
   optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99    
     timestep-batch-factor           = 0.8
-    skip-reduction-in-batched-time-steps = on
+    skip-reduction-in-batched-time-steps = off
   end optimisation
-  
+
   solver ADER-DG MyEulerSolver
     variables         = 5
     parameters        = 0
     order             = 3
-    maximum-mesh-size = 0.5
-    time-stepping     = global
+    maximum-mesh-size = 0.01
+    time-stepping     = globalfixed
     kernel            = generic::fluxes::nonlinear
     language          = C
   end solver
+
 end exahype-project
