@@ -334,10 +334,10 @@ bool exahype::Parser::getFuseAlgorithmicSteps() const {
 
 
 bool exahype::Parser::getExchangeBoundaryDataInBatchedTimeSteps() const {
-  std::string token = getTokenAfter("optimisation", "disable-amr-in-batched-time-steps");
+  std::string token = getTokenAfter("optimisation", "disable-amr-if-grid-has-been-stationary-in-previous-iteration");
   if (token.compare("on")!=0 && token.compare("off")!=0) {
     logError("getExchangeBoundaryDataInBatchedTimeSteps()",
-             "disable-amr-in-batched-time-steps is required in the "
+             "disable-amr-if-grid-has-been-stationary-in-previous-iteration is required in the "
              "optimisation segment and has to be either on or off: "
                  << token);
     _interpretationErrorOccured = true;
