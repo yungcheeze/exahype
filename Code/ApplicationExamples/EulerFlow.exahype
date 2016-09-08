@@ -27,28 +27,30 @@ exahype-project  Euler
 
   computational-domain
     dimension                = 2
-    width                    = 1.0, 1.0
+    width                    = 15.0, 15.0
     offset                   = 0.0, 0.0
     end-time                 = 0.12
   end computational-domain
-/*
+
   shared-memory
-    identifier               = autotuning
-    cores                    = 4
+    identifier               = dummy
+    cores                    = 1
     properties-file          = sharedmemory.properties
   end shared-memory
-*/
 
   distributed-memory
     identifier               = static_load_balancing
     configure                = {hotspot,fair,ranks_per_node:4}
     buffer-size              = 64
-    timeout                  = 120
+    timeout                  = 60
   end distributed-memory
  
   optimisation
     fuse-algorithmic-steps          = on
-    fuse-algorithmic-steps-factor   = 0.99    
+    fuse-algorithmic-steps-factor   = 0.99
+    timestep-batch-factor           = 0.8
+    skip-reduction-in-batched-time-steps = on
+    disable-amr-in-batched-time-steps    = on
   end optimisation
   
   solver ADER-DG MyEulerSolver
@@ -57,7 +59,7 @@ exahype-project  Euler
     order             = 3
     /* 27 points: 0.05, 9 points: 0.15 */
     maximum-mesh-size = 0.15
-    time-stepping     = global
+    time-stepping     = globalfixed
     kernel            = generic::fluxes::nonlinear
     language          = C
 
