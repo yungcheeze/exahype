@@ -215,7 +215,7 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
         if (
           fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==exahype::Vertex::Records::RefinementControl::Unrefined
 	  &&
-	  _localState.refineInitialGridInTouchVertexLastTime()
+	  _state.refineInitialGridInTouchVertexLastTime()
 	) {
           fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
         }
@@ -589,8 +589,8 @@ exahype::mappings::MarkingForAugmentation::~MarkingForAugmentation() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::MarkingForAugmentation::MarkingForAugmentation(
-    const MarkingForAugmentation& masterThread) {
-  // do nothing
+  const MarkingForAugmentation& masterThread):
+  _state(masterThread._state) {
 }
 
 void exahype::mappings::MarkingForAugmentation::mergeWithWorkerThread(
