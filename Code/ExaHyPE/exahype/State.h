@@ -119,6 +119,10 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    * thus is reasonable to invoke enforceRefine in the parallel case if the
    * result it true.
    *
+   * If this operation returns refineInitialGridInCreationalEvents(), also
+   * refineInitialGridInTouchVertexLastTime() should hold in the parallel
+   * mode. Without MPI, the two always are different.
+   *
    * Please consult the Peano cookbook (Sect. 6.3.2) for details/rationale.
    */
   bool refineInitialGridInCreationalEvents() const;
@@ -126,6 +130,10 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   /**
    *
    * Please consult the Peano cookbook (Sect. 6.3.2) for details/rationale.
+   *
+   * Means that the computational regular initial grid is to be refined in
+   * touchVertexLastTime(), but it basically also means that you may refined
+   * the grid though perhaps not in the creational routines.
    */
   bool refineInitialGridInTouchVertexLastTime() const;
 };
