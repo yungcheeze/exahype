@@ -3,14 +3,14 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #include "LikwidPerformanceMonitoringModule.h"
 
 #ifdef LIKWID_AVAILABLE
@@ -29,13 +29,11 @@
 // TODO(guera): Remove once likwid 4.1 is available on SuperMUC. At the moment
 // this section is somewhat Haswell specific.
 
-// TODO(guera): Implement Flop/s metric. 
-// See http://likwid-tools.blogspot.de/2012/02/intel-sandybridge-and-counting-flops.html
 namespace {
-constexpr const char* groups[] = {"BRANCH",  "CLOCK",    "DATA",     "ENERGY",
-                                  "ICACHE",  "L2",       "L2CACHE",  "L3",
-                                  "L3CACHE", "MEM",      "NUMA",     "QPI",
-                                  "SBOX",    "TLB_DATA", "TLB_INSTR"};
+constexpr const char* groups[] = {
+    "BRANCH",  "CLOCK",    "DATA",      "ENERGY",   "ICACHE", "L2",
+    "L2CACHE", "L3",       "L3CACHE",   "MEM",      "NUMA",   "QPI",
+    "SBOX",    "TLB_DATA", "TLB_INSTR", "FLOPS_AVX"};
 constexpr const char* eventsets[] = {
     /* BRANCH */
     "INSTR_RETIRED_ANY:FIXC0,"
@@ -154,6 +152,11 @@ constexpr const char* eventsets[] = {
     "CPU_CLK_UNHALTED_REF:FIXC2,"
     "ITLB_MISSES_CAUSES_A_WALK:PMC0,"
     "ITLB_MISSES_WALK_DURATION:PMC1",
+    /* FLOPS_AVX */
+    "INSTR_RETIRED_ANY:FIXC0,"
+    "CPU_CLK_UNHALTED_CORE:FIXC1,"
+    "CPU_CLK_UNHALTED_REF:FIXC2,"
+    "AVX_INSTS_CALC:PMC0",
 };
 
 const std::vector<const char*> metrics_names[] = {
@@ -216,6 +219,9 @@ const std::vector<const char*> metrics_names[] = {
     /* TLB_INSTR */
     {"Runtime (RDTSC) [s]", "Runtime unhalted [s]", "Clock [MHz]", "CPI",
      "L1 ITLB misses", "L1 ITLB miss rate", "L1 ITLB miss duration [Cyc]"},
+    /* FLOPS_AVX */
+    {"Runtime (RDTSC) [s]", "Runtime unhalted [s]", "Clock [MHz]", "CPI",
+     "Packed SP MFLOP/s", "Packed DP MFLOP/s"},
 };
 
 const std::vector<std::function<double(int, int)>> metrics_functions[] = {
@@ -1065,6 +1071,44 @@ const std::vector<std::function<double(int, int)>> metrics_functions[] = {
                  perfmon_getResult(group_id, 3, cpu_id);
         },
     },
+    /* FLOPS_AVX */
+    {
+        // Runtime (RDTSC) [s]
+        [](int group_id, int cpu_id) {
+          // time
+          return perfmon_getTimeOfGroup(group_id);
+        },
+        // Runtime unhalted [s]
+        [](int group_id, int cpu_id) {
+          // FIXC1*inverseClock
+          return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
+        },
+        // Clock [MHz]
+        [](int group_id, int cpu_id) {
+          // 1.E-06*(FIXC1/FIXC2)/inverseClock
+          return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                         perfmon_getResult(group_id, 2, cpu_id)) *
+                 timer_getCpuClock();
+        },
+        // CPI
+        [](int group_id, int cpu_id) {
+          // FIXC1/FIXC0
+          return perfmon_getResult(group_id, 1, cpu_id) /
+                 perfmon_getResult(group_id, 0, cpu_id);
+        },
+        // Packed SP MFLOP/s
+        [](int group_id, int cpu_id) {
+          // 1.0E-06*(PMC0*8.0)/time
+          return 1e-6 * perfmon_getResult(group_id, 3, cpu_id) * 8 /
+                 perfmon_getTimeOfGroup(group_id);
+        },
+        // Packed DP MFLOP/s
+        [](int group_id, int cpu_id) {
+          // 1.0E-06*(PMC0*8.0)/time
+          return 1e-6 * perfmon_getResult(group_id, 3, cpu_id) * 4 /
+                 perfmon_getTimeOfGroup(group_id);
+        },
+    },
 };
 }  // namespace
 
@@ -1078,8 +1122,7 @@ LikwidPerformanceMonitoringModule::LikwidPerformanceMonitoringModule(
   int errcode;
 
   // Initialize perfmon module
-  errcode =
-      perfmon_init(state_.cpus_.size(), const_cast<int*>(state_.cpus_.data()));
+  errcode = perfmon_init(1, const_cast<int*>(&state_.cpu_));
   if (errcode != 0) {
     std::cerr << "LikwidPerformanceMonitoringModule: perfmon_init returned "
               << errcode << " != 0" << std::endl;
@@ -1091,13 +1134,18 @@ LikwidPerformanceMonitoringModule::LikwidPerformanceMonitoringModule(
                                        [this](const char* group) {
                                          return group_name_.compare(group) == 0;
                                        }));
+  if (group_index_ == std::distance(std::begin(groups), std::end(groups))) {
+    std::cerr << "LikwidPerformanceMonitoringModule: group_name_ = "
+              << group_name_ << " not found." << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
 
   timer_init();
 }
 
 LikwidPerformanceMonitoringModule::~LikwidPerformanceMonitoringModule() {
-  //timer_finalize();
   perfmon_finalize();
+  timer_finalize();
 }
 
 void LikwidPerformanceMonitoringModule::setNumberOfTags(int n) {
@@ -1139,23 +1187,20 @@ void LikwidPerformanceMonitoringModule::stop(const std::string& tag) {
 void LikwidPerformanceMonitoringModule::writeToOstream(std::ostream* os) const {
   // For all tags
   for (const auto& tag_group_handle_pair : group_handles_) {
-    // for all CPUs
-    for (int cpu : state_.cpus_) {
-      assert((metrics_names[group_index_].size() ==
-              metrics_functions[group_index_].size()) &&
-             "LikwidPerformanceMonitoringModule: metrics_names and "
-             "metrics_functions don't have the same length");
-      int number_of_metrics = metrics_names[group_index_].size();
+    assert((metrics_names[group_index_].size() ==
+            metrics_functions[group_index_].size()) &&
+           "LikwidPerformanceMonitoringModule: metrics_names and "
+           "metrics_functions don't have the same length");
+    int number_of_metrics = metrics_names[group_index_].size();
 
-      // for all metrics
-      for (int i = 0; i < number_of_metrics; i++) {
-        // TODO(guera): Fix inconsistent use of terms thread and cpu
-        *os << "PerformanceMonitoringModule " << tag_group_handle_pair.first
-            << " cpu" << cpu << " " << metrics_names[group_index_][i] << " "
-            << metrics_functions[group_index_]
-                                [i](tag_group_handle_pair.second, cpu)
-            << std::endl;
-      }
+    // for all metrics
+    for (int i = 0; i < number_of_metrics; i++) {
+      // TODO(guera): Fix inconsistent use of terms thread and cpu
+      *os << "PerformanceMonitoringModule " << tag_group_handle_pair.first
+          << " " << metrics_names[group_index_][i] << " "
+          << metrics_functions[group_index_]
+                              [i](tag_group_handle_pair.second, state_.cpu_)
+          << std::endl;
     }
   }
 }
