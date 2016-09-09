@@ -39,7 +39,7 @@ class LikwidTimeMeasurementModule : public LikwidModule {
   void writeToOstream(std::ostream* os) const override;
 
  private:
-  std::unordered_map<std::string, TimerData> timer_data_;
+  TimerData timer_data_;
   std::unordered_map<std::string, std::pair<uint64_t, double>>
       aggregates_cycles_seconds_;
 };

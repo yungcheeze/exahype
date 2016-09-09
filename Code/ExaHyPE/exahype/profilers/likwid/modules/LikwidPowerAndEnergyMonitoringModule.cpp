@@ -15,61 +15,178 @@
 
 #ifdef LIKWID_AVAILABLE
 
+#include "../../ProfilerUtils.h"
 #include "../LikwidProfiler.h"
+#include <array>
 #include <cassert>
+#include <chrono>
 #include <cstdlib>
+#include <limits>
+#include <map>
+
+namespace {
+using namespace exahype::profilers::utils;
+
+// TODO: Remove once the public function power_read does not depend on private
+// knowledge any more.
+static const uint64_t MSR_PKG_ENERGY_STATUS = 0x611;
+static const uint64_t MSR_PP0_ENERGY_STATUS = 0x639;
+static const uint64_t MSR_PP1_ENERGY_STATUS = 0x641;
+static const uint64_t MSR_DRAM_ENERGY_STATUS = 0x619;
+
+static const std::map<const PowerType, uint64_t> powertype_to_register = {
+    {PowerType::PKG, MSR_PKG_ENERGY_STATUS},
+    {PowerType::PP0, MSR_PP0_ENERGY_STATUS},
+    {PowerType::PP1, MSR_PP1_ENERGY_STATUS},
+    {PowerType::DRAM, MSR_DRAM_ENERGY_STATUS}};
+
+static const int kNumberOfSamples = 1000000;
+static const int kNumberOfSamples2 = 1000;
+
+std::chrono::steady_clock::duration singleRaplRead(int cpu_id) {
+  PowerData powerdata;
+  uint32_t value;
+
+  power_start(&powerdata, cpu_id, PowerType::PKG);
+  auto start = std::chrono::steady_clock::now();
+  power_read(cpu_id, MSR_PKG_ENERGY_STATUS, &value);
+  escape(&value);
+  auto stop = std::chrono::steady_clock::now();
+  power_stop(&powerdata, cpu_id, PowerType::PKG);
+  return stop - start;
+}
+
+uint64_t singleRaplReadCycles(int cpu_id) {
+  timer_init();
+
+  PowerData powerdata;
+  uint32_t value;
+
+  TimerData td;
+  timer_start(&td);
+
+  power_start(&powerdata, cpu_id, PowerType::PKG);
+  timer_start(&td);
+  power_read(cpu_id, MSR_PKG_ENERGY_STATUS, &value);
+  escape(&value);
+  timer_stop(&td);
+  power_stop(&powerdata, cpu_id, PowerType::PKG);
+
+  return timer_printCycles(&td);
+}
+
+template <int kNumberOfProfiledPowerTypes, const PowerType* kProfiledPowerTypes>
+int countUntilChange(int cpu_id) {
+  uint32_t old_values[kNumberOfProfiledPowerTypes],
+      new_values[kNumberOfProfiledPowerTypes];
+
+  int i = 1;
+  for (int j = 0; j < kNumberOfProfiledPowerTypes; j++) {
+    power_read(cpu_id, powertype_to_register.at(kProfiledPowerTypes[j]),
+               &old_values[j]);
+  }
+  while (true) {
+    i++;
+    for (int j = 0; j < kNumberOfProfiledPowerTypes; j++) {
+      power_read(cpu_id, powertype_to_register.at(kProfiledPowerTypes[j]),
+                 &new_values[j]);
+    }
+
+    bool all_updated = true;
+    for (int j = 0; j < kNumberOfProfiledPowerTypes; j++) {
+      all_updated &= (old_values[j] != new_values[j]);
+    }
+    if (all_updated) {
+      break;
+    }
+  }
+  return i;
+}
+
+}  // namespace
 
 namespace exahype {
 namespace profilers {
 namespace likwid {
 
+// todo: check
 constexpr PowerType LikwidPowerAndEnergyMonitoringModule::kProfiledPowerTypes
     [LikwidPowerAndEnergyMonitoringModule::kNumberOfProfiledPowerTypes];
 
 LikwidPowerAndEnergyMonitoringModule::LikwidPowerAndEnergyMonitoringModule(
     const LikwidProfilerState& state)
-    : LikwidModule(state) {
-  int has_rapl = power_init(0);  // test for CPU 0
+    : LikwidModule(state), number_of_rapl_reads_(-1) {
+  assert(state_.cpu_ == affinity_threadGetProcessorId());
+
+  int has_rapl = power_init(state_.cpu_);
   if (has_rapl == 0) {
     std::cerr << "LikwidPowerAndEnergyMonitoringModule: has_rapl == 0"
               << std::endl;
     std::exit(EXIT_FAILURE);
   }
 
-  const AffinityDomain* affinity_domains_begin =
-      state_.affinity_domains_->domains;
-  const AffinityDomain* affinity_domains_end =
-      affinity_domains_begin +
-      state_.affinity_domains_->numberOfAffinityDomains;
+  HPMaddThread(state_.cpu_);
+  power_init(state_.cpu_);
 
-  // Find all sockets
-  number_of_sockets_ = 0;
-  for (const AffinityDomain* current_affinity_domain = affinity_domains_begin;
-       current_affinity_domain != affinity_domains_end;
-       current_affinity_domain++) {
-    const std::string tag = std::string(current_affinity_domain->tag->data,
-                                        current_affinity_domain->tag->data +
-                                            current_affinity_domain->tag->slen);
+  power_info_ = get_powerInfo();
 
-    // Currently possible values: N (node), SX (socket/package X), CX (cache
-    // domain X) and MX (memory domain X)
-    size_t pos = tag.find("S");
-    if (pos != std::string::npos) {  // current affinity domain is socket
-      number_of_sockets_++;
+  // calibration
 
-      int socket_id = std::stoi(tag.substr(pos + 1));  // Parse X in SX
-      assert(socket_id == static_cast<int>(cpuid_of_sockets_.size()) &&
-             "Sockets are not numbered consecutively");
+  // time likwid rapl read with chrono
+  {
+    std::array<std::chrono::steady_clock::duration, kNumberOfSamples>
+        single_read;
+    std::generate(single_read.begin(), single_read.end(),
+                  [this]() { return singleRaplRead(state_.cpu_); });
+    std::cout << "single rapl read duration in sec median = "
+              << meanDuration(single_read) << std::endl;
+  }
 
-      int cpu_id = current_affinity_domain->processorList[0];
-      cpuid_of_sockets_.push_back(cpu_id);
+  // time likwid rapl read with likwid cycle count
+  {
+    std::array<uint64_t, kNumberOfSamples> single_read_cycles;
+    std::generate(single_read_cycles.begin(), single_read_cycles.end(),
+                  [this]() { return singleRaplReadCycles(state_.cpu_); });
+    std::sort(single_read_cycles.begin(), single_read_cycles.end());
+    std::cout << "single rapl read in cycles median = "
+              << median<uint64_t, kNumberOfSamples>(single_read_cycles)
+              << std::endl;
+  }
 
-      HPMaddThread(cpu_id);
-      // power_init(cpu_id);
+  // measure energy of likwid rapl
+  {
+    for (int i = 0; i < kNumberOfProfiledPowerTypes; i++) {
+      PowerData powerdata;
+      uint32_t value;
+
+      power_start(&powerdata, state_.cpu_, kProfiledPowerTypes[i]);
+      for (int j = 0; j < kNumberOfSamples; j++) {
+        power_read(state_.cpu_,
+                   powertype_to_register.at(kProfiledPowerTypes[i]), &value);
+        escape(&value);
+      }
+      power_stop(&powerdata, state_.cpu_, kProfiledPowerTypes[i]);
+      penality_per_rapl_read_[i] =
+          power_printEnergy(&powerdata) / kNumberOfSamples;
+      std::cout << powerTypeToString(kProfiledPowerTypes[i])
+                << " power per rapl poll in J mean: "
+                << penality_per_rapl_read_[i] << std::endl;
     }
   }
 
-  power_info_ = get_powerInfo();
+  // rapl reads until value changed
+  {
+    std::array<int, kNumberOfSamples2> single_read_cycles;
+    std::generate(single_read_cycles.begin(), single_read_cycles.end(),
+                  [this]() {
+                    return countUntilChange<kNumberOfProfiledPowerTypes,
+                                            kProfiledPowerTypes>(state_.cpu_);
+                  });
+    std::sort(single_read_cycles.begin(), single_read_cycles.end());
+    std::cout << "number of reads until change median = "
+              << median<int, kNumberOfSamples2>(single_read_cycles)
+              << std::endl;
+  }
 }
 
 LikwidPowerAndEnergyMonitoringModule::~LikwidPowerAndEnergyMonitoringModule() {
@@ -78,83 +195,101 @@ LikwidPowerAndEnergyMonitoringModule::~LikwidPowerAndEnergyMonitoringModule() {
 }
 
 void LikwidPowerAndEnergyMonitoringModule::setNumberOfTags(int n) {
-  power_data_.reserve(n);
   aggregates_.reserve(n);
 }
 
 void LikwidPowerAndEnergyMonitoringModule::registerTag(const std::string& tag) {
-  assert((power_data_.count(tag) == 0) &&
+  assert((aggregates_.count(tag) == 0) &&
          "At least one tag has been registered twice");
-  power_data_[tag].resize(number_of_sockets_);
 
-  auto& vec_array_value = aggregates_[tag];
-  vec_array_value.resize(number_of_sockets_);
-
-  // For all sockets...
-  for (auto& array_value : vec_array_value) {
-    // initialize array of aggregates to zero
-    std::fill(array_value.begin(), array_value.end(), 0.0);
-  }
+  auto& array = aggregates_[tag];
+  std::fill(array.begin(), array.end(), 0.0);
 }
 
 void LikwidPowerAndEnergyMonitoringModule::start(const std::string& tag) {
-  assert(power_data_.count(tag) && "Unregistered tag encountered");
+  number_of_rapl_reads_ = 1;
 
-  // For all sockets...
-  auto& vec_array_power_data = power_data_[tag];
+  // For all profiled power types...
+  for (int j = 0; j < kNumberOfProfiledPowerTypes; j++) {
+    // start power measurement
+    power_start(&power_data_[j], state_.cpu_, kProfiledPowerTypes[j]);
+  }
 
-  for (int i = 0; i < number_of_sockets_; i++) {
-    // for all profiled power types...
-    for (int j = 0; j < kNumberOfProfiledPowerTypes; j++) {
-      // start power measurement
-      power_start(&vec_array_power_data[i][j], cpuid_of_sockets_[i],
-                  kProfiledPowerTypes[j]);
+  // poll until rapl counter update occurs
+  uint32_t old_values[kNumberOfProfiledPowerTypes],
+      new_values[kNumberOfProfiledPowerTypes];
+  for (int i = 0; i < kNumberOfProfiledPowerTypes; i++) {
+    power_read(state_.cpu_, powertype_to_register.at(kProfiledPowerTypes[i]),
+               &old_values[i]);
+  }
+  while (true) {
+    number_of_rapl_reads_++;
+    for (int i = 0; i < kNumberOfProfiledPowerTypes; i++) {
+      power_read(state_.cpu_, powertype_to_register.at(kProfiledPowerTypes[i]),
+                 &new_values[i]);
+    }
+
+    bool all_updated = true;
+    for (int i = 0; i < kNumberOfProfiledPowerTypes; i++) {
+      all_updated &= (old_values[i] != new_values[i]);
+    }
+    if (all_updated) {
+      break;
     }
   }
 }
 
 void LikwidPowerAndEnergyMonitoringModule::stop(const std::string& tag) {
-  assert(power_data_.count(tag) && "Unregistered tag encountered");
+  assert(aggregates_.count(tag) && "Unregistered tag encountered");
 
-  // Stop all measurements first
-  auto& vec_array_power_data = power_data_[tag];
-
-  // For all sockets
-  for (int i = 0; i < number_of_sockets_; i++) {
-    // for all profiled power types
-    for (int j = 0; j < kNumberOfProfiledPowerTypes; j++) {
-      // stop power measurement
-      power_stop(&vec_array_power_data[i][j], cpuid_of_sockets_[i],
-                 kProfiledPowerTypes[j]);
+  // poll until rapl counter update occurs
+  uint32_t old_values[kNumberOfProfiledPowerTypes],
+      new_values[kNumberOfProfiledPowerTypes];
+  for (int i = 0; i < kNumberOfProfiledPowerTypes; i++) {
+    power_read(state_.cpu_, powertype_to_register.at(kProfiledPowerTypes[i]),
+               &old_values[i]);
+  }
+  while (true) {
+    number_of_rapl_reads_++;
+    for (int i = 0; i < kNumberOfProfiledPowerTypes; i++) {
+      power_read(state_.cpu_, powertype_to_register.at(kProfiledPowerTypes[i]),
+                 &new_values[i]);
     }
+
+    bool all_updated = true;
+    for (int i = 0; i < kNumberOfProfiledPowerTypes; i++) {
+      all_updated &= (old_values[i] != new_values[i]);
+    }
+    if (all_updated) {
+      break;
+    }
+  }
+
+  // For all profiled power types
+  for (int j = 0; j < kNumberOfProfiledPowerTypes; j++) {
+    // stop power measurement
+    power_stop(&power_data_[j], state_.cpu_, kProfiledPowerTypes[j]);
   }
 
   // then update all aggregates
   auto& vec_array_value = aggregates_[tag];
 
-  // For all sockets
-  for (int i = 0; i < number_of_sockets_; i++) {
-    // for all power types
-    for (int j = 0; j < kNumberOfProfiledPowerTypes; j++) {
-      vec_array_value[i][j] += power_printEnergy(&vec_array_power_data[i][j]);
-    }
+  // for all power types
+  for (int j = 0; j < kNumberOfProfiledPowerTypes; j++) {
+    vec_array_value[j] += power_printEnergy(&power_data_[j]) -
+                          number_of_rapl_reads_ * penality_per_rapl_read_[j];
   }
 }
 
 void LikwidPowerAndEnergyMonitoringModule::writeToOstream(
     std::ostream* os) const {
   // For all tags
-  for (const auto& tag_vec_array_value_pair : aggregates_) {
-    // for all sockets
-    for (int i = 0;
-         i < static_cast<int>(tag_vec_array_value_pair.second.size()); i++) {
-      // for all profiled power types
-      for (int j = 0; j < kNumberOfProfiledPowerTypes; j++) {
-        *os << "PowerAndEnergyMonitoringModule "
-            << tag_vec_array_value_pair.first << " socket" << i << " "
-            << powerTypeToString(kProfiledPowerTypes[j]) << " "
-            << tag_vec_array_value_pair.second[i][j] << std::endl;
-      }
+  for (const auto& tag_array_pair : aggregates_) {
+    // for all power types
+    for (int j = 0; j < kNumberOfProfiledPowerTypes; j++) {
+      *os << "PowerAndEnergyMonitoringModule: " << tag_array_pair.first << " "
+          << powerTypeToString(kProfiledPowerTypes[j]) << " "
+          << tag_array_pair.second[j] << std::endl;
     }
   }
 }
