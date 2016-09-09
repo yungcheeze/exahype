@@ -78,6 +78,7 @@ tarch::logging::Log exahype::mappings::MarkingForAugmentation::_log(
 
 void exahype::mappings::MarkingForAugmentation::beginIteration(
   exahype::State& solverState) {
+  _state = solverState;
 }
 
 void exahype::mappings::MarkingForAugmentation::enterCell(
@@ -211,8 +212,11 @@ void exahype::mappings::MarkingForAugmentation::enterCell(
 //    if (refineFineGridCell && _state->refineInitialGridInTouchVertexLastTime()) { // TODO what is going on here?
     if (refineFineGridCell) {
       dfor2(v)
-        if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
-            exahype::Vertex::Records::RefinementControl::Unrefined) {
+        if (
+          fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==exahype::Vertex::Records::RefinementControl::Unrefined
+	  &&
+	  _state.refineInitialGridInTouchVertexLastTime()
+	) {
           fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
         }
       enddforx
@@ -585,8 +589,8 @@ exahype::mappings::MarkingForAugmentation::~MarkingForAugmentation() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::MarkingForAugmentation::MarkingForAugmentation(
-    const MarkingForAugmentation& masterThread) {
-  // do nothing
+  const MarkingForAugmentation& masterThread):
+  _state(masterThread._state) {
 }
 
 void exahype::mappings::MarkingForAugmentation::mergeWithWorkerThread(

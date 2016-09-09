@@ -163,15 +163,18 @@ pylab.xlabel('cores')
 experimentSetCounter =  0
 for (table,label) in zip(args.table,args.experimentdescription):
   print "read " + table
-  maxLevel = runtimeParser.readColumnFromTable(table,1)
-  if len(maxLevel)>0 and maxLevel[-1]==0:
-    print "WARNING: max level seems not to have been plotted (perhaps code had been translated without -DTrackGridStatistics). Assume increase by one per table"
-    maxLevel[-1] = experimentSetCounter   
-  if len(maxLevel)>0:
+  maxLevel      = runtimeParser.readColumnFromTable(table,1)
+  # normalisation = 1.0
+  #if len(maxLevel)>0 and maxLevel[-1]==0:
+  #  print "WARNING: max level seems not to have been plotted (perhaps code had been translated without -DTrackGridStatistics). Assume increase by one per table"
+  normalisation = 1.0/(3**(experimentSetCounter*dim))
+  print "normalise with " + str(normalisation)
+  if len(maxLevel)>0  and maxLevel[-1]>0:
     normalisation = 1.0/(3**(maxLevel[-1]*dim))
-    addData(table,normalisation,table==args.table[0],experimentSetCounter,label)
-  else:
-    print "WARNING: Could not determine max level for table " + table
+    print "reset normalisation to " + str(normalisation)
+
+  addData(table,normalisation,table==args.table[0],experimentSetCounter,label)
+
   experimentSetCounter = experimentSetCounter + 1
 
 initGlobalPlotterSettings()

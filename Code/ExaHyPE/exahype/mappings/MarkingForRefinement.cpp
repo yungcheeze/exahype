@@ -211,7 +211,11 @@ void exahype::mappings::MarkingForRefinement::enterCell(
 //    if (refineFineGridCell && _state.refineInitialGridInTouchVertexLastTime()) {
     if (refineFineGridCell) {
       dfor2(v)
-        if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==exahype::Vertex::Records::RefinementControl::Unrefined) {
+        if (
+          fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==exahype::Vertex::Records::RefinementControl::Unrefined
+	  &&
+	  _state.refineInitialGridInTouchVertexLastTime()
+	) {
           fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
         }
       enddforx
@@ -532,7 +536,8 @@ exahype::mappings::MarkingForRefinement::~MarkingForRefinement() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::MarkingForRefinement::MarkingForRefinement(
-    const MarkingForRefinement& masterThread) {
+    const MarkingForRefinement& masterThread):
+    _state(masterThread._state) {
   // do nothing
 }
 
