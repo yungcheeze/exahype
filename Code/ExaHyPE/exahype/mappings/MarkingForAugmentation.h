@@ -52,6 +52,11 @@ class exahype::mappings::MarkingForAugmentation {
    */
   static tarch::logging::Log _log;
 
+  /**
+   * Local copy of the state.
+   */
+  exahype::State _state;
+
 //  #define logInfoM(a,b) std::cout << "[dominic-acer],rank:" << tarch::parallel::Node::getInstance().getRank() << " info         exahype::mappings::MarkingForAugmentation::" << a << " " << b << std::endl;
 
   /**

@@ -78,6 +78,7 @@ tarch::logging::Log exahype::mappings::MarkingForAugmentation::_log(
 
 void exahype::mappings::MarkingForAugmentation::beginIteration(
   exahype::State& solverState) {
+  _state = solverState;
 }
 
 void exahype::mappings::MarkingForAugmentation::enterCell(
