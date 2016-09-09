@@ -81,6 +81,8 @@ void exahype::mappings::MarkingForRefinement::beginIteration(
   _state = solverState;
 
   #ifdef Parallel
+  MetadataHeap::getInstance().finishedToSendSynchronousData();
+  DataHeap::getInstance().finishedToSendSynchronousData();
   MetadataHeap::getInstance().startToSendSynchronousData();
   DataHeap::getInstance().startToSendSynchronousData();
   #endif
@@ -88,11 +90,6 @@ void exahype::mappings::MarkingForRefinement::beginIteration(
 
 void exahype::mappings::MarkingForRefinement::endIteration(
     exahype::State& solverState) {
-
-  #ifdef Parallel
-  MetadataHeap::getInstance().finishedToSendSynchronousData();
-  DataHeap::getInstance().finishedToSendSynchronousData();
-  #endif
 }
 
 void exahype::mappings::MarkingForRefinement::enterCell(
@@ -232,7 +229,7 @@ void exahype::mappings::MarkingForRefinement::prepareCopyToRemoteNode(
     exahype::Cell& localCell, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-//  return;
+  return;
 
   if (localCell.isInside() && localCell.isInitialised()) {
     exahype::solvers::ADERDGSolver::sendCellDescriptions(toRank,localCell.getCellDescriptionsIndex(),
@@ -287,7 +284,7 @@ void exahype::mappings::MarkingForRefinement::mergeWithRemoteDataDueToForkOrJoin
         exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
         int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
         const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-//  return; // TODO(Dominic): Remove
+  return; // TODO(Dominic): Remove
 
   if (localCell.isInside()) {
     if (!geometryInfoDoesMatch(localCell.getCellDescriptionsIndex(),cellCentre,cellSize,level)) {
