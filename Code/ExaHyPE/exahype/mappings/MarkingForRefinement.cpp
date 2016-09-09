@@ -232,7 +232,7 @@ void exahype::mappings::MarkingForRefinement::prepareCopyToRemoteNode(
     exahype::Cell& localCell, int toRank,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  return;
+//  return;
 
   if (localCell.isInside() && localCell.isInitialised()) {
     exahype::solvers::ADERDGSolver::sendCellDescriptions(toRank,localCell.getCellDescriptionsIndex(),
@@ -267,47 +267,6 @@ void exahype::mappings::MarkingForRefinement::prepareCopyToRemoteNode(
   }
 }
 
-//// TODO(Dominic): Add to docu: Make sure that ancestors and descendants
-//// at fork boundaries always hold face data.
-//// TODO(Dominic): Move change of type out of here to MarkingForAugmentation::enterCell(...)
-//void exahype::mappings::MarkingForRefinement::sendADERDGDataToMasterOrWorker(
-//    int cellDescriptionsIndex,
-//    int toRank,
-//    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-//    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-//  for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
-//    double* solution    = 0;
-//    int unknownsPerCell = 0;
-//
-//    switch(p.getType()) {
-//      case exahype::records::ADERDGCellDescription::Descendant:
-//      case exahype::records::ADERDGCellDescription::EmptyDescendant:
-//        p.setType(exahype::records::ADERDGCellDescription::Descendant);
-//        exahype::Cell::ensureNecessaryMemoryIsAllocated(p);
-//        break;
-//      case exahype::records::ADERDGCellDescription::Ancestor:
-//      case exahype::records::ADERDGCellDescription::EmptyAncestor:
-//        p.setType(exahype::records::ADERDGCellDescription::Ancestor);
-//        exahype::Cell::ensureNecessaryMemoryIsAllocated(p);
-//        break;
-//      case exahype::records::ADERDGCellDescription::Cell:
-//         solution        = DataHeap::getInstance().getData(p.getSolution()).data();
-//         unknownsPerCell = static_cast<exahype::solvers::ADERDGSolver*>(
-//                exahype::solvers::RegisteredSolvers[p.getSolverNumber()])->getUnknownsPerCell();
-//
-//         logDebug("sendADERDGDataToMasterOrWorker(...)","[solution] of solver " << p.getSolverNumber() << " sent to rank "<<toRank<<
-//             ", cell: "<< cellCentre << ", level: " << level);
-//
-//        DataHeap::getInstance().sendData(
-//            solution, unknownsPerCell, toRank, cellCentre, level,
-//            peano::heap::MessageType::ForkOrJoinCommunication);
-//        break;
-//      default:
-//        break;
-//      }
-//  }
-//}
-
 void exahype::mappings::MarkingForRefinement::receiveDataFromMaster(
     exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
     const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
@@ -328,7 +287,7 @@ void exahype::mappings::MarkingForRefinement::mergeWithRemoteDataDueToForkOrJoin
         exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
         int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
         const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  return; // TODO(Dominic): Remove
+//  return; // TODO(Dominic): Remove
 
   if (localCell.isInside()) {
     if (!geometryInfoDoesMatch(localCell.getCellDescriptionsIndex(),cellCentre,cellSize,level)) {
@@ -394,54 +353,11 @@ bool exahype::mappings::MarkingForRefinement::geometryInfoDoesMatch(
   return true;
 }
 
-void exahype::mappings::MarkingForRefinement::receiveADERDGDataFromMasterOrWorker(
-    const int cellDescriptionsIndex,
-    const int fromRank,
-    const peano::heap::MessageType& messageType,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-    const tarch::la::Vector<DIMENSIONS, double>& cellSize,
-    const int level,
-    const int receivedMetadataIndex) {
-  assertion1(messageType==peano::heap::MessageType::MasterWorkerCommunication ||
-            messageType==peano::heap::MessageType::ForkOrJoinCommunication,peano::heap::toString(messageType));
-  assertion(!MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
-  exahype::MetadataHeap::HeapEntries neighbourCellTypes =
-      MetadataHeap::getInstance().getData(receivedMetadataIndex);
-
-  for (int solverNumber=exahype::solvers::RegisteredSolvers.size()-1; solverNumber>0; --solverNumber) {
-    const int typeAsInt = neighbourCellTypes[solverNumber].getU();
-    exahype::records::ADERDGCellDescription::Type neighbourType =
-        static_cast<exahype::records::ADERDGCellDescription::Type>(typeAsInt);
-    assertion1(neighbourType==exahype::records::ADERDGCellDescription::Cell
-        ||neighbourType==exahype::records::ADERDGCellDescription::Ancestor
-        ||neighbourType==exahype::records::ADERDGCellDescription::Descendant,neighbourType);
-    // 2. Receive solution values if necessary
-    if (neighbourType==exahype::records::ADERDGCellDescription::Cell) {
-      for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
-        if (p.getSolverNumber() == solverNumber) {
-          assertion5(tarch::la::equals(cellCentre,p.getOffset()+0.5*p.getSize()),
-              cellCentre,cellSize,p.getOffset()+0.5*p.getSize(),level,p.getLevel());
-          assertion2(p.getLevel()==level,p.getLevel(),level);
-
-          if (p.getType()==exahype::records::ADERDGCellDescription::Cell) {
-            logDebug("mergeWithRemoteDataDueToForkOrJoin(...)","[solution] receive from rank "<<fromRank<<
-                ", cell: "<< cellCentre << ", level: " << level);
-
-            DataHeap::getInstance().receiveData(
-                p.getSolution(), fromRank, cellCentre, level,
-                peano::heap::MessageType::ForkOrJoinCommunication);
-          }
-        }
-      }
-    }
-  }
-}
 
 //
 // Below all methods are nop.
 //
 // ====================================
-
 
 
 void exahype::mappings::MarkingForRefinement::mergeWithNeighbour(
