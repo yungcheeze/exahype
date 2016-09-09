@@ -172,15 +172,15 @@ void exahype::mappings::Augmentation::ascend(
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell) {
+  // TODO(Dominic,25.08.2016): Seems to work now. Mesh is however oscillating if MPI is
+  // active. Have to consider MPI boundaries.
+
+  #ifdef Parallel
+    return;
+  #endif
+
   logTraceInWith2Arguments("ascend(...)", coarseGridCell.toString(),
                            coarseGridVerticesEnumerator.toString());
-
-// TODO(Dominic,25.08.2016): Seems to work now. Mesh is however oscillating if MPI is
-// active. Have to consider MPI boundaries.
-
-#ifdef Parallel
-  return;
-#endif
 
   if (coarseGridCell.isInitialised()) {
     for (auto& pCoarse : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(

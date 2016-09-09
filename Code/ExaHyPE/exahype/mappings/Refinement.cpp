@@ -199,9 +199,6 @@ void exahype::mappings::Refinement::ascend(
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     exahype::Cell& coarseGridCell) {
-  logTraceInWith2Arguments("ascend(...)", coarseGridCell.toString(),
-                           coarseGridVerticesEnumerator.toString());
-
   // TODO(Dominic,25.08.2016): Might nearly work now thanks to
   // the new adjacency inf. consistency check. Mesh is however oscillating if MPI is
   // active. Have to consider MPI boundaries.
@@ -211,6 +208,9 @@ void exahype::mappings::Refinement::ascend(
 #ifdef Parallel
   return;
 #endif
+
+  logTraceInWith2Arguments("ascend(...)", coarseGridCell.toString(),
+                           coarseGridVerticesEnumerator.toString());
 
   if (coarseGridCell.isInitialised()) {
     for (auto& pCoarse : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(

@@ -217,6 +217,11 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
 void exahype::mappings::TimeStepSizeComputation::beginIteration(
     exahype::State& solverState) {
   prepareEmptyLocalTimeStepData();
+
+  #ifdef Parallel
+  DataHeap::getInstance().finishedToSendSynchronousData(); // See method documentation.
+  DataHeap::getInstance().startToSendSynchronousData(); // See method documentation.
+  #endif
 }
 
 void exahype::mappings::TimeStepSizeComputation::endIteration(
@@ -247,7 +252,6 @@ void exahype::mappings::TimeStepSizeComputation::prepareSendToMaster(
     const exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   // TODO(Dominic): Merge with other Master-Worker exchanges: FaceUnknownsProjection
-  DataHeap::getInstance().startToSendSynchronousData(); // See method documentation.
 
   for (auto dt : _minTimeStepSizes) {
     assertion1(dt>0,dt);
@@ -285,8 +289,6 @@ void exahype::mappings::TimeStepSizeComputation::mergeWithMaster(
       fineGridVerticesEnumerator.getCellCenter(),
       fineGridVerticesEnumerator.getLevel(),
       peano::heap::MessageType::MasterWorkerCommunication);
-
-  DataHeap::getInstance().finishedToSendSynchronousData(); // See method documentation.
 
   for (int i = 0; i < static_cast<int>(_minTimeStepSizes.size()); i++) {
     _minTimeStepSizes[i] =

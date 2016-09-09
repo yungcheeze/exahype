@@ -106,18 +106,10 @@ void exahype::mappings::Reduction::enterCell(
   // do nothing
 }
 
-void exahype::mappings::Reduction::beginIteration(
-    exahype::State& solverState) {
-  // do nothing
-}
-
-void exahype::mappings::Reduction::endIteration(
-    exahype::State& solverState) {
-  // do nothing
-}
-
 #ifdef Parallel
-// Worker-master comm. Send to master.
+///////////////////////////////////////
+// WORKER->MASTER
+///////////////////////////////////////
 void exahype::mappings::Reduction::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
@@ -125,25 +117,38 @@ void exahype::mappings::Reduction::prepareSendToMaster(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     const exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-//  // 1. Send metadata to master
-//  // 1. Send solver time step sizes to master
-//  // 2. Send face data+volume data to master
-//  // TODO(Dominic): Please implement the rest.
-//  DataHeap::getInstance().startToSendSynchronousData(); // See method documentation.
-//
-//  for (auto dt : _minTimeStepSizes) {
-//    assertion1(dt>0,dt);
-//  }
-//
-//  DataHeap::getInstance().sendData(
-//      _minTimeStepSizes.data(),_minTimeStepSizes.size(),
-//      tarch::parallel::NodePool::getInstance().getMasterRank(),
-//      verticesEnumerator.getCellCenter(),
-//      verticesEnumerator.getLevel(),
-//      peano::heap::MessageType::MasterWorkerCommunication);
+  // TODO(Dominic): Move down if code below is verified.
+  return;
+
+  if (localCell.isInside() && localCell.isInitialised()) {
+    int solverNumber=0;
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      int element = solver->tryGetElement(localCell.getCellDescriptionsIndex(),solverNumber);
+      if (element!=exahype::solvers::Solver::NotFound) {
+        solver->sendDataToMaster(
+            tarch::parallel::NodePool::getInstance().getMasterRank(),
+            localCell.getCellDescriptionsIndex(),
+            element,
+            verticesEnumerator.getCellCenter(),
+            verticesEnumerator.getLevel());
+      } else {
+        solver->sendEmptyDataToMaster(
+            tarch::parallel::NodePool::getInstance().getMasterRank(),
+            verticesEnumerator.getCellCenter(),
+            verticesEnumerator.getLevel());
+      }
+      ++solverNumber;
+    }
+  } else if (localCell.isInside() && !localCell.isInitialised()) {
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      solver->sendEmptyDataToMaster(
+          tarch::parallel::NodePool::getInstance().getMasterRank(),
+          verticesEnumerator.getCellCenter(),
+          verticesEnumerator.getLevel());
+    }
+  } //  else  do nothing
 }
 
-// Worker-master comm. Receive from worker.
 void exahype::mappings::Reduction::mergeWithMaster(
     const exahype::Cell& workerGridCell,
     exahype::Vertex* const workerGridVertices,
@@ -156,39 +161,53 @@ void exahype::mappings::Reduction::mergeWithMaster(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker, const exahype::State& workerState,
     exahype::State& masterState) {
-  // 1. Send metadata to master
-  // 1. Send solver time step sizes to master
-  // 2. Send face data+volume data to master
-  // TODO(Dominic): Please implement the rest.
+  // TODO(Dominic): Or receive data from master here?
 
-//  for (auto dt : _minTimeStepSizes) {
-//    assertion1(dt>0.0,dt);
-//  } // Dead code elimination will get rid of this loop if Debug/Asserts flag is not set.
+  return; // TODO(Dominic): I know this.
 
-//  std::vector<double> receivedMinTimeStepSizes(_minTimeStepSizes.size());
-//  DataHeap::getInstance().receiveData(
-//      receivedMinTimeStepSizes.data(),receivedMinTimeStepSizes.size(),
-//      worker,
-//      fineGridVerticesEnumerator.getCellCenter(),
-//      fineGridVerticesEnumerator.getLevel(),
-//      peano::heap::MessageType::MasterWorkerCommunication);
-//
-//  DataHeap::getInstance().finishedToSendSynchronousData(); // See method documentation.
-//
-//  for (int i = 0; i < static_cast<int>(_minTimeStepSizes.size()); i++) {
-//    _minTimeStepSizes[i] =
-//        std::min(_minTimeStepSizes[i], receivedMinTimeStepSizes[i]);
-//  }
-//
-//  for (auto dt : receivedMinTimeStepSizes) {
-//    assertion1(dt>0.0,dt);
-//  } // Dead code elimination will get rid of this.
-//  for (auto dt : _minTimeStepSizes) {
-//    assertion1(dt>0.0,dt);
-//  } // Dead code elimination will get rid of this loop if Debug/Asserts flag is not set.
+  if (fineGridCell.isInside() && fineGridCell.isInitialised()) {
+    int receivedMetadataIndex = exahype::MetadataHeap::getInstance().createData(
+        0,exahype::solvers::RegisteredSolvers.size());
+    exahype::MetadataHeap::getInstance().receiveData(receivedMetadataIndex,worker,
+        fineGridVerticesEnumerator.getCellCenter(),
+        fineGridVerticesEnumerator.getLevel(),
+        peano::heap::MessageType::MasterWorkerCommunication);
+    int solverNumber=0;
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+
+      if (element!=exahype::solvers::Solver::NotFound) {
+        solver->mergeWithWorkerData(worker,
+                  fineGridCell.getCellDescriptionsIndex(),element,
+                  fineGridVerticesEnumerator.getCellCenter(),
+                  fineGridVerticesEnumerator.getLevel());
+      } else {
+        solver->dropWorkerData(worker,
+            fineGridVerticesEnumerator.getCellCenter(),
+            fineGridVerticesEnumerator.getLevel());
+      }
+
+      ++solverNumber;
+    }
+    exahype::MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
+  } else if (fineGridCell.isInside() && !fineGridCell.isInitialised()) {
+    exahype::Vertex::dropMetadata(worker,
+        peano::heap::MessageType::MasterWorkerCommunication,
+        fineGridVerticesEnumerator.getCellCenter(),
+        fineGridVerticesEnumerator.getLevel());
+
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      solver->dropWorkerData(
+          worker,
+          fineGridVerticesEnumerator.getCellCenter(),
+          fineGridVerticesEnumerator.getLevel());
+    }
+  } // else do nothing
 }
 
-
+//
+// Below all functions are nop.
+//
 bool exahype::mappings::Reduction::prepareSendToWorker(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -197,18 +216,36 @@ bool exahype::mappings::Reduction::prepareSendToWorker(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker) {
-// TODO(Dominic): Please implement.
-//  if (
-//    !peano::parallel::loadbalancing::Oracle::getInstance().isLoadBalancingActivated()
-//    &&
-//    SkipReductionInBatchedTimeSteps
-//  ) {
-//    return false;
-//  }
-//  else return true;
+  // do nothing
   return false;
 }
 
+void exahype::mappings::Reduction::receiveDataFromMaster(
+    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
+    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
+    exahype::Vertex* const receivedCoarseGridVertices,
+    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
+    exahype::Cell& receivedCoarseGridCell,
+    exahype::Vertex* const workersCoarseGridVertices,
+    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
+    exahype::Cell& workersCoarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
+void exahype::mappings::Reduction::mergeWithWorker(
+    exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
+  // do nothing
+}
+
+void exahype::mappings::Reduction::mergeWithWorker(
+    exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // do nothing
+}
 
 void exahype::mappings::Reduction::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
@@ -254,33 +291,6 @@ void exahype::mappings::Reduction::
         const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }
-
-void exahype::mappings::Reduction::receiveDataFromMaster(
-    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
-    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
-    exahype::Vertex* const receivedCoarseGridVertices,
-    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
-    exahype::Cell& receivedCoarseGridCell,
-    exahype::Vertex* const workersCoarseGridVertices,
-    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
-    exahype::Cell& workersCoarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
-}
-
-void exahype::mappings::Reduction::mergeWithWorker(
-    exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  // do nothing
-}
-
-void exahype::mappings::Reduction::mergeWithWorker(
-    exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& x,
-    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // do nothing
-}
 #endif
 
 exahype::mappings::Reduction::Reduction() {
@@ -288,6 +298,16 @@ exahype::mappings::Reduction::Reduction() {
 }
 
 exahype::mappings::Reduction::~Reduction() {
+  // do nothing
+}
+
+void exahype::mappings::Reduction::beginIteration(
+    exahype::State& solverState) {
+  // do nothing
+}
+
+void exahype::mappings::Reduction::endIteration(
+    exahype::State& solverState) {
   // do nothing
 }
 

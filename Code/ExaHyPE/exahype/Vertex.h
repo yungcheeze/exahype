@@ -195,6 +195,48 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
   }
 
   /**
+   * Send metadata to rank \p toRank.
+   */
+  static void sendMetadata(
+      const int                                   toRank,
+      const int                                   cellDescriptionsIndex,
+      const peano::heap::MessageType&             messageType,
+      const tarch::la::Vector<DIMENSIONS,double>& x,
+      const int                                   level) {
+    MetadataHeap::HeapEntries encodedMetadata =
+        encodeMetadata(cellDescriptionsIndex);
+    MetadataHeap::getInstance().sendData(
+        encodedMetadata,toRank,x,level,messageType);
+  }
+
+  /**
+   * Send a metadata sequence filled with InvalidMetadataEntry
+   * to rank \p toRank.
+   */
+  static void sendMetadataWithInvalidEntries(
+      const int                                   toRank,
+      const peano::heap::MessageType&             messageType,
+      const tarch::la::Vector<DIMENSIONS,double>& x,
+      const int                                   level) {
+    MetadataHeap::HeapEntries encodedMetadata =
+        createEncodedMetadataSequenceWithInvalidEntries();
+    MetadataHeap::getInstance().sendData(
+        encodedMetadata,toRank,x,level,messageType);
+  }
+
+  /**
+   * Drop metadata sent by rank \p fromRank.
+   */
+  static void dropMetadata(
+      const int                                   fromRank,
+      const peano::heap::MessageType&             messageType,
+      const tarch::la::Vector<DIMENSIONS,double>& x,
+      const int                                   level) {
+    MetadataHeap::getInstance().receiveData(
+        fromRank,x,level,messageType);
+  }
+
+  /**
    * Returns if this vertex needs to send a metadata message to a remote rank \p toRank.
    *
    * We need to send a message to remote rank \p roRank if both ranks
