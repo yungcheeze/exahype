@@ -61,7 +61,7 @@ ifeq ($(call tolower,$(MODE)),release)
 else ifeq ($(call tolower,$(MODE)),debug)
   # Settings for the Debug mode
   # --------------------------------------------
-  COMPILER_CFLAGS += -DDebug -DAsserts
+  COMPILER_CFLAGS += -DDebug -DAsserts -DTrackGridStatistics
   COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),profile)
@@ -73,7 +73,7 @@ else ifeq ($(call tolower,$(MODE)),profile)
 else ifeq ($(call tolower,$(MODE)),asserts)
   # Settings for the Adderst mode
   # --------------------------------------------
-  COMPILER_CFLAGS += -DAsserts -g3
+  COMPILER_CFLAGS += -DAsserts -g3 -DTrackGridStatistics
   COMPILER_LFLAGS += -g3
 
 else
