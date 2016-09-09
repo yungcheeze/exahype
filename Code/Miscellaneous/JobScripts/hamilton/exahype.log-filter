@@ -20,6 +20,7 @@ info               peano    -1                      black
 #
 info             peano::utils::UserInterface    -1  white
 info             exahype                        -1  white
+info             exahype::tests                 -1  black
 
 
 info             sharedmemoryoracles  -1            white
@@ -33,4 +34,5 @@ info             ::InitialData                     -1   black
 info             ::main                            -1   black
 
 info             exahype::mappings::MarkingForRefinement -1 black
+info             peano::grid::nodes::Node::update        -1 black
 

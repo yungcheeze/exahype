@@ -20,43 +20,47 @@
 #include "multiscalelinkedcell/HangingVertexBookkeeper.h"
 
 namespace {
-constexpr const char* tags[]{
-    "solutionUpdate",           "volumeIntegral",
-    "surfaceIntegral",          "riemannADERDGSolver",
-    "spaceTimePredictor",       "stableTimeStepSize",
-    "solutionAdjustment",       "faceUnknownsProlongation",
-    "faceUnknownsRestriction",  "volumeUnknownsProlongation",
-    "volumeUnknownsRestriction"};
+constexpr const char* tags[]{"solutionUpdate",
+                             "volumeIntegral",
+                             "surfaceIntegral",
+                             "riemannSolver",
+                             "spaceTimePredictor",
+                             "stableTimeStepSize",
+                             "solutionAdjustment",
+                             "faceUnknownsProlongation",
+                             "faceUnknownsRestriction",
+                             "volumeUnknownsProlongation",
+                             "volumeUnknownsRestriction",
+                             "boundaryConditions"};
 }  // namespace
 
 exahype::solvers::ADERDGSolver::ADERDGSolver(
-    const std::string& identifier,
-    int numberOfVariables, int numberOfParameters, int nodesPerCoordinateAxis,
-    double maximumMeshSize,
+    const std::string& identifier, int numberOfVariables,
+    int numberOfParameters, int nodesPerCoordinateAxis, double maximumMeshSize,
     exahype::solvers::Solver::TimeStepping timeStepping,
-    std::unique_ptr<profilers::Profiler> profiler):
-  Solver(
-    identifier,Solver::Type::ADER_DG,
-    numberOfVariables,
-    numberOfParameters,
-    nodesPerCoordinateAxis,
-    maximumMeshSize,
-    timeStepping,
-    std::move(profiler)
-  ),
-      _unknownsPerFace(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
+    std::unique_ptr<profilers::Profiler> profiler)
+    : Solver(identifier, Solver::Type::ADER_DG, numberOfVariables,
+             numberOfParameters, nodesPerCoordinateAxis, maximumMeshSize,
+             timeStepping, std::move(profiler)),
+      _unknownsPerFace(numberOfVariables *
+                       power(nodesPerCoordinateAxis, DIMENSIONS - 1)),
       _unknownsPerCellBoundary(DIMENSIONS_TIMES_TWO * _unknownsPerFace),
-      _unknownsPerCell(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
-      _fluxUnknownsPerCell(_unknownsPerCell * (DIMENSIONS+1)), // +1 for sources
-      _spaceTimeUnknownsPerCell(numberOfVariables * power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
-      _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell * (DIMENSIONS+1)), // +1 for sources
-      _dataPerCell(numberOfVariables*power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
+      _unknownsPerCell(numberOfVariables *
+                       power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
+      _fluxUnknownsPerCell(_unknownsPerCell *
+                           (DIMENSIONS + 1)),  // +1 for sources
+      _spaceTimeUnknownsPerCell(numberOfVariables *
+                                power(nodesPerCoordinateAxis, DIMENSIONS + 1)),
+      _spaceTimeFluxUnknownsPerCell(_spaceTimeUnknownsPerCell *
+                                    (DIMENSIONS + 1)),  // +1 for sources
+      _dataPerCell(numberOfVariables *
+                   power(nodesPerCoordinateAxis, DIMENSIONS + 0)),
       _minCorrectorTimeStamp(std::numeric_limits<double>::max()),
       _minPredictorTimeStamp(std::numeric_limits<double>::max()),
       _minCorrectorTimeStepSize(std::numeric_limits<double>::max()),
       _minPredictorTimeStepSize(std::numeric_limits<double>::max()),
       _minNextPredictorTimeStepSize(std::numeric_limits<double>::max()) {
-  assertion(numberOfParameters==0);
+  assertion(numberOfParameters == 0);
   // register tags with profiler
   for (const char* tag : tags) {
     _profiler->registerTag(tag);
@@ -86,7 +90,6 @@ int exahype::solvers::ADERDGSolver::getNodesPerCoordinateAxis() const {
 double exahype::solvers::ADERDGSolver::getMaximumMeshSize() const {
   return _maximumMeshSize;
 }
-
 
 int exahype::solvers::ADERDGSolver::getUnknownsPerFace() const {
   return _unknownsPerFace;
@@ -162,18 +165,22 @@ void exahype::solvers::ADERDGSolver::startNewTimeStep() {
   }
 }
 
-
-void exahype::solvers::ADERDGSolver::updateMinNextPredictorTimeStepSize(const double& minNextPredictorTimeStepSize) {
+void exahype::solvers::ADERDGSolver::updateMinNextPredictorTimeStepSize(
+    const double& minNextPredictorTimeStepSize) {
   switch (_timeStepping) {
     case TimeStepping::Global:
-      _minNextPredictorTimeStepSize = std::min(_minNextPredictorTimeStepSize, minNextPredictorTimeStepSize);
+      _minNextPredictorTimeStepSize =
+          std::min(_minNextPredictorTimeStepSize, minNextPredictorTimeStepSize);
       break;
     case TimeStepping::GlobalFixed:
-      _minNextPredictorTimeStepSize = _minNextPredictorTimeStepSize==std::numeric_limits<double>::max() ? std::min(_minNextPredictorTimeStepSize, minNextPredictorTimeStepSize) : _minNextPredictorTimeStepSize;
+      _minNextPredictorTimeStepSize =
+          _minNextPredictorTimeStepSize == std::numeric_limits<double>::max()
+              ? std::min(_minNextPredictorTimeStepSize,
+                         minNextPredictorTimeStepSize)
+              : _minNextPredictorTimeStepSize;
       break;
   }
 }
-
 
 double exahype::solvers::ADERDGSolver::getMinNextPredictorTimeStepSize() const {
   return _minNextPredictorTimeStepSize;

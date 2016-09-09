@@ -92,16 +92,13 @@ public:
    */
   typedef peano::heap::PlainHeap<exahype::records::FiniteVolumesCellDescription> Heap;
 
-  FiniteVolumesSolver(
-      const std::string& identifier,
-      int numberOfVariables,
-      int numberOfParameters,
-      int nodesPerCoordinateAxis,
-      double maximumMeshSize,
-      exahype::solvers::Solver::TimeStepping timeStepping,
-      std::unique_ptr<profilers::Profiler> profiler =
-          std::unique_ptr<profilers::Profiler>( new profilers::simple::NoOpProfiler)
-  );
+  FiniteVolumesSolver(const std::string& identifier, int numberOfVariables,
+                      int numberOfParameters, int nodesPerCoordinateAxis,
+                      double maximumMeshSize,
+                      exahype::solvers::Solver::TimeStepping timeStepping,
+                      std::unique_ptr<profilers::Profiler> profiler =
+                          std::unique_ptr<profilers::Profiler>(
+                              new profilers::simple::NoOpProfiler("")));
 
   virtual ~FiniteVolumesSolver() {}
 
@@ -119,7 +116,9 @@ public:
   /**
    *
    */
-  virtual void solutionAdjustment( double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) = 0;
+  virtual void solutionAdjustment(
+      double* luh, const tarch::la::Vector<DIMENSIONS, double>& center,
+      const tarch::la::Vector<DIMENSIONS, double>& dx, double t, double dt) = 0;
 
   virtual bool hasToAdjustSolution(
       const tarch::la::Vector<DIMENSIONS, double>& center,
@@ -137,7 +136,9 @@ public:
    *        possible. If maxAdmissibleDt<dt, then we know that no time
    *        step has been done.
    */
-  virtual void solutionUpdate(double* luh[THREE_POWER_D], const tarch::la::Vector<DIMENSIONS, double>& dx, const double dt, double& maxAdmissibleDt) = 0;
+  virtual void solutionUpdate(double* luh[THREE_POWER_D],
+                              const tarch::la::Vector<DIMENSIONS, double>& dx,
+                              const double dt, double& maxAdmissibleDt) = 0;
 
   virtual double getMinTimeStamp() const override;
 

@@ -3,25 +3,25 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #ifndef EXAHYPE_PARSER
 #define EXAHYPE_PARSER
 
 namespace exahype {
-  class Parser;
+class Parser;
 }
 
 #include <iostream>
 
-#include <vector>
 #include <map>
+#include <vector>
 
 #include "peano/utils/Globals.h"
 #include "tarch/la/Vector.h"
@@ -35,71 +35,78 @@ namespace exahype {
  * @author Tobias Weinzierl
  */
 class exahype::Parser {
-  public:
+ public:
+  /**
+   * View on the parser
+   *
+   * An instance of this class is a parser view. While the parser sees the
+   * whole specification file, a view only 'sees' the fragment that is
+   * specific to one solver. As such, we do pass it to solvers (that hold
+   * constants) and then allow these solvers to read their data from the
+   * config file.
+   *
+   * From the user's point of view, this class provides access to key-value
+   * pairs. If you have an instruction alike
+   * <pre>
+  constants         = {rho:0.4567,gamma:-4,alpha:4.04e-5,file:output}
+     </pre>
+   * in your
+   *
+   * @author Tobias Weinzierl
+   */
+  class ParserView {
+   private:
+    Parser& _parser;
+    int _solverNumberInSpecificationFile;
+
     /**
-     * View on the parser
-     *
-     * An instance of this class is a parser view. While the parser sees the
-     * whole specification file, a view only 'sees' the fragment that is
-     * specific to one solver. As such, we do pass it to solvers (that hold
-     * constants) and then allow these solvers to read their data from the
-     * config file.
-     *
-     * From the user's point of view, this class provides access to key-value
-     * pairs. If you have an instruction alike
-     * <pre>
-    constants         = {rho:0.4567,gamma:-4,alpha:4.04e-5,file:output}
-       </pre>
-     * in your
-     *
-     * @author Tobias Weinzierl
+     * @return Value for given key. Returns the empty string if there is no
+     *         value. Returns std::npos if the key does not exist.
      */
-    class ParserView {
-      private:
-        Parser&  _parser;
-        int      _solverNumberInSpecificationFile;
+    std::string getValue(const std::string selector,
+                         const std::string& key) const;
 
-        /**
-         * @return Value for given key. Returns the empty string if there is no
-         *         value. Returns std::npos if the key does not exist.
-         */
-        std::string getValue(const std::string selector, const std::string& key) const;
-      public:
-        ParserView( Parser& parser, int solverNumberInSpecificationFile );
+   public:
+    ParserView(Parser& parser, int solverNumberInSpecificationFile);
 
-        /**
-         * You may use keys without a value. This operation allows you to check
-         * whether there are such keys. Furthermore, you might use this guy as
-         * a preamble to the other getters.
-         */
-        bool hasKey(const std::string& key) const;
+    /**
+     * You may use keys without a value. This operation allows you to check
+     * whether there are such keys. Furthermore, you might use this guy as
+     * a preamble to the other getters.
+     */
+    bool hasKey(const std::string& key) const;
 
-        /**
-         * Please ensure that isValueValidXXX holds before you invoke this operation.
-         */
-        bool        getValueAsBool(const std::string& key) const;
+    /**
+     * Please ensure that isValueValidXXX holds before you invoke this
+     * operation.
+     */
+    bool getValueAsBool(const std::string& key) const;
 
-        /**
-         * Please ensure that isValueValidXXX holds before you invoke this operation.
-         */
-        int         getValueAsInt(const std::string& key) const;
+    /**
+     * Please ensure that isValueValidXXX holds before you invoke this
+     * operation.
+     */
+    int getValueAsInt(const std::string& key) const;
 
-        /**
-         * Please ensure that isValueValidXXX holds before you invoke this operation.
-         */
-        double      getValueAsDouble(const std::string& key) const;
+    /**
+     * Please ensure that isValueValidXXX holds before you invoke this
+     * operation.
+     */
+    double getValueAsDouble(const std::string& key) const;
 
-        /**
-         * Please ensure that isValueValidXXX holds before you invoke this operation.
-         */
-        std::string getValueAsString(const std::string& key) const;
+    /**
+     * Please ensure that isValueValidXXX holds before you invoke this
+     * operation.
+     */
+    std::string getValueAsString(const std::string& key) const;
 
-        bool  isValueValidBool(const std::string& key) const;
-        bool  isValueValidInt(const std::string& key) const;
-        bool  isValueValidDouble(const std::string& key) const;
-        bool  isValueValidString(const std::string& key) const;
-    };
-  private:
+    bool isValueValidBool(const std::string& key) const;
+    bool isValueValidInt(const std::string& key) const;
+    bool isValueValidDouble(const std::string& key) const;
+    bool isValueValidString(const std::string& key) const;
+  };
+
+ private:
   static tarch::logging::Log _log;
 
   std::vector<std::string> _tokenStream;
@@ -107,12 +114,13 @@ class exahype::Parser {
   /*
    * Helper map for converting strings to types.
    */
-  std::map<std::string,exahype::solvers::Solver::Type> _identifier2Type;
+  std::map<std::string, exahype::solvers::Solver::Type> _identifier2Type;
 
   /*
    * Helper map for converting strings to types.
    */
-  std::map<std::string,exahype::solvers::Solver::TimeStepping> _identifier2TimeStepping;
+  std::map<std::string, exahype::solvers::Solver::TimeStepping>
+      _identifier2TimeStepping;
 
   /**
    * Has to be static. If it is not static, then we can't modify it inside
@@ -134,6 +142,7 @@ class exahype::Parser {
   std::string getTokenAfter(std::string token0, int occurance0,
                             std::string token1, int occurance1,
                             int additionalTokensToSkip = 0) const;
+
  public:
   /**
    * Property strings in ExaHyPE are string alike "{all,left=0.5,Q4}". This
@@ -142,7 +151,8 @@ class exahype::Parser {
    * above. The routine returns nan if now entry is found or the entry's
    * value  is not a valid floating point number.
    */
-  static double getValueFromPropertyString( const std::string& parameterString, const std::string& key );
+  static double getValueFromPropertyString(const std::string& parameterString,
+                                           const std::string& key);
 
   Parser();
   virtual ~Parser() {}
@@ -158,9 +168,7 @@ class exahype::Parser {
     // evtl. spaeter mal InvadeSHM
   };
 
-  enum class MPILoadBalancingType {
-    Static
-  };
+  enum class MPILoadBalancingType { Static };
 
   void readFile(const std::string& filename);
 
@@ -187,24 +195,34 @@ class exahype::Parser {
   MulticoreOracleType getMulticoreOracleType() const;
 
   MPILoadBalancingType getMPILoadBalancingType() const;
-  std::string          getMPIConfiguration() const;
-  int                  getMPIBufferSize() const;
-  int                  getMPITimeOut() const;
+  std::string getMPIConfiguration() const;
+  int getMPIBufferSize() const;
+  int getMPITimeOut() const;
 
   double getSimulationEndTime() const;
 
   /**
-   * \return Indicates if the user has chosen the fused ADER-DG time stepping variant.
+   * \return Indicates if the user has chosen the fused ADER-DG time stepping
+   * variant.
    */
   bool getFuseAlgorithmicSteps() const;
 
   /**
-   * \return Time step size underestimation factor for the fused ADER-DG time stepping variant.
+   * \return Time step size underestimation factor for the fused ADER-DG time
+   * stepping variant.
    */
   double getFuseAlgorithmicStepsFactor() const;
 
   double getTimestepBatchFactor() const;
-  bool   getSkipReductionInBatchedTimeSteps() const;
+  bool getSkipReductionInBatchedTimeSteps() const;
+
+  /**
+   * If we batch time steps, we can in principle switch off the boundary data
+   * exchange, as ExaHyPE's data flow is realised through heaps. However, if we
+   * turn off the boundary exchange, we enforce that no AMR is done in-between
+   * domain boundaries.
+   */
+  bool getExchangeBoundaryDataInBatchedTimeSteps() const;
 
   /**
    * \return The type of a solver.
@@ -232,7 +250,8 @@ class exahype::Parser {
   int getOrder(int solverNumber) const;
 
   /**
-   * \return The maximum extent in each coordinate direction a cell is allowed to have.
+   * \return The maximum extent in each coordinate direction a cell is allowed
+   * to have.
    */
   double getMaximumMeshSize(int solverNumber) const;
 
@@ -254,12 +273,12 @@ class exahype::Parser {
   /**
    * \return The time stepping mode of a solver.
    */
-  exahype::solvers::Solver::TimeStepping getTimeStepping(int solverNumber) const;
+  exahype::solvers::Solver::TimeStepping getTimeStepping(
+      int solverNumber) const;
 
   std::string getIdentifierForPlotter(int solverNumber,
                                       int plotterNumber) const;
-  int getUnknownsForPlotter(int solverNumber,
-                                      int plotterNumber) const;
+  int getUnknownsForPlotter(int solverNumber, int plotterNumber) const;
   double getFirstSnapshotTimeForPlotter(int solverNumber,
                                         int plotterNumber) const;
   double getRepeatTimeForPlotter(int solverNumber, int plotterNumber) const;
@@ -268,8 +287,9 @@ class exahype::Parser {
 
   std::string getProfilerIdentifier() const;
   std::string getMetricsIdentifierList() const;
+  std::string getProfilingOutputFilename() const;
 
-  ParserView getParserView( int solverNumber );
+  ParserView getParserView(int solverNumber);
 };
 
 #endif

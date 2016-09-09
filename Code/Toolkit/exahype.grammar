@@ -90,10 +90,12 @@ Tokens
   token_fuse_algorithm_steps_factor = 'fuse-algorithmic-steps-factor';
   token_batch_timesteps             = 'timestep-batch-factor';
   token_skip_reduction              = 'skip-reduction-in-batched-time-steps';
+  token_disable_amr                 = 'disable-amr-if-grid-has-been-stationary-in-previous-iteration';
 
   token_profiling                   = 'profiling';
   token_profiler                    = 'profiler';
   token_metrics                     = 'metrics';
+  token_profiling_output            = 'profiling-output';
   token_likwid_inc                  = 'likwid_inc';
   token_likwid_lib                  = 'likwid_lib';
   token_ipcm_inc                    = 'ipcm_inc';
@@ -214,8 +216,9 @@ Productions
         token_fuse_algorithm_steps_factor [token_fuse_algorithm_steps_factor_equals]:token_equals [fuse_algorithm_steps_factor]:float_number
         token_batch_timesteps             [token_batch_timesteps_equals]:token_equals             [batch_timesteps]:float_number 
         token_skip_reduction              [token_skip_reduction_equals]:token_equals              [skip_reduction]:token_on_off
+        token_disable_amr                 [token_disable_amr_equals]:token_equals                 [disable_amr]:token_on_off
       token_end [end_token]:token_optimisation
-        { -> New optimisation(fuse_algorithm_steps, fuse_algorithm_steps_factor,batch_timesteps,skip_reduction) }
+        { -> New optimisation(fuse_algorithm_steps, fuse_algorithm_steps_factor,batch_timesteps,skip_reduction,disable_amr) }
       ;
 
    profiling {->profiling} =
@@ -223,6 +226,7 @@ Productions
        [begin_token]:token_profiling
          token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
          token_metrics [token_metrics_equals]:token_equals [metrics]:parameter_list
+         token_profiling_output [properties_equals]:token_equals [profiling_output]:filename
          token_likwid_inc [token_likwid_inc_equals]:token_equals [likwid_inc]:filename
          token_likwid_lib [token_likwid_lib_equals]:token_equals [likwid_lib]:filename
        token_end [end_token]:token_profiling
@@ -232,6 +236,7 @@ Productions
        [begin_token]:token_profiling
          token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
          token_metrics [token_metrics_equals]:token_equals [metrics]:parameter_list
+         token_profiling_output [properties_equals]:token_equals [profiling_output]:filename
          token_ipcm_inc [token_ipcm_inc_equals]:token_equals [ipcm_inc]:filename
          token_ipcm_lib [token_ipcm_lib_equals]:token_equals [ipcm_lib]:filename
        token_end [end_token]:token_profiling
@@ -241,6 +246,7 @@ Productions
        [begin_token]:token_profiling
          token_profiler [token_profiler_equals]:token_equals [profiler]:identifier
          token_metrics [token_metrics_equals]:token_equals [metrics]:parameter_list
+         token_profiling_output [properties_equals]:token_equals [profiling_output]:filename
        token_end [end_token]:token_profiling
         { -> New profiling(profiler,metrics,Null,Null,Null,Null) }
       ;
@@ -358,6 +364,7 @@ Abstract Syntax Tree
      [fuse_algorithm_steps_factor]:float_number
      [batch_timesteps]:float_number 
      [skip_reduction]:token_on_off
+     [disable_amr]:token_on_off
      ;
 
    profiling =

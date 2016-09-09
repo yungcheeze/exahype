@@ -67,7 +67,8 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
   
   private void writeProfilerCreation() {
       _methodBodyWriter.write("  std::string profiler_identifier = parser.getProfilerIdentifier();\n");
-      _methodBodyWriter.write("  std::string metrics_identifier_list = parser.getMetricsIdentifierList();\n\n");
+      _methodBodyWriter.write("  std::string metrics_identifier_list = parser.getMetricsIdentifierList();\n");
+      _methodBodyWriter.write("  std::string profiling_output = parser.getProfilingOutputFilename();\n\n");
 
       _methodBodyWriter.write(
           "  assertion1(metrics_identifier_list.find_first_of(\"{\") == 0,\n"+
@@ -91,7 +92,7 @@ public class GenerateSolverRegistration extends DepthFirstAdapter {
       _methodBodyWriter.write("  // Create profiler\n");
       _methodBodyWriter.write(
           "  auto profiler = exahype::profilers::ProfilerFactory::getInstance().create(\n"+
-          "    profiler_identifier, metrics_vector);\n\n");
+          "    profiler_identifier, metrics_vector, profiling_output);\n\n");
   }
 
   @Override
