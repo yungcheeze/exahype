@@ -28,9 +28,14 @@ void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
   const double GAMMA = 1.4;
 
   const double irho = 1.0 / Q[0];
-  // TODO: For DIMENSIONS==3, there is an Q[3]*Q[3] missing.
+#if DIMENSIONS == 2
   const double p =
       (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2]) * irho);
+#else
+  const double p =
+      (GAMMA - 1) *
+      (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2] + Q[3] * Q[3]) * irho);
+#endif
 
   double* f = F[0];
   double* g = F[1];
