@@ -28,13 +28,15 @@ void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
   const double GAMMA = 1.4;
 
   const double irho = 1.0 / Q[0];
-#if DIMENSIONS == 2
+#ifdef Dim2
   const double p =
       (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2]) * irho);
-#else
+#elif Dim3
   const double p =
       (GAMMA - 1) *
       (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2] + Q[3] * Q[3]) * irho);
+#else
+#error Dim2 or Dim3 must be defined
 #endif
 
   double* f = F[0];
@@ -55,7 +57,7 @@ void Euler::MyEulerSolver::flux(const double* const Q, double** F) {
   g[3] = irho * Q[2] * Q[3];
   g[4] = irho * Q[2] * (Q[4] + p);
 
-#if DIMENSIONS == 3
+#ifdef Dim3
   double* h = F[2];
   // h
   // @todo Please implement
@@ -84,13 +86,14 @@ void Euler::MyEulerSolver::eigenvalues(const double* const Q,
 
   double irho = 1.0 / Q[0];
 
-  //#if DIMENSIONS == 2
-  // DIMENSIONS is not defined, for some reason. Built system broken or so.
+#ifdef Dim2
   double p = (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2]) * irho);
-  //#else
-  // double p = (GAMMA - 1) * (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2] + Q[3] *
-  // Q[3]) * irho);
-  //#endif
+#elif Dim3
+  double p = (GAMMA - 1) *
+             (Q[4] - 0.5 * (Q[1] * Q[1] + Q[2] * Q[2] + Q[3] * Q[3]) * irho);
+#else
+#error Dim2 or Dim3 must be defined
+#endif
 
   double u_n = Q[normalNonZeroIndex + 1] * irho;
   double c = std::sqrt(GAMMA * p * irho);
