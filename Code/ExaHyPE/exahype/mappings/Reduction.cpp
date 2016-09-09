@@ -110,7 +110,7 @@ void exahype::mappings::Reduction::enterCell(
 ///////////////////////////////////////
 // WORKER->MASTER
 ///////////////////////////////////////
-void exahype::mappings::Synchronisation::prepareSendToMaster(
+void exahype::mappings::Reduction::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
     const exahype::Vertex* const coarseGridVertices,
@@ -149,7 +149,7 @@ void exahype::mappings::Synchronisation::prepareSendToMaster(
   } //  else  do nothing
 }
 
-void exahype::mappings::Synchronisation::mergeWithMaster(
+void exahype::mappings::Reduction::mergeWithMaster(
     const exahype::Cell& workerGridCell,
     exahype::Vertex* const workerGridVertices,
     const peano::grid::VertexEnumerator& workerEnumerator,
@@ -166,9 +166,9 @@ void exahype::mappings::Synchronisation::mergeWithMaster(
   return; // TODO(Dominic): I know this.
 
   if (fineGridCell.isInside() && fineGridCell.isInitialised()) {
-    int receivedMetadataIndex = MetadataHeap::getInstance().createData(
+    int receivedMetadataIndex = exahype::MetadataHeap::getInstance().createData(
         0,exahype::solvers::RegisteredSolvers.size());
-    MetadataHeap::getInstance().receiveData(receivedMetadataIndex,worker,
+    exahype::MetadataHeap::getInstance().receiveData(receivedMetadataIndex,worker,
         fineGridVerticesEnumerator.getCellCenter(),
         fineGridVerticesEnumerator.getLevel(),
         peano::heap::MessageType::MasterWorkerCommunication);
@@ -189,7 +189,7 @@ void exahype::mappings::Synchronisation::mergeWithMaster(
 
       ++solverNumber;
     }
-    MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
+    exahype::MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
   } else if (fineGridCell.isInside() && !fineGridCell.isInitialised()) {
     exahype::Vertex::dropMetadata(worker,
         peano::heap::MessageType::MasterWorkerCommunication,
@@ -220,7 +220,7 @@ bool exahype::mappings::Reduction::prepareSendToWorker(
   return false;
 }
 
-void exahype::mappings::Synchronisation::receiveDataFromMaster(
+void exahype::mappings::Reduction::receiveDataFromMaster(
     exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
     const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
     exahype::Vertex* const receivedCoarseGridVertices,
@@ -233,10 +233,17 @@ void exahype::mappings::Synchronisation::receiveDataFromMaster(
   // do nothing
 }
 
-void exahype::mappings::Synchronisation::mergeWithWorker(
+void exahype::mappings::Reduction::mergeWithWorker(
     exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
     const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
+  // do nothing
+}
+
+void exahype::mappings::Reduction::mergeWithWorker(
+    exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
 }
 

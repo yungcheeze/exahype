@@ -324,7 +324,7 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
          exahype::solvers::Solver::TimeStepping timeStepping,
          std::unique_ptr<profilers::Profiler> profiler =
              std::unique_ptr<profilers::Profiler>(
-                 new profilers::simple::NoOpProfiler));
+                 new profilers::simple::NoOpProfiler("")));
 
   virtual ~ADERDGSolver() {}
 
