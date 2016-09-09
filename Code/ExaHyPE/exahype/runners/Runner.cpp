@@ -331,6 +331,8 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
 /*
  *  evtl. muss das dann auf allen Rank gelten oder was?
  *
+ *  Auf jeden Fall muss ich so einen Uebergang wahrscheinlich kommunizieren
+ *
     if (
       !repository.getState().refineInitialGridInTouchVertexLastTime()
       &&
