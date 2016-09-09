@@ -323,14 +323,17 @@ double exahype::Parser::getSimulationEndTime() const {
 
 bool exahype::Parser::getFuseAlgorithmicSteps() const {
   std::string token = getTokenAfter("optimisation", "fuse-algorithmic-steps");
-  logDebug("getFuseAlgorithmicSteps()", "found fuse-algorithmic-steps"
-                                            << token);
-  if (
+  logDebug("getFuseAlgorithmicSteps()", "found fuse-algorithmic-steps" << token);
+
+  bool result = token.compare("on") == 0;
+
+  if (token.compare(_noTokenFound)==0) {
+    result = false; // default value
+  }
+  else if (
     token.compare("on")!=0
     &&
     token.compare("off")!=0
-    &&
-    token.compare(_noTokenFound)!=0
   ) {
     logError("getFuseAlgorithmicSteps()",
              "fuse-algorithmic-steps is required in the "
@@ -338,7 +341,7 @@ bool exahype::Parser::getFuseAlgorithmicSteps() const {
                  << token);
     _interpretationErrorOccured = true;
   }
-  return token.compare("on") == 0;
+  return result;
 }
 
 
