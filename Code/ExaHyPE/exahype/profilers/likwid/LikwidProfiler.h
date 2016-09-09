@@ -35,13 +35,13 @@ struct LikwidProfilerState {
   NumaTopology* numa_topology_ = nullptr;
   AffinityDomains* affinity_domains_ = nullptr;
 
-  std::vector<int> cpus_;
+  int cpu_;
+  std::string output_;
 };
 
 class LikwidProfiler : public Profiler {
  public:
-  explicit LikwidProfiler(const std::string& output,
-                          const std::vector<int>& cpus = {});
+  explicit LikwidProfiler(const std::string& output, int cpu = 0);
   virtual ~LikwidProfiler();
 
   const LikwidProfilerState& state() const { return state_; }

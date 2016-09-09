@@ -74,7 +74,7 @@ static void estimateOverhead(const std::string& output) {
 
   // noop
   std::tuple<mean_sec, median_sec, std_sec, min_sec, max_sec> duration_noop =
-      meanMedianStdMinMaxOf<kNumberOfSamples1>(
+      meanMedianStdMinMaxOfDurations<kNumberOfSamples1>(
           nTimesDurationOf<kNumberOfSamples1, &noop>());
   file << "duration_noop" << std::endl;
   file << "  mean_sec = " << std::get<0>(duration_noop) << std::endl;
@@ -86,7 +86,7 @@ static void estimateOverhead(const std::string& output) {
   // storeInMap
   initOverheadMeasurementMap();
   std::tuple<mean_sec, median_sec, std_sec, min_sec, max_sec>
-      duration_storeInMap = meanMedianStdMinMaxOf<kNumberOfSamples1>(
+      duration_storeInMap = meanMedianStdMinMaxOfDurations<kNumberOfSamples1>(
           nTimesDurationOf<kNumberOfSamples1, &storeInMap>());
   file << "duration_storeInMap" << std::endl;
   file << "  mean_sec = " << std::get<0>(duration_storeInMap) << std::endl;
@@ -97,8 +97,9 @@ static void estimateOverhead(const std::string& output) {
 
   // getCurrentTime
   std::tuple<mean_sec, median_sec, std_sec, min_sec, max_sec>
-      duration_getCurrentTime = meanMedianStdMinMaxOf<kNumberOfSamples1>(
-          nTimesDurationOf<kNumberOfSamples1, &getCurrentTime>());
+      duration_getCurrentTime =
+          meanMedianStdMinMaxOfDurations<kNumberOfSamples1>(
+              nTimesDurationOf<kNumberOfSamples1, &getCurrentTime>());
   file << "getCurrentTime" << std::endl;
   file << "  mean_sec = " << std::get<0>(duration_getCurrentTime) << std::endl;
   file << "  median_sec = " << std::get<1>(duration_getCurrentTime)

@@ -90,6 +90,11 @@ void exahype::mappings::Synchronisation::mergeWithWorkerThread(
 #endif
 
 #ifdef Parallel
+
+///////////////////////////////////////
+// MASTER->WORKER
+///////////////////////////////////////
+
 // This is master-worker comm. part 1. See SpaceTimePredictor for time stepping equivalents.
 bool exahype::mappings::Synchronisation::prepareSendToWorker(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -102,6 +107,44 @@ bool exahype::mappings::Synchronisation::prepareSendToWorker(
   for (auto& p : exahype::solvers::RegisteredSolvers) {
     p->sendToRank(worker, _mpiTag); // TODO(Dominic) change this; call start to send here.
   }
+
+  // TODO(Dominic): Move down if code below is verified.
+  return false;
+
+  if (fineGridCell.isInside() && fineGridCell.isInitialised()) {
+    exahype::Vertex::sendMetadata(
+        worker,fineGridCell.getCellDescriptionsIndex(),
+        peano::heap::MessageType::MasterWorkerCommunication,
+        fineGridVerticesEnumerator.getCellCenter(),
+        fineGridVerticesEnumerator.getLevel());
+
+    int solverNumber=0;
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+
+      if (element!=exahype::solvers::Solver::NotFound) {
+        solver->sendDataToWorker(
+                  worker,
+                  fineGridCell.getCellDescriptionsIndex(),element,
+                  fineGridVerticesEnumerator.getCellCenter(),
+                  fineGridVerticesEnumerator.getLevel());
+      } else {
+        solver->sendEmptyDataToWorker(
+            worker,
+            fineGridVerticesEnumerator.getCellCenter(),
+            fineGridVerticesEnumerator.getLevel());
+      }
+
+      ++solverNumber;
+    }
+  } else if (fineGridCell.isInside() && !fineGridCell.isInitialised()) {
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      solver->sendEmptyDataToWorker(
+          worker,
+          fineGridVerticesEnumerator.getCellCenter(),
+          fineGridVerticesEnumerator.getLevel());
+    }
+  } // else do nothing
 
   return false;
 }
@@ -121,8 +164,85 @@ void exahype::mappings::Synchronisation::receiveDataFromMaster(
     p->receiveFromMasterRank(
         tarch::parallel::NodePool::getInstance().getMasterRank(), _mpiTag); // TODO(Dominic) change this; call finish to send here.
   }
+
+  return; // TODO(Dominic): I know this.
+
+  // TODO(Dominic): Need to change this
+  // I have to
+//  if (receivedCell.isInside() && receivedCell.isInitialised()) {
+//    int receivedMetadataIndex = MetadataHeap::getInstance().createData(
+//        0,exahype::solvers::RegisteredSolvers.size());
+//    MetadataHeap::getInstance().receiveData(
+//        receivedMetadataIndex,
+//        tarch::parallel::NodePool::getInstance().getMasterRank(),
+//        receivedVerticesEnumerator.getCellCenter(),
+//        receivedVerticesEnumerator.getLevel(),
+//        peano::heap::MessageType::MasterWorkerCommunication);
+//
+//    int solverNumber=0;
+//    for (auto solver : exahype::solvers::RegisteredSolvers) {
+//      int element = solver->tryGetElement(receivedCell.getCellDescriptionsIndex(),solverNumber);
+//
+//      if (element!=exahype::solvers::Solver::NotFound) {
+//        solver->mergeWithMasterData(
+//                  tarch::parallel::NodePool::getInstance().getMasterRank(),
+//                  receivedCell.getCellDescriptionsIndex(),element,
+//                  receivedVerticesEnumerator.getCellCenter(),
+//                  receivedVerticesEnumerator.getLevel());
+//      } else {
+//        solver->dropMasterData(
+//            tarch::parallel::NodePool::getInstance().getMasterRank(),
+//            receivedVerticesEnumerator.getCellCenter(),
+//            receivedVerticesEnumerator.getLevel());
+//      }
+//
+//      ++solverNumber;
+//    }
+//    MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
+//
+//  } else if (receivedCell.isInside() && !receivedCell.isInitialised()) {
+//    exahype::Vertex::dropMetadata(tarch::parallel::NodePool,peano::heap::MessageType::MasterWorkerCommunication,receivedVerticesEnumerator.getCellCenter(),receivedVerticesEnumerator)
+//
+//    for (auto solver : exahype::solvers::RegisteredSolvers) {
+//      solver->dropMasterData(
+//          tarch::parallel::NodePool::getInstance().getMasterRank(),
+//          receivedVerticesEnumerator.getCellCenter(),
+//          receivedVerticesEnumerator.getLevel());
+//    }
+//  } // else do nothing
 }
 
+void exahype::mappings::Synchronisation::mergeWithWorker(
+    exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
+  // TODO(Dominic): 1. Copy the received data to the local cell (Maybe just "swap" the indices and delete previous local cell data).
+}
+
+void exahype::mappings::Synchronisation::prepareSendToMaster(
+    exahype::Cell& localCell, exahype::Vertex* vertices,
+    const peano::grid::VertexEnumerator& verticesEnumerator,
+    const exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    const exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
+void exahype::mappings::Synchronisation::mergeWithMaster(
+    const exahype::Cell& workerGridCell,
+    exahype::Vertex* const workerGridVertices,
+    const peano::grid::VertexEnumerator& workerEnumerator,
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker, const exahype::State& workerState,
+    exahype::State& masterState) {
+  // do nothing
+}
 
 //
 // Below all methods are nop.
@@ -168,38 +288,6 @@ void exahype::mappings::Synchronisation::mergeWithRemoteDataDueToForkOrJoin(
 void exahype::mappings::Synchronisation::mergeWithRemoteDataDueToForkOrJoin(
     exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  // do nothing
-}
-
-void exahype::mappings::Synchronisation::prepareSendToMaster(
-    exahype::Cell& localCell, exahype::Vertex* vertices,
-    const peano::grid::VertexEnumerator& verticesEnumerator,
-    const exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    const exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // do nothing
-}
-
-void exahype::mappings::Synchronisation::mergeWithMaster(
-    const exahype::Cell& workerGridCell,
-    exahype::Vertex* const workerGridVertices,
-    const peano::grid::VertexEnumerator& workerEnumerator,
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    int worker, const exahype::State& workerState,
-    exahype::State& masterState) {
-  // do nothing
-}
-
-void exahype::mappings::Synchronisation::mergeWithWorker(
-    exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
   // do nothing
 }

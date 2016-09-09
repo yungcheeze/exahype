@@ -22,9 +22,9 @@ namespace exahype {
 namespace profilers {
 namespace likwid {
 
-LikwidProfiler::LikwidProfiler(const std::string& output,
-                               const std::vector<int>& cpus /* = {} */)
+LikwidProfiler::LikwidProfiler(const std::string& output, int cpu /* = 0 */)
     : Profiler(output) {
+  state_.output_ = output;
   int err;
 
   setenv("LIKWID_FORCE", "1", 1);
@@ -44,19 +44,9 @@ LikwidProfiler::LikwidProfiler(const std::string& output,
   affinity_init();
   state_.affinity_domains_ = get_affinityDomains();
 
-  // Initialize CPU ID vector
-  if (cpus.empty()) {
-    // Add all processors to list
-    for (unsigned int i = 0; i < state_.cpu_topology_->numHWThreads; i++) {
-      state_.cpus_.push_back(state_.cpu_topology_->threadPool[i].apicId);
-    }
-  } else {
-    // Only add CPU IDs specified by constructor argument
-    state_.cpus_ = cpus;
-  }
+  state_.cpu_ = cpu;
 
-  // TODO(guera): Remove this hack
-  affinity_pinThread(0);
+  affinity_pinThread(cpu);
 }
 
 LikwidProfiler::~LikwidProfiler() {
