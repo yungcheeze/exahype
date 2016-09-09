@@ -211,7 +211,11 @@ void exahype::mappings::MarkingForRefinement::enterCell(
 //    if (refineFineGridCell && _state.refineInitialGridInTouchVertexLastTime()) {
     if (refineFineGridCell) {
       dfor2(v)
-        if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==exahype::Vertex::Records::RefinementControl::Unrefined) {
+        if (
+          fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==exahype::Vertex::Records::RefinementControl::Unrefined
+	  &&
+	  _localState.refineInitialGridInTouchVertexLastTime()
+	) {
           fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
         }
       enddforx
