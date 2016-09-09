@@ -143,7 +143,7 @@ void exahype::mappings::DropIncomingMPIMessages::dropNeighbourData(
     const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
   logDebug(
       "mergeWithNeighbour(...)", "[drop] " <<
-      fromRank << " for vertex x=" << fineGridX << ", level=" << level <<
+      fromRank << " for vertex x=" << x << ", level=" << level <<
       ", src type=" << multiscalelinkedcell::indexToString(destCellDescriptionIndex) <<
       ", src=" << src << ", dest=" << dest);
 

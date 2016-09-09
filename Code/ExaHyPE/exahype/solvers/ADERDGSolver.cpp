@@ -34,6 +34,8 @@ constexpr const char* tags[]{"solutionUpdate",
                              "boundaryConditions"};
 }  // namespace
 
+tarch::logging::Log exahype::solvers::ADERDGSolver::_log( "exahype::solvers::ADERDGSolver");
+
 exahype::solvers::ADERDGSolver::ADERDGSolver(
     const std::string& identifier, int numberOfVariables,
     int numberOfParameters, int nodesPerCoordinateAxis, double maximumMeshSize,
@@ -670,7 +672,7 @@ void exahype::solvers::ADERDGSolver::sendDataToWorkerOrMasterDueToForkOrJoin(
       solution        = DataHeap::getInstance().getData(p.getSolution()).data();
 
       logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)","solution of solver " << p.getSolverNumber() << " sent to rank "<<toRank<<
-               ", cell: "<< cellCentre << ", level: " << level);
+               ", cell: "<< x << ", level: " << level);
 
       DataHeap::getInstance().sendData(
           solution, getUnknownsPerCell(), toRank, x, level,
@@ -706,7 +708,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerOrMasterDataDueToForkOrJoin(
 
   if (p.getType()==exahype::records::ADERDGCellDescription::Cell) {
     logDebug("mergeWithRemoteDataDueToForkOrJoin(...)","[solution] receive from rank "<<fromRank<<
-             ", cell: "<< cellCentre << ", level: " << level);
+             ", cell: "<< x << ", level: " << level);
 
     DataHeap::getInstance().receiveData(
         p.getSolution(),fromRank,x,level,
@@ -763,12 +765,10 @@ void exahype::solvers::ADERDGSolver::sendDataToNeighbour(
 
     logDebug(
         "sendDataToNeighbour(...)",
-        "send "<<exahype::Cell::DataExchangesPerADERDGSolver<<" arrays to rank " <<
+        "send "<<DataMessagesPerNeighbourCommunication<<" arrays to rank " <<
         toRank << " for cell="<<p.getOffset()<< " and face=" << faceIndex << " from vertex x=" << x << ", level=" << level <<
-        ", src type=" << multiscalelinkedcell::indexToString(srcCellDescriptionIndex) <<
-        ", dest type=" << multiscalelinkedcell::indexToString(destCellDescriptionIndex) <<
+        ", src type=" << multiscalelinkedcell::indexToString(cellDescriptionsIndex) <<
         ", src=" << src << ", dest=" << dest <<
-        ", adjacent ranks=" << vertex.getAdjacentRanks() <<
         ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
     );
 
@@ -845,9 +845,9 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     assertion(DataHeap::getInstance().isValidIndex(p.getFluctuation()));
 
     logDebug(
-        "mergeNeighbourData(...)", "receive ">>DataMessagesPerNeighbourCommunication>>" arrays from rank " <<
+        "mergeWithNeighbourData(...)", "receive "<<DataMessagesPerNeighbourCommunication<<" arrays from rank " <<
         fromRank << " for vertex x=" << x << ", level=" << level <<
-        ", src type=" << multiscalelinkedcell::indexToString(srcCellDescriptionIndex) <<
+        ", src type=" << multiscalelinkedcell::indexToString(cellDescriptionsIndex) <<
         ", src=" << src << ", dest=" << dest <<
         ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
     );
@@ -900,7 +900,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourData(
     logDebug(
         "receiveADERDGFaceData(...)", "drop three arrays from rank " <<
         fromRank << " for vertex x=" << x << ", level=" << level <<
-        ", src type=" << multiscalelinkedcell::indexToString(srcCellDescriptionIndex) <<
+        ", src type=" << multiscalelinkedcell::indexToString(cellDescriptionsIndex) <<
         ", src=" << src << ", dest=" << dest <<
         ", counter=" << p.getFaceDataExchangeCounter(faceIndex)
     );
@@ -1027,7 +1027,7 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
     double* fluctuations          = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
     logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)","solution of solver " << p.getSolverNumber() << " sent to rank "<<masterRank<<
-             ", cell: "<< cellCentre << ", level: " << level);
+             ", cell: "<< x << ", level: " << level);
 
     // !!! Be aware of inverted receive order !!!
     // Send order:    extrapolatedPredictor, fluctuations
@@ -1072,8 +1072,9 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
   if (p.getType()==exahype::records::ADERDGCellDescription::Ancestor
       // || exahype::records::ADERDGCellDescription::RemoteBoundaryAncestor:
   ) {
-    logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)","solution of solver " << p.getSolverNumber() << " sent to rank "<<masterRank<<
-             ", cell: "<< cellCentre << ", level: " << level);
+    logDebug("mergeWithWorkerData(...)","solution of solver " <<
+             p.getSolverNumber() << " sent to rank "<<workerRank<<
+             ", cell: "<< x << ", level: " << level);
 
     // !!! Be aware of inverted receive order !!!
     // Send order:    extrapolatedPredictor, fluctuations
@@ -1121,8 +1122,9 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
     double* extrapolatedPredictor = DataHeap::getInstance().getData(p.getExtrapolatedPredictor()).data();
     double* fluctuations          = DataHeap::getInstance().getData(p.getFluctuation()).data();
 
-    logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)","solution of solver " << p.getSolverNumber() << " sent to rank "<<masterRank<<
-             ", cell: "<< cellCentre << ", level: " << level);
+    logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)","solution of solver " <<
+             p.getSolverNumber() << " sent to rank "<<workerRank<<
+             ", cell: "<< x << ", level: " << level);
 
     // !!! Be aware of inverted receive order !!!
     // Send order:    extrapolatedPredictor, fluctuations
@@ -1168,7 +1170,7 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
       // || exahype::records::ADERDGCellDescription::RemoteBoundaryDescendant:
   ) {
     logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)","solution of solver " << p.getSolverNumber() << " sent to rank "<<masterRank<<
-             ", cell: "<< cellCentre << ", level: " << level);
+             ", cell: "<< x << ", level: " << level);
 
     // !!! Be aware of inverted receive order !!!
     // Send order:    extrapolatedPredictor, fluctuations

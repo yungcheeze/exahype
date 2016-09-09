@@ -256,7 +256,7 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbourData(
 
       logDebug(
           "mergeWithNeighbour(...)", "receive data for solver " << solverNumber << " from " <<
-          fromRank << " at vertex x=" << fineGridX << ", level=" << level <<
+          fromRank << " at vertex x=" << x << ", level=" << level <<
           ", src=" << src << ", dest=" << dest);
 
       solver->mergeWithNeighbourData(
@@ -265,7 +265,7 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbourData(
     } else {
       logDebug(
             "mergeWithNeighbour(...)", "drop data for solver " << solverNumber << " from " <<
-            fromRank << " at vertex x=" << fineGridX << ", level=" << level <<
+            fromRank << " at vertex x=" << x << ", level=" << level <<
             ", src=" << src << ", dest=" << dest);
 
       solver->dropNeighbourData(
@@ -288,8 +288,8 @@ void exahype::mappings::RiemannSolver::dropNeighbourData(
 
   for(auto solver : solvers::RegisteredSolvers) {
     logDebug(
-        "mergeWithNeighbour(...)", "drop data for solver " << solverNumber << " from " <<
-        fromRank << " at vertex x=" << fineGridX << ", level=" << level <<
+        "dropNeighbourData(...)", "drop data from " <<
+        fromRank << " at vertex x=" << x << ", level=" << level <<
         ", src=" << src << ", dest=" << dest);
 
     solver->dropNeighbourData(fromRank,src,dest,x,level);

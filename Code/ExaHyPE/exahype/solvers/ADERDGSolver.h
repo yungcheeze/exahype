@@ -21,6 +21,8 @@
 #include <string>
 #include <vector>
 
+#include "tarch/logging/Log.h"
+
 #include "exahype/records/ADERDGCellDescription.h"
 
 namespace exahype {
@@ -36,6 +38,8 @@ namespace exahype {
  */
 class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
  private:
+  static tarch::logging::Log _log;
+
   /**
    * The number of unknowns/basis functions associated with each face of an
    * element.
