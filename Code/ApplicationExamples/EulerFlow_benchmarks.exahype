@@ -52,7 +52,7 @@ exahype-project  Euler
     fuse-algorithmic-steps-factor   = 0.99    
     timestep-batch-factor           = 0.8
     skip-reduction-in-batched-time-steps = on
-    disable-amr-in-batched-time-steps    = off
+    disable-amr-if-grid-has-been-stationary-in-previous-iteration = off
   end optimisation
   
   solver ADER-DG MyEulerSolver
