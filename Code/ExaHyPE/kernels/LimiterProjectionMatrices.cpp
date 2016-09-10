@@ -157,8 +157,8 @@ double* kernels::matrixInverse(int n, double* a) {
   idx2 idx(n,n);
   idx2 idxC(n,2*n);
   
-  int i,j,k,ml,mlV;
-  double tmp, piv;
+  int i,j,k,ml;
+  double tmp, piv, mlV;
   
   for(i=0; i<n; i++) {
     for(j=0; j<n; j++) {
@@ -173,9 +173,6 @@ double* kernels::matrixInverse(int n, double* a) {
   //Forward elimination and row swapping (if necessary)
   for(i=0; i<n; i++) {
     ml = i;
-    //  @todo Jean-Matthieu: Please fix! This line assigns a double to an integer.
-    assertionMsg(false, "please fix" );
-/*
     mlV = std::abs(c[idxC(i,i)]);
     for(j=i+1; j<n; j++) {
       if(std::abs(c[idxC(j,i)]) > mlV) {
@@ -183,7 +180,7 @@ double* kernels::matrixInverse(int n, double* a) {
         mlV = c[idxC(j,i)];
       }
     }
-*/
+
     for(k=0; k<2*n; k++) {
       tmp = c[idxC(ml,k)];
       c[idxC(ml,k)] = c[idxC(i,k)];
