@@ -150,14 +150,14 @@ void ChronoElapsedTimeProfiler::setNumberOfTags(int n) {
   time_points_.reserve(n);
   counts_and_durations_.reserve(n);
 
-  individual_measurements_ns_.reserve(n);
+  //  individual_measurements_ns_.reserve(n);
 }
 
 void ChronoElapsedTimeProfiler::registerTag(const std::string& tag) {
   time_points_[tag];
   counts_and_durations_[tag];
 
-  individual_measurements_ns_[tag];
+  //  individual_measurements_ns_[tag];
 }
 
 void ChronoElapsedTimeProfiler::start(const std::string& tag) {
@@ -173,7 +173,7 @@ void ChronoElapsedTimeProfiler::stop(const std::string& tag) {
   pair.first++;                  // count
   pair.second += (end - start);  // total elapsed time
 
-  individual_measurements_ns_[tag].push_back((end - start).count());
+  //  individual_measurements_ns_[tag].push_back((end - start).count());
 }
 
 void ChronoElapsedTimeProfiler::writeToOstream(std::ostream* os) const {
@@ -189,6 +189,7 @@ void ChronoElapsedTimeProfiler::writeToOstream(std::ostream* os) const {
         << std::endl;
   }
 
+  /*
   *os << "individual measurements" << std::endl;
   for (const auto& kv_pair : individual_measurements_ns_) {
     *os << "  " << kv_pair.first << " = [" << std::endl;
@@ -197,6 +198,7 @@ void ChronoElapsedTimeProfiler::writeToOstream(std::ostream* os) const {
     }
     *os << "  ];" << std::endl;
   }
+  */
 }
 
 }  // namespace simple
