@@ -19,6 +19,7 @@
 #include <iostream>
 #include <likwid.h>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 
 #include "LikwidModule.h"
@@ -40,8 +41,10 @@ class LikwidTimeMeasurementModule : public LikwidModule {
 
  private:
   TimerData timer_data_;
-  std::unordered_map<std::string, std::pair<uint64_t, double>>
-      aggregates_cycles_seconds_;
+  std::unordered_map<
+      std::string,
+      std::tuple<int, uint64_t, double /* count, cycles, seconds */>>
+      aggregates_;
 };
 
 }  // namespace likwid
