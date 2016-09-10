@@ -202,8 +202,10 @@ void LikwidPowerAndEnergyMonitoringModule::registerTag(const std::string& tag) {
   assert((aggregates_.count(tag) == 0) &&
          "At least one tag has been registered twice");
 
-  auto& array = aggregates_[tag];
-  std::fill(array.begin(), array.end(), 0.0);
+  auto& pair_count_array = aggregates_[tag];
+  pair_count_array.first = 0;  // init count
+  std::fill(pair_count_array.second.begin(), pair_count_array.second.end(),
+            0.0);  // init aggregates for all power types
 }
 
 void LikwidPowerAndEnergyMonitoringModule::start(const std::string& tag) {
@@ -272,24 +274,32 @@ void LikwidPowerAndEnergyMonitoringModule::stop(const std::string& tag) {
   }
 
   // then update all aggregates
-  auto& vec_array_value = aggregates_[tag];
+  auto& pair_count_array = aggregates_[tag];
+
+  pair_count_array.first++;  // increase count
 
   // for all power types
   for (int j = 0; j < kNumberOfProfiledPowerTypes; j++) {
-    vec_array_value[j] += power_printEnergy(&power_data_[j]) -
-                          number_of_rapl_reads_ * penality_per_rapl_read_[j];
+    pair_count_array.second[j] +=
+        power_printEnergy(&power_data_[j]) -
+        number_of_rapl_reads_ * penality_per_rapl_read_[j];
   }
 }
 
 void LikwidPowerAndEnergyMonitoringModule::writeToOstream(
     std::ostream* os) const {
   // For all tags
-  for (const auto& tag_array_pair : aggregates_) {
+  for (const auto& pair_tag_pair_count_array : aggregates_) {
+    // print count
+    *os << "PowerAndEnergyMonitoringModule: count "
+        << pair_tag_pair_count_array.second.first << std::endl;
+
     // for all power types
     for (int j = 0; j < kNumberOfProfiledPowerTypes; j++) {
-      *os << "PowerAndEnergyMonitoringModule: " << tag_array_pair.first << " "
+      *os << "PowerAndEnergyMonitoringModule: "
+          << pair_tag_pair_count_array.first << " "
           << powerTypeToString(kProfiledPowerTypes[j]) << " "
-          << tag_array_pair.second[j] << std::endl;
+          << pair_tag_pair_count_array.second.second[j] << std::endl;
     }
   }
 }

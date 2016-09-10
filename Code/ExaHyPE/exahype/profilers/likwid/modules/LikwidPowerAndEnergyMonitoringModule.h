@@ -75,8 +75,8 @@ class LikwidPowerAndEnergyMonitoringModule : public LikwidModule {
   std::array<PowerData, kNumberOfProfiledPowerTypes> power_data_;
 
   std::unordered_map<std::string,
-                     std::array<  // power types
-                         double, kNumberOfProfiledPowerTypes>>
+                     std::pair<int /* count */,
+                               std::array<double, kNumberOfProfiledPowerTypes>>>
       aggregates_;
 
   double penality_per_rapl_read_[kNumberOfProfiledPowerTypes];
