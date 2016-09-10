@@ -72,7 +72,9 @@ constexpr const char* eventsets[] = {
     "CPU_CLK_UNHALTED_CORE:FIXC1,"
     "CPU_CLK_UNHALTED_REF:FIXC2,"
     "ICACHE_ACCESSES:PMC0,"
-    "ICACHE_MISSES:PMC1",
+    "ICACHE_MISSES:PMC1,"
+    "ICACHE_IFETCH_STALL:PMC2,"
+    "ILD_STALL_IQ_FULL:PMC3",
     /* L2 */
     "INSTR_RETIRED_ANY:FIXC0,"
     "CPU_CLK_UNHALTED_CORE:FIXC1,"
@@ -183,7 +185,8 @@ const std::vector<const char*> metrics_names[] = {
      "Power PP0 [W]", "Energy DRAM [J]", "Power DRAM [W]"},
     /* ICACHE */
     {"Runtime (RDTSC) [s]", "Runtime unhalted [s]", "Clock [MHz]", "CPI",
-     "L1I request rate", "L1I miss rate", "L1I miss ratio"},
+     "L1I request rate", "L1I miss rate", "L1I miss ratio", "L1I stalls",
+     "L1I stall rate", "L1I queue full stalls", "L1I queue full stall rate"},
     /* L2 */
     {"Runtime (RDTSC) [s]", "Runtime unhalted [s]", "Clock [MHz]", "CPI",
      "L2D load bandwidth [MBytes/s]", "L2D load data volume [GBytes]",
@@ -457,6 +460,28 @@ const std::vector<std::function<double(int, int)>> metrics_functions[] = {
           // PMC1/PMC0
           return perfmon_getResult(group_id, 5, cpu_id) /
                  perfmon_getResult(group_id, 4, cpu_id);
+        },
+        // L1I stalls
+        [](int group_id, int cpu_id) {
+          // PMC2
+          return perfmon_getResult(group_id, 5, cpu_id);
+        },
+        // L1I stall rate
+        [](int group_id, int cpu_id) {
+          // PMC2/FIXC0
+          return perfmon_getResult(group_id, 5, cpu_id) /
+                 perfmon_getResult(group_id, 0, cpu_id);
+        },
+        // L1I queue full stalls
+        [](int group_id, int cpu_id) {
+          // PMC3
+          return perfmon_getResult(group_id, 6, cpu_id);
+        },
+        // L1I queue full stall rate
+        [](int group_id, int cpu_id) {
+          // PMC3/FIXC0
+          return perfmon_getResult(group_id, 6, cpu_id) /
+                 perfmon_getResult(group_id, 0, cpu_id);
         },
     },
     /* L2 */
