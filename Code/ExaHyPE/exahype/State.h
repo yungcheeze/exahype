@@ -35,13 +35,15 @@ class Vertex;
 class Cell;
 
 namespace repositories {
-/**
- * Forward declaration
- */
-class RepositoryArrayStack;
-class RepositorySTDStack;
+  /**
+   * Forward declaration
+   */
+  class RepositoryArrayStack;
+    class RepositorySTDStack;
+  }
 }
-}
+
+
 
 /**
  * Blueprint for solver state.
@@ -65,6 +67,16 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   void readFromCheckpoint(
       const peano::grid::Checkpoint<Vertex, Cell>& checkpoint);
 
+
+  #ifdef Parallel
+  /**
+   * We need/use this field in the parallel mode, but we use it on the global
+   * master only in operation updateRegularInitialGridRefinementStrategy(). We
+   * memorise the idle ranks per lookup. If it has changed, we assume that some
+   * load balancing is going on.
+   */
+  int _idleRanksAtLastLookup;
+  #endif
  public:
   /**
    * Default Constructor
