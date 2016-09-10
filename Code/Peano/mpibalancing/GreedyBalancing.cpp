@@ -11,7 +11,7 @@ tarch::logging::Log mpibalancing::GreedyBalancing::_log( "mpibalancing::GreedyBa
 
 
 bool mpibalancing::GreedyBalancing::_forkHasFailed = false;
-int  mpibalancing::GreedyBalancing::_coarsestRegularInnerAndOuterGridLevel = -1;
+int  mpibalancing::GreedyBalancing::_regularLevelAlongBoundary = 0;
 
 
 mpibalancing::GreedyBalancing::GreedyBalancing(int coarsestLevelWithRealWork, int coarsestRegularInnerAndOuterGridLevel):
@@ -24,7 +24,7 @@ mpibalancing::GreedyBalancing::GreedyBalancing(int coarsestLevelWithRealWork, in
     _finestLevelToForkAggressively++;
   }
 
-  _coarsestRegularInnerAndOuterGridLevel = coarsestRegularInnerAndOuterGridLevel;
+  _regularLevelAlongBoundary = coarsestRegularInnerAndOuterGridLevel;
 }
 
 
@@ -62,7 +62,7 @@ void mpibalancing::GreedyBalancing::plotStatistics() {
 
 
 peano::parallel::loadbalancing::OracleForOnePhase* mpibalancing::GreedyBalancing::createNewOracle(int adapterNumber) const {
-  return new GreedyBalancing(_coarsestLevelWithRealWork, _coarsestRegularInnerAndOuterGridLevel);
+  return new GreedyBalancing(_coarsestLevelWithRealWork, _regularLevelAlongBoundary);
 }
 
 
@@ -77,12 +77,6 @@ void mpibalancing::GreedyBalancing::forkFailed() {
 }
 
 
-int mpibalancing::GreedyBalancing::getCoarsestRegularInnerAndOuterGridLevel() const {
-  return _coarsestRegularInnerAndOuterGridLevel;
-}
-
-
-void mpibalancing::GreedyBalancing::changeCoarsestRegularInnerAndOuterGridLevel(int value) {
-  assertion(value>=0);
-  _coarsestRegularInnerAndOuterGridLevel = value;
+int mpibalancing::GreedyBalancing::getRegularLevelAlongBoundary() const {
+  return _regularLevelAlongBoundary;
 }

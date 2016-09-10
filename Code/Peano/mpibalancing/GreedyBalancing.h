@@ -62,8 +62,7 @@ class mpibalancing::GreedyBalancing: public peano::parallel::loadbalancing::Orac
 
     void forkFailed() override;
  
-    int getCoarsestRegularInnerAndOuterGridLevel() const override;
-    void changeCoarsestRegularInnerAndOuterGridLevel(int value);
+    int getRegularLevelAlongBoundary() const override;
 
   private:
     /**
@@ -79,7 +78,7 @@ class mpibalancing::GreedyBalancing: public peano::parallel::loadbalancing::Orac
 
     const int                   _coarsestLevelWithRealWork;
 
-    static int                  _coarsestRegularInnerAndOuterGridLevel;
+    static int                  _regularLevelAlongBoundary;
 
     std::map<int,int>           _workersLevel;
 
