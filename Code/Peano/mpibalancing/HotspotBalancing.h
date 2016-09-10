@@ -308,7 +308,7 @@ class mpibalancing::HotspotBalancing: public peano::parallel::loadbalancing::Ora
     void forkFailed() override;
  
     int getCoarsestRegularInnerAndOuterGridLevel() const override;
-    void changeCoarsestRegularInnerAndOuterGridLevel(int value) override;
+    void changeCoarsestRegularInnerAndOuterGridLevel(int value);
 
     /**
      * Should be called in mergeWithMaster. Typically usage is as follows:
