@@ -97,13 +97,16 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
     if ( configuration.find( "greedy" )!=std::string::npos ) {
       logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins (mpibalancing/GreedyBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-          new mpibalancing::GreedyBalancing(3,3)
+        new mpibalancing::GreedyBalancing(
+          getCoarsestGridLevelOfAllSolvers(),
+          getCoarsestGridLevelOfAllSolvers()
+        )
       );
     }
     else if ( configuration.find( "hotspot" )!=std::string::npos ) {
       logInfo("initDistributedMemoryConfiguration()", "use global hotspot elimination without joins (mpibalancing/StaticBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-          new mpibalancing::HotspotBalancing(false,3)
+          new mpibalancing::HotspotBalancing(false,getCoarsestGridLevelOfAllSolvers())
       );
     }
     else {
@@ -327,22 +330,6 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
     else {
       gridSetupIterationsToRun--;
     }
-
-/*
- *  evtl. muss das dann auf allen Rank gelten oder was?
- *
- *  Auf jeden Fall muss ich so einen Uebergang wahrscheinlich kommunizieren
- *
-    if (
-      !repository.getState().refineInitialGridInTouchVertexLastTime()
-      &&
-      peano::parallel::loadbalancing::Oracle::getInstance().getCoarsestRegularInnerAndOuterGridLevel()<getCoarsestGridLevelOfAllSolvers()
-    ) {
-      peano::parallel::loadbalancing::Oracle::getInstance().changeCoarsestRegularInnerAndOuterGridLevel(
-        peano::parallel::loadbalancing::Oracle::getInstance().getCoarsestRegularInnerAndOuterGridLevel()+1
-      );
-    }
-*/
 
     #if defined(TrackGridStatistics) && defined(Asserts)
     logInfo("runAsMaster()",
