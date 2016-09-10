@@ -26,7 +26,7 @@ tarch::logging::Log exahype::Parser::_log("exahype::Parser");
 
 bool exahype::Parser::_interpretationErrorOccured(false);
 
-const std::string   exahype::Parser::_noTokenFound( "notoken" );
+const std::string exahype::Parser::_noTokenFound("notoken");
 
 double exahype::Parser::getValueFromPropertyString(
     const std::string& parameterString, const std::string& key) {
@@ -323,18 +323,14 @@ double exahype::Parser::getSimulationEndTime() const {
 
 bool exahype::Parser::getFuseAlgorithmicSteps() const {
   std::string token = getTokenAfter("optimisation", "fuse-algorithmic-steps");
-  logDebug("getFuseAlgorithmicSteps()", "found fuse-algorithmic-steps" << token);
+  logDebug("getFuseAlgorithmicSteps()", "found fuse-algorithmic-steps"
+                                            << token);
 
   bool result = token.compare("on") == 0;
 
-  if (token.compare(_noTokenFound)==0) {
-    result = false; // default value
-  }
-  else if (
-    token.compare("on")!=0
-    &&
-    token.compare("off")!=0
-  ) {
+  if (token.compare(_noTokenFound) == 0) {
+    result = false;  // default value
+  } else if (token.compare("on") != 0 && token.compare("off") != 0) {
     logError("getFuseAlgorithmicSteps()",
              "fuse-algorithmic-steps is required in the "
              "optimisation segment and has to be either on or off: "
@@ -344,19 +340,20 @@ bool exahype::Parser::getFuseAlgorithmicSteps() const {
   return result;
 }
 
-
 bool exahype::Parser::getExchangeBoundaryDataInBatchedTimeSteps() const {
-  std::string token = getTokenAfter("optimisation", "disable-amr-if-grid-has-been-stationary-in-previous-iteration");
-  if (token.compare("on")!=0 && token.compare("off")!=0) {
+  std::string token = getTokenAfter(
+      "optimisation",
+      "disable-amr-if-grid-has-been-stationary-in-previous-iteration");
+  if (token.compare("on") != 0 && token.compare("off") != 0) {
     logError("getExchangeBoundaryDataInBatchedTimeSteps()",
-             "disable-amr-if-grid-has-been-stationary-in-previous-iteration is required in the "
+             "disable-amr-if-grid-has-been-stationary-in-previous-iteration is "
+             "required in the "
              "optimisation segment and has to be either on or off: "
                  << token);
     _interpretationErrorOccured = true;
   }
   return token.compare("off") == 0;
 }
-
 
 double exahype::Parser::getFuseAlgorithmicStepsFactor() const {
   std::string token =
@@ -403,7 +400,7 @@ bool exahype::Parser::getSkipReductionInBatchedTimeSteps() const {
       getTokenAfter("optimisation", "skip-reduction-in-batched-time-steps");
   logDebug("getSkipReductionInBatchedTimeSteps()",
            "found skip-reduction-in-batched-time-steps " << token);
-  if (token.compare("on")!=0 && token.compare("off")!=0) {
+  if (token.compare("on") != 0 && token.compare("off") != 0) {
     logError("getSkipReductionInBatchedTimeSteps()",
              "skip-reduction-in-batched-time-steps is required in the "
              "optimisation segment and has to be either on or off: "
@@ -536,7 +533,8 @@ int exahype::Parser::getUnknownsForPlotter(int solverNumber,
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
                                     plotterNumber * 2 + 1, 2);
   logDebug("getFirstSnapshotTimeForPlotter()", "found token " << token);
-  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber, plotterNumber);
+  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
+             plotterNumber);
   return atoi(token.c_str());
 }
 
@@ -547,7 +545,8 @@ double exahype::Parser::getFirstSnapshotTimeForPlotter(
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
                                     plotterNumber * 2 + 1, 4);
   logDebug("getFirstSnapshotTimeForPlotter()", "found token " << token);
-  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber, plotterNumber);
+  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
+             plotterNumber);
   return atof(token.c_str());
 }
 
@@ -558,7 +557,8 @@ double exahype::Parser::getRepeatTimeForPlotter(int solverNumber,
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
                                     plotterNumber * 2 + 1, 6);
   logDebug("getRepeatTimeForPlotter()", "found token " << token);
-  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber, plotterNumber);
+  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
+             plotterNumber);
   return atof(token.c_str());
 }
 
@@ -569,7 +569,8 @@ std::string exahype::Parser::getIdentifierForPlotter(int solverNumber,
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
                                     plotterNumber * 2 + 1);
   logDebug("getIdentifierForPlotter()", "found token " << token);
-  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber, plotterNumber);
+  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
+             plotterNumber);
   return token;
 }
 
@@ -580,7 +581,8 @@ std::string exahype::Parser::getFilenameForPlotter(int solverNumber,
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
                                     plotterNumber * 2 + 1, 8);
   logDebug("getFilenameForPlotter()", "found token " << token);
-  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber, plotterNumber);
+  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
+             plotterNumber);
   return token;
 }
 
@@ -591,7 +593,8 @@ std::string exahype::Parser::getSelectorForPlotter(int solverNumber,
   std::string token = getTokenAfter("solver", solverNumber * 2 + 1, "plot",
                                     plotterNumber * 2 + 1, 10);
   logDebug("getSelectorForPlotter()", "found token " << token);
-  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber, plotterNumber);
+  assertion3(token.compare(_noTokenFound) != 0, token, solverNumber,
+             plotterNumber);
   return (token != _noTokenFound) ? token : "{}";
 }
 
@@ -610,7 +613,7 @@ std::string exahype::Parser::getMetricsIdentifierList() const {
 std::string exahype::Parser::getProfilingOutputFilename() const {
   std::string token = getTokenAfter("profiling", "profiling-output");
   logDebug("getProfilingOutputFilename()", "found token " << token);
-  return (token != _noTokenFound) ? token : "cout";
+  return (token != _noTokenFound) ? token : "";
 }
 
 void exahype::Parser::logSolverDetails(int solverNumber) const {
