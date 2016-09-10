@@ -19,15 +19,21 @@
 #include <cassert>
 #include <cstdlib>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <likwid.h>
+#include <sstream>
 #include <utility>
 #include <vector>
+
+// Todo(guera): Remove
+#include <chrono>
+#include <thread>
 
 #include "../LikwidProfiler.h"
 
 // TODO(guera): Remove once likwid 4.1 is available on SuperMUC. At the moment
-// this section is somewhat Haswell specific.
+// this section is somewhat Haswell-EP specific.
 
 namespace {
 constexpr const char* groups[] = {
@@ -51,7 +57,8 @@ constexpr const char* eventsets[] = {
     "CPU_CLK_UNHALTED_CORE:FIXC1,"
     "CPU_CLK_UNHALTED_REF:FIXC2,"
     "MEM_UOPS_RETIRED_LOADS:PMC0,"
-    "MEM_UOPS_RETIRED_STORES:PMC1",
+    "MEM_UOPS_RETIRED_STORES:PMC1,"
+    "UOPS_RETIRED_ALL:PMC2",
     /* ENERGY */
     "INSTR_RETIRED_ANY:FIXC0,"
     "CPU_CLK_UNHALTED_CORE:FIXC1,"
@@ -1110,6 +1117,29 @@ const std::vector<std::function<double(int, int)>> metrics_functions[] = {
         },
     },
 };
+
+void test() {
+  const int event = 1;
+  int handle = perfmon_addEventSet(const_cast<char*>(eventsets[event]));
+  perfmon_setupCounters(handle);
+  perfmon_startCounters();
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  perfmon_startCounters();
+  std::cout << metrics_functions[event][4](handle, 0) << std::endl;
+
+  // perfmon_setupCounters(handle);
+  perfmon_startCounters();
+  std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+  perfmon_startCounters();
+  std::cout << metrics_functions[event][4](handle, 0) << std::endl;
+
+  perfmon_setupCounters(handle);
+  perfmon_startCounters();
+  std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+  perfmon_startCounters();
+  std::cout << metrics_functions[event][4](handle, 0) << std::endl;
+}
+
 }  // namespace
 
 namespace exahype {
@@ -1141,6 +1171,9 @@ LikwidPerformanceMonitoringModule::LikwidPerformanceMonitoringModule(
   }
 
   timer_init();
+
+  // test();
+  // std::exit(0);
 }
 
 LikwidPerformanceMonitoringModule::~LikwidPerformanceMonitoringModule() {
@@ -1150,6 +1183,7 @@ LikwidPerformanceMonitoringModule::~LikwidPerformanceMonitoringModule() {
 
 void LikwidPerformanceMonitoringModule::setNumberOfTags(int n) {
   group_handles_.reserve(n);
+  counts_.reserve(n);
 }
 
 void LikwidPerformanceMonitoringModule::registerTag(const std::string& tag) {
@@ -1161,6 +1195,7 @@ void LikwidPerformanceMonitoringModule::registerTag(const std::string& tag) {
     std::exit(EXIT_FAILURE);
   }
   group_handles_[tag] = handle;
+  counts_[tag] = 0;
 }
 
 void LikwidPerformanceMonitoringModule::start(const std::string& tag) {
@@ -1182,6 +1217,8 @@ void LikwidPerformanceMonitoringModule::stop(const std::string& tag) {
   errcode = perfmon_stopCounters();
   assert((errcode == 0) &&
          "LikwidPerformanceMonitoringModule: stopCounters failed");
+
+  counts_[tag]++;
 }
 
 void LikwidPerformanceMonitoringModule::writeToOstream(std::ostream* os) const {
@@ -1191,16 +1228,31 @@ void LikwidPerformanceMonitoringModule::writeToOstream(std::ostream* os) const {
             metrics_functions[group_index_].size()) &&
            "LikwidPerformanceMonitoringModule: metrics_names and "
            "metrics_functions don't have the same length");
-    int number_of_metrics = metrics_names[group_index_].size();
 
+    *os << "PerformanceMonitoringModule: " << tag_group_handle_pair.first
+        << " count " << counts_.at(tag_group_handle_pair.first) << std::endl;
+
+    int number_of_metrics = metrics_names[group_index_].size();
     // for all metrics
     for (int i = 0; i < number_of_metrics; i++) {
-      // TODO(guera): Fix inconsistent use of terms thread and cpu
-      *os << "PerformanceMonitoringModule " << tag_group_handle_pair.first
+      *os << "PerformanceMonitoringModule: " << tag_group_handle_pair.first
           << " " << metrics_names[group_index_][i] << " "
           << metrics_functions[group_index_]
                               [i](tag_group_handle_pair.second, state_.cpu_)
           << std::endl;
+    }
+
+    std::istringstream iss(eventsets[group_index_]);
+    std::string counter;
+    int counter_index = 0;
+
+    // For all counters
+    while (getline(iss, counter, ',')) {
+      *os << "PerformanceMonitoringModule: " << tag_group_handle_pair.first
+          << " " << counter << " "
+          << perfmon_getResult(group_index_, counter_index, state_.cpu_)
+          << std::endl;
+      counter_index++;
     }
   }
 }
