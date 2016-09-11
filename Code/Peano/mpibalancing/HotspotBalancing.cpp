@@ -12,14 +12,15 @@ tarch::logging::Log mpibalancing::HotspotBalancing::_log( "mpibalancing::Hotspot
 bool                        mpibalancing::HotspotBalancing::_forkHasFailed = false;
 std::map<int,double>        mpibalancing::HotspotBalancing::_weightMap;
 std::map<int,bool>          mpibalancing::HotspotBalancing::_workerCouldNotEraseDueToDecomposition;
+int                         mpibalancing::HotspotBalancing::_regularLevelAlongBoundary = 0;
 
 
 mpibalancing::HotspotBalancing::HotspotBalancing(bool joinsAllowed, int coarsestRegularInnerAndOuterGridLevel):
-  _coarsestRegularInnerAndOuterGridLevel(coarsestRegularInnerAndOuterGridLevel),
   _joinsAllowed(joinsAllowed),
   _criticalWorker(),
   _maxForksOnCriticalWorker(THREE_POWER_D) {
   _workerCouldNotEraseDueToDecomposition.insert( std::pair<int,bool>(tarch::parallel::Node::getInstance().getRank(), false) );
+  _regularLevelAlongBoundary = coarsestRegularInnerAndOuterGridLevel;
 }
 
 
@@ -197,7 +198,7 @@ void mpibalancing::HotspotBalancing::plotStatistics() {
 
 
 peano::parallel::loadbalancing::OracleForOnePhase* mpibalancing::HotspotBalancing::createNewOracle(int adapterNumber) const {
-  return new HotspotBalancing(_joinsAllowed, _coarsestRegularInnerAndOuterGridLevel);
+  return new HotspotBalancing(_joinsAllowed, _regularLevelAlongBoundary);
 }
 
 
@@ -212,6 +213,6 @@ void mpibalancing::HotspotBalancing::forkFailed() {
 }
 
 
-int mpibalancing::HotspotBalancing::getCoarsestRegularInnerAndOuterGridLevel() const {
-  return _coarsestRegularInnerAndOuterGridLevel;
+int mpibalancing::HotspotBalancing::getRegularLevelAlongBoundary() const {
+  return _regularLevelAlongBoundary;
 }

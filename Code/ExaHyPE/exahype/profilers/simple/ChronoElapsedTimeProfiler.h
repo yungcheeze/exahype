@@ -46,9 +46,10 @@ class ChronoElapsedTimeProfiler : public Profiler {
   std::unordered_map<std::string,
                      std::pair<int, std::chrono::steady_clock::duration>>
       counts_and_durations_;
-
-  std::unordered_map<std::string, std::vector<int64_t>>
-      individual_measurements_ns_;
+  /*
+    std::unordered_map<std::string, std::vector<int64_t>>
+        individual_measurements_ns_;
+        */
 };
 
 }  // namespace simple

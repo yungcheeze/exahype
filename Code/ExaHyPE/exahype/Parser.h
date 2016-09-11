@@ -109,6 +109,8 @@ class exahype::Parser {
  private:
   static tarch::logging::Log _log;
 
+  static const std::string   _noTokenFound;
+
   std::vector<std::string> _tokenStream;
 
   /*
@@ -204,6 +206,9 @@ class exahype::Parser {
   /**
    * \return Indicates if the user has chosen the fused ADER-DG time stepping
    * variant.
+   *
+   * If the parser returns _noTokenFound, we may not issue an error as this is
+   * an optional entry in the spec file.
    */
   bool getFuseAlgorithmicSteps() const;
 

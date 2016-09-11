@@ -8,7 +8,7 @@ void escape(void* p) { asm volatile("" : : "g"(p) : "memory"); }
 
 void clobber() { asm volatile("" : : : "memory"); }
 
-void noop(){};
+void noop() {}
 
 }  // namespace utils
 }  // namespace profilers

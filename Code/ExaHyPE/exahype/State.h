@@ -35,13 +35,15 @@ class Vertex;
 class Cell;
 
 namespace repositories {
-/**
- * Forward declaration
- */
-class RepositoryArrayStack;
-class RepositorySTDStack;
+  /**
+   * Forward declaration
+   */
+  class RepositoryArrayStack;
+    class RepositorySTDStack;
+  }
 }
-}
+
+
 
 /**
  * Blueprint for solver state.
@@ -65,6 +67,16 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   void readFromCheckpoint(
       const peano::grid::Checkpoint<Vertex, Cell>& checkpoint);
 
+
+  #ifdef Parallel
+  /**
+   * We need/use this field in the parallel mode, but we use it on the global
+   * master only in operation updateRegularInitialGridRefinementStrategy(). We
+   * memorise the idle ranks per lookup. If it has changed, we assume that some
+   * load balancing is going on.
+   */
+  int _idleRanksAtLastLookup;
+  #endif
  public:
   /**
    * Default Constructor
@@ -119,6 +131,10 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    * thus is reasonable to invoke enforceRefine in the parallel case if the
    * result it true.
    *
+   * If this operation returns refineInitialGridInCreationalEvents(), also
+   * refineInitialGridInTouchVertexLastTime() should hold in the parallel
+   * mode. Without MPI, the two always are different.
+   *
    * Please consult the Peano cookbook (Sect. 6.3.2) for details/rationale.
    */
   bool refineInitialGridInCreationalEvents() const;
@@ -126,6 +142,10 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   /**
    *
    * Please consult the Peano cookbook (Sect. 6.3.2) for details/rationale.
+   *
+   * Means that the computational regular initial grid is to be refined in
+   * touchVertexLastTime(), but it basically also means that you may refined
+   * the grid though perhaps not in the creational routines.
    */
   bool refineInitialGridInTouchVertexLastTime() const;
 };

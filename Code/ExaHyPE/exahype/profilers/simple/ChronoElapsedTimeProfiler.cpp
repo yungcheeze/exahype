@@ -74,7 +74,7 @@ static void estimateOverhead(const std::string& output) {
 
   // noop
   std::tuple<mean_sec, median_sec, std_sec, min_sec, max_sec> duration_noop =
-      meanMedianStdMinMaxOf<kNumberOfSamples1>(
+      meanMedianStdMinMaxOfDurations<kNumberOfSamples1>(
           nTimesDurationOf<kNumberOfSamples1, &noop>());
   file << "duration_noop" << std::endl;
   file << "  mean_sec = " << std::get<0>(duration_noop) << std::endl;
@@ -86,7 +86,7 @@ static void estimateOverhead(const std::string& output) {
   // storeInMap
   initOverheadMeasurementMap();
   std::tuple<mean_sec, median_sec, std_sec, min_sec, max_sec>
-      duration_storeInMap = meanMedianStdMinMaxOf<kNumberOfSamples1>(
+      duration_storeInMap = meanMedianStdMinMaxOfDurations<kNumberOfSamples1>(
           nTimesDurationOf<kNumberOfSamples1, &storeInMap>());
   file << "duration_storeInMap" << std::endl;
   file << "  mean_sec = " << std::get<0>(duration_storeInMap) << std::endl;
@@ -97,8 +97,9 @@ static void estimateOverhead(const std::string& output) {
 
   // getCurrentTime
   std::tuple<mean_sec, median_sec, std_sec, min_sec, max_sec>
-      duration_getCurrentTime = meanMedianStdMinMaxOf<kNumberOfSamples1>(
-          nTimesDurationOf<kNumberOfSamples1, &getCurrentTime>());
+      duration_getCurrentTime =
+          meanMedianStdMinMaxOfDurations<kNumberOfSamples1>(
+              nTimesDurationOf<kNumberOfSamples1, &getCurrentTime>());
   file << "getCurrentTime" << std::endl;
   file << "  mean_sec = " << std::get<0>(duration_getCurrentTime) << std::endl;
   file << "  median_sec = " << std::get<1>(duration_getCurrentTime)
@@ -149,14 +150,14 @@ void ChronoElapsedTimeProfiler::setNumberOfTags(int n) {
   time_points_.reserve(n);
   counts_and_durations_.reserve(n);
 
-  individual_measurements_ns_.reserve(n);
+  //  individual_measurements_ns_.reserve(n);
 }
 
 void ChronoElapsedTimeProfiler::registerTag(const std::string& tag) {
   time_points_[tag];
   counts_and_durations_[tag];
 
-  individual_measurements_ns_[tag];
+  //  individual_measurements_ns_[tag];
 }
 
 void ChronoElapsedTimeProfiler::start(const std::string& tag) {
@@ -172,7 +173,7 @@ void ChronoElapsedTimeProfiler::stop(const std::string& tag) {
   pair.first++;                  // count
   pair.second += (end - start);  // total elapsed time
 
-  individual_measurements_ns_[tag].push_back((end - start).count());
+  //  individual_measurements_ns_[tag].push_back((end - start).count());
 }
 
 void ChronoElapsedTimeProfiler::writeToOstream(std::ostream* os) const {
@@ -188,6 +189,7 @@ void ChronoElapsedTimeProfiler::writeToOstream(std::ostream* os) const {
         << std::endl;
   }
 
+  /*
   *os << "individual measurements" << std::endl;
   for (const auto& kv_pair : individual_measurements_ns_) {
     *os << "  " << kv_pair.first << " = [" << std::endl;
@@ -196,6 +198,7 @@ void ChronoElapsedTimeProfiler::writeToOstream(std::ostream* os) const {
     }
     *os << "  ];" << std::endl;
   }
+  */
 }
 
 }  // namespace simple

@@ -97,7 +97,10 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
     if ( configuration.find( "greedy" )!=std::string::npos ) {
       logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins (mpibalancing/GreedyBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-          new mpibalancing::GreedyBalancing(getCoarsestGridLevelOfAllSolvers(),getCoarsestGridLevelOfAllSolvers())
+        new mpibalancing::GreedyBalancing(
+          getCoarsestGridLevelOfAllSolvers(),
+          getCoarsestGridLevelOfAllSolvers()
+        )
       );
     }
     else if ( configuration.find( "hotspot" )!=std::string::npos ) {
@@ -328,31 +331,31 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
       gridSetupIterationsToRun--;
     }
 
-#if defined(TrackGridStatistics) && defined(Asserts)
+    #if defined(TrackGridStatistics) && defined(Asserts)
     logInfo("runAsMaster()",
         "grid setup iteration #" << gridSetupIterations <<
         ", max-level=" << repository.getState().getMaxLevel() <<
         ", state=" << repository.getState().toString() <<
         ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
-#elif defined(Asserts)
+    #elif defined(Asserts)
     logInfo("runAsMaster()",
         "grid setup iteration #" << gridSetupIterations <<
         ", state=" << repository.getState().toString() <<
         ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
-#elif defined(TrackGridStatistics)
+    #elif defined(TrackGridStatistics)
     logInfo("runAsMaster()",
         "grid setup iteration #" << gridSetupIterations <<
         ", max-level=" << repository.getState().getMaxLevel() <<
         ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
-#else
+    #else
     logInfo("runAsMaster()",
         "grid setup iteration #" << gridSetupIterations <<
         ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
-#endif
+    #endif
   }
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
@@ -360,7 +363,7 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   if (
     tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0
     &&
-	  tarch::parallel::Node::getInstance().getNumberOfNodes()>1
+    tarch::parallel::Node::getInstance().getNumberOfNodes()>1
   ) {
     logWarning( "createGrid(Repository)", "there are still " << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes() << " ranks idle" )
   }

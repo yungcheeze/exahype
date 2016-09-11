@@ -14,13 +14,12 @@
 #ifndef _EXAHYPE_PROFILERS_PROFILER_UTILS_H_
 #define _EXAHYPE_PROFILERS_PROFILER_UTILS_H_
 
+#include <algorithm>
 #include <array>
 #include <chrono>
-#include <thread>
+#include <cmath>
 #include <numeric>
-#include <algorithm>
-
-
+#include <thread>
 
 namespace exahype {
 namespace profilers {
@@ -45,10 +44,8 @@ void sleep() {
 
 template <typename type, uint64_t size>
 static double mean(const std::array<type, size>& array) {
-  double sum = static_cast<std::chrono::duration<double, std::ratio<1>>>(
-                   std::accumulate(array.begin(), array.end(), type(0)))
-                   .count();
-  return sum / size;
+  double sum = std::accumulate(array.begin(), array.end(), type(0));
+  return sum / static_cast<double>(size);
 }
 
 template <typename type, uint64_t size>
@@ -57,19 +54,54 @@ static double median(const std::array<type, size>& array) {
   std::sort(copy.begin(), copy.end());
 
   if (size & 1) {  // odd
-    return 0.5 *
-           static_cast<std::chrono::duration<double, std::ratio<1>>>(
-               copy[size / 2] + copy[size / 2 + 1])
-               .count();
+    return static_cast<double>(copy[size / 2]);
   } else {  // even
-    return static_cast<std::chrono::duration<double, std::ratio<1>>>(
-               copy[size / 2])
-        .count();
+    return 0.5 * (copy[size / 2 - 1] + copy[size / 2]);
   }
 }
 
 template <typename type, uint64_t size>
-static double std(const std::array<type, size>& array, const double mean_sec) {
+static double std(const std::array<type, size>& array, const double mean) {
+  return std::sqrt(std::accumulate(array.begin(), array.end(), 0.0,
+                                   [mean](const double& sum, const double xi) {
+                                     return sum + (xi - mean) * (xi - mean);
+                                   }) /
+                   (size - 1));
+}
+
+template <typename type, uint64_t size>
+static double std(const std::array<type, size>& array) {
+  return std<type, size>(array, mean<type, size>(array));
+}
+
+template <typename type, uint64_t size>
+static double meanDuration(const std::array<type, size>& array) {
+  double sum = static_cast<std::chrono::duration<double, std::ratio<1>>>(
+                   std::accumulate(array.begin(), array.end(), type(0)))
+                   .count();
+  return sum / size;
+}
+
+template <typename type, uint64_t size>
+static double medianDuration(const std::array<type, size>& array) {
+  std::array<type, size> copy = array;
+  std::sort(copy.begin(), copy.end());
+
+  if (size & 1) {  // odd
+    return static_cast<std::chrono::duration<double, std::ratio<1>>>(
+               copy[size / 2])
+        .count();
+  } else {  // even
+    return 0.5 *
+           static_cast<std::chrono::duration<double, std::ratio<1>>>(
+               copy[size / 2 - 1] + copy[size / 2])
+               .count();
+  }
+}
+
+template <typename type, uint64_t size>
+static double stdDuration(const std::array<type, size>& array,
+                          const double mean_sec) {
   return std::sqrt(
       std::accumulate(
           array.begin(), array.end(), 0.0,
@@ -85,7 +117,7 @@ static double std(const std::array<type, size>& array, const double mean_sec) {
 }
 
 template <typename type, uint64_t size>
-static double std(const std::array<type, size>& array) {
+static double stdDuration(const std::array<type, size>& array) {
   return std<type, size>(array, mean<type, size>(array));
 }
 
@@ -95,8 +127,7 @@ static std::chrono::steady_clock::duration durationOf() {
   f();
   auto stop = std::chrono::steady_clock::now();
   escape(&stop);
-  auto duration = stop - start;
-  return duration;
+  return stop - start;
 }
 
 template <uint64_t n, void (*f)()>
@@ -108,14 +139,14 @@ static std::array<std::chrono::steady_clock::duration, n> nTimesDurationOf() {
 
 template <uint64_t n>
 static std::tuple<mean_sec, median_sec, std_sec, min_sec, max_sec>
-meanMedianStdMinMaxOf(
+meanMedianStdMinMaxOfDurations(
     const std::array<std::chrono::steady_clock::duration, n> durations) {
   const double mean_sec =
-      mean<std::chrono::steady_clock::duration, n>(durations);
+      meanDuration<std::chrono::steady_clock::duration, n>(durations);
   const double median_sec =
-      median<std::chrono::steady_clock::duration, n>(durations);
+      medianDuration<std::chrono::steady_clock::duration, n>(durations);
   const double std_sec =
-      std<std::chrono::steady_clock::duration, n>(durations, mean_sec);
+      stdDuration<std::chrono::steady_clock::duration, n>(durations, mean_sec);
   const double min_sec =
       static_cast<std::chrono::duration<double, std::ratio<1>>>(
           *std::min_element(durations.begin(), durations.end()))

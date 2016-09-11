@@ -12,6 +12,9 @@
  **/
  
 #include "kernels/LimiterProjectionMatrices.h"
+#include <cmath>
+
+
 
 double** kernels::uh2lim;
 double** kernels::uh2lob;
@@ -157,8 +160,8 @@ double* kernels::matrixInverse(int n, double* a) {
   idx2 idx(n,n);
   idx2 idxC(n,2*n);
   
-  int i,j,k,ml,mlV;
-  double tmp, piv;
+  int i,j,k,ml;
+  double tmp, piv, mlV;
   
   for(i=0; i<n; i++) {
     for(j=0; j<n; j++) {
@@ -173,13 +176,14 @@ double* kernels::matrixInverse(int n, double* a) {
   //Forward elimination and row swapping (if necessary)
   for(i=0; i<n; i++) {
     ml = i;
-    mlV = abs(c[idxC(i,i)]);
+    mlV = std::abs(static_cast<double>(c[idxC(i,i)]));
     for(j=i+1; j<n; j++) {
-      if(abs(c[idxC(j,i)]) > mlV) {
+      if(std::abs(c[idxC(j,i)]) > mlV) {
         ml = j;
         mlV = c[idxC(j,i)];
       }
     }
+
     for(k=0; k<2*n; k++) {
       tmp = c[idxC(ml,k)];
       c[idxC(ml,k)] = c[idxC(i,k)];

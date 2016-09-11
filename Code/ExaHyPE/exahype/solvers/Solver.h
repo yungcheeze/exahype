@@ -3,20 +3,20 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon
+ * The project has received funding from the European Union's Horizon 
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
-
+ 
 #ifndef _EXAHYPE_SOLVERS_SOLVER_H_
 #define _EXAHYPE_SOLVERS_SOLVER_H_
 
-#include <iostream>
 #include <memory>
 #include <string>
+#include <iostream>
 #include <vector>
 
 #include "peano/utils/Globals.h"
@@ -45,33 +45,32 @@ constexpr int power(int basis, int exp) {
 
 #ifdef ALIGNMENT
 constexpr int addPadding(const int originalSize) {
-  return ALIGNMENT / 8 * static_cast<int>((originalSize + (ALIGNMENT / 8 - 1)) /
-                                          (ALIGNMENT / 8));
+  return ALIGNMENT/8 * static_cast<int>((originalSize+(ALIGNMENT/8-1))/(ALIGNMENT/8));
 }
 #else
-constexpr int addPadding(const int originalSize) { return originalSize; }
+constexpr int addPadding(const int originalSize) {
+  return originalSize;
+}
 #endif
 
 namespace exahype {
-/**
- * We store the degrees of freedom associated with the ADERDGCellDescription and
- * FiniteVolumesCellDescription
- * instances on this heap.
- * We further use this heap to send and receive face data from one MPI rank to
- * the other.
- */
-typedef peano::heap::PlainDoubleHeap DataHeap;
+  /**
+   * We store the degrees of freedom associated with the ADERDGCellDescription and FiniteVolumesCellDescription
+   * instances on this heap.
+   * We further use this heap to send and receive face data from one MPI rank to the other.
+   */
+  typedef peano::heap::PlainDoubleHeap DataHeap;
 
-namespace solvers {
-class Solver;
+  namespace solvers {
+    class Solver;
 
-typedef std::vector<Solver*> RegisteredSolversEntries;
-/**
- * All the registered solvers. Has to be declared extern in C++ standard as
- * it is instantiated in the corresponding cpp file.
- */
-// TODO: std::vector<std::unique_ptr<Solver>> ?!
-extern std::vector<Solver*> RegisteredSolvers;
+    typedef std::vector<Solver*> RegisteredSolversEntries;
+    /**
+     * All the registered solvers. Has to be declared extern in C++ standard as
+     * it is instantiated in the corresponding cpp file.
+     */
+    // TODO: std::vector<std::unique_ptr<Solver>> ?!
+    extern std::vector<Solver*> RegisteredSolvers;
 }  // namespace solvers
 }  // namespace exahype
 
@@ -90,8 +89,7 @@ class exahype::solvers::Solver {
    */
   enum class TimeStepping {
     /**
-     * In the global time stepping mode, every cells works with the same time
-     * step.
+     * In the global time stepping mode, every cells works with the same time step.
      */
     Global,
     /**
@@ -107,6 +105,7 @@ class exahype::solvers::Solver {
    */
   enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
 
+
   /**
    * Default return value of function getElement(...)
    * If we do not find the element in a vector
@@ -117,8 +116,7 @@ class exahype::solvers::Solver {
   /*
    * The refinement events a cell description can be subject to.
    *
-   * \note Make sure the bounds in the assertion in
-   * convertToRefinementEvent(...)
+   * \note Make sure the bounds in the assertion in convertToRefinementEvent(...)
    * do always match the order of these enums.
    */
   enum RefinementEvent {
@@ -212,8 +210,7 @@ class exahype::solvers::Solver {
   /**
    * Return a string representation for the time stepping mode \p param.
    */
-  static std::string toString(
-      const exahype::solvers::Solver::TimeStepping& param);
+  static std::string toString(const exahype::solvers::Solver::TimeStepping& param);
 
   /**
    * Returns the maximum extent a mesh cell is allowed to have
@@ -309,12 +306,13 @@ class exahype::solvers::Solver {
    * \param[in] element Index of the cell description in
    *                    the array at address \p cellDescriptionsIndex.
    */
-  virtual void synchroniseTimeStepping(const int cellDescriptionsIndex,
-                                       const int element) = 0;
+  virtual void synchroniseTimeStepping(
+      const int cellDescriptionsIndex,
+      const int element) = 0;
 
   virtual void startNewTimeStep() = 0;
 
-  virtual double getNextMinTimeStepSize() const = 0;
+  virtual double getNextMinTimeStepSize() const =0;
 
   /**
    * Run over all solvers and identify the minimal time stamp.
@@ -335,8 +333,7 @@ class exahype::solvers::Solver {
    */
   static double getMaxSolverTimeStampOfAllSolvers();
 
-  static bool allSolversUseTimeSteppingScheme(
-      solvers::Solver::TimeStepping scheme);
+  static bool allSolversUseTimeSteppingScheme(solvers::Solver::TimeStepping scheme);
 
   static double getCoarsestMeshSizeOfAllSolvers();
   static double getFinestMaximumMeshSizeOfAllSolvers();
@@ -347,8 +344,9 @@ class exahype::solvers::Solver {
    * in the array at address \p cellDescriptionsIndex.
    * Otherwise return Solver::NotFound.
    */
-  virtual int tryGetElement(const int cellDescriptionsIndex,
-                            const int solverNumber) const = 0;
+  virtual int tryGetElement(
+      const int cellDescriptionsIndex,
+      const int solverNumber) const = 0;
 
   /**
    * Receive solver data from neighbour rank and write
@@ -361,10 +359,12 @@ class exahype::solvers::Solver {
    *                    the array at address \p cellDescriptionsIndex.
    */
   virtual void mergeNeighbours(
-      const int cellDescriptionsIndex1, const int element1,
-      const int cellDescriptionsIndex2, const int element2,
-      const tarch::la::Vector<DIMENSIONS, int>& pos1,
-      const tarch::la::Vector<DIMENSIONS, int>& pos2) = 0;
+        const int                                 cellDescriptionsIndex1,
+        const int                                 element1,
+        const int                                 cellDescriptionsIndex2,
+        const int                                 element2,
+        const tarch::la::Vector<DIMENSIONS, int>& pos1,
+        const tarch::la::Vector<DIMENSIONS, int>& pos2) = 0;
 
   /**
    * Take the cell descriptions \p element
@@ -375,11 +375,12 @@ class exahype::solvers::Solver {
    *                    at address \p cellDescriptionsIndex.
    */
   virtual void mergeWithBoundaryData(
-      const int cellDescriptionsIndex, const int element,
-      const tarch::la::Vector<DIMENSIONS, int>& posCell,
-      const tarch::la::Vector<DIMENSIONS, int>& posBoundary) = 0;
+        const int                                 cellDescriptionsIndex,
+        const int                                 element,
+        const tarch::la::Vector<DIMENSIONS, int>& posCell,
+        const tarch::la::Vector<DIMENSIONS, int>& posBoundary) =0;
 
-#ifdef Parallel
+  #ifdef Parallel
   /**
    * Send solver copy to remote node
    *
@@ -410,18 +411,23 @@ class exahype::solvers::Solver {
    *                    the heap vector at \p cellDescriptionsIndex.
    */
   virtual void sendDataToNeighbour(
-      const int toRank, const int cellDescriptionsIndex, const int element,
-      const tarch::la::Vector<DIMENSIONS, int>& src,
-      const tarch::la::Vector<DIMENSIONS, int>& dest,
-      const tarch::la::Vector<DIMENSIONS, double>& x, const int level) = 0;
+      const int                                    toRank,
+      const int                                    cellDescriptionsIndex,
+      const int                                    element,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   /**
    * Send empty solver data to neighbour rank.
    */
   virtual void sendEmptyDataToNeighbour(
-      const int toRank, const tarch::la::Vector<DIMENSIONS, int>& src,
-      const tarch::la::Vector<DIMENSIONS, int>& dest,
-      const tarch::la::Vector<DIMENSIONS, double>& x, const int level) = 0;
+      const int                                    toRank,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   /**
    * Receive solver data from neighbour rank and write
@@ -434,19 +440,24 @@ class exahype::solvers::Solver {
    *                    the array with address \p cellDescriptionsIndex.
    */
   virtual void mergeWithNeighbourData(
-      const int fromRank, const int cellDescriptionsIndex, const int element,
-      const tarch::la::Vector<DIMENSIONS, int>& src,
-      const tarch::la::Vector<DIMENSIONS, int>& dest,
-      const tarch::la::Vector<DIMENSIONS, double>& x, const int level) = 0;
+      const int                                    fromRank,
+      const int                                    neighbourTypeAsInt,
+      const int                                    cellDescriptionsIndex,
+      const int                                    element,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   /**
    * Drop solver data from neighbour rank.
    */
-  virtual void dropNeighbourData(const int fromRank,
-                                 const tarch::la::Vector<DIMENSIONS, int>& src,
-                                 const tarch::la::Vector<DIMENSIONS, int>& dest,
-                                 const tarch::la::Vector<DIMENSIONS, double>& x,
-                                 const int level) = 0;
+  virtual void dropNeighbourData(
+      const int                                    fromRank,
+      const tarch::la::Vector<DIMENSIONS, int>&    src,
+      const tarch::la::Vector<DIMENSIONS, int>&    dest,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   /**
    * Send solver data to master or worker rank. Read the data from
@@ -459,16 +470,20 @@ class exahype::solvers::Solver {
    *                    the array with address \p cellDescriptionsIndex.
    */
   virtual void sendDataToWorkerOrMasterDueToForkOrJoin(
-      const int toRank, const int cellDescriptionsIndex, const int element,
-      const tarch::la::Vector<DIMENSIONS, double>& x, const int level) = 0;
+      const int                                    toRank,
+      const int                                    cellDescriptionsIndex,
+      const int                                    element,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   /**
    * Send empty solver data to master or worker rank
    * due to fork or join.
    */
   virtual void sendEmptyDataToWorkerOrMasterDueToForkOrJoin(
-      const int toRank, const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int level) = 0;
+      const int                                    toRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   /**
    * Merge with solver data from master or worker rank
@@ -482,16 +497,20 @@ class exahype::solvers::Solver {
    *                    the array with address \p cellDescriptionsIndex.
    */
   virtual void mergeWithWorkerOrMasterDataDueToForkOrJoin(
-      const int fromRank, const int cellDescriptionsIndex, const int element,
-      const tarch::la::Vector<DIMENSIONS, double>& x, const int level) = 0;
+      const int                                    fromRank,
+      const int                                    cellDescriptionsIndex,
+      const int                                    element,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   /**
    * Drop solver data from master or worker rank
    * that was sent out due to a fork or join.
    */
   virtual void dropWorkerOrMasterDataDueToForkOrJoin(
-      const int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int level) = 0;
+      const int                                    fromRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   ///////////////////////////////////
   // WORKER->MASTER
@@ -507,18 +526,20 @@ class exahype::solvers::Solver {
    *                    holding the data to send out in
    *                    the heap vector at \p cellDescriptionsIndex.
    */
-  virtual void sendDataToMaster(const int masterRank,
-                                const int cellDescriptionsIndex,
-                                const int element,
-                                const tarch::la::Vector<DIMENSIONS, double>& x,
-                                const int level) = 0;
+  virtual void sendDataToMaster(
+      const int                                    masterRank,
+      const int                                    cellDescriptionsIndex,
+      const int                                    element,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   /**
    * Send empty solver data to master rank.
    */
   virtual void sendEmptyDataToMaster(
-      const int masterRank, const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int level) = 0;
+      const int                                    masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   /**
    * Merge with solver data from worker rank.
@@ -531,15 +552,19 @@ class exahype::solvers::Solver {
    *                    the array with address \p cellDescriptionsIndex.
    */
   virtual void mergeWithWorkerData(
-      const int workerRank, const int cellDescriptionsIndex, const int element,
-      const tarch::la::Vector<DIMENSIONS, double>& x, const int level) = 0;
+      const int                                     workerRank,
+      const int                                     cellDescriptionsIndex,
+      const int                                     element,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
 
   /**
    * Drop solver data from worker rank.
    */
-  virtual void dropWorkerData(const int workerRank,
-                              const tarch::la::Vector<DIMENSIONS, double>& x,
-                              const int level) = 0;
+  virtual void dropWorkerData(
+      const int                                     workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
 
   ///////////////////////////////////
   // MASTER->WORKER
@@ -554,18 +579,20 @@ class exahype::solvers::Solver {
    *                    holding the data to send out in
    *                    the heap vector at \p cellDescriptionsIndex.
    */
-  virtual void sendDataToWorker(const int workerRank,
-                                const int cellDescriptionsIndex,
-                                const int element,
-                                const tarch::la::Vector<DIMENSIONS, double>& x,
-                                const int level) = 0;
+  virtual void sendDataToWorker(
+      const int                                     workerRank,
+      const int                                     cellDescriptionsIndex,
+      const int                                     element,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
 
   /**
    * Send empty solver data to worker rank.
    */
   virtual void sendEmptyDataToWorker(
-      const int workerRank, const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int level) = 0;
+      const int                                     workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
 
   /**
    * Merge with solver data from master rank
@@ -579,16 +606,20 @@ class exahype::solvers::Solver {
    *                    the array with address \p cellDescriptionsIndex.
    */
   virtual void mergeWithMasterData(
-      const int masterRank, const int cellDescriptionsIndex, const int element,
-      const tarch::la::Vector<DIMENSIONS, double>& x, const int level) = 0;
+      const int                                     masterRank,
+      const int                                     cellDescriptionsIndex,
+      const int                                     element,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
 
   /**
    * Drop solver data from master rank.
    */
-  virtual void dropMasterData(const int masterRank,
-                              const tarch::la::Vector<DIMENSIONS, double>& x,
-                              const int level) = 0;
-#endif
+  virtual void dropMasterData(
+      const int                                     masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>&  x,
+      const int                                     level) = 0;
+  #endif
 
  protected:
   /**
@@ -609,9 +640,8 @@ class exahype::solvers::Solver {
    * Return the unique int value for \p refinementEvent.
    */
   static RefinementEvent convertToRefinementEvent(const int& value) {
-    assertion1(value >= static_cast<int>(RefinementEvent::None) &&
-                   value <= static_cast<int>(RefinementEvent::Augmenting),
-               value);
+    assertion1(value>=static_cast<int>(RefinementEvent::None) &&
+               value<=static_cast<int>(RefinementEvent::Augmenting),value);
     return static_cast<RefinementEvent>(value);
   }
 
@@ -619,9 +649,8 @@ class exahype::solvers::Solver {
    * Return the unique int value for \p cellType.
    */
   static CellType convertToCellType(const int& value) {
-    assertion1(value >= static_cast<int>(CellType::Erased) &&
-                   value <= static_cast<int>(CellType::EmptyDescendant),
-               value);
+    assertion1(value>=static_cast<int>(CellType::Erased) &&
+               value<=static_cast<int>(CellType::EmptyDescendant),value);
     return static_cast<CellType>(value);
   }
 };
