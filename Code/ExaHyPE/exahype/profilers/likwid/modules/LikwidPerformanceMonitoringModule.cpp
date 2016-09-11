@@ -1214,8 +1214,6 @@ LikwidPerformanceMonitoringModule::LikwidPerformanceMonitoringModule(
     std::exit(EXIT_FAILURE);
   }
 
-  std::cerr << "group_index_ = " << group_index_ << std::endl;
-
   timer_init();
 
   // test();
