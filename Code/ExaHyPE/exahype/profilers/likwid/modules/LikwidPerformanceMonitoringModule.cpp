@@ -1286,6 +1286,20 @@ void LikwidPerformanceMonitoringModule::writeToOstream(std::ostream* os) const {
           << std::endl;
     }
 
+    *os << "PerformanceMonitoringModule: " << tag_group_handle_pair.first
+        << " runtime / count "
+        << metrics_functions[group_index_]
+                            [0](tag_group_handle_pair.second, state_.cpu_) /
+               counts_.at(tag_group_handle_pair.first)
+        << std::endl;
+
+    *os << "PerformanceMonitoringModule: " << tag_group_handle_pair.first
+        << " runtime unhalted / count "
+        << metrics_functions[group_index_]
+                            [1](tag_group_handle_pair.second, state_.cpu_) /
+               counts_.at(tag_group_handle_pair.first)
+        << std::endl;
+
     std::istringstream iss(eventsets[group_index_]);
     std::string counter;
     int counter_index = 0;
