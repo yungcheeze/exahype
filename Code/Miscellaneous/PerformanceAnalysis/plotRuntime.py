@@ -18,9 +18,10 @@ def addData(table,normalisation,plotLabels,experimentSetCounter,label):
   
   xdata    = runtimeParser.readColumnFromTable(table,0)
 
-  yDataMin      = 65636
   symbolCounter = 0
   for adap in args.adapter:
+    yDataMin     = 65636
+    xDataMax     = 0
     totalTime    = runtimeParser.readColumnFromTable(table, runtimeParser.getAdapterRuntimeColumnFromTable(table,adap) )
     count        = runtimeParser.readColumnFromTable(table, runtimeParser.getAdapterCountColumnFromTable(table,adap) )
     ydata = []
@@ -43,18 +44,17 @@ def addData(table,normalisation,plotLabels,experimentSetCounter,label):
         pylab.plot(xdata,ydata,markersize=experimentSetCounter+4,color=Colors[symbolCounter],marker=Markers[symbolCounter],markerfacecolor=Markerfacecolors[symbolCounter],markevery=1,lw=1.2) 
     symbolCounter = symbolCounter + 1
 
-  if len(xdata)>0 and len(ydata)>0:
-    pylab.text(xdata[-1],ydata[-1],label)
+    if adap==args.adapter[-1]:
+      pylab.text(xdata[-1],ydata[-1],label )
+
+    if int(args.singlecore) < xDataMax and ydata[0]>ydata[-1]:
+      tSerial = yDataMin
+      ydata = [tSerial/(x-int(args.singlecore)+1) for x in range(int(args.singlecore),int(xDataMax))]
+      pylab.plot(range(int(args.singlecore),int(xDataMax)),ydata,markersize=4,markevery=1,lw=1.2,linestyle='dashed',color='grey') 
 
 
-  if len(xdata)>0 and xdata[0]==1:
-    tSerial = yDataMin
-    for x in range(1,len(xdata)):
-      if xdata[x]==int(args.singlecore):
-        tSerial = ydata[x]
 
-    ydata = [tSerial/x*int(args.singlecore) for x in xdata]
-    pylab.plot(xdata,ydata,markersize=4,markevery=1,lw=1.2,linestyle='dashed',color='grey') 
+
 
 
 
