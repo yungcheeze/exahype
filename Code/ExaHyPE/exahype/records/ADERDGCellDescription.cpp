@@ -6,11 +6,11 @@
    }
    
    
-   exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax):
+   exahype::records::ADERDGCellDescription::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax):
    _solverNumber(solverNumber),
    _riemannSolvePerformed(riemannSolvePerformed),
    _isInside(isInside),
-   _helperCellNeedsToStoreFaceData(helperCellNeedsToStoreFaceData),
+   _oneRemoteBoundaryNeighbourIsOfTypeCell(oneRemoteBoundaryNeighbourIsOfTypeCell),
    _faceDataExchangeCounter(faceDataExchangeCounter),
    _correctorTimeStepSize(correctorTimeStepSize),
    _correctorTimeStamp(correctorTimeStamp),
@@ -38,13 +38,13 @@
    
    
    exahype::records::ADERDGCellDescription::ADERDGCellDescription(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._helperCellNeedsToStoreFaceData, persistentRecords._faceDataExchangeCounter, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._solution, persistentRecords._update, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._type, persistentRecords._parentIndex, persistentRecords._refinementEvent, persistentRecords._solutionMin, persistentRecords._solutionMax) {
+   _persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell, persistentRecords._faceDataExchangeCounter, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._solution, persistentRecords._update, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._type, persistentRecords._parentIndex, persistentRecords._refinementEvent, persistentRecords._solutionMin, persistentRecords._solutionMax) {
       
    }
    
    
-   exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax):
-   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, helperCellNeedsToStoreFaceData, faceDataExchangeCounter, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, solution, update, extrapolatedPredictor, fluctuation, level, offset, size, type, parentIndex, refinementEvent, solutionMin, solutionMax) {
+   exahype::records::ADERDGCellDescription::ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax):
+   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, oneRemoteBoundaryNeighbourIsOfTypeCell, faceDataExchangeCounter, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, solution, update, extrapolatedPredictor, fluctuation, level, offset, size, type, parentIndex, refinementEvent, solutionMin, solutionMax) {
       
    }
    
@@ -54,12 +54,14 @@
    std::string exahype::records::ADERDGCellDescription::toString(const RefinementEvent& param) {
       switch (param) {
          case None: return "None";
-         case ErasingRequested: return "ErasingRequested";
-         case Erasing: return "Erasing";
-         case ChangeToDescendantRequested: return "ChangeToDescendantRequested";
+         case ErasingChildrenRequested: return "ErasingChildrenRequested";
+         case ErasingChildren: return "ErasingChildren";
+         case ChangeChildrenToDescendantsRequested: return "ChangeChildrenToDescendantsRequested";
+         case ChangeChildrenToDescendants: return "ChangeChildrenToDescendants";
          case RefiningRequested: return "RefiningRequested";
          case Refining: return "Refining";
-         case DeaugmentingRequested: return "DeaugmentingRequested";
+         case DeaugmentingChildrenRequested: return "DeaugmentingChildrenRequested";
+         case DeaugmentingChildren: return "DeaugmentingChildren";
          case AugmentingRequested: return "AugmentingRequested";
          case Augmenting: return "Augmenting";
       }
@@ -67,7 +69,7 @@
    }
    
    std::string exahype::records::ADERDGCellDescription::getRefinementEventMapping() {
-      return "RefinementEvent(None=0,ErasingRequested=1,Erasing=2,ChangeToDescendantRequested=3,RefiningRequested=4,Refining=5,DeaugmentingRequested=6,AugmentingRequested=7,Augmenting=8)";
+      return "RefinementEvent(None=0,ErasingChildrenRequested=1,ErasingChildren=2,ChangeChildrenToDescendantsRequested=3,ChangeChildrenToDescendants=4,RefiningRequested=5,Refining=6,DeaugmentingChildrenRequested=7,DeaugmentingChildren=8,AugmentingRequested=9,Augmenting=10)";
    }
    std::string exahype::records::ADERDGCellDescription::toString(const Type& param) {
       switch (param) {
@@ -108,7 +110,7 @@
    }
    out << getIsInside(DIMENSIONS_TIMES_TWO-1) << "]";
       out << ",";
-      out << "helperCellNeedsToStoreFaceData:" << getHelperCellNeedsToStoreFaceData();
+      out << "oneRemoteBoundaryNeighbourIsOfTypeCell:" << getOneRemoteBoundaryNeighbourIsOfTypeCell();
       out << ",";
       out << "faceDataExchangeCounter:[";
    for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
@@ -170,7 +172,7 @@
          getSolverNumber(),
          getRiemannSolvePerformed(),
          getIsInside(),
-         getHelperCellNeedsToStoreFaceData(),
+         getOneRemoteBoundaryNeighbourIsOfTypeCell(),
          getFaceDataExchangeCounter(),
          getCorrectorTimeStepSize(),
          getCorrectorTimeStamp(),
@@ -208,7 +210,7 @@
                MPI_INT,		 //solverNumber
                MPI_INT,		 //riemannSolvePerformed
                MPI_INT,		 //isInside
-               MPI_CHAR,		 //helperCellNeedsToStoreFaceData
+               MPI_CHAR,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                MPI_INT,		 //faceDataExchangeCounter
                MPI_DOUBLE,		 //correctorTimeStepSize
                MPI_DOUBLE,		 //correctorTimeStamp
@@ -234,7 +236,7 @@
                1,		 //solverNumber
                DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
                DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //helperCellNeedsToStoreFaceData
+               1,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
                1,		 //correctorTimeStepSize
                1,		 //correctorTimeStamp
@@ -263,7 +265,7 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solverNumber))), 		&disp[0] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[1] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._isInside))), 		&disp[2] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._helperCellNeedsToStoreFaceData))), 		&disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell))), 		&disp[3] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[4] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._correctorTimeStepSize))), 		&disp[5] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._correctorTimeStamp))), 		&disp[6] );
@@ -302,7 +304,7 @@
                MPI_INT,		 //solverNumber
                MPI_INT,		 //riemannSolvePerformed
                MPI_INT,		 //isInside
-               MPI_CHAR,		 //helperCellNeedsToStoreFaceData
+               MPI_CHAR,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                MPI_INT,		 //faceDataExchangeCounter
                MPI_DOUBLE,		 //correctorTimeStepSize
                MPI_DOUBLE,		 //correctorTimeStamp
@@ -328,7 +330,7 @@
                1,		 //solverNumber
                DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
                DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //helperCellNeedsToStoreFaceData
+               1,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
                1,		 //correctorTimeStepSize
                1,		 //correctorTimeStamp
@@ -357,7 +359,7 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._solverNumber))), 		&disp[0] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._riemannSolvePerformed))), 		&disp[1] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._isInside))), 		&disp[2] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._helperCellNeedsToStoreFaceData))), 		&disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell))), 		&disp[3] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[4] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._correctorTimeStepSize))), 		&disp[5] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescription[0]._persistentRecords._correctorTimeStamp))), 		&disp[6] );
@@ -623,11 +625,11 @@
    }
    
    
-   exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax):
+   exahype::records::ADERDGCellDescriptionPacked::PersistentRecords::PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax):
    _solverNumber(solverNumber),
    _riemannSolvePerformed(riemannSolvePerformed),
    _isInside(isInside),
-   _helperCellNeedsToStoreFaceData(helperCellNeedsToStoreFaceData),
+   _oneRemoteBoundaryNeighbourIsOfTypeCell(oneRemoteBoundaryNeighbourIsOfTypeCell),
    _faceDataExchangeCounter(faceDataExchangeCounter),
    _correctorTimeStepSize(correctorTimeStepSize),
    _correctorTimeStamp(correctorTimeStamp),
@@ -655,13 +657,13 @@
    
    
    exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const PersistentRecords& persistentRecords):
-   _persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._helperCellNeedsToStoreFaceData, persistentRecords._faceDataExchangeCounter, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._solution, persistentRecords._update, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._type, persistentRecords._parentIndex, persistentRecords._refinementEvent, persistentRecords._solutionMin, persistentRecords._solutionMax) {
+   _persistentRecords(persistentRecords._solverNumber, persistentRecords._riemannSolvePerformed, persistentRecords._isInside, persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell, persistentRecords._faceDataExchangeCounter, persistentRecords._correctorTimeStepSize, persistentRecords._correctorTimeStamp, persistentRecords._predictorTimeStepSize, persistentRecords._predictorTimeStamp, persistentRecords._nextPredictorTimeStepSize, persistentRecords._solution, persistentRecords._update, persistentRecords._extrapolatedPredictor, persistentRecords._fluctuation, persistentRecords._level, persistentRecords._offset, persistentRecords._size, persistentRecords._type, persistentRecords._parentIndex, persistentRecords._refinementEvent, persistentRecords._solutionMin, persistentRecords._solutionMax) {
       
    }
    
    
-   exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax):
-   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, helperCellNeedsToStoreFaceData, faceDataExchangeCounter, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, solution, update, extrapolatedPredictor, fluctuation, level, offset, size, type, parentIndex, refinementEvent, solutionMin, solutionMax) {
+   exahype::records::ADERDGCellDescriptionPacked::ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax):
+   _persistentRecords(solverNumber, riemannSolvePerformed, isInside, oneRemoteBoundaryNeighbourIsOfTypeCell, faceDataExchangeCounter, correctorTimeStepSize, correctorTimeStamp, predictorTimeStepSize, predictorTimeStamp, nextPredictorTimeStepSize, solution, update, extrapolatedPredictor, fluctuation, level, offset, size, type, parentIndex, refinementEvent, solutionMin, solutionMax) {
       
    }
    
@@ -708,7 +710,7 @@
    }
    out << getIsInside(DIMENSIONS_TIMES_TWO-1) << "]";
       out << ",";
-      out << "helperCellNeedsToStoreFaceData:" << getHelperCellNeedsToStoreFaceData();
+      out << "oneRemoteBoundaryNeighbourIsOfTypeCell:" << getOneRemoteBoundaryNeighbourIsOfTypeCell();
       out << ",";
       out << "faceDataExchangeCounter:[";
    for (int i = 0; i < DIMENSIONS_TIMES_TWO-1; i++) {
@@ -770,7 +772,7 @@
          getSolverNumber(),
          getRiemannSolvePerformed(),
          getIsInside(),
-         getHelperCellNeedsToStoreFaceData(),
+         getOneRemoteBoundaryNeighbourIsOfTypeCell(),
          getFaceDataExchangeCounter(),
          getCorrectorTimeStepSize(),
          getCorrectorTimeStamp(),
@@ -808,7 +810,7 @@
                MPI_INT,		 //solverNumber
                MPI_INT,		 //riemannSolvePerformed
                MPI_INT,		 //isInside
-               MPI_CHAR,		 //helperCellNeedsToStoreFaceData
+               MPI_CHAR,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                MPI_INT,		 //faceDataExchangeCounter
                MPI_DOUBLE,		 //correctorTimeStepSize
                MPI_DOUBLE,		 //correctorTimeStamp
@@ -834,7 +836,7 @@
                1,		 //solverNumber
                DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
                DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //helperCellNeedsToStoreFaceData
+               1,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
                1,		 //correctorTimeStepSize
                1,		 //correctorTimeStamp
@@ -863,7 +865,7 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solverNumber))), 		&disp[0] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[1] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._isInside))), 		&disp[2] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._helperCellNeedsToStoreFaceData))), 		&disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell))), 		&disp[3] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[4] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._correctorTimeStepSize))), 		&disp[5] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._correctorTimeStamp))), 		&disp[6] );
@@ -902,7 +904,7 @@
                MPI_INT,		 //solverNumber
                MPI_INT,		 //riemannSolvePerformed
                MPI_INT,		 //isInside
-               MPI_CHAR,		 //helperCellNeedsToStoreFaceData
+               MPI_CHAR,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                MPI_INT,		 //faceDataExchangeCounter
                MPI_DOUBLE,		 //correctorTimeStepSize
                MPI_DOUBLE,		 //correctorTimeStamp
@@ -928,7 +930,7 @@
                1,		 //solverNumber
                DIMENSIONS_TIMES_TWO,		 //riemannSolvePerformed
                DIMENSIONS_TIMES_TWO,		 //isInside
-               1,		 //helperCellNeedsToStoreFaceData
+               1,		 //oneRemoteBoundaryNeighbourIsOfTypeCell
                DIMENSIONS_TIMES_TWO,		 //faceDataExchangeCounter
                1,		 //correctorTimeStepSize
                1,		 //correctorTimeStamp
@@ -957,7 +959,7 @@
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._solverNumber))), 		&disp[0] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._riemannSolvePerformed))), 		&disp[1] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._isInside))), 		&disp[2] );
-            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._helperCellNeedsToStoreFaceData))), 		&disp[3] );
+            MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell))), 		&disp[3] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._faceDataExchangeCounter[0]))), 		&disp[4] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._correctorTimeStepSize))), 		&disp[5] );
             MPI_Address( const_cast<void*>(static_cast<const void*>(&(dummyADERDGCellDescriptionPacked[0]._persistentRecords._correctorTimeStamp))), 		&disp[6] );
@@ -1271,12 +1273,14 @@
    std::string exahype::records::ADERDGCellDescription::toString(const RefinementEvent& param) {
       switch (param) {
          case None: return "None";
-         case ErasingRequested: return "ErasingRequested";
-         case Erasing: return "Erasing";
-         case ChangeToDescendantRequested: return "ChangeToDescendantRequested";
+         case ErasingChildrenRequested: return "ErasingChildrenRequested";
+         case ErasingChildren: return "ErasingChildren";
+         case ChangeChildrenToDescendantsRequested: return "ChangeChildrenToDescendantsRequested";
+         case ChangeChildrenToDescendants: return "ChangeChildrenToDescendants";
          case RefiningRequested: return "RefiningRequested";
          case Refining: return "Refining";
-         case DeaugmentingRequested: return "DeaugmentingRequested";
+         case DeaugmentingChildrenRequested: return "DeaugmentingChildrenRequested";
+         case DeaugmentingChildren: return "DeaugmentingChildren";
          case AugmentingRequested: return "AugmentingRequested";
          case Augmenting: return "Augmenting";
       }
@@ -1284,7 +1288,7 @@
    }
    
    std::string exahype::records::ADERDGCellDescription::getRefinementEventMapping() {
-      return "RefinementEvent(None=0,ErasingRequested=1,Erasing=2,ChangeToDescendantRequested=3,RefiningRequested=4,Refining=5,DeaugmentingRequested=6,AugmentingRequested=7,Augmenting=8)";
+      return "RefinementEvent(None=0,ErasingChildrenRequested=1,ErasingChildren=2,ChangeChildrenToDescendantsRequested=3,ChangeChildrenToDescendants=4,RefiningRequested=5,Refining=6,DeaugmentingChildrenRequested=7,DeaugmentingChildren=8,AugmentingRequested=9,Augmenting=10)";
    }
    std::string exahype::records::ADERDGCellDescription::toString(const Type& param) {
       switch (param) {

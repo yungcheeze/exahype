@@ -16,6 +16,7 @@
 #include "peano/stacks/VertexSTDStack.h"
 
 
+ #include "exahype/adapters/MeshRefinement.h" 
  #include "exahype/adapters/AugmentedAMRGrid.h" 
  #include "exahype/adapters/PlotAugmentedAMRGrid.h" 
  #include "exahype/adapters/InitialConditionAndTimeStepSizeComputation.h" 
@@ -55,6 +56,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::RegularGridContainer<exahype::Vertex,exahype::Cell>  _regularGridContainer;
     peano::grid::TraversalOrderOnTopLevel                                         _traversalOrderOnTopLevel;
 
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::MeshRefinement> _gridWithMeshRefinement;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::AugmentedAMRGrid> _gridWithAugmentedAMRGrid;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAugmentedAMRGrid> _gridWithPlotAugmentedAMRGrid;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialConditionAndTimeStepSizeComputation> _gridWithInitialConditionAndTimeStepSizeComputation;
@@ -73,6 +75,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
      
    exahype::records::RepositoryState               _repositoryState;
    
+    tarch::timing::Measurement _measureMeshRefinementCPUTime;
     tarch::timing::Measurement _measureAugmentedAMRGridCPUTime;
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCPUTime;
     tarch::timing::Measurement _measureInitialConditionAndTimeStepSizeComputationCPUTime;
@@ -88,6 +91,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureCorrectionAndPlotCPUTime;
     tarch::timing::Measurement _measurePlotCPUTime;
 
+    tarch::timing::Measurement _measureMeshRefinementCalendarTime;
     tarch::timing::Measurement _measureAugmentedAMRGridCalendarTime;
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCalendarTime;
     tarch::timing::Measurement _measureInitialConditionAndTimeStepSizeComputationCalendarTime;
@@ -141,6 +145,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void readCheckpoint( peano::grid::Checkpoint<exahype::Vertex, exahype::Cell> const * const checkpoint );
     virtual peano::grid::Checkpoint<exahype::Vertex, exahype::Cell>* createEmptyCheckpoint(); 
 
+    virtual void switchToMeshRefinement();    
     virtual void switchToAugmentedAMRGrid();    
     virtual void switchToPlotAugmentedAMRGrid();    
     virtual void switchToInitialConditionAndTimeStepSizeComputation();    
@@ -156,6 +161,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToCorrectionAndPlot();    
     virtual void switchToPlot();    
 
+    virtual bool isActiveAdapterMeshRefinement() const;
     virtual bool isActiveAdapterAugmentedAMRGrid() const;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const;
     virtual bool isActiveAdapterInitialConditionAndTimeStepSizeComputation() const;

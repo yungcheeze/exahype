@@ -50,18 +50,21 @@ event-mapping:
 
 event-mapping:
   name: RegularMesh
-
-event-mapping:
-  name: MarkingForRefinement
   
 event-mapping:
-  name: Refinement
+  name: MeshRefinement
 
 event-mapping:
-  name: MarkingForAugmentation
+  name: MarkingForRefinement // TODO(Dominic): get rid of this
+  
+event-mapping: 
+  name: Refinement           // TODO(Dominic): get rid of this
+
+event-mapping:
+  name: MarkingForAugmentation // TODO(Dominic): get rid of this
   
 event-mapping:
-  name: Augmentation
+  name: Augmentation // TODO(Dominic): get rid of this
 
 event-mapping:
   name: DropIncomingMPIMessages
@@ -74,11 +77,18 @@ event-mapping:
   name: AugmentedAMRTreePlot2d
   
 adapter:
+  name: MeshRefinement
+  merge-with-user-defined-mapping: InitialCondition        // (enterCell,runconcurrently);
+  merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
+  merge-with-user-defined-mapping: LoadBalancing
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
+  
+adapter:
   name: AugmentedAMRGrid
   merge-with-user-defined-mapping: RegularMesh             // (createInner/BoundaryVertex,enterCell,serial)
   // Initial Condition comes after RegularMesh since we refine here in a fast manner down to the 
   // first layer of cells we initialise. Afterwards refinement is done per iteration.
-  merge-with-user-defined-mapping: InitialCondition        // (enterCell,runconcurrently);   
+  merge-with-user-defined-mapping: InitialCondition        // (enterCell,runconcurrently);
   merge-with-user-defined-mapping: MarkingForRefinement    // (enterCell,runconcurrently,forkjoin)
   merge-with-user-defined-mapping: Refinement              // (touchVertexLastTime,enterCell,serial)          
   merge-with-user-defined-mapping: MarkingForAugmentation  // (enterCell,runconcurrently,neighbour)
