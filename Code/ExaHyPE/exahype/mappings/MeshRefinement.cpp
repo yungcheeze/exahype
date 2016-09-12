@@ -223,10 +223,11 @@ void exahype::mappings::MeshRefinement::enterCell(
   logTraceInWith4Arguments("enterCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
+  bool refineFineGridCell = false;
 
   int solverNumber = 0;
   for (auto& solver : exahype::solvers::RegisteredSolvers) {
-    bool refineFineGridCell =
+    refineFineGridCell |=
         solver->enterCell(
             fineGridCell,fineGridVerticesEnumerator.getVertexPosition(),
             fineGridVerticesEnumerator.getCellSize(),
@@ -235,19 +236,18 @@ void exahype::mappings::MeshRefinement::enterCell(
             VertexOperations::readCellDescriptionsIndex(
                 fineGridVerticesEnumerator,fineGridVertices),
             solverNumber);
-
-    // Refine all adjacent vertices if necessary and possible.
-    //    if (refineFineGridCell && _state.refineInitialGridInTouchVertexLastTime()) {
-    if (refineFineGridCell) {
-      dfor2(v)
-        if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
-                exahype::Vertex::Records::RefinementControl::Unrefined) {
-          fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
-        }
-      enddforx
-    }
-
     solverNumber++;
+  }
+
+  // Refine all adjacent vertices if necessary and possible.
+  //    if (refineFineGridCell && _state.refineInitialGridInTouchVertexLastTime()) {
+  if (refineFineGridCell) {
+    dfor2(v)
+      if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
+              exahype::Vertex::Records::RefinementControl::Unrefined) {
+        fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
+      }
+    enddforx
   }
 
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
@@ -263,27 +263,26 @@ void exahype::mappings::MeshRefinement::leaveCell(
   logTraceInWith4Arguments("leaveCell(...)", fineGridCell,
                            fineGridVerticesEnumerator.toString(),
                            coarseGridCell, fineGridPositionOfCell);
+  bool eraseFineGridCell = true;
 
   int solverNumber = 0;
   for (auto& solver : exahype::solvers::RegisteredSolvers) {
-    bool eraseFineGridCell =
+    eraseFineGridCell &=
         solver->leaveCell(
             fineGridCell,fineGridPositionOfCell,
-            coarseGridCell,
-            solverNumber);
-
-    // Refine all adjacent vertices if necessary and possible.
-    //    if (refineFineGridCell && _state.refineInitialGridInTouchVertexLastTime()) {
-    if (eraseFineGridCell) {
-      dfor2(v)
-        if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
-            exahype::Vertex::Records::RefinementControl::Unrefined) {
-          fineGridVertices[ fineGridVerticesEnumerator(v) ].refine();
-        }
-      enddforx
-    }
-
+            coarseGridCell,solverNumber);
     solverNumber++;
+  }
+
+  // Refine all adjacent vertices if necessary and possible.
+  //    if (refineFineGridCell && _state.refineInitialGridInTouchVertexLastTime()) {
+  if (eraseFineGridCell) {
+    dfor2(v)
+      if (fineGridVertices[ fineGridVerticesEnumerator(v) ].getRefinementControl()==
+          exahype::Vertex::Records::RefinementControl::Unrefined) {
+        fineGridVertices[ fineGridVerticesEnumerator(v) ].erase();
+      }
+    enddforx
   }
 
   logTraceOutWith1Argument("leaveCell(...)", fineGridCell);
