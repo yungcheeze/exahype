@@ -99,14 +99,14 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
         new mpibalancing::GreedyBalancing(
           getCoarsestGridLevelOfAllSolvers(),
-          getCoarsestGridLevelOfAllSolvers()
+          getCoarsestGridLevelOfAllSolvers()+1
         )
       );
     }
     else if ( configuration.find( "hotspot" )!=std::string::npos ) {
       logInfo("initDistributedMemoryConfiguration()", "use global hotspot elimination without joins (mpibalancing/StaticBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-          new mpibalancing::HotspotBalancing(false,getCoarsestGridLevelOfAllSolvers())
+          new mpibalancing::HotspotBalancing(false,getCoarsestGridLevelOfAllSolvers()+1)
       );
     }
     else {
