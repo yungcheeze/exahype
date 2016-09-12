@@ -183,9 +183,6 @@ void exahype::mappings::RiemannSolver::endIteration(
 // We receive only for Cell/Ancestor/Descendants cell descriptions face data.
 // EmptyAncestor/EmptyDescendants/InvalidAdjacencyIndices drop face data
 // that was sent to them by Cells/Ancestors/Descendants.
-// TODO(Dominic): Add to docu: The following invariant must hold:
-// A cell holding Cell/Ancestor/Descendant cell descriptions
-// next to a remote cell with cellDescriptionsIndex==InvalidAdjacencyIndex.
 void exahype::mappings::RiemannSolver::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
@@ -206,8 +203,8 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbour(
       int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
 
       if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
-        int receivedMetadataIndex = MetadataHeap::getInstance().createData(0,0);
-        assertion(MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
+        int receivedMetadataIndex = MetadataHeap::getInstance().
+            createData(0,exahype::solvers::RegisteredSolvers.size());
         MetadataHeap::getInstance().receiveData(
             receivedMetadataIndex,
             fromRank, fineGridX, level,
@@ -251,8 +248,6 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbourData(
         const tarch::la::Vector<DIMENSIONS, double>& x,
         const int level,
         const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
-
-
   int solverNumber = 0;
   for(auto solver : solvers::RegisteredSolvers) {
     if (receivedMetadata[solverNumber].getU()!=exahype::Vertex::InvalidMetadataEntry) {
@@ -261,17 +256,20 @@ void exahype::mappings::RiemannSolver::mergeWithNeighbourData(
 
       logDebug(
           "mergeWithNeighbour(...)", "receive data for solver " << solverNumber << " from " <<
-          fromRank << " at vertex x=" << fineGridX << ", level=" << level <<
+          fromRank << " at vertex x=" << x << ", level=" << level <<
           ", src=" << src << ", dest=" << dest);
 
-      solver->mergeWithNeighbourData(fromRank,destCellDescriptionIndex,element,src,dest,x,level);
+      solver->mergeWithNeighbourData(
+          fromRank,receivedMetadata[solverNumber].getU(),
+          destCellDescriptionIndex,element,src,dest,x,level);
     } else {
       logDebug(
             "mergeWithNeighbour(...)", "drop data for solver " << solverNumber << " from " <<
-            fromRank << " at vertex x=" << fineGridX << ", level=" << level <<
+            fromRank << " at vertex x=" << x << ", level=" << level <<
             ", src=" << src << ", dest=" << dest);
 
-      solver->dropNeighbourData(fromRank,src,dest,x,level);
+      solver->dropNeighbourData(
+          fromRank,src,dest,x,level);
     }
     ++solverNumber;
   }
@@ -290,8 +288,8 @@ void exahype::mappings::RiemannSolver::dropNeighbourData(
 
   for(auto solver : solvers::RegisteredSolvers) {
     logDebug(
-        "mergeWithNeighbour(...)", "drop data for solver " << solverNumber << " from " <<
-        fromRank << " at vertex x=" << fineGridX << ", level=" << level <<
+        "dropNeighbourData(...)", "drop data from " <<
+        fromRank << " at vertex x=" << x << ", level=" << level <<
         ", src=" << src << ", dest=" << dest);
 
     solver->dropNeighbourData(fromRank,src,dest,x,level);

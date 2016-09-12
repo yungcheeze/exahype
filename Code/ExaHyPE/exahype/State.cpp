@@ -24,6 +24,7 @@
 exahype::State::State() : Base() {
   #ifdef Parallel
   _stateData.setGridConstructionState( exahype::records::State::Default );
+  _idleRanksAtLastLookup = 0;
   #endif
 }
 
@@ -72,9 +73,16 @@ void exahype::State::updateRegularInitialGridRefinementStrategy() {
   ) {
     _stateData.setGridConstructionState( exahype::records::State::Veto );
   }
+  else if (
+    _idleRanksAtLastLookup != tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
+  ) {
+    _stateData.setGridConstructionState( exahype::records::State::Veto );
+    _idleRanksAtLastLookup = tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes();
+  }
   else {
     _stateData.setGridConstructionState( exahype::records::State::Default );
   }
+
   #endif
 }
 

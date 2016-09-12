@@ -10,12 +10,8 @@ module load intel_mpi/5.0.1
 module unload gcc/4.9.1
 module load gcc/4.9.1
 
-set output=$SLURM_NTASKS"x"$SLURM_NTASKS_PER_NODE"-"$SLURM_ARRAY_TASK_ID".results"
-mpirun ./ExaHyPE-Euler eulerflow-$SLURM_ARRAY_TASK_ID.exahype > $output
-
-set output=$SLURM_NTASKS"x"$SLURM_NTASKS_PER_NODE"-"$SLURM_ARRAY_TASK_ID"-noskip.results"
-mpirun ./ExaHyPE-Euler eulerflow-$SLURM_ARRAY_TASK_ID-noskip.exahype > $output
-
-
-
-
+for extension in "" "-batch-noskip-exchange" "-batch-noskip-noexchange" "-batch-skip-exchange" "-batch-skip-noexchange" "-noexchange"
+do
+  set output=$SLURM_NTASKS"x"$SLURM_NTASKS_PER_NODE"-"$SLURM_ARRAY_TASK_ID$extension".results"
+  mpirun ./ExaHyPE-Euler eulerflow-$SLURM_ARRAY_TASK_ID$extension.exahype > $output
+done

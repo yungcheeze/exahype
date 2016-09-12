@@ -3,14 +3,14 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #include "LikwidPerformanceMonitoringModule.h"
 
 #ifdef LIKWID_AVAILABLE
@@ -19,24 +19,30 @@
 #include <cassert>
 #include <cstdlib>
 #include <functional>
+#include <iostream>
 #include <iterator>
 #include <likwid.h>
+#include <sstream>
 #include <utility>
 #include <vector>
+
+// TODO(guera): Remove
+#include <chrono>
+#include <thread>
 
 #include "../LikwidProfiler.h"
 
 // TODO(guera): Remove once likwid 4.1 is available on SuperMUC. At the moment
-// this section is somewhat Haswell specific.
+// this section is somewhat Haswell-EP specific.
 
-// TODO(guera): Implement Flop/s metric. 
-// See http://likwid-tools.blogspot.de/2012/02/intel-sandybridge-and-counting-flops.html
 namespace {
-constexpr const char* groups[] = {"BRANCH",  "CLOCK",    "DATA",     "ENERGY",
-                                  "ICACHE",  "L2",       "L2CACHE",  "L3",
-                                  "L3CACHE", "MEM",      "NUMA",     "QPI",
-                                  "SBOX",    "TLB_DATA", "TLB_INSTR"};
-constexpr const char* eventsets[] = {
+constexpr const int kNumberOfGroups = 16;
+
+constexpr const char* groups[kNumberOfGroups] = {
+    "BRANCH",  "CLOCK",    "DATA",      "ENERGY",   "ICACHE", "L2",
+    "L2CACHE", "L3",       "L3CACHE",   "MEM",      "NUMA",   "QPI",
+    "SBOX",    "TLB_DATA", "TLB_INSTR", "FLOPS_AVX"};
+constexpr const char* eventsets[kNumberOfGroups] = {
     /* BRANCH */
     "INSTR_RETIRED_ANY:FIXC0,"
     "CPU_CLK_UNHALTED_CORE:FIXC1,"
@@ -53,7 +59,8 @@ constexpr const char* eventsets[] = {
     "CPU_CLK_UNHALTED_CORE:FIXC1,"
     "CPU_CLK_UNHALTED_REF:FIXC2,"
     "MEM_UOPS_RETIRED_LOADS:PMC0,"
-    "MEM_UOPS_RETIRED_STORES:PMC1",
+    "MEM_UOPS_RETIRED_STORES:PMC1,"
+    "UOPS_RETIRED_ALL:PMC2",
     /* ENERGY */
     "INSTR_RETIRED_ANY:FIXC0,"
     "CPU_CLK_UNHALTED_CORE:FIXC1,"
@@ -67,7 +74,9 @@ constexpr const char* eventsets[] = {
     "CPU_CLK_UNHALTED_CORE:FIXC1,"
     "CPU_CLK_UNHALTED_REF:FIXC2,"
     "ICACHE_ACCESSES:PMC0,"
-    "ICACHE_MISSES:PMC1",
+    "ICACHE_MISSES:PMC1,"
+    "ICACHE_IFETCH_STALL:PMC2,"
+    "ILD_STALL_IQ_FULL:PMC3",
     /* L2 */
     "INSTR_RETIRED_ANY:FIXC0,"
     "CPU_CLK_UNHALTED_CORE:FIXC1,"
@@ -154,9 +163,14 @@ constexpr const char* eventsets[] = {
     "CPU_CLK_UNHALTED_REF:FIXC2,"
     "ITLB_MISSES_CAUSES_A_WALK:PMC0,"
     "ITLB_MISSES_WALK_DURATION:PMC1",
+    /* FLOPS_AVX */
+    "INSTR_RETIRED_ANY:FIXC0,"
+    "CPU_CLK_UNHALTED_CORE:FIXC1,"
+    "CPU_CLK_UNHALTED_REF:FIXC2,"
+    "AVX_INSTS_CALC:PMC0",
 };
 
-const std::vector<const char*> metrics_names[] = {
+const std::vector<const char*> metrics_names[kNumberOfGroups] = {
     /* BRANCH */
     {"Runtime (RDTSC) [s]", "Runtime unhalted [s]", "Clock [MHz]", "CPI",
      "Branch rate", "Branch misprediction rate", "Branch misprediction ratio",
@@ -173,7 +187,8 @@ const std::vector<const char*> metrics_names[] = {
      "Power PP0 [W]", "Energy DRAM [J]", "Power DRAM [W]"},
     /* ICACHE */
     {"Runtime (RDTSC) [s]", "Runtime unhalted [s]", "Clock [MHz]", "CPI",
-     "L1I request rate", "L1I miss rate", "L1I miss ratio"},
+     "L1I request rate", "L1I miss rate", "L1I miss ratio", "L1I stalls",
+     "L1I stall rate", "L1I queue full stalls", "L1I queue full stall rate"},
     /* L2 */
     {"Runtime (RDTSC) [s]", "Runtime unhalted [s]", "Clock [MHz]", "CPI",
      "L2D load bandwidth [MBytes/s]", "L2D load data volume [GBytes]",
@@ -216,856 +231,959 @@ const std::vector<const char*> metrics_names[] = {
     /* TLB_INSTR */
     {"Runtime (RDTSC) [s]", "Runtime unhalted [s]", "Clock [MHz]", "CPI",
      "L1 ITLB misses", "L1 ITLB miss rate", "L1 ITLB miss duration [Cyc]"},
+    /* FLOPS_AVX */
+    {"Runtime (RDTSC) [s]", "Runtime unhalted [s]", "Clock [MHz]", "CPI",
+     "Packed SP MFLOP/s", "Packed DP MFLOP/s"},
 };
 
-const std::vector<std::function<double(int, int)>> metrics_functions[] = {
-    /* BRANCH */
-    {
-        // Runtime (RDTSC) [s]
-        [](int group_id, int cpu_id) {
-          // time
-          return perfmon_getTimeOfGroup(group_id);
+const std::vector<std::function<double(int, int)>>
+    metrics_functions[kNumberOfGroups] = {
+        /* BRANCH */
+        {
+            // Runtime (RDTSC) [s]
+            [](int group_id, int cpu_id) {
+              // time
+              return perfmon_getTimeOfGroup(group_id);
+            },
+            // Runtime unhalted [s]
+            [](int group_id, int cpu_id) {
+              // FIXC1*inverseClock
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     timer_getCpuClock();
+            },
+            // Clock [MHz]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(FIXC1/FIXC2)/inverseClock
+              return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                             perfmon_getResult(group_id, 2, cpu_id)) *
+                     timer_getCpuClock();
+            },
+            // CPI
+            [](int group_id, int cpu_id) {
+              // FIXC1/FIXC0
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // Branch rate
+            [](int group_id, int cpu_id) {
+              // PMC0/FIXC0
+              return perfmon_getResult(group_id, 3, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // Branch misprediction rate
+            [](int group_id, int cpu_id) {
+              // PMC1/FIXC0
+              return perfmon_getResult(group_id, 4, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // Branch misprediction ratio
+            [](int group_id, int cpu_id) {
+              // PMC1/PMC0
+              return perfmon_getResult(group_id, 4, cpu_id) /
+                     perfmon_getResult(group_id, 3, cpu_id);
+            },
+            // Instructions per branch
+            [](int group_id, int cpu_id) {
+              // FIXC0/PMC0
+              return perfmon_getResult(group_id, 0, cpu_id) /
+                     perfmon_getResult(group_id, 3, cpu_id);
+            },
         },
-        // Runtime unhalted [s]
-        [](int group_id, int cpu_id) {
-          // FIXC1*inverseClock
-          return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
+        /* CLOCK */
+        {
+            // Runtime (RDTSC) [s]
+            [](int group_id, int cpu_id) {
+              // time
+              return perfmon_getTimeOfGroup(group_id);
+            },
+            // Runtime unhalted [s]
+            [](int group_id, int cpu_id) {
+              // FIXC1*inverseClock
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     timer_getCpuClock();
+            },
+            // Clock [MHz]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(FIXC1/FIXC2)/inverseClock
+              return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                             perfmon_getResult(group_id, 2, cpu_id)) *
+                     timer_getCpuClock();
+            },
+            // CPI
+            [](int group_id, int cpu_id) {
+              // FIXC1/FIXC0
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // Energy [J]
+            [](int group_id, int cpu_id) {
+              // PWR0
+              return perfmon_getResult(group_id, 3, cpu_id);
+            },
+            // Power [W]
+            [](int group_id, int cpu_id) {
+              // PWR0/time
+              return perfmon_getResult(group_id, 3, cpu_id) /
+                     timer_getCpuClock();
+            },
         },
-        // Clock [MHz]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(FIXC1/FIXC2)/inverseClock
-          return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
-                         perfmon_getResult(group_id, 2, cpu_id)) *
-                 timer_getCpuClock();
-        },
-        // CPI
-        [](int group_id, int cpu_id) {
-          // FIXC1/FIXC0
-          return perfmon_getResult(group_id, 1, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // Branch rate
-        [](int group_id, int cpu_id) {
-          // PMC0/FIXC0
-          return perfmon_getResult(group_id, 3, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // Branch misprediction rate
-        [](int group_id, int cpu_id) {
-          // PMC1/FIXC0
-          return perfmon_getResult(group_id, 4, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // Branch misprediction ratio
-        [](int group_id, int cpu_id) {
-          // PMC1/PMC0
-          return perfmon_getResult(group_id, 4, cpu_id) /
-                 perfmon_getResult(group_id, 3, cpu_id);
-        },
-        // Instructions per branch
-        [](int group_id, int cpu_id) {
-          // FIXC0/PMC0
-          return perfmon_getResult(group_id, 0, cpu_id) /
-                 perfmon_getResult(group_id, 3, cpu_id);
-        },
-    },
-    /* CLOCK */
-    {
-        // Runtime (RDTSC) [s]
-        [](int group_id, int cpu_id) {
-          // time
-          return perfmon_getTimeOfGroup(group_id);
-        },
-        // Runtime unhalted [s]
-        [](int group_id, int cpu_id) {
-          // FIXC1*inverseClock
-          return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
-        },
-        // Clock [MHz]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(FIXC1/FIXC2)/inverseClock
-          return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
-                         perfmon_getResult(group_id, 2, cpu_id)) *
-                 timer_getCpuClock();
-        },
-        // CPI
-        [](int group_id, int cpu_id) {
-          // FIXC1/FIXC0
-          return perfmon_getResult(group_id, 1, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // Energy [J]
-        [](int group_id, int cpu_id) {
-          // PWR0
-          return perfmon_getResult(group_id, 3, cpu_id);
-        },
-        // Power [W]
-        [](int group_id, int cpu_id) {
-          // PWR0/time
-          return perfmon_getResult(group_id, 3, cpu_id) / timer_getCpuClock();
-        },
-    },
-    /* DATA */
-    {// Runtime (RDTSC) [s]
-     [](int group_id, int cpu_id) {
-       // time
-       return perfmon_getTimeOfGroup(group_id);
-     },
-     // Runtime unhalted [s]
-     [](int group_id, int cpu_id) {
-       // FIXC1*inverseClock
-       return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
-       // TODO(guera): likwid 4.1: timer_getCycleClock?
-     },
-     // Clock [MHz]
-     [](int group_id, int cpu_id) {
-       // 1.E-06*(FIXC1/FIXC2)/inverseClock
-       return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
-                      perfmon_getResult(group_id, 2, cpu_id)) *
-              timer_getCpuClock();
-       // TODO(guera): likwid 4.1: timer_getCycleClock?
-     },
-     // CPI
-     [](int group_id, int cpu_id) {
-       // FIXC1/FIXC0
-       return perfmon_getResult(group_id, 1, cpu_id) /
-              perfmon_getResult(group_id, 0, cpu_id);
+        /* DATA */
+        {// Runtime (RDTSC) [s]
+         [](int group_id, int cpu_id) {
+           // time
+           return perfmon_getTimeOfGroup(group_id);
+         },
+         // Runtime unhalted [s]
+         [](int group_id, int cpu_id) {
+           // FIXC1*inverseClock
+           return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
+           // TODO(guera): likwid 4.1: timer_getCycleClock?
+         },
+         // Clock [MHz]
+         [](int group_id, int cpu_id) {
+           // 1.E-06*(FIXC1/FIXC2)/inverseClock
+           return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                          perfmon_getResult(group_id, 2, cpu_id)) *
+                  timer_getCpuClock();
+           // TODO(guera): likwid 4.1: timer_getCycleClock?
+         },
+         // CPI
+         [](int group_id, int cpu_id) {
+           // FIXC1/FIXC0
+           return perfmon_getResult(group_id, 1, cpu_id) /
+                  perfmon_getResult(group_id, 0, cpu_id);
 
-     },
-     // Load to store ratio
-     [](int group_id, int cpu_id) {
-       // PMC0/PMC1
-       return perfmon_getResult(group_id, 3, cpu_id) /
-              perfmon_getResult(group_id, 4, cpu_id);
-     }},
-    /*ENERGY */
-    {
-        // Runtime (RDTSC) [s]
-        [](int group_id, int cpu_id) {
-          // time
-          return perfmon_getTimeOfGroup(group_id);
+         },
+         // Load to store ratio
+         [](int group_id, int cpu_id) {
+           // PMC0/PMC1
+           return perfmon_getResult(group_id, 3, cpu_id) /
+                  perfmon_getResult(group_id, 4, cpu_id);
+         }},
+        /*ENERGY */
+        {
+            // Runtime (RDTSC) [s]
+            [](int group_id, int cpu_id) {
+              // time
+              return perfmon_getTimeOfGroup(group_id);
+            },
+            // Runtime unhalted [s]
+            [](int group_id, int cpu_id) {
+              // FIXC1*inverseClock
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     timer_getCpuClock();
+            },
+            // Clock [MHz]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(FIXC1/FIXC2)/inverseClock
+              return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                             perfmon_getResult(group_id, 2, cpu_id)) *
+                     timer_getCpuClock();
+            },
+            // CPI
+            [](int group_id, int cpu_id) {
+              // FIXC1/FIXC0
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // Temperature [C]
+            [](int group_id, int cpu_id) {
+              // TMP0
+              return perfmon_getResult(group_id, 3, cpu_id);
+            },
+            // Energy [J]
+            [](int group_id, int cpu_id) {
+              // PWR0
+              return perfmon_getResult(group_id, 4, cpu_id);
+            },
+            // Power [W]
+            [](int group_id, int cpu_id) {
+              // PWR0/time
+              return perfmon_getResult(group_id, 4, cpu_id) /
+                     perfmon_getTimeOfGroup(group_id);
+            },
+            // Energy PP0 [J]
+            [](int group_id, int cpu_id) {
+              // PWR1
+              return perfmon_getResult(group_id, 5, cpu_id);
+            },
+            // Power PP0 [W]
+            [](int group_id, int cpu_id) {
+              // PWR1/time
+              return perfmon_getResult(group_id, 5, cpu_id) /
+                     perfmon_getTimeOfGroup(group_id);
+            },
+            // Energy DRAM [J]
+            [](int group_id, int cpu_id) {
+              // PWR3
+              return perfmon_getResult(group_id, 6, cpu_id);
+            },
+            // Power DRAM [W]
+            [](int group_id, int cpu_id) {
+              // PWR3/time
+              return perfmon_getResult(group_id, 6, cpu_id) /
+                     perfmon_getTimeOfGroup(group_id);
+            },
+        },
+        /* ICACHE */
+        {
+            // Runtime (RDTSC) [s]
+            [](int group_id, int cpu_id) {
+              // time
+              return perfmon_getTimeOfGroup(group_id);
+            },
+            // Runtime unhalted [s]
+            [](int group_id, int cpu_id) {
+              // FIXC1*inverseClock
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     timer_getCpuClock();
+            },
+            // Clock [MHz]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(FIXC1/FIXC2)/inverseClock
+              return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                             perfmon_getResult(group_id, 2, cpu_id)) *
+                     timer_getCpuClock();
+            },
+            // CPI
+            [](int group_id, int cpu_id) {
+              // FIXC1/FIXC0
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // L1I request rate
+            [](int group_id, int cpu_id) {
+              // PMC0/FIXC0
+              return perfmon_getResult(group_id, 3, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // L1I miss rate
+            [](int group_id, int cpu_id) {
+              // PMC1/FIXC0
+              return perfmon_getResult(group_id, 5, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // L1I miss ratio
+            [](int group_id, int cpu_id) {
+              // PMC1/PMC0
+              return perfmon_getResult(group_id, 5, cpu_id) /
+                     perfmon_getResult(group_id, 4, cpu_id);
+            },
+            // L1I stalls
+            [](int group_id, int cpu_id) {
+              // PMC2
+              return perfmon_getResult(group_id, 5, cpu_id);
+            },
+            // L1I stall rate
+            [](int group_id, int cpu_id) {
+              // PMC2/FIXC0
+              return perfmon_getResult(group_id, 5, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // L1I queue full stalls
+            [](int group_id, int cpu_id) {
+              // PMC3
+              return perfmon_getResult(group_id, 6, cpu_id);
+            },
+            // L1I queue full stall rate
+            [](int group_id, int cpu_id) {
+              // PMC3/FIXC0
+              return perfmon_getResult(group_id, 6, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+        },
+        /* L2 */
+        {
+            // Runtime (RDTSC) [s]
+            [](int group_id, int cpu_id) {
+              // time
+              return perfmon_getTimeOfGroup(group_id);
+            },
+            // Runtime unhalted [s]
+            [](int group_id, int cpu_id) {
+              // FIXC1*inverseClock
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     timer_getCpuClock();
+            },
+            // Clock [MHz]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(FIXC1/FIXC2)/inverseClock
+              return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                             perfmon_getResult(group_id, 2, cpu_id)) *
+                     timer_getCpuClock();
+            },
+            // CPI
+            [](int group_id, int cpu_id) {
+              // FIXC1/FIXC0
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // L2D load bandwidth [MBytes/s]
+            [](int group_id, int cpu_id) {
+              // 1.0E-06*PMC0*64.0/time
+              return 1e-6 * perfmon_getResult(group_id, 3, cpu_id) * 64.0 /
+                     perfmon_getTimeOfGroup(group_id);
+            },
+            // L2D load data volume [GBytes]
+            [](int group_id, int cpu_id) {
+              // 1.0E-09*PMC0*64.0
+              return 1e-9 * perfmon_getResult(group_id, 3, cpu_id) * 64.0;
+            },
+            // L2D evict bandwidth [MBytes/s]
+            [](int group_id, int cpu_id) {
+              // 1.0E-06*PMC1*64.0/time
+              return 1e-6 * perfmon_getResult(group_id, 4, cpu_id) * 64.0 /
+                     perfmon_getTimeOfGroup(group_id);
+            },
+            // L2D evict data volume [GBytes]
+            [](int group_id, int cpu_id) {
+              // 1.0E-09*PMC1*64.0
+              return 1e-9 * perfmon_getResult(group_id, 4, cpu_id) * 64.0;
+            },
+            // L2 bandwidth [MBytes/s]
+            [](int group_id, int cpu_id) {
+              // 1.0E-06*(PMC0+PMC1+PMC2)*64.0/time
+              return 1e-6 * (perfmon_getResult(group_id, 3, cpu_id) +
+                             perfmon_getResult(group_id, 4, cpu_id) +
+                             perfmon_getResult(group_id, 5, cpu_id)) *
+                     64.0 / perfmon_getTimeOfGroup(group_id);
+            },
+            // L2 data volume [GBytes]
+            [](int group_id, int cpu_id) {
+              // 1.0E-09*(PMC0+PMC1+PMC2)*64.0
+              return 1e-9 * (perfmon_getResult(group_id, 3, cpu_id) +
+                             perfmon_getResult(group_id, 4, cpu_id) +
+                             perfmon_getResult(group_id, 5, cpu_id)) *
+                     64.0;
+            },
+        },
+        /* L2CACHE */
+        {
+            // Runtime (RDTSC) [s]
+            [](int group_id, int cpu_id) {
+              // time
+              return perfmon_getTimeOfGroup(group_id);
+            },
+            // Runtime unhalted [s]
+            [](int group_id, int cpu_id) {
+              // FIXC1*inverseClock
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     timer_getCpuClock();
+            },
+            // Clock [MHz]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(FIXC1/FIXC2)/inverseClock
+              return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                             perfmon_getResult(group_id, 2, cpu_id)) *
+                     timer_getCpuClock();
+            },
+            // CPI
+            [](int group_id, int cpu_id) {
+              // FIXC1/FIXC0
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // L2 request rate
+            [](int group_id, int cpu_id) {
+              // PMC0/FIXC0
+              return perfmon_getResult(group_id, 3, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // L2 miss rate
+            [](int group_id, int cpu_id) {
+              // PMC1/FIXC0
+              return perfmon_getResult(group_id, 4, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // L2 miss ratio
+            [](int group_id, int cpu_id) {
+              // PMC1/PMC0
+              return perfmon_getResult(group_id, 4, cpu_id) /
+                     perfmon_getResult(group_id, 3, cpu_id);
+            },
+        },
+        /* L3 */
+        {
+            // Runtime (RDTSC) [s]
+            [](int group_id, int cpu_id) {
+              // time
+              return perfmon_getTimeOfGroup(group_id);
+            },
+            // Runtime unhalted [s]
+            [](int group_id, int cpu_id) {
+              // FIXC1*inverseClock
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     timer_getCpuClock();
+            },
+            // Clock [MHz]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(FIXC1/FIXC2)/inverseClock
+              return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                             perfmon_getResult(group_id, 2, cpu_id)) *
+                     timer_getCpuClock();
+            },
+            // CPI
+            [](int group_id, int cpu_id) {
+              // FIXC1/FIXC0
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // L3 load bandwidth [MBytes/s]
+            [](int group_id, int cpu_id) {
+              // 1.0E-06*PMC0*64.0/time
+              return 1e-6 * perfmon_getResult(group_id, 3, cpu_id) * 64.0 /
+                     perfmon_getTimeOfGroup(group_id);
+            },
+            // L3 load data volume [GBytes]
+            [](int group_id, int cpu_id) {
+              // 1.0E-09*PMC0*64.0
+              return 1e-9 * perfmon_getResult(group_id, 3, cpu_id) * 64.0;
+            },
+            // L3 evict bandwidth [MBytes/s]
+            [](int group_id, int cpu_id) {
+              // 1.0E-06*PMC1*64.0/time
+              return 1e-6 * perfmon_getResult(group_id, 4, cpu_id) * 64.0 /
+                     perfmon_getTimeOfGroup(group_id);
+            },
+            // L3 evict data volume [GBytes]
+            [](int group_id, int cpu_id) {
+              // 1.0E-09*PMC1*64.0
+              return 1e-9 * perfmon_getResult(group_id, 4, cpu_id) * 64.0;
+            },
+            // L3 bandwidth [MBytes/s]
+            [](int group_id, int cpu_id) {
+              // 1.0E-06*(PMC0+PMC1)*64.0/time
+              return 1e-6 * (perfmon_getResult(group_id, 3, cpu_id) +
+                             perfmon_getResult(group_id, 4, cpu_id)) *
+                     64.0 / perfmon_getTimeOfGroup(group_id);
+            },
+            // L3 data volume [GBytes]
+            [](int group_id, int cpu_id) {
+              // 1.0E-09*(PMC0+PMC1)*64.0
+              return 1e-9 * (perfmon_getResult(group_id, 3, cpu_id) +
+                             perfmon_getResult(group_id, 4, cpu_id)) *
+                     64.0;
+            },
+        },
+        /* L3CACHE */
+        {
+            // Runtime (RDTSC) [s]
+            [](int group_id, int cpu_id) {
+              // time
+              return perfmon_getTimeOfGroup(group_id);
+            },
+            // Runtime unhalted [s]
+            [](int group_id, int cpu_id) {
+              // FIXC1*inverseClock
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     timer_getCpuClock();
+            },
+            // Clock [MHz]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(FIXC1/FIXC2)/inverseClock
+              return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                             perfmon_getResult(group_id, 2, cpu_id)) *
+                     timer_getCpuClock();
+            },
+            // CPI
+            [](int group_id, int cpu_id) {
+              // FIXC1/FIXC0
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // L3 request rate
+            [](int group_id, int cpu_id) {
+              // PMC0/PMC2
+              return perfmon_getResult(group_id, 3, cpu_id) /
+                     perfmon_getResult(group_id, 5, cpu_id);
+            },
+            // L3 miss rate
+            [](int group_id, int cpu_id) {
+              // PMC1/PMC2
+              return perfmon_getResult(group_id, 4, cpu_id) /
+                     perfmon_getResult(group_id, 5, cpu_id);
+            },
+            // L3 miss ratio
+            [](int group_id, int cpu_id) {
+              // PMC1/PMC0
+              return perfmon_getResult(group_id, 4, cpu_id) /
+                     perfmon_getResult(group_id, 3, cpu_id);
+            },
+        },
+        /* MEM */
+        {
+            // Runtime (RDTSC) [s]
+            [](int group_id, int cpu_id) {
+              // time
+              return perfmon_getTimeOfGroup(group_id);
+            },
+            // Runtime unhalted [s]
+            [](int group_id, int cpu_id) {
+              // FIXC1*inverseClock
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     timer_getCpuClock();
+            },
+            // Clock [MHz]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(FIXC1/FIXC2)/inverseClock
+              return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                             perfmon_getResult(group_id, 2, cpu_id)) *
+                     timer_getCpuClock();
+            },
+            // CPI
+            [](int group_id, int cpu_id) {
+              // FIXC1/FIXC0
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // Memory read bandwidth [MBytes/s]
+            [](int group_id, int cpu_id) {
+              // 1.0E-06*(MBOX0C0+MBOX1C0+MBOX2C0+
+              //          MBOX3C0+MBOX4C0+MBOX5C0+MBOX6C0+MBOX7C0)*64.0/time
+              return 1e-6 * (perfmon_getResult(group_id, 3, cpu_id) +
+                             perfmon_getResult(group_id, 5, cpu_id) +
+                             perfmon_getResult(group_id, 7, cpu_id) +
+                             perfmon_getResult(group_id, 9, cpu_id) +
+                             perfmon_getResult(group_id, 11, cpu_id) +
+                             perfmon_getResult(group_id, 13, cpu_id) +
+                             perfmon_getResult(group_id, 15, cpu_id) +
+                             perfmon_getResult(group_id, 17, cpu_id)) *
+                     64.0 / perfmon_getTimeOfGroup(group_id);
+            },
+            // Memory read data volume [GBytes]
+            [](int group_id, int cpu_id) {
+              // 1.0E-09*(MBOX0C0+MBOX1C0+MBOX2C0+MBOX3C0+
+              //          MBOX4C0+MBOX5C0+MBOX6C0+MBOX7C0)*64.0
+              return 1e-9 * (perfmon_getResult(group_id, 3, cpu_id) +
+                             perfmon_getResult(group_id, 5, cpu_id) +
+                             perfmon_getResult(group_id, 7, cpu_id) +
+                             perfmon_getResult(group_id, 9, cpu_id) +
+                             perfmon_getResult(group_id, 11, cpu_id) +
+                             perfmon_getResult(group_id, 13, cpu_id) +
+                             perfmon_getResult(group_id, 15, cpu_id) +
+                             perfmon_getResult(group_id, 17, cpu_id)) *
+                     64.0;
+            },
+            // Memory write bandwidth [MBytes/s]
+            [](int group_id, int cpu_id) {
+              // 1.0E-06*(MBOX0C1+MBOX1C1+MBOX2C1+MBOX3C1+
+              //          MBOX4C1+MBOX5C1+MBOX6C1+MBOX7C1)*64.0/time
+              return 1e-6 * (perfmon_getResult(group_id, 4, cpu_id) +
+                             perfmon_getResult(group_id, 6, cpu_id) +
+                             perfmon_getResult(group_id, 8, cpu_id) +
+                             perfmon_getResult(group_id, 10, cpu_id) +
+                             perfmon_getResult(group_id, 12, cpu_id) +
+                             perfmon_getResult(group_id, 14, cpu_id) +
+                             perfmon_getResult(group_id, 16, cpu_id) +
+                             perfmon_getResult(group_id, 18, cpu_id)) *
+                     64.0 / perfmon_getTimeOfGroup(group_id);
+            },
+            // Memory write data volume [GBytes]
+            [](int group_id, int cpu_id) {
+              // 1.0E-09*(MBOX0C1+MBOX1C1+MBOX2C1+MBOX3C1+
+              //          MBOX4C1+MBOX5C1+MBOX6C1+MBOX7C1)*64.0
+              return 1e-9 * (perfmon_getResult(group_id, 4, cpu_id) +
+                             perfmon_getResult(group_id, 6, cpu_id) +
+                             perfmon_getResult(group_id, 8, cpu_id) +
+                             perfmon_getResult(group_id, 10, cpu_id) +
+                             perfmon_getResult(group_id, 12, cpu_id) +
+                             perfmon_getResult(group_id, 14, cpu_id) +
+                             perfmon_getResult(group_id, 16, cpu_id) +
+                             perfmon_getResult(group_id, 18, cpu_id)) *
+                     64.0;
+            },
+            // Memory bandwidth [MBytes/s]
+            [](int group_id, int cpu_id) {
+              // 1.0E-06*(MBOX0C0+MBOX1C0+MBOX2C0+MBOX3C0+
+              //          MBOX4C0+MBOX5C0+MBOX6C0+MBOX7C0+
+              //          MBOX0C1+MBOX1C1+MBOX2C1+MBOX3C1+
+              //          MBOX4C1+MBOX5C1+MBOX6C1+MBOX7C1)*64.0/time
+              return 1e-6 * (perfmon_getResult(group_id, 3, cpu_id) +
+                             perfmon_getResult(group_id, 4, cpu_id) +
+                             perfmon_getResult(group_id, 5, cpu_id) +
+                             perfmon_getResult(group_id, 6, cpu_id) +
+                             perfmon_getResult(group_id, 7, cpu_id) +
+                             perfmon_getResult(group_id, 8, cpu_id) +
+                             perfmon_getResult(group_id, 9, cpu_id) +
+                             perfmon_getResult(group_id, 10, cpu_id) +
+                             perfmon_getResult(group_id, 11, cpu_id) +
+                             perfmon_getResult(group_id, 12, cpu_id) +
+                             perfmon_getResult(group_id, 13, cpu_id) +
+                             perfmon_getResult(group_id, 14, cpu_id) +
+                             perfmon_getResult(group_id, 15, cpu_id) +
+                             perfmon_getResult(group_id, 16, cpu_id) +
+                             perfmon_getResult(group_id, 17, cpu_id) +
+                             perfmon_getResult(group_id, 18, cpu_id)) *
+                     64.0 / perfmon_getTimeOfGroup(group_id);
+            },
+            // Memory data volume [GBytes]
+            [](int group_id, int cpu_id) {
+              // 1.0E-09*(MBOX0C0+MBOX1C0+MBOX2C0+MBOX3C0+
+              //          MBOX4C0+MBOX5C0+MBOX6C0+MBOX7C0+
+              //          MBOX0C1+MBOX1C1+MBOX2C1+MBOX3C1+
+              //          MBOX4C1+MBOX5C1+MBOX6C1+MBOX7C1)*64.0
+              return 1e-9 * (perfmon_getResult(group_id, 3, cpu_id) +
+                             perfmon_getResult(group_id, 4, cpu_id) +
+                             perfmon_getResult(group_id, 5, cpu_id) +
+                             perfmon_getResult(group_id, 6, cpu_id) +
+                             perfmon_getResult(group_id, 7, cpu_id) +
+                             perfmon_getResult(group_id, 8, cpu_id) +
+                             perfmon_getResult(group_id, 9, cpu_id) +
+                             perfmon_getResult(group_id, 10, cpu_id) +
+                             perfmon_getResult(group_id, 11, cpu_id) +
+                             perfmon_getResult(group_id, 12, cpu_id) +
+                             perfmon_getResult(group_id, 13, cpu_id) +
+                             perfmon_getResult(group_id, 14, cpu_id) +
+                             perfmon_getResult(group_id, 15, cpu_id) +
+                             perfmon_getResult(group_id, 16, cpu_id) +
+                             perfmon_getResult(group_id, 17, cpu_id) +
+                             perfmon_getResult(group_id, 18, cpu_id)) *
+                     64.0;
+            },
+        },
+        /* NUMA */
+        {
+            // Runtime (RDTSC) [s]
+            [](int group_id, int cpu_id) {
+              // time
+              return perfmon_getTimeOfGroup(group_id);
+            },
+            // Runtime unhalted [s]
+            [](int group_id, int cpu_id) {
+              // FIXC1*inverseClock
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     timer_getCpuClock();
+            },
+            // Clock [MHz]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(FIXC1/FIXC2)/inverseClock
+              return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                             perfmon_getResult(group_id, 2, cpu_id)) *
+                     timer_getCpuClock();
+            },
+            // CPI
+            [](int group_id, int cpu_id) {
+              // FIXC1/FIXC0
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // Local DRAM data volume [GByte]
+            [](int group_id, int cpu_id) {
+              // 1.E-09*PMC0*64
+              return 1e-9 * perfmon_getResult(group_id, 3, cpu_id) * 64.0;
+            },
+            // Local DRAM bandwidth [MByte/s]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(PMC0*64)/time
+              return 1e-6 * (perfmon_getResult(group_id, 3, cpu_id)) /
+                     perfmon_getTimeOfGroup(group_id);
+            },
+            // Remote DRAM data volume [GByte]
+            [](int group_id, int cpu_id) {
+              // 1.E-09*PMC1*64
+              return 1e-9 * perfmon_getResult(group_id, 4, cpu_id) * 64.0;
+            },
+            // Remote DRAM bandwidth [MByte/s]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(PMC1*64)/time
+              return 1e-6 * (perfmon_getResult(group_id, 4, cpu_id) * 64.0) /
+                     perfmon_getTimeOfGroup(group_id);
+            },
+            // Memory data volume [GByte]
+            [](int group_id, int cpu_id) {
+              // 1.E-09*(PMC0+PMC1)*64
+              return 1e-9 * (perfmon_getResult(group_id, 3, cpu_id) +
+                             perfmon_getResult(group_id, 4, cpu_id)) *
+                     64.0;
+            },
+            // Memory bandwidth [MByte/s]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*((PMC0+PMC1)*64)/time
+              return 1e-6 * ((perfmon_getResult(group_id, 3, cpu_id) +
+                              perfmon_getResult(group_id, 4, cpu_id)) *
+                             64.0) /
+                     perfmon_getTimeOfGroup(group_id);
+            },
+        },
+        /* QPI */
+        {
+            // Runtime (RDTSC) [s]
+            [](int group_id, int cpu_id) {
+              // time
+              return perfmon_getTimeOfGroup(group_id);
+            },
+            // Runtime unhalted [s]
+            [](int group_id, int cpu_id) {
+              // FIXC1*inverseClock
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     timer_getCpuClock();
+            },
+            // Clock [MHz]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(FIXC1/FIXC2)/inverseClock
+              return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                             perfmon_getResult(group_id, 2, cpu_id)) *
+                     timer_getCpuClock();
+            },
+            // CPI
+            [](int group_id, int cpu_id) {
+              // FIXC1/FIXC0
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // QPI to LLC data volume [GByte]
+            [](int group_id, int cpu_id) {
+              // 1.E-09*(QBOX0C1+QBOX1C1)*64
+              return 1e-9 * (perfmon_getResult(group_id, 5, cpu_id) +
+                             perfmon_getResult(group_id, 6, cpu_id)) *
+                     64.0;
+            },
+            // QPI data volume [GByte]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(QBOX0C2+QBOX1C2)*8
+              return 1e-6 * (perfmon_getResult(group_id, 7, cpu_id) +
+                             perfmon_getResult(group_id, 8, cpu_id)) *
+                     8.0;
+            },
+            // QPI data bandwidth [MByte/s]
+            [](int group_id, int cpu_id) {
+              // 1.E-09*(QBOX0C2+QBOX1C2)*8/time
+              return 1e-9 * (perfmon_getResult(group_id, 7, cpu_id) +
+                             perfmon_getResult(group_id, 8, cpu_id)) *
+                     8.0 / perfmon_getTimeOfGroup(group_id);
+            },
+            // QPI link volume [GByte]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(QBOX0C2+QBOX1C2+QBOX0C3+QBOX1C3)*8
+              return 1e-6 * (perfmon_getResult(group_id, 7, cpu_id) +
+                             perfmon_getResult(group_id, 8, cpu_id) +
+                             perfmon_getResult(group_id, 9, cpu_id) +
+                             perfmon_getResult(group_id, 10, cpu_id)) *
+                     8.0;
+            },
+            // QPI link bandwidth [MByte/s]
+            [](int group_id, int cpu_id) {
+              // 1.E-09*(QBOX0C2+QBOX1C2+QBOX0C3+QBOX1C3)*8/time
+              return 1e-9 * (perfmon_getResult(group_id, 7, cpu_id) +
+                             perfmon_getResult(group_id, 8, cpu_id) +
+                             perfmon_getResult(group_id, 9, cpu_id) +
+                             perfmon_getResult(group_id, 10, cpu_id)) *
+                     8.0 / perfmon_getTimeOfGroup(group_id);
+            },
+        },
+        /* SBOX */
+        {
+            // Runtime (RDTSC) [s]
+            [](int group_id, int cpu_id) {
+              // time
+              return perfmon_getTimeOfGroup(group_id);
+            },
+            // Runtime unhalted [s]
+            [](int group_id, int cpu_id) {
+              // FIXC1*inverseClock
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     timer_getCpuClock();
+            },
+            // Clock [MHz]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(FIXC1/FIXC2)/inverseClock
+              return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                             perfmon_getResult(group_id, 2, cpu_id)) *
+                     timer_getCpuClock();
+            },
+            // CPI
+            [](int group_id, int cpu_id) {
+              // FIXC1/FIXC0
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // Ring transfer bandwidth [MByte/s]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(SBOX0C0+SBOX1C0+SBOX2C0+SBOX3C0)*32/time
+              return 1e-6 * (perfmon_getResult(group_id, 3, cpu_id) +
+                             perfmon_getResult(group_id, 4, cpu_id) +
+                             perfmon_getResult(group_id, 5, cpu_id) +
+                             perfmon_getResult(group_id, 6, cpu_id)) *
+                     32.0 / perfmon_getTimeOfGroup(group_id);
+            },
+            // Ring transfer data volume [GByte]
+            [](int group_id, int cpu_id) {
+              // 1.E-09*(SBOX0C0+SBOX1C0+SBOX2C0+SBOX3C0)*32
+              return 1e-9 * (perfmon_getResult(group_id, 3, cpu_id) +
+                             perfmon_getResult(group_id, 4, cpu_id) +
+                             perfmon_getResult(group_id, 5, cpu_id) +
+                             perfmon_getResult(group_id, 6, cpu_id)) *
+                     32.0;
+            },
+        },
+        /* TLB_DATA */
+        {
+            // Runtime (RDTSC) [s]
+            [](int group_id, int cpu_id) {
+              // time
+              return perfmon_getTimeOfGroup(group_id);
+            },
+            // Runtime unhalted [s]
+            [](int group_id, int cpu_id) {
+              // FIXC1*inverseClock
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     timer_getCpuClock();
+            },
+            // Clock [MHz]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(FIXC1/FIXC2)/inverseClock
+              return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                             perfmon_getResult(group_id, 2, cpu_id)) *
+                     timer_getCpuClock();
+            },
+            // CPI
+            [](int group_id, int cpu_id) {
+              // FIXC1/FIXC0
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // L1 DTLB load misses
+            [](int group_id, int cpu_id) {
+              // PMC0
+              return perfmon_getResult(group_id, 3, cpu_id);
+            },
+            // L1 DTLB load miss rate
+            [](int group_id, int cpu_id) {
+              // PMC0/FIXC0
+              return perfmon_getResult(group_id, 3, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // L1 DTLB load miss duration
+            [](int group_id, int cpu_id) {
+              // PMC2/PMC0
+              return perfmon_getResult(group_id, 5, cpu_id) /
+                     perfmon_getResult(group_id, 3, cpu_id);
+            },
+            // L1 DTLB store misses
+            [](int group_id, int cpu_id) {
+              // PMC1
+              return perfmon_getResult(group_id, 4, cpu_id);
+            },
+            // L1 DTLB store miss rate
+            [](int group_id, int cpu_id) {
+              // PMC1/FIXC0
+              return perfmon_getResult(group_id, 4, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // L1 DTLB store miss duration [Cyc]
+            [](int group_id, int cpu_id) {
+              // PMC3/PMC1
+              return perfmon_getResult(group_id, 6, cpu_id) /
+                     perfmon_getResult(group_id, 4, cpu_id);
+            },
+        },
+        /* TLB_INSTR */
+        {
+            // Runtime (RDTSC) [s]
+            [](int group_id, int cpu_id) {
+              // time
+              return perfmon_getTimeOfGroup(group_id);
+            },
+            // Runtime unhalted [s]
+            [](int group_id, int cpu_id) {
+              // FIXC1*inverseClock
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     timer_getCpuClock();
+            },
+            // Clock [MHz]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(FIXC1/FIXC2)/inverseClock
+              return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                             perfmon_getResult(group_id, 2, cpu_id)) *
+                     timer_getCpuClock();
+            },
+            // CPI
+            [](int group_id, int cpu_id) {
+              // FIXC1/FIXC0
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // L1 ITLB misses
+            [](int group_id, int cpu_id) {
+              // PMC0
+              return perfmon_getResult(group_id, 3, cpu_id);
+            },
+            // L1 ITLB miss rate
+            [](int group_id, int cpu_id) {
+              // PMC0/FIXC0
+              return perfmon_getResult(group_id, 3, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // L1 ITLB miss duration [Cyc]
+            [](int group_id, int cpu_id) {
+              // PMC1/PMC0
+              return perfmon_getResult(group_id, 4, cpu_id) /
+                     perfmon_getResult(group_id, 3, cpu_id);
+            },
+        },
+        /* FLOPS_AVX */
+        {
+            // Runtime (RDTSC) [s]
+            [](int group_id, int cpu_id) {
+              // time
+              return perfmon_getTimeOfGroup(group_id);
+            },
+            // Runtime unhalted [s]
+            [](int group_id, int cpu_id) {
+              // FIXC1*inverseClock
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     timer_getCpuClock();
+            },
+            // Clock [MHz]
+            [](int group_id, int cpu_id) {
+              // 1.E-06*(FIXC1/FIXC2)/inverseClock
+              return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
+                             perfmon_getResult(group_id, 2, cpu_id)) *
+                     timer_getCpuClock();
+            },
+            // CPI
+            [](int group_id, int cpu_id) {
+              // FIXC1/FIXC0
+              return perfmon_getResult(group_id, 1, cpu_id) /
+                     perfmon_getResult(group_id, 0, cpu_id);
+            },
+            // Packed SP MFLOP/s
+            [](int group_id, int cpu_id) {
+              // 1.0E-06*(PMC0*8.0)/time
+              return 1e-6 * perfmon_getResult(group_id, 3, cpu_id) * 8 /
+                     perfmon_getTimeOfGroup(group_id);
+            },
+            // Packed DP MFLOP/s
+            [](int group_id, int cpu_id) {
+              // 1.0E-06*(PMC0*8.0)/time
+              return 1e-6 * perfmon_getResult(group_id, 3, cpu_id) * 4 /
+                     perfmon_getTimeOfGroup(group_id);
+            },
         },
-        // Runtime unhalted [s]
-        [](int group_id, int cpu_id) {
-          // FIXC1*inverseClock
-          return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
-        },
-        // Clock [MHz]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(FIXC1/FIXC2)/inverseClock
-          return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
-                         perfmon_getResult(group_id, 2, cpu_id)) *
-                 timer_getCpuClock();
-        },
-        // CPI
-        [](int group_id, int cpu_id) {
-          // FIXC1/FIXC0
-          return perfmon_getResult(group_id, 1, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // Temperature [C]
-        [](int group_id, int cpu_id) {
-          // TMP0
-          return perfmon_getResult(group_id, 3, cpu_id);
-        },
-        // Energy [J]
-        [](int group_id, int cpu_id) {
-          // PWR0
-          return perfmon_getResult(group_id, 4, cpu_id);
-        },
-        // Power [W]
-        [](int group_id, int cpu_id) {
-          // PWR0/time
-          return perfmon_getResult(group_id, 4, cpu_id) /
-                 perfmon_getTimeOfGroup(group_id);
-        },
-        // Energy PP0 [J]
-        [](int group_id, int cpu_id) {
-          // PWR1
-          return perfmon_getResult(group_id, 5, cpu_id);
-        },
-        // Power PP0 [W]
-        [](int group_id, int cpu_id) {
-          // PWR1/time
-          return perfmon_getResult(group_id, 5, cpu_id) /
-                 perfmon_getTimeOfGroup(group_id);
-        },
-        // Energy DRAM [J]
-        [](int group_id, int cpu_id) {
-          // PWR3
-          return perfmon_getResult(group_id, 6, cpu_id);
-        },
-        // Power DRAM [W]
-        [](int group_id, int cpu_id) {
-          // PWR3/time
-          return perfmon_getResult(group_id, 6, cpu_id) /
-                 perfmon_getTimeOfGroup(group_id);
-        },
-    },
-    /* ICACHE */
-    {
-        // Runtime (RDTSC) [s]
-        [](int group_id, int cpu_id) {
-          // time
-          return perfmon_getTimeOfGroup(group_id);
-        },
-        // Runtime unhalted [s]
-        [](int group_id, int cpu_id) {
-          // FIXC1*inverseClock
-          return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
-        },
-        // Clock [MHz]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(FIXC1/FIXC2)/inverseClock
-          return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
-                         perfmon_getResult(group_id, 2, cpu_id)) *
-                 timer_getCpuClock();
-        },
-        // CPI
-        [](int group_id, int cpu_id) {
-          // FIXC1/FIXC0
-          return perfmon_getResult(group_id, 1, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // L1I request rate
-        [](int group_id, int cpu_id) {
-          // PMC0/FIXC0
-          return perfmon_getResult(group_id, 3, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // L1I miss rate
-        [](int group_id, int cpu_id) {
-          // PMC1/FIXC0
-          return perfmon_getResult(group_id, 5, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // L1I miss ratio
-        [](int group_id, int cpu_id) {
-          // PMC1/PMC0
-          return perfmon_getResult(group_id, 5, cpu_id) /
-                 perfmon_getResult(group_id, 4, cpu_id);
-        },
-    },
-    /* L2 */
-    {
-        // Runtime (RDTSC) [s]
-        [](int group_id, int cpu_id) {
-          // time
-          return perfmon_getTimeOfGroup(group_id);
-        },
-        // Runtime unhalted [s]
-        [](int group_id, int cpu_id) {
-          // FIXC1*inverseClock
-          return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
-        },
-        // Clock [MHz]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(FIXC1/FIXC2)/inverseClock
-          return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
-                         perfmon_getResult(group_id, 2, cpu_id)) *
-                 timer_getCpuClock();
-        },
-        // CPI
-        [](int group_id, int cpu_id) {
-          // FIXC1/FIXC0
-          return perfmon_getResult(group_id, 1, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // L2D load bandwidth [MBytes/s]
-        [](int group_id, int cpu_id) {
-          // 1.0E-06*PMC0*64.0/time
-          return 1e-6 * perfmon_getResult(group_id, 3, cpu_id) * 64.0 /
-                 perfmon_getTimeOfGroup(group_id);
-        },
-        // L2D load data volume [GBytes]
-        [](int group_id, int cpu_id) {
-          // 1.0E-09*PMC0*64.0
-          return 1e-9 * perfmon_getResult(group_id, 3, cpu_id) * 64.0;
-        },
-        // L2D evict bandwidth [MBytes/s]
-        [](int group_id, int cpu_id) {
-          // 1.0E-06*PMC1*64.0/time
-          return 1e-6 * perfmon_getResult(group_id, 4, cpu_id) * 64.0 /
-                 perfmon_getTimeOfGroup(group_id);
-        },
-        // L2D evict data volume [GBytes]
-        [](int group_id, int cpu_id) {
-          // 1.0E-09*PMC1*64.0
-          return 1e-9 * perfmon_getResult(group_id, 4, cpu_id) * 64.0;
-        },
-        // L2 bandwidth [MBytes/s]
-        [](int group_id, int cpu_id) {
-          // 1.0E-06*(PMC0+PMC1+PMC2)*64.0/time
-          return 1e-6 * (perfmon_getResult(group_id, 3, cpu_id) +
-                         perfmon_getResult(group_id, 4, cpu_id) +
-                         perfmon_getResult(group_id, 5, cpu_id)) *
-                 64.0 / perfmon_getTimeOfGroup(group_id);
-        },
-        // L2 data volume [GBytes]
-        [](int group_id, int cpu_id) {
-          // 1.0E-09*(PMC0+PMC1+PMC2)*64.0
-          return 1e-9 * (perfmon_getResult(group_id, 3, cpu_id) +
-                         perfmon_getResult(group_id, 4, cpu_id) +
-                         perfmon_getResult(group_id, 5, cpu_id)) *
-                 64.0;
-        },
-    },
-    /* L2CACHE */
-    {
-        // Runtime (RDTSC) [s]
-        [](int group_id, int cpu_id) {
-          // time
-          return perfmon_getTimeOfGroup(group_id);
-        },
-        // Runtime unhalted [s]
-        [](int group_id, int cpu_id) {
-          // FIXC1*inverseClock
-          return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
-        },
-        // Clock [MHz]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(FIXC1/FIXC2)/inverseClock
-          return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
-                         perfmon_getResult(group_id, 2, cpu_id)) *
-                 timer_getCpuClock();
-        },
-        // CPI
-        [](int group_id, int cpu_id) {
-          // FIXC1/FIXC0
-          return perfmon_getResult(group_id, 1, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // L2 request rate
-        [](int group_id, int cpu_id) {
-          // PMC0/FIXC0
-          return perfmon_getResult(group_id, 3, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // L2 miss rate
-        [](int group_id, int cpu_id) {
-          // PMC1/FIXC0
-          return perfmon_getResult(group_id, 4, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // L2 miss ratio
-        [](int group_id, int cpu_id) {
-          // PMC1/PMC0
-          return perfmon_getResult(group_id, 4, cpu_id) /
-                 perfmon_getResult(group_id, 3, cpu_id);
-        },
-    },
-    /* L3 */
-    {
-        // Runtime (RDTSC) [s]
-        [](int group_id, int cpu_id) {
-          // time
-          return perfmon_getTimeOfGroup(group_id);
-        },
-        // Runtime unhalted [s]
-        [](int group_id, int cpu_id) {
-          // FIXC1*inverseClock
-          return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
-        },
-        // Clock [MHz]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(FIXC1/FIXC2)/inverseClock
-          return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
-                         perfmon_getResult(group_id, 2, cpu_id)) *
-                 timer_getCpuClock();
-        },
-        // CPI
-        [](int group_id, int cpu_id) {
-          // FIXC1/FIXC0
-          return perfmon_getResult(group_id, 1, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // L3 load bandwidth [MBytes/s]
-        [](int group_id, int cpu_id) {
-          // 1.0E-06*PMC0*64.0/time
-          return 1e-6 * perfmon_getResult(group_id, 3, cpu_id) * 64.0 /
-                 perfmon_getTimeOfGroup(group_id);
-        },
-        // L3 load data volume [GBytes]
-        [](int group_id, int cpu_id) {
-          // 1.0E-09*PMC0*64.0
-          return 1e-9 * perfmon_getResult(group_id, 3, cpu_id) * 64.0;
-        },
-        // L3 evict bandwidth [MBytes/s]
-        [](int group_id, int cpu_id) {
-          // 1.0E-06*PMC1*64.0/time
-          return 1e-6 * perfmon_getResult(group_id, 4, cpu_id) * 64.0 /
-                 perfmon_getTimeOfGroup(group_id);
-        },
-        // L3 evict data volume [GBytes]
-        [](int group_id, int cpu_id) {
-          // 1.0E-09*PMC1*64.0
-          return 1e-9 * perfmon_getResult(group_id, 4, cpu_id) * 64.0;
-        },
-        // L3 bandwidth [MBytes/s]
-        [](int group_id, int cpu_id) {
-          // 1.0E-06*(PMC0+PMC1)*64.0/time
-          return 1e-6 * (perfmon_getResult(group_id, 3, cpu_id) +
-                         perfmon_getResult(group_id, 4, cpu_id)) *
-                 64.0 / perfmon_getTimeOfGroup(group_id);
-        },
-        // L3 data volume [GBytes]
-        [](int group_id, int cpu_id) {
-          // 1.0E-09*(PMC0+PMC1)*64.0
-          return 1e-9 * (perfmon_getResult(group_id, 3, cpu_id) +
-                         perfmon_getResult(group_id, 4, cpu_id)) *
-                 64.0;
-        },
-    },
-    /* L3CACHE */
-    {
-        // Runtime (RDTSC) [s]
-        [](int group_id, int cpu_id) {
-          // time
-          return perfmon_getTimeOfGroup(group_id);
-        },
-        // Runtime unhalted [s]
-        [](int group_id, int cpu_id) {
-          // FIXC1*inverseClock
-          return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
-        },
-        // Clock [MHz]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(FIXC1/FIXC2)/inverseClock
-          return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
-                         perfmon_getResult(group_id, 2, cpu_id)) *
-                 timer_getCpuClock();
-        },
-        // CPI
-        [](int group_id, int cpu_id) {
-          // FIXC1/FIXC0
-          return perfmon_getResult(group_id, 1, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // L3 request rate
-        [](int group_id, int cpu_id) {
-          // PMC0/PMC2
-          return perfmon_getResult(group_id, 3, cpu_id) /
-                 perfmon_getResult(group_id, 5, cpu_id);
-        },
-        // L3 miss rate
-        [](int group_id, int cpu_id) {
-          // PMC1/PMC2
-          return perfmon_getResult(group_id, 4, cpu_id) /
-                 perfmon_getResult(group_id, 5, cpu_id);
-        },
-        // L3 miss ratio
-        [](int group_id, int cpu_id) {
-          // PMC1/PMC0
-          return perfmon_getResult(group_id, 4, cpu_id) /
-                 perfmon_getResult(group_id, 3, cpu_id);
-        },
-    },
-    /* MEM */
-    {
-        // Runtime (RDTSC) [s]
-        [](int group_id, int cpu_id) {
-          // time
-          return perfmon_getTimeOfGroup(group_id);
-        },
-        // Runtime unhalted [s]
-        [](int group_id, int cpu_id) {
-          // FIXC1*inverseClock
-          return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
-        },
-        // Clock [MHz]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(FIXC1/FIXC2)/inverseClock
-          return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
-                         perfmon_getResult(group_id, 2, cpu_id)) *
-                 timer_getCpuClock();
-        },
-        // CPI
-        [](int group_id, int cpu_id) {
-          // FIXC1/FIXC0
-          return perfmon_getResult(group_id, 1, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // Memory read bandwidth [MBytes/s]
-        [](int group_id, int cpu_id) {
-          // 1.0E-06*(MBOX0C0+MBOX1C0+MBOX2C0+
-          //          MBOX3C0+MBOX4C0+MBOX5C0+MBOX6C0+MBOX7C0)*64.0/time
-          return 1e-6 * (perfmon_getResult(group_id, 3, cpu_id) +
-                         perfmon_getResult(group_id, 5, cpu_id) +
-                         perfmon_getResult(group_id, 7, cpu_id) +
-                         perfmon_getResult(group_id, 9, cpu_id) +
-                         perfmon_getResult(group_id, 11, cpu_id) +
-                         perfmon_getResult(group_id, 13, cpu_id) +
-                         perfmon_getResult(group_id, 15, cpu_id) +
-                         perfmon_getResult(group_id, 17, cpu_id)) *
-                 64.0 / perfmon_getTimeOfGroup(group_id);
-        },
-        // Memory read data volume [GBytes]
-        [](int group_id, int cpu_id) {
-          // 1.0E-09*(MBOX0C0+MBOX1C0+MBOX2C0+MBOX3C0+
-          //          MBOX4C0+MBOX5C0+MBOX6C0+MBOX7C0)*64.0
-          return 1e-9 * (perfmon_getResult(group_id, 3, cpu_id) +
-                         perfmon_getResult(group_id, 5, cpu_id) +
-                         perfmon_getResult(group_id, 7, cpu_id) +
-                         perfmon_getResult(group_id, 9, cpu_id) +
-                         perfmon_getResult(group_id, 11, cpu_id) +
-                         perfmon_getResult(group_id, 13, cpu_id) +
-                         perfmon_getResult(group_id, 15, cpu_id) +
-                         perfmon_getResult(group_id, 17, cpu_id)) *
-                 64.0;
-        },
-        // Memory write bandwidth [MBytes/s]
-        [](int group_id, int cpu_id) {
-          // 1.0E-06*(MBOX0C1+MBOX1C1+MBOX2C1+MBOX3C1+
-          //          MBOX4C1+MBOX5C1+MBOX6C1+MBOX7C1)*64.0/time
-          return 1e-6 * (perfmon_getResult(group_id, 4, cpu_id) +
-                         perfmon_getResult(group_id, 6, cpu_id) +
-                         perfmon_getResult(group_id, 8, cpu_id) +
-                         perfmon_getResult(group_id, 10, cpu_id) +
-                         perfmon_getResult(group_id, 12, cpu_id) +
-                         perfmon_getResult(group_id, 14, cpu_id) +
-                         perfmon_getResult(group_id, 16, cpu_id) +
-                         perfmon_getResult(group_id, 18, cpu_id)) *
-                 64.0 / perfmon_getTimeOfGroup(group_id);
-        },
-        // Memory write data volume [GBytes]
-        [](int group_id, int cpu_id) {
-          // 1.0E-09*(MBOX0C1+MBOX1C1+MBOX2C1+MBOX3C1+
-          //          MBOX4C1+MBOX5C1+MBOX6C1+MBOX7C1)*64.0
-          return 1e-9 * (perfmon_getResult(group_id, 4, cpu_id) +
-                         perfmon_getResult(group_id, 6, cpu_id) +
-                         perfmon_getResult(group_id, 8, cpu_id) +
-                         perfmon_getResult(group_id, 10, cpu_id) +
-                         perfmon_getResult(group_id, 12, cpu_id) +
-                         perfmon_getResult(group_id, 14, cpu_id) +
-                         perfmon_getResult(group_id, 16, cpu_id) +
-                         perfmon_getResult(group_id, 18, cpu_id)) *
-                 64.0;
-        },
-        // Memory bandwidth [MBytes/s]
-        [](int group_id, int cpu_id) {
-          // 1.0E-06*(MBOX0C0+MBOX1C0+MBOX2C0+MBOX3C0+
-          //          MBOX4C0+MBOX5C0+MBOX6C0+MBOX7C0+
-          //          MBOX0C1+MBOX1C1+MBOX2C1+MBOX3C1+
-          //          MBOX4C1+MBOX5C1+MBOX6C1+MBOX7C1)*64.0/time
-          return 1e-6 * (perfmon_getResult(group_id, 3, cpu_id) +
-                         perfmon_getResult(group_id, 4, cpu_id) +
-                         perfmon_getResult(group_id, 5, cpu_id) +
-                         perfmon_getResult(group_id, 6, cpu_id) +
-                         perfmon_getResult(group_id, 7, cpu_id) +
-                         perfmon_getResult(group_id, 8, cpu_id) +
-                         perfmon_getResult(group_id, 9, cpu_id) +
-                         perfmon_getResult(group_id, 10, cpu_id) +
-                         perfmon_getResult(group_id, 11, cpu_id) +
-                         perfmon_getResult(group_id, 12, cpu_id) +
-                         perfmon_getResult(group_id, 13, cpu_id) +
-                         perfmon_getResult(group_id, 14, cpu_id) +
-                         perfmon_getResult(group_id, 15, cpu_id) +
-                         perfmon_getResult(group_id, 16, cpu_id) +
-                         perfmon_getResult(group_id, 17, cpu_id) +
-                         perfmon_getResult(group_id, 18, cpu_id)) *
-                 64.0 / perfmon_getTimeOfGroup(group_id);
-        },
-        // Memory data volume [GBytes]
-        [](int group_id, int cpu_id) {
-          // 1.0E-09*(MBOX0C0+MBOX1C0+MBOX2C0+MBOX3C0+
-          //          MBOX4C0+MBOX5C0+MBOX6C0+MBOX7C0+
-          //          MBOX0C1+MBOX1C1+MBOX2C1+MBOX3C1+
-          //          MBOX4C1+MBOX5C1+MBOX6C1+MBOX7C1)*64.0
-          return 1e-9 * (perfmon_getResult(group_id, 3, cpu_id) +
-                         perfmon_getResult(group_id, 4, cpu_id) +
-                         perfmon_getResult(group_id, 5, cpu_id) +
-                         perfmon_getResult(group_id, 6, cpu_id) +
-                         perfmon_getResult(group_id, 7, cpu_id) +
-                         perfmon_getResult(group_id, 8, cpu_id) +
-                         perfmon_getResult(group_id, 9, cpu_id) +
-                         perfmon_getResult(group_id, 10, cpu_id) +
-                         perfmon_getResult(group_id, 11, cpu_id) +
-                         perfmon_getResult(group_id, 12, cpu_id) +
-                         perfmon_getResult(group_id, 13, cpu_id) +
-                         perfmon_getResult(group_id, 14, cpu_id) +
-                         perfmon_getResult(group_id, 15, cpu_id) +
-                         perfmon_getResult(group_id, 16, cpu_id) +
-                         perfmon_getResult(group_id, 17, cpu_id) +
-                         perfmon_getResult(group_id, 18, cpu_id)) *
-                 64.0;
-        },
-    },
-    /* NUMA */
-    {
-        // Runtime (RDTSC) [s]
-        [](int group_id, int cpu_id) {
-          // time
-          return perfmon_getTimeOfGroup(group_id);
-        },
-        // Runtime unhalted [s]
-        [](int group_id, int cpu_id) {
-          // FIXC1*inverseClock
-          return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
-        },
-        // Clock [MHz]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(FIXC1/FIXC2)/inverseClock
-          return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
-                         perfmon_getResult(group_id, 2, cpu_id)) *
-                 timer_getCpuClock();
-        },
-        // CPI
-        [](int group_id, int cpu_id) {
-          // FIXC1/FIXC0
-          return perfmon_getResult(group_id, 1, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // Local DRAM data volume [GByte]
-        [](int group_id, int cpu_id) {
-          // 1.E-09*PMC0*64
-          return 1e-9 * perfmon_getResult(group_id, 3, cpu_id) * 64.0;
-        },
-        // Local DRAM bandwidth [MByte/s]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(PMC0*64)/time
-          return 1e-6 * (perfmon_getResult(group_id, 3, cpu_id)) /
-                 perfmon_getTimeOfGroup(group_id);
-        },
-        // Remote DRAM data volume [GByte]
-        [](int group_id, int cpu_id) {
-          // 1.E-09*PMC1*64
-          return 1e-9 * perfmon_getResult(group_id, 4, cpu_id) * 64.0;
-        },
-        // Remote DRAM bandwidth [MByte/s]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(PMC1*64)/time
-          return 1e-6 * (perfmon_getResult(group_id, 4, cpu_id) * 64.0) /
-                 perfmon_getTimeOfGroup(group_id);
-        },
-        // Memory data volume [GByte]
-        [](int group_id, int cpu_id) {
-          // 1.E-09*(PMC0+PMC1)*64
-          return 1e-9 * (perfmon_getResult(group_id, 3, cpu_id) +
-                         perfmon_getResult(group_id, 4, cpu_id)) *
-                 64.0;
-        },
-        // Memory bandwidth [MByte/s]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*((PMC0+PMC1)*64)/time
-          return 1e-6 * ((perfmon_getResult(group_id, 3, cpu_id) +
-                          perfmon_getResult(group_id, 4, cpu_id)) *
-                         64.0) /
-                 perfmon_getTimeOfGroup(group_id);
-        },
-    },
-    /* QPI */
-    {
-        // Runtime (RDTSC) [s]
-        [](int group_id, int cpu_id) {
-          // time
-          return perfmon_getTimeOfGroup(group_id);
-        },
-        // Runtime unhalted [s]
-        [](int group_id, int cpu_id) {
-          // FIXC1*inverseClock
-          return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
-        },
-        // Clock [MHz]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(FIXC1/FIXC2)/inverseClock
-          return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
-                         perfmon_getResult(group_id, 2, cpu_id)) *
-                 timer_getCpuClock();
-        },
-        // CPI
-        [](int group_id, int cpu_id) {
-          // FIXC1/FIXC0
-          return perfmon_getResult(group_id, 1, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // QPI to LLC data volume [GByte]
-        [](int group_id, int cpu_id) {
-          // 1.E-09*(QBOX0C1+QBOX1C1)*64
-          return 1e-9 * (perfmon_getResult(group_id, 5, cpu_id) +
-                         perfmon_getResult(group_id, 6, cpu_id)) *
-                 64.0;
-        },
-        // QPI data volume [GByte]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(QBOX0C2+QBOX1C2)*8
-          return 1e-6 * (perfmon_getResult(group_id, 7, cpu_id) +
-                         perfmon_getResult(group_id, 8, cpu_id)) *
-                 8.0;
-        },
-        // QPI data bandwidth [MByte/s]
-        [](int group_id, int cpu_id) {
-          // 1.E-09*(QBOX0C2+QBOX1C2)*8/time
-          return 1e-9 * (perfmon_getResult(group_id, 7, cpu_id) +
-                         perfmon_getResult(group_id, 8, cpu_id)) *
-                 8.0 / perfmon_getTimeOfGroup(group_id);
-        },
-        // QPI link volume [GByte]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(QBOX0C2+QBOX1C2+QBOX0C3+QBOX1C3)*8
-          return 1e-6 * (perfmon_getResult(group_id, 7, cpu_id) +
-                         perfmon_getResult(group_id, 8, cpu_id) +
-                         perfmon_getResult(group_id, 9, cpu_id) +
-                         perfmon_getResult(group_id, 10, cpu_id)) *
-                 8.0;
-        },
-        // QPI link bandwidth [MByte/s]
-        [](int group_id, int cpu_id) {
-          // 1.E-09*(QBOX0C2+QBOX1C2+QBOX0C3+QBOX1C3)*8/time
-          return 1e-9 * (perfmon_getResult(group_id, 7, cpu_id) +
-                         perfmon_getResult(group_id, 8, cpu_id) +
-                         perfmon_getResult(group_id, 9, cpu_id) +
-                         perfmon_getResult(group_id, 10, cpu_id)) *
-                 8.0 / perfmon_getTimeOfGroup(group_id);
-        },
-    },
-    /* SBOX */
-    {
-        // Runtime (RDTSC) [s]
-        [](int group_id, int cpu_id) {
-          // time
-          return perfmon_getTimeOfGroup(group_id);
-        },
-        // Runtime unhalted [s]
-        [](int group_id, int cpu_id) {
-          // FIXC1*inverseClock
-          return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
-        },
-        // Clock [MHz]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(FIXC1/FIXC2)/inverseClock
-          return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
-                         perfmon_getResult(group_id, 2, cpu_id)) *
-                 timer_getCpuClock();
-        },
-        // CPI
-        [](int group_id, int cpu_id) {
-          // FIXC1/FIXC0
-          return perfmon_getResult(group_id, 1, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // Ring transfer bandwidth [MByte/s]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(SBOX0C0+SBOX1C0+SBOX2C0+SBOX3C0)*32/time
-          return 1e-6 * (perfmon_getResult(group_id, 3, cpu_id) +
-                         perfmon_getResult(group_id, 4, cpu_id) +
-                         perfmon_getResult(group_id, 5, cpu_id) +
-                         perfmon_getResult(group_id, 6, cpu_id)) *
-                 32.0 / perfmon_getTimeOfGroup(group_id);
-        },
-        // Ring transfer data volume [GByte]
-        [](int group_id, int cpu_id) {
-          // 1.E-09*(SBOX0C0+SBOX1C0+SBOX2C0+SBOX3C0)*32
-          return 1e-9 * (perfmon_getResult(group_id, 3, cpu_id) +
-                         perfmon_getResult(group_id, 4, cpu_id) +
-                         perfmon_getResult(group_id, 5, cpu_id) +
-                         perfmon_getResult(group_id, 6, cpu_id)) *
-                 32.0;
-        },
-    },
-    /* TLB_DATA */
-    {
-        // Runtime (RDTSC) [s]
-        [](int group_id, int cpu_id) {
-          // time
-          return perfmon_getTimeOfGroup(group_id);
-        },
-        // Runtime unhalted [s]
-        [](int group_id, int cpu_id) {
-          // FIXC1*inverseClock
-          return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
-        },
-        // Clock [MHz]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(FIXC1/FIXC2)/inverseClock
-          return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
-                         perfmon_getResult(group_id, 2, cpu_id)) *
-                 timer_getCpuClock();
-        },
-        // CPI
-        [](int group_id, int cpu_id) {
-          // FIXC1/FIXC0
-          return perfmon_getResult(group_id, 1, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // L1 DTLB load misses
-        [](int group_id, int cpu_id) {
-          // PMC0
-          return perfmon_getResult(group_id, 3, cpu_id);
-        },
-        // L1 DTLB load miss rate
-        [](int group_id, int cpu_id) {
-          // PMC0/FIXC0
-          return perfmon_getResult(group_id, 3, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // L1 DTLB load miss duration
-        [](int group_id, int cpu_id) {
-          // PMC2/PMC0
-          return perfmon_getResult(group_id, 5, cpu_id) /
-                 perfmon_getResult(group_id, 3, cpu_id);
-        },
-        // L1 DTLB store misses
-        [](int group_id, int cpu_id) {
-          // PMC1
-          return perfmon_getResult(group_id, 4, cpu_id);
-        },
-        // L1 DTLB store miss rate
-        [](int group_id, int cpu_id) {
-          // PMC1/FIXC0
-          return perfmon_getResult(group_id, 4, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // L1 DTLB store miss duration [Cyc]
-        [](int group_id, int cpu_id) {
-          // PMC3/PMC1
-          return perfmon_getResult(group_id, 6, cpu_id) /
-                 perfmon_getResult(group_id, 4, cpu_id);
-        },
-    },
-    /* TLB_INSTR */
-    {
-        // Runtime (RDTSC) [s]
-        [](int group_id, int cpu_id) {
-          // time
-          return perfmon_getTimeOfGroup(group_id);
-        },
-        // Runtime unhalted [s]
-        [](int group_id, int cpu_id) {
-          // FIXC1*inverseClock
-          return perfmon_getResult(group_id, 1, cpu_id) / timer_getCpuClock();
-        },
-        // Clock [MHz]
-        [](int group_id, int cpu_id) {
-          // 1.E-06*(FIXC1/FIXC2)/inverseClock
-          return 1e-6 * (perfmon_getResult(group_id, 1, cpu_id) /
-                         perfmon_getResult(group_id, 2, cpu_id)) *
-                 timer_getCpuClock();
-        },
-        // CPI
-        [](int group_id, int cpu_id) {
-          // FIXC1/FIXC0
-          return perfmon_getResult(group_id, 1, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // L1 ITLB misses
-        [](int group_id, int cpu_id) {
-          // PMC0
-          return perfmon_getResult(group_id, 3, cpu_id);
-        },
-        // L1 ITLB miss rate
-        [](int group_id, int cpu_id) {
-          // PMC0/FIXC0
-          return perfmon_getResult(group_id, 3, cpu_id) /
-                 perfmon_getResult(group_id, 0, cpu_id);
-        },
-        // L1 ITLB miss duration [Cyc]
-        [](int group_id, int cpu_id) {
-          // PMC1/PMC0
-          return perfmon_getResult(group_id, 4, cpu_id) /
-                 perfmon_getResult(group_id, 3, cpu_id);
-        },
-    },
 };
+
+void test() {
+  const int event = 1;
+  int handle = perfmon_addEventSet(const_cast<char*>(eventsets[event]));
+  perfmon_setupCounters(handle);
+  perfmon_startCounters();
+  std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+  perfmon_startCounters();
+  std::cout << metrics_functions[event][4](handle, 0) << std::endl;
+
+  // perfmon_setupCounters(handle);
+  perfmon_startCounters();
+  std::this_thread::sleep_for(std::chrono::milliseconds(2000));
+  perfmon_startCounters();
+  std::cout << metrics_functions[event][4](handle, 0) << std::endl;
+
+  perfmon_setupCounters(handle);
+  perfmon_startCounters();
+  std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+  perfmon_startCounters();
+  std::cout << metrics_functions[event][4](handle, 0) << std::endl;
+}
+
 }  // namespace
 
 namespace exahype {
@@ -1078,8 +1196,7 @@ LikwidPerformanceMonitoringModule::LikwidPerformanceMonitoringModule(
   int errcode;
 
   // Initialize perfmon module
-  errcode =
-      perfmon_init(state_.cpus_.size(), const_cast<int*>(state_.cpus_.data()));
+  errcode = perfmon_init(1, const_cast<int*>(&state_.cpu_));
   if (errcode != 0) {
     std::cerr << "LikwidPerformanceMonitoringModule: perfmon_init returned "
               << errcode << " != 0" << std::endl;
@@ -1091,17 +1208,26 @@ LikwidPerformanceMonitoringModule::LikwidPerformanceMonitoringModule(
                                        [this](const char* group) {
                                          return group_name_.compare(group) == 0;
                                        }));
+  if (group_index_ == std::distance(std::begin(groups), std::end(groups))) {
+    std::cerr << "LikwidPerformanceMonitoringModule: group_name_ = "
+              << group_name_ << " not found." << std::endl;
+    std::exit(EXIT_FAILURE);
+  }
 
   timer_init();
+
+  // test();
+  // std::exit(0);
 }
 
 LikwidPerformanceMonitoringModule::~LikwidPerformanceMonitoringModule() {
-  //timer_finalize();
   perfmon_finalize();
+  timer_finalize();
 }
 
 void LikwidPerformanceMonitoringModule::setNumberOfTags(int n) {
   group_handles_.reserve(n);
+  counts_.reserve(n);
 }
 
 void LikwidPerformanceMonitoringModule::registerTag(const std::string& tag) {
@@ -1113,6 +1239,7 @@ void LikwidPerformanceMonitoringModule::registerTag(const std::string& tag) {
     std::exit(EXIT_FAILURE);
   }
   group_handles_[tag] = handle;
+  counts_[tag] = 0;
 }
 
 void LikwidPerformanceMonitoringModule::start(const std::string& tag) {
@@ -1134,28 +1261,57 @@ void LikwidPerformanceMonitoringModule::stop(const std::string& tag) {
   errcode = perfmon_stopCounters();
   assert((errcode == 0) &&
          "LikwidPerformanceMonitoringModule: stopCounters failed");
+
+  counts_[tag]++;
 }
 
 void LikwidPerformanceMonitoringModule::writeToOstream(std::ostream* os) const {
+  assert((metrics_names[group_index_].size() ==
+          metrics_functions[group_index_].size()) &&
+         "LikwidPerformanceMonitoringModule: metrics_names and "
+         "metrics_functions don't have the same length");
+
   // For all tags
   for (const auto& tag_group_handle_pair : group_handles_) {
-    // for all CPUs
-    for (int cpu : state_.cpus_) {
-      assert((metrics_names[group_index_].size() ==
-              metrics_functions[group_index_].size()) &&
-             "LikwidPerformanceMonitoringModule: metrics_names and "
-             "metrics_functions don't have the same length");
-      int number_of_metrics = metrics_names[group_index_].size();
+    *os << "PerformanceMonitoringModule: " << tag_group_handle_pair.first
+        << " count " << counts_.at(tag_group_handle_pair.first) << std::endl;
 
-      // for all metrics
-      for (int i = 0; i < number_of_metrics; i++) {
-        // TODO(guera): Fix inconsistent use of terms thread and cpu
-        *os << "PerformanceMonitoringModule " << tag_group_handle_pair.first
-            << " cpu" << cpu << " " << metrics_names[group_index_][i] << " "
-            << metrics_functions[group_index_]
-                                [i](tag_group_handle_pair.second, cpu)
-            << std::endl;
-      }
+    int number_of_metrics = metrics_names[group_index_].size();
+    // for all metrics
+    for (int i = 0; i < number_of_metrics; i++) {
+      *os << "PerformanceMonitoringModule: " << tag_group_handle_pair.first
+          << " " << metrics_names[group_index_][i] << " "
+          << metrics_functions[group_index_]
+                              [i](tag_group_handle_pair.second, state_.cpu_)
+          << std::endl;
+    }
+
+    *os << "PerformanceMonitoringModule: " << tag_group_handle_pair.first
+        << " runtime / count "
+        << metrics_functions[group_index_]
+                            [0](tag_group_handle_pair.second, state_.cpu_) /
+               counts_.at(tag_group_handle_pair.first)
+        << std::endl;
+
+    *os << "PerformanceMonitoringModule: " << tag_group_handle_pair.first
+        << " runtime unhalted / count "
+        << metrics_functions[group_index_]
+                            [1](tag_group_handle_pair.second, state_.cpu_) /
+               counts_.at(tag_group_handle_pair.first)
+        << std::endl;
+
+    std::istringstream iss(eventsets[group_index_]);
+    std::string counter;
+    int counter_index = 0;
+
+    // For all counters
+    while (getline(iss, counter, ',')) {
+      *os << "PerformanceMonitoringModule: " << tag_group_handle_pair.first
+          << " " << counter << " "
+          << perfmon_getResult(tag_group_handle_pair.second, counter_index,
+                               state_.cpu_)
+          << std::endl;
+      counter_index++;
     }
   }
 }

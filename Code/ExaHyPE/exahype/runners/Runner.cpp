@@ -97,13 +97,16 @@ void exahype::runners::Runner::initDistributedMemoryConfiguration() {
     if ( configuration.find( "greedy" )!=std::string::npos ) {
       logInfo("initDistributedMemoryConfiguration()", "use greedy load balancing without joins (mpibalancing/GreedyBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-          new mpibalancing::GreedyBalancing(getCoarsestGridLevelOfAllSolvers(),getCoarsestGridLevelOfAllSolvers())
+        new mpibalancing::GreedyBalancing(
+          getCoarsestGridLevelOfAllSolvers(),
+          getCoarsestGridLevelOfAllSolvers()+1
+        )
       );
     }
     else if ( configuration.find( "hotspot" )!=std::string::npos ) {
       logInfo("initDistributedMemoryConfiguration()", "use global hotspot elimination without joins (mpibalancing/StaticBalancing)");
       peano::parallel::loadbalancing::Oracle::getInstance().setOracle(
-          new mpibalancing::HotspotBalancing(false,getCoarsestGridLevelOfAllSolvers())
+          new mpibalancing::HotspotBalancing(false,getCoarsestGridLevelOfAllSolvers()+1)
       );
     }
     else {
@@ -328,31 +331,31 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
       gridSetupIterationsToRun--;
     }
 
-#if defined(TrackGridStatistics) && defined(Asserts)
+    #if defined(TrackGridStatistics) && defined(Asserts)
     logInfo("runAsMaster()",
         "grid setup iteration #" << gridSetupIterations <<
         ", max-level=" << repository.getState().getMaxLevel() <<
         ", state=" << repository.getState().toString() <<
         ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
-#elif defined(Asserts)
+    #elif defined(Asserts)
     logInfo("runAsMaster()",
         "grid setup iteration #" << gridSetupIterations <<
         ", state=" << repository.getState().toString() <<
         ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
-#elif defined(TrackGridStatistics)
+    #elif defined(TrackGridStatistics)
     logInfo("runAsMaster()",
         "grid setup iteration #" << gridSetupIterations <<
         ", max-level=" << repository.getState().getMaxLevel() <<
         ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
-#else
+    #else
     logInfo("runAsMaster()",
         "grid setup iteration #" << gridSetupIterations <<
         ", idle-nodes=" << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()
     );
-#endif
+    #endif
   }
 
   logInfo("createGrid(Repository)", "finished grid setup after " << gridSetupIterations << " iterations" );
@@ -360,7 +363,7 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
   if (
     tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes()>0
     &&
-	  tarch::parallel::Node::getInstance().getNumberOfNodes()>1
+    tarch::parallel::Node::getInstance().getNumberOfNodes()>1
   ) {
     logWarning( "createGrid(Repository)", "there are still " << tarch::parallel::NodePool::getInstance().getNumberOfIdleNodes() << " ranks idle" )
   }
@@ -470,7 +473,11 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
         numberOfStepsToRun = numberOfStepsToRun<1 ? 1 : numberOfStepsToRun;
       }
 
-      runOneTimeStampWithFusedAlgorithmicSteps(repository, numberOfStepsToRun);
+      runOneTimeStampWithFusedAlgorithmicSteps(
+        repository,
+        numberOfStepsToRun,
+        _parser.getExchangeBoundaryDataInBatchedTimeSteps() && repository.getState().isGridStationary()
+      );
       recomputePredictorIfNecessary(repository,_parser.getFuseAlgorithmicStepsFactor());
       printTimeStepInfo(numberOfStepsToRun);
     } else {
@@ -542,8 +549,9 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
 #endif
 }
 
+
 void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
-    exahype::repositories::Repository& repository, int numberOfStepsToRun) {
+    exahype::repositories::Repository& repository, int numberOfStepsToRun, bool exchangeBoundaryData) {
   /*
    * The adapter below performs the following steps:
    *
@@ -564,9 +572,10 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
     repository.iterate();
   } else {
     repository.switchToADERDGTimeStep();
-    repository.iterate(numberOfStepsToRun);
+    repository.iterate(numberOfStepsToRun,exchangeBoundaryData);
   }
 }
+
 
 bool exahype::runners::Runner::setStableTimeStepSizesIfStabilityConditionWasHarmed(double factor) {
   assertion1(tarch::la::smallerEquals(factor,1.) && tarch::la::greater(factor,0.),"Factor must be smaller or equal to 1.");

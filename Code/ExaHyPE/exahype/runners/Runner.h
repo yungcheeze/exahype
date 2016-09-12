@@ -109,7 +109,7 @@ class exahype::runners::Runner {
    * @param numberOfStepsToRun Number of steps to run. If you hand in 0, then
    *           it runs one time step plus does a plot.
    */
-  void runOneTimeStampWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository, int numberOfStepsToRun);
+  void runOneTimeStampWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository, int numberOfStepsToRun, bool exchangeBoundaryData);
 
   /**
    * Resets the corrector and predictor time step sizes of an ADER-DG solver

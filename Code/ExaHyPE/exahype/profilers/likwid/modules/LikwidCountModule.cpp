@@ -30,9 +30,7 @@ void LikwidCountModule::registerTag(const std::string& tag) {
   counts_[tag];
 }
 
-void LikwidCountModule::start(const std::string& tag) {
-  assert(counts_.count(tag) && "Unregistered tag encountered");
-}
+void LikwidCountModule::start(const std::string& tag) {}
 
 void LikwidCountModule::stop(const std::string& tag) {
   assert(counts_.count(tag) && "Unregistered tag encountered");

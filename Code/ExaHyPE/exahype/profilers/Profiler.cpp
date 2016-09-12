@@ -45,7 +45,7 @@ void Profiler::writeToFile(const std::string& path) const {
 void Profiler::writeToConfiguredOutput() const {
   if (output_ == "") {
     // do nothing
-  } else if (output_ == "cout") {
+  } else if (output_ == "std.cout") {
     writeToCout();
   } else if (hasSuffix(output_, ".txt")) {
     writeToFile(output_);
