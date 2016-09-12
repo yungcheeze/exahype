@@ -19,6 +19,7 @@
 #include <unordered_map>
 
 #include "simple/ChronoElapsedTimeProfiler.h"
+#include "simple/IbmAemProfiler.h"
 #include "simple/NoOpProfiler.h"
 
 #ifdef LIKWID_AVAILABLE
@@ -191,6 +192,13 @@ const std::unordered_map<
            return std::unique_ptr<
                exahype::profilers::simple::ChronoElapsedTimeProfiler>(
                new exahype::profilers::simple::ChronoElapsedTimeProfiler(
+                   profiling_output));
+         }},
+        {"IbmAemProfiler",
+         [](const std::vector<std::string>& metrics,
+            const std::string& profiling_output) {
+           return std::unique_ptr<exahype::profilers::simple::IbmAemProfiler>(
+               new exahype::profilers::simple::IbmAemProfiler(
                    profiling_output));
          }},
 #ifdef LIKWID_AVAILABLE
