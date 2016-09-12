@@ -119,6 +119,7 @@ parser.add_argument('-xaxislabel',required=True,help="Label of x axis.")
 parser.add_argument('-fontsize',default=10,required=False,help="Font size of the legend and tick labels. Axis labels are computed by ceiling the font size times a factor 1.2.")
 parser.add_argument('-experimentdescription',nargs='+',required=True,help="Per table entry, one experiment desription is required")
 parser.add_argument('-singlecore',required=True,help="Which core count is the sequential run time")
+parser.add_argument('-meshsize',required=False,nargs='+',help="Specify per table how big the mesh size is")
 args   = parser.parse_args();
 
 dim = int(args.dimension)
@@ -154,9 +155,9 @@ print "written " + outputFile
 
 
 #
-# Runtime scaled by regular grid of max depth
+# Runtime scaled by number of cells. Does not yield reasonable output if grid statistics are switched off
 #
-outputFile = args.output + "-scaled-by-regular-grid"
+outputFile = args.output + "-scaled-by-cells"
 pylab.clf()
 pylab.xlabel('cores')
 
@@ -165,10 +166,10 @@ for (table,label) in zip(args.table,args.experimentdescription):
   print "read " + table
   maxLevel      = runtimeParser.readColumnFromTable(table,1)
   # normalisation = 1.0
-  #if len(maxLevel)>0 and maxLevel[-1]==0:
-  #  print "WARNING: max level seems not to have been plotted (perhaps code had been translated without -DTrackGridStatistics). Assume increase by one per table"
+  if len(maxLevel)>0 and maxLevel[-1]==0:
+    print "WARNING: max level seems not to have been plotted (perhaps code had been translated without -DTrackGridStatistics). Assume increase by one per table"
   normalisation = 1.0/(3**(experimentSetCounter*dim))
-  print "normalise with " + str(normalisation)
+  #print "normalise with " + str(normalisation)
   if len(maxLevel)>0  and maxLevel[-1]>0:
     normalisation = 1.0/(3**(maxLevel[-1]*dim))
     print "reset normalisation to " + str(normalisation)
@@ -187,4 +188,35 @@ switchToLogScales()
 pylab.savefig( outputFile + "-log.png" )
 pylab.savefig( outputFile + "-log.pdf" )
 print "written " + outputFile
+    
+
+    
+  
+#
+# Runtime scaled by regular grid of max depth
+#
+outputFile = args.output + "-scaled-by-regular-grid"
+pylab.clf()
+pylab.xlabel('cores')
+if args.meshsize is not None:
+
+ experimentSetCounter =  0
+ for (table,label,h) in zip(args.table,args.experimentdescription,args.meshsize):
+  print "read " + table
+  normalisation = float(h)**(-dim)
+
+  addData(table,normalisation,table==args.table[0],experimentSetCounter,label)
+  experimentSetCounter = experimentSetCounter + 1
+
+ initGlobalPlotterSettings()
+
+ pylab.ylabel( "time per cell per time step [t]=s" )
+
+ pylab.savefig( outputFile + ".png" )
+ pylab.savefig( outputFile + ".pdf" )
+ switchToLogScales()
+ pylab.savefig( outputFile + "-log.png" )
+ pylab.savefig( outputFile + "-log.pdf" )
+ print "written " + outputFile
+    
     
