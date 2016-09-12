@@ -13,6 +13,8 @@
  
 #include "exahype/solvers/Solver.h"
 
+#include "exahype/Cell.h"
+
 std::vector<exahype::solvers::Solver*> exahype::solvers::RegisteredSolvers;
 
 const int exahype::solvers::Solver::NotFound = -1;
@@ -61,6 +63,10 @@ std::string exahype::solvers::Solver::toString(const exahype::solvers::Solver::T
 
 exahype::solvers::Solver::Type exahype::solvers::Solver::getType() const {
   return _type;
+}
+
+exahype::solvers::Solver::TimeStepping exahype::solvers::Solver::getTimeStepping() const {
+  return _timeStepping;
 }
 
 int exahype::solvers::Solver::getNumberOfVariables() const {
