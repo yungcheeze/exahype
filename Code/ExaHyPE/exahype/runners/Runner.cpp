@@ -311,7 +311,7 @@ void exahype::runners::Runner::createGrid(exahype::repositories::Repository& rep
 #endif
 
   int gridSetupIterations = 0;
-  repository.switchToAugmentedAMRGrid();
+  repository.switchToMeshRefinement();
 
   int gridSetupIterationsToRun = 3;
   while (gridSetupIterationsToRun>0) {
