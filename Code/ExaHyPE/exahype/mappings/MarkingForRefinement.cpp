@@ -149,9 +149,10 @@ void exahype::mappings::MarkingForRefinement::enterCell(
                 fineGridCell.getADERDGCellDescription(i).setRefinementEvent(exahype::records::ADERDGCellDescription::RefiningRequested);
                 refineFineGridCell = true;
               break;
-              case exahype::solvers::Solver::RefinementControl::Erase:
-                fineGridCell.getADERDGCellDescription(i).setRefinementEvent(exahype::records::ADERDGCellDescription::ErasingRequested);
-              break;
+              // old erasing code.
+//              case exahype::solvers::Solver::RefinementControl::Erase:
+//                fineGridCell.getADERDGCellDescription(i).setRefinementEvent(exahype::records::ADERDGCellDescription::ErasingRequested);
+//              break;
               default:
                 break;
             }

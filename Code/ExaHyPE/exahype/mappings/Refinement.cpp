@@ -101,16 +101,17 @@ void exahype::mappings::Refinement::enterCell(
       switch (pCoarse.getType()) {
         case exahype::records::ADERDGCellDescription::Cell:
           switch (pCoarse.getRefinementEvent()) {
-            case exahype::records::ADERDGCellDescription::ErasingRequested:
-              /*
-               * Change the erasing request to a change to descendant request if the coarse grid Cell
-               * has children (of type Descendant).
-               *
-               * Rationale:
-               * We cannot directly erase a Cell that has children (of type Descendant).
-               */
-              pCoarse.setRefinementEvent(exahype::records::ADERDGCellDescription::ChangeToDescendantRequested);
-              break;
+            // TODO(Dominic): old code
+//            case exahype::records::ADERDGCellDescription::ErasingRequested:
+//              /*
+//               * Change the erasing request to a change to descendant request if the coarse grid Cell
+//               * has children (of type Descendant).
+//               *
+//               * Rationale:
+//               * We cannot directly erase a Cell that has children (of type Descendant).
+//               */
+//              pCoarse.setRefinementEvent(exahype::records::ADERDGCellDescription::ChangeToDescendantRequested);
+//              break;
             case exahype::records::ADERDGCellDescription::RefiningRequested:
             case exahype::records::ADERDGCellDescription::Refining:
               /*
@@ -209,90 +210,92 @@ void exahype::mappings::Refinement::ascend(
   return;
 #endif
 
-  logTraceInWith2Arguments("ascend(...)", coarseGridCell.toString(),
-                           coarseGridVerticesEnumerator.toString());
+  // TODO(Dominic): Old code.
 
-  if (coarseGridCell.isInitialised()) {
-    for (auto& pCoarse : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
-             coarseGridCell.getCellDescriptionsIndex())) {
-      bool eraseChildren               = true;
-      bool changeChildrenToDescendants = false;
-
-      switch (pCoarse.getType()) {
-        case exahype::records::ADERDGCellDescription::EmptyAncestor:
-        case exahype::records::ADERDGCellDescription::Ancestor:
-          eraseChildren = true;
-
-          dfor3(k)
-            assertion(fineGridCells[kScalar].isInitialised());
-            for (auto& pFine : exahype::solvers::ADERDGSolver::Heap::getInstance()
-                .getData(fineGridCells[kScalar]
-                .getCellDescriptionsIndex())) {
-              if (pCoarse.getSolverNumber() == pFine.getSolverNumber()) {
-                eraseChildren = eraseChildren &&
-                    (pFine.getRefinementEvent() == exahype::records::ADERDGCellDescription::ErasingRequested ||
-                     pFine.getRefinementEvent() == exahype::records::ADERDGCellDescription::ChangeToDescendantRequested);
-                changeChildrenToDescendants =
-                    changeChildrenToDescendants ||
-                    pFine.getRefinementEvent() == exahype::records::ADERDGCellDescription::ChangeToDescendantRequested;
-              }
-            }
-          enddforx
-
-          if (eraseChildren) {
-            pCoarse.setType(exahype::records::ADERDGCellDescription::Cell);
-            coarseGridCell.ensureNecessaryMemoryIsAllocated(pCoarse.getSolverNumber());
-
-            dfor3(k)
-              auto pFine = exahype::solvers::ADERDGSolver::Heap::getInstance().
-                              getData(fineGridCells[kScalar].getCellDescriptionsIndex()).begin();
-              while (pFine != exahype::solvers::ADERDGSolver::Heap::getInstance().
-                  getData(fineGridCells[kScalar].getCellDescriptionsIndex()).end()) {
-                if (pCoarse.getSolverNumber() == pFine->getSolverNumber()) {
-                  exahype::Cell::SubcellPosition subcellPosition =
-                      fineGridCells[kScalar].computeSubcellPositionOfCellOrAncestor(*pFine);
-                  restrictVolumeData(pCoarse,(*pFine),subcellPosition.subcellIndex);
-                  if (changeChildrenToDescendants) {
-                    pFine->setType(exahype::records::ADERDGCellDescription::EmptyDescendant);
-                    pFine->setRefinementEvent(exahype::records::ADERDGCellDescription::None);
-                    fineGridCells[kScalar].ensureNoUnnecessaryMemoryIsAllocated(pFine->getSolverNumber());
-                    ++pFine;
-                  } else {
-                    pFine->setType(exahype::records::ADERDGCellDescription::Erased);
-                    fineGridCells[kScalar].ensureNoUnnecessaryMemoryIsAllocated(pFine->getSolverNumber());
-                    pFine = exahype::solvers::ADERDGSolver::Heap::getInstance().
-                       getData(fineGridCells[kScalar].getCellDescriptionsIndex()).erase(pFine);
-                  }
-                } else {
-                  ++pFine;
-                }
-              }
-
-              if (exahype::solvers::ADERDGSolver::Heap::getInstance().getData(fineGridCells[kScalar].getCellDescriptionsIndex()).empty()) {
-                fineGridCells[kScalar].shutdownMetaData();
-              }
-            enddforx
-
-          // reset if not all children requested erasing
-          } else {
-            dfor3(k)
-              for (auto& pFine : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(fineGridCells[kScalar]
-                 .getCellDescriptionsIndex())) {
-                if (pCoarse.getSolverNumber() ==
-                    pFine.getSolverNumber()) {
-                  if (pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::ErasingRequested) {
-                    pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::None);
-                  }
-                }
-              }
-            enddforx
-          }
-          break;
-        default:
-          break;
-      }
-    }
-  }
+//  logTraceInWith2Arguments("ascend(...)", coarseGridCell.toString(),
+//                           coarseGridVerticesEnumerator.toString());
+//
+//  if (coarseGridCell.isInitialised()) {
+//    for (auto& pCoarse : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
+//             coarseGridCell.getCellDescriptionsIndex())) {
+//      bool eraseChildren               = true;
+//      bool changeChildrenToDescendants = false;
+//
+//      switch (pCoarse.getType()) {
+//        case exahype::records::ADERDGCellDescription::EmptyAncestor:
+//        case exahype::records::ADERDGCellDescription::Ancestor:
+//          eraseChildren = true;
+//
+//          dfor3(k)
+//            assertion(fineGridCells[kScalar].isInitialised());
+//            for (auto& pFine : exahype::solvers::ADERDGSolver::Heap::getInstance()
+//                .getData(fineGridCells[kScalar]
+//                .getCellDescriptionsIndex())) {
+//              if (pCoarse.getSolverNumber() == pFine.getSolverNumber()) {
+//                eraseChildren = eraseChildren &&
+//                    (pFine.getRefinementEvent() == exahype::records::ADERDGCellDescription::ErasingRequested ||
+//                     pFine.getRefinementEvent() == exahype::records::ADERDGCellDescription::ChangeToDescendantRequested);
+//                changeChildrenToDescendants =
+//                    changeChildrenToDescendants ||
+//                    pFine.getRefinementEvent() == exahype::records::ADERDGCellDescription::ChangeToDescendantRequested;
+//              }
+//            }
+//          enddforx
+//
+//          if (eraseChildren) {
+//            pCoarse.setType(exahype::records::ADERDGCellDescription::Cell);
+//            coarseGridCell.ensureNecessaryMemoryIsAllocated(pCoarse.getSolverNumber());
+//
+//            dfor3(k)
+//              auto pFine = exahype::solvers::ADERDGSolver::Heap::getInstance().
+//                              getData(fineGridCells[kScalar].getCellDescriptionsIndex()).begin();
+//              while (pFine != exahype::solvers::ADERDGSolver::Heap::getInstance().
+//                  getData(fineGridCells[kScalar].getCellDescriptionsIndex()).end()) {
+//                if (pCoarse.getSolverNumber() == pFine->getSolverNumber()) {
+//                  exahype::Cell::SubcellPosition subcellPosition =
+//                      fineGridCells[kScalar].computeSubcellPositionOfCellOrAncestor(*pFine);
+//                  restrictVolumeData(pCoarse,(*pFine),subcellPosition.subcellIndex);
+//                  if (changeChildrenToDescendants) {
+//                    pFine->setType(exahype::records::ADERDGCellDescription::EmptyDescendant);
+//                    pFine->setRefinementEvent(exahype::records::ADERDGCellDescription::None);
+//                    fineGridCells[kScalar].ensureNoUnnecessaryMemoryIsAllocated(pFine->getSolverNumber());
+//                    ++pFine;
+//                  } else {
+//                    pFine->setType(exahype::records::ADERDGCellDescription::Erased);
+//                    fineGridCells[kScalar].ensureNoUnnecessaryMemoryIsAllocated(pFine->getSolverNumber());
+//                    pFine = exahype::solvers::ADERDGSolver::Heap::getInstance().
+//                       getData(fineGridCells[kScalar].getCellDescriptionsIndex()).erase(pFine);
+//                  }
+//                } else {
+//                  ++pFine;
+//                }
+//              }
+//
+//              if (exahype::solvers::ADERDGSolver::Heap::getInstance().getData(fineGridCells[kScalar].getCellDescriptionsIndex()).empty()) {
+//                fineGridCells[kScalar].shutdownMetaData();
+//              }
+//            enddforx
+//
+//          // reset if not all children requested erasing
+//          } else {
+//            dfor3(k)
+//              for (auto& pFine : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(fineGridCells[kScalar]
+//                 .getCellDescriptionsIndex())) {
+//                if (pCoarse.getSolverNumber() ==
+//                    pFine.getSolverNumber()) {
+//                  if (pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::ErasingRequested) {
+//                    pFine.setRefinementEvent(exahype::records::ADERDGCellDescription::None);
+//                  }
+//                }
+//              }
+//            enddforx
+//          }
+//          break;
+//        default:
+//          break;
+//      }
+//    }
+//  }
 
   logTraceOut("ascend(...)");
 }
