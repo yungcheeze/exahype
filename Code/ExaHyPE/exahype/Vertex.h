@@ -197,7 +197,7 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
   /**
    * Send metadata to rank \p toRank.
    */
-  static void sendMetadata(
+  static void sendEncodedMetadata(
       const int                                   toRank,
       const int                                   cellDescriptionsIndex,
       const peano::heap::MessageType&             messageType,
@@ -213,7 +213,7 @@ class exahype::Vertex : public peano::grid::Vertex<exahype::records::Vertex> {
    * Send a metadata sequence filled with InvalidMetadataEntry
    * to rank \p toRank.
    */
-  static void sendMetadataWithInvalidEntries(
+  static void sendEncodedMetadataSequenceWithInvalidEntries(
       const int                                   toRank,
       const peano::heap::MessageType&             messageType,
       const tarch::la::Vector<DIMENSIONS,double>& x,
