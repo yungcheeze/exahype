@@ -229,6 +229,8 @@ class exahype::plotters::Plotter {
    * the next time step if you have fixed time stepping.
    */
   double getNextPlotTime() const;
+
+  std::string toString() const;
 };
 
 #endif

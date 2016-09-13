@@ -22,32 +22,12 @@
 
 #include "exahype/records/ADERDGCellDescription.h"
 #include "exahype/records/FiniteVolumesCellDescription.h"
-#include "peano/heap/DoubleHeap.h"
+
+#include "exahype/solvers/ADERDGSolver.h"
+#include "exahype/solvers/FiniteVolumesSolver.h"
 
 namespace exahype {
   class Cell;
-
-  /**
-   * Rank-local heap that stores ADERDGCellDescription instances.
-   */
-  typedef peano::heap::PlainHeap<exahype::records::ADERDGCellDescription>         ADERDGCellDescriptionHeap;
-
-  /**
-   * Rank-local heap that stores FiniteVolumesCellDescription instances.
-   */
-  typedef peano::heap::PlainHeap<exahype::records::FiniteVolumesCellDescription>  FiniteVolumesCellDescriptionHeap;
-  /**
-   * We store the degrees of freedom associated with the ADERDGCellDescription and FiniteVolumesCellDescription
-   * instances on this heap.
-   * We further use this heap to send and receive face data from one MPI rank to the other.
-   */
-  typedef peano::heap::PlainDoubleHeap DataHeap;
-  /**
-   * We abuse this heap to send and receive metadata from one MPI rank to the other.
-   * We never actually store data on this heap.
-   * TODO(Dominic): Change to RLEIntegerHeap that compresses data.
-   */
-  typedef peano::heap::PlainIntegerHeap  MetadataHeap;
 }
 
 /**
@@ -59,21 +39,10 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
 
   static tarch::logging::Log _log;
 
-  /**
-   * Each cell points to a series of cell descriptions. The array holding the
-   * series has to be stored on the heap and, consequently, initialised
-   * properly. This is done by create() while destroy() cleans up. Please note
-   * that you have to invoke create() once before you do anything with the cell
-   * at all. You should destroy() in return in the very end.
-   *
-   * The operation shows that each cell in the tree can theoretically hold a
-   * solver though only few do.
-   *
-   * This operation is used by addNewCellDescription().
-   */
-  void setupMetaData();
-
  public:
+ /**
+  * @deprecated
+  */
   typedef struct {
     int parentIndex;
     tarch::la::Vector<DIMENSIONS, int> subcellIndex;
@@ -107,11 +76,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   Cell(const Base::PersistentCell& argument);
 
   /**
-   * TODO(Dominic): Add docu.
-   */
-  void initialiseStorageOnHeap();
-
-  /**
    * Returns meta data describing the surrounding cell descriptions. The
    * routine is notably used by the automated adapters to derive adjacency
    * information on the cell level.
@@ -141,7 +105,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    */
   inline exahype::records::ADERDGCellDescription& getADERDGCellDescription(
       int index) const {
-    return ADERDGCellDescriptionHeap::getInstance().getData(
+    return exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
         getCellDescriptionsIndex())[index];
   }
 
@@ -151,34 +115,28 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    */
   inline exahype::records::FiniteVolumesCellDescription& getFiniteVolumesCellDescription(
       int index) const {
-    return FiniteVolumesCellDescriptionHeap::getInstance().getData(
+    return exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(
         getCellDescriptionsIndex())[index];
   }
+
+  /**
+   * Each cell points to a series of cell descriptions. The array holding the
+   * series has to be stored on the heap and, consequently, initialised
+   * properly. This is done by create() while destroy() cleans up. Please note
+   * that you have to invoke create() once before you do anything with the cell
+   * at all. You should destroy() in return in the very end.
+   *
+   * The operation shows that each cell in the tree can theoretically hold a
+   * solver though only few do.
+   *
+   * This operation is used by addNewCellDescription().
+   */
+  void setupMetaData();
 
   /**
    * @see setupMetaData()
    */
   void shutdownMetaData();
-
-  /**
-   * Encodes the metadata as integer sequence.
-   *
-   * The first element refers to the number of
-   * ADERDGCellDescriptions associated with this cell (nADERG).
-   * The next 2*nADERG elements store a pair of
-   * solver number, and cell description type (encoded as int)
-   * for each ADERDGCellDescription associated with this cell.
-   *
-   * The element 1+2*nADERDG refers to the number of
-   * FiniteVolumesCellDescriptions associated with this cell (nFV).
-   * The remaining 2*nFV elements store a pair of
-   * solver number, and cell description type (encoded as int)
-   * for each FiniteVolumesCellDescription associated with this cell.
-   *
-   * @todo(Dominic): Not directly associated with a cell. Consider
-   * to move this function somewhere else.
-   */
-  static std::vector<peano::heap::records::IntegerHeapData> encodeMetadata(const int cellDescriptionsIndex);
 
   /**
    * Checks if no unnecessary memory is allocated for the ADERDGCellDescription.
@@ -248,6 +206,10 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   void ensureNecessaryMemoryIsAllocated(const int solverNumber);
 
   /**
+   *
+   * @deprecated @see AdaptiveMeshRefinement.h
+   *
+   *
    * Determine the position of a Cell or Ancestor with respect
    * to a parent of type Ancestor.
    *
@@ -258,9 +220,13 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * right file/class to hold this functionality.
    */
   SubcellPosition computeSubcellPositionOfCellOrAncestor(
-      const exahype::records::ADERDGCellDescription& pChild) const;
+      const exahype::records::ADERDGCellDescription& pChild);
 
   /**
+   *
+   * @deprecated @see AdaptiveMeshRefinement.h
+   *
+   *
    * Determine the position of a Descendant with respect
    * to a  Cell or Descendant that contains data, i.e.,
    * has at least one neighbour that is a real cell.
@@ -272,7 +238,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * right file/class to hold this functionality.
    */
   SubcellPosition computeSubcellPositionOfDescendant(
-      const exahype::records::ADERDGCellDescription& pChild) const;
+      const exahype::records::ADERDGCellDescription& pChild);
 
   /**
    * @return if this cell is initialised.
@@ -292,7 +258,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    */
   void validateNoNansInADERDGSolver(
     int                                  number,
-    exahype::Cell&                       fineGridCell,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     const std::string&                   methodTraceOfCaller
   );
@@ -305,6 +270,9 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   #endif
 
   /**
+   * TODO(Dominic,Tobias): Move this operation into the ADERDGSolver class.
+   * Is it called after the minMax merge?
+   *
    * This operation sets the solutions' minimum and maximum value on a cell.
    * The routine is to be invoked after the code has determined the new minimum
    * and maximum value within a cell. In turn, it evaluates whether the new
@@ -325,35 +293,15 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * stores the data for the subsequent time step, but it also propagates the
    * min/max information into the face-connected neighbours.
    *
-   * @param  min          New minimum value within the cell
-   * @param  max          New maximum value within the cell
+   * @param  min          New minimum values within the cell. Array of length
+   *                      _numberOfUnknowns.
+   * @param  max          New maximum values within the cell
    * @param  solverIndex  Number of the solver within the cell. Please ensure
-   *   that solverIndex refers to an ADER-DG solver.
+   *                      that solverIndex refers to an ADER-DG solver.
    * @return True if the new min and max values fit into the restricted min
    *   max solutions. Return false if we seem to run into oscillations.
    */
-  bool setSolutionMinMaxAndAnalyseValidity( double min, double max, int solverIndex );
-
-  /**
-   * Merge the solution min and max values on a face between two cell
-   * descriptions. Signature is similar to the solver of a Riemann problem.
-   */
-  static void mergeSolutionMinMaxOnFace(
-    const int cellDescriptionsIndexOfLeftCell,
-    const int cellDescriptionsIndexOfRightCell,
-    const int faceIndexForLeftCell,
-    const int faceIndexForRightCell
-  );
-
-  /**
-   * Single-sided variant of mergeSolutionMinMaxOnFace() that is required
-   * for MPI where min and max value are explicitly exchanged through messages.
-   */
-  static void mergeSolutionMinMaxOnFace(
-    records::ADERDGCellDescription&  cellDescription,
-    int                              faceNumber,
-    double min, double max
-  );
+  bool setSolutionMinMaxAndAnalyseValidity( double* min, double* max, int solverIndex );
 };
 
 #endif

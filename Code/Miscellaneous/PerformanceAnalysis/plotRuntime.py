@@ -18,9 +18,10 @@ def addData(table,normalisation,plotLabels,experimentSetCounter,label):
   
   xdata    = runtimeParser.readColumnFromTable(table,0)
 
-  yDataMin      = 65636
   symbolCounter = 0
   for adap in args.adapter:
+    yDataMin     = 65636
+    xDataMax     = 0
     totalTime    = runtimeParser.readColumnFromTable(table, runtimeParser.getAdapterRuntimeColumnFromTable(table,adap) )
     count        = runtimeParser.readColumnFromTable(table, runtimeParser.getAdapterCountColumnFromTable(table,adap) )
     ydata = []
@@ -43,24 +44,22 @@ def addData(table,normalisation,plotLabels,experimentSetCounter,label):
         pylab.plot(xdata,ydata,markersize=experimentSetCounter+4,color=Colors[symbolCounter],marker=Markers[symbolCounter],markerfacecolor=Markerfacecolors[symbolCounter],markevery=1,lw=1.2) 
     symbolCounter = symbolCounter + 1
 
-  if len(xdata)>0 and len(ydata)>0:
-    pylab.text(xdata[-1],ydata[-1],label)
+    if adap==args.adapter[-1]:
+      pylab.text(xdata[-1],ydata[-1],label )
+
+    if int(args.singlecore) < xDataMax and ydata[0]>ydata[-1]:
+      tSerial = yDataMin
+      ydata = [tSerial/(x-int(args.singlecore)+1) for x in range(int(args.singlecore),int(xDataMax))]
+      pylab.plot(range(int(args.singlecore),int(xDataMax)),ydata,markersize=4,markevery=1,lw=1.2,linestyle='dashed',color='grey') 
 
 
-  if len(xdata)>0 and xdata[0]==1:
-    tSerial = yDataMin
-    for x in range(1,len(xdata)):
-      if xdata[x]==int(args.singlecore):
-        tSerial = ydata[x]
 
-    ydata = [tSerial/x*int(args.singlecore) for x in xdata]
-    pylab.plot(xdata,ydata,markersize=4,markevery=1,lw=1.2,linestyle='dashed',color='grey') 
+
 
 
 
   
 def initGlobalPlotterSettings():
-  pylab.ylabel( "time [t]=s" )
   pylab.xlabel( args.xaxislabel )
   pylab.grid(True)
   pylab.legend(loc='best',fontsize='%d' % int(args.fontsize))  
@@ -77,12 +76,16 @@ def switchToLogScales():
   pylab.loglog( basex=2, basey=2 )
   XTicks  = [ int(args.singlecore) ]
   XLabels = [ "serial" ]
+  #XTicks  = [ int(args.singlecore), int(args.singlecore) ]
+  #XLabels = [ "no MPI", "serial" ]
+  #XTicks  = [ int(args.singlecore) ]
+  #XLabels = [ "no MPI" ]
   for i in range(1,int(xDataMax)+2):
     if i>1 and ((i & (i - 1)) == 0) and i>int(args.singlecore):
       XTicks.append( i )
       XLabels.append( str(i) ) 
   pylab.xticks(XTicks,XLabels)
-  pylab.xlim(int(args.singlecore),xDataMax)
+  pylab.xlim(int(args.singlecore)-1,xDataMax)
 
   #and i>int(args.singlecore)
 
@@ -116,6 +119,7 @@ parser.add_argument('-xaxislabel',required=True,help="Label of x axis.")
 parser.add_argument('-fontsize',default=10,required=False,help="Font size of the legend and tick labels. Axis labels are computed by ceiling the font size times a factor 1.2.")
 parser.add_argument('-experimentdescription',nargs='+',required=True,help="Per table entry, one experiment desription is required")
 parser.add_argument('-singlecore',required=True,help="Which core count is the sequential run time")
+parser.add_argument('-meshsize',required=False,nargs='+',help="Specify per table how big the mesh size is")
 args   = parser.parse_args();
 
 dim = int(args.dimension)
@@ -138,6 +142,8 @@ for (table,label) in zip(args.table,args.experimentdescription):
 
 initGlobalPlotterSettings()
 
+pylab.ylabel( "time per time step [t]=s" )
+
 pylab.savefig( outputFile + ".png" )
 pylab.savefig( outputFile + ".pdf" )
 switchToLogScales()
@@ -149,27 +155,32 @@ print "written " + outputFile
 
 
 #
-# Runtime scaled by regular grid of max depth
+# Runtime scaled by number of cells. Does not yield reasonable output if grid statistics are switched off
 #
-outputFile = args.output + "-scaled-by-regular-grid"
+outputFile = args.output + "-scaled-by-cells"
 pylab.clf()
 pylab.xlabel('cores')
 
 experimentSetCounter =  0
 for (table,label) in zip(args.table,args.experimentdescription):
   print "read " + table
-  maxLevel = runtimeParser.readColumnFromTable(table,1)
+  maxLevel      = runtimeParser.readColumnFromTable(table,1)
+  # normalisation = 1.0
   if len(maxLevel)>0 and maxLevel[-1]==0:
     print "WARNING: max level seems not to have been plotted (perhaps code had been translated without -DTrackGridStatistics). Assume increase by one per table"
-    maxLevel[-1] = experimentSetCounter   
-  if len(maxLevel)>0:
+  normalisation = 1.0/(3**(experimentSetCounter*dim))
+  #print "normalise with " + str(normalisation)
+  if len(maxLevel)>0  and maxLevel[-1]>0:
     normalisation = 1.0/(3**(maxLevel[-1]*dim))
-    addData(table,normalisation,table==args.table[0],experimentSetCounter,label)
-  else:
-    print "WARNING: Could not determine max level for table " + table
+    print "reset normalisation to " + str(normalisation)
+
+  addData(table,normalisation,table==args.table[0],experimentSetCounter,label)
+
   experimentSetCounter = experimentSetCounter + 1
 
 initGlobalPlotterSettings()
+
+pylab.ylabel( "time per cell per time step [t]=s" )
 
 pylab.savefig( outputFile + ".png" )
 pylab.savefig( outputFile + ".pdf" )
@@ -177,4 +188,35 @@ switchToLogScales()
 pylab.savefig( outputFile + "-log.png" )
 pylab.savefig( outputFile + "-log.pdf" )
 print "written " + outputFile
+    
+
+    
+  
+#
+# Runtime scaled by regular grid of max depth
+#
+outputFile = args.output + "-scaled-by-regular-grid"
+pylab.clf()
+pylab.xlabel('cores')
+if args.meshsize is not None:
+
+ experimentSetCounter =  0
+ for (table,label,h) in zip(args.table,args.experimentdescription,args.meshsize):
+  print "read " + table
+  normalisation = float(h)**(-dim)
+
+  addData(table,normalisation,table==args.table[0],experimentSetCounter,label)
+  experimentSetCounter = experimentSetCounter + 1
+
+ initGlobalPlotterSettings()
+
+ pylab.ylabel( "time per cell per time step [t]=s" )
+
+ pylab.savefig( outputFile + ".png" )
+ pylab.savefig( outputFile + ".pdf" )
+ switchToLogScales()
+ pylab.savefig( outputFile + "-log.png" )
+ pylab.savefig( outputFile + "-log.pdf" )
+ print "written " + outputFile
+    
     

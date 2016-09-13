@@ -17,6 +17,8 @@
 
 #include "exahype/solvers/Solver.h"
 
+#include "exahype/mappings/RiemannSolver.h"
+
 peano::CommunicationSpecification
 exahype::mappings::DropIncomingMPIMessages::communicationSpecification() {
   return peano::CommunicationSpecification(
@@ -71,6 +73,177 @@ exahype::mappings::DropIncomingMPIMessages::descendSpecification() {
 
 tarch::logging::Log exahype::mappings::DropIncomingMPIMessages::_log(
     "exahype::mappings::DropIncomingMPIMessages");
+
+#ifdef Parallel
+void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
+    exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
+
+// TODO(Dominic): This is a bug or needs to be documented.
+// see discussion in SpaceTimePredictor
+#if !defined(PeriodicBC)
+  if (vertex.isBoundary()) return;
+#endif
+
+  dfor2(myDest)
+    dfor2(mySrc)
+      tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
+      tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
+
+      int destScalar = TWO_POWER_D - myDestScalar - 1;
+      int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
+
+      if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
+        int receivedMetadataIndex = MetadataHeap::getInstance().createData(0,0);
+        assertion(MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
+        MetadataHeap::getInstance().receiveData(
+            receivedMetadataIndex,
+            fromRank, fineGridX, level,
+            peano::heap::MessageType::NeighbourCommunication);
+        exahype::MetadataHeap::HeapEntries& receivedMetadata = MetadataHeap::getInstance().getData(receivedMetadataIndex);
+        assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
+
+        if(vertex.hasToMergeWithNeighbourData(src,dest)) {
+          vertex.setFaceDataExchangeCountersOfDestination(src,dest,TWO_POWER_D);
+          vertex.setMergePerformed(src,dest,true);
+
+          dropNeighbourData(
+              fromRank,
+              vertex.getCellDescriptionsIndex()[srcScalar],
+              vertex.getCellDescriptionsIndex()[destScalar],
+              src,dest,
+              fineGridX,level,
+              receivedMetadata);
+        } else {
+          dropNeighbourData(
+              fromRank,
+              vertex.getCellDescriptionsIndex()[srcScalar],
+              vertex.getCellDescriptionsIndex()[destScalar],
+              src,dest,
+              fineGridX,level,
+              receivedMetadata);
+        }
+        // Clean up
+        MetadataHeap::getInstance().deleteData(receivedMetadataIndex);
+      }
+    enddforx
+  enddforx
+}
+
+
+void exahype::mappings::DropIncomingMPIMessages::dropNeighbourData(
+    const int fromRank,
+    const int srcCellDescriptionIndex,
+    const int destCellDescriptionIndex,
+    const tarch::la::Vector<DIMENSIONS,int>& src,
+    const tarch::la::Vector<DIMENSIONS,int>& dest,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int level,
+    const exahype::MetadataHeap::HeapEntries& receivedMetadata) {
+  logDebug(
+      "mergeWithNeighbour(...)", "[drop] " <<
+      fromRank << " for vertex x=" << x << ", level=" << level <<
+      ", src type=" << multiscalelinkedcell::indexToString(destCellDescriptionIndex) <<
+      ", src=" << src << ", dest=" << dest);
+
+  assertion(receivedMetadata.size()==solvers::RegisteredSolvers.size());
+
+  for(auto solver : solvers::RegisteredSolvers) {
+    solver->dropNeighbourData(fromRank,src,dest,x,level);
+  }
+}
+
+void exahype::mappings::DropIncomingMPIMessages::mergeWithMaster(
+    const exahype::Cell& workerGridCell,
+    exahype::Vertex* const workerGridVertices,
+    const peano::grid::VertexEnumerator& workerEnumerator,
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker, const exahype::State& workerState,
+    exahype::State& masterState) {
+
+
+
+}
+
+//
+// All methods below are nop.
+//
+// ====================================
+
+void exahype::mappings::DropIncomingMPIMessages::prepareSendToNeighbour(
+    exahype::Vertex& vertex, int toRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {}
+
+void exahype::mappings::DropIncomingMPIMessages::prepareCopyToRemoteNode(
+    exahype::Vertex& localVertex, int toRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {}
+
+void exahype::mappings::DropIncomingMPIMessages::prepareCopyToRemoteNode(
+    exahype::Cell& localCell, int toRank,
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {}
+
+void exahype::mappings::DropIncomingMPIMessages::
+    mergeWithRemoteDataDueToForkOrJoin(
+        exahype::Vertex& localVertex,
+        const exahype::Vertex& masterOrWorkerVertex, int fromRank,
+        const tarch::la::Vector<DIMENSIONS, double>& x,
+        const tarch::la::Vector<DIMENSIONS, double>& h, int level) {}
+
+void exahype::mappings::DropIncomingMPIMessages::
+    mergeWithRemoteDataDueToForkOrJoin(
+        exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
+        int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+        const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {}
+
+bool exahype::mappings::DropIncomingMPIMessages::prepareSendToWorker(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker) {
+  return false;
+}
+
+void exahype::mappings::DropIncomingMPIMessages::prepareSendToMaster(
+    exahype::Cell& localCell, exahype::Vertex* vertices,
+    const peano::grid::VertexEnumerator& verticesEnumerator,
+    const exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    const exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {}
+
+void exahype::mappings::DropIncomingMPIMessages::receiveDataFromMaster(
+    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
+    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
+    exahype::Vertex* const receivedCoarseGridVertices,
+    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
+    exahype::Cell& receivedCoarseGridCell,
+    exahype::Vertex* const workersCoarseGridVertices,
+    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
+    exahype::Cell& workersCoarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {}
+
+void exahype::mappings::DropIncomingMPIMessages::mergeWithWorker(
+    exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {}
+
+void exahype::mappings::DropIncomingMPIMessages::mergeWithWorker(
+    exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {}
+#endif
 
 exahype::mappings::DropIncomingMPIMessages::DropIncomingMPIMessages() {}
 
@@ -145,164 +318,6 @@ void exahype::mappings::DropIncomingMPIMessages::destroyCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {}
 
-#ifdef Parallel
-void exahype::mappings::DropIncomingMPIMessages::mergeWithNeighbour(
-    exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
-    const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
-  logTraceInWith6Arguments("mergeWithNeighbour(...)", vertex, neighbour,
-                           fromRank, fineGridX, fineGridH, level);
-
-#if !defined(PeriodicBC)
-  if (vertex.isBoundary()) return;
-#endif
-
-  tarch::la::Vector<TWO_POWER_D, int>& adjacentADERDGCellDescriptionsIndices =
-      vertex.getCellDescriptionsIndex();
-
-  dfor2(dest)
-      dfor2(src) if (vertex.getAdjacentRanks()(destScalar) ==
-                         tarch::parallel::Node::getInstance().getRank() &&
-                     vertex.getAdjacentRanks()(srcScalar) == fromRank &&
-                     tarch::la::countEqualEntries(dest, src) ==
-                         1  // we are solely exchanging faces
-                     ) {
-    const int destCellDescriptionIndex =
-        adjacentADERDGCellDescriptionsIndices(destScalar);
-
-    if (ADERDGCellDescriptionHeap::getInstance().isValidIndex(destCellDescriptionIndex)) {
-      std::vector<records::ADERDGCellDescription>& cellDescriptions =
-          ADERDGCellDescriptionHeap::getInstance().getData(destCellDescriptionIndex);
-
-      for (int currentSolver = 0; currentSolver < static_cast<int>(cellDescriptions.size()); currentSolver++) {
-        if (cellDescriptions[currentSolver].getType() == exahype::records::ADERDGCellDescription::Cell) {
-          #ifdef Asserts
-          const int normalOfExchangedFace = tarch::la::equalsReturnIndex(src, dest);
-          assertion(normalOfExchangedFace >= 0 && normalOfExchangedFace < DIMENSIONS);
-          #endif
-
-          assertion(DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getExtrapolatedPredictor()));
-          assertion(DataHeap::getInstance().isValidIndex(cellDescriptions[currentSolver].getFluctuation()));
-
-          if (adjacentADERDGCellDescriptionsIndices(destScalar) ==
-              multiscalelinkedcell::HangingVertexBookkeeper::DomainBoundaryAdjacencyIndex) {
-#if defined(PeriodicBC)
-            assertionMsg(false, "Vasco, we have to implement this");
-#else
-            assertionMsg(false, "should never been entered");
-#endif
-          } else {
-            logDebug(
-                "mergeWithNeighbour(...)",
-                "receive two arrays from rank "
-                    << fromRank << " for vertex " << vertex.toString()
-                    << ", src type="
-                    << multiscalelinkedcell::indexToString(
-                           adjacentADERDGCellDescriptionsIndices(srcScalar)));
-
-            // If the predictor is recomputed, we still have to receive all
-            // previously sent MPI messages in
-            // order to clear the MPI buffer.
-            DataHeap::HeapEntries lQhbnd = DataHeap::getInstance().receiveData(
-                fromRank, fineGridX, level,
-                peano::heap::MessageType::NeighbourCommunication);
-            DataHeap::HeapEntries lFhbnd = DataHeap::getInstance().receiveData(
-                fromRank, fineGridX, level,
-                peano::heap::MessageType::NeighbourCommunication);
-            DataHeap::getInstance().receiveData(fromRank, fineGridX, level, peano::heap::MessageType::NeighbourCommunication);
-          }
-        } else {
-          assertionMsg(false, "Dominic, please implement");
-        }
-      }
-    }
-  }
-  enddforx enddforx
-
-      logTraceOut("mergeWithNeighbour(...)");
-}
-
-void exahype::mappings::DropIncomingMPIMessages::prepareSendToNeighbour(
-    exahype::Vertex& vertex, int toRank,
-    const tarch::la::Vector<DIMENSIONS, double>& x,
-    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {}
-
-void exahype::mappings::DropIncomingMPIMessages::prepareCopyToRemoteNode(
-    exahype::Vertex& localVertex, int toRank,
-    const tarch::la::Vector<DIMENSIONS, double>& x,
-    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {}
-
-void exahype::mappings::DropIncomingMPIMessages::prepareCopyToRemoteNode(
-    exahype::Cell& localCell, int toRank,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {}
-
-void exahype::mappings::DropIncomingMPIMessages::
-    mergeWithRemoteDataDueToForkOrJoin(
-        exahype::Vertex& localVertex,
-        const exahype::Vertex& masterOrWorkerVertex, int fromRank,
-        const tarch::la::Vector<DIMENSIONS, double>& x,
-        const tarch::la::Vector<DIMENSIONS, double>& h, int level) {}
-
-void exahype::mappings::DropIncomingMPIMessages::
-    mergeWithRemoteDataDueToForkOrJoin(
-        exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
-        int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-        const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {}
-
-bool exahype::mappings::DropIncomingMPIMessages::prepareSendToWorker(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    int worker) {
-  return false;
-}
-
-void exahype::mappings::DropIncomingMPIMessages::prepareSendToMaster(
-    exahype::Cell& localCell, exahype::Vertex* vertices,
-    const peano::grid::VertexEnumerator& verticesEnumerator,
-    const exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    const exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {}
-
-void exahype::mappings::DropIncomingMPIMessages::mergeWithMaster(
-    const exahype::Cell& workerGridCell,
-    exahype::Vertex* const workerGridVertices,
-    const peano::grid::VertexEnumerator& workerEnumerator,
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    int worker, const exahype::State& workerState,
-    exahype::State& masterState) {}
-
-void exahype::mappings::DropIncomingMPIMessages::receiveDataFromMaster(
-    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
-    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
-    exahype::Vertex* const receivedCoarseGridVertices,
-    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
-    exahype::Cell& receivedCoarseGridCell,
-    exahype::Vertex* const workersCoarseGridVertices,
-    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
-    exahype::Cell& workersCoarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {}
-
-void exahype::mappings::DropIncomingMPIMessages::mergeWithWorker(
-    exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
-    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {}
-
-void exahype::mappings::DropIncomingMPIMessages::mergeWithWorker(
-    exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& x,
-    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {}
-#endif
 
 void exahype::mappings::DropIncomingMPIMessages::touchVertexFirstTime(
     exahype::Vertex& fineGridVertex,

@@ -3,14 +3,14 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #include "LikwidProfiler.h"
 
 #include <algorithm>
@@ -22,7 +22,9 @@ namespace exahype {
 namespace profilers {
 namespace likwid {
 
-LikwidProfiler::LikwidProfiler(const std::vector<int>& cpus /* = {} */) {
+LikwidProfiler::LikwidProfiler(const std::string& output, int cpu /* = 0 */)
+    : Profiler(output) {
+  state_.output_ = output;
   int err;
 
   setenv("LIKWID_FORCE", "1", 1);
@@ -42,19 +44,9 @@ LikwidProfiler::LikwidProfiler(const std::vector<int>& cpus /* = {} */) {
   affinity_init();
   state_.affinity_domains_ = get_affinityDomains();
 
-  // Initialize CPU ID vector
-  if (cpus.empty()) {
-    // Add all processors to list
-    for (unsigned int i = 0; i < state_.cpu_topology_->numHWThreads; i++) {
-      state_.cpus_.push_back(state_.cpu_topology_->threadPool[i].apicId);
-    }
-  } else {
-    // Only add CPU IDs specified by constructor argument
-    state_.cpus_ = cpus;
-  }
+  state_.cpu_ = cpu;
 
-  // TODO(guera): Remove this hack
-  affinity_pinThread(0);
+  affinity_pinThread(cpu);
 }
 
 LikwidProfiler::~LikwidProfiler() {

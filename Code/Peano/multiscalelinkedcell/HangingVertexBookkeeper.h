@@ -59,15 +59,6 @@ namespace multiscalelinkedcell {
     const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&  indices
   );
 
-  /**
-   * Counts the remote adjacency indices at the faces of a cell.
-   *
-   * Throw in the 3^d vector returned by the getIndicesAroundCell(...) method.
-   */
-  bool countRemoteAdjacencyIndicesAtFacesOfCell(
-      tarch::la::Vector<THREE_POWER_D,int> indicesAroundCell
-  );
-
   std::string indexToString( int indices );
   std::string indicesToString( const tarch::la::Vector<THREE_POWER_D,int>& indices );
   std::string indicesToString( const tarch::la::Vector<TWO_POWER_D,int>&   indices );

@@ -58,6 +58,24 @@ class exahype::mappings::DropIncomingMPIMessages {
    */
   static tarch::logging::Log _log;
 
+  #ifdef Parallel
+  /**
+   * Iterates over the received metadata and
+   * drop the received neighbour data.
+   *
+   * \note Not thread-safe.
+   */
+  static void dropNeighbourData(
+    const int fromRank,
+    const int srcCellDescriptionIndex,
+    const int destCellDescriptionIndex,
+    const tarch::la::Vector<DIMENSIONS,int>& src,
+    const tarch::la::Vector<DIMENSIONS,int>& dest,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int level,
+    const exahype::MetadataHeap::HeapEntries& receivedMetadata);
+  #endif
+
  public:
   /**
    * These flags are used to inform Peano about your operation. It tells the
@@ -247,7 +265,7 @@ class exahype::mappings::DropIncomingMPIMessages {
       int worker);
 
   /**
-   * Nop
+   * Drop the global time step computation data sent by the workers.
    */
   void mergeWithMaster(
       const exahype::Cell& workerGridCell,

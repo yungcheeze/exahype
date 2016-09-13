@@ -11,11 +11,11 @@ tarch::logging::Log mpibalancing::GreedyBalancing::_log( "mpibalancing::GreedyBa
 
 
 bool mpibalancing::GreedyBalancing::_forkHasFailed = false;
+int  mpibalancing::GreedyBalancing::_regularLevelAlongBoundary = 0;
 
 
 mpibalancing::GreedyBalancing::GreedyBalancing(int coarsestLevelWithRealWork, int coarsestRegularInnerAndOuterGridLevel):
-  _coarsestLevelWithRealWork(coarsestLevelWithRealWork),
-  _coarsestRegularInnerAndOuterGridLevel(coarsestRegularInnerAndOuterGridLevel) {
+  _coarsestLevelWithRealWork(coarsestLevelWithRealWork) {
   _finestLevelToForkAggressively = _coarsestLevelWithRealWork;
   int activeNodes                = 1;
 
@@ -23,6 +23,8 @@ mpibalancing::GreedyBalancing::GreedyBalancing(int coarsestLevelWithRealWork, in
     activeNodes *= THREE_POWER_D;
     _finestLevelToForkAggressively++;
   }
+
+  _regularLevelAlongBoundary = coarsestRegularInnerAndOuterGridLevel;
 }
 
 
@@ -45,7 +47,7 @@ peano::parallel::loadbalancing::LoadBalancingFlag  mpibalancing::GreedyBalancing
   else if (_workersLevel.count(workerRank)==1) {
     const int workersLevel = _workersLevel.count(workerRank);
 
-    if (workersLevel>=_finestLevelToForkAggressively) {
+    if (workersLevel>=_finestLevelToForkAggressively && forkIsAllowed) {
       result = peano::parallel::loadbalancing::LoadBalancingFlag::ForkOnce;
     }
   }
@@ -60,7 +62,7 @@ void mpibalancing::GreedyBalancing::plotStatistics() {
 
 
 peano::parallel::loadbalancing::OracleForOnePhase* mpibalancing::GreedyBalancing::createNewOracle(int adapterNumber) const {
-  return new GreedyBalancing(_coarsestLevelWithRealWork, _coarsestRegularInnerAndOuterGridLevel);
+  return new GreedyBalancing(_coarsestLevelWithRealWork, _regularLevelAlongBoundary);
 }
 
 
@@ -75,6 +77,6 @@ void mpibalancing::GreedyBalancing::forkFailed() {
 }
 
 
-int mpibalancing::GreedyBalancing::getCoarsestRegularInnerAndOuterGridLevel() const {
-  return _coarsestRegularInnerAndOuterGridLevel;
+int mpibalancing::GreedyBalancing::getRegularLevelAlongBoundary() const {
+  return _regularLevelAlongBoundary;
 }

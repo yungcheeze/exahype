@@ -28,7 +28,7 @@
 
 
 # update code generation backend
-cd ../../../libxsmm
+cd ../../libxsmm
 git pull
 make generator
 
@@ -48,13 +48,13 @@ DEGREE=$MIN_DEGREE
 
 while [ $DEGREE -le $MAX_DEGREE ]; do
   # execute code generator
-  python Driver.py Euler 5 $DEGREE 3 nonlinear hsw ../../../libxsmm --precision=DP
+  python Driver.py Euler 5 $DEGREE 3 nonlinear hsw ../../libxsmm --precision=DP
   
   # create subdirectory for each degree
   mkdir -p runtime/degree$DEGREE
 
   # move generated files into subdirectory
-  mv ../../ExaHyPE/kernels/aderdg/optimised/* runtime/degree$DEGREE
+  mv ../ExaHyPE/kernels/aderdg/optimised/* runtime/degree$DEGREE
 
   if [ "$APPEND_DEGREE" = true ]; then
     cd runtime/degree$DEGREE

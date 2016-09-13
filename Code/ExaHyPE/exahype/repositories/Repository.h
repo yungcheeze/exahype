@@ -62,34 +62,34 @@ class exahype::repositories::Repository {
     /**
      * Switch to another event handle.
      */
-    virtual void switchToAugmentedAMRGrid() = 0;    
+    virtual void switchToMeshRefinement() = 0;    
     virtual void switchToPlotAugmentedAMRGrid() = 0;    
-    virtual void switchToSolutionAdjustmentAndGlobalTimeStepComputation() = 0;    
-    virtual void switchToPredictorAndPlotAndGlobalTimeStepComputation() = 0;    
-    virtual void switchToPredictorAndGlobalTimeStepComputation() = 0;    
+    virtual void switchToInitialConditionAndTimeStepSizeComputation() = 0;    
+    virtual void switchToPredictionAndPlotAndTimeStepSizeComputation() = 0;    
+    virtual void switchToPredictionAndTimeStepSizeComputation() = 0;    
     virtual void switchToGridErasing() = 0;    
     virtual void switchToADERDGTimeStep() = 0;    
     virtual void switchToADERDGTimeStepAndPlot() = 0;    
-    virtual void switchToPredictorRerun() = 0;    
+    virtual void switchToPredictionRerun() = 0;    
     virtual void switchToRiemannSolver() = 0;    
-    virtual void switchToPredictor() = 0;    
-    virtual void switchToCorrector() = 0;    
-    virtual void switchToCorrectorAndPlot() = 0;    
+    virtual void switchToPrediction() = 0;    
+    virtual void switchToCorrection() = 0;    
+    virtual void switchToCorrectionAndPlot() = 0;    
     virtual void switchToPlot() = 0;    
 
-    virtual bool isActiveAdapterAugmentedAMRGrid() const = 0;
+    virtual bool isActiveAdapterMeshRefinement() const = 0;
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const = 0;
-    virtual bool isActiveAdapterSolutionAdjustmentAndGlobalTimeStepComputation() const = 0;
-    virtual bool isActiveAdapterPredictorAndPlotAndGlobalTimeStepComputation() const = 0;
-    virtual bool isActiveAdapterPredictorAndGlobalTimeStepComputation() const = 0;
+    virtual bool isActiveAdapterInitialConditionAndTimeStepSizeComputation() const = 0;
+    virtual bool isActiveAdapterPredictionAndPlotAndTimeStepSizeComputation() const = 0;
+    virtual bool isActiveAdapterPredictionAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterGridErasing() const = 0;
     virtual bool isActiveAdapterADERDGTimeStep() const = 0;
     virtual bool isActiveAdapterADERDGTimeStepAndPlot() const = 0;
-    virtual bool isActiveAdapterPredictorRerun() const = 0;
+    virtual bool isActiveAdapterPredictionRerun() const = 0;
     virtual bool isActiveAdapterRiemannSolver() const = 0;
-    virtual bool isActiveAdapterPredictor() const = 0;
-    virtual bool isActiveAdapterCorrector() const = 0;
-    virtual bool isActiveAdapterCorrectorAndPlot() const = 0;
+    virtual bool isActiveAdapterPrediction() const = 0;
+    virtual bool isActiveAdapterCorrection() const = 0;
+    virtual bool isActiveAdapterCorrectionAndPlot() const = 0;
     virtual bool isActiveAdapterPlot() const = 0;
 
 

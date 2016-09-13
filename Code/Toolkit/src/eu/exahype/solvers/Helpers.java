@@ -26,10 +26,10 @@ public class Helpers {
         "class " + projectName + "::" + solverName + ": public exahype::solvers::ADERDGSolver {\n");
     writer.write("  public:\n");
     if (hasConstants) {
-      writer.write("    " + solverName + "(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, exahype::Parser::ParserView constants);\n\n");
+      writer.write("    " + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, exahype::Parser::ParserView constants);\n\n");
     }
     else {
-      writer.write("    " + solverName + "(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler);\n\n");
+      writer.write("    " + solverName + "(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler);\n\n");
     }
 
     writer.write(
@@ -118,19 +118,12 @@ public class Helpers {
     writer.write("#include \"" + solverName + ".h\"\n\n");
     writer.write("#include <memory>\n\n");
 
-    if (hasConstants) {
-      writer.write(projectName + "::" + solverName + "::" + solverName + "(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, exahype::Parser::ParserView constants):\n");
-    }
-    else {
-      writer.write(projectName + "::" + solverName + "::" + solverName + "(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):\n");
-    }
-
-    
-    writer.write("  exahype::solvers::ADERDGSolver("
-        + "\""+solverName+"\", "+numberOfVariables+", "+numberOfParameters+", nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {\n");
-    writer.write("  // @todo Please implement/augment if required\n");
-    writer.write("}\n");
-    writer.write("\n\n\n");
+    // init
+    writer.write("void " + projectName + "::" + solverName +
+      "::init() {\n");
+    writer.write("  // This function is called inside the constructur.\n");
+    writer.write("  // @todo Please implement/augment if required.\n");
+    writer.write("}\n\n");
   }
 
   static public void invokeCodeGenerator(String solverName, int numberOfUnknowns, int numberOfParameters, int order,

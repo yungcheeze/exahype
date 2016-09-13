@@ -3,6 +3,7 @@
 
 peano::CommunicationSpecification   exahype::adapters::RiemannSolver::communicationSpecification() {
   return peano::CommunicationSpecification::getMinimalSpecification()
+   & exahype::mappings::Synchronisation::communicationSpecification()
    & exahype::mappings::RiemannSolver::communicationSpecification()
 
   ;
@@ -11,6 +12,7 @@ peano::CommunicationSpecification   exahype::adapters::RiemannSolver::communicat
 
 peano::MappingSpecification   exahype::adapters::RiemannSolver::touchVertexLastTimeSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::Synchronisation::touchVertexLastTimeSpecification()
    & exahype::mappings::RiemannSolver::touchVertexLastTimeSpecification()
 
   ;
@@ -19,6 +21,7 @@ peano::MappingSpecification   exahype::adapters::RiemannSolver::touchVertexLastT
 
 peano::MappingSpecification   exahype::adapters::RiemannSolver::touchVertexFirstTimeSpecification() { 
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::Synchronisation::touchVertexFirstTimeSpecification()
    & exahype::mappings::RiemannSolver::touchVertexFirstTimeSpecification()
 
   ;
@@ -27,6 +30,7 @@ peano::MappingSpecification   exahype::adapters::RiemannSolver::touchVertexFirst
 
 peano::MappingSpecification   exahype::adapters::RiemannSolver::enterCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::Synchronisation::enterCellSpecification()
    & exahype::mappings::RiemannSolver::enterCellSpecification()
 
   ;
@@ -35,6 +39,7 @@ peano::MappingSpecification   exahype::adapters::RiemannSolver::enterCellSpecifi
 
 peano::MappingSpecification   exahype::adapters::RiemannSolver::leaveCellSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::Synchronisation::leaveCellSpecification()
    & exahype::mappings::RiemannSolver::leaveCellSpecification()
 
   ;
@@ -43,6 +48,7 @@ peano::MappingSpecification   exahype::adapters::RiemannSolver::leaveCellSpecifi
 
 peano::MappingSpecification   exahype::adapters::RiemannSolver::ascendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::Synchronisation::ascendSpecification()
    & exahype::mappings::RiemannSolver::ascendSpecification()
 
   ;
@@ -51,6 +57,7 @@ peano::MappingSpecification   exahype::adapters::RiemannSolver::ascendSpecificat
 
 peano::MappingSpecification   exahype::adapters::RiemannSolver::descendSpecification() {
   return peano::MappingSpecification::getMinimalSpecification()
+   & exahype::mappings::Synchronisation::descendSpecification()
    & exahype::mappings::RiemannSolver::descendSpecification()
 
   ;
@@ -67,6 +74,7 @@ exahype::adapters::RiemannSolver::~RiemannSolver() {
 
 #if defined(SharedMemoryParallelisation)
 exahype::adapters::RiemannSolver::RiemannSolver(const RiemannSolver&  masterThread):
+  _map2Synchronisation(masterThread._map2Synchronisation) , 
   _map2RiemannSolver(masterThread._map2RiemannSolver) 
 
 {
@@ -74,6 +82,7 @@ exahype::adapters::RiemannSolver::RiemannSolver(const RiemannSolver&  masterThre
 
 
 void exahype::adapters::RiemannSolver::mergeWithWorkerThread(const RiemannSolver& workerThread) {
+  _map2Synchronisation.mergeWithWorkerThread(workerThread._map2Synchronisation);
   _map2RiemannSolver.mergeWithWorkerThread(workerThread._map2RiemannSolver);
 
 }
@@ -89,6 +98,7 @@ void exahype::adapters::RiemannSolver::createHangingVertex(
       exahype::Cell&       coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                   fineGridPositionOfVertex
 ) {
+  _map2Synchronisation.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2RiemannSolver.createHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 
@@ -104,6 +114,7 @@ void exahype::adapters::RiemannSolver::destroyHangingVertex(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
+  _map2Synchronisation.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2RiemannSolver.destroyHangingVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
@@ -118,6 +129,7 @@ void exahype::adapters::RiemannSolver::createInnerVertex(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
+  _map2Synchronisation.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2RiemannSolver.createInnerVertex(fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
@@ -132,6 +144,7 @@ void exahype::adapters::RiemannSolver::createBoundaryVertex(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
+  _map2Synchronisation.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2RiemannSolver.createBoundaryVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
@@ -146,6 +159,7 @@ void exahype::adapters::RiemannSolver::destroyVertex(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
+  _map2Synchronisation.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2RiemannSolver.destroyVertex( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
@@ -160,6 +174,7 @@ void exahype::adapters::RiemannSolver::createCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
+  _map2Synchronisation.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2RiemannSolver.createCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
@@ -174,6 +189,7 @@ void exahype::adapters::RiemannSolver::destroyCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
+  _map2Synchronisation.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2RiemannSolver.destroyCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
@@ -188,6 +204,7 @@ void exahype::adapters::RiemannSolver::mergeWithNeighbour(
   const tarch::la::Vector<DIMENSIONS,double>&   fineGridH,
   int                                           level
 ) {
+   _map2Synchronisation.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
    _map2RiemannSolver.mergeWithNeighbour( vertex, neighbour, fromRank, fineGridX, fineGridH, level );
 
 }
@@ -200,6 +217,7 @@ void exahype::adapters::RiemannSolver::prepareSendToNeighbour(
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
+   _map2Synchronisation.prepareSendToNeighbour( vertex, toRank, x, h, level );
    _map2RiemannSolver.prepareSendToNeighbour( vertex, toRank, x, h, level );
 
 }
@@ -212,6 +230,7 @@ void exahype::adapters::RiemannSolver::prepareCopyToRemoteNode(
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
+   _map2Synchronisation.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
    _map2RiemannSolver.prepareCopyToRemoteNode( localVertex, toRank, x, h, level );
 
 }
@@ -224,6 +243,7 @@ void exahype::adapters::RiemannSolver::prepareCopyToRemoteNode(
       const tarch::la::Vector<DIMENSIONS,double>&   h,
       int                                           level
 ) {
+   _map2Synchronisation.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
    _map2RiemannSolver.prepareCopyToRemoteNode( localCell, toRank, x, h, level );
 
 }
@@ -237,6 +257,7 @@ void exahype::adapters::RiemannSolver::mergeWithRemoteDataDueToForkOrJoin(
   const tarch::la::Vector<DIMENSIONS,double>&  h,
   int                                       level
 ) {
+   _map2Synchronisation.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
    _map2RiemannSolver.mergeWithRemoteDataDueToForkOrJoin( localVertex, masterOrWorkerVertex, fromRank, x, h, level );
 
 }
@@ -250,6 +271,7 @@ void exahype::adapters::RiemannSolver::mergeWithRemoteDataDueToForkOrJoin(
   const tarch::la::Vector<DIMENSIONS,double>&  h,
   int                                       level
 ) {
+   _map2Synchronisation.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
    _map2RiemannSolver.mergeWithRemoteDataDueToForkOrJoin( localCell, masterOrWorkerCell, fromRank, x, h, level );
 
 }
@@ -266,6 +288,7 @@ bool exahype::adapters::RiemannSolver::prepareSendToWorker(
   int                                                                  worker
 ) {
   bool result = false;
+   result |= _map2Synchronisation.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
    result |= _map2RiemannSolver.prepareSendToWorker( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker );
 
   return result;
@@ -281,6 +304,7 @@ void exahype::adapters::RiemannSolver::prepareSendToMaster(
   const exahype::Cell&                 coarseGridCell,
   const tarch::la::Vector<DIMENSIONS,int>&   fineGridPositionOfCell
 ) {
+   _map2Synchronisation.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
    _map2RiemannSolver.prepareSendToMaster( localCell, vertices, verticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
@@ -301,6 +325,7 @@ void exahype::adapters::RiemannSolver::mergeWithMaster(
     const exahype::State&          workerState,
   exahype::State&                masterState
 ) {
+   _map2Synchronisation.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
    _map2RiemannSolver.mergeWithMaster( workerGridCell, workerGridVertices, workerEnumerator, fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell, worker, workerState, masterState );
 
 }
@@ -318,6 +343,7 @@ void exahype::adapters::RiemannSolver::receiveDataFromMaster(
       exahype::Cell&                        workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&    fineGridPositionOfCell
 ) {
+   _map2Synchronisation.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
    _map2RiemannSolver.receiveDataFromMaster( receivedCell, receivedVertices, receivedVerticesEnumerator, receivedCoarseGridVertices, receivedCoarseGridVerticesEnumerator, receivedCoarseGridCell, workersCoarseGridVertices, workersCoarseGridVerticesEnumerator, workersCoarseGridCell, fineGridPositionOfCell );
 
 }
@@ -330,6 +356,7 @@ void exahype::adapters::RiemannSolver::mergeWithWorker(
   const tarch::la::Vector<DIMENSIONS,double>&  cellSize,
   int                                          level
 ) {
+   _map2Synchronisation.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
    _map2RiemannSolver.mergeWithWorker( localCell, receivedMasterCell, cellCentre, cellSize, level );
 
 }
@@ -342,6 +369,7 @@ void exahype::adapters::RiemannSolver::mergeWithWorker(
   const tarch::la::Vector<DIMENSIONS,double>&   h,
   int                                           level
 ) {
+   _map2Synchronisation.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
    _map2RiemannSolver.mergeWithWorker( localVertex, receivedMasterVertex, x, h, level );
 
 }
@@ -357,6 +385,7 @@ void exahype::adapters::RiemannSolver::touchVertexFirstTime(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfVertex
 ) {
+  _map2Synchronisation.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2RiemannSolver.touchVertexFirstTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
@@ -371,6 +400,7 @@ void exahype::adapters::RiemannSolver::touchVertexLastTime(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfVertex
 ) {
+  _map2Synchronisation.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
   _map2RiemannSolver.touchVertexLastTime( fineGridVertex, fineGridX, fineGridH, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfVertex );
 
 }
@@ -385,6 +415,7 @@ void exahype::adapters::RiemannSolver::enterCell(
       exahype::Cell&                 coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell
 ) {
+  _map2Synchronisation.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2RiemannSolver.enterCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
@@ -399,6 +430,7 @@ void exahype::adapters::RiemannSolver::leaveCell(
       exahype::Cell&           coarseGridCell,
       const tarch::la::Vector<DIMENSIONS,int>&                       fineGridPositionOfCell
 ) {
+  _map2Synchronisation.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
   _map2RiemannSolver.leaveCell( fineGridCell, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell, fineGridPositionOfCell );
 
 }
@@ -407,6 +439,7 @@ void exahype::adapters::RiemannSolver::leaveCell(
 void exahype::adapters::RiemannSolver::beginIteration(
   exahype::State&  solverState
 ) {
+  _map2Synchronisation.beginIteration( solverState );
   _map2RiemannSolver.beginIteration( solverState );
 
 }
@@ -415,6 +448,7 @@ void exahype::adapters::RiemannSolver::beginIteration(
 void exahype::adapters::RiemannSolver::endIteration(
   exahype::State&  solverState
 ) {
+  _map2Synchronisation.endIteration( solverState );
   _map2RiemannSolver.endIteration( solverState );
 
 }
@@ -430,6 +464,7 @@ void exahype::adapters::RiemannSolver::descend(
   const peano::grid::VertexEnumerator&                coarseGridVerticesEnumerator,
   exahype::Cell&                 coarseGridCell
 ) {
+  _map2Synchronisation.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2RiemannSolver.descend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
 }
@@ -443,6 +478,7 @@ void exahype::adapters::RiemannSolver::ascend(
   const peano::grid::VertexEnumerator&          coarseGridVerticesEnumerator,
   exahype::Cell&           coarseGridCell
 ) {
+  _map2Synchronisation.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
   _map2RiemannSolver.ascend( fineGridCells, fineGridVertices, fineGridVerticesEnumerator, coarseGridVertices, coarseGridVerticesEnumerator, coarseGridCell );
 
 }

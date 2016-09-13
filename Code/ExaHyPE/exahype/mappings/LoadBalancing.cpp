@@ -342,8 +342,7 @@ bool exahype::mappings::LoadBalancing::prepareSendToWorker(
   const tarch::la::Vector<DIMENSIONS,int>&                             fineGridPositionOfCell,
   int                                                                  worker
 ) {
-  // do nothing
-  return true;
+  return false;
 }
 
 void exahype::mappings::LoadBalancing::prepareSendToMaster(

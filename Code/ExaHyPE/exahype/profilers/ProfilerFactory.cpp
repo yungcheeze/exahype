@@ -19,6 +19,7 @@
 #include <unordered_map>
 
 #include "simple/ChronoElapsedTimeProfiler.h"
+#include "simple/IbmAemProfiler.h"
 #include "simple/NoOpProfiler.h"
 
 #ifdef LIKWID_AVAILABLE
@@ -38,6 +39,7 @@
 #include "ipcm/metrics/IpcmCyclesLostL2MissesMetric.h"
 #include "ipcm/metrics/IpcmCyclesLostL3MissesMetric.h"
 #include "ipcm/metrics/IpcmCyclesMetric.h"
+#include "ipcm/metrics/IpcmDramConsumedJoulesMetric."
 #include "ipcm/metrics/IpcmInstructionsRetiredMetric.h"
 #include "ipcm/metrics/IpcmL2CacheHitsMetric.h"
 #include "ipcm/metrics/IpcmL2CacheMissesMetric.h"
@@ -118,6 +120,12 @@ const std::unordered_map<
                exahype::profilers::ipcm::IpcmConsumedJoulesMetric>(
                new exahype::profilers::ipcm::IpcmConsumedJoulesMetric);
          }},
+        {"IpcmDramConsumedJoulesMetric",
+         []() {
+           return std::unique_ptr<
+               exahype::profilers::ipcm::IpcmDramConsumedJoulesMetric>(
+               new exahype::profilers::ipcm::IpcmDramConsumedJoulesMetric);
+         }},
         {"IpcmCyclesLostL2MissesMetric",
          []() {
            return std::unique_ptr<
@@ -170,24 +178,36 @@ const std::unordered_map<
 
 const std::unordered_map<
     std::string, std::function<std::unique_ptr<exahype::profilers::Profiler>(
-                     const std::vector<std::string>&)>>
+                     const std::vector<std::string>&, const std::string&)>>
     profiler_map = {
         {"NoOpProfiler",
-         [](const std::vector<std::string>& metrics) {
+         [](const std::vector<std::string>& metrics,
+            const std::string& profiling_output) {
            return std::unique_ptr<exahype::profilers::simple::NoOpProfiler>(
-               new exahype::profilers::simple::NoOpProfiler());
+               new exahype::profilers::simple::NoOpProfiler(profiling_output));
          }},
         {"ChronoElapsedTimeProfiler",
-         [](const std::vector<std::string>& metrics) {
+         [](const std::vector<std::string>& metrics,
+            const std::string& profiling_output) {
            return std::unique_ptr<
                exahype::profilers::simple::ChronoElapsedTimeProfiler>(
-               new exahype::profilers::simple::ChronoElapsedTimeProfiler());
+               new exahype::profilers::simple::ChronoElapsedTimeProfiler(
+                   profiling_output));
+         }},
+        {"IbmAemProfiler",
+         [](const std::vector<std::string>& metrics,
+            const std::string& profiling_output) {
+           return std::unique_ptr<exahype::profilers::simple::IbmAemProfiler>(
+               new exahype::profilers::simple::IbmAemProfiler(
+                   profiling_output));
          }},
 #ifdef LIKWID_AVAILABLE
         {"LikwidProfiler",
-         [](const std::vector<std::string>& modules) {
+         [](const std::vector<std::string>& modules,
+            const std::string& profiling_output) {
            std::unique_ptr<exahype::profilers::likwid::LikwidProfiler> profiler(
-               new exahype::profilers::likwid::LikwidProfiler());
+               new exahype::profilers::likwid::LikwidProfiler(
+                   profiling_output));
            for (const auto& module : modules) {
              std::string module_identifier, suffix;
              size_t pos_underscore = module.find_first_of('_');
@@ -212,9 +232,10 @@ const std::unordered_map<
 #endif  // LIKWID_AVAILABLE
 #ifdef IPCM_AVAILABLE
         {"IpcmProfiler",
-         [](const std::vector<std::string>& metrics) {
+         [](const std::vector<std::string>& metrics,
+            const std::string& profiling_output) {
            std::unique_ptr<exahype::profilers::ipcm::IpcmProfiler> profiler(
-               new exahype::profilers::ipcm::IpcmProfiler());
+               new exahype::profilers::ipcm::IpcmProfiler(profiling_output));
            for (const auto& metric : metrics) {
              if (ipcm_metrics_map.count(metric)) {
                profiler->addMetric(ipcm_metrics_map.at(metric)());
@@ -240,13 +261,14 @@ ProfilerFactory& ProfilerFactory::getInstance() {
 }
 
 std::unique_ptr<Profiler> ProfilerFactory::create(
-    const std::string& profiler_name, const std::vector<std::string>& modules) {
+    const std::string& profiler_name, const std::vector<std::string>& modules,
+    const std::string& profiling_output) {
   if (profiler_map.count(profiler_name)) {  // known profiler
-    return profiler_map.at(profiler_name)(modules);
+    return profiler_map.at(profiler_name)(modules, profiling_output);
   } else {  // unknown profiler
     std::cerr << "ProfilerFactory: Unknown profiler name '" << profiler_name
               << "'. NoOpProfiler created instead." << std::endl;
-    return profiler_map.at("NoOpProfiler")(modules);
+    return profiler_map.at("NoOpProfiler")(modules, profiling_output);
   }
 }
 

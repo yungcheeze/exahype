@@ -61,7 +61,7 @@ ifeq ($(call tolower,$(MODE)),release)
 else ifeq ($(call tolower,$(MODE)),debug)
   # Settings for the Debug mode
   # --------------------------------------------
-  COMPILER_CFLAGS += -DDebug -DAsserts
+  COMPILER_CFLAGS += -DDebug -DAsserts -DTrackGridStatistics
   COMPILER_LFLAGS +=
 
 else ifeq ($(call tolower,$(MODE)),profile)
@@ -73,8 +73,8 @@ else ifeq ($(call tolower,$(MODE)),profile)
 else ifeq ($(call tolower,$(MODE)),asserts)
   # Settings for the Adderst mode
   # --------------------------------------------
-  COMPILER_CFLAGS += -DAsserts -g
-  COMPILER_LFLAGS += -g
+  COMPILER_CFLAGS += -DAsserts -g3 -DTrackGridStatistics
+  COMPILER_LFLAGS += -g3
 
 else
   # Option not recognized
@@ -235,10 +235,14 @@ endif
 # -----------------------
 ifeq ($(call tolower,$(DISTRIBUTEDMEM)),mpi)
 	COMPILER_CFLAGS += -DParallel -DMPICH_IGNORE_CXX_SEEK
-	ifeq ($(call tolower,$(COMPILER)),gnu)
-		CC = mpiCC
-	else
-		CC = mpiicpc
+        ifdef MPICC
+		CC=$(MPICC)
+        else
+		ifeq ($(call tolower,$(COMPILER)),gnu)
+			CC = mpiCC
+		else
+			CC = mpiicpc
+		endif
 	endif
 endif
 
@@ -309,6 +313,11 @@ header:
 	@echo "SHAREDMEM      | $(SHAREDMEM)"
 	@echo "DISTRIBUTEDMEM | $(DISTRIBUTEDMEM)"
 	@echo ================================
+	@echo
+	@echo By default, ExaHyPE uses mpiicpc if you use INTEL and MPI. To 
+	@echo change this and make ExaHyPE use mpiCC always, please set the 
+	@echo environment variable MPICC to mpiCC.
+
 
 build: ffiles.mk $(FOBJECTS) cfiles.mk $(COBJECTS)
 	$(LL) $(COBJECTS) $(FOBJECTS) $(LINK_FORTRAN) -o $(EXECUTABLE) $(PROJECT_LFLAGS) $(COMPILER_LFLAGS) $(SYSTEM_LFLAGS)

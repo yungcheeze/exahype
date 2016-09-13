@@ -146,23 +146,8 @@ void exahype::mappings::AugmentedAMRTreePlot2d::createHangingVertex(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
 #if DIMENSIONS == 2
-  bool needToPlotVertex = false;
-
-  tarch::la::Vector<DIMENSIONS,double> fineGridCellSize = coarseGridVerticesEnumerator.getCellSize();
-  fineGridCellSize /= 3.0;
-
-  for (const auto& p : exahype::solvers::RegisteredSolvers) {
-      needToPlotVertex = tarch::la::allSmallerEquals(fineGridCellSize,p->getMaximumMeshSize());
-  }
-
-  if (needToPlotVertex) {
-    int mapEntries = _level2OffsetMap.size();
-    _level2OffsetMap.insert( std::pair<int,double>(coarseGridVerticesEnumerator.getLevel()+1,mapEntries) ); // Checks for duplicate keys. Does not insert if key exists.
-
-    double offsetZ = _level2OffsetMap.at(coarseGridVerticesEnumerator.getLevel()+1);
-
-    plotVertex(fineGridVertex, fineGridX, offsetZ);
-  }
+  double offsetZ = coarseGridVerticesEnumerator.getLevel()+1;
+  plotVertex(fineGridVertex, fineGridX, offsetZ);
 #else
   logError("createHangingVertex",
            "This mapping can only be used for two-dimensional problems "
@@ -248,7 +233,8 @@ void exahype::mappings::AugmentedAMRTreePlot2d::
         exahype::Vertex& localVertex,
         const exahype::Vertex& masterOrWorkerVertex, int fromRank,
         const tarch::la::Vector<DIMENSIONS, double>& x,
-        const tarch::la::Vector<DIMENSIONS, double>& h, int level) {}
+        const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+}
 
 void exahype::mappings::AugmentedAMRTreePlot2d::
     mergeWithRemoteDataDueToForkOrJoin(
@@ -319,23 +305,8 @@ void exahype::mappings::AugmentedAMRTreePlot2d::touchVertexFirstTime(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
 #if DIMENSIONS == 2
-  bool needToPlotVertex = false;
-
-  tarch::la::Vector<DIMENSIONS,double> fineGridCellSize = coarseGridVerticesEnumerator.getCellSize();
-  fineGridCellSize /= 3.0;
-
-  for (const auto& p : exahype::solvers::RegisteredSolvers) {
-      needToPlotVertex = tarch::la::allSmallerEquals(fineGridCellSize,p->getMaximumMeshSize());
-  }
-
-  if (needToPlotVertex) {
-    int mapEntries = _level2OffsetMap.size();
-    _level2OffsetMap.insert( std::pair<int,double>(coarseGridVerticesEnumerator.getLevel()+1,mapEntries) ); // Checks for duplicate keys. Does not insert if key exists.
-
-    double offsetZ = _level2OffsetMap.at(coarseGridVerticesEnumerator.getLevel()+1);
-
-    plotVertex(fineGridVertex, fineGridX, offsetZ);
-  }
+  double offsetZ = coarseGridVerticesEnumerator.getLevel()+1;
+  plotVertex(fineGridVertex, fineGridX, offsetZ);
 #else
   logError("touchVertexFirstTime",
            "This mapping can only be used for two-dimensional problems "
@@ -360,8 +331,7 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
 #if DIMENSIONS == 2
-  if (_level2OffsetMap.find(coarseGridVerticesEnumerator.getLevel()+1)!=_level2OffsetMap.end()) {
-    double offsetZ = _level2OffsetMap.at(coarseGridVerticesEnumerator.getLevel()+1);
+    double offsetZ = coarseGridVerticesEnumerator.getLevel()+1;
 
     int vertexIndex[TWO_POWER_D];
     tarch::la::Vector<DIMENSIONS + 1, double> currentVertexPosition;
@@ -388,11 +358,11 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
         static_cast<int>(fineGridCell.getCellDescriptionsIndex()));
 
     if (fineGridCell.isInitialised() &&
-        ADERDGCellDescriptionHeap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size() > 0) {
+        exahype::solvers::ADERDGSolver::Heap::getInstance().getData(fineGridCell.getCellDescriptionsIndex()).size() > 0) {
       int solverNumber = 0;
       bool solverFound = false;
 
-      for (auto& pFine : ADERDGCellDescriptionHeap::getInstance().getData(
+      for (auto& pFine : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(
                fineGridCell.getCellDescriptionsIndex())) {
         if (pFine.getSolverNumber() == solverNumber) {
           _cellTypeWriter->plotCell(cellIndex,
@@ -422,7 +392,6 @@ void exahype::mappings::AugmentedAMRTreePlot2d::enterCell(
     }
 
     _cellCounter++;
-  }
 #endif
 }
 

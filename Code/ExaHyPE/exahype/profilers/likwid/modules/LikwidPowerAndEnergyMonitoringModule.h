@@ -3,14 +3,14 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #ifndef _EXAHYPE_PROFILERS_LIKWID_MODULES_LIKWID_POWER_AND_ENERGY_MODULE_H_
 #define _EXAHYPE_PROFILERS_LIKWID_MODULES_LIKWID_POWER_AND_ENERGY_MODULE_H_
 
@@ -71,20 +71,16 @@ class LikwidPowerAndEnergyMonitoringModule : public LikwidModule {
       {PowerType::PKG, PowerType::DRAM};
 
   PowerInfo* power_info_ = nullptr;
-  int number_of_sockets_ = -1;
-  std::vector<int> cpuid_of_sockets_;
 
-  std::unordered_map<std::string,     // tags
-                     std::vector<     // sockets
-                         std::array<  // power types
-                             PowerData, kNumberOfProfiledPowerTypes>>>
-      power_data_;
+  std::array<PowerData, kNumberOfProfiledPowerTypes> power_data_;
 
-  std::unordered_map<               // tags
-      std::string, std::vector<     // sockets
-                       std::array<  // power types
-                           double, kNumberOfProfiledPowerTypes>>>
+  std::unordered_map<std::string,
+                     std::pair<int /* count */,
+                               std::array<double, kNumberOfProfiledPowerTypes>>>
       aggregates_;
+
+  double penality_per_rapl_read_[kNumberOfProfiledPowerTypes];
+  int number_of_rapl_reads_;
 };
 
 }  // namespace likwid

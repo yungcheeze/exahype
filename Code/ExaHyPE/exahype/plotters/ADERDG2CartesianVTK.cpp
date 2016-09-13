@@ -35,7 +35,7 @@ std::string exahype::plotters::ADERDG2CartesianVerticesVTKAscii::getIdentifier()
 
 
 exahype::plotters::ADERDG2CartesianVerticesVTKAscii::ADERDG2CartesianVerticesVTKAscii(exahype::plotters::Plotter::UserOnTheFlyPostProcessing* postProcessing):
-    ADERDG2CartesianVTK(postProcessing,false,false) {
+  ADERDG2CartesianVTK(postProcessing,false,false) {
 }
 
 
@@ -74,7 +74,13 @@ exahype::plotters::ADERDG2CartesianVTK::ADERDG2CartesianVTK(exahype::plotters::P
   Device(postProcessing),
   _fileCounter(-1),
   _isBinary(isBinary),
-  _plotCells(plotCells) {
+  _plotCells(plotCells),
+  _vertexDataWriter(nullptr),
+  _cellDataWriter(nullptr),
+  _timeStampDataWriter(nullptr),
+  _cellTimeStampDataWriter(nullptr),
+  _gridWriter(nullptr),
+  _patchWriter(nullptr) {
 }
 
 
@@ -175,20 +181,21 @@ void exahype::plotters::ADERDG2CartesianVTK::finishPlotting() {
     // _patchWriter should raise/throw the C++ Exception or return something in case
     // of failure.
     _patchWriter->writeToFile(snapshotFileName.str());
-
-    if (_vertexDataWriter!=nullptr) delete _vertexDataWriter;
-    if (_cellDataWriter!=nullptr)   delete _cellDataWriter;
-    delete _timeStampDataWriter;
-    delete _gridWriter;
-    delete _patchWriter;
-
-    _vertexDataWriter    = nullptr;
-    _cellDataWriter      = nullptr;
-    _patchWriter         = nullptr;
-    _timeStampDataWriter = nullptr;
-    _gridWriter          = nullptr;
   }
+
+  if (_vertexDataWriter!=nullptr)     delete _vertexDataWriter;
+  if (_cellDataWriter!=nullptr)       delete _cellDataWriter;
+  if (_timeStampDataWriter!=nullptr)  delete _timeStampDataWriter;
+  if (_gridWriter!=nullptr)           delete _gridWriter;
+  if (_patchWriter!=nullptr)          delete _patchWriter;
+
+  _vertexDataWriter    = nullptr;
+  _cellDataWriter      = nullptr;
+  _patchWriter         = nullptr;
+  _timeStampDataWriter = nullptr;
+  _gridWriter          = nullptr;
 }
+
 
 
 exahype::plotters::ADERDG2CartesianVTK::~ADERDG2CartesianVTK() {

@@ -18,6 +18,7 @@
 #include "exahype/State.h"
 
 
+ #include "exahype/mappings/Synchronisation.h"
  #include "exahype/mappings/RiemannSolver.h"
 
 
@@ -38,9 +39,11 @@ namespace exahype {
  */
 class exahype::adapters::RiemannSolver {
   private:
-    typedef mappings::RiemannSolver Mapping0;
+    typedef mappings::Synchronisation Mapping0;
+    typedef mappings::RiemannSolver Mapping1;
 
-     Mapping0  _map2RiemannSolver;
+     Mapping0  _map2Synchronisation;
+     Mapping1  _map2RiemannSolver;
 
 
   public:

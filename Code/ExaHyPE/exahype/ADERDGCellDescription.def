@@ -25,16 +25,43 @@ class exahype::records::ADERDGCellDescription {
    * performed.
    */
   parallelise persistent bool riemannSolvePerformed[DIMENSIONS_TIMES_TWO];
+  
+  /**
+   * These flags indicate which face of a cell is inside the domain.
+   * If a face is not inside of the domain, it might be part
+   * of the domain boundary or outside of the domain.
+   * 
+   * In both cases, we apply boundary conditions.
+   *
+   * !!! HangingVertexBookkeeper !!!
+   * We need this field since the HangingVertexBookkeeper overwrites
+   * DomainAdjacencyIndices by RemoteAdjacencyIndices if the rank's
+   * and a remote rank's domain's overlap contains the parts of the boundary
+   * or a sub-manifold that is located outside of the domain.   
+   */
+  parallelise persistent bool isInside[DIMENSIONS_TIMES_TWO];
   ///@}
   
-  #ifdef Parallel
+  #ifdef Parallel  
+  /**
+   * If a neighbouring cell belonging to another rank
+   * functions as a compute cell for the same solver (Type::Cell)
+   * that this cell description is associated with and this
+   * cell description is further a helper cell description (Type::Ancestor/EmptyAncestor/
+   * Descendant/EmptyDescendany), this helper cell description needs to store face data.
+   * This flag is used to indicate these scenarios.
+   *
+   * \note This flag should be only set in MarkingForAugmentation::mergeWithNeighbour(...).
+   * It should be read and be reseted afterwards in MarkingForAugmentation::enterCell(...).
+   */
+  parallelise persistent bool oneRemoteBoundaryNeighbourIsOfTypeCell; 
   /**
    * Face data exchange in ExaHyPE is realised in vertices: each vertex checks
    * whether one of its adjacent faces should go to another rank. As a result, 
    * a face might be exchanged up to 2^{d-1} times. We use this flag to avoid 
    * this. See prepareSendToNeighbour() in SpaceTimePredictor.
    */
-  parallelise persistent bool faceDataSentToNeighbouringRank[DIMENSIONS_TIMES_TWO];
+  parallelise persistent int faceDataExchangeCounter[DIMENSIONS_TIMES_TWO];
   #endif
 
   /**
@@ -69,39 +96,6 @@ class exahype::records::ADERDGCellDescription {
    */
   parallelise persistent double nextPredictorTimeStepSize;
   ///@}
-
-  /**
-   * @defgroup SpaceTimeDataIndices Space Time Data Indices
-   *
-   * Index pointing to an array of size \f$ N_\mathrm{var}\,(N+1)^{d+1} \f$.
-   *
-   * \note Only for local time stepping we really need to keep the entire
-   *       space-time degrees of freedom of the ADER approach.
-   */
-  ///@{
-  /**
-   * Index pointing to the space-time predictor DoF belonging to this cell.
-   * Symbol: \f$ q \f$.
-   */
-  parallelise persistent int spaceTimePredictor;
-  ///@}
-
-  /**
-   * @defgroup SpaceTimeDataIndices Space Time Data Indices
-   *
-   * Index pointing to an array of size \f$ d\,N_\mathrm{var}\,(N+1)^{d+1} \f$
-   *
-   * \note Only for local time stepping we really need to keep the entire
-   * space-time degrees of freedom of the ADER approach.
-   * */
-  ///@{
-  /**
-   * Index pointing to the space-time volume fluxes DoF belonging to this cell.
-   * Symbol: \f$ \textbf{F} \f$.
-   */
-  parallelise persistent int spaceTimeVolumeFlux;
-  ///@}
-
   /**
    * @defgroup VolumeDataIndices Volume Data Indices
    *
@@ -122,26 +116,6 @@ class exahype::records::ADERDGCellDescription {
    * \f$ \Delta u_h \f$.
    */
   parallelise persistent int update;
-
-  /**
-   * Index pointing to the predictor DoF belonging to this cell, i.e., the time
-   * integrated space-time DoF. Symbol: \f$q_h\f$.
-  */
-  parallelise persistent int predictor;
-  ///@}
-
-  /**
-   * @defgroup VolumeFluxDataIndices Volume Flux Data Indices
-   *
-   * Index pointing to an array of size \f$ d\,N_\mathrm{var}\,(N+1)^{d} \f$.
-   */
-  ///@{
-  /**
-   * Index pointing to the volume flux DoF belonging to this cell, i.e., the
-   * time
-   * integrated space-time DoF. Symbol: \f$ \textbf{F}_h \f$.
-   */
-  parallelise persistent int volumeFlux;
   ///@}
 
   /**
@@ -192,12 +166,23 @@ class exahype::records::ADERDGCellDescription {
   /**
    * Type of a cell description.
    * Cell descriptions of type \p Cell hold cell and face data,
-   * while the ones of type \p Shell hold only face data.
+   * while the ones of type \p Ancestor hold only face data.
    * Both belong to the original spacetree that
    * is constructed according to solver-based refinement criteria.
-   * Virtual shells hold also only face data but belong to
-   * the virtual part of the augmented spacetree that
+   * Helper cells of type Descendant also hold face data 
+   * but belong to the virtual part of the augmented spacetree that
    * is created to store prolongated face data.
+   *
+   * ADERDGCellDescriptions of type \p EmptyAncestor and \p EmptyDescendant
+   * do not hold face data. These types are set if the cell
+   * associated to this cell description is not neighbouring
+   * a cell that holds a cell description of type \p
+   * Cell.
+   *
+   * RemoteBoundaryDescendant and RemoteBoundaryAncestor are set
+   * as type of an ADERDGCellDescription if the ADERDGCellDescription
+   * needs to communicate data to a neighbour process, or a worker/master
+   * process.
    */
 
   enum Type {
@@ -229,15 +214,82 @@ class exahype::records::ADERDGCellDescription {
   parallelise persistent int parentIndex;
 
   enum RefinementEvent {
+    /**
+     * In this state, the cell description is ready to
+     * perform operations of the ADER-DG method, e.g.,
+     * the Riemann solve, the solution update etc.
+     */
     None,
-    ErasingRequested,            // post
-    Erasing,                     // pre
-    ChangeToDescendantRequested, // post
-    RefiningRequested,           // pre
-    Refining,                    // pre
-    DeaugmentingRequested,       // post
-    AugmentingRequested,         // pre
-    Augmenting                   // pre
+    /**
+     * If this refinement event is set, 
+     * the parent Ancestor asks its
+     * children if they want to be erased. If not so,
+     * the children change the RefinementEvent 
+     * of the parent to None. If so,
+     * they leave the parent's RefinementEvent
+     * unchanged. 
+     */
+    ErasingChildrenRequested,
+    /**
+     * After all children of a parent left
+     * the parent's refinement event ErasingChildrenRequested
+     * unchanged, the parent changes its state
+     * to this event. In the next iteration
+     * the parent's children need to restrict their
+     * solution up to the parent and
+     * the child cell descriptions need to be
+     * removed from the grid.
+     */
+    ErasingChildren,   
+    /**
+     * Change children to descendants.
+     * An Ancestor cell description can adopt 
+     * this status if its children can be erased 
+     * w.r.t. the physics based refinement criterion
+     * however one of the children is parent itself
+     * to children of type Descendant.
+     * In this case, we do not erase the children
+     * of the Ancestor but change their type to (Empty)Descendant.
+     */
+    ChangeChildrenToDescendantsRequested,
+    /**
+     * Change children to descendants.
+     * An Ancestor cell description can adopt 
+     * this status if its children can be erased 
+     * w.r.t. the physics based refinement criterion
+     * however one of the children is parent itself
+     * to children of type Descendant.
+     * In this case, we do not erase the children
+     * of the Ancestor but change their type to (Empty)Descendant.
+     */
+    ChangeChildrenToDescendants,
+    
+    RefiningRequested,           
+    Refining,                    
+    
+    /**
+     * If this refinement event is set, 
+     * the parent Descendant or Cell asks its
+     * children if they want to be deaugmented. If not so,
+     * the children change the RefinementEvent 
+     * of the parent to None. If so,
+     * they leave the parent's RefinementEvent
+     * unchanged. 
+     */
+    DeaugmentingChildrenRequested,
+    /**
+     * After all children of a parent left
+     * the parent's refinement event DeaugmentingChildrenRequested
+     * unchanged, the parent changes its state
+     * to this event. In the next iteration
+     * the parent's children need to restrict their
+     * solution up to the parent and
+     * the child cell descriptions need to be
+     * removed from the grid.
+     */
+    DeaugmentingChildren, 
+    AugmentingRequested,         
+    Augmenting                   
   };
 
   /**
@@ -245,7 +297,13 @@ class exahype::records::ADERDGCellDescription {
    */
   parallelise persistent RefinementEvent refinementEvent;
   ///@}
-
-  parallelise persistent double solutionMin[DIMENSIONS_TIMES_TWO];
-  parallelise persistent double solutionMax[DIMENSIONS_TIMES_TWO];
+  
+  /**
+   * Pointer to DIMENSIONS_TIMES_TWO \times _numberOfUnknowns doubles.
+   *
+   * First, all the _numberOfUnknowns entries of the left face are stored, then
+   * the _numberOfUnknowns of the right face and so forth.
+   */
+  parallelise persistent int solutionMin;
+  parallelise persistent int solutionMax;
 };

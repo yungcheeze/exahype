@@ -84,10 +84,10 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithWorkerThread(
     const DropIncomingMPIMetadataMessages& workerThread) {}
 #endif
 
-void exahype::mappings::DropIncomingMPIMetadataMessages::beginIteration(
-    exahype::State& solverState) {
-  _state = &solverState; // Copy address of rank's state.
+
+void exahype::mappings::DropIncomingMPIMetadataMessages::beginIteration(exahype::State& solverState) {
 }
+
 
 void exahype::mappings::DropIncomingMPIMetadataMessages::endIteration(
     exahype::State& solverState) {}
@@ -97,76 +97,34 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::mergeWithNeighbour(
     exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
-  logTraceInWith6Arguments("mergeWithNeighbour(...)", vertex, neighbour,
-                           fromRank, fineGridX, fineGridH, level);
 
-// TODO(Dominic): Remove
-  return;
-
-  // TODO(Dominic): AMR + MPI
-  // 1. Get metadata,
-  // 2. Set AugmentationRequest if neighbour is of type Ancestor
-  // 3. Change cell type of local cell description if neighbour is of type Cell.
-  // 4. Delete metadata.
-  #if !defined(PeriodicBC)
+// TODO(Dominic): This is a bug or needs to be documented.
+// see discussion in SpaceTimePredictor
+#if !defined(PeriodicBC)
   if (vertex.isBoundary()) return;
-  #endif
-  // TODO (Dominic): Add to docu: Only receive if this vertex was not newly created
-  // but is an existing one.
-  if (vertex.isInside()) {
+#endif
 
-    dfor2(myDest)
-      dfor2(mySrc)
-        tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
-        tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
+  dfor2(myDest)
+    dfor2(mySrc)
+      tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
+      tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
 
-        // TODO(Dominic): Add to docu why we invert the order:
-        // MPI message order: Stack principle.
-        int destScalar = TWO_POWER_D - myDestScalar - 1;
-        int srcScalar  = TWO_POWER_D - mySrcScalar  - 1;
-
-        assertion(
-            ((tarch::la::countEqualEntries(dest, src) == 1 &&
-            vertex.getAdjacentRanks()(srcScalar)    == fromRank &&
-            (vertex.getAdjacentRanks()(destScalar)  == tarch::parallel::Node::getInstance().getRank()))
-            &&
-            vertex.hasToReceiveMetadata(_state,src,dest,fromRank))
-            ||
-            (!(tarch::la::countEqualEntries(dest, src) == 1 &&
-            vertex.getAdjacentRanks()(srcScalar)    == fromRank &&
-            (vertex.getAdjacentRanks()(destScalar)  == tarch::parallel::Node::getInstance().getRank()))
-            &&
-            !vertex.hasToReceiveMetadata(_state,src,dest,fromRank))
-        );
-
-        assertion1(!_state->isForkTriggeredForRank(vertex.getAdjacentRanks()(destScalar)), _state->toString());
-        assertion1(!_state->isForkingRank(vertex.getAdjacentRanks()(destScalar)),          _state->toString());
-        assertion1(!_state->isForkTriggeredForRank(vertex.getAdjacentRanks()(srcScalar)), _state->toString());
-        assertion1(!_state->isForkingRank(vertex.getAdjacentRanks()(srcScalar)),          _state->toString());
-
-        if (
-            vertex.hasToReceiveMetadata(_state,src,dest,fromRank)
-        ) {  // we are solely exchanging faces
-          logDebug("mergeWithNeighbour(...)","drop message.");
-
-          // After the grid setup, we still have to receive all
-          // previously sent MPI messages in
-          // order to clear the MPI buffer.
-          MetadataHeap::getInstance().receiveData(
-              fromRank, fineGridX, level,
-              peano::heap::MessageType::NeighbourCommunication);
-        }
-      enddforx
+      if (vertex.hasToReceiveMetadata(src,dest,fromRank)) {
+        MetadataHeap::getInstance().receiveData(
+            fromRank, fineGridX, level,
+            peano::heap::MessageType::NeighbourCommunication);
+      }
     enddforx
-
-  }
-
-  logTraceOut("mergeWithNeighbour(...)");
+  enddforx
 }
+
 
 //
 // All methods below are nop.
 //
+// ====================================
+
+
 
 void exahype::mappings::DropIncomingMPIMetadataMessages::prepareSendToNeighbour(
     exahype::Vertex& vertex, int toRank,
