@@ -209,7 +209,7 @@ bool exahype::mappings::Plot::prepareSendToWorker(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker) {
   // do nothing
-  return true;
+  return false;
 }
 
 void exahype::mappings::Plot::prepareSendToMaster(

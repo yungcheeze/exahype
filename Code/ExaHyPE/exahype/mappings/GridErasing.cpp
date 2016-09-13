@@ -256,7 +256,7 @@ bool exahype::mappings::GridErasing::prepareSendToWorker(
   int                                                                  worker
 ) {
   // do nothing
-  return true;
+  return false;
 }
 
 void exahype::mappings::GridErasing::prepareSendToMaster(
