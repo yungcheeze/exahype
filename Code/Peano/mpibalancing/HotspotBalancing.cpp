@@ -141,7 +141,11 @@ peano::parallel::loadbalancing::LoadBalancingFlag  mpibalancing::HotspotBalancin
   
   peano::parallel::loadbalancing::LoadBalancingFlag  result = peano::parallel::loadbalancing::LoadBalancingFlag::Continue;
 
-  if ( tarch::parallel::Node::getInstance().isGlobalMaster() ) {
+  if (
+    tarch::parallel::Node::getInstance().isGlobalMaster()
+    &&
+    forkIsAllowed
+  ) {
     result = peano::parallel::loadbalancing::LoadBalancingFlag::ForkAllChildrenAndBecomeAdministrativeRank;
   }
   else if (_joinsAllowed && _workerCouldNotEraseDueToDecomposition[workerRank] && joinIsAllowed) {
