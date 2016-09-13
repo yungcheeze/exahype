@@ -18,8 +18,8 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/InitialCondition.h"
  #include "exahype/mappings/MeshRefinement.h"
+ #include "exahype/mappings/InitialCondition.h"
  #include "exahype/mappings/LoadBalancing.h"
  #include "exahype/adapters/MeshRefinement2MultiscaleLinkedCell_3.h"
 
@@ -41,13 +41,13 @@ namespace exahype {
  */
 class exahype::adapters::MeshRefinement {
   private:
-    typedef mappings::InitialCondition Mapping0;
-    typedef mappings::MeshRefinement Mapping1;
+    typedef mappings::MeshRefinement Mapping0;
+    typedef mappings::InitialCondition Mapping1;
     typedef mappings::LoadBalancing Mapping2;
     typedef adapters::MeshRefinement2MultiscaleLinkedCell_3 Mapping3;
 
-     Mapping0  _map2InitialCondition;
-     Mapping1  _map2MeshRefinement;
+     Mapping0  _map2MeshRefinement;
+     Mapping1  _map2InitialCondition;
      Mapping2  _map2LoadBalancing;
      Mapping3  _map2MeshRefinement2MultiscaleLinkedCell_3;
 
