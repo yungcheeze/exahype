@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_AugmentedAMRGrid2MultiscaleLinkedCell_7_H_
-#define EXAHYPE_ADAPTERS_AugmentedAMRGrid2MultiscaleLinkedCell_7_H_
+#ifndef EXAHYPE_ADAPTERS_MeshRefinement2MultiscaleLinkedCell_3_H_
+#define EXAHYPE_ADAPTERS_MeshRefinement2MultiscaleLinkedCell_3_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,7 +18,7 @@
 
 namespace exahype {
       namespace adapters {
-        class AugmentedAMRGrid2MultiscaleLinkedCell_7;
+        class MeshRefinement2MultiscaleLinkedCell_3;
       } 
 }
 
@@ -32,7 +32,7 @@ namespace exahype {
  * @author Tobias Weinzierl
  * @version $Revision: 1.1 $
  */
-class exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_7 {
+class exahype::adapters::MeshRefinement2MultiscaleLinkedCell_3 {
   public:
     static peano::MappingSpecification   touchVertexLastTimeSpecification();
     static peano::MappingSpecification   touchVertexFirstTimeSpecification();
@@ -42,16 +42,16 @@ class exahype::adapters::AugmentedAMRGrid2MultiscaleLinkedCell_7 {
     static peano::MappingSpecification   descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    AugmentedAMRGrid2MultiscaleLinkedCell_7();
+    MeshRefinement2MultiscaleLinkedCell_3();
 
     #if defined(SharedMemoryParallelisation)
-    AugmentedAMRGrid2MultiscaleLinkedCell_7(const AugmentedAMRGrid2MultiscaleLinkedCell_7& masterThread);
+    MeshRefinement2MultiscaleLinkedCell_3(const MeshRefinement2MultiscaleLinkedCell_3& masterThread);
     #endif
 
-    virtual ~AugmentedAMRGrid2MultiscaleLinkedCell_7();
+    virtual ~MeshRefinement2MultiscaleLinkedCell_3();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const AugmentedAMRGrid2MultiscaleLinkedCell_7& workerThread);
+    void mergeWithWorkerThread(const MeshRefinement2MultiscaleLinkedCell_3& workerThread);
     #endif
 
     void createInnerVertex(

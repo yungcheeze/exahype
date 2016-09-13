@@ -40,6 +40,9 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   static tarch::logging::Log _log;
 
  public:
+ /**
+  * @deprecated
+  */
   typedef struct {
     int parentIndex;
     tarch::la::Vector<DIMENSIONS, int> subcellIndex;
@@ -203,6 +206,10 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
   void ensureNecessaryMemoryIsAllocated(const int solverNumber);
 
   /**
+   *
+   * @deprecated @see AdaptiveMeshRefinement.h
+   *
+   *
    * Determine the position of a Cell or Ancestor with respect
    * to a parent of type Ancestor.
    *
@@ -213,9 +220,13 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * right file/class to hold this functionality.
    */
   SubcellPosition computeSubcellPositionOfCellOrAncestor(
-      const exahype::records::ADERDGCellDescription& pChild) const;
+      const exahype::records::ADERDGCellDescription& pChild);
 
   /**
+   *
+   * @deprecated @see AdaptiveMeshRefinement.h
+   *
+   *
    * Determine the position of a Descendant with respect
    * to a  Cell or Descendant that contains data, i.e.,
    * has at least one neighbour that is a real cell.
@@ -227,7 +238,7 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    * right file/class to hold this functionality.
    */
   SubcellPosition computeSubcellPositionOfDescendant(
-      const exahype::records::ADERDGCellDescription& pChild) const;
+      const exahype::records::ADERDGCellDescription& pChild);
 
   /**
    * @return if this cell is initialised.
@@ -291,29 +302,6 @@ class exahype::Cell : public peano::grid::Cell<exahype::records::Cell> {
    *   max solutions. Return false if we seem to run into oscillations.
    */
   bool setSolutionMinMaxAndAnalyseValidity( double* min, double* max, int solverIndex );
-
-  /**
-   * Merge the solution min and max values on a face between two cell
-   * descriptions. Signature is similar to the solver of a Riemann problem.
-   */
-  static void mergeSolutionMinMaxOnFace(
-    const int cellDescriptionsIndexOfLeftCell,
-    const int cellDescriptionsIndexOfRightCell,
-    const int faceIndexForLeftCell,
-    const int faceIndexForRightCell
-  );
-
-  /**
-   * Single-sided variant of mergeSolutionMinMaxOnFace() that is required
-   * for MPI where min and max value are explicitly exchanged through messages.
-   *
-   * @deprecated
-   */
-  static void mergeSolutionMinMaxOnFace(
-    records::ADERDGCellDescription&  cellDescription,
-    int                              faceNumber,
-    double* min, double* max
-  );
 };
 
 #endif

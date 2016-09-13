@@ -190,7 +190,7 @@ void exahype::Cell::addNewCellDescription(
 
   // Initialise MPI helper variables
   #ifdef Parallel
-  newCellDescription.setHelperCellNeedsToStoreFaceData(false);
+  newCellDescription.setOneRemoteBoundaryNeighbourIsOfTypeCell(false);
   for (int faceIndex = 0; faceIndex < DIMENSIONS_TIMES_TWO; faceIndex++) {
     newCellDescription.setFaceDataExchangeCounter(faceIndex,TWO_POWER_D);
 //    newCellDescription.setIsInside(faceIndex,)
@@ -458,7 +458,7 @@ void exahype::Cell::validateNoNansInADERDGSolver(
 
 exahype::Cell::SubcellPosition
 exahype::Cell::computeSubcellPositionOfCellOrAncestor(
-    const exahype::records::ADERDGCellDescription& pChild) const {
+    const exahype::records::ADERDGCellDescription& pChild) {
   assertion1(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(
                  _cellData.getCellDescriptionsIndex()),
              toString());
@@ -517,7 +517,7 @@ exahype::Cell::computeSubcellPositionOfCellOrAncestor(
 
 exahype::Cell::SubcellPosition
 exahype::Cell::computeSubcellPositionOfDescendant(
-    const exahype::records::ADERDGCellDescription& pChild) const {
+    const exahype::records::ADERDGCellDescription& pChild) {
   assertion1(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(_cellData.getCellDescriptionsIndex()),toString());
   assertion1(solvers::RegisteredSolvers[pChild.getSolverNumber()]->getType() == exahype::solvers::Solver::Type::ADER_DG,toString());
   assertion1(pChild.getType() == exahype::records::ADERDGCellDescription::Descendant,toString());

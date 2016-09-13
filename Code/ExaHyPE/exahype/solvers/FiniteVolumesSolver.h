@@ -27,7 +27,20 @@ class FiniteVolumesSolver;
 
 
 
-class exahype::solvers::FiniteVolumesSolver: public exahype::solvers::Solver {
+class exahype::solvers::FiniteVolumesSolver : public exahype::solvers::Solver {
+public:
+  typedef exahype::DataHeap DataHeap;
+
+  /**
+   * Rank-local heap that stores FiniteVolumesCellDescription instances.
+   *
+   * \note This heap might be shared by multiple FiniteVolumesSolver instances
+   * that differ in their solver number and other attributes.
+   * @see solvers::Solver::RegisteredSolvers.
+   */
+  typedef exahype::records::FiniteVolumesCellDescription CellDescription;
+  typedef peano::heap::PlainHeap<CellDescription> Heap;
+
 private:
   /**
    * Total number of unknowns in a cell.
@@ -81,17 +94,6 @@ private:
 #endif
 
 public:
-  typedef exahype::DataHeap DataHeap;
-
-  /**
-   * Rank-local heap that stores FiniteVolumesCellDescription instances.
-   *
-   * \note This heap might be shared by multiple FiniteVolumesSolver instances
-   * that differ in their solver number and other attributes.
-   * @see solvers::Solver::RegisteredSolvers.
-   */
-  typedef peano::heap::PlainHeap<exahype::records::FiniteVolumesCellDescription> Heap;
-
   FiniteVolumesSolver(const std::string& identifier, int numberOfVariables,
                       int numberOfParameters, int nodesPerCoordinateAxis,
                       double maximumMeshSize,
@@ -140,7 +142,7 @@ public:
                               const tarch::la::Vector<DIMENSIONS, double>& dx,
                               const double dt, double& maxAdmissibleDt) = 0;
 
-  virtual double getMinTimeStamp() const override;
+  double getMinTimeStamp() const override;
 
   /**
    * This operation returns the number of unknowns per cell located in
@@ -151,23 +153,67 @@ public:
   /**
    * Run over all solvers and identify the minimal time step size.
    */
-  virtual double getMinTimeStepSize() const override;
+  double getMinTimeStepSize() const override;
 
-  virtual void updateNextTimeStepSize( double value ) override;
+  void updateNextTimeStepSize( double value ) override;
 
-  virtual void initInitialTimeStamp(double value) override;
+  void initInitialTimeStamp(double value) override;
 
   void synchroniseTimeStepping(
           const int cellDescriptionsIndex,
           const int element) override;
 
-  virtual void startNewTimeStep() override;
+  void startNewTimeStep() override;
 
-  virtual double getNextMinTimeStepSize() const override;
+  double getNextMinTimeStepSize() const override;
 
-  virtual int tryGetElement(
+  bool isValid(
+      const int cellDescriptionsIndex) const {
+    return Heap::getInstance().isValidIndex(cellDescriptionsIndex);
+  }
+
+  int tryGetElement(
       const int cellDescriptionsIndex,
-      const int solverNumber) const;
+      const int solverNumber) const override;
+
+  ///////////////////////////////////
+  // MODIFY CELL DESCRIPTION
+  ///////////////////////////////////
+  bool enterCell(
+      exahype::Cell& fineGridCell,
+      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellSize,
+      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
+      const int fineGridLevel,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS,double>& coarseGridCellSize,
+      const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
+      indicesAdjacentToFineGridVertices,
+      const int solverNumber) override;
+
+  bool leaveCell(
+      exahype::Cell& fineGridCell,
+      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
+      exahype::Cell& coarseGridCell,
+      const int solverNumber) override;
+
+  ///////////////////////////////////
+  // NEIGHBOUR
+  ///////////////////////////////////
+  void mergeNeighbours(
+        const int                                 cellDescriptionsIndex1,
+        const int                                 element1,
+        const int                                 cellDescriptionsIndex2,
+        const int                                 element2,
+        const tarch::la::Vector<DIMENSIONS, int>& pos1,
+        const tarch::la::Vector<DIMENSIONS, int>& pos2) override;
+
+  void mergeWithBoundaryData(
+        const int                                 cellDescriptionsIndex,
+        const int                                 element,
+        const tarch::la::Vector<DIMENSIONS, int>& posCell,
+        const tarch::la::Vector<DIMENSIONS, int>& posBoundary) override;
+
 
 #ifdef Parallel
   /**
@@ -460,14 +506,13 @@ public:
 /**
  * Returns a string representation of this solver.
  */
-  virtual std::string toString() const;
+  std::string toString() const override;
 
   /**
    * Writes a string representation of this solver
    * to \p out.
    */
-  virtual void toString (std::ostream& out) const;
+  void toString (std::ostream& out) const override;
 };
-
 
 #endif

@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_AugmentedAMRGrid_H_
-#define EXAHYPE_ADAPTERS_AugmentedAMRGrid_H_
+#ifndef EXAHYPE_ADAPTERS_MeshRefinement_H_
+#define EXAHYPE_ADAPTERS_MeshRefinement_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,20 +18,16 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/RegularMesh.h"
+ #include "exahype/mappings/MeshRefinement.h"
  #include "exahype/mappings/InitialCondition.h"
- #include "exahype/mappings/MarkingForRefinement.h"
- #include "exahype/mappings/Refinement.h"
- #include "exahype/mappings/MarkingForAugmentation.h"
- #include "exahype/mappings/Augmentation.h"
  #include "exahype/mappings/LoadBalancing.h"
- #include "exahype/adapters/AugmentedAMRGrid2MultiscaleLinkedCell_7.h"
+ #include "exahype/adapters/MeshRefinement2MultiscaleLinkedCell_3.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class AugmentedAMRGrid;
+        class MeshRefinement;
       } 
 }
 
@@ -43,25 +39,17 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::AugmentedAMRGrid {
+class exahype::adapters::MeshRefinement {
   private:
-    typedef mappings::RegularMesh Mapping0;
+    typedef mappings::MeshRefinement Mapping0;
     typedef mappings::InitialCondition Mapping1;
-    typedef mappings::MarkingForRefinement Mapping2;
-    typedef mappings::Refinement Mapping3;
-    typedef mappings::MarkingForAugmentation Mapping4;
-    typedef mappings::Augmentation Mapping5;
-    typedef mappings::LoadBalancing Mapping6;
-    typedef adapters::AugmentedAMRGrid2MultiscaleLinkedCell_7 Mapping7;
+    typedef mappings::LoadBalancing Mapping2;
+    typedef adapters::MeshRefinement2MultiscaleLinkedCell_3 Mapping3;
 
-     Mapping0  _map2RegularMesh;
+     Mapping0  _map2MeshRefinement;
      Mapping1  _map2InitialCondition;
-     Mapping2  _map2MarkingForRefinement;
-     Mapping3  _map2Refinement;
-     Mapping4  _map2MarkingForAugmentation;
-     Mapping5  _map2Augmentation;
-     Mapping6  _map2LoadBalancing;
-     Mapping7  _map2AugmentedAMRGrid2MultiscaleLinkedCell_7;
+     Mapping2  _map2LoadBalancing;
+     Mapping3  _map2MeshRefinement2MultiscaleLinkedCell_3;
 
 
   public:
@@ -73,16 +61,16 @@ class exahype::adapters::AugmentedAMRGrid {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    AugmentedAMRGrid();
+    MeshRefinement();
 
     #if defined(SharedMemoryParallelisation)
-    AugmentedAMRGrid(const AugmentedAMRGrid& masterThread);
+    MeshRefinement(const MeshRefinement& masterThread);
     #endif
 
-    virtual ~AugmentedAMRGrid();
+    virtual ~MeshRefinement();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const AugmentedAMRGrid& workerThread);
+    void mergeWithWorkerThread(const MeshRefinement& workerThread);
     #endif
 
     void createInnerVertex(

@@ -112,7 +112,7 @@ bool exahype::mappings::Synchronisation::prepareSendToWorker(
   return false;
 
   if (fineGridCell.isInside() && fineGridCell.isInitialised()) {
-    exahype::Vertex::sendMetadata(
+    exahype::Vertex::sendEncodedMetadata(
         worker,fineGridCell.getCellDescriptionsIndex(),
         peano::heap::MessageType::MasterWorkerCommunication,
         fineGridVerticesEnumerator.getCellCenter(),

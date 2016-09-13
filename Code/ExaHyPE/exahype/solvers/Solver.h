@@ -55,6 +55,10 @@ constexpr int addPadding(const int originalSize) {
 
 namespace exahype {
   /**
+   * Forward declaration of exahype::Cell.
+   */
+  class Cell;
+  /**
    * We store the degrees of freedom associated with the ADERDGCellDescription and FiniteVolumesCellDescription
    * instances on this heap.
    * We further use this heap to send and receive face data from one MPI rank to the other.
@@ -105,6 +109,49 @@ class exahype::solvers::Solver {
    */
   enum class RefinementControl { Keep = 0, Refine = 1, Erase = 2 };
 
+  /**
+   * TODO(Dominic): Docu.
+   */
+  typedef struct {
+    int parentIndex;
+    tarch::la::Vector<DIMENSIONS, int> subcellIndex;
+  } SubcellPosition;
+
+  /**
+   * The augmentation control states.
+   */
+  enum class AugmentationControl {
+    /**
+     * Indicates that a spacetree cell is next to another spacetree cell
+     * of type exahype::records::ADERDGCellDescription::Cell.
+     */
+    NextToCell = 0,
+    /**
+     * Indicates that a spacetree cell is next to another spacetree cell
+     * of type exahype::records::ADERDGCellDescription::Ancestor or
+     * exahype::records::ADERDGCellDescription::EmptyAncestor.
+     */
+    NextToAncestor = 1,
+    /**
+     * Indicates that a spacetree cell is both, next to another spacetree cell
+     * of type exahype::records::ADERDGCellDescription::Ancestor or
+     * exahype::records::ADERDGCellDescription::EmptyAncestor, and
+     * a spacetree cell of type
+     * exahype::records::ADERDGCellDescription::Cell.
+     */
+    NextToCellAndAncestor = 2,
+    /**
+     * Indicates that a spacetree cell is neither, next to another spacetree cell
+     * of type exahype::records::ADERDGCellDescription::Ancestor or
+     * exahype::records::ADERDGCellDescription::EmptyAncestor, nor
+     * next to a spacetree cell of type exahype::records::ADERDGCellDescription::Cell.
+     *
+     * A cell of type exahype::records::ADERDGCellDescription::Descendant can then request erasing.
+     * A cell of type exahype::records::ADERDGCellDescription::Cell does then not need
+     * to request augmenting.
+     */
+        Default = 3
+  };
 
   /**
    * Default return value of function getElement(...)
@@ -112,41 +159,6 @@ class exahype::solvers::Solver {
    * stored at a heap address.
    */
   static const int NotFound;
-
-  /*
-   * The refinement events a cell description can be subject to.
-   *
-   * \note Make sure the bounds in the assertion in convertToRefinementEvent(...)
-   * do always match the order of these enums.
-   */
-  enum RefinementEvent {
-    None = 0,
-    ErasingRequested = 1,
-    Erasing = 2,
-    ChangeToDescendantRequested = 3,
-    RefiningRequested = 4,
-    Refining = 5,
-    DeaugmentingRequested = 6,
-    AugmentingRequested = 7,
-    Augmenting = 8
-  };
-
-  /*
-   * The cell type a cell description can attain.
-   *
-   * \note Make sure the bounds in the assertion in convertToCellType(...)
-   * do always match the order of these enums.
-   */
-  enum CellType {
-    Erased = 0,
-    Ancestor = 1,
-    RemoteBoundaryAncestor = 2,
-    EmptyAncestor = 3,
-    Cell = 4,
-    Descendant = 5,
-    RemoteBoundaryDescendant = 6,
-    EmptyDescendant = 7
-  };
 
  protected:
   /**
@@ -232,6 +244,11 @@ class exahype::solvers::Solver {
    * Returns the type of this solver.
    */
   Type getType() const;
+
+  /**
+   * Returns the time stepping algorithm this solver is using.
+   */
+  TimeStepping getTimeStepping() const;
 
   /**
    * Returns the number of state variables.
@@ -339,14 +356,77 @@ class exahype::solvers::Solver {
   static double getFinestMaximumMeshSizeOfAllSolvers();
 
   /**
+   * Returns true if the index \p cellDescriptionsIndex
+   * is a valid heap index.
+   */
+  virtual bool isValidCellDescriptionIndex(
+      const int cellDescriptionsIndex) const = 0;
+
+  /**
    * If an entry for this solver exists,
    * return the element index of the cell description
    * in the array at address \p cellDescriptionsIndex.
-   * Otherwise return Solver::NotFound.
+   * Otherwise and if \p cellDescriptionsIndex is an
+   * invalid index, return Solver::NotFound.
    */
   virtual int tryGetElement(
       const int cellDescriptionsIndex,
       const int solverNumber) const = 0;
+
+  /**
+   * Modify a cell description in enter cell event.
+   * This event should be used for single cell operations
+   * like marking for refinement, erasing, augmenting,
+   * or deaugmenting.
+   *
+   * Returns true if a performed action requires to
+   * refine the mesh.
+   *
+   * \note We use this at the moment only
+   * for refinement events. We can consider later
+   * on to merge the time stepping functionality
+   * (solution update, predictor comp.) into
+   * this hook.
+   *
+   * \param[in] cellDescriptionsIndicesAdjacentToVertices The cell description indices adjacent to
+   *                                                      the vertices around the cell.
+   *                                                      See VertexOperations::readCellDescriptions(...).
+   *
+   * \see exahype::VertexOperations
+   */
+  virtual bool enterCell(
+      exahype::Cell& fineGridCell,
+      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellSize,
+      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
+      const int fineGridLevel,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS,double>& coarseGridCellSize,
+      const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
+      indicesAdjacentToFineGridVertices,
+      const int solverNumber) = 0;
+
+  /**
+   * Refinement routine that should be used for
+   * collective children-parent operations.
+   *
+   * Returns true if the grid cell associated with
+   * the cell description can be erased due to
+   * an erasing/deaugmenting process that was finished
+   * for the cell description.
+   * Returns false otherwise.
+   *
+   * \note We use this at the moment only
+   * for refinement events. We can consider later
+   * on to merge the time stepping functionality
+   * (solution update, predictor comp.) into
+   * this hook.
+   */
+  virtual bool leaveCell(
+      exahype::Cell& fineGridCell,
+      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
+      exahype::Cell& coarseGridCell,
+      const int solverNumber) = 0;
 
   /**
    * Receive solver data from neighbour rank and write
@@ -357,6 +437,9 @@ class exahype::solvers::Solver {
    * \param[in] element Index of the cell description
    *                    holding the data to send out in
    *                    the array at address \p cellDescriptionsIndex.
+   *                    This is not the solver number.
+   *
+   * \see tryGetElement
    */
   virtual void mergeNeighbours(
         const int                                 cellDescriptionsIndex1,
@@ -373,6 +456,9 @@ class exahype::solvers::Solver {
    *
    * \param[in] element Index of the cell description
    *                    at address \p cellDescriptionsIndex.
+   *                    This is not the solver number.
+   *
+   * \see tryGetElement
    */
   virtual void mergeWithBoundaryData(
         const int                                 cellDescriptionsIndex,
@@ -409,6 +495,9 @@ class exahype::solvers::Solver {
    * \param[in] element Index of the ADERDGCellDescription
    *                    holding the data to send out in
    *                    the heap vector at \p cellDescriptionsIndex.
+   *                    This is not the solver number.
+   *
+   * \see tryGetElement
    */
   virtual void sendDataToNeighbour(
       const int                                    toRank,
@@ -430,14 +519,33 @@ class exahype::solvers::Solver {
       const int                                    level) = 0;
 
   /**
+   * Merge cell description \p element in
+   * the cell descriptions array stored at \p
+   * cellDescriptionsIndex with metadata.
+   *
+   * Currently, the neighbour metadata is only the neighbour
+   * type as int \p neighbourTypeAsInt.
+   *
+   * \param[in] element Index of the cell description
+   *                    holding the data to send out in
+   *                    the array with address \p cellDescriptionsIndex.
+   *                    This is not the solver number.
+   */
+  virtual void mergeWithNeighbourMetadata(
+      const int neighbourTypeAsInt,
+      const int cellDescriptionsIndex,
+      const int element) = 0;
+
+  /**
    * Receive solver data from neighbour rank and write
    * it on the cell description \p element in
-   * the cell descriptions vector stored at \p
+   * the cell descriptions array stored at \p
    * cellDescriptionsIndex.
    *
    * \param[in] element Index of the cell description
    *                    holding the data to send out in
    *                    the array with address \p cellDescriptionsIndex.
+   *                    This is not the solver number.
    */
   virtual void mergeWithNeighbourData(
       const int                                    fromRank,
@@ -468,6 +576,7 @@ class exahype::solvers::Solver {
    * \param[in] element Index of the cell description
    *                    holding the data to send out in
    *                    the array with address \p cellDescriptionsIndex.
+   *                    This is not the solver number.
    */
   virtual void sendDataToWorkerOrMasterDueToForkOrJoin(
       const int                                    toRank,
@@ -495,6 +604,7 @@ class exahype::solvers::Solver {
    * \param[in] element Index of the cell description
    *                    holding the data to send out in
    *                    the array with address \p cellDescriptionsIndex.
+   *                    This is not the solver number.
    */
   virtual void mergeWithWorkerOrMasterDataDueToForkOrJoin(
       const int                                    fromRank,
@@ -525,6 +635,7 @@ class exahype::solvers::Solver {
    * \param[in] element Index of the cell description
    *                    holding the data to send out in
    *                    the heap vector at \p cellDescriptionsIndex.
+   *                    This is not the solver number.
    */
   virtual void sendDataToMaster(
       const int                                    masterRank,
@@ -550,6 +661,7 @@ class exahype::solvers::Solver {
    * \param[in] element Index of the cell description
    *                    holding the data to send out in
    *                    the array with address \p cellDescriptionsIndex.
+   *                    This is not the solver number.
    */
   virtual void mergeWithWorkerData(
       const int                                     workerRank,
@@ -578,6 +690,7 @@ class exahype::solvers::Solver {
    * \param[in] element Index of the ADERDGCellDescription
    *                    holding the data to send out in
    *                    the heap vector at \p cellDescriptionsIndex.
+   *                    This is not the solver number.
    */
   virtual void sendDataToWorker(
       const int                                     workerRank,
@@ -604,6 +717,7 @@ class exahype::solvers::Solver {
    * \param[in] element Index of the cell description
    *                    holding the data to send out in
    *                    the array with address \p cellDescriptionsIndex.
+   *                    This is not the solver number.
    */
   virtual void mergeWithMasterData(
       const int                                     masterRank,
@@ -620,39 +734,6 @@ class exahype::solvers::Solver {
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) = 0;
   #endif
-
- protected:
-  /**
-   * Return the unique int value for \p refinementEvent.
-   */
-  static int asInt(const RefinementEvent& refinementEvent) {
-    return static_cast<int>(refinementEvent);
-  }
-
-  /**
-   * Return the unique int value for \p refinementEvent.
-   */
-  static int asInt(const CellType& cellType) {
-    return static_cast<int>(cellType);
-  }
-
-  /**
-   * Return the unique int value for \p refinementEvent.
-   */
-  static RefinementEvent convertToRefinementEvent(const int& value) {
-    assertion1(value>=static_cast<int>(RefinementEvent::None) &&
-               value<=static_cast<int>(RefinementEvent::Augmenting),value);
-    return static_cast<RefinementEvent>(value);
-  }
-
-  /**
-   * Return the unique int value for \p cellType.
-   */
-  static CellType convertToCellType(const int& value) {
-    assertion1(value>=static_cast<int>(CellType::Erased) &&
-               value<=static_cast<int>(CellType::EmptyDescendant),value);
-    return static_cast<CellType>(value);
-  }
 };
 
 #endif

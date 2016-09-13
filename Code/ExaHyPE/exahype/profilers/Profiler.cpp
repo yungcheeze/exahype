@@ -32,7 +32,7 @@ void Profiler::writeToCout() const { writeToOstream(&std::cout); }
 
 void Profiler::writeToFile(const std::string& path) const {
   std::ofstream ofs;
-  ofs.open(path, std::ios::out | std::ios::app);
+  ofs.open(path, std::ios::out | std::ios::trunc);
 
   if (ofs.is_open()) {
     writeToOstream(&ofs);
