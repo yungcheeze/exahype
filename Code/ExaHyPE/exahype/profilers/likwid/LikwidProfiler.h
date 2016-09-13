@@ -30,7 +30,7 @@ namespace profilers {
 namespace likwid {
 
 struct LikwidProfilerState {
-  CpuInfo* cpi_info_ = nullptr;
+  CpuInfo* cpu_info_ = nullptr;
   CpuTopology* cpu_topology_ = nullptr;
   NumaTopology* numa_topology_ = nullptr;
   AffinityDomains* affinity_domains_ = nullptr;
