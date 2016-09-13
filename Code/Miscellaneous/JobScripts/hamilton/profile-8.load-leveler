@@ -25,6 +25,9 @@ do
     output=$LOADL_TOTAL_TASKS"x16-"$ARRAY_TASK_ID$extension".profile.results"
     poe ./ExaHyPE-Euler-Profile eulerflow-$ARRAY_TASK_ID$extension.exahype > $output
 
+    python ~/peano-code/src/peano/performanceanalysis/merge-log-files.py exahype.log-file $LOADL_TOTAL_TASKS
+    mv merged-exahype.log-file merged-$output
+
   done
 done
 
