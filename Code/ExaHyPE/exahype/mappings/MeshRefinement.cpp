@@ -345,7 +345,7 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
           }
 
           logDebug("mergeWithNeighbour(...)","solverNumber: " << solverNumber);
-          logDebug("mergeWithNeighbour(...)","neighbourTypeAsInt: "    << neighbourTypeAsInt);
+          // logDebug("mergeWithNeighbour(...)","neighbourTypeAsInt: "    << neighbourTypeAsInt);
 
           --solverNumber;
         }
