@@ -19,6 +19,7 @@
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "LikwidModule.h"
 
@@ -42,11 +43,13 @@ class LikwidPerformanceMonitoringModule : public LikwidModule {
 
  private:
   const std::string group_name_;
-  int group_index_ = -1;  // index of group_name_ in groups array
+  const int group_index_;  // index of group_name_ in groups array
 
   std::unordered_map<std::string, int>
       group_handles_;  // stores handles returned by addEventSet
-  std::unordered_map<std::string, int> counts_;
+
+  // Stores values of perf counters + counter for calls to stop(tag)
+  std::unordered_map<std::string, std::vector<uint64_t>> counter_values_;
 };
 
 }  // namespace likwid

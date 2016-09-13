@@ -29,8 +29,14 @@ LikwidProfiler::LikwidProfiler(const std::string& output, int cpu /* = 0 */)
 
   setenv("LIKWID_FORCE", "1", 1);
 
+  timer_init();
+
   topology_init();
-  state_.cpi_info_ = get_cpuInfo();
+  state_.cpu_info_ = get_cpuInfo();
+  if (state_.cpu_info_->clock <= 0) {
+    state_.cpu_info_->clock = timer_getCpuClock();
+  }
+
   state_.cpu_topology_ = get_cpuTopology();
 
   err = numa_init();
@@ -55,6 +61,8 @@ LikwidProfiler::~LikwidProfiler() {
   affinity_finalize();
   numa_finalize();
   topology_finalize();
+
+  timer_finalize();
 }
 
 void LikwidProfiler::addModule(std::unique_ptr<LikwidModule> module) {
