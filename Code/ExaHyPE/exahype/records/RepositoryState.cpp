@@ -38,7 +38,6 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case Terminate: return "Terminate";
       case RunOnAllNodes: return "RunOnAllNodes";
       case UseAdapterMeshRefinement: return "UseAdapterMeshRefinement";
-      case UseAdapterAugmentedAMRGrid: return "UseAdapterAugmentedAMRGrid";
       case UseAdapterPlotAugmentedAMRGrid: return "UseAdapterPlotAugmentedAMRGrid";
       case UseAdapterInitialConditionAndTimeStepSizeComputation: return "UseAdapterInitialConditionAndTimeStepSizeComputation";
       case UseAdapterPredictionAndPlotAndTimeStepSizeComputation: return "UseAdapterPredictionAndPlotAndTimeStepSizeComputation";
@@ -58,7 +57,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterMeshRefinement=4,UseAdapterAugmentedAMRGrid=5,UseAdapterPlotAugmentedAMRGrid=6,UseAdapterInitialConditionAndTimeStepSizeComputation=7,UseAdapterPredictionAndPlotAndTimeStepSizeComputation=8,UseAdapterPredictionAndTimeStepSizeComputation=9,UseAdapterGridErasing=10,UseAdapterADERDGTimeStep=11,UseAdapterADERDGTimeStepAndPlot=12,UseAdapterPredictionRerun=13,UseAdapterRiemannSolver=14,UseAdapterPrediction=15,UseAdapterCorrection=16,UseAdapterCorrectionAndPlot=17,UseAdapterPlot=18,NumberOfAdapters=19)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterMeshRefinement=4,UseAdapterPlotAugmentedAMRGrid=5,UseAdapterInitialConditionAndTimeStepSizeComputation=6,UseAdapterPredictionAndPlotAndTimeStepSizeComputation=7,UseAdapterPredictionAndTimeStepSizeComputation=8,UseAdapterGridErasing=9,UseAdapterADERDGTimeStep=10,UseAdapterADERDGTimeStepAndPlot=11,UseAdapterPredictionRerun=12,UseAdapterRiemannSolver=13,UseAdapterPrediction=14,UseAdapterCorrection=15,UseAdapterCorrectionAndPlot=16,UseAdapterPlot=17,NumberOfAdapters=18)";
 }
 
 
