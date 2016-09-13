@@ -104,6 +104,55 @@ int exahype::solvers::FiniteVolumesSolver::tryGetElement(
   return NotFound;
 }
 
+///////////////////////////////////
+// MODIFY CELL DESCRIPTION
+///////////////////////////////////
+bool exahype::solvers::FiniteVolumesSolver::enterCell(
+    exahype::Cell& fineGridCell,
+    const tarch::la::Vector<DIMENSIONS,double>& fineGridCellOffset,
+    const tarch::la::Vector<DIMENSIONS,double>& fineGridCellSize,
+    const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
+    const int fineGridLevel,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS,double>& coarseGridCellSize,
+    const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
+    indicesAdjacentToFineGridVertices,
+    const int solverNumber) {
+  assertionMsg(false,"Not implemented.");
+  return false;
+}
+
+bool exahype::solvers::FiniteVolumesSolver::leaveCell(
+    exahype::Cell& fineGridCell,
+    const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
+    exahype::Cell& coarseGridCell,
+    const int solverNumber) {
+  assertionMsg(false,"Not implemented.");
+  return false;
+}
+
+///////////////////////////////////
+// NEIGHBOUR
+///////////////////////////////////
+void exahype::solvers::FiniteVolumesSolver::mergeNeighbours(
+      const int                                 cellDescriptionsIndex1,
+      const int                                 element1,
+      const int                                 cellDescriptionsIndex2,
+      const int                                 element2,
+      const tarch::la::Vector<DIMENSIONS, int>& pos1,
+      const tarch::la::Vector<DIMENSIONS, int>& pos2) {
+  assertionMsg(false,"Not implemented.");
+}
+
+void exahype::solvers::FiniteVolumesSolver::mergeWithBoundaryData(
+      const int                                 cellDescriptionsIndex,
+      const int                                 element,
+      const tarch::la::Vector<DIMENSIONS, int>& posCell,
+      const tarch::la::Vector<DIMENSIONS, int>& posBoundary) {
+  assertionMsg(false,"Not implemented.");
+}
+
+
 #ifdef Parallel
 const int exahype::solvers::FiniteVolumesSolver::DataMessagesPerNeighbourCommunication    = 1;
 const int exahype::solvers::FiniteVolumesSolver::DataMessagesPerForkOrJoinCommunication   = 1;

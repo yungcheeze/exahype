@@ -47,7 +47,7 @@ peano::parallel::loadbalancing::LoadBalancingFlag  mpibalancing::GreedyBalancing
   else if (_workersLevel.count(workerRank)==1) {
     const int workersLevel = _workersLevel.count(workerRank);
 
-    if (workersLevel>=_finestLevelToForkAggressively) {
+    if (workersLevel>=_finestLevelToForkAggressively && forkIsAllowed) {
       result = peano::parallel::loadbalancing::LoadBalancingFlag::ForkOnce;
     }
   }

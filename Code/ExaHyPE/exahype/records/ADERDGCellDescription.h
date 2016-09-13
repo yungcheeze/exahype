@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   31/08/2016 00:53
+    * @date   13/09/2016 11:16
     */
    class exahype::records::ADERDGCellDescription { 
       
@@ -42,7 +42,7 @@ namespace exahype {
          typedef exahype::records::ADERDGCellDescriptionPacked Packed;
          
          enum RefinementEvent {
-            None = 0, ErasingRequested = 1, Erasing = 2, ChangeToDescendantRequested = 3, RefiningRequested = 4, Refining = 5, DeaugmentingRequested = 6, AugmentingRequested = 7, Augmenting = 8
+            None = 0, ErasingChildrenRequested = 1, ErasingChildren = 2, ChangeChildrenToDescendantsRequested = 3, ChangeChildrenToDescendants = 4, RefiningRequested = 5, Refining = 6, DeaugmentingChildrenRequested = 7, DeaugmentingChildren = 8, AugmentingRequested = 9, Augmenting = 10
          };
          
          enum Type {
@@ -61,7 +61,7 @@ namespace exahype {
             #else
             std::bitset<DIMENSIONS_TIMES_TWO> _isInside;
             #endif
-            bool _helperCellNeedsToStoreFaceData;
+            bool _oneRemoteBoundaryNeighbourIsOfTypeCell;
             #ifdef UseManualAlignment
             tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _faceDataExchangeCounter __attribute__((aligned(VectorisationAlignment)));
             #else
@@ -100,7 +100,7 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+            PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
             
             
             inline int getSolverNumber() const 
@@ -239,22 +239,22 @@ namespace exahype {
             
             
             
-            inline bool getHelperCellNeedsToStoreFaceData() const 
+            inline bool getOneRemoteBoundaryNeighbourIsOfTypeCell() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               return _helperCellNeedsToStoreFaceData;
+               return _oneRemoteBoundaryNeighbourIsOfTypeCell;
             }
             
             
             
-            inline void setHelperCellNeedsToStoreFaceData(const bool& helperCellNeedsToStoreFaceData) 
+            inline void setOneRemoteBoundaryNeighbourIsOfTypeCell(const bool& oneRemoteBoundaryNeighbourIsOfTypeCell) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-               _helperCellNeedsToStoreFaceData = helperCellNeedsToStoreFaceData;
+               _oneRemoteBoundaryNeighbourIsOfTypeCell = oneRemoteBoundaryNeighbourIsOfTypeCell;
             }
             
             
@@ -752,7 +752,7 @@ namespace exahype {
          /**
           * Generated
           */
-         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+         ADERDGCellDescription(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
          
          /**
           * Generated
@@ -972,22 +972,22 @@ namespace exahype {
          
          
          
-         inline bool getHelperCellNeedsToStoreFaceData() const 
+         inline bool getOneRemoteBoundaryNeighbourIsOfTypeCell() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            return _persistentRecords._helperCellNeedsToStoreFaceData;
+            return _persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell;
          }
          
          
          
-         inline void setHelperCellNeedsToStoreFaceData(const bool& helperCellNeedsToStoreFaceData) 
+         inline void setOneRemoteBoundaryNeighbourIsOfTypeCell(const bool& oneRemoteBoundaryNeighbourIsOfTypeCell) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-            _persistentRecords._helperCellNeedsToStoreFaceData = helperCellNeedsToStoreFaceData;
+            _persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell = oneRemoteBoundaryNeighbourIsOfTypeCell;
          }
          
          
@@ -1636,7 +1636,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   31/08/2016 00:53
+             * @date   13/09/2016 11:16
              */
             class exahype::records::ADERDGCellDescriptionPacked { 
                
@@ -1650,7 +1650,7 @@ namespace exahype {
                      int _solverNumber;
                      std::bitset<DIMENSIONS_TIMES_TWO> _riemannSolvePerformed;
                      std::bitset<DIMENSIONS_TIMES_TWO> _isInside;
-                     bool _helperCellNeedsToStoreFaceData;
+                     bool _oneRemoteBoundaryNeighbourIsOfTypeCell;
                      tarch::la::Vector<DIMENSIONS_TIMES_TWO,int> _faceDataExchangeCounter;
                      double _correctorTimeStepSize;
                      double _correctorTimeStamp;
@@ -1677,7 +1677,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+                     PersistentRecords(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
                      
                      
                      inline int getSolverNumber() const 
@@ -1816,22 +1816,22 @@ namespace exahype {
                      
                      
                      
-                     inline bool getHelperCellNeedsToStoreFaceData() const 
+                     inline bool getOneRemoteBoundaryNeighbourIsOfTypeCell() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        return _helperCellNeedsToStoreFaceData;
+                        return _oneRemoteBoundaryNeighbourIsOfTypeCell;
                      }
                      
                      
                      
-                     inline void setHelperCellNeedsToStoreFaceData(const bool& helperCellNeedsToStoreFaceData) 
+                     inline void setOneRemoteBoundaryNeighbourIsOfTypeCell(const bool& oneRemoteBoundaryNeighbourIsOfTypeCell) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                        _helperCellNeedsToStoreFaceData = helperCellNeedsToStoreFaceData;
+                        _oneRemoteBoundaryNeighbourIsOfTypeCell = oneRemoteBoundaryNeighbourIsOfTypeCell;
                      }
                      
                      
@@ -2329,7 +2329,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& helperCellNeedsToStoreFaceData, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
+                  ADERDGCellDescriptionPacked(const int& solverNumber, const std::bitset<DIMENSIONS_TIMES_TWO>& riemannSolvePerformed, const std::bitset<DIMENSIONS_TIMES_TWO>& isInside, const bool& oneRemoteBoundaryNeighbourIsOfTypeCell, const tarch::la::Vector<DIMENSIONS_TIMES_TWO,int>& faceDataExchangeCounter, const double& correctorTimeStepSize, const double& correctorTimeStamp, const double& predictorTimeStepSize, const double& predictorTimeStamp, const double& nextPredictorTimeStepSize, const int& solution, const int& update, const int& extrapolatedPredictor, const int& fluctuation, const int& level, const tarch::la::Vector<DIMENSIONS,double>& offset, const tarch::la::Vector<DIMENSIONS,double>& size, const Type& type, const int& parentIndex, const RefinementEvent& refinementEvent, const int& solutionMin, const int& solutionMax);
                   
                   /**
                    * Generated
@@ -2549,22 +2549,22 @@ namespace exahype {
                   
                   
                   
-                  inline bool getHelperCellNeedsToStoreFaceData() const 
+                  inline bool getOneRemoteBoundaryNeighbourIsOfTypeCell() const 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     return _persistentRecords._helperCellNeedsToStoreFaceData;
+                     return _persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell;
                   }
                   
                   
                   
-                  inline void setHelperCellNeedsToStoreFaceData(const bool& helperCellNeedsToStoreFaceData) 
+                  inline void setOneRemoteBoundaryNeighbourIsOfTypeCell(const bool& oneRemoteBoundaryNeighbourIsOfTypeCell) 
  #ifdef UseManualInlining
  __attribute__((always_inline))
  #endif 
  {
-                     _persistentRecords._helperCellNeedsToStoreFaceData = helperCellNeedsToStoreFaceData;
+                     _persistentRecords._oneRemoteBoundaryNeighbourIsOfTypeCell = oneRemoteBoundaryNeighbourIsOfTypeCell;
                   }
                   
                   
@@ -3210,7 +3210,7 @@ namespace exahype {
                       *
                       * 		   build date: 09-02-2014 14:40
                       *
-                      * @date   31/08/2016 00:53
+                      * @date   13/09/2016 11:16
                       */
                      class exahype::records::ADERDGCellDescription { 
                         
@@ -3219,7 +3219,7 @@ namespace exahype {
                            typedef exahype::records::ADERDGCellDescriptionPacked Packed;
                            
                            enum RefinementEvent {
-                              None = 0, ErasingRequested = 1, Erasing = 2, ChangeToDescendantRequested = 3, RefiningRequested = 4, Refining = 5, DeaugmentingRequested = 6, AugmentingRequested = 7, Augmenting = 8
+                              None = 0, ErasingChildrenRequested = 1, ErasingChildren = 2, ChangeChildrenToDescendantsRequested = 3, ChangeChildrenToDescendants = 4, RefiningRequested = 5, Refining = 6, DeaugmentingChildrenRequested = 7, DeaugmentingChildren = 8, AugmentingRequested = 9, Augmenting = 10
                            };
                            
                            enum Type {
@@ -4625,7 +4625,7 @@ namespace exahype {
                                *
                                * 		   build date: 09-02-2014 14:40
                                *
-                               * @date   31/08/2016 00:53
+                               * @date   13/09/2016 11:16
                                */
                               class exahype::records::ADERDGCellDescriptionPacked { 
                                  

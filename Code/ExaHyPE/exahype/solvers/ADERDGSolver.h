@@ -3,41 +3,54 @@
  * Copyright (c) 2016  http://exahype.eu
  * All rights reserved.
  *
- * The project has received funding from the European Union's Horizon 
+ * The project has received funding from the European Union's Horizon
  * 2020 research and innovation programme under grant agreement
  * No 671698. For copyrights and licensing, please consult the webpage.
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
  **/
- 
+
 #ifndef _EXAHYPE_SOLVERS_ADERDG_SOLVER_H_
 #define _EXAHYPE_SOLVERS_ADERDG_SOLVER_H_
 
-#include "exahype/solvers/Solver.h"
-
 #include <iostream>
-#include <memory>
 #include <string>
 #include <vector>
 
-#include "tarch/logging/Log.h"
-
+#include "peano/heap/Heap.h"
+#include "peano/utils/Globals.h"
+#include "tarch/Assertions.h"
+#include "tarch/la/Vector.h"
+#include "exahype/profilers/simple/NoOpProfiler.h"
 #include "exahype/records/ADERDGCellDescription.h"
+
+#include "exahype/solvers/Solver.h"
 
 namespace exahype {
   namespace solvers {
     class ADERDGSolver;
-  }  // namespace solvers
-
-
-}  // namespace exahype
+  }
+}
 
 /**
  * Describes one solver.
  */
-class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
- private:
+class exahype::solvers::ADERDGSolver : public exahype::solvers::Solver {
+public:
+  typedef exahype::DataHeap DataHeap;
+
+  /**
+   * Rank-local heap that stores ADERDGCellDescription instances.
+   *
+   * \note This heap might be shared by multiple ADERDGSolver instances
+     that differ in their solver number and other attributes.
+     @see solvers::Solver::RegisteredSolvers.
+   */
+  typedef exahype::records::ADERDGCellDescription CellDescription;
+  typedef peano::heap::PlainHeap<CellDescription> Heap;
+
+private:
   static tarch::logging::Log _log;
 
   /**
@@ -119,6 +132,148 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
   double _minNextPredictorTimeStepSize;
 
   /**
+   * TODO(Dominic): Add docu.
+   */
+  bool markForRefinement(
+      CellDescription& pFine);
+
+
+  /**
+   * Check if cell descriptions of type Ancestor or Descendant need to hold
+   * data or not based on virtual refinement criterion.
+   * Then, allocate the necessary memory or deallocate the unnecessary memory.
+   */
+  void ensureOnlyNecessaryMemoryIsAllocated(
+      CellDescription& fineGridCellDescription,
+      const exahype::solvers::Solver::AugmentationControl& augmentationControl,
+      const bool onMasterWorkerBoundary);
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  bool markForAugmentation(
+      CellDescription& pFine,
+      const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionIndices,
+      const bool onMasterWorkerBoundary);
+
+  /*
+   * Change the erasing children request to a change children to descendants
+   * request of the coarse grid cell description's parent
+   * if the coarse grid cell has children itself (of type Descendant).
+   * Rationale: We cannot directly erase a Cell that has children (of type Descendant).
+   *
+   * Further, reset the deaugmenting children request if a coarse grid
+   * Descendant has children (of type Descendant). Rationale:
+   * We cannot erase a coarse grid cell that has children (of type Descendant)
+   * before erasing the children.
+   *
+   * \note This operation spans over three spacetree levels. Calling
+   * it requires that a cell description for
+   * the same solver the \p coarseGridCellDescription is associated with
+   * is registered on the fine grid cell.
+   *
+   * \note A more sophisticated procedure has to performed for the refinement event
+   * AugmentationRequested. We need to use the taversal's descend event to handle
+   * this event. We thus do not rely on fineGridCell.isRefined() in the previous enterCell event
+   * to check if we need to reset the deaugmenting request.
+   *
+   * TODO(Dominic): Make template function as soon as verified.
+   */
+  void vetoErasingChildrenOrDeaugmentinChildrenRequest(
+      CellDescription& coarseGridCellDescription);
+
+   /*
+    * Resets the refinement event of a fine grid cell of type
+    * Descendant to None if it was set to Refining.
+    * The latter event indicates that the fine grid cells in
+    * the next finer level have all been initialised with
+    * type EmptyAncestor/Ancestor.
+    *
+    * Resets the augmentation event of a fine grid cell of type
+    * Descendant to None if it was set to Augmenting.
+    * The latter event indicates that the fine grid cells in
+    * the next finer level have all been initialised with
+    * type Descendant.
+    *
+    * TODO(Dominic): Erasing
+    * TODO(Dominic): Make template function as soon as verified.
+    */
+   static void startOrFinishCollectiveRefinementOperations(
+       CellDescription& fineGridCellDescription);
+
+   bool eraseCellDescriptionIfNecessary(
+       const int cellDescriptionsIndex,
+       const int fineGridCellElement,
+       const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
+       CellDescription& coarseGridCellDescription);
+
+  /**
+   * Initialises helper cell descriptions of type Descendant
+   * on the fine level after cell descriptions on the coarse level
+   * have been flagged for augmentation and Peano has
+   * created the requested new cells.
+   *
+   * Further sets the refinement event on a coarse grid Descendant to Augmenting
+   * if the first new Descendant was initialised on the fine grid.
+   */
+  void addNewDescendantIfAugmentingRequested(
+      exahype::Cell& fineGridCell,
+      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellSize,
+      const int fineGridLevel,
+      CellDescription& coarseGridCellDescription,
+      const int coarseGridCellDescriptionsIndex);
+
+  /**
+   * Initialises compute cell descriptions on the fine level (cell description type is Cell)
+   * after coarse grid cell descriptions have been flagged for refinement and Peano has
+   * created the requested new cells.
+   * Erasing is not performed on cells belonging to the regular initial grid
+   * of the solvers (see RegularMesh).
+   *
+   * Further sets the refinement event on a coarse grid Cell to Refining
+   * if the first new Cell was initialised on the fine grid.
+   */
+  void addNewCellIfRefinementRequested(
+      exahype::Cell& fineGridCell,
+      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellSize,
+      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
+      const int fineGridLevel,
+      CellDescription& coarseGridCellDescription,
+      const int coarseGridCellDescriptionsIndex);
+
+
+
+  /**
+   * Prolongates Volume data from a parent cell description to
+   * \p cellDescription if the fine grid cell associated with
+   * \p cellDescription is adjacent to a boundary of the
+   * coarse grid cell associated with the parent cell description.
+   *
+   * \note This method makes only sense for virtual shells
+   * in the current AMR concept.
+   */
+  void prolongateVolumeData(
+    CellDescription&       fineGridCellDescription,
+    const CellDescription& coarseGridCellDescription,
+    const tarch::la::Vector<DIMENSIONS, int>&      subcellIndex);
+
+  /**
+   * Restricts Volume data from \p cellDescriptio to
+   * a parent cell description if the fine grid cell associated with
+   * \p cellDescription is adjacent to a boundary of the
+   * coarse grid cell associated with the parent cell description.
+   *
+   * \note This method makes only sense for real cells.
+   * in the current AMR concept.
+   */
+  void restrictVolumeData(
+      CellDescription&       coarseGridCellDescription,
+      const CellDescription& fineGridCellDescription,
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex);
+
+  /**
    * Solve the Riemann problem at the interface between two cells ("left" and
    * "right"). This method only performs a Riemann solve if at least one of the
    * cell descriptions (per solver) associated with the two cells is of type
@@ -166,8 +321,8 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    * \note Not thread-safe.
    */
   void solveRiemannProblemAtInterface(
-      exahype::records::ADERDGCellDescription& pLeft,
-      exahype::records::ADERDGCellDescription& pRight,
+      CellDescription& pLeft,
+      CellDescription& pRight,
       const int faceIndexLeft,
       const int faceIndexRight);
 
@@ -190,7 +345,7 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
     * \note Not thread-safe.
     */
    void applyBoundaryConditions(
-       exahype::records::ADERDGCellDescription& p,
+       CellDescription& p,
        const int faceIndex);
 
    /**
@@ -229,8 +384,8 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
     * descriptions. Signature is similar to the solver of a Riemann problem.
     */
    void mergeSolutionMinMaxOnFace(
-       exahype::records::ADERDGCellDescription& pLeft,
-       exahype::records::ADERDGCellDescription& pRight,
+       CellDescription& pLeft,
+       CellDescription& pRight,
        const int faceIndexLeft,
        const int faceIndexRight) const;
 
@@ -283,7 +438,7 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    * for MPI where min and max value are explicitly exchanged through messages.
    */
   void mergeSolutionMinMaxOnFace(
-    exahype::records::ADERDGCellDescription&  cellDescription,
+    CellDescription&  cellDescription,
     int                              faceIndex,
     double* min, double* max) const;
 
@@ -301,24 +456,36 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
 #endif
 
  public:
-  typedef exahype::DataHeap DataHeap;
+  /**
+   * Returns the ADERDGCellDescription.
+   */
+  static Heap::HeapEntries& getCellDescriptions(
+      const int cellDescriptionsIndex) {
+    assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+
+    return Heap::getInstance().getData(cellDescriptionsIndex);
+  }
 
   /**
-   * Rank-local heap that stores ADERDGCellDescription instances.
-   *
-   * \note This heap might be shared by multiple ADERDGSolver instances
-     that differ in their solver number and other attributes.
-     @see solvers::Solver::RegisteredSolvers.
+   * Returns the ADERDGCellDescription.
    */
-  typedef peano::heap::PlainHeap<exahype::records::ADERDGCellDescription> Heap;
+  static CellDescription& getCellDescription(
+      const int cellDescriptionsIndex,
+      const int element) {
+    assertion2(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex,element);
+    assertion2(element>=0,cellDescriptionsIndex,element);
+    assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),cellDescriptionsIndex,element);
+
+    return Heap::getInstance().getData(cellDescriptionsIndex)[element];
+  }
 
   /**
    * Returns if a ADERDGCellDescription type holds face data.
    */
-  static bool holdsFaceData(const exahype::records::ADERDGCellDescription::Type& cellDescriptionType) {
-    return cellDescriptionType==exahype::records::ADERDGCellDescription::Cell       ||
-           cellDescriptionType==exahype::records::ADERDGCellDescription::Ancestor   ||
-           cellDescriptionType==exahype::records::ADERDGCellDescription::Descendant;
+  static bool holdsFaceData(const CellDescription::Type& cellDescriptionType) {
+    return cellDescriptionType==CellDescription::Cell       ||
+           cellDescriptionType==CellDescription::Ancestor   ||
+           cellDescriptionType==CellDescription::Descendant;
   }
 
   ADERDGSolver(
@@ -345,21 +512,6 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    * you indicate that this solver is not active in the domain.
    */
   double getMaximumMeshSize() const;
-
-  /**
-   * Returns the identifier of this solver.
-   */
-  std::string getIdentifier() const;
-
-  /**
-   * Returns the type of this solver.
-   */
-  Type getType() const;
-
-  /**
-   * Returns the time stepping mode of this solver.
-   */
-  TimeStepping getTimeStepping() const;
 
   /**
    * Returns the number of state variables.
@@ -632,7 +784,7 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    * meta data.
    */
   void synchroniseTimeStepping(
-      exahype::records::ADERDGCellDescription& p) const;
+      CellDescription& p) const;
 
   /**
    * Copies the time stepping data from the global solver onto the patch's time
@@ -688,15 +840,15 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
    */
   void updateNextPredictorTimeStepSize(double nextPredictorTimeStepSize);
 
-  virtual double getMinTimeStamp() const {
+  double getMinTimeStamp() const override {
     return getMinCorrectorTimeStamp();
   }
 
-  virtual double getMinTimeStepSize() const {
+  double getMinTimeStepSize() const override {
     return getMinCorrectorTimeStepSize();
   }
 
-  virtual double getNextMinTimeStepSize() const {
+  double getNextMinTimeStepSize() const override {
     return getMinPredictorTimeStepSize();
   }
 
@@ -709,30 +861,39 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
     setMinCorrectorTimeStamp(0.0);
   }
 
-  /**
-   * If an entry for solver \p solverNumber exists,
-   * return the element index of the cell description
-   * in the array at address \p cellDescriptionsIndex.
-   * Otherwise return \p Solver::NotFound.
-   */
+  bool isValidCellDescriptionIndex(
+      const int cellDescriptionsIndex) const override {
+    return Heap::getInstance().isValidIndex(cellDescriptionsIndex);
+  }
+
   int tryGetElement(
       const int cellDescriptionsIndex,
       const int solverNumber) const override;
 
-  int getNumberOfCellDescriptionsForSolverType(
-      const int cellDescriptionsIndex) const;
+  ///////////////////////////////////
+  // MODIFY CELL DESCRIPTION
+  ///////////////////////////////////
+  bool enterCell(
+      exahype::Cell& fineGridCell,
+      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellOffset,
+      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellSize,
+      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
+      const int fineGridLevel,
+      exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS,double>& coarseGridCellSize,
+      const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
+      indicesAdjacentToFineGridVertices,
+      const int solverNumber) override;
 
-  /**
-   * Take the cell descriptions \p element1
-   * and \p element2 from the arrays stored at \p
-   * cellDescriptionsIndex1 \p cellDescriptionsIndex2
-   * and merge data.
-   *
-   * \param[in] element1 Index of the cell description in
-   *                     the array at address \p cellDescriptionsIndex1.
-   * \param[in] element2 Index of the cell description in
-   *                     the array at address \p cellDescriptionsIndex2.
-   */
+  bool leaveCell(
+      exahype::Cell& fineGridCell,
+      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
+      exahype::Cell& coarseGridCell,
+      const int solverNumber) override;
+
+  ///////////////////////////////////
+  // NEIGHBOUR
+  ///////////////////////////////////
   void mergeNeighbours(
         const int                                 cellDescriptionsIndex1,
         const int                                 element1,
@@ -741,14 +902,6 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
         const tarch::la::Vector<DIMENSIONS, int>& pos1,
         const tarch::la::Vector<DIMENSIONS, int>& pos2) override;
 
-  /**
-   * Take the cell description with index \p element
-   * from the array at address \p cellDescriptionsIndex
-   * and merge it with boundary data.
-   *
-   * \param[in] element  Index of the cell description in
-   *                     the array at address \p cellDescriptionsIndex.
-   */
   void mergeWithBoundaryData(
         const int                                 cellDescriptionsIndex,
         const int                                 element,
@@ -858,7 +1011,10 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////
-
+  void mergeWithNeighbourMetadata(
+      const int neighbourTypeAsInt,
+      const int cellDescriptionsIndex,
+      const int element) override;
   /**
    * Send solver data to neighbour rank. Read the data from
    * the cell description \p elementIndex in
@@ -1088,13 +1244,13 @@ class exahype::solvers::ADERDGSolver: public exahype::solvers::Solver {
   /**
    * Returns a string representation of this solver.
    */
-  virtual std::string toString() const;
+  std::string toString() const override;
 
   /**
    * Writes a string representation of this solver
    * to \p out.
    */
-  virtual void toString (std::ostream& out) const;
+  void toString (std::ostream& out) const override;
 };
 
 #endif

@@ -59,54 +59,52 @@ void getCurrentTime() {
   escape(&now);
 }
 
-static void estimateOverhead(const std::string& output) {
-  if (output == "" || output == "cout") {
-    return;
-  }
-
-  std::ofstream file;
-  file.open(output, std::ios::out | std::ios::trunc);
-
-  file << "steady_clock::period = "
-       << static_cast<double>(std::chrono::steady_clock::period::num) /
-              std::chrono::steady_clock::period::den
-       << "sec" << std::endl;
+static void estimateOverhead() {
+  std::cout << "steady_clock::period = "
+            << static_cast<double>(std::chrono::steady_clock::period::num) /
+                   std::chrono::steady_clock::period::den
+            << "sec" << std::endl;
 
   // noop
   std::tuple<mean_sec, median_sec, std_sec, min_sec, max_sec> duration_noop =
       meanMedianStdMinMaxOfDurations<kNumberOfSamples1>(
           nTimesDurationOf<kNumberOfSamples1, &noop>());
-  file << "duration_noop" << std::endl;
-  file << "  mean_sec = " << std::get<0>(duration_noop) << std::endl;
-  file << "  median_sec = " << std::get<1>(duration_noop) << std::endl;
-  file << "  std_sec = " << std::get<2>(duration_noop) << std::endl;
-  file << "  min_sec = " << std::get<3>(duration_noop) << std::endl;
-  file << "  max_sec = " << std::get<4>(duration_noop) << std::endl;
+  std::cout << "duration_noop" << std::endl;
+  std::cout << "  mean_sec = " << std::get<0>(duration_noop) << std::endl;
+  std::cout << "  median_sec = " << std::get<1>(duration_noop) << std::endl;
+  std::cout << "  std_sec = " << std::get<2>(duration_noop) << std::endl;
+  std::cout << "  min_sec = " << std::get<3>(duration_noop) << std::endl;
+  std::cout << "  max_sec = " << std::get<4>(duration_noop) << std::endl;
 
   // storeInMap
   initOverheadMeasurementMap();
   std::tuple<mean_sec, median_sec, std_sec, min_sec, max_sec>
       duration_storeInMap = meanMedianStdMinMaxOfDurations<kNumberOfSamples1>(
           nTimesDurationOf<kNumberOfSamples1, &storeInMap>());
-  file << "duration_storeInMap" << std::endl;
-  file << "  mean_sec = " << std::get<0>(duration_storeInMap) << std::endl;
-  file << "  median_sec = " << std::get<1>(duration_storeInMap) << std::endl;
-  file << "  std_sec = " << std::get<2>(duration_storeInMap) << std::endl;
-  file << "  min_sec = " << std::get<3>(duration_storeInMap) << std::endl;
-  file << "  max_sec = " << std::get<4>(duration_storeInMap) << std::endl;
+  std::cout << "duration_storeInMap" << std::endl;
+  std::cout << "  mean_sec = " << std::get<0>(duration_storeInMap) << std::endl;
+  std::cout << "  median_sec = " << std::get<1>(duration_storeInMap)
+            << std::endl;
+  std::cout << "  std_sec = " << std::get<2>(duration_storeInMap) << std::endl;
+  std::cout << "  min_sec = " << std::get<3>(duration_storeInMap) << std::endl;
+  std::cout << "  max_sec = " << std::get<4>(duration_storeInMap) << std::endl;
 
   // getCurrentTime
   std::tuple<mean_sec, median_sec, std_sec, min_sec, max_sec>
       duration_getCurrentTime =
           meanMedianStdMinMaxOfDurations<kNumberOfSamples1>(
               nTimesDurationOf<kNumberOfSamples1, &getCurrentTime>());
-  file << "getCurrentTime" << std::endl;
-  file << "  mean_sec = " << std::get<0>(duration_getCurrentTime) << std::endl;
-  file << "  median_sec = " << std::get<1>(duration_getCurrentTime)
-       << std::endl;
-  file << "  std_sec = " << std::get<2>(duration_getCurrentTime) << std::endl;
-  file << "  min_sec = " << std::get<3>(duration_getCurrentTime) << std::endl;
-  file << "  max_sec = " << std::get<4>(duration_getCurrentTime) << std::endl;
+  std::cout << "getCurrentTime" << std::endl;
+  std::cout << "  mean_sec = " << std::get<0>(duration_getCurrentTime)
+            << std::endl;
+  std::cout << "  median_sec = " << std::get<1>(duration_getCurrentTime)
+            << std::endl;
+  std::cout << "  std_sec = " << std::get<2>(duration_getCurrentTime)
+            << std::endl;
+  std::cout << "  min_sec = " << std::get<3>(duration_getCurrentTime)
+            << std::endl;
+  std::cout << "  max_sec = " << std::get<4>(duration_getCurrentTime)
+            << std::endl;
 
   /*
   // sleep 1s
@@ -143,7 +141,7 @@ namespace simple {
 
 ChronoElapsedTimeProfiler::ChronoElapsedTimeProfiler(const std::string& output)
     : Profiler(output) {
-  estimateOverhead(output);
+  // estimateOverhead();
 }
 
 void ChronoElapsedTimeProfiler::setNumberOfTags(int n) {
@@ -177,15 +175,20 @@ void ChronoElapsedTimeProfiler::stop(const std::string& tag) {
 }
 
 void ChronoElapsedTimeProfiler::writeToOstream(std::ostream* os) const {
-  *os << "ChronoElapsedTimeProfiler" << std::endl;
-
   for (const auto& kv_pair : counts_and_durations_) {
-    *os << "  " << kv_pair.first << std::endl;
-    *os << "    count = " << kv_pair.second.first << std::endl;
-    *os << "    time_sec = "
+    *os << "ChronoElapsedTimeProfiler: " << kv_pair.first << " count "
+        << kv_pair.second.first << std::endl;
+    *os << "ChronoElapsedTimeProfiler: " << kv_pair.first << " time_sec "
         << static_cast<std::chrono::duration<double, std::ratio<1>>>(
                kv_pair.second.second)
                .count()
+        << std::endl;
+    *os << "ChronoElapsedTimeProfiler: " << kv_pair.first
+        << " time_sec / count "
+        << static_cast<std::chrono::duration<double, std::ratio<1>>>(
+               kv_pair.second.second)
+                   .count() /
+               kv_pair.second.first
         << std::endl;
   }
 

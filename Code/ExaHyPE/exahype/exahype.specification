@@ -47,21 +47,9 @@ event-mapping:
 // GridUpdate   
 event-mapping:
   name: GridErasing
-
-event-mapping:
-  name: RegularMesh
-
-event-mapping:
-  name: MarkingForRefinement
   
 event-mapping:
-  name: Refinement
-
-event-mapping:
-  name: MarkingForAugmentation
-  
-event-mapping:
-  name: Augmentation
+  name: MeshRefinement
 
 event-mapping:
   name: DropIncomingMPIMessages
@@ -74,17 +62,13 @@ event-mapping:
   name: AugmentedAMRTreePlot2d
   
 adapter:
-  name: AugmentedAMRGrid
-  merge-with-user-defined-mapping: RegularMesh             // (createInner/BoundaryVertex,enterCell,serial)
+  name: MeshRefinement
+  merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
   // Initial Condition comes after RegularMesh since we refine here in a fast manner down to the 
   // first layer of cells we initialise. Afterwards refinement is done per iteration.
-  merge-with-user-defined-mapping: InitialCondition        // (enterCell,runconcurrently);   
-  merge-with-user-defined-mapping: MarkingForRefinement    // (enterCell,runconcurrently,forkjoin)
-  merge-with-user-defined-mapping: Refinement              // (touchVertexLastTime,enterCell,serial)          
-  merge-with-user-defined-mapping: MarkingForAugmentation  // (enterCell,runconcurrently,neighbour)
-  merge-with-user-defined-mapping: Augmentation            // (touchVertexLastTime,enterCell,serial)
+  merge-with-user-defined-mapping: InitialCondition        // (enterCell,runconcurrently);
   merge-with-user-defined-mapping: LoadBalancing
-  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)       
+  merge-with-predefined-mapping:   MultiscaleLinkedCell(CellDescriptionsIndex) // (createInner/BoundaryVertex,enterCell,avoidfinegridraces)
   
 adapter:
   name: PlotAugmentedAMRGrid

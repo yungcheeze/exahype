@@ -37,7 +37,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case ReadCheckpoint: return "ReadCheckpoint";
       case Terminate: return "Terminate";
       case RunOnAllNodes: return "RunOnAllNodes";
-      case UseAdapterAugmentedAMRGrid: return "UseAdapterAugmentedAMRGrid";
+      case UseAdapterMeshRefinement: return "UseAdapterMeshRefinement";
       case UseAdapterPlotAugmentedAMRGrid: return "UseAdapterPlotAugmentedAMRGrid";
       case UseAdapterInitialConditionAndTimeStepSizeComputation: return "UseAdapterInitialConditionAndTimeStepSizeComputation";
       case UseAdapterPredictionAndPlotAndTimeStepSizeComputation: return "UseAdapterPredictionAndPlotAndTimeStepSizeComputation";
@@ -57,7 +57,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterAugmentedAMRGrid=4,UseAdapterPlotAugmentedAMRGrid=5,UseAdapterInitialConditionAndTimeStepSizeComputation=6,UseAdapterPredictionAndPlotAndTimeStepSizeComputation=7,UseAdapterPredictionAndTimeStepSizeComputation=8,UseAdapterGridErasing=9,UseAdapterADERDGTimeStep=10,UseAdapterADERDGTimeStepAndPlot=11,UseAdapterPredictionRerun=12,UseAdapterRiemannSolver=13,UseAdapterPrediction=14,UseAdapterCorrection=15,UseAdapterCorrectionAndPlot=16,UseAdapterPlot=17,NumberOfAdapters=18)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterMeshRefinement=4,UseAdapterPlotAugmentedAMRGrid=5,UseAdapterInitialConditionAndTimeStepSizeComputation=6,UseAdapterPredictionAndPlotAndTimeStepSizeComputation=7,UseAdapterPredictionAndTimeStepSizeComputation=8,UseAdapterGridErasing=9,UseAdapterADERDGTimeStep=10,UseAdapterADERDGTimeStepAndPlot=11,UseAdapterPredictionRerun=12,UseAdapterRiemannSolver=13,UseAdapterPrediction=14,UseAdapterCorrection=15,UseAdapterCorrectionAndPlot=16,UseAdapterPlot=17,NumberOfAdapters=18)";
 }
 
 

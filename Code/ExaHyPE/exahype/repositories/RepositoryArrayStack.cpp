@@ -37,7 +37,7 @@ exahype::repositories::RepositoryArrayStack::RepositoryArrayStack(
   _cellStack(maximumSizeOfCellInOutStack),
   _vertexStack(maximumSizeOfVertexInOutStack, maximumSizeOfVertexTemporaryStack),
   _solverState(),
-  _gridWithAugmentedAMRGrid(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithMeshRefinement(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithPlotAugmentedAMRGrid(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithInitialConditionAndTimeStepSizeComputation(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithPredictionAndPlotAndTimeStepSizeComputation(_vertexStack,_cellStack,_geometry,_solverState,domainSize,domainOffset,_regularGridContainer,_traversalOrderOnTopLevel),
@@ -77,7 +77,7 @@ exahype::repositories::RepositoryArrayStack::RepositoryArrayStack(
   _cellStack(maximumSizeOfCellInOutStack),
   _vertexStack(maximumSizeOfVertexInOutStack,maximumSizeOfVertexTemporaryStack),
   _solverState(),
-  _gridWithAugmentedAMRGrid(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
+  _gridWithMeshRefinement(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithPlotAugmentedAMRGrid(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithInitialConditionAndTimeStepSizeComputation(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
   _gridWithPredictionAndPlotAndTimeStepSizeComputation(_vertexStack,_cellStack,_geometry,_solverState,_regularGridContainer,_traversalOrderOnTopLevel),
@@ -129,7 +129,7 @@ void exahype::repositories::RepositoryArrayStack::restart(
   _vertexStack.clear();
   _cellStack.clear();
 
-  _gridWithAugmentedAMRGrid.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
+  _gridWithMeshRefinement.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithPlotAugmentedAMRGrid.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithInitialConditionAndTimeStepSizeComputation.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
   _gridWithPredictionAndPlotAndTimeStepSizeComputation.restart(domainSize,domainOffset,domainLevel,positionOfCentralElementWithRespectToCoarserRemoteLevel);
@@ -166,7 +166,7 @@ void exahype::repositories::RepositoryArrayStack::terminate() {
   peano::parallel::SendReceiveBufferPool::getInstance().terminate();
   #endif
   
-  _gridWithAugmentedAMRGrid.terminate();
+  _gridWithMeshRefinement.terminate();
   _gridWithPlotAugmentedAMRGrid.terminate();
   _gridWithInitialConditionAndTimeStepSizeComputation.terminate();
   _gridWithPredictionAndPlotAndTimeStepSizeComputation.terminate();
@@ -235,7 +235,7 @@ void exahype::repositories::RepositoryArrayStack::iterate(int numberOfIterations
   
   for (int i=0; i<numberOfIterations; i++) {
     switch ( _repositoryState.getAction()) {
-      case exahype::records::RepositoryState::UseAdapterAugmentedAMRGrid: watch.startTimer(); _gridWithAugmentedAMRGrid.iterate(); watch.stopTimer(); _measureAugmentedAMRGridCPUTime.setValue( watch.getCPUTime() ); _measureAugmentedAMRGridCalendarTime.setValue( watch.getCalendarTime() ); break;
+      case exahype::records::RepositoryState::UseAdapterMeshRefinement: watch.startTimer(); _gridWithMeshRefinement.iterate(); watch.stopTimer(); _measureMeshRefinementCPUTime.setValue( watch.getCPUTime() ); _measureMeshRefinementCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterPlotAugmentedAMRGrid: watch.startTimer(); _gridWithPlotAugmentedAMRGrid.iterate(); watch.stopTimer(); _measurePlotAugmentedAMRGridCPUTime.setValue( watch.getCPUTime() ); _measurePlotAugmentedAMRGridCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterInitialConditionAndTimeStepSizeComputation: watch.startTimer(); _gridWithInitialConditionAndTimeStepSizeComputation.iterate(); watch.stopTimer(); _measureInitialConditionAndTimeStepSizeComputationCPUTime.setValue( watch.getCPUTime() ); _measureInitialConditionAndTimeStepSizeComputationCalendarTime.setValue( watch.getCalendarTime() ); break;
       case exahype::records::RepositoryState::UseAdapterPredictionAndPlotAndTimeStepSizeComputation: watch.startTimer(); _gridWithPredictionAndPlotAndTimeStepSizeComputation.iterate(); watch.stopTimer(); _measurePredictionAndPlotAndTimeStepSizeComputationCPUTime.setValue( watch.getCPUTime() ); _measurePredictionAndPlotAndTimeStepSizeComputationCalendarTime.setValue( watch.getCalendarTime() ); break;
@@ -280,7 +280,7 @@ void exahype::repositories::RepositoryArrayStack::iterate(int numberOfIterations
   #endif
 }
 
- void exahype::repositories::RepositoryArrayStack::switchToAugmentedAMRGrid() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterAugmentedAMRGrid); }
+ void exahype::repositories::RepositoryArrayStack::switchToMeshRefinement() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterMeshRefinement); }
  void exahype::repositories::RepositoryArrayStack::switchToPlotAugmentedAMRGrid() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterPlotAugmentedAMRGrid); }
  void exahype::repositories::RepositoryArrayStack::switchToInitialConditionAndTimeStepSizeComputation() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterInitialConditionAndTimeStepSizeComputation); }
  void exahype::repositories::RepositoryArrayStack::switchToPredictionAndPlotAndTimeStepSizeComputation() { _repositoryState.setAction(exahype::records::RepositoryState::UseAdapterPredictionAndPlotAndTimeStepSizeComputation); }
@@ -297,7 +297,7 @@ void exahype::repositories::RepositoryArrayStack::iterate(int numberOfIterations
 
 
 
- bool exahype::repositories::RepositoryArrayStack::isActiveAdapterAugmentedAMRGrid() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterAugmentedAMRGrid; }
+ bool exahype::repositories::RepositoryArrayStack::isActiveAdapterMeshRefinement() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterMeshRefinement; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterPlotAugmentedAMRGrid() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterPlotAugmentedAMRGrid; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterInitialConditionAndTimeStepSizeComputation() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterInitialConditionAndTimeStepSizeComputation; }
  bool exahype::repositories::RepositoryArrayStack::isActiveAdapterPredictionAndPlotAndTimeStepSizeComputation() const { return _repositoryState.getAction() == exahype::records::RepositoryState::UseAdapterPredictionAndPlotAndTimeStepSizeComputation; }
@@ -387,7 +387,7 @@ exahype::repositories::RepositoryArrayStack::ContinueCommand exahype::repositori
 
 void exahype::repositories::RepositoryArrayStack::logIterationStatistics(bool logAllAdapters) const {
   logInfo( "logIterationStatistics()", "|| adapter name \t || iterations \t || total CPU time [t]=s \t || average CPU time [t]=s \t || total user time [t]=s \t || average user time [t]=s  || CPU time properties  || user time properties " );  
-   if (logAllAdapters || _measureAugmentedAMRGridCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| AugmentedAMRGrid \t |  " << _measureAugmentedAMRGridCPUTime.getNumberOfMeasurements() << " \t |  " << _measureAugmentedAMRGridCPUTime.getAccumulatedValue() << " \t |  " << _measureAugmentedAMRGridCPUTime.getValue()  << " \t |  " << _measureAugmentedAMRGridCalendarTime.getAccumulatedValue() << " \t |  " << _measureAugmentedAMRGridCalendarTime.getValue() << " \t |  " << _measureAugmentedAMRGridCPUTime.toString() << " \t |  " << _measureAugmentedAMRGridCalendarTime.toString() );
+   if (logAllAdapters || _measureMeshRefinementCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| MeshRefinement \t |  " << _measureMeshRefinementCPUTime.getNumberOfMeasurements() << " \t |  " << _measureMeshRefinementCPUTime.getAccumulatedValue() << " \t |  " << _measureMeshRefinementCPUTime.getValue()  << " \t |  " << _measureMeshRefinementCalendarTime.getAccumulatedValue() << " \t |  " << _measureMeshRefinementCalendarTime.getValue() << " \t |  " << _measureMeshRefinementCPUTime.toString() << " \t |  " << _measureMeshRefinementCalendarTime.toString() );
    if (logAllAdapters || _measurePlotAugmentedAMRGridCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| PlotAugmentedAMRGrid \t |  " << _measurePlotAugmentedAMRGridCPUTime.getNumberOfMeasurements() << " \t |  " << _measurePlotAugmentedAMRGridCPUTime.getAccumulatedValue() << " \t |  " << _measurePlotAugmentedAMRGridCPUTime.getValue()  << " \t |  " << _measurePlotAugmentedAMRGridCalendarTime.getAccumulatedValue() << " \t |  " << _measurePlotAugmentedAMRGridCalendarTime.getValue() << " \t |  " << _measurePlotAugmentedAMRGridCPUTime.toString() << " \t |  " << _measurePlotAugmentedAMRGridCalendarTime.toString() );
    if (logAllAdapters || _measureInitialConditionAndTimeStepSizeComputationCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| InitialConditionAndTimeStepSizeComputation \t |  " << _measureInitialConditionAndTimeStepSizeComputationCPUTime.getNumberOfMeasurements() << " \t |  " << _measureInitialConditionAndTimeStepSizeComputationCPUTime.getAccumulatedValue() << " \t |  " << _measureInitialConditionAndTimeStepSizeComputationCPUTime.getValue()  << " \t |  " << _measureInitialConditionAndTimeStepSizeComputationCalendarTime.getAccumulatedValue() << " \t |  " << _measureInitialConditionAndTimeStepSizeComputationCalendarTime.getValue() << " \t |  " << _measureInitialConditionAndTimeStepSizeComputationCPUTime.toString() << " \t |  " << _measureInitialConditionAndTimeStepSizeComputationCalendarTime.toString() );
    if (logAllAdapters || _measurePredictionAndPlotAndTimeStepSizeComputationCPUTime.getNumberOfMeasurements()>0) logInfo( "logIterationStatistics()", "| PredictionAndPlotAndTimeStepSizeComputation \t |  " << _measurePredictionAndPlotAndTimeStepSizeComputationCPUTime.getNumberOfMeasurements() << " \t |  " << _measurePredictionAndPlotAndTimeStepSizeComputationCPUTime.getAccumulatedValue() << " \t |  " << _measurePredictionAndPlotAndTimeStepSizeComputationCPUTime.getValue()  << " \t |  " << _measurePredictionAndPlotAndTimeStepSizeComputationCalendarTime.getAccumulatedValue() << " \t |  " << _measurePredictionAndPlotAndTimeStepSizeComputationCalendarTime.getValue() << " \t |  " << _measurePredictionAndPlotAndTimeStepSizeComputationCPUTime.toString() << " \t |  " << _measurePredictionAndPlotAndTimeStepSizeComputationCalendarTime.toString() );
@@ -406,7 +406,7 @@ void exahype::repositories::RepositoryArrayStack::logIterationStatistics(bool lo
 
 
 void exahype::repositories::RepositoryArrayStack::clearIterationStatistics() {
-   _measureAugmentedAMRGridCPUTime.erase();
+   _measureMeshRefinementCPUTime.erase();
    _measurePlotAugmentedAMRGridCPUTime.erase();
    _measureInitialConditionAndTimeStepSizeComputationCPUTime.erase();
    _measurePredictionAndPlotAndTimeStepSizeComputationCPUTime.erase();
@@ -421,7 +421,7 @@ void exahype::repositories::RepositoryArrayStack::clearIterationStatistics() {
    _measureCorrectionAndPlotCPUTime.erase();
    _measurePlotCPUTime.erase();
 
-   _measureAugmentedAMRGridCalendarTime.erase();
+   _measureMeshRefinementCalendarTime.erase();
    _measurePlotAugmentedAMRGridCalendarTime.erase();
    _measureInitialConditionAndTimeStepSizeComputationCalendarTime.erase();
    _measurePredictionAndPlotAndTimeStepSizeComputationCalendarTime.erase();
