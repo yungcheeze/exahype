@@ -34,13 +34,14 @@
 namespace {
 using namespace exahype::profilers::likwid;
 
-constexpr const int kNumberOfGroups = 13;
+constexpr const int kNumberOfGroups = 14;
 constexpr const char* groups[kNumberOfGroups] = {
-    "BRANCH", "CLOCK",   "DATA", "ENERGY",   "ICACHE",    "L2",       "L2CACHE",
-    "L3",     "L3CACHE", "MEM",  "TLB_DATA", "TLB_INSTR", "FLOPS_AVX"};
+    "BRANCH",   "CLOCK",     "DATA",      "ENERGY",        "ICACHE",
+    "L2",       "L2CACHE",   "L3",        "L3CACHE",       "MEM",
+    "TLB_DATA", "TLB_INSTR", "FLOPS_AVX", "CYCLE_ACTIVITY"};
 
 constexpr const int kNrOfCounters[kNumberOfGroups] = {5, 4, 6,  7, 7, 6, 5,
-                                                      5, 6, 19, 7, 5, 4};
+                                                      5, 6, 19, 7, 5, 4, 7};
 
 constexpr const char* BRANCH_CTR[kNrOfCounters[0]] = {
     "INSTR_RETIRED_ANY:FIXC0", "CPU_CLK_UNHALTED_CORE:FIXC1",
@@ -121,13 +122,22 @@ constexpr const char* FLOPS_AVX_CTR[kNrOfCounters[12]] = {
     "INSTR_RETIRED_ANY:FIXC0", "CPU_CLK_UNHALTED_CORE:FIXC1",
     "CPU_CLK_UNHALTED_REF:FIXC2", "AVX_INSTS_CALC:PMC0"};
 
+constexpr const char* CYCLE_ACTIVITY_CTR[kNrOfCounters[13]] = {
+    "INSTR_RETIRED_ANY:FIXC0",
+    "CPU_CLK_UNHALTED_CORE:FIXC1",
+    "CPU_CLK_UNHALTED_REF:FIXC2",
+    "CYCLE_ACTIVITY_STALLS_L2_PENDING:PMC0",
+    "CYCLE_ACTIVITY_STALLS_LDM_PENDING:PMC1",
+    "CYCLE_ACTIVITY_STALLS_L1D_PENDING:PMC2",
+    "CYCLE_ACTIVITY_CYCLES_NO_EXECUTE:PMC3"};
+
 constexpr std::array<const char* const*, kNumberOfGroups> eventsets = {
-    BRANCH_CTR,   CLOCK_CTR,     DATA_CTR,     ENERGY_CTR,  ICACHE_CTR,
-    L2_CTR,       L2CACHE_CTR,   L3_CTR,       L3CACHE_CTR, MEM_CTR,
-    TLB_DATA_CTR, TLB_INSTR_CTR, FLOPS_AVX_CTR};
+    BRANCH_CTR,   CLOCK_CTR,     DATA_CTR,      ENERGY_CTR,        ICACHE_CTR,
+    L2_CTR,       L2CACHE_CTR,   L3_CTR,        L3CACHE_CTR,       MEM_CTR,
+    TLB_DATA_CTR, TLB_INSTR_CTR, FLOPS_AVX_CTR, CYCLE_ACTIVITY_CTR};
 
 constexpr const int kNrOfMetrics[kNumberOfGroups] = {8,  6, 5,  11, 11, 10, 7,
-                                                     10, 7, 10, 10, 7,  6};
+                                                     10, 7, 10, 10, 7,  6,  8};
 
 constexpr const char* BRANCH_METRIC_NAMES[kNrOfMetrics[0]] = {
     "Runtime (RDTSC) [s]",
@@ -238,12 +248,22 @@ constexpr const char* FLOPS_AVX_METRIC_NAMES[kNrOfMetrics[12]] = {
     "Runtime (RDTSC) [s]", "Runtime unhalted [s]", "Clock [MHz]", "CPI",
     "Packed SP MFLOP/s",   "Packed DP MFLOP/s"};
 
+constexpr const char* CYCLEACTIVITY_METRIC_NAMES[kNrOfMetrics[13]] = {
+    "Runtime (RDTSC) [s]",
+    "Runtime unhalted [s]",
+    "Clock [MHz]",
+    "CPI",
+    "Cycles without execution [%]",
+    "Cycles without execution due to L1D [%]",
+    "Cycles without execution due to L2 [%]",
+    "Cycles without execution due to memory [%]"};
+
 constexpr std::array<const char* const*, kNumberOfGroups> metric_names = {
-    BRANCH_METRIC_NAMES,   CLOCK_METRIC_NAMES,    DATA_METRIC_NAMES,
-    ENERGY_METRIC_NAMES,   ICACHE_METRIC_NAMES,   L2_METRIC_NAMES,
-    L2CACHE_METRIC_NAMES,  L3_METRIC_NAMES,       L3CACHE_METRIC_NAMES,
-    MEM_METRIC_NAMES,      TLB_DATA_METRIC_NAMES, TLB_INSTR_METRIC_NAMES,
-    FLOPS_AVX_METRIC_NAMES};
+    BRANCH_METRIC_NAMES,    CLOCK_METRIC_NAMES,        DATA_METRIC_NAMES,
+    ENERGY_METRIC_NAMES,    ICACHE_METRIC_NAMES,       L2_METRIC_NAMES,
+    L2CACHE_METRIC_NAMES,   L3_METRIC_NAMES,           L3CACHE_METRIC_NAMES,
+    MEM_METRIC_NAMES,       TLB_DATA_METRIC_NAMES,     TLB_INSTR_METRIC_NAMES,
+    FLOPS_AVX_METRIC_NAMES, CYCLEACTIVITY_METRIC_NAMES};
 
 static const std::function<double(int, const std::vector<uint64_t>&,
                                   const LikwidProfilerState&)>
@@ -1113,16 +1133,76 @@ static const std::function<double(int, const std::vector<uint64_t>&,
                  perfmon_getTimeOfGroup(group_id);
         }};
 
+static const std::function<double(int, const std::vector<uint64_t>&,
+                                  const LikwidProfilerState&)>
+    CYCLE_ACTIVE_METRIC_FUNS[kNrOfMetrics[13]] = {
+        // Runtime (RDTSC) [s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // time
+          return perfmon_getTimeOfGroup(group_id);
+        },
+        // Runtime unhalted [s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // FIXC1*inverseClock
+          return static_cast<double>(counter_values[1]) /
+                 state.cpu_info_->clock;
+        },
+        // Clock [MHz]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.E-06*(FIXC1/FIXC2)/inverseClock
+          return 1e-6 * (static_cast<double>(counter_values[1]) /
+                         static_cast<double>(counter_values[2])) *
+                 state.cpu_info_->clock;
+        },
+        // CPI
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // FIXC1/FIXC0
+          return static_cast<double>(counter_values[1]) /
+                 static_cast<double>(counter_values[0]);
+        },
+        // Cycles without execution [%]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // PMC3/FIXC1*100
+          return static_cast<double>(counter_values[6]) /
+                 static_cast<double>(counter_values[1]) * 100.0;
+        },
+        // Cycles without execution due to L1D [%]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // PMC2/FIXC1*100
+          return static_cast<double>(counter_values[5]) /
+                 static_cast<double>(counter_values[1]) * 100.0;
+        },
+        // Cycles without execution due to L2 [%]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // PMC0/FIXC1*100
+          return static_cast<double>(counter_values[3]) /
+                 static_cast<double>(counter_values[1]) * 100.0;
+        },
+        // Cycles without execution due to memory [%]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // PMC1/FIXC1*100
+          return static_cast<double>(counter_values[4]) /
+                 static_cast<double>(counter_values[1]) * 100.0;
+        }};
+
 static const std::array<
     const std::function<double(int, const std::vector<uint64_t>&,
                                const LikwidProfilerState&)>*,
     kNumberOfGroups>
     metric_functions = {
-        BRANCH_METRIC_FUNS,   CLOCK_METRIC_FUNS,    DATA_METRIC_FUNS,
-        ENERGY_METRIC_FUNS,   ICACHE_METRIC_FUNS,   L2_METRIC_FUNS,
-        L2CACHE_METRIC_FUNS,  L3_METRIC_FUNS,       L3CACHE_METRIC_FUNS,
-        MEM_METRIC_FUNS,      TLB_DATA_METRIC_FUNS, TLB_INSTR_METRIC_FUNS,
-        FLOPS_AVX_METRIC_FUNS};
+        BRANCH_METRIC_FUNS,    CLOCK_METRIC_FUNS,       DATA_METRIC_FUNS,
+        ENERGY_METRIC_FUNS,    ICACHE_METRIC_FUNS,      L2_METRIC_FUNS,
+        L2CACHE_METRIC_FUNS,   L3_METRIC_FUNS,          L3CACHE_METRIC_FUNS,
+        MEM_METRIC_FUNS,       TLB_DATA_METRIC_FUNS,    TLB_INSTR_METRIC_FUNS,
+        FLOPS_AVX_METRIC_FUNS, CYCLE_ACTIVE_METRIC_FUNS};
 
 }  // namespace
 
