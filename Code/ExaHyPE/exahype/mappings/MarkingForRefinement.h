@@ -70,6 +70,14 @@ class exahype::mappings::MarkingForRefinement {
    */
   exahype::State _state;
 
+
+  bool geometryInfoDoesMatch(
+      const int cellDescriptionsIndex,
+      const tarch::la::Vector<DIMENSIONS,double>& cellCentre,
+      const tarch::la::Vector<DIMENSIONS,double>& cellSize,
+      const int level);
+
+
 #ifdef Parallel
 
   /**
