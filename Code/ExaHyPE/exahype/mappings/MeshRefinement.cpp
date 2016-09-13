@@ -296,6 +296,9 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
   logTraceInWith6Arguments("mergeWithNeighbour(...)", vertex, neighbour,
                            fromRank, fineGridX, fineGridH, level);
 
+  // TODO(Dominic): Add to docu why we invert the order:
+  // MPI message order: Stack principle.
+
   // TODO(Dominic): remove
   //  return;
 
@@ -311,8 +314,6 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
 
   dfor2(myDest)
     dfor2(mySrc)
-      // TODO(Dominic): Add to docu why we invert the order:
-      // MPI message order: Stack principle.
       tarch::la::Vector<DIMENSIONS, int> dest = tarch::la::Vector<DIMENSIONS, int>(1) - myDest;
       tarch::la::Vector<DIMENSIONS, int> src  = tarch::la::Vector<DIMENSIONS, int>(1) - mySrc;
       int destScalar = TWO_POWER_D - myDestScalar - 1;
@@ -322,7 +323,8 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
                  fineGridX.toString() << ", level=" <<level << ", vertex.adjacentRanks: "
                  << vertex.getAdjacentRanks());
 
-        int receivedMetadataIndex = MetadataHeap::getInstance().createData(0,0);
+        int receivedMetadataIndex = MetadataHeap::getInstance().
+            createData(0,exahype::solvers::RegisteredSolvers.size());
         assertion(MetadataHeap::getInstance().getData(receivedMetadataIndex).empty());
         MetadataHeap::getInstance().receiveData(
             receivedMetadataIndex,
@@ -443,7 +445,7 @@ void exahype::mappings::MeshRefinement::prepareCopyToRemoteNode(
 
 // TODO(Dominic): How to deal with cell descriptions index that
 // is copied from the remote rank but is a valid index on the local
-// remote rank? Currently use geometryInfoDoesMatch! Not best idea.
+// remote rank? Currently use geometryInfoDoesMatch!
 void exahype::mappings::MeshRefinement::mergeWithRemoteDataDueToForkOrJoin(
         exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
         int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
@@ -488,27 +490,33 @@ bool exahype::mappings::MeshRefinement::geometryInfoDoesMatch(
     const tarch::la::Vector<DIMENSIONS,double>& cellCentre,
     const tarch::la::Vector<DIMENSIONS,double>& cellSize,
     const int level) {
-  if (!exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex)) {
-    assertion1(!exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(cellDescriptionsIndex),
-        cellDescriptionsIndex);
-    return false;
-  }
-  if (exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex).empty() &&
-      exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex).empty()) {
-    return false;
-  }
-  // TODO(Dominic): Optimisation for multi-solver runs: Only check the first element of each.
-  for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
-    if (!tarch::la::equals(cellCentre,p.getOffset()+0.5*p.getSize()) ||
-        p.getLevel()!=level) {
-      return false;
+  int solverNumber=0;
+  for (auto& solver : exahype::solvers::RegisteredSolvers) {
+    int element = solver->tryGetElement(cellDescriptionsIndex,solverNumber);
+    if (element!=exahype::solvers::Solver::NotFound) {
+      if (solver->getType()==case exahype::solvers::Solver::Type::ADER_DG) {
+        exahype::solvers::ADERDGSolver::CellDescription& cellDescription =
+            exahype::solvers::ADERDGSolver::getCellDescription(
+                cellDescriptionsIndex,element);
+
+        if (!tarch::la::equals(
+            cellCentre,cellDescription.getOffset()+0.5*cellDescription.getSize()) ||
+            cellDescription.getLevel()!=level) {
+          return false;
+        }
+      } else if (exahype::solvers::Solver::Type::FiniteVolumes) {
+        exahype::solvers::FiniteVolumesSolver::CellDescription& cellDescription =
+            exahype::solvers::FiniteVolumesSolver::getCellDescription(
+                cellDescriptionsIndex,element);
+
+        if (!tarch::la::equals(
+            cellCentre,cellDescription.getOffset()+0.5*cellDescription.getSize()) ||
+            cellDescription.getLevel()!=level) {
+          return false;
+        }
+      }
     }
-  }
-  for (auto& p : exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex)) {
-    if (!tarch::la::equals(cellCentre,p.getOffset()+0.5*p.getSize()) ||
-        p.getLevel()!=level) {
-      return false;
-    }
+    ++solverNumber;
   }
 
   return true;
