@@ -44,7 +44,7 @@ def addData(table,normalisation,plotLabels,experimentSetCounter,label):
         pylab.plot(xdata,ydata,markersize=experimentSetCounter+4,color=Colors[symbolCounter],marker=Markers[symbolCounter],markerfacecolor=Markerfacecolors[symbolCounter],markevery=1,lw=1.2) 
     symbolCounter = symbolCounter + 1
 
-    if adap==args.adapter[-1]:
+    if adap==args.adapter[-1] and len(xdata)>0:
       pylab.text(xdata[-1],ydata[-1],label )
 
     if int(args.singlecore) < xDataMax and ydata[0]>ydata[-1]:
@@ -137,7 +137,7 @@ experimentSetCounter =  0
 for (table,label) in zip(args.table,args.experimentdescription):
   print "read " + table
   maxLevel = runtimeParser.readColumnFromTable(table,1)   
-  addData(table,1.0,table==args.table[0],experimentSetCounter,label)
+  addData(table,1.0,table==args.table[-1],experimentSetCounter,label)
   experimentSetCounter = experimentSetCounter + 1
 
 initGlobalPlotterSettings()
@@ -174,7 +174,7 @@ for (table,label) in zip(args.table,args.experimentdescription):
     normalisation = 1.0/(3**(maxLevel[-1]*dim))
     print "reset normalisation to " + str(normalisation)
 
-  addData(table,normalisation,table==args.table[0],experimentSetCounter,label)
+  addData(table,normalisation,table==args.table[-1],experimentSetCounter,label)
 
   experimentSetCounter = experimentSetCounter + 1
 
@@ -205,7 +205,7 @@ if args.meshsize is not None:
   print "read " + table
   normalisation = float(h)**(-dim)
 
-  addData(table,normalisation,table==args.table[0],experimentSetCounter,label)
+  addData(table,normalisation,table==args.table[-1],experimentSetCounter,label)
   experimentSetCounter = experimentSetCounter + 1
 
  initGlobalPlotterSettings()

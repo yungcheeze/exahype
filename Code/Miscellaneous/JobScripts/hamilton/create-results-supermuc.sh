@@ -5,7 +5,7 @@
 
 MyNODES=1
 MyNTASKS_PER_NODE=1
-cp euler.load-leveler tmp.load-leveler
+cp euler-test.load-leveler tmp.load-leveler
 sed -i "s/NODES/$MyNODES/g" tmp.load-leveler
 sed -i "s/NTASKS_PER_NODE/$MyNTASKS_PER_NODE/g" tmp.load-leveler
 #llsubmit tmp.load-leveler
@@ -29,7 +29,7 @@ do
   cp euler-general.load-leveler tmp.load-leveler
   sed -i "s/NODES/$MyNODES/g" tmp.load-leveler
   sed -i "s/NTASKS_PER_NODE/$MyNTASKS_PER_NODE/g" tmp.load-leveler
-  llsubmit tmp.load-leveler
+  #llsubmit tmp.load-leveler
  done
 done
 
