@@ -68,6 +68,8 @@ namespace exahype {
   namespace solvers {
     class Solver;
 
+    bool FuseAlgorithmicTimeSteps = false;
+
     typedef std::vector<Solver*> RegisteredSolversEntries;
     /**
      * All the registered solvers. Has to be declared extern in C++ standard as
@@ -112,9 +114,12 @@ class exahype::solvers::Solver {
   /**
    * TODO(Dominic): Docu.
    */
-  typedef struct {
+  typedef struct SubcellPosition {
     int parentIndex;
     tarch::la::Vector<DIMENSIONS, int> subcellIndex;
+
+    SubcellPosition() : parentIndex(-1), subcellIndex(-1) {}
+    ~SubcellPosition() {}
   } SubcellPosition;
 
   /**
@@ -387,23 +392,15 @@ class exahype::solvers::Solver {
    * on to merge the time stepping functionality
    * (solution update, predictor comp.) into
    * this hook.
-   *
-   * \param[in] cellDescriptionsIndicesAdjacentToVertices The cell description indices adjacent to
-   *                                                      the vertices around the cell.
-   *                                                      See VertexOperations::readCellDescriptions(...).
-   *
-   * \see exahype::VertexOperations
    */
   virtual bool enterCell(
       exahype::Cell& fineGridCell,
-      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellSize,
-      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
-      const int fineGridLevel,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,double>& coarseGridCellSize,
-      const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
-      indicesAdjacentToFineGridVertices,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) = 0;
 
   /**
@@ -424,9 +421,20 @@ class exahype::solvers::Solver {
    */
   virtual bool leaveCell(
       exahype::Cell& fineGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) = 0;
+
+  /**
+   * Update the solution of a cell description.
+   */
+  virtual void updateSolution(
+      const int cellDescriptionsIndex,
+      const int element) = 0;
 
   /**
    * Receive solver data from neighbour rank and write

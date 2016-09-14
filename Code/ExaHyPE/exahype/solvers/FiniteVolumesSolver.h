@@ -94,6 +94,40 @@ private:
 #endif
 
 public:
+  /**
+    * Returns the ADERDGCellDescription.
+    */
+   static Heap::HeapEntries& getCellDescriptions(
+       const int cellDescriptionsIndex) {
+     assertion1(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex);
+
+     return Heap::getInstance().getData(cellDescriptionsIndex);
+   }
+
+   /**
+    * Returns the ADERDGCellDescription.
+    */
+   static CellDescription& getCellDescription(
+       const int cellDescriptionsIndex,
+       const int element) {
+     assertion2(Heap::getInstance().isValidIndex(cellDescriptionsIndex),cellDescriptionsIndex,element);
+     assertion2(element>=0,cellDescriptionsIndex,element);
+     assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),cellDescriptionsIndex,element);
+
+     return Heap::getInstance().getData(cellDescriptionsIndex)[element];
+   }
+
+   /**
+    * Returns if a ADERDGCellDescription type holds face data.
+    */
+   static bool holdsFaceData(const CellDescription::Type& cellDescriptionType) {
+     return cellDescriptionType==CellDescription::Cell
+//            ||
+//            cellDescriptionType==CellDescription::Ancestor   ||
+//            cellDescriptionType==CellDescription::Descendant
+            ;
+   }
+
   FiniteVolumesSolver(const std::string& identifier, int numberOfVariables,
                       int numberOfParameters, int nodesPerCoordinateAxis,
                       double maximumMeshSize,
@@ -181,21 +215,30 @@ public:
   ///////////////////////////////////
   bool enterCell(
       exahype::Cell& fineGridCell,
-      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellSize,
-      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
-      const int fineGridLevel,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,double>& coarseGridCellSize,
-      const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
-      indicesAdjacentToFineGridVertices,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
   bool leaveCell(
       exahype::Cell& fineGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
+
+  ///////////////////////////////////
+  // CELL-LOCAL
+  //////////////////////////////////
+  void updateSolution(
+        const int cellDescriptionsIndex,
+        const int element) override;
 
   ///////////////////////////////////
   // NEIGHBOUR

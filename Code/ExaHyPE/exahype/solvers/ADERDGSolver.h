@@ -179,7 +179,7 @@ private:
    *
    * TODO(Dominic): Make template function as soon as verified.
    */
-  void vetoErasingChildrenOrDeaugmentinChildrenRequest(
+  void vetoErasingOrDeaugmentinChildrenRequest(
       CellDescription& coarseGridCellDescription);
 
    /*
@@ -875,21 +875,35 @@ private:
   ///////////////////////////////////
   bool enterCell(
       exahype::Cell& fineGridCell,
-      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellSize,
-      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
-      const int fineGridLevel,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
-      const tarch::la::Vector<DIMENSIONS,double>& coarseGridCellSize,
-      const tarch::la::Vector<TWO_POWER_D_TIMES_TWO_POWER_D,int>&
-      indicesAdjacentToFineGridVertices,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
 
   bool leaveCell(
       exahype::Cell& fineGridCell,
-      const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      exahype::Vertex* const coarseGridVertices,
+      const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
       exahype::Cell& coarseGridCell,
+      const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) override;
+
+  ///////////////////////////////////
+  // CELL-LOCAL
+  ///////////////////////////////////
+  void updateSolution(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
+  ///////////////////////////////////
+  // PARENT<->CHILD
+  ///////////////////////////////////
+  // TODO(Dominic): Extract prolongation and restriction operations.
 
   ///////////////////////////////////
   // NEIGHBOUR
