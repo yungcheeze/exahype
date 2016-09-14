@@ -22,11 +22,11 @@ namespace MHDSolver{
 
 
 class MHDSolver::MHDSolver: public exahype::solvers::ADERDGSolver {
-  exahype::Parser::ParserView constants;
-  static int numberOfVariables;
-  static int numberOfParameters;
-
   public:
+    static exahype::Parser::ParserView *constants;
+    static int numberOfVariables;
+    static int numberOfParameters;
+
     MHDSolver(double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler, exahype::Parser::ParserView constants);
 
     void spaceTimePredictor(double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd, double* lFhbnd, const double* const luh, const tarch::la::Vector<DIMENSIONS,double>& dx, const double dt ) override; 

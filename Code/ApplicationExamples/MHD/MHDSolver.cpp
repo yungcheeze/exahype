@@ -2,6 +2,8 @@
 //#include "fortran.h" _ltob
 
 #include <memory>
+#include <cstring>
+#include <stdio.h>
 
 /* This is the MHDSolver.cpp binding to Fortran functions, as done in SRHD. */
 
@@ -12,10 +14,13 @@ void hastoadjustsolution_(double* t, bool* refine);
 void adjustedsolutionvalues_(const double* const x,const double* w,const double* t,const double* dt,double* Q);
 void pdeflux_(double* F, const double* const Q);
 void pdeeigenvalues_(double* lambda, const double* const Q, double* nv);
-}
+void registerinitialdata_(const char* const id_name, int* id_name_len);
+}/* extern "C" */
 
-int MHDSolver::MHDSolver::numberOfVariables = 0;
-int MHDSolver::MHDSolver::numberOfParameters = 0;
+// storage for static class members
+int MHDSolver::MHDSolver::numberOfVariables;
+int MHDSolver::MHDSolver::numberOfParameters;
+exahype::Parser::ParserView* MHDSolver::MHDSolver::constants;
 
 void MHDSolver::MHDSolver::init() {
   // This function is called inside the constructur.
