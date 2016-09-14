@@ -54,7 +54,7 @@ exahype-project  MHDSolver
     order              = 3
     /* 27 grid points: 0.2327 */
     maximum-mesh-size  = 0.24
-    time-stepping      = globalfixed
+    time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     /* we are using the new Fortran interface */
     language           = C
