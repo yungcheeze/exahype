@@ -34,14 +34,15 @@
 namespace {
 using namespace exahype::profilers::likwid;
 
-constexpr const int kNumberOfGroups = 15;
+constexpr const int kNumberOfGroups = 19;
 constexpr const char* groups[kNumberOfGroups] = {
-    "BRANCH",   "CLOCK",     "DATA",      "ENERGY",         "ICACHE",
-    "L2",       "L2CACHE",   "L3",        "L3CACHE",        "MEM",
-    "TLB_DATA", "TLB_INSTR", "FLOPS_AVX", "CYCLE_ACTIVITY", "PORT_USAGE"};
+    "BRANCH",   "CLOCK",     "DATA",       "ENERGY",         "ICACHE",
+    "L2",       "L2CACHE",   "L3",         "L3CACHE",        "MEM",
+    "TLB_DATA", "TLB_INSTR", "FLOPS_AVX",  "CYCLE_ACTIVITY", "PORT_USAGE",
+    "UOPS",     "UOPS_EXEC", "UOPS_ISSUE", "UOPS_RETIRE"};
 
-constexpr const int kNrOfCounters[kNumberOfGroups] = {5, 4,  6, 7, 7, 6, 5, 5,
-                                                      6, 19, 7, 5, 4, 7, 11};
+constexpr const int kNrOfCounters[kNumberOfGroups] = {
+    5, 4, 6, 7, 7, 6, 5, 5, 6, 19, 7, 5, 4, 7, 11, 7, 7, 7, 7};
 
 constexpr const char* BRANCH_CTR[kNrOfCounters[0]] = {
     "INSTR_RETIRED_ANY:FIXC0", "CPU_CLK_UNHALTED_CORE:FIXC1",
@@ -139,18 +140,53 @@ constexpr const char* PORT_USAGE_CTR[kNrOfCounters[14]] = {
     "UOPS_EXECUTED_PORT_PORT_5:PMC5", "UOPS_EXECUTED_PORT_PORT_6:PMC6",
     "UOPS_EXECUTED_PORT_PORT_7:PMC7"};
 
+constexpr const char* UOPS_CTR[kNrOfCounters[15]] = {
+    "INSTR_RETIRED_ANY:FIXC0",     "CPU_CLK_UNHALTED_CORE:FIXC1",
+    "CPU_CLK_UNHALTED_REF:FIXC2",  "UOPS_ISSUED_ANY:PMC0",
+    "UOPS_EXECUTED_THREAD:PMC1",   "UOPS_RETIRED_ALL:PMC2",
+    "UOPS_ISSUED_FLAGS_MERGE:PMC3"};
+
+constexpr const char* UOPS_EXEC_CTR[kNrOfCounters[16]] = {
+    "INSTR_RETIRED_ANY:FIXC0",
+    "CPU_CLK_UNHALTED_CORE:FIXC1",
+    "CPU_CLK_UNHALTED_REF:FIXC2",
+    "UOPS_EXECUTED_USED_CYCLES:PMC0",
+    "UOPS_EXECUTED_STALL_CYCLES:PMC1",
+    "CPU_CLOCK_UNHALTED_TOTAL_CYCLES:PMC2",
+    "UOPS_EXECUTED_STALL_CYCLES:PMC3:EDGEDETECT"};
+
+constexpr const char* UOPS_ISSUE_CTR[kNrOfCounters[17]] = {
+    "INSTR_RETIRED_ANY:FIXC0",
+    "CPU_CLK_UNHALTED_CORE:FIXC1",
+    "CPU_CLK_UNHALTED_REF:FIXC2",
+    "UOPS_ISSUED_USED_CYCLES:PMC0",
+    "UOPS_ISSUED_STALL_CYCLES:PMC1",
+    "CPU_CLOCK_UNHALTED_TOTAL_CYCLES:PMC2",
+    "UOPS_ISSUED_STALL_CYCLES:PMC3:EDGEDETECT"};
+
+constexpr const char* UOPS_RETIRE_CTR[kNrOfCounters[18]] = {
+    "INSTR_RETIRED_ANY:FIXC0",
+    "CPU_CLK_UNHALTED_CORE:FIXC1",
+    "CPU_CLK_UNHALTED_REF:FIXC2",
+    "UOPS_RETIRED_USED_CYCLES:PMC0",
+    "UOPS_RETIRED_STALL_CYCLES:PMC1",
+    "CPU_CLOCK_UNHALTED_TOTAL_CYCLES:PMC2",
+    "UOPS_RETIRED_STALL_CYCLES:PMC3:EDGEDETECT"};
+
 constexpr std::array<const char* const*, kNumberOfGroups> eventsets = {
-    BRANCH_CTR,    CLOCK_CTR,
-    DATA_CTR,      ENERGY_CTR,
-    ICACHE_CTR,    L2_CTR,
-    L2CACHE_CTR,   L3_CTR,
-    L3CACHE_CTR,   MEM_CTR,
-    TLB_DATA_CTR,  TLB_INSTR_CTR,
-    FLOPS_AVX_CTR, CYCLE_ACTIVITY_CTR,
-    PORT_USAGE_CTR};
+    BRANCH_CTR,     CLOCK_CTR,
+    DATA_CTR,       ENERGY_CTR,
+    ICACHE_CTR,     L2_CTR,
+    L2CACHE_CTR,    L3_CTR,
+    L3CACHE_CTR,    MEM_CTR,
+    TLB_DATA_CTR,   TLB_INSTR_CTR,
+    FLOPS_AVX_CTR,  CYCLE_ACTIVITY_CTR,
+    PORT_USAGE_CTR, UOPS_CTR,
+    UOPS_EXEC_CTR,  UOPS_ISSUE_CTR,
+    UOPS_RETIRE_CTR};
 
 constexpr const int kNrOfMetrics[kNumberOfGroups] = {
-    8, 6, 5, 11, 11, 10, 7, 10, 7, 10, 10, 7, 6, 8, 12};
+    8, 6, 5, 11, 11, 10, 7, 10, 7, 10, 10, 7, 6, 8, 12, 8, 7, 7, 7};
 
 constexpr const char* BRANCH_METRIC_NAMES[kNrOfMetrics[0]] = {
     "Runtime (RDTSC) [s]",
@@ -279,15 +315,50 @@ constexpr const char* PORT_USAGE_METRIC_NAMES[kNrOfMetrics[14]] = {
     "Port4 usage ratio",   "Port5 usage ratio",
     "Port6 usage ratio",   "Port7 usage ratio"};
 
+constexpr const char* UOPS_METRIC_NAMES[kNrOfMetrics[15]] = {
+    "Runtime (RDTSC) [s]", "Runtime unhalted [s]",
+    "Clock [MHz]",         "CPI",
+    "Issued UOPs",         "Merged UOPs",
+    "Executed UOPs",       "Retired UOPs"};
+
+constexpr const char* UOPS_EXEC_METRIC_NAMES[kNrOfMetrics[15]] = {
+    "Runtime (RDTSC) [s]",
+    "Runtime unhalted [s]",
+    "Clock [MHz]",
+    "CPI",
+    "Used cycles ratio [%]",
+    "Unused cycles ratio [%]",
+    "Avg stall duration [cycles]"};
+
+constexpr const char* UOPS_ISSUE_METRIC_NAMES[kNrOfMetrics[15]] = {
+    "Runtime (RDTSC) [s]",
+    "Runtime unhalted [s]",
+    "Clock [MHz]",
+    "CPI",
+    "Used cycles ratio [%]",
+    "Unused cycles ratio [%]",
+    "Avg stall duration [cycles]"};
+
+constexpr const char* UOPS_RETIRE_METRIC_NAMES[kNrOfMetrics[15]] = {
+    "Runtime (RDTSC) [s]",
+    "Runtime unhalted [s]",
+    "Clock [MHz]",
+    "CPI",
+    "Used cycles ratio [%]",
+    "Unused cycles ratio [%]",
+    "Avg stall duration [cycles]"};
+
 constexpr std::array<const char* const*, kNumberOfGroups> metric_names = {
-    BRANCH_METRIC_NAMES,    CLOCK_METRIC_NAMES,
-    DATA_METRIC_NAMES,      ENERGY_METRIC_NAMES,
-    ICACHE_METRIC_NAMES,    L2_METRIC_NAMES,
-    L2CACHE_METRIC_NAMES,   L3_METRIC_NAMES,
-    L3CACHE_METRIC_NAMES,   MEM_METRIC_NAMES,
-    TLB_DATA_METRIC_NAMES,  TLB_INSTR_METRIC_NAMES,
-    FLOPS_AVX_METRIC_NAMES, CYCLE_ACTIVITY_METRIC_NAMES,
-    PORT_USAGE_METRIC_NAMES};
+    BRANCH_METRIC_NAMES,     CLOCK_METRIC_NAMES,
+    DATA_METRIC_NAMES,       ENERGY_METRIC_NAMES,
+    ICACHE_METRIC_NAMES,     L2_METRIC_NAMES,
+    L2CACHE_METRIC_NAMES,    L3_METRIC_NAMES,
+    L3CACHE_METRIC_NAMES,    MEM_METRIC_NAMES,
+    TLB_DATA_METRIC_NAMES,   TLB_INSTR_METRIC_NAMES,
+    FLOPS_AVX_METRIC_NAMES,  CYCLE_ACTIVITY_METRIC_NAMES,
+    PORT_USAGE_METRIC_NAMES, UOPS_METRIC_NAMES,
+    UOPS_EXEC_METRIC_NAMES,  UOPS_ISSUE_METRIC_NAMES,
+    UOPS_RETIRE_METRIC_NAMES};
 
 static const std::function<double(int, const std::vector<uint64_t>&,
                                   const LikwidProfilerState&)>
@@ -1314,18 +1385,233 @@ static const std::function<double(int, const std::vector<uint64_t>&,
         },
 };
 
+static const std::function<double(int, const std::vector<uint64_t>&,
+                                  const LikwidProfilerState&)>
+    UOPS_METRIC_FUNS[kNrOfMetrics[15]] = {
+        // Runtime (RDTSC) [s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // time
+          return perfmon_getTimeOfGroup(group_id);
+        },
+        // Runtime unhalted [s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // FIXC1*inverseClock
+          return static_cast<double>(counter_values[1]) /
+                 state.cpu_info_->clock;
+        },
+        // Clock [MHz]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.E-06*(FIXC1/FIXC2)/inverseClock
+          return 1e-6 * (static_cast<double>(counter_values[1]) /
+                         static_cast<double>(counter_values[2])) *
+                 state.cpu_info_->clock;
+        },
+        // CPI
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // FIXC1/FIXC0
+          return static_cast<double>(counter_values[1]) /
+                 static_cast<double>(counter_values[0]);
+        },
+        // Issued UOPs
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // PMC0
+          return static_cast<double>(counter_values[3]);
+        },
+        // Merged UOPS
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // PMC3
+          return static_cast<double>(counter_values[6]);
+        },
+        // Executed UOPs
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // PMC1
+          return static_cast<double>(counter_values[4]);
+        },
+        // Retired UOPs
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // PMC2
+          return static_cast<double>(counter_values[5]);
+        }};
+
+static const std::function<double(int, const std::vector<uint64_t>&,
+                                  const LikwidProfilerState&)>
+    UOPS_EXEC_METRIC_FUNS[kNrOfMetrics[15]] = {
+        // Runtime (RDTSC) [s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // time
+          return perfmon_getTimeOfGroup(group_id);
+        },
+        // Runtime unhalted [s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // FIXC1*inverseClock
+          return static_cast<double>(counter_values[1]) /
+                 state.cpu_info_->clock;
+        },
+        // Clock [MHz]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.E-06*(FIXC1/FIXC2)/inverseClock
+          return 1e-6 * (static_cast<double>(counter_values[1]) /
+                         static_cast<double>(counter_values[2])) *
+                 state.cpu_info_->clock;
+        },
+        // CPI
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // FIXC1/FIXC0
+          return static_cast<double>(counter_values[1]) /
+                 static_cast<double>(counter_values[0]);
+        },
+        // Used cycles ratio [%]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 100*PMC0/PMC2
+          return 100.0 * static_cast<double>(counter_values[3]) /
+                 static_cast<double>(counter_values[5]);
+        },
+        // Unused cycles ratio [%]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 100*PMC1/PMC2
+          return 100.0 * static_cast<double>(counter_values[4]) /
+                 static_cast<double>(counter_values[5]);
+        },
+        // Avg stall duration [cycles]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // PMC1/PMC3:EDGEDETECT
+          return static_cast<double>(counter_values[4]) /
+                 static_cast<double>(counter_values[6]);
+        }};
+
+static const std::function<double(int, const std::vector<uint64_t>&,
+                                  const LikwidProfilerState&)>
+    UOPS_ISSUE_METRIC_FUNS[kNrOfMetrics[15]] = {
+        // Runtime (RDTSC) [s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // time
+          return perfmon_getTimeOfGroup(group_id);
+        },
+        // Runtime unhalted [s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // FIXC1*inverseClock
+          return static_cast<double>(counter_values[1]) /
+                 state.cpu_info_->clock;
+        },
+        // Clock [MHz]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.E-06*(FIXC1/FIXC2)/inverseClock
+          return 1e-6 * (static_cast<double>(counter_values[1]) /
+                         static_cast<double>(counter_values[2])) *
+                 state.cpu_info_->clock;
+        },
+        // CPI
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // FIXC1/FIXC0
+          return static_cast<double>(counter_values[1]) /
+                 static_cast<double>(counter_values[0]);
+        },  // Used cycles ratio [%]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 100*PMC0/PMC2
+          return 100.0 * static_cast<double>(counter_values[3]) /
+                 static_cast<double>(counter_values[5]);
+        },
+        // Unused cycles ratio [%]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 100*PMC1/PMC2
+          return 100.0 * static_cast<double>(counter_values[4]) /
+                 static_cast<double>(counter_values[5]);
+        },
+        // Avg stall duration [cycles]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // PMC1/PMC3:EDGEDETECT
+          return static_cast<double>(counter_values[4]) /
+                 static_cast<double>(counter_values[6]);
+        }};
+
+static const std::function<double(int, const std::vector<uint64_t>&,
+                                  const LikwidProfilerState&)>
+    UOPS_RETIRE_METRIC_FUNS[kNrOfMetrics[15]] = {
+        // Runtime (RDTSC) [s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // time
+          return perfmon_getTimeOfGroup(group_id);
+        },
+        // Runtime unhalted [s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // FIXC1*inverseClock
+          return static_cast<double>(counter_values[1]) /
+                 state.cpu_info_->clock;
+        },
+        // Clock [MHz]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.E-06*(FIXC1/FIXC2)/inverseClock
+          return 1e-6 * (static_cast<double>(counter_values[1]) /
+                         static_cast<double>(counter_values[2])) *
+                 state.cpu_info_->clock;
+        },
+        // CPI
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // FIXC1/FIXC0
+          return static_cast<double>(counter_values[1]) /
+                 static_cast<double>(counter_values[0]);
+        },  // Used cycles ratio [%]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 100*PMC0/PMC2
+          return 100.0 * static_cast<double>(counter_values[3]) /
+                 static_cast<double>(counter_values[5]);
+        },
+        // Unused cycles ratio [%]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 100*PMC1/PMC2
+          return 100.0 * static_cast<double>(counter_values[4]) /
+                 static_cast<double>(counter_values[5]);
+        },
+        // Avg stall duration [cycles]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // PMC1/PMC3:EDGEDETECT
+          return static_cast<double>(counter_values[4]) /
+                 static_cast<double>(counter_values[6]);
+        }};
+
 static const std::array<
     const std::function<double(int, const std::vector<uint64_t>&,
                                const LikwidProfilerState&)>*,
     kNumberOfGroups>
-    metric_functions = {BRANCH_METRIC_FUNS,    CLOCK_METRIC_FUNS,
-                        DATA_METRIC_FUNS,      ENERGY_METRIC_FUNS,
-                        ICACHE_METRIC_FUNS,    L2_METRIC_FUNS,
-                        L2CACHE_METRIC_FUNS,   L3_METRIC_FUNS,
-                        L3CACHE_METRIC_FUNS,   MEM_METRIC_FUNS,
-                        TLB_DATA_METRIC_FUNS,  TLB_INSTR_METRIC_FUNS,
-                        FLOPS_AVX_METRIC_FUNS, CYCLE_ACTIVE_METRIC_FUNS,
-                        PORT_USAGE_METRIC_FUNS};
+    metric_functions = {BRANCH_METRIC_FUNS,     CLOCK_METRIC_FUNS,
+                        DATA_METRIC_FUNS,       ENERGY_METRIC_FUNS,
+                        ICACHE_METRIC_FUNS,     L2_METRIC_FUNS,
+                        L2CACHE_METRIC_FUNS,    L3_METRIC_FUNS,
+                        L3CACHE_METRIC_FUNS,    MEM_METRIC_FUNS,
+                        TLB_DATA_METRIC_FUNS,   TLB_INSTR_METRIC_FUNS,
+                        FLOPS_AVX_METRIC_FUNS,  CYCLE_ACTIVE_METRIC_FUNS,
+                        PORT_USAGE_METRIC_FUNS, UOPS_METRIC_FUNS,
+                        UOPS_EXEC_METRIC_FUNS,  UOPS_ISSUE_METRIC_FUNS,
+                        UOPS_RETIRE_METRIC_FUNS};
 
 }  // namespace
 
