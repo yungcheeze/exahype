@@ -1,9 +1,9 @@
 #include "MHDSolver.h"
-#include "GeneratedConstants.h"
-
 //#include "fortran.h" _ltob
 
 #include <memory>
+#include <cstring>
+#include <stdio.h>
 
 /* This is the MHDSolver.cpp binding to Fortran functions, as done in SRHD. */
 
@@ -14,11 +14,21 @@ void hastoadjustsolution_(double* t, bool* refine);
 void adjustedsolutionvalues_(const double* const x,const double* w,const double* t,const double* dt,double* Q);
 void pdeflux_(double* F, const double* const Q);
 void pdeeigenvalues_(double* lambda, const double* const Q, double* nv);
-}
+void registerinitialdata_(const char* const id_name, int* id_name_len);
+}/* extern "C" */
 
-MHDSolver::MHDSolver::MHDSolver(int nodesPerCoordinateAxis, double maximumMeshSize, exahype::solvers::Solver::TimeStepping timeStepping, std::unique_ptr<exahype::profilers::Profiler> profiler):
-  exahype::solvers::ADERDGSolver("MHDSolver", 9, 0, nodesPerCoordinateAxis, maximumMeshSize, timeStepping, std::move(profiler)) {
+// storage for static class members
+int MHDSolver::MHDSolver::numberOfVariables;
+int MHDSolver::MHDSolver::numberOfParameters;
+exahype::Parser::ParserView* MHDSolver::MHDSolver::constants;
+
+void MHDSolver::MHDSolver::init() {
+  // This function is called inside the constructur.
   // @todo Please implement/augment if required
+
+  // cf issue #61
+  numberOfVariables = getNumberOfVariables();
+  numberOfParameters = getNumberOfParameters();
 }
 
 void MHDSolver::MHDSolver::flux(const double* const Q, double** F) {
@@ -56,6 +66,13 @@ void MHDSolver::MHDSolver::adjustedSolutionValues(const double* const x,const do
   adjustedsolutionvalues_(x, &w, &t, &dt, Q);
 }
 
+void MHDSolver::MHDSolver::source(const double* const Q, double* S) {
+  // TODO: pass this to Fortran.
+  for(int i=0; i < MHDSolver::MHDSolver::numberOfVariables; i++) {
+    S[i] = 0.0;
+  }
+}
+
 
 
 exahype::solvers::Solver::RefinementControl MHDSolver::MHDSolver::refinementCriterion(const double* luh, const tarch::la::Vector<DIMENSIONS, double>& center, const tarch::la::Vector<DIMENSIONS, double>& dx, double t, const int level) {
@@ -64,23 +81,10 @@ exahype::solvers::Solver::RefinementControl MHDSolver::MHDSolver::refinementCrit
 }
 
 void MHDSolver::MHDSolver::boundaryValues(const double* const x,const double t, const int faceIndex, const int normalNonZero, const double * const fluxIn, const double* const stateIn, double *fluxOut, double* stateOut) {
-  // Dimensions             = 2
-  // Number of variables    = 5 (#unknowns + #parameters)
-
-  // TODO: Extend this for all the 9 fluxes!!
-
-  // fluxOut
-  fluxOut[0] = fluxIn[0];
-  fluxOut[1] = fluxIn[1];
-  fluxOut[2] = fluxIn[2];
-  fluxOut[3] = fluxIn[3];
-  fluxOut[4] = fluxIn[4];
-  // stateOut
-  // @todo Please implement
-  stateOut[0] = stateIn[0];
-  stateOut[1] = stateIn[1];
-  stateOut[2] = stateIn[2];
-  stateOut[3] = stateIn[3];
-  stateOut[4] = stateIn[4];
+  // TODO: Pass this to Fortran
+  for(int i=0; i < MHDSolver::MHDSolver::numberOfVariables; i++) {
+      fluxOut[i] = fluxIn[i];
+      stateOut[i] = stateIn[i];
+  }
 }
 
