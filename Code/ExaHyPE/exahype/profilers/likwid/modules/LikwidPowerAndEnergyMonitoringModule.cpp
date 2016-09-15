@@ -291,7 +291,8 @@ void LikwidPowerAndEnergyMonitoringModule::writeToOstream(
   // For all tags
   for (const auto& pair_tag_pair_count_array : aggregates_) {
     // print count
-    *os << "PowerAndEnergyMonitoringModule: count "
+    *os << "PowerAndEnergyMonitoringModule: "
+        << pair_tag_pair_count_array.first << " count "
         << pair_tag_pair_count_array.second.first << std::endl;
 
     // for all power types
