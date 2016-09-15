@@ -18,9 +18,10 @@ exahype-project  MHDSolver
 
   computational-domain
     dimension                = 2
-/*    width                    = 6.283185307179586 */
-    width = 6.283185307179586, 6.283185307179586
-    offset                   = 0.0, 0.0
+    /* This is the grid for the Rotor problem */
+    /* Domain: -0.5 .. 0.5 (square domain) */
+    width                    = 1.0
+    offset                   = -0.5, -0.5
     end-time                 = 0.8
   end computational-domain
 
@@ -52,14 +53,14 @@ exahype-project  MHDSolver
     variables          = 9
     parameters         = 0
     order              = 3
-    /* 27 grid points: 0.2327 */
+    /* 27 grid points: 0.2327 @TODO refinment not yet done */
     maximum-mesh-size  = 0.24
     time-stepping      = global
     kernel             = generic::fluxes::nonlinear
     /* we are using the new Fortran interface */
     language           = C
     /* choose your iniitial data here. Caveats on whitespace */
-    constants = {initialdata:orsagtang}
+    constants = {initialdata:rotor}
 
     plot vtk::Cartesian::vertices::ascii
       variables= 9

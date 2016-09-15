@@ -44,7 +44,6 @@ SUBROUTINE AdjustedSolutionValues(x, w, t, dt, Q)
 	ENDIF
 END SUBROUTINE AdjustedSolutionValues
 
-
 SUBROUTINE InitialData(x, Q)
 	USE, INTRINSIC :: ISO_C_BINDING
 	USE Parameters, ONLY : nVar
@@ -52,14 +51,40 @@ SUBROUTINE InitialData(x, Q)
 	! Argument list 
 	REAL, INTENT(IN)               :: x(2)        ! 
 	REAL, INTENT(OUT)              :: Q(5)        ! 
+
+	! We call a C++ function which helps us to get access to the
+	! exahype specification file constants
+	INTERFACE
+		SUBROUTINE InitialDataByExaHyPESpecFile(x,Q) BIND(C)
+			USE, INTRINSIC :: ISO_C_BINDING
+			IMPLICIT NONE
+			REAL, INTENT(IN)               :: x(2)
+			REAL, INTENT(OUT)              :: Q(5)
+		END SUBROUTINE InitialDataByExaHyPESpecFile
+	END INTERFACE
 	
 	! Call here one of
 	! CALL InitialBlast(x, Q)
-	!Call AlfenWave(x, Q, 0.0)
+	! Call InitialAlfenWave(x, Q)
 	! Call InitialRotor(x,Q)
 	! Call InitialBlast(x, Q)
-	Call InitialOrsagTang(x, Q)
+	! Call InitialOrsagTang(x, Q)
+
+	CALL InitialDataByExaHyPESpecFile(x,Q)
 END SUBROUTINE InitialData
+
+SUBROUTINE InitialAlfenWave(x, Q)
+    ! Get the AlfenWave for t=0
+    ! This subroutine is neccessary for a common argument interface InitialFooBar(x,Q)
+    ! for all initial data.
+    USE, INTRINSIC :: ISO_C_BINDING
+    IMPLICIT NONE 
+    ! Argument list 
+    REAL, INTENT(IN)               :: x(2)        ! 
+    REAL, INTENT(OUT)              :: Q(5)        ! 
+
+    CALL AlfenWave(x, Q, 0.0)
+END SUBROUTINE InitialAlfenWave
 
 SUBROUTINE AlfenWave(x, Q, t)
     ! Computes the AlfenWave at a given time t.

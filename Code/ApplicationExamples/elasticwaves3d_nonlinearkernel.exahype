@@ -29,27 +29,22 @@ exahype-project  Elastic
     dimension                = 3
     width                    = 10.0, 20.0, 20.0
     offset                   = 0.0, 0.0, 0.0
-    end-time                 = 10.0
+    end-time                 = 1.0
   end computational-domain
-/*
-  shared-memory
-    identifier               = autotuning
-    cores                    = 4
-    properties-file          = sharedmemory.properties
-  end shared-memory
-*/
- /*
+
   distributed-memory
     identifier               = static_load_balancing
-    configure                = {greedy,FCFS}
+    configure                = {hotspot,fair,ranks_per_node:4} 
     buffer-size              = 64
-    timeout                  = 120
+    timeout                  = 1200
   end distributed-memory
- */
- 
+
   optimisation
     fuse-algorithmic-steps          = on
     fuse-algorithmic-steps-factor   = 0.99    
+    timestep-batch-factor           = 0.0
+    skip-reduction-in-batched-time-steps = off
+    disable-amr-if-grid-has-been-stationary-in-previous-iteration    = off
   end optimisation
   
   solver ADER-DG MyElasticSolver
@@ -68,41 +63,5 @@ exahype-project  Elastic
       output    = ./conserved
       select = {}
     end plot
-
-    /* this is the fake plotter used to compute global integrals */
-    /* it has no output fields. */
-    plot vtk::Cartesian::vertices::ascii
-      variables = 0
-      time = 0.0
-      repeat = 0.05
-      output = ./output/these-files-should-not-be-there
-      select = {}
-    end plot
-
-    plot vtk::Cartesian::vertices::ascii
-      variables = 12
-      time      = 0.0
-      repeat    = 0.05
-      output    = ./primitive
-      select = {}
-    end plot
-    
-    plot vtk::Cartesian::vertices::ascii
-      variables = 12
-      time      = 0.0
-      repeat    = 0.05
-      output    = ./exact-primitive
-      select = {}
-    end plot
-
-    /* Do not need the time series for a point in the moment
-    plot probe::ascii
-      variables = 12
-      time      = 0.0
-      repeat    = 0.05
-      output    = ./seismogram
-      select    = {x:0.2,y:0.2} 
-    end plot
-    */
   end solver
 end exahype-project
