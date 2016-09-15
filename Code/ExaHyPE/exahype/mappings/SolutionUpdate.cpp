@@ -98,60 +98,6 @@ void exahype::mappings::SolutionUpdate::mergeWithWorkerThread(
 }
 #endif
 
-static void updateSolutionFV(const int cellDescriptionsIndex,
-                             const int element,
-                             const tarch::la::Vector<THREE_POWER_D, int>& neighbourCellDescriptionsIndices) {
-  auto& pFine  = exahype::solvers::FiniteVolumesSolver::getCellDescription(cellDescriptionsIndex,element);
-    exahype::solvers::FiniteVolumesSolver* solver = static_cast<exahype::solvers::FiniteVolumesSolver*>(
-        exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()]);
-
-  // todo MPI
-  // todo Boundary
-  #ifdef SharedTBB
-  assertionMsg(false,"Not implemented yet!");
-  #endif
-  assertion1(multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
-      VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices)),fineGridVerticesEnumerator.toString());
-
-
-
-  double* finiteVolumeSolutions[THREE_POWER_D];
-  for (int nScalar=0; nScalar<THREE_POWER_D; ++nScalar) {
-    if (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[nScalar])) {
-      exahype::records::FiniteVolumesCellDescription& pNeighbour =
-          exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(neighbourCellDescriptionsIndices[nScalar])[pFine.getSolverNumber()]; // todo assumes same number of patches per cell
-      finiteVolumeSolutions[nScalar] = exahype::DataHeap::getInstance().getData(pNeighbour.getSolution()).data();
-    } else {
-      finiteVolumeSolutions[nScalar] = exahype::DataHeap::getInstance().getData(pFine.getSolution()).data();
-    }
-  }
-
-  double* finiteVolumeSolution  = exahype::DataHeap::getInstance().getData(pFine.getSolution()).data();
-  assertion(!std::isnan(finiteVolumeSolution[0]));
-
-  double admissibleTimeStepSize=0;
-  solver->solutionUpdate(finiteVolumeSolutions,pFine.getSize(),pFine.getTimeStepSize(),admissibleTimeStepSize);
-
-  if (admissibleTimeStepSize < pFine.getTimeStepSize()) {
-    logWarning("updateSolution(...)","Finite volumes solver time step size harmed CFL condition. dt="<<pFine.getTimeStepSize()<<", dt_adm=" << admissibleTimeStepSize);
-  }
-
-  if (solver->hasToAdjustSolution(
-      pFine.getOffset()+0.5*pFine.getSize(),
-      pFine.getSize(),
-      pFine.getTimeStamp())) {
-    solver->solutionAdjustment(
-        finiteVolumeSolution,
-        pFine.getOffset()+0.5*pFine.getSize(),
-        pFine.getSize(),
-        pFine.getTimeStamp(), pFine.getTimeStepSize());
-  }
-
-  for (int i=0; i<solver->getUnknownsPerCell(); i++) {
-    assertion3(std::isfinite(finiteVolumeSolution[i]),pFine.toString(),"finiteVolumeSolution[i]",i);
-  } // Dead code elimination will get rid of this loop if Asserts/Debug flags are not set.
-}
-
 void exahype::mappings::SolutionUpdate::enterCell(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
@@ -180,16 +126,6 @@ void exahype::mappings::SolutionUpdate::enterCell(
         solver->updateSolution(
             fineGridCell.getCellDescriptionsIndex(),element,
             fineGridVertices,fineGridVerticesEnumerator);
-
-        // TODO(Dominic): The FV solver does nothing at the moment in updateSolution(...).
-        // We currently rely on updateSolutionFV here. But this
-        // function should be split in mergeNeighbours and updateSolution
-        // solver functionality.
-        if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes) {
-          const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices = multiscalelinkedcell::getIndicesAroundCell(
-              VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices));
-          updateSolutionFV(fineGridCell.getCellDescriptionsIndex(),element,neighbourCellDescriptionsIndices);
-        }
       }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
   }
