@@ -114,8 +114,48 @@ void exahype::mappings::TimeStepSizeComputation::mergeWithWorkerThread(
 }
 #endif
 
+static double startNewTimeStepFV(
+    const int cellDescriptionsIndex,
+    const int element,
+    const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices) {
+  exahype::solvers::FiniteVolumesSolver::CellDescription& p =
+      exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex)[element];
+  exahype::solvers::FiniteVolumesSolver* solver = static_cast<exahype::solvers::FiniteVolumesSolver*>(
+      exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
+
+  if (p.getType()==exahype::records::FiniteVolumesCellDescription::Cell) {
+//         assertion1(p.getRefinementEvent()==exahype::records::FiniteVolumesCellDescription::None,p.toString()); // todo refine
+    assertion1(multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
+        VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices)),fineGridVerticesEnumerator.toString());
+
+    double* finiteVolumesSolutions[THREE_POWER_D];
+    for (int nScalar=0; nScalar<THREE_POWER_D; ++nScalar) {
+      if (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[nScalar])) {
+        exahype::records::FiniteVolumesCellDescription& pNeighbour =
+            exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(neighbourCellDescriptionsIndices[nScalar])[p.getSolverNumber()]; // todo assumes same number of patches per cell
+        finiteVolumesSolutions[nScalar] = exahype::DataHeap::getInstance().getData(pNeighbour.getSolution()).data();
+      } else {
+        finiteVolumesSolutions[nScalar] = exahype::DataHeap::getInstance().getData(p.getSolution()).data();
+      }
+    }
+
+    double admissibleTimeStepSize = solver->stableTimeStepSize(
+        finiteVolumesSolutions, p.getSize());
+
+    assertion(!std::isnan(admissibleTimeStepSize));
+
+    p.setTimeStamp(p.getTimeStamp()+p.getTimeStepSize());
+    p.setTimeStepSize(admissibleTimeStepSize);
+
+    return admissibleTimeStepSize;
+  }
+
+  return std::numeric_limits<double>::max();
+}
+
 void exahype::mappings::TimeStepSizeComputation::enterCell(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    exahype::Cell& fineGridCell,
+    exahype::Vertex* const fineGridVertices,
     const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
     exahype::Vertex* const coarseGridVertices,
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
@@ -127,86 +167,33 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
 
   if (fineGridCell.isInitialised()) {
     // ADER-DG
-    const int numberOfADERDGCellDescriptions = static_cast<int>(exahype::solvers::ADERDGSolver::Heap::getInstance()
-            .getData(fineGridCell.getCellDescriptionsIndex()).size());
+    const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
     // please use a different UserDefined per mapping/event
     peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined2;
-    int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions, methodTrace);
+    int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, methodTrace);
 
-    pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      records::ADERDGCellDescription& p =
-          exahype::solvers::ADERDGSolver::Heap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
-      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
-          exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
+    pfor(solverNumber, 0, numberOfSolvers, grainSize)
+      exahype::solvers::Solver* solver =
+          exahype::solvers::RegisteredSolvers[solverNumber];
+      int element = exahype::solvers::RegisteredSolvers[solverNumber]->tryGetElement(
+          fineGridCell.getCellDescriptionsIndex(),solverNumber);
 
-      double* luh = 0;
-      double admissibleTimeStepSize;
+      if (element!=exahype::solvers::Solver::NotFound) {
+        double admissibleTimeStepSize =
+            solver->startNewTimeStep(fineGridCell.getCellDescriptionsIndex(),element);
+        // TODO(Dominic): The FV solver does nothing at the moment in startNewTimeStep(...).
+        // We currently rely on startNewTimeStepFV here. But this
+        // function should be split in startNewTimeStep and updateSolution
+        // solver functionality.
+        if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes) {
+          const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices = multiscalelinkedcell::getIndicesAroundCell(
+                VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices));
 
-      if (p.getType()==exahype::records::ADERDGCellDescription::Cell) {
-         assertion1(p.getRefinementEvent()==exahype::records::ADERDGCellDescription::None,p.toString());
-         luh = DataHeap::getInstance().getData(p.getSolution()).data();
-
-         admissibleTimeStepSize = solver->stableTimeStepSize(
-             luh, fineGridVerticesEnumerator.getCellSize());
-
-         assertionEquals(admissibleTimeStepSize,admissibleTimeStepSize);  // assert no nan
-
-         // direct update of the cell description time steps
-         p.setCorrectorTimeStamp(p.getPredictorTimeStamp());
-         p.setCorrectorTimeStepSize(p.getPredictorTimeStepSize());
-         p.setPredictorTimeStamp(p.getPredictorTimeStamp() +
-                                 admissibleTimeStepSize);
-         p.setPredictorTimeStepSize(admissibleTimeStepSize);
-
-         // indirect update of the solver time step sizes
-         _minTimeStepSizes[p.getSolverNumber()] = std::min(
-             admissibleTimeStepSize, _minTimeStepSizes[p.getSolverNumber()]);
-      }
-    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-        .parallelSectionHasTerminated(methodTrace);
-
-    // FINITE VOLUMES
-    const int numberOfFiniteVolumesCellDescriptions = static_cast<int>(exahype::solvers::FiniteVolumesSolver::Heap::getInstance()
-            .getData(fineGridCell.getCellDescriptionsIndex()).size());
-    // please use a different UserDefined per mapping/event
-    methodTrace = peano::datatraversal::autotuning::UserDefined2;
-    grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfFiniteVolumesCellDescriptions, methodTrace);
-
-    pfor(i, 0, numberOfFiniteVolumesCellDescriptions, grainSize)
-      records::FiniteVolumesCellDescription& p =
-          exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(fineGridCell.getCellDescriptionsIndex())[i];
-      exahype::solvers::FiniteVolumesSolver* solver = static_cast<exahype::solvers::FiniteVolumesSolver*>(
-          exahype::solvers::RegisteredSolvers[p.getSolverNumber()]);
-
-      if (p.getType()==exahype::records::FiniteVolumesCellDescription::Cell) {
-//         assertion1(p.getRefinementEvent()==exahype::records::FiniteVolumesCellDescription::None,p.toString()); // todo refine
-        assertion1(multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
-            VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices)),fineGridVerticesEnumerator.toString());
-
-        const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices = multiscalelinkedcell::getIndicesAroundCell(
-            VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices));
-
-        double* finiteVolumesSolutions[THREE_POWER_D];
-        for (int nScalar=0; nScalar<THREE_POWER_D; ++nScalar) {
-          if (exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(neighbourCellDescriptionsIndices[nScalar])) {
-            exahype::records::FiniteVolumesCellDescription& pNeighbour =
-                exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(neighbourCellDescriptionsIndices[nScalar])[p.getSolverNumber()]; // todo assumes same number of patches per cell
-            finiteVolumesSolutions[nScalar] = DataHeap::getInstance().getData(pNeighbour.getSolution()).data();
-          } else {
-            finiteVolumesSolutions[nScalar] = DataHeap::getInstance().getData(p.getSolution()).data();
-          }
+          admissibleTimeStepSize =
+              startNewTimeStepFV(fineGridCell.getCellDescriptionsIndex(),element,neighbourCellDescriptionsIndices);
         }
-
-        double admissibleTimeStepSize = solver->stableTimeStepSize(
-           finiteVolumesSolutions, fineGridVerticesEnumerator.getCellSize());
-
-        assertion(!std::isnan(admissibleTimeStepSize));
-
-        p.setTimeStamp(p.getTimeStamp()+p.getTimeStepSize());
-        p.setTimeStepSize(admissibleTimeStepSize);
-
-        _minTimeStepSizes[p.getSolverNumber()] = std::min(
-           admissibleTimeStepSize, _minTimeStepSizes[p.getSolverNumber()]); // todo MPI
+        _minTimeStepSizes[solverNumber] = std::min(
+            admissibleTimeStepSize, _minTimeStepSizes[solverNumber]); // todo MPI
       }
     endpfor peano::datatraversal::autotuning::Oracle::getInstance()
         .parallelSectionHasTerminated(methodTrace);
