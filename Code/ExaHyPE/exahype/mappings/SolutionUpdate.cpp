@@ -177,7 +177,9 @@ void exahype::mappings::SolutionUpdate::enterCell(
           fineGridCell.getCellDescriptionsIndex(),i);
 
       if (element!=exahype::solvers::Solver::NotFound) {
-        solver->updateSolution(fineGridCell.getCellDescriptionsIndex(),element);
+        solver->updateSolution(
+            fineGridCell.getCellDescriptionsIndex(),element,
+            fineGridVertices,fineGridVerticesEnumerator);
 
         // TODO(Dominic): The FV solver does nothing at the moment in updateSolution(...).
         // We currently rely on updateSolutionFV here. But this
