@@ -11,16 +11,18 @@ Markers          = ['o','^','s','o','^','s']
 
 
 xDataMax = 0
-
+yDataMin = 65636
+yDataMax = 0
 
 def addData(table,normalisation,plotLabels,experimentSetCounter,label):
   global xDataMax
+  global yDataMin
+  global yDataMax
   
   xdata    = runtimeParser.readColumnFromTable(table,0)
 
   symbolCounter = 0
   for adap in args.adapter:
-    yDataMin     = 65636
     totalTime    = runtimeParser.readColumnFromTable(table, runtimeParser.getAdapterRuntimeColumnFromTable(table,adap) )
     count        = runtimeParser.readColumnFromTable(table, runtimeParser.getAdapterCountColumnFromTable(table,adap) )
     ydata = []
@@ -33,8 +35,13 @@ def addData(table,normalisation,plotLabels,experimentSetCounter,label):
     if len(ydata)==0:
       print "WARNING: file " + table + " seems to be empty for adapter " + adap
     else:
-      if ydata[0]<yDataMin:
-        yDataMin = ydata[0]
+      for i in range(0,len(ydata)):
+        EvaluateMinMaxAt = 1
+        EvaluateMinMaxAt = int(args.singlecore)
+        if ydata[i]>yDataMax and xdata[i]==EvaluateMinMaxAt:
+          yDataMax = ydata[i]
+        if ydata[i]<yDataMin and xdata[i]==EvaluateMinMaxAt:
+          yDataMin = ydata[i]
       if xdata[-1]>xDataMax:
         xDataMax = xdata[-1]
       if (plotLabels):
@@ -46,13 +53,25 @@ def addData(table,normalisation,plotLabels,experimentSetCounter,label):
     if adap==args.adapter[-1] and len(xdata)>0:
      pylab.text(xdata[-1],ydata[-1],label )
 
-    if int(args.singlecore) < xDataMax and len(ydata)>0 and ydata[0]>ydata[-1]:
-      tSerial = yDataMin
-      ydata = [tSerial/(x-int(args.singlecore)+1) for x in range(int(args.singlecore),int(xDataMax))]
-      pylab.plot(range(int(args.singlecore),int(xDataMax)),ydata,markersize=4,markevery=1,lw=1.2,linestyle='dashed',color='grey') 
 
 
+def plotLinearSpeedupCurves():
+  global xDataMax
+  global yDataMin
+  global yDataMax
 
+  speedupCurveYdata = [yDataMin/(x-int(args.singlecore)+1) for x in range(int(args.singlecore),int(xDataMax))]
+  pylab.plot(range(int(args.singlecore),int(xDataMax)),speedupCurveYdata,markersize=4,markevery=1,lw=1.2,linestyle='dashed',color='grey',label="linear") 
+
+  speedupCurveYdata = [yDataMax/(x-int(args.singlecore)+1) for x in range(int(args.singlecore),int(xDataMax))]
+  pylab.plot(range(int(args.singlecore),int(xDataMax)),speedupCurveYdata,markersize=4,markevery=1,lw=1.2,linestyle='dashed',color='grey') 
+
+  if int(args.singlecore)>1:
+    speedupCurveYdata = [yDataMin*int(args.singlecore)/x for x in range(int(args.singlecore),int(xDataMax))]
+    pylab.plot(range(int(args.singlecore),int(xDataMax)),speedupCurveYdata,markersize=4,markevery=1,lw=1.2,linestyle='dashed',color='grey',label="linear w.o. multicore") 
+
+    speedupCurveYdata = [yDataMax*int(args.singlecore)/x for x in range(int(args.singlecore),int(xDataMax))]
+    pylab.plot(range(int(args.singlecore),int(xDataMax)),speedupCurveYdata,markersize=4,markevery=1,lw=1.2,linestyle='dashed',color='grey') 
 
 
 
@@ -132,12 +151,17 @@ outputFile = args.output + "-raw-runtime"
 pylab.clf()
 pylab.xlabel('cores')
 
+yDataMin = 65636
+yDataMax = 0
+
 experimentSetCounter =  0
 for (table,label) in zip(args.table,args.experimentdescription):
   print "read " + table
   maxLevel = runtimeParser.readColumnFromTable(table,1)   
   addData(table,1.0,table==args.table[-1],experimentSetCounter,label)
   experimentSetCounter = experimentSetCounter + 1
+
+plotLinearSpeedupCurves()
 
 initGlobalPlotterSettings()
 
@@ -160,6 +184,9 @@ outputFile = args.output + "-scaled-by-cells"
 pylab.clf()
 pylab.xlabel('cores')
 
+yDataMin = 65636
+yDataMax = 0
+
 experimentSetCounter =  0
 for (table,label) in zip(args.table,args.experimentdescription):
   print "read " + table
@@ -176,6 +203,8 @@ for (table,label) in zip(args.table,args.experimentdescription):
   addData(table,normalisation,table==args.table[-1],experimentSetCounter,label)
 
   experimentSetCounter = experimentSetCounter + 1
+
+plotLinearSpeedupCurves()
 
 initGlobalPlotterSettings()
 
@@ -197,6 +226,10 @@ print "written " + outputFile
 outputFile = args.output + "-scaled-by-regular-grid"
 pylab.clf()
 pylab.xlabel('cores')
+
+yDataMin = 65636
+yDataMax = 0
+
 if args.meshsize is not None:
 
  experimentSetCounter =  0
@@ -207,6 +240,8 @@ if args.meshsize is not None:
   addData(table,normalisation,table==args.table[-1],experimentSetCounter,label)
   experimentSetCounter = experimentSetCounter + 1
 
+ plotLinearSpeedupCurves()
+ 
  initGlobalPlotterSettings()
 
  pylab.ylabel( "time per cell per time step [t]=s" )
