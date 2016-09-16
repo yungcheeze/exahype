@@ -64,12 +64,27 @@ void LikwidTimeMeasurementModule::writeToOstream(std::ostream* os) const {
     *os << "TimeMeasurementModule: "
         << pair_tag_tuple_count_cycles_seconds.first << " count "
         << std::get<0>(pair_tag_tuple_count_cycles_seconds.second) << std::endl;
+
     *os << "TimeMeasurementModule: "
         << pair_tag_tuple_count_cycles_seconds.first << " cycles "
         << std::get<1>(pair_tag_tuple_count_cycles_seconds.second) << std::endl;
     *os << "TimeMeasurementModule: "
         << pair_tag_tuple_count_cycles_seconds.first << " time_sec "
         << std::get<2>(pair_tag_tuple_count_cycles_seconds.second) << std::endl;
+
+    *os << "TimeMeasurementModule: "
+        << pair_tag_tuple_count_cycles_seconds.first << " cycles / count "
+        << std::get<1>(pair_tag_tuple_count_cycles_seconds.second) /
+               static_cast<double>(
+                   std::get<0>(pair_tag_tuple_count_cycles_seconds.second))
+
+        << std::endl;
+    *os << "TimeMeasurementModule: "
+        << pair_tag_tuple_count_cycles_seconds.first << " time_sec / count "
+        << std::get<2>(pair_tag_tuple_count_cycles_seconds.second) /
+               static_cast<double>(
+                   std::get<0>(pair_tag_tuple_count_cycles_seconds.second))
+        << std::endl;
   }
 }
 
