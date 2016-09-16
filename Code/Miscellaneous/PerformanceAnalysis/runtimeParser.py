@@ -34,7 +34,7 @@ def readColumnFromTable(filename,whichColumn):
     file = open(filename, "r" )
   except:
     print( "was not able to open file " + filename )
-    return -1.0
+    return []
   try:
     file.readline()
     for line in file:
@@ -52,12 +52,11 @@ def readColumnFromTable(filename,whichColumn):
 
 
 def getAdapterCountColumnFromTable(filename,adapterName):
-  result = [] 
   try:
     file = open(filename, "r" )
   except:
     print( "was not able to open file " + filename )
-    return -1.0
+    return -1
 
   line = file.readline()
   counter = 0
