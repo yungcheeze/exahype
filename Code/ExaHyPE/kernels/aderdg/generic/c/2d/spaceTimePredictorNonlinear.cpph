@@ -97,21 +97,17 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
           PDESource(Q, S);
         }
       }
+    }
 
-      // Compute the "derivatives" (contributions of the stiffness matrix)
-      // x direction (independent from the y derivatives)
+    // Copy rhs0 -> rhs
+    std::copy(rhs0, rhs0 + basisSize3 * numberOfVariables, rhs);
+
+    // Compute the "derivatives" (contributions of the stiffness matrix)
+    // x direction (independent from the y derivatives)
+    for (int i = 0; i < basisSize; i++) {  // time DOF
       for (int k = 0; k < basisSize; k++) {
         const double updateSize =
             kernels::gaussLegendreWeights[order][i] * dt / dx[0];
-
-        // Copy rhs0 -> rhs
-        // TODO(guera): Move out?!
-        for (int l = 0; l < basisSize; l++) {
-          for (int m = 0; m < numberOfVariables; m++) {
-            rhs[idx_rhs(i, k, l, m)] = rhs0[idx_rhs(i, k, l, m)];
-          }
-        }
-
         // Matrix operation
         for (int l = 0; l < basisSize; l++) {
           for (int m = 0; m < numberOfVariables; m++) {
@@ -123,8 +119,10 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
           }
         }
       }
+    }
 
-      // y direction (independent from the x derivatives)
+    // y direction (independent from the x derivatives)
+    for (int i = 0; i < basisSize; i++) {  // time DOF
       for (int k = 0; k < basisSize; k++) {
         const double updateSize =
             kernels::gaussLegendreWeights[order][i] * dt / dx[1];
@@ -140,8 +138,10 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
           }
         }
       }
+    }
 
-      // source
+    // source
+    for (int i = 0; i < basisSize; i++) {  // time DOF
       for (int k = 0; k < basisSize; k++) {
         for (int l = 0; l < basisSize; l++) {
           const double updateSize =
