@@ -143,7 +143,8 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
       // source
       for (int k = 0; k < basisSize; k++) {
         for (int l = 0; l < basisSize; l++) {
-          const double weight = kernels::gaussLegendreWeights[order][k] *
+          const double weight = kernels::gaussLegendreWeights[order][i] *
+                                kernels::gaussLegendreWeights[order][k] *
                                 kernels::gaussLegendreWeights[order][l];
           const double updateSize = weight * dt;
           double* S = &lFi[idx_lFi(i, k, l, 2, 0)];
