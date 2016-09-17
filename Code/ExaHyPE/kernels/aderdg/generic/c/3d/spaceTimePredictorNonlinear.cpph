@@ -11,8 +11,9 @@
  * For the full license text, see LICENSE.txt
  **/
 
-#include <cstring>
 #include <tarch/la/Vector.h>
+#include <cstring>
+#include <utility>
 
 #include "../../../../DGMatrices.h"
 #include "../../../../GaussLegendreQuadrature.h"
@@ -76,14 +77,18 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
   }
 
   // 3. Discrete Picard iterations
-  double* lQi_old = new double[basisSize4 * numberOfVariables];
+  double* lQi2 = new double[basisSize4 * numberOfVariables];
+
+  double* lQi_new = lQi;
+  double* lQi_old = lQi2;
+
   double* rhs = new double[basisSize4 * numberOfVariables];
 
   const int MaxIterations = 2 * (order + 1);
 
   for (int iter = 0; iter < MaxIterations; iter++) {
     // Save old space-time DOF
-    std::memcpy(lQi_old, lQi, basisSize4 * numberOfVariables * sizeof(double));
+    std::swap(lQi_new, lQi_old);
 
     for (int i = 0; i < basisSize; i++) {  // time DOF
       // Compute the fluxes
@@ -91,7 +96,7 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
         for (int k = 0; k < basisSize; k++) {
           for (int l = 0; l < basisSize; l++) {
             // Call PDE fluxes
-            const double* Q = &lQi[idx_lQi(j, k, l, i, 0)];
+            const double* Q = &lQi_old[idx_lQi(j, k, l, i, 0)];
             double* F[3];
             F[0] = &lFi[idx_lFi(i, j, k, l, 0, 0)];
             F[1] = &lFi[idx_lFi(i, j, k, l, 1, 0)];
@@ -199,7 +204,7 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
 
     // 4. Multiply with (K1)^(-1) to get the discrete time integral of the
     // discrete Picard iteration
-    std::memset(lQi, 0, basisSize4 * numberOfVariables * sizeof(double));
+    std::memset(lQi_new, 0, basisSize4 * numberOfVariables * sizeof(double));
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize; k++) {
@@ -212,9 +217,9 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
           for (int l = 0; l < basisSize; l++) {
             for (int m = 0; m < numberOfVariables; m++) {
               for (int n = 0; n < basisSize; n++) {
-                lQi[idx_lQi(i, j, k, l, m)] += iweight *
-                                               rhs[idx_rhs(n, i, j, k, m)] *
-                                               kernels::iK1[order][l][n];
+                lQi_new[idx_lQi(i, j, k, l, m)] += iweight *
+                                                   rhs[idx_rhs(n, i, j, k, m)] *
+                                                   kernels::iK1[order][l][n];
                 // TODO: Check if we store iK1 or rather its transpose
               }
             }
@@ -230,7 +235,7 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
     const double tol = 1e-7;
     double sq_res = 0.0;
     for (int i = 0; i < basisSize4 * numberOfVariables; i++) {
-      sq_res += (lQi_old[i] - lQi[i]) * (lQi_old[i] - lQi[i]);
+      sq_res += (lQi_old[i] - lQi_new[i]) * (lQi_old[i] - lQi_new[i]);
     }
     if (sq_res < tol * tol) {
       break;
@@ -246,9 +251,15 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
     }
   }  // end iter
 
+  // If number of iterations has been odd lQi2 contains the latest solution
+  // instead of lQi.
+  if (lQi_new == lQi2) {
+    std::copy(lQi2, lQi2 + basisSize4 * numberOfVariables, lQi);
+  }
+
   // Delete heap-allocated arrays
   delete[] rhs0;
-  delete[] lQi_old;
+  delete[] lQi2;
   delete[] rhs;
 }
 

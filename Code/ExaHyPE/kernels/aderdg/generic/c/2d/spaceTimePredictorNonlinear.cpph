@@ -11,8 +11,9 @@
  * For the full license text, see LICENSE.txt
  **/
 
-#include <cstring>
 #include <tarch/la/Vector.h>
+#include <cstring>
+#include <utility>
 
 #include "../../../../DGMatrices.h"
 #include "../../../../GaussLegendreQuadrature.h"
@@ -27,7 +28,7 @@ namespace c {
 
 namespace {
 
-template <void PDEFlux3d(const double* const Q, double** F),
+template <void PDEFlux2d(const double* const Q, double** F),
           void PDESource(const double* const Q, double* S)>
 void aderPicardLoopNonlinear(const double* luh, const double dt,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
@@ -71,26 +72,30 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
   }
 
   // 3. Discrete Picard iterations
-  double* lQi_old = new double[basisSize3 * numberOfVariables];
+  double* lQi2 = new double[basisSize3 * numberOfVariables];
+
+  double* lQi_new = lQi;
+  double* lQi_old = lQi2;
+
   double* rhs = new double[basisSize3 * numberOfVariables];
 
-  const int MaxIterations = 2*(order + 1);
+  const int MaxIterations = 2 * (order + 1);
 
   for (int iter = 0; iter < MaxIterations; iter++) {
     // Save old space-time DOF
-    std::memcpy(lQi_old, lQi, basisSize3 * numberOfVariables * sizeof(double));
+    std::swap(lQi_new, lQi_old);
 
     for (int i = 0; i < basisSize; i++) {  // time DOF
                                            // Compute the fluxes
       for (int k = 0; k < basisSize; k++) {
         for (int l = 0; l < basisSize; l++) {
           // Call PDE fluxes
-          const double* Q = &lQi[idx_lQi(k, l, i, 0)];
+          const double* Q = &lQi_old[idx_lQi(k, l, i, 0)];
           double* F[2];
           F[0] = &lFi[idx_lFi(i, k, l, 0, 0)];
           F[1] = &lFi[idx_lFi(i, k, l, 1, 0)];
           double* S = &lFi[idx_lFi(i, k, l, 2, 0)];
-          PDEFlux3d(Q, F);
+          PDEFlux2d(Q, F);
           PDESource(Q, S);
         }
       }
@@ -161,7 +166,7 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
 
     // 4. Multiply with (K1)^(-1) to get the discrete time integral of the
     // discrete Picard iteration
-    std::memset(lQi, 0, basisSize3 * numberOfVariables * sizeof(double));
+    std::memset(lQi_new, 0, basisSize3 * numberOfVariables * sizeof(double));
     for (int j = 0; j < basisSize; j++) {
       for (int k = 0; k < basisSize; k++) {
         const double weight = kernels::gaussLegendreWeights[order][j] *
@@ -172,8 +177,9 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
         for (int l = 0; l < basisSize; l++) {
           for (int m = 0; m < numberOfVariables; m++) {
             for (int n = 0; n < basisSize; n++) {
-              lQi[idx_lQi(j, k, l, m)] += iweight * rhs[idx_rhs(n, j, k, m)] *
-                                          kernels::iK1[order][l][n];
+              lQi_new[idx_lQi(j, k, l, m)] += iweight *
+                                              rhs[idx_rhs(n, j, k, m)] *
+                                              kernels::iK1[order][l][n];
               // TODO: Check if we store iK1 or rather its transpose
             }
           }
@@ -188,21 +194,31 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
     const double tol = 1e-7;
     double sq_res = 0.0;
     for (int i = 0; i < basisSize3 * numberOfVariables; i++) {
-      sq_res += (lQi_old[i] - lQi[i]) * (lQi_old[i] - lQi[i]);
+      sq_res += (lQi_old[i] - lQi_new[i]) * (lQi_old[i] - lQi_new[i]);
     }
     if (sq_res < tol * tol) {
       break;
     }
 
     if (iter == MaxIterations) {  // No convergence after last iteration
-      static tarch::logging::Log _log( "kernels::aderdg::generic::c" );
-      logWarning( "aderPicardLoopNonlinear(...)", "|res|^2=" << sq_res << " > |tol|^2=" << tol * tol << " after " << iter << " iterations. Solver seems not to have converged properly within maximum number of iteration steps" );
+      static tarch::logging::Log _log("kernels::aderdg::generic::c");
+      logWarning("aderPicardLoopNonlinear(...)",
+                 "|res|^2=" << sq_res << " > |tol|^2=" << tol * tol << " after "
+                            << iter << " iterations. Solver seems not to have "
+                                       "converged properly within maximum "
+                                       "number of iteration steps");
     }
   }  // end iter
 
+  // If the number of iterations has been odd lQi2 containes the latest solution
+  // instead of lQi.
+  if (lQi_new == lQi2) {
+    std::copy(lQi2, lQi2 + basisSize3 * numberOfVariables, lQi);
+  }
+
   // Delete heap-allocated arrays
   delete[] rhs0;
-  delete[] lQi_old;
+  delete[] lQi2;
   delete[] rhs;
 }
 
