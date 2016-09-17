@@ -53,6 +53,7 @@ public abstract class GenericFluxesADER_DG implements Solver {
     writer.write("// Please do not change the implementations below\n");
     writer.write("// =============================---==============\n");
     writer.write("#include \"" + solverName + ".h\"\n");
+    writer.write("#include <cassert>\n");  // TODO: Use peano asserts
     writer.write("#include \"kernels/aderdg/generic/Kernels.h\"\n");
     writer.write("\n\n");
 
@@ -71,6 +72,10 @@ public abstract class GenericFluxesADER_DG implements Solver {
         " /* nodesPerCoordinateAxis */, maximumMeshSize, timeStepping, " +
         "std::move(profiler)) {\n");
     writer.write("  init();\n");
+    // TODO: Might be redundant.
+    writer.write("  assert((" + (_numberOfUnknowns + _numberOfParameters) + " == getNumberOfVariables()) && \"Please rerun toolkit.\");\n");
+    writer.write("  assert((" + _numberOfParameters + " == getNumberOfParameters()) && \"Please rerun toolkit.\");\n");
+    writer.write("  assert((" + (_order + 1) + " == getNodesPerCoordinateAxis()) && \"Please rerun toolkit.\");\n");
     writer.write("}\n");
     writer.write("\n\n\n");
 
@@ -79,9 +84,15 @@ public abstract class GenericFluxesADER_DG implements Solver {
     if (_enableProfiler) {
       writer.write("  _profiler->start(\"spaceTimePredictor\");\n");
     }
-    writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
-        + "::spaceTimePredictor" + (isLinear() ? "Linear<ncp>" : "Nonlinear<flux, source>")
+    if (isLinear()) {
+      writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
+        + "::spaceTimePredictorLinear<ncp>"
         + "( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt, getNumberOfVariables(), getNumberOfParameters(), getNodesPerCoordinateAxis() );\n");
+    } else {
+      writer.write("  kernels::aderdg::generic::" + (isFortran() ? "fortran" : "c")
+        + "::spaceTimePredictorNonlinear<flux, source, " + (_numberOfUnknowns + _numberOfParameters) + " /* nVar */, " + _numberOfParameters + " /* nParam */, " + (_order + 1) + " /* basisSize */>"
+        + "( lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd, luh, dx, dt );\n");
+    }
     if (_enableProfiler) {
       writer.write("  _profiler->stop(\"spaceTimePredictor\");\n");
     }

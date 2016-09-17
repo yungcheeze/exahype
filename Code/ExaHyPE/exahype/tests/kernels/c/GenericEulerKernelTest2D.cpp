@@ -18,7 +18,6 @@
 #include "../testdata/generic_euler_testdata.h"
 #include "kernels/aderdg/generic/Kernels.h"
 
-
 #if DIMENSIONS == 2
 
 namespace exahype {
@@ -114,7 +113,7 @@ void GenericEulerKernelTest::testMatrixB(const double *const Q,
 }  // testMatrixB
 
 void GenericEulerKernelTest::testPDEFluxes() {
-  logInfo( "testPDEFluxes()", "Test PDE-related functions, DIM=2" );
+  logInfo("testPDEFluxes()", "Test PDE-related functions, DIM=2");
 
   double Q[5] = {1., 0.1, 0.2, 0.3, 3.5};  // pressure = 1.39
   double f[5], g[5];
@@ -137,7 +136,7 @@ void GenericEulerKernelTest::testPDEFluxes() {
 }  // testPDEFluxes
 
 void GenericEulerKernelTest::testSolutionUpdate() {
-  logInfo( "testSolutionUpdate()",  "Test solution update, ORDER=2, DIM=2" );
+  logInfo("testSolutionUpdate()", "Test solution update, ORDER=2, DIM=2");
 
   // inputs:
   double *luh = new double[80];
@@ -169,7 +168,8 @@ void GenericEulerKernelTest::testSolutionUpdate() {
 }  // testSolutionUpdate
 
 void GenericEulerKernelTest::testSurfaceIntegralLinear() {
-  logInfo( "testSurfaceIntegralLinear()", "Test surface integral linear, ORDER=2, DIM=2" );
+  logInfo("testSurfaceIntegralLinear()",
+          "Test surface integral linear, ORDER=2, DIM=2");
 
   {  // test 1
     // inputs:
@@ -248,7 +248,8 @@ void GenericEulerKernelTest::testSurfaceIntegralLinear() {
 }  // testSurfaceIntegralLinear
 
 void GenericEulerKernelTest::testSurfaceIntegralNonlinear() {
-  logInfo( "testSurfaceIntegralNonlinear()", "Test surface integral nonlinear, ORDER=2, DIM=2" );
+  logInfo("testSurfaceIntegralNonlinear()",
+          "Test surface integral nonlinear, ORDER=2, DIM=2");
 
   {  // test 1
     // inputs:
@@ -328,7 +329,8 @@ void GenericEulerKernelTest::testSurfaceIntegralNonlinear() {
 
 void GenericEulerKernelTest::testRiemannSolverLinear() {
   // Rusanov
-  logInfo( "testRiemannSolverLinear()", "Test Riemann Solver linear (Rusanov), ORDER=2, DIM=2" );
+  logInfo("testRiemannSolverLinear()",
+          "Test Riemann Solver linear (Rusanov), ORDER=2, DIM=2");
 
   {                                  // test normalNonZero = 0
                                      // output:
@@ -415,7 +417,8 @@ void GenericEulerKernelTest::testRiemannSolverLinear() {
 
 void GenericEulerKernelTest::testRiemannSolverNonlinear() {
   // Rusanov
-  logInfo( "testRiemannSolverNonlinear()", "Test Riemann Solver nonlinear (Rusanov), ORDER=2, DIM=2" );
+  logInfo("testRiemannSolverNonlinear()",
+          "Test Riemann Solver nonlinear (Rusanov), ORDER=2, DIM=2");
 
   {  // test 1
      // input:
@@ -541,7 +544,8 @@ void GenericEulerKernelTest::testRiemannSolverNonlinear() {
 }  // testRiemannSolverNonlinear
 
 void GenericEulerKernelTest::testVolumeIntegralLinear() {
-  logInfo( "testVolumeIntegralLinear()", "Test volume integral linear, ORDER=2, DIM=2" );
+  logInfo("testVolumeIntegralLinear()",
+          "Test volume integral linear, ORDER=2, DIM=2");
 
   {  // first test
     // output:
@@ -606,7 +610,8 @@ void GenericEulerKernelTest::testVolumeIntegralLinear() {
 }  // testVolumeIntegralLinear
 
 void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
-  logInfo( "testVolumeIntegralNonlinear()", "Test volume integral nonlinear, ORDER=2, DIM=2" );
+  logInfo("testVolumeIntegralNonlinear()",
+          "Test volume integral nonlinear, ORDER=2, DIM=2");
 
   {  // first test
 
@@ -676,7 +681,8 @@ void GenericEulerKernelTest::testVolumeIntegralNonlinear() {
 }  // testVolumeIntegralNonlinear
 
 void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
-  logInfo( "testSpaceTimePredictorLinear()", "Test space time predictor linear, ORDER=3, DIM=2" );
+  logInfo("testSpaceTimePredictorLinear()",
+          "Test space time predictor linear, ORDER=3, DIM=2");
 
   // inputs:
   // exahype::tests::testdata::generic_euler::testSpaceTimePredictor::luh[80 =
@@ -745,7 +751,8 @@ void GenericEulerKernelTest::testSpaceTimePredictorLinear() {
 }  // testSpaceTimePredictorLinear
 
 void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
-  logInfo( "testSpaceTimePredictorNonlinear()", "Test space time predictor nonlinear, ORDER=3, DIM=2" );
+  logInfo("testSpaceTimePredictorNonlinear()",
+          "Test space time predictor nonlinear, ORDER=3, DIM=2");
 
   const tarch::la::Vector<DIMENSIONS, double> dx(5e-02, 5e-02);
   const double timeStepSize = 1.686854344081342E-003;
@@ -760,16 +767,13 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
   double *lQhbnd = new double[80];  // nVar * nDOFy * 4
   double *lFhbnd = new double[80];  // nVar * nDOFy * 4
 
-  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<testFlux,
-                                                           testSource>(
+  kernels::aderdg::generic::c::spaceTimePredictorNonlinear<
+      testFlux, testSource, 5 /* getNumberOfVariables */,
+      0 /* getNumberOfParameters */, 4 /* getNodesPerCoordinateAxis */>(
       lQi, lFi, lQhi, lFhi, lQhbnd, lFhbnd,
       ::exahype::tests::testdata::generic_euler::
           testSpaceTimePredictorNonlinear::luh,
-      dx, timeStepSize,
-      5,  // getNumberOfVariables(),
-      0,  // getNumberOfParameters()
-      4   // getNodesPerCoordinateAxis()
-      );
+      dx, timeStepSize);
 
   for (int i = 0; i < 320; i++) {
     validateNumericalEqualsWithEpsWithParams1(
@@ -837,7 +841,8 @@ void GenericEulerKernelTest::testSpaceTimePredictorNonlinear() {
 }  // testSpaceTimePredictorNonlinear
 
 void GenericEulerKernelTest::testFaceUnknownsProjection() {
-  logInfo( "testFaceUnknownsProjection()", "Test face unknowns projection operators, ORDER=2, DIM=2" );
+  logInfo("testFaceUnknownsProjection()",
+          "Test face unknowns projection operators, ORDER=2, DIM=2");
 
   const int numberOfVariables = 1;
   const int basisSize = 4;
@@ -914,7 +919,8 @@ void GenericEulerKernelTest::testFaceUnknownsProjection() {
 }
 
 void GenericEulerKernelTest::testVolumeUnknownsProjection() {
-  logInfo( "testVolumeUnknownsProjection()", "Test volume unknowns projection operators, ORDER=2, DIM=2" );
+  logInfo("testVolumeUnknownsProjection()",
+          "Test volume unknowns projection operators, ORDER=2, DIM=2");
 
   const int numberOfVariables = 1;
   const int basisSize = 4;

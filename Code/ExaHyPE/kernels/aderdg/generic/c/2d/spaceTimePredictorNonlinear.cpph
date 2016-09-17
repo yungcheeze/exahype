@@ -29,11 +29,11 @@ namespace c {
 namespace {
 
 template <void PDEFlux2d(const double* const Q, double** F),
-          void PDESource(const double* const Q, double* S)>
+          void PDESource(const double* const Q, double* S),
+          int numberOfVariables, int numberOfParameters, int basisSize>
 void aderPicardLoopNonlinear(const double* luh, const double dt,
                              const tarch::la::Vector<DIMENSIONS, double>& dx,
-                             int numberOfVariables, int basisSize, double* lQi,
-                             double* lFi) {
+                             double* lQi, double* lFi) {
   idx3 idx_luh(basisSize, basisSize, numberOfVariables);
   idx4 idx_lQi(basisSize, basisSize, basisSize, numberOfVariables);
   idx5 idx_lFi(basisSize, basisSize, basisSize, DIMENSIONS + 1,
@@ -211,8 +211,8 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
   delete[] rhs;
 }
 
-void aderPredictorNonlinear(const double* lQi, const double* lFi,
-                            int numberOfVariables, int basisSize, double* lQhi,
+template <int numberOfVariables, int numberOfParameters, int basisSize>
+void aderPredictorNonlinear(const double* lQi, const double* lFi, double* lQhi,
                             double* lFhi_x, double* lFhi_y, double* lShi) {
   // Immediately compute the time - averaged space - time polynomials
 
@@ -258,9 +258,10 @@ void aderPredictorNonlinear(const double* lQi, const double* lFi,
   }
 }
 
+template <int numberOfVariables, int numberOfParameters, int basisSize>
 void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
-                               const double* lFhi_y, int numberOfVariables,
-                               int basisSize, double* lQhbnd, double* lFhbnd) {
+                               const double* lFhi_y, double* lQhbnd,
+                               double* lFhbnd) {
   // Compute the boundary-extrapolated values for Q and F*n
 
   const int order = basisSize - 1;
@@ -328,28 +329,29 @@ void aderExtrapolatorNonlinear(const double* lQhi, const double* lFhi_x,
 }  // namespace
 
 template <void PDEFlux2d(const double* const Q, double** F),
-          void PDESource(const double* const Q, double* S)>
+          void PDESource(const double* const Q, double* S),
+          int numberOfVariables, int numberOfParameters, int basisSize>
 void spaceTimePredictorNonlinear(
     double* lQi, double* lFi, double* lQhi, double* lFhi, double* lQhbnd,
     double* lFhbnd, const double* luh,
-    const tarch::la::Vector<DIMENSIONS, double>& dx, double dt,
-    int numberOfVariables, int numberOfParameters, int basisSize) {
+    const tarch::la::Vector<DIMENSIONS, double>& dx, double dt) {
   const int basisSize2 = basisSize * basisSize;
 
-  aderPicardLoopNonlinear<PDEFlux2d, PDESource>(luh, dt, dx, numberOfVariables,
-                                                basisSize, lQi, lFi);
+  aderPicardLoopNonlinear<PDEFlux2d, PDESource, numberOfVariables,
+                          numberOfParameters, basisSize>(luh, dt, dx, lQi, lFi);
 
-  aderPredictorNonlinear(lQi, lFi, numberOfVariables, basisSize, lQhi,
-                         &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
-                         &lFhi[1 * basisSize2 * numberOfVariables],  // lFhi_y
-                         &lFhi[2 * basisSize2 * numberOfVariables]   // lShi
-                         );
+  aderPredictorNonlinear<numberOfVariables, numberOfParameters, basisSize>(
+      lQi, lFi, lQhi,
+      &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
+      &lFhi[1 * basisSize2 * numberOfVariables],  // lFhi_y
+      &lFhi[2 * basisSize2 * numberOfVariables]   // lShi
+      );
 
-  aderExtrapolatorNonlinear(
+  aderExtrapolatorNonlinear<numberOfVariables, numberOfParameters, basisSize>(
       lQhi,
       &lFhi[0 * basisSize2 * numberOfVariables],  // lFhi_x
       &lFhi[1 * basisSize2 * numberOfVariables],  // lFhi_y
-      numberOfVariables, basisSize, lQhbnd, lFhbnd);
+      lQhbnd, lFhbnd);
 }
 
 }  // namespace c
