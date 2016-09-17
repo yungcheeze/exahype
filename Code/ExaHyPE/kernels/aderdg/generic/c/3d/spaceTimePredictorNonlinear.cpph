@@ -63,13 +63,10 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
   for (int i = 0; i < basisSize; i++) {
     for (int j = 0; j < basisSize; j++) {
       for (int k = 0; k < basisSize; k++) {
-        const double weight = kernels::gaussLegendreWeights[order][i] *
-                              kernels::gaussLegendreWeights[order][j] *
-                              kernels::gaussLegendreWeights[order][k];
         for (int l = 0; l < numberOfVariables; l++) {
           for (int m = 0; m < basisSize; m++) {
             rhs0[idx_rhs(m, i, j, k, l)] =
-                weight * kernels::F0[order][m] * luh[idx_luh(i, j, k, l)];
+                kernels::F0[order][m] * luh[idx_luh(i, j, k, l)];
           }
         }
       }
@@ -112,10 +109,8 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
       // x direction (independent from the y and z derivatives)
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize; k++) {
-          const double weight = kernels::gaussLegendreWeights[order][i] *
-                                kernels::gaussLegendreWeights[order][j] *
-                                kernels::gaussLegendreWeights[order][k];
-          const double updateSize = weight * dt / dx[0];
+          const double updateSize =
+              dt / dx[0] * kernels::gaussLegendreWeights[order][i];
 
           // Copy rhs0 -> rhs
           // TODO(guera): Move out?!
@@ -129,9 +124,9 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
           for (int l = 0; l < basisSize; l++) {
             for (int m = 0; m < numberOfVariables; m++) {
               for (int n = 0; n < basisSize; n++) {
-                rhs[idx_rhs(i, j, k, l, m)] -= updateSize *
-                                               lFi[idx_lFi(i, j, k, n, 0, m)] *
-                                               kernels::Kxi[order][n][l];
+                rhs[idx_rhs(i, j, k, l, m)] -=
+                    updateSize / kernels::gaussLegendreWeights[order][l] *
+                    lFi[idx_lFi(i, j, k, n, 0, m)] * kernels::Kxi[order][n][l];
               }
             }
           }
@@ -141,18 +136,16 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
       // y direction (independent from the x and z derivatives)
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize; k++) {
-          const double weight = kernels::gaussLegendreWeights[order][i] *
-                                kernels::gaussLegendreWeights[order][j] *
-                                kernels::gaussLegendreWeights[order][k];
-          const double updateSize = weight * dt / dx[1];
+          const double updateSize =
+              dt / dx[1] * kernels::gaussLegendreWeights[order][i];
 
           // Matrix operation
           for (int l = 0; l < basisSize; l++) {
             for (int m = 0; m < numberOfVariables; m++) {
               for (int n = 0; n < basisSize; n++) {
-                rhs[idx_rhs(i, j, l, k, m)] -= updateSize *
-                                               lFi[idx_lFi(i, j, n, k, 1, m)] *
-                                               kernels::Kxi[order][n][l];
+                rhs[idx_rhs(i, j, l, k, m)] -=
+                    updateSize / kernels::gaussLegendreWeights[order][l] *
+                    lFi[idx_lFi(i, j, n, k, 1, m)] * kernels::Kxi[order][n][l];
               }
             }
           }
@@ -162,18 +155,16 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
       // z direction (independent from the x and y derivatives)
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize; k++) {
-          const double weight = kernels::gaussLegendreWeights[order][i] *
-                                kernels::gaussLegendreWeights[order][j] *
-                                kernels::gaussLegendreWeights[order][k];
-          const double updateSize = weight * dt / dx[2];
+          const double updateSize =
+              dt / dx[2] * kernels::gaussLegendreWeights[order][i];
 
           // Matrix operation
           for (int l = 0; l < basisSize; l++) {
             for (int m = 0; m < numberOfVariables; m++) {
               for (int n = 0; n < basisSize; n++) {
-                rhs[idx_rhs(i, l, j, k, m)] -= updateSize *
-                                               lFi[idx_lFi(i, n, j, k, 2, m)] *
-                                               kernels::Kxi[order][n][l];
+                rhs[idx_rhs(i, l, j, k, m)] -=
+                    updateSize / kernels::gaussLegendreWeights[order][l] *
+                    lFi[idx_lFi(i, n, j, k, 2, m)] * kernels::Kxi[order][n][l];
               }
             }
           }
@@ -184,11 +175,8 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize; k++) {
           for (int l = 0; l < basisSize; l++) {
-            const double weight = kernels::gaussLegendreWeights[order][i] *
-                                  kernels::gaussLegendreWeights[order][j] *
-                                  kernels::gaussLegendreWeights[order][k] *
-                                  kernels::gaussLegendreWeights[order][l];
-            const double updateSize = weight * dt;
+            const double updateSize =
+                kernels::gaussLegendreWeights[order][i] * dt;
             double* S = &lFi[idx_lFi(i, j, k, l, 3, 0)];
 
             // TODO: Subtract nonconservative part from S
@@ -208,18 +196,12 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
     for (int i = 0; i < basisSize; i++) {
       for (int j = 0; j < basisSize; j++) {
         for (int k = 0; k < basisSize; k++) {
-          const double weight = kernels::gaussLegendreWeights[order][i] *
-                                kernels::gaussLegendreWeights[order][j] *
-                                kernels::gaussLegendreWeights[order][k];
-          const double iweight = 1.0 / weight;
-
           // Matrix operation
           for (int l = 0; l < basisSize; l++) {
             for (int m = 0; m < numberOfVariables; m++) {
               for (int n = 0; n < basisSize; n++) {
-                lQi_new[idx_lQi(i, j, k, l, m)] += iweight *
-                                                   rhs[idx_rhs(n, i, j, k, m)] *
-                                                   kernels::iK1[order][l][n];
+                lQi_new[idx_lQi(i, j, k, l, m)] +=
+                    rhs[idx_rhs(n, i, j, k, m)] * kernels::iK1[order][l][n];
                 // TODO: Check if we store iK1 or rather its transpose
               }
             }
