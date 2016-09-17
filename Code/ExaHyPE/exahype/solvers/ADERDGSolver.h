@@ -18,14 +18,14 @@
 #include <string>
 #include <vector>
 
+#include "exahype/solvers/Solver.h"
+
 #include "peano/heap/Heap.h"
 #include "peano/utils/Globals.h"
 #include "tarch/Assertions.h"
 #include "tarch/la/Vector.h"
 #include "exahype/profilers/simple/NoOpProfiler.h"
 #include "exahype/records/ADERDGCellDescription.h"
-
-#include "exahype/solvers/Solver.h"
 
 namespace exahype {
   namespace solvers {
@@ -51,6 +51,9 @@ public:
   typedef peano::heap::PlainHeap<CellDescription> Heap;
 
 private:
+  /**
+   * Log device.
+   */
   static tarch::logging::Log _log;
 
   /**
@@ -137,7 +140,6 @@ private:
   bool markForRefinement(
       CellDescription& pFine);
 
-
   /**
    * Check if cell descriptions of type Ancestor or Descendant need to hold
    * data or not based on virtual refinement criterion.
@@ -198,7 +200,7 @@ private:
     * TODO(Dominic): Erasing
     * TODO(Dominic): Make template function as soon as verified.
     */
-   static void startOrFinishCollectiveRefinementOperations(
+   void startOrFinishCollectiveRefinementOperations(
        CellDescription& fineGridCellDescription);
 
    bool eraseCellDescriptionIfNecessary(
@@ -206,6 +208,17 @@ private:
        const int fineGridCellElement,
        const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
        CellDescription& coarseGridCellDescription);
+
+   /**
+    * Initialise cell description of type Cell.
+    * Initialise the refinement event with None.
+    */
+   void addNewCell(
+       exahype::Cell& fineGridCell,
+       exahype::Vertex* const fineGridVertices,
+       const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+       const int coarseGridCellDescriptionsIndex,
+       const int solverNumber);
 
   /**
    * Initialises helper cell descriptions of type Descendant
@@ -218,9 +231,8 @@ private:
    */
   void addNewDescendantIfAugmentingRequested(
       exahype::Cell& fineGridCell,
-      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellSize,
-      const int fineGridLevel,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
       CellDescription& coarseGridCellDescription,
       const int coarseGridCellDescriptionsIndex);
 
@@ -236,14 +248,11 @@ private:
    */
   void addNewCellIfRefinementRequested(
       exahype::Cell& fineGridCell,
-      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellOffset,
-      const tarch::la::Vector<DIMENSIONS,double>& fineGridCellSize,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
       const tarch::la::Vector<DIMENSIONS,int>& fineGridPositionOfCell,
-      const int fineGridLevel,
       CellDescription& coarseGridCellDescription,
       const int coarseGridCellDescriptionsIndex);
-
-
 
   /**
    * Prolongates Volume data from a parent cell description to
@@ -272,6 +281,24 @@ private:
       CellDescription&       coarseGridCellDescription,
       const CellDescription& fineGridCellDescription,
       const tarch::la::Vector<DIMENSIONS, int>& subcellIndex);
+
+  /**
+   * Sets the face unknowns of a cell description of type Ancestor to zero.
+   * This is typically done before we perform a face unknowns
+   * restriction operation.
+   */
+  void prepareFaceDataOfAncestor(CellDescription& cellDescription);
+
+  /**
+   * Determine if the cell description of type
+   * Descendant is on the cell boundary of its parent
+   * of type Cell or Descendant with at least one of
+   * its faces. If so restrict face data from the parent down
+   * to the Descendant for those face(s).
+   */
+  void prolongateFaceDataToDescendant(
+          CellDescription& cellDescription,
+          SubcellPosition& SubcellPosition);
 
   /**
    * Solve the Riemann problem at the interface between two cells ("left" and
@@ -478,6 +505,19 @@ private:
 
     return Heap::getInstance().getData(cellDescriptionsIndex)[element];
   }
+
+  /**
+   * Checks if no unnecessary memory is allocated for the cell description.
+   * If this is not the case, it deallocates the unnecessarily allocated memory.
+   */
+  void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription);
+
+  /**
+   * Checks if all the necessary memory is allocated for the cell description.
+   * If this is not the case, it allocates the necessary
+   * memory for the cell description.
+   */
+  void ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription);
 
   /**
    * Returns if a ADERDGCellDescription type holds face data.
@@ -870,6 +910,10 @@ private:
       const int cellDescriptionsIndex,
       const int solverNumber) const override;
 
+  SubcellPosition computeSubcellPositionOfCellOrAncestor(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
   ///////////////////////////////////
   // MODIFY CELL DESCRIPTION
   ///////////////////////////////////
@@ -896,9 +940,49 @@ private:
   ///////////////////////////////////
   // CELL-LOCAL
   ///////////////////////////////////
-  void updateSolution(
+  /**
+   * Computes the space-time predictor quantities, extrapolates fluxes
+   * and (space-time) predictor values to the boundary and
+   * computes the volume integral.
+   */
+  void performPredictionAndVolumeIntegral(
+      exahype::records::ADERDGCellDescription& p,
+      double* spaceTimePredictor,
+      double* spaceTimeVolumeFlux,
+      double* predictor,
+      double* volumeFlux);
+
+  void validateNoNansInADERDGSolver(
+      const CellDescription& cellDescription,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+      const std::string&                   methodTraceOfCaller);
+
+  double startNewTimeStep(
       const int cellDescriptionsIndex,
       const int element) override;
+
+  void setInitialConditions(
+      const int cellDescriptionsIndex,
+      const int element,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+
+  void updateSolution(
+      const int cellDescriptionsIndex,
+      const int element,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+
+  void prolongateDataAndPrepareDataRestriction(
+      const int cellDescriptionsIndex,
+      const int element) override;
+
+  void restrictData(
+      const int cellDescriptionsIndex,
+      const int element,
+      const int parentCellDescriptionsIndex,
+      const int parentElement,
+      const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) override;
 
   ///////////////////////////////////
   // PARENT<->CHILD

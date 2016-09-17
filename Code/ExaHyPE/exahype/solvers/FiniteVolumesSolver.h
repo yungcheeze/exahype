@@ -19,6 +19,9 @@
 
 #include "exahype/records/FiniteVolumesCellDescription.h"
 
+#include "exahype/Cell.h"
+#include "exahype/Vertex.h"
+
 namespace exahype {
 namespace solvers {
 class FiniteVolumesSolver;
@@ -42,6 +45,11 @@ public:
   typedef peano::heap::PlainHeap<CellDescription> Heap;
 
 private:
+  /**
+   * Log device.
+   */
+  static tarch::logging::Log _log;
+
   /**
    * Total number of unknowns in a cell.
    */
@@ -115,6 +123,23 @@ public:
      assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),cellDescriptionsIndex,element);
 
      return Heap::getInstance().getData(cellDescriptionsIndex)[element];
+   }
+
+   /**
+    * Checks if no unnecessary memory is allocated for the cell description.
+    * If this is not the case, it deallocates the unnecessarily allocated memory.
+    */
+   static void ensureNoUnnecessaryMemoryIsAllocated(CellDescription& cellDescription) {
+     assertionMsg(false,"Please implement!");
+   }
+
+   /**
+    * Checks if all the necessary memory is allocated for the cell description.
+    * If this is not the case, it allocates the necessary
+    * memory for the cell description.
+    */
+   static void ensureNecessaryMemoryIsAllocated(exahype::records::ADERDGCellDescription& cellDescription) {
+     assertionMsg(false,"Please implement!");
    }
 
    /**
@@ -236,10 +261,21 @@ public:
   ///////////////////////////////////
   // CELL-LOCAL
   //////////////////////////////////
-  void updateSolution(
-        const int cellDescriptionsIndex,
-        const int element) override;
+  double startNewTimeStep(
+      const int cellDescriptionsIndex,
+      const int element) override;
 
+  void setInitialConditions(
+      const int cellDescriptionsIndex,
+      const int element,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
+
+  void updateSolution(
+      const int cellDescriptionsIndex,
+      const int element,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) override;
   ///////////////////////////////////
   // NEIGHBOUR
   ///////////////////////////////////

@@ -19,14 +19,17 @@
 #include <iostream>
 #include <vector>
 
-#include "peano/utils/Globals.h"
-
 #include "tarch/la/Vector.h"
+
+#include "peano/utils/Globals.h"
+#include "peano/grid/VertexEnumerator.h"
+#include "peano/heap/DoubleHeap.h"
 
 #include "exahype/profilers/Profiler.h"
 #include "exahype/profilers/simple/NoOpProfiler.h"
 
-#include "peano/heap/DoubleHeap.h"
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
 
 // TODO(Dominic): Change to enum
 #define EXAHYPE_FACE_LEFT 0
@@ -54,10 +57,9 @@ constexpr int addPadding(const int originalSize) {
 #endif
 
 namespace exahype {
-  /**
-   * Forward declaration of exahype::Cell.
-   */
+  // Forward declarations
   class Cell;
+  class Vertex;
   /**
    * We store the degrees of freedom associated with the ADERDGCellDescription and FiniteVolumesCellDescription
    * instances on this heap.
@@ -67,8 +69,6 @@ namespace exahype {
 
   namespace solvers {
     class Solver;
-
-    bool FuseAlgorithmicTimeSteps = false;
 
     typedef std::vector<Solver*> RegisteredSolversEntries;
     /**
@@ -115,10 +115,16 @@ class exahype::solvers::Solver {
    * TODO(Dominic): Docu.
    */
   typedef struct SubcellPosition {
-    int parentIndex;
-    tarch::la::Vector<DIMENSIONS, int> subcellIndex;
+    int parentCellDescriptionsIndex;
+    int parentElement;
+    tarch::la::Vector<DIMENSIONS,int> subcellIndex;
+    int levelDifference;
 
-    SubcellPosition() : parentIndex(-1), subcellIndex(-1) {}
+    SubcellPosition() :
+      parentCellDescriptionsIndex(multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex),
+      parentElement(NotFound),
+      subcellIndex(-1),
+      levelDifference(-1) {}
     ~SubcellPosition() {}
   } SubcellPosition;
 
@@ -379,6 +385,13 @@ class exahype::solvers::Solver {
       const int solverNumber) const = 0;
 
   /**
+   * \see exahype::amr::computeSubcellPositionOfCellOrAncestor
+   */
+  virtual SubcellPosition computeSubcellPositionOfCellOrAncestor(
+      const int cellDescriptionsIndex,
+      const int element) = 0;
+
+  /**
    * Modify a cell description in enter cell event.
    * This event should be used for single cell operations
    * like marking for refinement, erasing, augmenting,
@@ -429,12 +442,93 @@ class exahype::solvers::Solver {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
       const int solverNumber) = 0;
 
+  /////////////////////////////////////
+  // CELL-LOCAL
+  /////////////////////////////////////
+  /**
+   * Compute and return a new admissible time step
+   * size for the cell description
+   * \p element in the array at address
+   * \p cellDescriptionsIndex.
+   *
+   * Then, update the time stamps and time step
+   * sizes on the cell description accordingly.
+   *
+   * \return The new admissible time step size if the
+   * cell description is of type Cell or
+   * std::numeric_limits<double>::max().
+   *
+   * \note The update of the time stamps
+   * and the time step sizes of the cell description
+   * performed in this method can be revoked by the
+   * solver's time stepping synchronisation mode.
+   * If a time stepping mode like global or globalfixed
+   * is chosen, then the changes made here are simply
+   * overwritten. You might want to take a look
+   * into method synchroniseTimeStepping().
+   *
+   * \see startNewTimeStep(),
+   *      synchroniseTimeStepping(int,int),
+   *      synchroniseTimeStepping(CellDescription&)
+   */
+  virtual double startNewTimeStep(
+      const int cellDescriptionsIndex,
+      const int element) = 0;
+
+  /**
+   * Impose initial conditions.
+   *
+   * \note Make sure to reset neighbour merge
+   * helper variables in this method call.
+   */
+  virtual void setInitialConditions(
+      const int cellDescriptionsIndex,
+      const int element,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) = 0;
+
   /**
    * Update the solution of a cell description.
+   *
+   * \note Make sure to reset neighbour merge
+   * helper variables in this method call.
    */
   virtual void updateSolution(
       const int cellDescriptionsIndex,
+      const int element,
+      exahype::Vertex* const fineGridVertices,
+      const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) = 0;
+
+  /**
+    * Prolongates face data from a parent ADERDGCellDescription to
+    * \p cellDescription if the fine grid cell associated with
+    * \p cellDescription is adjacent to a boundary of the
+    * coarse grid cell associated with the parent cell description.
+    *
+    * Further zero out the face data of ancestors.
+    *
+    * \note This function assumes a top-down traversal of the grid and must thus
+    * be called from the enterCell(...) or descend(...) mapping methods.
+    *
+    * \note Calling this method makes only sense if \p cellDescription is of type
+    * Descendant or Ancestor.
+    */
+  virtual void prolongateDataAndPrepareDataRestriction(
+      const int cellDescriptionsIndex,
       const int element) = 0;
+
+  /**
+   *
+   *
+   * \note This function assumes a bottom-up traversal of the grid and must thus
+   * be called from the leaveCell(...) or ascend(...) mapping methods.
+   */
+  virtual void restrictData(
+        const int cellDescriptionsIndex,
+        const int element,
+        const int parentCellDescriptionsIndex,
+        const int parentElement,
+        const tarch::la::Vector<DIMENSIONS,int>& subcellIndex) = 0;
 
   /**
    * Receive solver data from neighbour rank and write
