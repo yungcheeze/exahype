@@ -71,10 +71,10 @@ class exahype::repositories::Repository {
     virtual void switchToADERDGTimeStep() = 0;    
     virtual void switchToADERDGTimeStepAndPlot() = 0;    
     virtual void switchToPredictionRerun() = 0;    
-    virtual void switchToRiemannSolver() = 0;    
+    virtual void switchToNeighbourDataMerging() = 0;    
     virtual void switchToPrediction() = 0;    
-    virtual void switchToCorrection() = 0;    
-    virtual void switchToCorrectionAndPlot() = 0;    
+    virtual void switchToSolutionUpdateAndTimeStepSizeComputation() = 0;    
+    virtual void switchToSolutionUpdateAndPlotAndTimeStepSizeComputation() = 0;    
     virtual void switchToPlot() = 0;    
 
     virtual bool isActiveAdapterMeshRefinement() const = 0;
@@ -86,10 +86,10 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterADERDGTimeStep() const = 0;
     virtual bool isActiveAdapterADERDGTimeStepAndPlot() const = 0;
     virtual bool isActiveAdapterPredictionRerun() const = 0;
-    virtual bool isActiveAdapterRiemannSolver() const = 0;
+    virtual bool isActiveAdapterNeighbourDataMerging() const = 0;
     virtual bool isActiveAdapterPrediction() const = 0;
-    virtual bool isActiveAdapterCorrection() const = 0;
-    virtual bool isActiveAdapterCorrectionAndPlot() const = 0;
+    virtual bool isActiveAdapterSolutionUpdateAndTimeStepSizeComputation() const = 0;
+    virtual bool isActiveAdapterSolutionUpdateAndPlotAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterPlot() const = 0;
 
 

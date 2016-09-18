@@ -22,17 +22,17 @@
  #include "exahype/adapters/ADERDGTimeStep.h" 
  #include "exahype/adapters/ADERDGTimeStepAndPlot.h" 
  #include "exahype/adapters/PredictionRerun.h" 
- #include "exahype/adapters/RiemannSolver.h" 
+ #include "exahype/adapters/NeighbourDataMerging.h" 
  #include "exahype/adapters/Prediction.h" 
- #include "exahype/adapters/Correction.h" 
- #include "exahype/adapters/CorrectionAndPlot.h" 
+ #include "exahype/adapters/SolutionUpdateAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/SolutionUpdateAndPlotAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/Plot.h" 
 
 
 namespace peano {
   namespace grid {
-    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexArrayStack<exahype::Vertex> ,peano::stacks::CellArrayStack<exahype::Cell> ,exahype::adapters::Correction>;
-    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexSTDStack<  exahype::Vertex> ,peano::stacks::CellSTDStack<  exahype::Cell> ,exahype::adapters::Correction>;
+    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexArrayStack<exahype::Vertex> ,peano::stacks::CellArrayStack<exahype::Cell> ,exahype::adapters::NeighbourDataMerging>;
+    template class Grid<exahype::Vertex,exahype::Cell,exahype::State, peano::stacks::VertexSTDStack<  exahype::Vertex> ,peano::stacks::CellSTDStack<  exahype::Cell> ,exahype::adapters::NeighbourDataMerging>;
   }
 }
 

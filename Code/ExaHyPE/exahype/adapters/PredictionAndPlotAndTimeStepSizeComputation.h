@@ -18,10 +18,11 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/Synchronisation.h"
+ #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/Prediction.h"
  #include "exahype/mappings/Plot.h"
  #include "exahype/mappings/TimeStepSizeComputation.h"
+ #include "exahype/mappings/Sending.h"
 
 
 
@@ -41,15 +42,17 @@ namespace exahype {
  */
 class exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation {
   private:
-    typedef mappings::Synchronisation Mapping0;
+    typedef mappings::Merging Mapping0;
     typedef mappings::Prediction Mapping1;
     typedef mappings::Plot Mapping2;
     typedef mappings::TimeStepSizeComputation Mapping3;
+    typedef mappings::Sending Mapping4;
 
-     Mapping0  _map2Synchronisation;
+     Mapping0  _map2Merging;
      Mapping1  _map2Prediction;
      Mapping2  _map2Plot;
      Mapping3  _map2TimeStepSizeComputation;
+     Mapping4  _map2Sending;
 
 
   public:

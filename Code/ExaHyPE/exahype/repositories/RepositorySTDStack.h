@@ -25,10 +25,10 @@
  #include "exahype/adapters/ADERDGTimeStep.h" 
  #include "exahype/adapters/ADERDGTimeStepAndPlot.h" 
  #include "exahype/adapters/PredictionRerun.h" 
- #include "exahype/adapters/RiemannSolver.h" 
+ #include "exahype/adapters/NeighbourDataMerging.h" 
  #include "exahype/adapters/Prediction.h" 
- #include "exahype/adapters/Correction.h" 
- #include "exahype/adapters/CorrectionAndPlot.h" 
+ #include "exahype/adapters/SolutionUpdateAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/SolutionUpdateAndPlotAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/Plot.h" 
 
 
@@ -64,10 +64,10 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::ADERDGTimeStep> _gridWithADERDGTimeStep;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::ADERDGTimeStepAndPlot> _gridWithADERDGTimeStepAndPlot;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionRerun> _gridWithPredictionRerun;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::RiemannSolver> _gridWithRiemannSolver;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::NeighbourDataMerging> _gridWithNeighbourDataMerging;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Prediction> _gridWithPrediction;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Correction> _gridWithCorrection;
-    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::CorrectionAndPlot> _gridWithCorrectionAndPlot;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionUpdateAndTimeStepSizeComputation> _gridWithSolutionUpdateAndTimeStepSizeComputation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::SolutionUpdateAndPlotAndTimeStepSizeComputation> _gridWithSolutionUpdateAndPlotAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::Plot> _gridWithPlot;
 
      
@@ -82,10 +82,10 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureADERDGTimeStepCPUTime;
     tarch::timing::Measurement _measureADERDGTimeStepAndPlotCPUTime;
     tarch::timing::Measurement _measurePredictionRerunCPUTime;
-    tarch::timing::Measurement _measureRiemannSolverCPUTime;
+    tarch::timing::Measurement _measureNeighbourDataMergingCPUTime;
     tarch::timing::Measurement _measurePredictionCPUTime;
-    tarch::timing::Measurement _measureCorrectionCPUTime;
-    tarch::timing::Measurement _measureCorrectionAndPlotCPUTime;
+    tarch::timing::Measurement _measureSolutionUpdateAndTimeStepSizeComputationCPUTime;
+    tarch::timing::Measurement _measureSolutionUpdateAndPlotAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measurePlotCPUTime;
 
     tarch::timing::Measurement _measureMeshRefinementCalendarTime;
@@ -97,10 +97,10 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measureADERDGTimeStepCalendarTime;
     tarch::timing::Measurement _measureADERDGTimeStepAndPlotCalendarTime;
     tarch::timing::Measurement _measurePredictionRerunCalendarTime;
-    tarch::timing::Measurement _measureRiemannSolverCalendarTime;
+    tarch::timing::Measurement _measureNeighbourDataMergingCalendarTime;
     tarch::timing::Measurement _measurePredictionCalendarTime;
-    tarch::timing::Measurement _measureCorrectionCalendarTime;
-    tarch::timing::Measurement _measureCorrectionAndPlotCalendarTime;
+    tarch::timing::Measurement _measureSolutionUpdateAndTimeStepSizeComputationCalendarTime;
+    tarch::timing::Measurement _measureSolutionUpdateAndPlotAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measurePlotCalendarTime;
 
    
@@ -150,10 +150,10 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToADERDGTimeStep();    
     virtual void switchToADERDGTimeStepAndPlot();    
     virtual void switchToPredictionRerun();    
-    virtual void switchToRiemannSolver();    
+    virtual void switchToNeighbourDataMerging();    
     virtual void switchToPrediction();    
-    virtual void switchToCorrection();    
-    virtual void switchToCorrectionAndPlot();    
+    virtual void switchToSolutionUpdateAndTimeStepSizeComputation();    
+    virtual void switchToSolutionUpdateAndPlotAndTimeStepSizeComputation();    
     virtual void switchToPlot();    
 
     virtual bool isActiveAdapterMeshRefinement() const;
@@ -165,10 +165,10 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual bool isActiveAdapterADERDGTimeStep() const;
     virtual bool isActiveAdapterADERDGTimeStepAndPlot() const;
     virtual bool isActiveAdapterPredictionRerun() const;
-    virtual bool isActiveAdapterRiemannSolver() const;
+    virtual bool isActiveAdapterNeighbourDataMerging() const;
     virtual bool isActiveAdapterPrediction() const;
-    virtual bool isActiveAdapterCorrection() const;
-    virtual bool isActiveAdapterCorrectionAndPlot() const;
+    virtual bool isActiveAdapterSolutionUpdateAndTimeStepSizeComputation() const;
+    virtual bool isActiveAdapterSolutionUpdateAndPlotAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterPlot() const;
 
    

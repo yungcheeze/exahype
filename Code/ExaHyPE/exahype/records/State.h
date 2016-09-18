@@ -33,7 +33,7 @@ namespace exahype {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   13/09/2016 11:16
+    * @date   18/09/2016 19:29
     */
    class exahype::records::State { 
       
@@ -41,7 +41,17 @@ namespace exahype {
          
          typedef exahype::records::StatePacked Packed;
          
+         enum MergeMode {
+            MergeNothing = 0, MergeTimeStepData = 1, MergeFaceData = 2, MergeTimeStepDataAndFaceData = 3
+         };
+         
+         enum SendMode {
+            SendNothing = 0, SendTimeStepData = 1, SendFaceData = 2, SendTimeStepDataAndFaceData = 3
+         };
+         
          struct PersistentRecords {
+            MergeMode _mergeMode;
+            SendMode _sendMode;
             bool _hasRefined;
             bool _hasTriggeredRefinementForNextIteration;
             bool _hasErased;
@@ -57,7 +67,47 @@ namespace exahype {
             /**
              * Generated
              */
-            PersistentRecords(const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            
+            
+            inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _mergeMode;
+            }
+            
+            
+            
+            inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _mergeMode = mergeMode;
+            }
+            
+            
+            
+            inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _sendMode;
+            }
+            
+            
+            
+            inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _sendMode = sendMode;
+            }
+            
             
             
             inline bool getHasRefined() const 
@@ -219,12 +269,52 @@ namespace exahype {
          /**
           * Generated
           */
-         State(const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+         State(const MergeMode& mergeMode, const SendMode& sendMode, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
          
          /**
           * Generated
           */
          virtual ~State();
+         
+         
+         inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._mergeMode;
+         }
+         
+         
+         
+         inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._mergeMode = mergeMode;
+         }
+         
+         
+         
+         inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            return _persistentRecords._sendMode;
+         }
+         
+         
+         
+         inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+            _persistentRecords._sendMode = sendMode;
+         }
+         
          
          
          inline bool getHasRefined() const 
@@ -369,6 +459,26 @@ namespace exahype {
          /**
           * Generated
           */
+         static std::string toString(const MergeMode& param);
+         
+         /**
+          * Generated
+          */
+         static std::string getMergeModeMapping();
+         
+         /**
+          * Generated
+          */
+         static std::string toString(const SendMode& param);
+         
+         /**
+          * Generated
+          */
+         static std::string getSendModeMapping();
+         
+         /**
+          * Generated
+          */
          std::string toString() const;
          
          /**
@@ -443,13 +553,19 @@ namespace exahype {
        *
        * 		   build date: 09-02-2014 14:40
        *
-       * @date   13/09/2016 11:16
+       * @date   18/09/2016 19:29
        */
       class exahype::records::StatePacked { 
          
          public:
             
+            typedef exahype::records::State::MergeMode MergeMode;
+            
+            typedef exahype::records::State::SendMode SendMode;
+            
             struct PersistentRecords {
+               MergeMode _mergeMode;
+               SendMode _sendMode;
                bool _isTraversalInverted;
                
                /** mapping of records:
@@ -471,7 +587,47 @@ namespace exahype {
                /**
                 * Generated
                 */
-               PersistentRecords(const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+               
+               
+               inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _mergeMode;
+               }
+               
+               
+               
+               inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _mergeMode = mergeMode;
+               }
+               
+               
+               
+               inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _sendMode;
+               }
+               
+               
+               
+               inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _sendMode = sendMode;
+               }
+               
                
                
                inline bool getHasRefined() const 
@@ -651,12 +807,52 @@ namespace exahype {
             /**
              * Generated
              */
-            StatePacked(const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+            StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
             
             /**
              * Generated
              */
             virtual ~StatePacked();
+            
+            
+            inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._mergeMode;
+            }
+            
+            
+            
+            inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._mergeMode = mergeMode;
+            }
+            
+            
+            
+            inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               return _persistentRecords._sendMode;
+            }
+            
+            
+            
+            inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+               _persistentRecords._sendMode = sendMode;
+            }
+            
             
             
             inline bool getHasRefined() const 
@@ -819,6 +1015,26 @@ namespace exahype {
             /**
              * Generated
              */
+            static std::string toString(const MergeMode& param);
+            
+            /**
+             * Generated
+             */
+            static std::string getMergeModeMapping();
+            
+            /**
+             * Generated
+             */
+            static std::string toString(const SendMode& param);
+            
+            /**
+             * Generated
+             */
+            static std::string getSendModeMapping();
+            
+            /**
+             * Generated
+             */
             std::string toString() const;
             
             /**
@@ -890,7 +1106,7 @@ namespace exahype {
           *
           * 		   build date: 09-02-2014 14:40
           *
-          * @date   13/09/2016 11:16
+          * @date   18/09/2016 19:29
           */
          class exahype::records::State { 
             
@@ -902,8 +1118,18 @@ namespace exahype {
                   Default = 0, Veto = 1, Aggressive = 2
                };
                
+               enum MergeMode {
+                  MergeNothing = 0, MergeTimeStepData = 1, MergeFaceData = 2, MergeTimeStepDataAndFaceData = 3
+               };
+               
+               enum SendMode {
+                  SendNothing = 0, SendTimeStepData = 1, SendFaceData = 2, SendTimeStepDataAndFaceData = 3
+               };
+               
                struct PersistentRecords {
                   GridConstructionState _gridConstructionState;
+                  MergeMode _mergeMode;
+                  SendMode _sendMode;
                   #ifdef UseManualAlignment
                   tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
                   #else
@@ -943,7 +1169,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  PersistentRecords(const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                  PersistentRecords(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                   
                   
                   inline GridConstructionState getGridConstructionState() const 
@@ -962,6 +1188,46 @@ namespace exahype {
  #endif 
  {
                      _gridConstructionState = gridConstructionState;
+                  }
+                  
+                  
+                  
+                  inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _mergeMode;
+                  }
+                  
+                  
+                  
+                  inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _mergeMode = mergeMode;
+                  }
+                  
+                  
+                  
+                  inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _sendMode;
+                  }
+                  
+                  
+                  
+                  inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _sendMode = sendMode;
                   }
                   
                   
@@ -1521,7 +1787,7 @@ namespace exahype {
                /**
                 * Generated
                 */
-               State(const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+               State(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                
                /**
                 * Generated
@@ -1545,6 +1811,46 @@ namespace exahype {
  #endif 
  {
                   _persistentRecords._gridConstructionState = gridConstructionState;
+               }
+               
+               
+               
+               inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._mergeMode;
+               }
+               
+               
+               
+               inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._mergeMode = mergeMode;
+               }
+               
+               
+               
+               inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  return _persistentRecords._sendMode;
+               }
+               
+               
+               
+               inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                  _persistentRecords._sendMode = sendMode;
                }
                
                
@@ -2149,6 +2455,26 @@ namespace exahype {
                /**
                 * Generated
                 */
+               static std::string toString(const MergeMode& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getMergeModeMapping();
+               
+               /**
+                * Generated
+                */
+               static std::string toString(const SendMode& param);
+               
+               /**
+                * Generated
+                */
+               static std::string getSendModeMapping();
+               
+               /**
+                * Generated
+                */
                std::string toString() const;
                
                /**
@@ -2223,7 +2549,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   13/09/2016 11:16
+             * @date   18/09/2016 19:29
              */
             class exahype::records::StatePacked { 
                
@@ -2231,8 +2557,14 @@ namespace exahype {
                   
                   typedef exahype::records::State::GridConstructionState GridConstructionState;
                   
+                  typedef exahype::records::State::MergeMode MergeMode;
+                  
+                  typedef exahype::records::State::SendMode SendMode;
+                  
                   struct PersistentRecords {
                      GridConstructionState _gridConstructionState;
+                     MergeMode _mergeMode;
+                     SendMode _sendMode;
                      tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
                      tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
                      double _numberOfInnerVertices;
@@ -2270,7 +2602,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                     PersistentRecords(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                      
                      
                      inline GridConstructionState getGridConstructionState() const 
@@ -2289,6 +2621,46 @@ namespace exahype {
  #endif 
  {
                         _gridConstructionState = gridConstructionState;
+                     }
+                     
+                     
+                     
+                     inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _mergeMode;
+                     }
+                     
+                     
+                     
+                     inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _mergeMode = mergeMode;
+                     }
+                     
+                     
+                     
+                     inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _sendMode;
+                     }
+                     
+                     
+                     
+                     inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _sendMode = sendMode;
                      }
                      
                      
@@ -2875,7 +3247,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  StatePacked(const GridConstructionState& gridConstructionState, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                  StatePacked(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                   
                   /**
                    * Generated
@@ -2899,6 +3271,46 @@ namespace exahype {
  #endif 
  {
                      _persistentRecords._gridConstructionState = gridConstructionState;
+                  }
+                  
+                  
+                  
+                  inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._mergeMode;
+                  }
+                  
+                  
+                  
+                  inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._mergeMode = mergeMode;
+                  }
+                  
+                  
+                  
+                  inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._sendMode;
+                  }
+                  
+                  
+                  
+                  inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._sendMode = sendMode;
                   }
                   
                   
@@ -3530,6 +3942,26 @@ namespace exahype {
                   /**
                    * Generated
                    */
+                  static std::string toString(const MergeMode& param);
+                  
+                  /**
+                   * Generated
+                   */
+                  static std::string getMergeModeMapping();
+                  
+                  /**
+                   * Generated
+                   */
+                  static std::string toString(const SendMode& param);
+                  
+                  /**
+                   * Generated
+                   */
+                  static std::string getSendModeMapping();
+                  
+                  /**
+                   * Generated
+                   */
                   std::string toString() const;
                   
                   /**
@@ -3602,7 +4034,7 @@ namespace exahype {
              *
              * 		   build date: 09-02-2014 14:40
              *
-             * @date   13/09/2016 11:16
+             * @date   18/09/2016 19:29
              */
             class exahype::records::State { 
                
@@ -3614,8 +4046,18 @@ namespace exahype {
                      Default = 0, Veto = 1, Aggressive = 2
                   };
                   
+                  enum MergeMode {
+                     MergeNothing = 0, MergeTimeStepData = 1, MergeFaceData = 2, MergeTimeStepDataAndFaceData = 3
+                  };
+                  
+                  enum SendMode {
+                     SendNothing = 0, SendTimeStepData = 1, SendFaceData = 2, SendTimeStepDataAndFaceData = 3
+                  };
+                  
                   struct PersistentRecords {
                      GridConstructionState _gridConstructionState;
+                     MergeMode _mergeMode;
+                     SendMode _sendMode;
                      bool _hasRefined;
                      bool _hasTriggeredRefinementForNextIteration;
                      bool _hasErased;
@@ -3634,7 +4076,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     PersistentRecords(const GridConstructionState& gridConstructionState, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                     PersistentRecords(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                      
                      
                      inline GridConstructionState getGridConstructionState() const 
@@ -3653,6 +4095,46 @@ namespace exahype {
  #endif 
  {
                         _gridConstructionState = gridConstructionState;
+                     }
+                     
+                     
+                     
+                     inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _mergeMode;
+                     }
+                     
+                     
+                     
+                     inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _mergeMode = mergeMode;
+                     }
+                     
+                     
+                     
+                     inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _sendMode;
+                     }
+                     
+                     
+                     
+                     inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _sendMode = sendMode;
                      }
                      
                      
@@ -3876,7 +4358,7 @@ namespace exahype {
                   /**
                    * Generated
                    */
-                  State(const GridConstructionState& gridConstructionState, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                  State(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                   
                   /**
                    * Generated
@@ -3900,6 +4382,46 @@ namespace exahype {
  #endif 
  {
                      _persistentRecords._gridConstructionState = gridConstructionState;
+                  }
+                  
+                  
+                  
+                  inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._mergeMode;
+                  }
+                  
+                  
+                  
+                  inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._mergeMode = mergeMode;
+                  }
+                  
+                  
+                  
+                  inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     return _persistentRecords._sendMode;
+                  }
+                  
+                  
+                  
+                  inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                     _persistentRecords._sendMode = sendMode;
                   }
                   
                   
@@ -4116,6 +4638,26 @@ namespace exahype {
                   /**
                    * Generated
                    */
+                  static std::string toString(const MergeMode& param);
+                  
+                  /**
+                   * Generated
+                   */
+                  static std::string getMergeModeMapping();
+                  
+                  /**
+                   * Generated
+                   */
+                  static std::string toString(const SendMode& param);
+                  
+                  /**
+                   * Generated
+                   */
+                  static std::string getSendModeMapping();
+                  
+                  /**
+                   * Generated
+                   */
                   std::string toString() const;
                   
                   /**
@@ -4190,7 +4732,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   13/09/2016 11:16
+                * @date   18/09/2016 19:29
                 */
                class exahype::records::StatePacked { 
                   
@@ -4198,8 +4740,14 @@ namespace exahype {
                      
                      typedef exahype::records::State::GridConstructionState GridConstructionState;
                      
+                     typedef exahype::records::State::MergeMode MergeMode;
+                     
+                     typedef exahype::records::State::SendMode SendMode;
+                     
                      struct PersistentRecords {
                         GridConstructionState _gridConstructionState;
+                        MergeMode _mergeMode;
+                        SendMode _sendMode;
                         bool _isTraversalInverted;
                         
                         /** mapping of records:
@@ -4224,7 +4772,7 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const GridConstructionState& gridConstructionState, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                        PersistentRecords(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                         
                         
                         inline GridConstructionState getGridConstructionState() const 
@@ -4243,6 +4791,46 @@ namespace exahype {
  #endif 
  {
                            _gridConstructionState = gridConstructionState;
+                        }
+                        
+                        
+                        
+                        inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _mergeMode;
+                        }
+                        
+                        
+                        
+                        inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _mergeMode = mergeMode;
+                        }
+                        
+                        
+                        
+                        inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _sendMode;
+                        }
+                        
+                        
+                        
+                        inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _sendMode = sendMode;
                         }
                         
                         
@@ -4493,7 +5081,7 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     StatePacked(const GridConstructionState& gridConstructionState, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
+                     StatePacked(const GridConstructionState& gridConstructionState, const MergeMode& mergeMode, const SendMode& sendMode, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted, const bool& reduceStateAndCell, const bool& couldNotEraseDueToDecompositionFlag, const bool& subWorkerIsInvolvedInJoinOrFork);
                      
                      /**
                       * Generated
@@ -4517,6 +5105,46 @@ namespace exahype {
  #endif 
  {
                         _persistentRecords._gridConstructionState = gridConstructionState;
+                     }
+                     
+                     
+                     
+                     inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _persistentRecords._mergeMode;
+                     }
+                     
+                     
+                     
+                     inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _persistentRecords._mergeMode = mergeMode;
+                     }
+                     
+                     
+                     
+                     inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _persistentRecords._sendMode;
+                     }
+                     
+                     
+                     
+                     inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _persistentRecords._sendMode = sendMode;
                      }
                      
                      
@@ -4760,6 +5388,26 @@ namespace exahype {
                      /**
                       * Generated
                       */
+                     static std::string toString(const MergeMode& param);
+                     
+                     /**
+                      * Generated
+                      */
+                     static std::string getMergeModeMapping();
+                     
+                     /**
+                      * Generated
+                      */
+                     static std::string toString(const SendMode& param);
+                     
+                     /**
+                      * Generated
+                      */
+                     static std::string getSendModeMapping();
+                     
+                     /**
+                      * Generated
+                      */
                      std::string toString() const;
                      
                      /**
@@ -4832,7 +5480,7 @@ namespace exahype {
                 *
                 * 		   build date: 09-02-2014 14:40
                 *
-                * @date   13/09/2016 11:16
+                * @date   18/09/2016 19:29
                 */
                class exahype::records::State { 
                   
@@ -4840,7 +5488,17 @@ namespace exahype {
                      
                      typedef exahype::records::StatePacked Packed;
                      
+                     enum MergeMode {
+                        MergeNothing = 0, MergeTimeStepData = 1, MergeFaceData = 2, MergeTimeStepDataAndFaceData = 3
+                     };
+                     
+                     enum SendMode {
+                        SendNothing = 0, SendTimeStepData = 1, SendFaceData = 2, SendTimeStepDataAndFaceData = 3
+                     };
+                     
                      struct PersistentRecords {
+                        MergeMode _mergeMode;
+                        SendMode _sendMode;
                         #ifdef UseManualAlignment
                         tarch::la::Vector<DIMENSIONS,double> _minMeshWidth __attribute__((aligned(VectorisationAlignment)));
                         #else
@@ -4877,7 +5535,47 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        PersistentRecords(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                        PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                        
+                        
+                        inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _mergeMode;
+                        }
+                        
+                        
+                        
+                        inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _mergeMode = mergeMode;
+                        }
+                        
+                        
+                        
+                        inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _sendMode;
+                        }
+                        
+                        
+                        
+                        inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _sendMode = sendMode;
+                        }
+                        
                         
                         
                         /**
@@ -5375,12 +6073,52 @@ namespace exahype {
                      /**
                       * Generated
                       */
-                     State(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                     State(const MergeMode& mergeMode, const SendMode& sendMode, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                      
                      /**
                       * Generated
                       */
                      virtual ~State();
+                     
+                     
+                     inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _persistentRecords._mergeMode;
+                     }
+                     
+                     
+                     
+                     inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _persistentRecords._mergeMode = mergeMode;
+                     }
+                     
+                     
+                     
+                     inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        return _persistentRecords._sendMode;
+                     }
+                     
+                     
+                     
+                     inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                        _persistentRecords._sendMode = sendMode;
+                     }
+                     
                      
                      
                      /**
@@ -5913,6 +6651,26 @@ namespace exahype {
                      /**
                       * Generated
                       */
+                     static std::string toString(const MergeMode& param);
+                     
+                     /**
+                      * Generated
+                      */
+                     static std::string getMergeModeMapping();
+                     
+                     /**
+                      * Generated
+                      */
+                     static std::string toString(const SendMode& param);
+                     
+                     /**
+                      * Generated
+                      */
+                     static std::string getSendModeMapping();
+                     
+                     /**
+                      * Generated
+                      */
                      std::string toString() const;
                      
                      /**
@@ -5987,13 +6745,19 @@ namespace exahype {
                    *
                    * 		   build date: 09-02-2014 14:40
                    *
-                   * @date   13/09/2016 11:16
+                   * @date   18/09/2016 19:29
                    */
                   class exahype::records::StatePacked { 
                      
                      public:
                         
+                        typedef exahype::records::State::MergeMode MergeMode;
+                        
+                        typedef exahype::records::State::SendMode SendMode;
+                        
                         struct PersistentRecords {
+                           MergeMode _mergeMode;
+                           SendMode _sendMode;
                            tarch::la::Vector<DIMENSIONS,double> _minMeshWidth;
                            tarch::la::Vector<DIMENSIONS,double> _maxMeshWidth;
                            double _numberOfInnerVertices;
@@ -6028,7 +6792,47 @@ namespace exahype {
                            /**
                             * Generated
                             */
-                           PersistentRecords(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                           PersistentRecords(const MergeMode& mergeMode, const SendMode& sendMode, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                           
+                           
+                           inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _mergeMode;
+                           }
+                           
+                           
+                           
+                           inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _mergeMode = mergeMode;
+                           }
+                           
+                           
+                           
+                           inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              return _sendMode;
+                           }
+                           
+                           
+                           
+                           inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                              _sendMode = sendMode;
+                           }
+                           
                            
                            
                            /**
@@ -6544,12 +7348,52 @@ namespace exahype {
                         /**
                          * Generated
                          */
-                        StatePacked(const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
+                        StatePacked(const MergeMode& mergeMode, const SendMode& sendMode, const tarch::la::Vector<DIMENSIONS,double>& minMeshWidth, const tarch::la::Vector<DIMENSIONS,double>& maxMeshWidth, const double& numberOfInnerVertices, const double& numberOfBoundaryVertices, const double& numberOfOuterVertices, const double& numberOfInnerCells, const double& numberOfOuterCells, const double& numberOfInnerLeafVertices, const double& numberOfBoundaryLeafVertices, const double& numberOfOuterLeafVertices, const double& numberOfInnerLeafCells, const double& numberOfOuterLeafCells, const int& maxLevel, const bool& hasRefined, const bool& hasTriggeredRefinementForNextIteration, const bool& hasErased, const bool& hasTriggeredEraseForNextIteration, const bool& hasChangedVertexOrCellState, const bool& hasModifiedGridInPreviousIteration, const bool& isTraversalInverted);
                         
                         /**
                          * Generated
                          */
                         virtual ~StatePacked();
+                        
+                        
+                        inline MergeMode getMergeMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _persistentRecords._mergeMode;
+                        }
+                        
+                        
+                        
+                        inline void setMergeMode(const MergeMode& mergeMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _persistentRecords._mergeMode = mergeMode;
+                        }
+                        
+                        
+                        
+                        inline SendMode getSendMode() const 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           return _persistentRecords._sendMode;
+                        }
+                        
+                        
+                        
+                        inline void setSendMode(const SendMode& sendMode) 
+ #ifdef UseManualInlining
+ __attribute__((always_inline))
+ #endif 
+ {
+                           _persistentRecords._sendMode = sendMode;
+                        }
+                        
                         
                         
                         /**
@@ -7096,6 +7940,26 @@ namespace exahype {
                            _persistentRecords._isTraversalInverted = isTraversalInverted;
                         }
                         
+                        
+                        /**
+                         * Generated
+                         */
+                        static std::string toString(const MergeMode& param);
+                        
+                        /**
+                         * Generated
+                         */
+                        static std::string getMergeModeMapping();
+                        
+                        /**
+                         * Generated
+                         */
+                        static std::string toString(const SendMode& param);
+                        
+                        /**
+                         * Generated
+                         */
+                        static std::string getSendModeMapping();
                         
                         /**
                          * Generated

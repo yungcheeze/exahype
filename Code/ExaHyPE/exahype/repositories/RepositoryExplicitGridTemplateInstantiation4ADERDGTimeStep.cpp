@@ -22,10 +22,10 @@
  #include "exahype/adapters/ADERDGTimeStep.h" 
  #include "exahype/adapters/ADERDGTimeStepAndPlot.h" 
  #include "exahype/adapters/PredictionRerun.h" 
- #include "exahype/adapters/RiemannSolver.h" 
+ #include "exahype/adapters/NeighbourDataMerging.h" 
  #include "exahype/adapters/Prediction.h" 
- #include "exahype/adapters/Correction.h" 
- #include "exahype/adapters/CorrectionAndPlot.h" 
+ #include "exahype/adapters/SolutionUpdateAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/SolutionUpdateAndPlotAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/Plot.h" 
 
 
