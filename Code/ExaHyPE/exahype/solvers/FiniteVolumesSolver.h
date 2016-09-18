@@ -295,10 +295,6 @@ public:
 
 
 #ifdef Parallel
-  /**
-   * Sends all the cell descriptions at address \p
-   * cellDescriptionsIndex to the rank \p toRank.
-   */
   static void sendCellDescriptions(
       const int                                     toRank,
       const int                                     cellDescriptionsIndex,
@@ -306,9 +302,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level);
 
-  /**
-   * Sends an empty message to the rank \p toRank.
-   */
   static void sendEmptyCellDescriptions(
       const int                                     toRank,
       const peano::heap::MessageType&               messageType,
@@ -352,16 +345,6 @@ public:
       const peano::heap::MessageType&               messageType,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level);
-
-  /**
-   * @deprecated
-   */
-  void sendToRank(int rank, int tag) override;
-
-  /**
-   * @deprecated
-   */
-  void receiveFromMasterRank(int rank, int tag) override;
 
   ///////////////////////////////////
   // NEIGHBOUR
@@ -476,17 +459,16 @@ public:
   ///////////////////////////////////
   // WORKER->MASTER
   ///////////////////////////////////
+  void sendDataToMaster(
+      const int                                    masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) override;
 
-  /**
-   * Send solver data to master rank. Read the data from
-   * the cell description \p element in
-   * the cell descriptions vector stored at \p
-   * cellDescriptionsIndex.
-   *
-   * \param[in] element Index of the ADERDGCellDescription
-   *                    holding the data to send out in
-   *                    the heap vector at \p cellDescriptionsIndex.
-   */
+  void mergeWithWorkerData(
+      const int                                    workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) override;
+
   void sendDataToMaster(
       const int                                     masterRank,
       const int                                     cellDescriptionsIndex,
@@ -494,24 +476,11 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Send empty solver data to master rank.
-   */
   void sendEmptyDataToMaster(
       const int                                     masterRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Merge with solver data from worker rank.
-   * Write the data to the cell description \p element in
-   * the cell descriptions vector stored at \p
-   * cellDescriptionsIndex.
-   *
-   * \param[in] element Index of the cell description
-   *                    holding the data to send out in
-   *                    the array with address \p cellDescriptionsIndex.
-   */
   void mergeWithWorkerData(
       const int                                     workerRank,
       const int                                     cellDescriptionsIndex,
@@ -519,9 +488,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Drop solver data from worker rank.
-   */
   void dropWorkerData(
       const int                                     workerRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
@@ -530,16 +496,16 @@ public:
   ///////////////////////////////////
   // MASTER->WORKER
   ///////////////////////////////////
+  void sendDataToWorker(
+      const                                        int workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) override;
 
-  /**
-   * Send solver data to worker rank. Read the data from
-   * the cell description \p element in the cell descriptions
-   * vector stored at \p cellDescriptionsIndex.
-   *
-   * \param[in] element Index of the ADERDGCellDescription
-   *                    holding the data to send out in
-   *                    the heap vector at \p cellDescriptionsIndex.
-   */
+  void mergeWithMasterData(
+      const                                        int masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) override;
+
   void sendDataToWorker(
       const int                                     workerRank,
       const int                                     cellDescriptionsIndex,
@@ -547,25 +513,11 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Send empty solver data to worker rank.
-   */
   void sendEmptyDataToWorker(
       const int                                     workerRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Merge with solver data from master rank
-   * that was sent out due to a fork or join. Write the data to
-   * the cell description \p element in
-   * the cell descriptions vector stored at \p
-   * cellDescriptionsIndex.
-   *
-   * \param[in] element Index of the cell description
-   *                    holding the data to send out in
-   *                    the array with address \p cellDescriptionsIndex.
-   */
   void mergeWithMasterData(
       const int                                     masterRank,
       const int                                     cellDescriptionsIndex,
@@ -573,24 +525,14 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 
-  /**
-   * Drop solver data from master rank.
-   */
   void dropMasterData(
       const int                                     masterRank,
       const tarch::la::Vector<DIMENSIONS, double>&  x,
       const int                                     level) override;
 #endif
 
-/**
- * Returns a string representation of this solver.
- */
   std::string toString() const override;
 
-  /**
-   * Writes a string representation of this solver
-   * to \p out.
-   */
   void toString (std::ostream& out) const override;
 };
 

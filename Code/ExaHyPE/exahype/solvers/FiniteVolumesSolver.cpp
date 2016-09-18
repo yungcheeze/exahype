@@ -310,14 +310,6 @@ void exahype::solvers::FiniteVolumesSolver::dropCellDescriptions(
   Heap::getInstance().receiveData(fromRank,x,level,messageType);
 }
 
-void exahype::solvers::FiniteVolumesSolver::sendToRank(int rank, int tag) {
-  assertionMsg(false, "not implemented yet");
-}
-
-void exahype::solvers::FiniteVolumesSolver::receiveFromMasterRank(int rank, int tag) {
-  assertionMsg(false, "not implemented yet");
-}
-
 ///////////////////////////////////
 // NEIGHBOUR
 ///////////////////////////////////
@@ -395,6 +387,20 @@ void exahype::solvers::FiniteVolumesSolver::dropWorkerOrMasterDataDueToForkOrJoi
 ///////////////////////////////////
 // WORKER->MASTER
 ///////////////////////////////////
+void exahype::solvers::FiniteVolumesSolver::sendDataToMaster(
+    const int                                    masterRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  assertionMsg(false,"Please implement!");
+}
+
+void exahype::solvers::FiniteVolumesSolver::mergeWithWorkerData(
+    const int                                    workerRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  assertionMsg(false,"Please implement!");
+}
+
 
 void exahype::solvers::FiniteVolumesSolver::sendDataToMaster(
     const int                                     masterRank,
@@ -438,6 +444,23 @@ void exahype::solvers::FiniteVolumesSolver::dropWorkerData(
 ///////////////////////////////////
 // MASTER->WORKER
 ///////////////////////////////////
+void exahype::solvers::FiniteVolumesSolver::sendDataToWorker(
+    const int                                    workerRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  assertionMsg(false,"Please implement!");
+
+  // todo send time step size
+}
+
+void exahype::solvers::FiniteVolumesSolver::mergeWithMasterData(
+    const int                                    masterRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  assertionMsg(false,"Please implement!");
+
+  // todo send time step size
+}
 
 void exahype::solvers::FiniteVolumesSolver::sendDataToWorker(
     const int                                     workerRank,

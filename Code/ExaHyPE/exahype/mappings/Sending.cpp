@@ -1,0 +1,617 @@
+/**
+ * This file is part of the ExaHyPE project.
+ * Copyright (c) 2016  http://exahype.eu
+ * All rights reserved.
+ *
+ * The project has received funding from the European Union's Horizon
+ * 2020 research and innovation programme under grant agreement
+ * No 671698. For copyrights and licensing, please consult the webpage.
+ *
+ * Released under the BSD 3 Open Source License.
+ * For the full license text, see LICENSE.txt
+ **/
+
+#include "exahype/mappings/Sending.h"
+
+#include <limits>
+
+#include "tarch/multicore/Loop.h"
+#include "tarch/multicore/Lock.h"
+#include "tarch/parallel/Node.h"
+
+#include "peano/utils/Globals.h"
+#include "peano/utils/Loop.h"
+
+#include "peano/datatraversal/autotuning/Oracle.h"
+
+#include "multiscalelinkedcell/HangingVertexBookkeeper.h"
+
+#include "exahype/VertexOperations.h"
+
+#include "exahype/solvers/ADERDGSolver.h"
+#include "exahype/solvers/FiniteVolumesSolver.h"
+
+#include "exahype/amr/AdaptiveMeshRefinement.h"
+
+
+
+tarch::multicore::BooleanSemaphore exahype::mappings::Sending::_semaphoreForRestriction;
+
+#ifdef Parallel
+bool exahype::mappings::Sending::SkipReductionInBatchedTimeSteps = false;
+#endif
+
+peano::CommunicationSpecification
+exahype::mappings::Sending::communicationSpecification() {
+  return peano::CommunicationSpecification(
+      peano::CommunicationSpecification::ExchangeMasterWorkerData::MaskOutMasterWorkerDataAndStateExchange,
+      peano::CommunicationSpecification::ExchangeWorkerMasterData::SendDataAndStateAfterProcessingOfLocalSubtree,
+      true);
+}
+
+/**
+ * Nop.
+ */
+peano::MappingSpecification exahype::mappings::Sending::
+    touchVertexLastTimeSpecification() {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::Nop,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+}
+peano::MappingSpecification exahype::mappings::Sending::
+    touchVertexFirstTimeSpecification() {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::Nop,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+}
+peano::MappingSpecification
+exahype::mappings::Sending::enterCellSpecification() {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+}
+peano::MappingSpecification
+exahype::mappings::Sending::leaveCellSpecification() {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::WholeTree,
+      peano::MappingSpecification::RunConcurrentlyOnFineGrid);
+}
+peano::MappingSpecification
+exahype::mappings::Sending::ascendSpecification() {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::Nop,
+      peano::MappingSpecification::AvoidCoarseGridRaces);
+}
+peano::MappingSpecification
+exahype::mappings::Sending::descendSpecification() {
+  return peano::MappingSpecification(
+      peano::MappingSpecification::Nop,
+      peano::MappingSpecification::AvoidCoarseGridRaces);
+}
+
+tarch::logging::Log exahype::mappings::Sending::_log(
+    "exahype::mappings::Sending");
+
+void exahype::mappings::Sending::beginIteration(
+    exahype::State& solverState) {
+  _localState = solverState;
+}
+
+#if defined(SharedMemoryParallelisation)
+exahype::mappings::Sending::Sending(const Sending& masterThread) :
+  _localState(_localState) {}
+
+void exahype::mappings::Sending::mergeWithWorkerThread(
+    const Sending& workerThread) {
+  // do nothing for now
+}
+#endif
+
+void exahype::mappings::Sending::enterCell(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  if (_localState.getSendMode()==exahype::records::State::SendFaceData ||
+      _localState.getSendMode()==exahype::records::State::SendTimeStepDataAndFaceData) {
+    const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
+    // please use a different UserDefined per mapping/event
+    const peano::datatraversal::autotuning::MethodTrace methodTrace =
+        peano::datatraversal::autotuning::UserDefined7;
+    const int grainSize = peano::datatraversal::autotuning::Oracle::
+        getInstance().parallelise(numberOfSolvers, methodTrace);
+    pfor(solverNumber, 0, numberOfSolvers, grainSize)
+      exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+      int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+      if (element!=exahype::solvers::Solver::NotFound) {
+        solver->prolongateDataAndPrepareDataRestriction(fineGridCell.getCellDescriptionsIndex(),element);
+      }
+    endpfor
+    peano::datatraversal::autotuning::Oracle::getInstance()
+        .parallelSectionHasTerminated(methodTrace);
+  }
+}
+
+void exahype::mappings::Sending::leaveCell(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  logTraceInWith4Arguments("leaveCell(...)", fineGridCell,
+                           fineGridVerticesEnumerator.toString(),
+                           coarseGridCell, fineGridPositionOfCell);
+
+  if (_localState.getSendMode()==exahype::records::State::SendFaceData ||
+      _localState.getSendMode()==exahype::records::State::SendTimeStepDataAndFaceData) {
+    const int numberOfSolvers = static_cast<int>(exahype::solvers::RegisteredSolvers.size());
+    // please use a different UserDefined per mapping/event
+    const peano::datatraversal::autotuning::MethodTrace methodTrace =
+        peano::datatraversal::autotuning::UserDefined7;
+    const int grainSize = peano::datatraversal::autotuning::Oracle::
+        getInstance().parallelise(numberOfSolvers, methodTrace);
+    pfor(solverNumber, 0, numberOfSolvers, grainSize)
+      exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[solverNumber];
+
+      int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+      if (element!=exahype::solvers::Solver::NotFound) {
+        exahype::solvers::Solver* solver =
+            exahype::solvers::RegisteredSolvers[solverNumber];
+
+        exahype::solvers::Solver::SubcellPosition subcellPosition =
+            solver->computeSubcellPositionOfCellOrAncestor(
+                fineGridCell.getCellDescriptionsIndex(),element);
+
+        if (subcellPosition.parentElement!=exahype::solvers::Solver::NotFound &&
+            exahype::amr::onBoundaryOfParent(
+                subcellPosition.subcellIndex,subcellPosition.levelDifference)) {
+          tarch::multicore::Lock lock(_semaphoreForRestriction);
+
+          solver->restrictData(fineGridCell.getCellDescriptionsIndex(),
+                               element,
+                               subcellPosition.parentCellDescriptionsIndex,
+                               subcellPosition.parentElement,
+                               subcellPosition.subcellIndex);
+        }
+      }
+    endpfor
+    peano::datatraversal::autotuning::Oracle::getInstance()
+    .parallelSectionHasTerminated(methodTrace);
+  }
+
+  logTraceOutWith1Argument("leaveCell(...)", fineGridCell);
+}
+
+
+#ifdef Parallel
+///////////////////////////////////////
+// NEIGHBOUR
+///////////////////////////////////////
+void exahype::mappings::Sending::prepareSendToNeighbour(
+    exahype::Vertex& vertex, int toRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+#if !defined(PeriodicBC)
+  if (vertex.isBoundary()) return;
+#endif
+
+  dfor2(dest)
+    dfor2(src)
+    if (vertex.hasToSendMetadata(src,dest,toRank)) {
+      vertex.tryDecrementFaceDataExchangeCountersOfSource(src,dest);
+      if (vertex.hasToSendDataToNeighbour(src,dest)) {
+        sendSolverDataToNeighbour(
+            toRank,src,dest,
+            vertex.getCellDescriptionsIndex()[srcScalar],
+            vertex.getCellDescriptionsIndex()[destScalar],
+            x,level);
+      } else {
+        sendEmptySolverDataToNeighbour(toRank,src,dest,x,level);
+      }
+    }
+    enddforx
+  enddforx
+}
+
+void exahype::mappings::Sending::sendEmptySolverDataToNeighbour(
+    const int                                     toRank,
+    const tarch::la::Vector<DIMENSIONS, int>&     src,
+    const tarch::la::Vector<DIMENSIONS, int>&     dest,
+    const tarch::la::Vector<DIMENSIONS, double>&  x,
+    const int                                     level) {
+  for (exahype::solvers::Solver* solver : exahype::solvers::RegisteredSolvers) {
+    solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+  }
+
+  auto encodedMetadata = exahype::Vertex::createEncodedMetadataSequenceWithInvalidEntries();
+  MetadataHeap::getInstance().sendData(
+      encodedMetadata, toRank, x, level,
+      peano::heap::MessageType::NeighbourCommunication);
+}
+
+void exahype::mappings::Sending::sendSolverDataToNeighbour(
+    const int                                    toRank,
+    const tarch::la::Vector<DIMENSIONS,int>&     src,
+    const tarch::la::Vector<DIMENSIONS,int>&     dest,
+    const int                                    srcCellDescriptionIndex,
+    const int                                    destCellDescriptionIndex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  assertion(exahype::solvers::ADERDGSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
+  assertion(exahype::solvers::FiniteVolumesSolver::Heap::getInstance().isValidIndex(srcCellDescriptionIndex));
+
+  int solverNumber=0;
+  for (exahype::solvers::Solver* solver : exahype::solvers::RegisteredSolvers) {
+    bool solverIsRegistered = false;
+    int element = 0;
+    for (auto& p : exahype::solvers::ADERDGSolver::Heap::getInstance().getData(srcCellDescriptionIndex)) {
+      if (p.getSolverNumber()==solverNumber) {
+        assertionMsg(!solverIsRegistered,"The solverNumber is a unique key. Every solver is allowed to "
+            "be registered only once on each face description.");
+        solverIsRegistered=true;
+        solver->sendDataToNeighbour(toRank,srcCellDescriptionIndex,element,src,dest,x,level);
+      }
+      ++element;
+    }
+
+    if (!solverIsRegistered)
+      solver->sendEmptyDataToNeighbour(toRank,src,dest,x,level);
+
+    ++solverNumber;
+  }
+
+  auto encodedMetadata = exahype::Vertex::encodeMetadata(srcCellDescriptionIndex);
+  MetadataHeap::getInstance().sendData(
+      encodedMetadata, toRank, x, level,
+      peano::heap::MessageType::NeighbourCommunication);
+}
+
+
+void exahype::mappings::Sending::mergeWithMaster(
+    const exahype::Cell& workerGridCell,
+    exahype::Vertex* const workerGridVertices,
+    const peano::grid::VertexEnumerator& workerEnumerator,
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker, const exahype::State& workerState,
+    exahype::State& masterState) {
+  if (_localState.getSendMode()==exahype::records::State::SendMode::SendTimeStepData ||
+      _localState.getSendMode()==exahype::records::State::SendMode::SendTimeStepDataAndFaceData) {
+    for (auto& p : exahype::solvers::RegisteredSolvers) {
+      p->mergeWithWorkerData(
+          worker,
+          fineGridVerticesEnumerator.getCellCenter(),
+          fineGridVerticesEnumerator.getLevel());
+    }
+  }
+}
+
+bool exahype::mappings::Sending::prepareSendToWorker(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker) {
+  if (_localState.getSendMode()==exahype::records::State::SendMode::SendTimeStepData ||
+      _localState.getSendMode()==exahype::records::State::SendMode::SendTimeStepDataAndFaceData) {
+    for (auto& p : exahype::solvers::RegisteredSolvers) {
+      p->sendDataToWorker(
+          worker,
+          fineGridVerticesEnumerator.getCellCenter(),
+          fineGridVerticesEnumerator.getLevel());
+    }
+  }
+
+  if (
+    !peano::parallel::loadbalancing::Oracle::getInstance().isLoadBalancingActivated()
+    &&
+    SkipReductionInBatchedTimeSteps
+  ) {
+    return false;
+  }
+  else return true;
+
+  // TODO(Dominic): Move down if code below is verified.
+
+  if (fineGridCell.isInside() && fineGridCell.isInitialised()) {
+    exahype::Vertex::sendEncodedMetadata(
+        worker,fineGridCell.getCellDescriptionsIndex(),
+        peano::heap::MessageType::MasterWorkerCommunication,
+        fineGridVerticesEnumerator.getCellCenter(),
+        fineGridVerticesEnumerator.getLevel());
+
+    int solverNumber=0;
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+
+      if (element!=exahype::solvers::Solver::NotFound) {
+        solver->sendDataToWorker(
+                  worker,
+                  fineGridCell.getCellDescriptionsIndex(),element,
+                  fineGridVerticesEnumerator.getCellCenter(),
+                  fineGridVerticesEnumerator.getLevel());
+      } else {
+        solver->sendEmptyDataToWorker(
+            worker,
+            fineGridVerticesEnumerator.getCellCenter(),
+            fineGridVerticesEnumerator.getLevel());
+      }
+
+      ++solverNumber;
+    }
+  } else if (fineGridCell.isInside() && !fineGridCell.isInitialised()) {
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      solver->sendEmptyDataToWorker(
+          worker,
+          fineGridVerticesEnumerator.getCellCenter(),
+          fineGridVerticesEnumerator.getLevel());
+    }
+  } // else do nothing
+
+  return false;
+}
+
+///////////////////////////////////////
+// WORKER->MASTER
+///////////////////////////////////////
+void exahype::mappings::Sending::prepareSendToMaster(
+    exahype::Cell& localCell, exahype::Vertex* vertices,
+    const peano::grid::VertexEnumerator& verticesEnumerator,
+    const exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    const exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // TODO(Dominic): Move down if code below is verified.
+  if (_localState.getSendMode()==exahype::records::State::SendMode::SendTimeStepData ||
+      _localState.getSendMode()==exahype::records::State::SendMode::SendTimeStepDataAndFaceData) {
+    for (auto& p : exahype::solvers::RegisteredSolvers) {
+      p->sendDataToMaster(
+          tarch::parallel::NodePool::getInstance().getMasterRank(),
+          verticesEnumerator.getCellCenter(),
+          verticesEnumerator.getLevel());
+    }
+  }
+  return;
+
+  // TODO(Dominic): Move down if code below is verified.
+
+  if (localCell.isInside() && localCell.isInitialised()) {
+    int solverNumber=0;
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      int element = solver->tryGetElement(localCell.getCellDescriptionsIndex(),solverNumber);
+      if (element!=exahype::solvers::Solver::NotFound) {
+        solver->sendDataToMaster(
+            tarch::parallel::NodePool::getInstance().getMasterRank(),
+            localCell.getCellDescriptionsIndex(),
+            element,
+            verticesEnumerator.getCellCenter(),
+            verticesEnumerator.getLevel());
+      } else {
+        solver->sendEmptyDataToMaster(
+            tarch::parallel::NodePool::getInstance().getMasterRank(),
+            verticesEnumerator.getCellCenter(),
+            verticesEnumerator.getLevel());
+      }
+      ++solverNumber;
+    }
+  } else if (localCell.isInside() && !localCell.isInitialised()) {
+    for (auto solver : exahype::solvers::RegisteredSolvers) {
+      solver->sendEmptyDataToMaster(
+          tarch::parallel::NodePool::getInstance().getMasterRank(),
+          verticesEnumerator.getCellCenter(),
+          verticesEnumerator.getLevel());
+    }
+  } //  else  do nothing
+}
+
+
+//
+// Below all functions are nop.
+//
+// ====================================
+
+
+
+void exahype::mappings::Sending::receiveDataFromMaster(
+    exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
+    const peano::grid::VertexEnumerator& receivedVerticesEnumerator,
+    exahype::Vertex* const receivedCoarseGridVertices,
+    const peano::grid::VertexEnumerator& receivedCoarseGridVerticesEnumerator,
+    exahype::Cell& receivedCoarseGridCell,
+    exahype::Vertex* const workersCoarseGridVertices,
+    const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
+    exahype::Cell& workersCoarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::mergeWithWorker(
+    exahype::Cell& localCell, const exahype::Cell& receivedMasterCell,
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::mergeWithWorker(
+    exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::mergeWithNeighbour(
+    exahype::Vertex& vertex, const exahype::Vertex& neighbour, int fromRank,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::prepareCopyToRemoteNode(
+    exahype::Vertex& localVertex, int toRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::prepareCopyToRemoteNode(
+    exahype::Cell& localCell, int toRank,
+    const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::
+    mergeWithRemoteDataDueToForkOrJoin(
+        exahype::Vertex& localVertex,
+        const exahype::Vertex& masterOrWorkerVertex, int fromRank,
+        const tarch::la::Vector<DIMENSIONS, double>& x,
+        const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::
+    mergeWithRemoteDataDueToForkOrJoin(
+        exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
+        int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+        const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
+  // do nothing
+}
+#endif
+
+exahype::mappings::Sending::Sending() {
+  // do nothing
+}
+
+exahype::mappings::Sending::~Sending() {
+  // do nothing
+}
+
+void exahype::mappings::Sending::endIteration(
+    exahype::State& solverState) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::createHangingVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::destroyHangingVertex(
+    const exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::createInnerVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::createBoundaryVertex(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::destroyVertex(
+    const exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::createCell(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::destroyCell(
+    const exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::touchVertexFirstTime(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::touchVertexLastTime(
+    exahype::Vertex& fineGridVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridX,
+    const tarch::la::Vector<DIMENSIONS, double>& fineGridH,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfVertex) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::descend(
+    exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell) {
+  // do nothing
+}
+
+void exahype::mappings::Sending::ascend(
+    exahype::Cell* const fineGridCells, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell) {
+  // do nothing
+}

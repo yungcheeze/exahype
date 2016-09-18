@@ -744,6 +744,31 @@ void exahype::solvers::ADERDGSolver::addNewDescendantIfAugmentingRequested(
           fineGridVerticesEnumerator);
 
       coarseGridCellDescription.setRefinementEvent(CellDescription::Augmenting);
+    } else if (fineGridElement!=exahype::solvers::Solver::NotFound &&
+               coarseGridCellDescription.getRefinementEvent()==CellDescription::AugmentingRequested){
+      /**
+       * Reset an augmentation request if the child cell does hold
+       * a Descendant or EmptyDescendant cell description with
+       * the same solver number.
+       *
+       * This scenario occurs if an augmentation request is triggered in
+       * enterCell() or mergeWithNeighbourMetadata(...).
+       *
+       * A similar scenario can never occur for refinement requests
+       * since only cell descriptions of type Cell can be refined.
+       * Ancestors and EmptyAncestors can never request refinement.
+       * TODO(Dominic): Add to docu.
+       */
+      coarseGridCellDescription.setRefinementEvent(CellDescription::None);
+
+      #if defined(Debug) || defined(Asserts)
+      CellDescription& fineGridCellDescription =
+                getCellDescription(fineGridCell.getCellDescriptionsIndex(),fineGridElement);
+      #endif
+
+      assertion1(fineGridCellDescription.getType()==CellDescription::EmptyDescendant ||
+                 fineGridCellDescription.getType()==CellDescription::Descendant,
+                 fineGridCellDescription.toString());
     }
   }
 }
@@ -1167,7 +1192,7 @@ void exahype::solvers::ADERDGSolver::prepareFaceDataOfAncestor(CellDescription& 
 
   #if defined(Debug) || defined(Asserts)
   double* Q = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data();
-  double* F = DataHeap::getInstance().getData(cellDescription.getExtrapolatedPredictor()).data();
+  double* F = DataHeap::getInstance().getData(cellDescription.getFluctuation()).data();
   #endif
 
   for(int i=0; i<getUnknownsPerCellBoundary(); ++i) {
@@ -1393,52 +1418,6 @@ void exahype::solvers::ADERDGSolver::solveRiemannProblemAtInterface(
       assertion5(std::isfinite(FR[i]),pRight.toString(),faceIndexRight,normalDirection,i,FR[i]);
     }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
 
-
-    // TODO(Dominic): Check only works for Euler
-    if (Heap::getInstance().isValidIndex(pLeft.getParentIndex())) {
-      auto& pParent = getCellDescriptions(pLeft.getParentIndex())[0];
-      double* QParent = DataHeap::getInstance() .getData(pLeft.getExtrapolatedPredictor()).data() +
-          (faceIndexLeft * numberOfFaceDof);
-      double* FParent = DataHeap::getInstance().getData(pLeft.getFluctuation()).data() +
-          (faceIndexLeft * numberOfFaceDof);
-      // TODO(Dominic): Check only works for Euler
-      for(int i=0; i<numberOfFaceDof; i += getNumberOfVariables()) {
-        assertion4(QParent[i]>0,pParent.toString(),faceIndexLeft,i,QParent[i]);
-        assertion4(QParent[i+4]>0,pParent.toString(),faceIndexLeft,i,QParent[i+4]);
-      }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
-    }
-
-    // TODO(Dominic): Check only works for Euler
-    if (Heap::getInstance().isValidIndex(pRight.getParentIndex())) {
-      auto& pParent = getCellDescriptions(pRight.getParentIndex())[0];
-      double* QParent = DataHeap::getInstance() .getData(pRight.getExtrapolatedPredictor()).data() +
-          (faceIndexRight * numberOfFaceDof);
-      // TODO(Dominic): Check only works for Euler
-      for(int i=0; i<numberOfFaceDof; i += getNumberOfVariables()) {
-        assertion5(QParent[i]>0,pRight.toString(),pParent.toString(),faceIndexRight,i,QParent[i]);
-        assertion5(QParent[i+4]>0,pRight.toString(),pParent.toString(),faceIndexRight,i,QParent[i+4]);
-      }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
-    }
-
-    // TODO(Dominic): Remove
-    if (pLeft.getType()==CellDescription::Ancestor) {
-      std::cout<<"offset: "<<faceIndexLeft * numberOfFaceDof<<std::endl;
-
-      for (int i=0; i<getUnknownsPerCellBoundary(); i += getNumberOfVariables()) {
-        std::cout << "(" << i << "," <<
-            DataHeap::getInstance() .getData(pLeft.getExtrapolatedPredictor()).data()[i] <<"),";
-      }
-      std::cout << std::endl;
-    }
-
-    // TODO(Dominic): Check only works for Euler
-    for (int i=0; i<numberOfFaceDof; i += getNumberOfVariables()) {
-      assertion4(QL[i]>0,pLeft.toString(),faceIndexLeft,i,QL[i]);
-      assertion4(QR[i]>0,pRight.toString(),faceIndexRight,i,QR[i]);
-      assertion4(QL[i+4]>0,pLeft.toString(),faceIndexLeft,i,QL[i+4]);
-      assertion4(QR[i+4]>0,pRight.toString(),faceIndexRight,i,QR[i+4]);
-    }  // Dead code elimination will get rid of this loop if Asserts flag is not set.
-
     riemannSolver(
         FL,FR,QL,QR,
         std::min(pLeft.getCorrectorTimeStepSize(),
@@ -1553,19 +1532,6 @@ void exahype::solvers::ADERDGSolver::mergeSolutionMinMaxOnFace(
 ) const {
   if (pLeft.getType()==CellDescription::Cell ||
       pRight.getType()==CellDescription::Cell) {
-/*
-  if (
-      (pLeft.getType() == CellDescription::Cell
-          && (pRight.getType() == CellDescription::Cell ||
-              pRight.getType() == CellDescription::Ancestor ||
-              pRight.getType() == CellDescription::Descendant))
-              ||
-              (pRight.getType() == CellDescription::Cell
-                  && (pLeft.getType() == CellDescription::Cell ||
-                      pLeft.getType() == CellDescription::Ancestor ||
-                      pLeft.getType() == CellDescription::Descendant))
-  ) {
-*/
     assertion( pLeft.getSolverNumber() == pRight.getSolverNumber() );
     const int numberOfVariables = getNumberOfVariables();
 
@@ -1700,57 +1666,6 @@ void exahype::solvers::ADERDGSolver::dropCellDescriptions(
   Heap::getInstance().receiveData(fromRank,x,level,messageType);
 }
 
-//std::vector<double> exahype::solvers::ADERDGSolver::collectTimeStampsAndStepSizes() {
-//  std::vector<double> timeStampsAndStepSizes(0,5);
-//
-//  timeStampsAndStepSizes.push_back(_minCorrectorTimeStamp);
-//  timeStampsAndStepSizes.push_back(_minCorrectorTimeStepSize);
-//  timeStampsAndStepSizes.push_back(_minPredictorTimeStepSize);
-//  timeStampsAndStepSizes.push_back(_minPredictorTimeStamp);
-//  timeStampsAndStepSizes.push_back(_minNextPredictorTimeStepSize);
-//  return timeStampsAndStepSizes;
-//}
-//
-//void exahype::solvers::ADERDGSolver::setTimeStampsAndStepSizes(
-//    std::vector<double>& timeSteppingData) {
-//  _minCorrectorTimeStamp        = timeSteppingData[0];
-//  _minCorrectorTimeStepSize     = timeSteppingData[1];
-//  _minPredictorTimeStepSize     = timeSteppingData[2];
-//  _minPredictorTimeStamp        = timeSteppingData[3];
-//  _minNextPredictorTimeStepSize = timeSteppingData[4];
-//}
-
-void exahype::solvers::ADERDGSolver::sendToRank(int rank, int tag) {
-  MPI_Send(&_minCorrectorTimeStamp, 1, MPI_DOUBLE, rank, tag,
-      tarch::parallel::Node::getInstance().getCommunicator()); // This is necessary since we might have performed a predictor rerun.
-  MPI_Send(&_minCorrectorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
-      tarch::parallel::Node::getInstance().getCommunicator()); // This is necessary since we might have performed a predictor rerun.
-  MPI_Send(&_minPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
-      tarch::parallel::Node::getInstance().getCommunicator());
-  MPI_Send(&_minPredictorTimeStamp, 1, MPI_DOUBLE, rank, tag,
-      tarch::parallel::Node::getInstance().getCommunicator());
-  MPI_Send(&_minNextPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
-      tarch::parallel::Node::getInstance().getCommunicator());
-}
-
-void exahype::solvers::ADERDGSolver::receiveFromMasterRank(int rank, int tag) {
-  MPI_Recv(&_minCorrectorTimeStamp, 1, MPI_DOUBLE, rank, tag,
-           tarch::parallel::Node::getInstance().getCommunicator(),
-           MPI_STATUS_IGNORE); // This is necessary since we might have performed a predictor rerun.
-  MPI_Recv(&_minCorrectorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
-           tarch::parallel::Node::getInstance().getCommunicator(),
-           MPI_STATUS_IGNORE); // This is necessary since we might have performed a predictor rerun.
-  MPI_Recv(&_minPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
-           tarch::parallel::Node::getInstance().getCommunicator(),
-           MPI_STATUS_IGNORE);
-  MPI_Recv(&_minPredictorTimeStamp, 1, MPI_DOUBLE, rank, tag,
-           tarch::parallel::Node::getInstance().getCommunicator(),
-           MPI_STATUS_IGNORE);
-  MPI_Recv(&_minNextPredictorTimeStepSize, 1, MPI_DOUBLE, rank, tag,
-           tarch::parallel::Node::getInstance().getCommunicator(),
-           MPI_STATUS_IGNORE);
-}
-
 ///////////////////////////////////
 // FORK OR JOIN
 ///////////////////////////////////
@@ -1766,22 +1681,17 @@ void exahype::solvers::ADERDGSolver::sendDataToWorkerOrMasterDueToForkOrJoin(
   assertion2(static_cast<unsigned int>(element)<Heap::getInstance().getData(cellDescriptionsIndex).size(),
              element,Heap::getInstance().getData(cellDescriptionsIndex).size());
 
-  auto& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
+  CellDescription& p = Heap::getInstance().getData(cellDescriptionsIndex)[element];
 
-  double* solution = 0;
-  switch(p.getType()) {
-    case CellDescription::Cell:
-      solution        = DataHeap::getInstance().getData(p.getSolution()).data();
+  if (p.getType()==CellDescription::Cell) {
+    double* solution = DataHeap::getInstance().getData(p.getSolution()).data();
 
-      logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)","solution of solver " << p.getSolverNumber() << " sent to rank "<<toRank<<
-               ", cell: "<< x << ", level: " << level);
+    logDebug("sendDataToWorkerOrMasterDueToForkOrJoin(...)","solution of solver " << p.getSolverNumber() << " sent to rank "<<toRank<<
+             ", cell: "<< x << ", level: " << level);
 
-      DataHeap::getInstance().sendData(
-          solution, getUnknownsPerCell(), toRank, x, level,
-          peano::heap::MessageType::ForkOrJoinCommunication);
-      break;
-    default:
-      break;
+    DataHeap::getInstance().sendData(
+        solution, getUnknownsPerCell(), toRank, x, level,
+        peano::heap::MessageType::ForkOrJoinCommunication);
   }
 }
 
@@ -1835,6 +1745,44 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourMetadata(
       const int neighbourTypeAsInt,
       const int cellDescriptionsIndex,
       const int element) {
+  CellDescription& p = getCellDescription(cellDescriptionsIndex,element);
+
+  CellDescription::Type type =
+      static_cast<CellDescription::Type>(neighbourTypeAsInt);
+  switch(p.getType()) {
+    case CellDescription::Cell:
+      if (p.getRefinementEvent()==CellDescription::None &&
+          (type==CellDescription::Ancestor ||
+              type==CellDescription::EmptyAncestor)) {
+        p.setRefinementEvent(CellDescription::AugmentingRequested);
+      }
+      break;
+    case CellDescription::Descendant:
+    case CellDescription::EmptyDescendant:
+      // TODO(Dominic): Add to docu what we do here.
+      if (type==CellDescription::Cell) {
+        p.setARemoteBoundaryNeighbourIsOfTypeCell(true);
+      }
+
+      // 2. Request further augmentation if necessary (this might get reset if the traversal
+      // is able to descend and finds existing descendants).
+      if (p.getRefinementEvent()==CellDescription::None &&
+          (type==CellDescription::Ancestor ||
+              type==CellDescription::EmptyAncestor)) {
+        p.setRefinementEvent(CellDescription::AugmentingRequested);
+      }
+      break;
+    case CellDescription::Ancestor:
+    case CellDescription::EmptyAncestor:
+      // TODO(Dominic): Add to docu what we do here.
+      if (type==CellDescription::Cell) {
+        p.setARemoteBoundaryNeighbourIsOfTypeCell(true);
+      }
+      break;
+    default:
+      assertionMsg(false,"Should never be entered in static AMR scenarios!");
+      break;
+  }
 }
 
 
@@ -2117,6 +2065,57 @@ void exahype::solvers::ADERDGSolver::dropNeighbourData(
 // WORKER->MASTER
 ///////////////////////////////////
 
+/*
+ * At the time of sending data to the master,
+ * we have already performed a time step update locally
+ * on the rank. We thus need to communicate the
+ * current min predictor time stamp and
+ * time step size to the master and perform
+ * a reduction over both quantities.
+ * The next min predictor time step size is
+ * already reset locally to the maximum double value.
+ */
+void exahype::solvers::ADERDGSolver::sendDataToMaster(
+    const int                                    masterRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level){
+  std::vector<double> timeStepDataToReduce(2);
+  timeStepDataToReduce.push_back(getMinPredictorTimeStamp());
+  timeStepDataToReduce.push_back(getMinPredictorTimeStepSize();
+
+  // TODO(Dominic) remove
+  assertion(timeStepDataToReduce.size()==2);
+
+  DataHeap::getInstance().sendData(
+      timeStepDataToReduce.data(), timeStepDataToReduce.size(),
+      masterRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
+}
+
+/**
+ * At the time of the merging,
+ * the workers and the master have already performed
+ * at local update of the next predictor time step size
+ * and of the predictor time stamp.
+ * We thus need to minimise over both quantities.
+ */
+void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
+    const int                                    workerRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  std::vector<double> receivedTimeStepData(2);
+
+  DataHeap::getInstance().receiveData(
+      receivedTimeStepData.data(),receivedTimeStepData.size(),workerRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
+
+  // TODO(Dominic) remove
+  assertion(timeStepDataToReduce.size()==2);
+
+  _minPredictorTimeStamp    = std::min( _minPredictorTimeStamp,    receivedTimeStepData[0] );
+  _minPredictorTimeStepSize = std::min( _minPredictorTimeStepSize, receivedTimeStepData[1] );
+}
+
 void exahype::solvers::ADERDGSolver::sendDataToMaster(
     const int                                     masterRank,
     const int                                     cellDescriptionsIndex,
@@ -2212,6 +2211,65 @@ void exahype::solvers::ADERDGSolver::dropWorkerData(
 ///////////////////////////////////
 // MASTER->WORKER
 ///////////////////////////////////
+void exahype::solvers::ADERDGSolver::sendDataToWorker(
+    const int                                    workerRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  std::vector<double> timeStepData(0,5);
+  timeStepData.push_back(_minCorrectorTimeStamp);
+  timeStepData.push_back(_minCorrectorTimeStepSize);
+  timeStepData.push_back(_minPredictorTimeStepSize);
+  timeStepData.push_back(_minPredictorTimeStamp);
+  timeStepData.push_back(_minNextPredictorTimeStepSize);
+
+  // TODO(Dominic) remove
+  assertion(timeStepDataToReduce.size()==5);
+
+  DataHeap::getInstance().sendData(
+      timeStepData.data(), timeStepData.size(),
+      workerRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
+}
+
+void exahype::solvers::ADERDGSolver::mergeWithMasterData(
+    const int                                    masterRank,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const int                                    level) {
+  std::vector<double> receivedTimeStepData(2);
+
+  DataHeap::getInstance().receiveData(
+      receivedTimeStepData.data(),receivedTimeStepData.size(),masterRank, x, level,
+      peano::heap::MessageType::MasterWorkerCommunication);
+
+  // TODO(Dominic) remove
+  assertion(timeStepDataToReduce.size()==5);
+
+  _minCorrectorTimeStamp        = receivedTimeStepData[0];
+  _minCorrectorTimeStepSize     = receivedTimeStepData[1];
+  _minPredictorTimeStepSize     = receivedTimeStepData[2];
+  _minPredictorTimeStamp        = receivedTimeStepData[3];
+  _minNextPredictorTimeStepSize = receivedTimeStepData[4];
+}
+
+//std::vector<double> exahype::solvers::ADERDGSolver::collectTimeStampsAndStepSizes() {
+//  std::vector<double> timeStampsAndStepSizes(0,5);
+//
+//  timeStampsAndStepSizes.push_back(_minCorrectorTimeStamp);
+//  timeStampsAndStepSizes.push_back(_minCorrectorTimeStepSize);
+//  timeStampsAndStepSizes.push_back(_minPredictorTimeStepSize);
+//  timeStampsAndStepSizes.push_back(_minPredictorTimeStamp);
+//  timeStampsAndStepSizes.push_back(_minNextPredictorTimeStepSize);
+//  return timeStampsAndStepSizes;
+//}
+//
+//void exahype::solvers::ADERDGSolver::setTimeStampsAndStepSizes(
+//    std::vector<double>& timeSteppingData) {
+//  _minCorrectorTimeStamp        = timeSteppingData[0];
+//  _minCorrectorTimeStepSize     = timeSteppingData[1];
+//  _minPredictorTimeStepSize     = timeSteppingData[2];
+//  _minPredictorTimeStamp        = timeSteppingData[3];
+//  _minNextPredictorTimeStepSize = timeSteppingData[4];
+//}
 
 void exahype::solvers::ADERDGSolver::sendDataToWorker(
     const int                                     workerRank,

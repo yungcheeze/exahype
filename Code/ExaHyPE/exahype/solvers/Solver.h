@@ -570,25 +570,6 @@ class exahype::solvers::Solver {
 
   #ifdef Parallel
   /**
-   * Send solver copy to remote node
-   *
-   * <h2>Time step restriction</h2>
-   *
-   * The restrictions of global solver data is not done through the solver
-   * objects directly via MPI. See GlobalTimeStepComputation for example.
-   *
-   * @deprecated
-   */
-  virtual void sendToRank(int rank, int tag) = 0;
-
-  /**
-   * Receive solver copy from remote node
-   *
-   * @deprecated
-   */
-  virtual void receiveFromMasterRank(int rank, int tag) = 0;
-
-  /**
    * Send solver data to neighbour rank. Read the data from
    * the cell description \p element in
    * the cell descriptions vector stored at \p
@@ -729,6 +710,33 @@ class exahype::solvers::Solver {
   ///////////////////////////////////
 
   /**
+   * Send data to the master that is not
+   * depending on a particular cell description.
+   *
+   * This operation might be used for the reduction of a global
+   * minimum time step size over all MPI ranks.
+   *
+   * \note We always assume that
+   * startNewTimeStep() has been already called on the
+   * local solver instance. You thus
+   * have to return the updated local time step size.
+   *
+   * \see startNewTimeStep(), mergeWithWorkerData()
+   */
+  virtual void sendDataToMaster(
+      const int                                    masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
+
+  /**
+   * Merge with solver data from worker rank.
+   */
+  virtual void mergeWithWorkerData(
+      const int                                    workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
+
+  /**
    * Send solver data to master rank. Read the data from
    * the cell description \p element in
    * the cell descriptions vector stored at \p
@@ -783,6 +791,28 @@ class exahype::solvers::Solver {
   ///////////////////////////////////
   // MASTER->WORKER
   ///////////////////////////////////
+
+  /**
+   * Send data to the worker that is not
+   * depending on a particular cell description.
+   *
+   * This operation might be used for the synchronisation
+   * of a global minimum time step size over all MPI ranks.
+   *
+   * \see startNewTimeStep(), mergeWithMasterData()
+   */
+  virtual void sendDataToWorker(
+      const int                                    workerRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
+
+  /**
+   * Merge with solver data from master rank.
+   */
+  virtual void mergeWithMasterData(
+      const int                                    masterRank,
+      const tarch::la::Vector<DIMENSIONS, double>& x,
+      const int                                    level) = 0;
 
   /**
    * Send solver data to worker rank. Read the data from
