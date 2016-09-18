@@ -148,6 +148,57 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    * the grid though perhaps not in the creational routines.
    */
   bool refineInitialGridInTouchVertexLastTime() const;
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  records::State::MergeMode getMergeMode() const {
+    return _stateData.getMergeMode();
+  }
+
+  /**
+   * TODO(Dominic): Add docu.
+   */
+  records::State::SendMode getSendMode() const {
+    return _stateData.getSendMode();
+  }
+
+  /**
+   * Merging and Sending contexts.
+   * See both mappings for more details.
+   */
+  void switchToInitialConditionAndTimeStepSizeComputationContext() {
+    switchToSolutionUpdateAndTimeStepSizeComputationContex();
+  }
+
+  void switchToPredictionAndTimeStepSizeComputationContext() {
+    _stateData.setMergeMode(records::State::MergeTimeStepData);
+    _stateData.setSendMode (records::State::SendTimeStepDataAndFaceData);
+  }
+
+  void switchToADERDGTimeStepContext() {
+    _stateData.setMergeMode(records::State::MergeTimeStepDataAndFaceData);
+    _stateData.setSendMode (records::State::SendTimeStepDataAndFaceData);
+  }
+
+  void switchToPredictionRerunContext() {
+    switchToPredictionContext();
+  }
+
+  void switchToNeighbourDataMergingContext() {
+    _stateData.setMergeMode(records::State::MergeFaceData);
+    _stateData.setSendMode (records::State::SendNothing);
+  }
+
+  void switchToSolutionUpdateAndTimeStepSizeComputationContex() {
+    _stateData.setMergeMode(records::State::MergeNothing);
+    _stateData.setSendMode (records::State::SendTimeStepData);
+  }
+
+  void switchToPredictionContext() {
+    _stateData.setMergeMode(records::State::MergeTimeStepData);
+    _stateData.setSendMode (records::State::SendFaceData);
+  }
 };
 
 #endif
