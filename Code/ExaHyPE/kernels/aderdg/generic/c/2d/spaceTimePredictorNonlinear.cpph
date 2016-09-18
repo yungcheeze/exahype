@@ -74,7 +74,7 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
   double* lQi_old = new double[basisSize3 * numberOfVariables];
   double* rhs = new double[basisSize3 * numberOfVariables];
 
-  const int MaxIterations = 2*(order + 1);
+  const int MaxIterations = 2 * (order + 1);
 
   for (int iter = 0; iter < MaxIterations; iter++) {
     // Save old space-time DOF
@@ -194,9 +194,13 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
       break;
     }
 
-    if (iter == MaxIterations) {  // No convergence after last iteration
-      static tarch::logging::Log _log( "kernels::aderdg::generic::c" );
-      logWarning( "aderPicardLoopNonlinear(...)", "|res|^2=" << sq_res << " > |tol|^2=" << tol * tol << " after " << iter << " iterations. Solver seems not to have converged properly within maximum number of iteration steps" );
+    if (iter == (MaxIterations - 1)) {  // No convergence after last iteration
+      static tarch::logging::Log _log("kernels::aderdg::generic::c");
+      logWarning("aderPicardLoopNonlinear(...)",
+                 "|res|^2=" << sq_res << " > |tol|^2=" << tol * tol << " after "
+                            << iter << " iterations. Solver seems not to have "
+                                       "converged properly within maximum "
+                                       "number of iteration steps");
     }
   }  // end iter
 

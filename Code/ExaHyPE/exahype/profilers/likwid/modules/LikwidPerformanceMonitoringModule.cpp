@@ -624,15 +624,15 @@ static const std::function<double(int, const std::vector<uint64_t>&,
         [](int group_id, const std::vector<uint64_t>& counter_values,
            const LikwidProfilerState& state) {
           // PMC1/FIXC0
-          return static_cast<double>(counter_values[5]) /
+          return static_cast<double>(counter_values[4]) /
                  static_cast<double>(counter_values[0]);
         },
         // L1I miss ratio
         [](int group_id, const std::vector<uint64_t>& counter_values,
            const LikwidProfilerState& state) {
           // PMC1/PMC0
-          return static_cast<double>(counter_values[5]) /
-                 static_cast<double>(counter_values[4]);
+          return static_cast<double>(counter_values[4]) /
+                 static_cast<double>(counter_values[3]);
         },
         // L1I stalls
         [](int group_id, const std::vector<uint64_t>& counter_values,
