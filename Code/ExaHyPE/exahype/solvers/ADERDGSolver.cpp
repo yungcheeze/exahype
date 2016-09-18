@@ -1551,6 +1551,9 @@ void exahype::solvers::ADERDGSolver::mergeSolutionMinMaxOnFace(
   const int faceIndexLeft,
   const int faceIndexRight
 ) const {
+  if (pLeft.getType()==CellDescription::Cell ||
+      pRight.getType()==CellDescription::Cell) {
+/*
   if (
       (pLeft.getType() == CellDescription::Cell
           && (pRight.getType() == CellDescription::Cell ||
@@ -1562,14 +1565,16 @@ void exahype::solvers::ADERDGSolver::mergeSolutionMinMaxOnFace(
                       pLeft.getType() == CellDescription::Ancestor ||
                       pLeft.getType() == CellDescription::Descendant))
   ) {
+*/
     assertion( pLeft.getSolverNumber() == pRight.getSolverNumber() );
     const int numberOfVariables = getNumberOfVariables();
+
     for (int i=0; i<numberOfVariables; i++) {
       double min = std::min(
           DataHeap::getInstance().getData( pLeft.getSolutionMin()  )[i+faceIndexLeft *numberOfVariables],
           DataHeap::getInstance().getData( pRight.getSolutionMin() )[i+faceIndexRight*numberOfVariables]
       );
-      double max = std::min(
+      double max = std::max(
           DataHeap::getInstance().getData( pLeft.getSolutionMax()  )[i+faceIndexLeft *numberOfVariables],
           DataHeap::getInstance().getData( pRight.getSolutionMax() )[i+faceIndexRight*numberOfVariables]
       );
@@ -2088,8 +2093,10 @@ void exahype::solvers::ADERDGSolver::mergeSolutionMinMaxOnFace(
         exahype::solvers::RegisteredSolvers[ cellDescription.getSolverNumber() ])->getNumberOfVariables();
 
     for (int i=0; i<numberOfVariables; i++) {
-      DataHeap::getInstance().getData( cellDescription.getSolutionMin()  )[i+faceIndex*numberOfVariables]  = min[i];
-      DataHeap::getInstance().getData( cellDescription.getSolutionMax()  )[i+faceIndex*numberOfVariables]  = max[i];
+      DataHeap::getInstance().getData( cellDescription.getSolutionMin()  )[i+faceIndex*numberOfVariables]  =
+        std::min( DataHeap::getInstance().getData( cellDescription.getSolutionMin()  )[i+faceIndex*numberOfVariables], min[i] );
+      DataHeap::getInstance().getData( cellDescription.getSolutionMax()  )[i+faceIndex*numberOfVariables]  =
+        std::max( DataHeap::getInstance().getData( cellDescription.getSolutionMax()  )[i+faceIndex*numberOfVariables], max[i] );
     }
   }
 }
