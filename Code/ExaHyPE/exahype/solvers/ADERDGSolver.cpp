@@ -1018,22 +1018,26 @@ void exahype::solvers::ADERDGSolver::mergeSolutionMinMaxOnFace(
     assertion( exahype::solvers::RegisteredSolvers[ pLeft.getSolverNumber() ]->getType()==exahype::solvers::Solver::Type::ADER_DG );
     const int numberOfVariables = static_cast<exahype::solvers::ADERDGSolver*>(
         exahype::solvers::RegisteredSolvers[ pLeft.getSolverNumber() ])->getNumberOfVariables();
+    double* minLeft  = DataHeap::getInstance().getData( pLeft.getSolutionMin()  ).data()  + faceIndexLeft  * numberOfVariables;
+    double* minRight = DataHeap::getInstance().getData( pRight.getSolutionMin()  ).data() + faceIndexRight * numberOfVariables;
+    double* maxLeft  = DataHeap::getInstance().getData( pLeft.getSolutionMax()  ).data()  + faceIndexLeft  * numberOfVariables;
+    double* maxRight = DataHeap::getInstance().getData( pRight.getSolutionMax()  ).data() + faceIndexRight * numberOfVariables;
 
     for (int i=0; i<numberOfVariables; i++) {
-      double min = std::min(
-          DataHeap::getInstance().getData( pLeft.getSolutionMin()  )[i+faceIndexLeft *numberOfVariables],
-          DataHeap::getInstance().getData( pRight.getSolutionMin() )[i+faceIndexRight*numberOfVariables]
+      const double min = std::min(
+          *(minLeft+i),
+          *(minRight+i)
       );
-      double max = std::max(
-          DataHeap::getInstance().getData( pLeft.getSolutionMax()  )[i+faceIndexLeft *numberOfVariables],
-          DataHeap::getInstance().getData( pRight.getSolutionMax() )[i+faceIndexRight*numberOfVariables]
+      const double max = std::max(
+          *(maxLeft+i),
+          *(maxRight+i)
       );
 
-      DataHeap::getInstance().getData( pLeft.getSolutionMin()  )[i+faceIndexLeft *numberOfVariables] = min;
-      DataHeap::getInstance().getData( pRight.getSolutionMin() )[i+faceIndexRight*numberOfVariables] = min;
+      *(minLeft+i)  = min;
+      *(minRight+i) = min;
 
-      DataHeap::getInstance().getData( pLeft.getSolutionMax()  )[i+faceIndexLeft *numberOfVariables] = max;
-      DataHeap::getInstance().getData( pRight.getSolutionMax() )[i+faceIndexRight*numberOfVariables] = max;
+      *(maxLeft+i)  = max;
+      *(maxRight+i) = max;
     }
   } // else do nothing
 }
