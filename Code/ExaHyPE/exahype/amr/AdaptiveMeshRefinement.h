@@ -9,10 +9,6 @@
  *
  * Released under the BSD 3 Open Source License.
  * For the full license text, see LICENSE.txt
- *
- *
- * TODO(Dominic): We currently just collect methods here.
- * These methods are not or only partially used at the moment.
  **/
 
 #ifndef ADAPTIVEMESHREFINEMENT_H_
@@ -27,6 +23,42 @@
 namespace exahype {
 
 namespace amr {
+  /**
+   * Per coordinate direction xi, count the number of shifts
+   * of step size \p childSize(xi) necessary to
+   * reach \p childOffset from \p parentOffset.
+   *
+   * \param[in] childOffset  Offset of a child cell.
+   * \param[in] childSize    Size of the child cell.
+   * \param[in] parentOffset Offset of the parent cell.
+   *
+   * \see getSubfaceIndex
+   */
+  tarch::la::Vector<DIMENSIONS,int> computeSubcellIndex(
+        const tarch::la::Vector<DIMENSIONS,double>& childOffset,
+        const tarch::la::Vector<DIMENSIONS,double>& childSize,
+        const tarch::la::Vector<DIMENSIONS,double>& parentOffset);
+
+  /**
+   * Collect all the element with index!=d
+   * from \p subcellIndex.
+   *
+   * \see getSubcellIndex
+   */
+  tarch::la::Vector<DIMENSIONS-1,int> getSubfaceIndex(
+        const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
+        const int d);
+
+  /**
+   * Per coordinate direction xi, check if
+   * subcellIndex[xi] is either 0 or 3^levelDelta - 1.
+   * If this is the case for at least one subcellIndex[xi]
+   * return true. Otherwise return false.
+   */
+  bool onBoundaryOfParent(
+      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
+      const int levelDelta);
+
   /**
    * Returns  AugmentationControl::::NextToCell if the cell has a neighbour of
    * type exahype::records::ADERDGCellDescription:Cell,
@@ -134,56 +166,75 @@ namespace amr {
   /**
    * Determine the position of a Cell or Ancestor with respect
    * to a parent of type Ancestor.
+   * The return values subcellPosition.parentCellDescriptionsIndex
+   * and subcellPosition.parentElement only
+   * hold valid indices >= 0 if we have found a parent of type Ancestor
+   * and the cell description itself is of type Cell or Ancestor.
+   *
+   * Otherwise, subcellPosition.parentIndex holds the value
+   * multiscalelinkedcell::HangingVertexBookkeeper::InvalidAdjacencyIndex,
+   * subcellPosition.parentElement holds the value exahype::solver::Solvers::NotFound,
+   * and subcellPosition.subcellIndex holds undefined values.
+   * This applies to the case where the parent index of the
+   * Cell or Ancestor is not a valid index and further to
+   * the case where we have found a parent of type EmptyAncestor
+   * as top most parent.
    *
    * This method is required for the face data restriction, the
    * volume data restriction, and the FV volume data restriction.
-   *
-   * @todo:16/04/09:Dominic Etienne Charrier: I am not sure if this the
-   * right file/class to hold this functionality.
    */
   template <class CellDescription,class CellDescriptionHeap>
   exahype::solvers::Solver::SubcellPosition
   computeSubcellPositionOfCellOrAncestor(
       const CellDescription& pChild) {
-    assertion1(pChild.getType()==CellDescription::Cell ||
-               pChild.getType()==CellDescription::Ancestor,pChild.toString());
-
-    exahype::Cell::SubcellPosition subcellPosition;
-    // Initialisation.
-    subcellPosition.parentIndex = pChild.getParentIndex();
-    CellDescription* pParent = 0;
-    for (auto& p : CellDescriptionHeap::getInstance().getData(
-        subcellPosition.parentIndex)) {  // Loop over cell descriptions
-      if (p.getSolverNumber() == pChild.getSolverNumber()) {
-        pParent = &p;
-        assertion(CellDescriptionHeap::getInstance().isValidIndex(
-            subcellPosition.parentIndex));
+    // 1. Initialisation.
+    exahype::solvers::Solver::SubcellPosition subcellPosition;
+    if ((pChild.getType()==CellDescription::Cell || pChild.getType()==CellDescription::Ancestor) &&
+        CellDescriptionHeap::getInstance().isValidIndex(pChild.getParentIndex())) {
+      CellDescription* pParent = 0;
+      int parentElement=0;
+      for (auto& p : CellDescriptionHeap::getInstance().getData(pChild.getParentIndex())) {
+        if (p.getSolverNumber()==pChild.getSolverNumber()) {
+          subcellPosition.parentCellDescriptionsIndex = pChild.getParentIndex();
+          subcellPosition.parentElement               = parentElement;
+          pParent = &p;
+          break;
+        }
+        ++parentElement;
       }
-    }
 
-    if (pParent != 0) {
-      // Iterative determining of the top most parent that might hold data.
-      while (pParent->getType() == CellDescription::EmptyAncestor &&
-          CellDescriptionHeap::getInstance().isValidIndex(pParent->getParentIndex())) {
-        const int currentParentIndex =
-            pParent->getParentIndex();
-        // Value must be fixed. We update pParent within the loop.
-        for (auto& p : CellDescriptionHeap::getInstance().getData(
-            currentParentIndex)) {  // Loop over cell descriptions
-          if (p.getSolverNumber() == pChild.getSolverNumber()) {
-            subcellPosition.parentIndex = pParent->getParentIndex();
-            pParent = &p;
+      // 2. If the current parent is an EmptyAncestor,
+      // try to determine iteratively the next parent that holds data.
+      if (subcellPosition.parentElement!=exahype::solvers::Solver::NotFound) {
+        while (pParent->getType()==CellDescription::EmptyAncestor &&
+            CellDescriptionHeap::getInstance().isValidIndex(pParent->getParentIndex())) {
+          const int currentParentIndex = pParent->getParentIndex();
+          int parentElement=0;
+          for (auto& p : CellDescriptionHeap::getInstance().getData(currentParentIndex)) {  // Loop over cell descriptions
+            if (p.getSolverNumber() == pChild.getSolverNumber()) {
+              subcellPosition.parentCellDescriptionsIndex = pParent->getParentIndex();
+              subcellPosition.parentElement               = parentElement;
+              pParent = &p;
+              break;
+            }
+            ++parentElement;
           }
         }
-      }
-      assertion(pParent->getType()==CellDescription::Ancestor ||
-                pParent->getType()==CellDescription::EmptyAncestor);
+        assertion2(pParent->getType()==CellDescription::Ancestor ||
+                   pParent->getType()==CellDescription::EmptyAncestor,
+                   pChild.toString(),pParent->toString());
 
-      // Compute subcell index.
-      for (int xi = 0; xi < DIMENSIONS; ++xi) {
-        assertion((pChild.getOffset(xi) - pParent->getOffset(xi)) >= 0);
-        subcellPosition.subcellIndex[xi] = tarch::la::round(
-            (pChild.getOffset(xi) - pParent->getOffset(xi))/pChild.getSize(xi));
+        if (pParent->getType()==CellDescription::EmptyAncestor) {
+          exahype::solvers::Solver::SubcellPosition subcellPositionWithInvalidIndices;
+          return subcellPositionWithInvalidIndices;
+        }
+
+        subcellPosition.subcellIndex =
+            computeSubcellIndex(
+                pChild.getOffset(),pChild.getSize(),
+                pParent->getOffset());
+        subcellPosition.levelDifference =
+            pChild.getLevel() - pParent->getLevel();
       }
     }
 
@@ -195,66 +246,71 @@ namespace amr {
    * to a  Cell or Descendant that contains data, i.e.,
    * has at least one neighbour that is a real cell.
    *
+   * \note This function only makes sense if the
+   * Descendant has a valid parentIndex attribute.
+   *
+   * \note This method is less complicated that corresponding
+   * method for computing the parent of
+   * a Cell or Ancestor since a Descendant always(!) has
+   * a parent of type Cell or Descendant.
+   *
    * This method is required for the face data prolongation, the
    * volume data prolongation, and the FV volume data prolongation.
-   *
-   * @todo:16/04/09:Dominic Etienne Charrier: I am not sure if this the
-   * right file/class to hold this functionality.
    */
   template <class CellDescription,class CellDescriptionHeap>
   exahype::solvers::Solver::SubcellPosition
   computeSubcellPositionOfDescendant(
       const CellDescription& pChild) {
     assertion1(pChild.getType()==CellDescription::Descendant,pChild.toString());
-
-    exahype::Cell::SubcellPosition subcellPosition;
-
-    // Initialisation.
     assertion1(CellDescriptionHeap::getInstance().isValidIndex(
-        pChild.getParentIndex()),
-        pChild.getParentIndex());
-    subcellPosition.parentIndex = pChild.getParentIndex();
-    CellDescription* pParent = 0;
+        pChild.getParentIndex()),pChild.getParentIndex());
 
+    // 1. Initialisation.
+    exahype::solvers::Solver::SubcellPosition subcellPosition;
+    subcellPosition.parentCellDescriptionsIndex = pChild.getParentIndex();
+    subcellPosition.parentElement=exahype::solvers::Solver::NotFound;
+    CellDescription* pParent = 0;
+    int parentElement=0;
     for (auto& p : CellDescriptionHeap::getInstance().getData(
         pChild.getParentIndex())) {
-      if (p.getSolverNumber() == pChild.getSolverNumber()) {
+      if (p.getSolverNumber()==pChild.getSolverNumber()) {
+        subcellPosition.parentElement = parentElement;
         pParent = &p;
+        break;
       }
+      ++parentElement;
     }
+    // Descendant pChild must always have
+    // a parent in the parent's cell description array.
+    assertion1(pParent!=0,pChild.toString());
 
-    if (pParent != 0) {
-      // recursion
-      while (pParent->getType() == CellDescription::EmptyDescendant) {
-        const int currentParentIndex =
-            pParent->getParentIndex();
-        // Value must be fixed. We update pParent within the loop.
-        assertion1(CellDescriptionHeap::getInstance().isValidIndex(
-            currentParentIndex),
-            currentParentIndex);
-        for (auto& p : CellDescriptionHeap::getInstance().getData(currentParentIndex)) {
-          if (p.getSolverNumber() == pChild.getSolverNumber()) {
-            subcellPosition.parentIndex = pParent->getParentIndex();
-            pParent = &p;
-          }
+    // 2. If the current parent is an EmptyAncestor,
+    // try to determine iteratively the next parent that holds data.
+    while (pParent->getType()==CellDescription::EmptyDescendant) {
+      const int currentParentIndex =
+          pParent->getParentIndex();
+      assertion1(CellDescriptionHeap::getInstance().isValidIndex(
+          currentParentIndex),currentParentIndex); // Must always hold if the current parent is an (Empty)Descendant
+      int parentElement=0;
+      for (auto& p : CellDescriptionHeap::getInstance().getData(currentParentIndex)) {
+        if (p.getSolverNumber()==pChild.getSolverNumber()) {
+          subcellPosition.parentCellDescriptionsIndex = pParent->getParentIndex();
+          subcellPosition.parentElement               = parentElement;
+          pParent = &p;
+          break;
         }
+        ++parentElement;
       }
-
-      assertion(pParent->getType() == CellDescription::Descendant ||
-                pParent->getType() == CellDescription::Cell);
-
-      // Ccompute subcell index.
-      for (int xi = 0; xi < DIMENSIONS; ++xi) {
-        assertion((pChild.getOffset(xi) - pParent->getOffset(xi)) >= 0);
-        subcellPosition.subcellIndex[xi] = tarch::la::round(
-            (pChild.getOffset(xi) - pParent->getOffset(xi))/pChild.getSize(0));
-      }
-    } else {
-      std::cerr << "computeSubcellPositionOfDescendant: parent of "
-          "descendant could not be found!"
-          << std::endl;
-      exit(EXIT_FAILURE);
     }
+    assertion(pParent->getType() == CellDescription::Descendant ||
+              pParent->getType() == CellDescription::Cell);
+
+    subcellPosition.subcellIndex =
+            computeSubcellIndex(
+                pChild.getOffset(),pChild.getSize(),
+                pParent->getOffset());
+    subcellPosition.levelDifference =
+        pChild.getLevel() - pParent->getLevel();
 
     return subcellPosition;
   }
