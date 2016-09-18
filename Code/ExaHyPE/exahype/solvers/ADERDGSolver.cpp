@@ -2085,7 +2085,7 @@ void exahype::solvers::ADERDGSolver::sendDataToMaster(
     const int                                    level){
   std::vector<double> timeStepDataToReduce(2);
   timeStepDataToReduce.push_back(getMinPredictorTimeStamp());
-  timeStepDataToReduce.push_back(getMinPredictorTimeStepSize();
+  timeStepDataToReduce.push_back(getMinPredictorTimeStepSize());
 
   // TODO(Dominic) remove
   assertion(timeStepDataToReduce.size()==2);
@@ -2114,7 +2114,7 @@ void exahype::solvers::ADERDGSolver::mergeWithWorkerData(
       peano::heap::MessageType::MasterWorkerCommunication);
 
   // TODO(Dominic) remove
-  assertion(timeStepDataToReduce.size()==2);
+  assertion(receivedTimeStepData.size()==2);
 
   _minPredictorTimeStamp    = std::min( _minPredictorTimeStamp,    receivedTimeStepData[0] );
   _minPredictorTimeStepSize = std::min( _minPredictorTimeStepSize, receivedTimeStepData[1] );
@@ -2227,7 +2227,7 @@ void exahype::solvers::ADERDGSolver::sendDataToWorker(
   timeStepData.push_back(_minNextPredictorTimeStepSize);
 
   // TODO(Dominic) remove
-  assertion(timeStepDataToReduce.size()==5);
+  assertion(timeStepData.size()==5);
 
   DataHeap::getInstance().sendData(
       timeStepData.data(), timeStepData.size(),
@@ -2239,14 +2239,14 @@ void exahype::solvers::ADERDGSolver::mergeWithMasterData(
     const int                                    masterRank,
     const tarch::la::Vector<DIMENSIONS, double>& x,
     const int                                    level) {
-  std::vector<double> receivedTimeStepData(2);
+  std::vector<double> receivedTimeStepData(5);
 
   DataHeap::getInstance().receiveData(
       receivedTimeStepData.data(),receivedTimeStepData.size(),masterRank, x, level,
       peano::heap::MessageType::MasterWorkerCommunication);
 
   // TODO(Dominic) remove
-  assertion(timeStepDataToReduce.size()==5);
+  assertion(receivedTimeStepData.size()==5);
 
   _minCorrectorTimeStamp        = receivedTimeStepData[0];
   _minCorrectorTimeStepSize     = receivedTimeStepData[1];

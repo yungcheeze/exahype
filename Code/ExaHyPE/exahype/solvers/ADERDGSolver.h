@@ -1043,8 +1043,6 @@ public:
       const tarch::la::Vector<DIMENSIONS, double>& x,
       const int                                    level);
 
-  double getTimeStepSizeToReduce() override;
-
   /**
    * Receives cell descriptions from rank \p fromRank
    * and resets the data heap indices to -1.
