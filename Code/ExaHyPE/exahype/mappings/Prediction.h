@@ -59,8 +59,6 @@ namespace exahype {
  * ranks when we start them up. See prepareSendToWorker() and the corresponding
  * receiveDataFromMaster().
  *
- * TODO(Comment):
- *
  * <h2>Shared Memory</h2>
  *
  * As the mapping accesses the state data in a read-only fashion, no special
@@ -98,12 +96,6 @@ class exahype::mappings::Prediction {
   static tarch::logging::Log _log;
 
   /**
-   * A semaphore that is locked if a thread performs a restriction
-   * operation.
-   */
-  static tarch::multicore::BooleanSemaphore _semaphoreForRestriction;
-
-  /**
    * Temporary variable: Degrees of freedom of the space-time predictor
    * for all solvers in case we parallelise over the cell descriptions associated with a cell.
    */
@@ -123,15 +115,6 @@ class exahype::mappings::Prediction {
    * for all solvers in case we parallelise over the cell descriptions associated with a cell.
    */
   double** _lFhi=0;
-
-  #if defined(Debug)
-  /**
-   * Some counters for debugging purposes.
-   */
-  static int _parentOfCellOrAncestorNotFound;
-  static int _parentOfCellOrAncestorFound;
-  static int _parentOfDescendantFound;
-  #endif
 
   /**
    * Initialises the temporary variables.
@@ -156,236 +139,6 @@ class exahype::mappings::Prediction {
    * are not copied for every thread.
    */
   void deleteTemporaryVariables();
-
-  /**
-   * Computes the space-time predictor quantities, extrapolates fluxes
-   * and (space-time) predictor values to the boundary and
-   * computes the volume integral.
-   */
-  void performPredictionAndVolumeIntegral(exahype::records::ADERDGCellDescription& p);
-
-  /**
-   * Returns if the face is inside. Inside for
-   * a face means that at least one vertex
-   * of the 2^{d-1} vertices building up
-   * the face must be inside of the domain.
-   *
-   * Otherwise the face might be on the
-   * boundary of the domain or outside of
-   * the domain.
-   */
-  static bool isFaceInside(
-      const int faceIndex,
-      exahype::Vertex* const verticesAroundCell,
-      const peano::grid::VertexEnumerator& verticesEnumerator);
-
-  /**
-   * Sets the extrapolated predictor and fluctuations of an Ancestor to zero.
-   */
-  static void prepareAncestor(
-      exahype::records::ADERDGCellDescription& p);
-
-  /**
-   * Prolongates face data from a parent ADERDGCellDescription to
-   * \p cellDescription if the fine grid cell associated with
-   * \p cellDescription is adjacent to a boundary of the
-   * coarse grid cell associated with the parent cell description.
-   *
-   * \note This function assumes a top-down traversal of the grid and must thus
-   * be called from the enterCell(...) or descend(...) functions.
-   *
-   * \note This method makes only sense if \p cellDescription is of type
-   * Descendant and EmptyDescendant.
-   */
-  static void prolongateADERDGFaceData(
-      const exahype::records::ADERDGCellDescription& cellDescription,
-      const int parentIndex,
-      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex);
-
-  /**
-   * Prolongates the boundary layer (or the complete solution) from a parent FiniteVolumesCellDescription to
-   * \p cellDescription if the fine grid cell associated with
-   * \p cellDescription is adjacent to a boundary of the
-   * coarse grid cell associated with the parent cell description.
-   *
-   * \note This function assumes a top-down traversal of the grid and must thus
-   * be called from the enterCell(...) or descend(...) functions.
-   *
-   * \note This method makes only sense if \p cellDescription is of type
-   * Descendant and EmptyDescendant.
-   */
-  static void prolongateFiniteVolumesFaceData(
-      const exahype::records::FiniteVolumesCellDescription& cellDescription,
-      const int parentIndex,
-      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex);
-
-  /**
-   * Restricts face data from \p cellDescription to
-   * a parent ADERDGCellDescription if the fine grid cell associated with
-   * \p cellDescription is adjacent to a boundary of the
-   * coarse grid cell associated with the parent cell description.
-   *
-   * \note This function assumes a bottom-up traversal of the grid and must thus
-   * be called from the leaveCell(...) or ascend(...) functions.
-   *
-   * \note This method makes only sense if \p cellDescription is of type Cell.
-   *
-   * \note We use a semaphore to make this operation thread-safe.
-   */
-  static void restrictADERDGFaceData(
-      const exahype::records::ADERDGCellDescription& cellDescription,
-      const int parentIndex,
-      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex);
-
-  /**
-   * Restricts the finite volume solution values (volume data) from \p cellDescription to
-   * a parent FiniteVolumesCellDescription if the fine grid cell associated with
-   * \p cellDescription is adjacent to a boundary of the
-   * coarse grid cell associated with the parent cell description.
-   *
-   * \note This function assumes a bottom-up traversal of the grid and must thus
-   * be called from the leaveCell(...) or ascend(...) functions.
-   *
-   * \note This method makes only sense if \p cellDescription is of type Cell.
-   */
-  static void restrictFiniteVolumesSolution(
-      const exahype::records::FiniteVolumesCellDescription& cellDescription,
-      const int parentIndex,
-      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex);
-
-  /**
-   * Picks out the subcell indices that are not at position \p d.
-   */
-  static tarch::la::Vector<DIMENSIONS - 1, int> getSubfaceIndex(
-      const tarch::la::Vector<DIMENSIONS, int>& subcellIndex,
-      const int d);
-
-
-  #ifdef Parallel
-  /**
-   * Tag that is used to exchange all the solver instances in MPI
-   */
-  static int _mpiTag;
-
-  /**
-   * Count the listings of remote ranks that share a vertex
-   * adjacent to the face \p faceIndex of a cell inside of the domain.
-   * This value is either 0, 2^{d-2}, or 2^{d-1}.
-   *
-   * If we count 2^{d-1} listings, we directly know that this rank
-   * shares a whole face with a remote rank.
-   * If we count 2^{d-2} listings, we know that this
-   * rank shares a face with a remote rank
-   * but half of the vertices are outside.
-   * If we count 0 listings, that we might not
-   * have a remote rank adjacent to this face or
-   * all the vertices are outside.
-   *
-   * We know from the result of this funcion how
-   * many vertices will try to exchange neighbour information
-   * on this face.
-   *
-   * @developers:
-   * TODO(Dominic): We currently check for uniqueness of the
-   * remote rank. This might however not be necessary.
-   */
-  static int countListingsOfRemoteRankByInsideVerticesAtFace(
-      const int faceIndex,
-      exahype::Vertex* const verticesAroundCell,
-      const peano::grid::VertexEnumerator& verticesEnumerator);
-
-  /**
-   * Loop over all the solvers and check
-   * if a cell description (ADERDGCellDescription,
-   * FiniteVolumesCellDescription,...) is registered
-   * for the solver type. If so, send
-   * out data or empty messages to the rank \p toRank that
-   * owns the neighbouring domain.
-   *
-   * If not so, send out empty messages for the particular
-   * solver.
-   *
-   * TODO(Dominic): Make messaging solver functionality?
-   *
-   * \note Not thread-safe.
-   */
-  static void sendSolverData(
-      const int                                    toRank,
-      const tarch::la::Vector<DIMENSIONS,int>&     src,
-      const tarch::la::Vector<DIMENSIONS,int>&     dest,
-      const int                                    srcCellDescriptionIndex,
-      const int                                    destCellDescriptionIndex,
-      const tarch::la::Vector<DIMENSIONS, double>& x,
-      const int                                    level);
-
-  /**
-   * Loop over all the solvers and check
-   * send out empty messages for the particular
-   * solver.
-   *
-   * TODO(Dominic): Make messaging solver functionality?
-   *
-   * \note Not thread-safe.
-   */
-  static void sendEmptySolverData(
-      const int                                     toRank,
-      const tarch::la::Vector<DIMENSIONS,int>&      src,
-      const tarch::la::Vector<DIMENSIONS,int>&      dest,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const int                                     level);
-
-
-  /**
-   * Send out ADERDG data to the rank of a neighbouring
-   * domain if a ADERDGCellDescription for the solver with number
-   * \p solverNumber can be found in the heap vector
-   * with index \p srcCellDescriptionIndex.
-   *
-   * If the ADERDGCellDescription does not hold
-   * the required data, we sent out an empty array
-   * for each required data.
-   *
-   * TODO(Dominic): Make messaging solver functionality?
-   *
-   * \note Not thread-safe.
-   */
-  static bool sendSolverDataIfRegistered(
-      const int                                     solverNumber,
-      const int                                     toRank,
-      const tarch::la::Vector<DIMENSIONS,int>&      src,
-      const tarch::la::Vector<DIMENSIONS,int>&      dest,
-      const int                                     srcCellDescriptionIndex,
-      const int                                     destCellDescriptionIndex,
-      const tarch::la::Vector<DIMENSIONS, double>&  x,
-      const  int                                    level);
-
-  /**
-   * Send out Finite Volumes data to the rank of a neighbouring
-   * domain if a FiniteVolumesCellDescription for the solver with number
-   * \p solverNumber can be found in the heap vector
-   * with index \p srcCellDescriptionIndex.
-   *
-   * If the FiniteVolumesCellDescription does not hold
-   * the required data, we sent out an empty array
-   * for each required data.
-   *
-   * TODO(Dominic): Make messaging solver functionality?
-   *
-   * \note Not thread-safe.
-   */
-  static bool sendFiniteVolumesDataIfSolverIsRegistered(
-        const int                                     solverNumber,
-        const int                                     toRank,
-        const tarch::la::Vector<DIMENSIONS,int>&      src,
-        const tarch::la::Vector<DIMENSIONS,int>&      dest,
-        const int                                     srcCellDescriptionIndex,
-        const int                                     destCellDescriptionIndex,
-        const tarch::la::Vector<DIMENSIONS, double>&  x,
-        const  int                                    level) {
-    assertionMsg(false,"Dominic please implement!"); return false;
-  }
-  #endif
-
 
  public:
   static peano::MappingSpecification touchVertexLastTimeSpecification();
@@ -425,8 +178,6 @@ class exahype::mappings::Prediction {
   #endif
 
   /**
-   * Enter a cell
-   *
    * This method first synchronises the time step sizes and time stamps, and
    * then resets the Riemann solve flags and the face data exchange counter for all
    * solvers for which a valid cell description was registered on this cell.
@@ -435,17 +186,6 @@ class exahype::mappings::Prediction {
    * spaceTimePredictor(...) as well as the solver's volumeIntegral(...) routines if
    * the the fine grid cell functions as a compute cell (Cell) for the solver.
    * Please see the discussion in the class header.
-   *
-   * <h2>MPI</h2>
-   *
-   * The predictor writes something into the boundary arrays lQhbnd and lFhbnd.
-   * These values are write-only and have to exchanged with neighbouring ranks.
-   *
-   * <h2>AMR</h2>
-   *
-   * If the fine grid cell functions as a helper cell of type Descendant for a solver, this method invokes
-   * prolongateFaceData(...).
-   * Further clears the face data of helper cells of type Ancestor.
    *
    * @see enterCellSpecification()
    */
@@ -458,8 +198,7 @@ class exahype::mappings::Prediction {
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
   /**
-   * If the fine grid cell functions as Cell or Ancestor for a solver, this function method
-   * restrictFaceData(...).
+   * Nop.
    */
   void leaveCell(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -552,56 +291,21 @@ class exahype::mappings::Prediction {
       exahype::Cell& coarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
 
+  //
+  // Below all methods are nop.
+  //
+  //===================================
 #ifdef Parallel
-  /**
-   * Prepare a vertex that is sent to the neighbour
-   *
-   * We run the $2^d$ adjacent cells and for each cell that is local, we do
-   * send its d boundary values that are adjacent to the vertex away.
-   *
-   * This algorithm translates into a loop very similar to
-   * RiemannSolver::touchVertexFirstTime():
-   *
-   * - Run through all the $2^d$ adjacent cells. Only those that belong to
-   *   toRank are of interest. Skip the others. See below for remarks on
-   *   interest.
-   * - For any cell assigned to toRank, there are d faces that are adjacent to
-   *   vertex.
-   * - Get the heap indices of all the surrounding cells. Not that some of
-   *   them, by definition, are remote.
-   *
-   * When we run through all the cells adjacent to a vertex, we may communicate
-   * only local cells to other ranks. This defines the first two entries in the
-   * corresponding if statement. Furthermore, only those cell pairs sharing a
-   * face do exchange data. This is done in the third line. The Manhattan
-   * distance of the two entries has to be exactly one. Finally (notably on rank
-   * 0), we may only send out data if the corresponding cell is inside the
-   * domain.
-   *
-   * <h2>Enumeration</h2>
-   *
-   * The faces are enumerated: left, right, bottom, top, front, back. Let n be
-   * the normal of the face starting with 0. Then, the face index is 2i+f where
-   * f means whether it is the face that runs through the left bottom corner (0)
-   * or not (1).
-   *
-   *
-   * <h2>MPI administration</h2>
-   *
-   * Please note that the communication specification deploys the whole heap
-   * management to the Peano kernel. There is thus no need to invoke any
-   * MPI-specific heap communication operation.
+  /*
+   * Nop
    */
   void prepareSendToNeighbour(exahype::Vertex& vertex, int toRank,
                               const tarch::la::Vector<DIMENSIONS, double>& x,
                               const tarch::la::Vector<DIMENSIONS, double>& h,
                               int level);
 
-  /**
-   * Exchange all the global states with the worker
-   *
-   * This ensures that all workers have correct states with correct time step
-   * sizes.
+  /*
+   * Nop
    */
   bool prepareSendToWorker(
       exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -613,7 +317,7 @@ class exahype::mappings::Prediction {
       int worker);
 
   /**
-   * See prepareSendToWorker(). This is the counterpart operation.
+   * Nop
    */
   void receiveDataFromMaster(
       exahype::Cell& receivedCell, exahype::Vertex* receivedVertices,
@@ -625,14 +329,6 @@ class exahype::mappings::Prediction {
       const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
       exahype::Cell& workersCoarseGridCell,
       const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell);
-
-
-
-  //
-  // Below all methods are nop.
-  //
-  //===================================
-
 
 
   /**
