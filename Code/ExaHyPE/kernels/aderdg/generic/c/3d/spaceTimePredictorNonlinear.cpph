@@ -236,7 +236,7 @@ void aderPicardLoopNonlinear(const double* luh, const double dt,
       break;
     }
 
-    if (iter == MaxIterations) {  // No convergence after last iteration
+    if (iter == (MaxIterations - 1)) {  // No convergence after last iteration
       static tarch::logging::Log _log("kernels::aderdg::generic::c");
       logWarning("aderPicardLoopNonlinear(...)",
                  "|res|^2=" << sq_res << " > |tol|^2=" << tol * tol << " after "
