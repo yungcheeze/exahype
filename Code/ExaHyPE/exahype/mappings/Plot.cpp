@@ -17,7 +17,8 @@
 
 #include "peano/utils/Globals.h"
 
-#include "exahype/solvers/Solver.h"
+#include "exahype/solvers/ADERDGSolver.h"
+#include "exahype/solvers/FiniteVolumesSolver.h"
 
 #include "exahype/plotters/Plotter.h"
 
@@ -295,39 +296,81 @@ void exahype::mappings::Plot::enterCell(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
   if ( fineGridCell.isInitialised() ) {
-    for (auto& pPlotter : exahype::plotters::RegisteredPlotters) {
-      // ADER-DG
-      for (int i=0; i<fineGridCell.getNumberOfADERDGCellDescriptions(); i++) {
-        if (
-          fineGridCell.getADERDGCellDescription(i).getType()==exahype::records::ADERDGCellDescription::Cell
-          &&
-          pPlotter->plotDataFromSolver( fineGridCell.getADERDGCellDescription(i).getSolverNumber() )
-        ) {
-          // Only cell descriptions of type Cell have a valid solution index.
-          double*  u = DataHeap::getInstance().getData(fineGridCell.getADERDGCellDescription(i).getSolution()).data();
-          
-          pPlotter->plotPatch(
-              fineGridVerticesEnumerator.getVertexPosition(),
-              fineGridVerticesEnumerator.getCellSize(), u,
-              fineGridCell.getADERDGCellDescription(i).getCorrectorTimeStamp());
+    for (auto pPlotter : exahype::plotters::RegisteredPlotters) {
+      int solverNumber=0;
+      for (auto solver : exahype::solvers::RegisteredSolvers) {
+        int element = solver->tryGetElement(fineGridCell.getCellDescriptionsIndex(),solverNumber);
+
+        if (element!=exahype::solvers::Solver::NotFound &&
+            pPlotter->plotDataFromSolver(solverNumber)) {
+          if (solver->getType()==exahype::solvers::Solver::Type::ADER_DG) {
+            auto& cellDescription =
+                exahype::solvers::ADERDGSolver::getCellDescription(
+                    fineGridCell.getCellDescriptionsIndex(),element);
+
+            if (cellDescription.getType()==
+                exahype::solvers::ADERDGSolver::CellDescription::Type::Cell) {
+              double*  u = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+
+              pPlotter->plotPatch(
+                  fineGridVerticesEnumerator.getVertexPosition(),
+                  fineGridVerticesEnumerator.getCellSize(), u,
+                  cellDescription.getCorrectorTimeStamp());
+            }
+
+
+          } else if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes){
+            auto& cellDescription =
+                exahype::solvers::FiniteVolumesSolver::getCellDescription(
+                    fineGridCell.getCellDescriptionsIndex(),element);
+
+            if (cellDescription.getType()==
+                exahype::solvers::FiniteVolumesSolver::CellDescription::Type::Cell) {
+              double*  u = DataHeap::getInstance().getData(cellDescription.getSolution()).data();
+
+              pPlotter->plotPatch(
+                  fineGridVerticesEnumerator.getVertexPosition(),
+                  fineGridVerticesEnumerator.getCellSize(), u,
+                  cellDescription.getTimeStamp());
+            }
+          }
         }
+        ++solverNumber;
       }
-      // FINITE VOLUMES
-      for (int i=0; i<fineGridCell.getNumberOfFiniteVolumeCellDescriptions(); i++) {
-        if (
-          fineGridCell.getFiniteVolumesCellDescription(i).getType()==exahype::records::FiniteVolumesCellDescription::Cell
-          &&
-          pPlotter->plotDataFromSolver( fineGridCell.getFiniteVolumesCellDescription(i).getSolverNumber() )
-        ) {
-          // Only cell descriptions of type Cell have a valid solution index.
-          double*  u = DataHeap::getInstance().getData(fineGridCell.getFiniteVolumesCellDescription(i).getSolution()).data();
-          
-          pPlotter->plotPatch(
-              fineGridVerticesEnumerator.getVertexPosition(),
-              fineGridVerticesEnumerator.getCellSize(), u,
-              fineGridCell.getFiniteVolumesCellDescription(i).getTimeStamp());
-        }
-      }
+
+      // TODO(Dominic): Old code for reference. Remove if not needed anymore
+//      // ADER-DG
+//      for (int i=0; i<fineGridCell.getNumberOfADERDGCellDescriptions(); i++) {
+//        if (
+//          fineGridCell.getADERDGCellDescription(i).getType()==exahype::records::ADERDGCellDescription::Cell
+//          &&
+//          pPlotter->plotDataFromSolver( fineGridCell.getADERDGCellDescription(i).getSolverNumber() )
+//        ) {
+//          // Only cell descriptions of type Cell have a valid solution index.
+//          double*  u = DataHeap::getInstance().getData(fineGridCell.getADERDGCellDescription(i).getSolution()).data();
+//
+//          pPlotter->plotPatch(
+//              fineGridVerticesEnumerator.getVertexPosition(),
+//              fineGridVerticesEnumerator.getCellSize(), u,
+//              fineGridCell.getADERDGCellDescription(i).getCorrectorTimeStamp());
+//        }
+//      }
+//      // FINITE VOLUMES
+//      for (int i=0; i<fineGridCell.getNumberOfFiniteVolumeCellDescriptions(); i++) {
+//        if (
+//          fineGridCell.getFiniteVolumesCellDescription(i).getType()==exahype::records::FiniteVolumesCellDescription::Cell
+//          &&
+//          pPlotter->plotDataFromSolver( fineGridCell.getFiniteVolumesCellDescription(i).getSolverNumber() )
+//        ) {
+//          // Only cell descriptions of type Cell have a valid solution index.
+//          double*  u = DataHeap::getInstance().getData(fineGridCell.getFiniteVolumesCellDescription(i).getSolution()).data();
+//
+//          pPlotter->plotPatch(
+//              fineGridVerticesEnumerator.getVertexPosition(),
+//              fineGridVerticesEnumerator.getCellSize(), u,
+//              fineGridCell.getFiniteVolumesCellDescription(i).getTimeStamp());
+//        }
+//      }
     }
   }
 }
