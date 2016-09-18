@@ -1534,22 +1534,26 @@ void exahype::solvers::ADERDGSolver::mergeSolutionMinMaxOnFace(
       pRight.getType()==CellDescription::Cell) {
     assertion( pLeft.getSolverNumber() == pRight.getSolverNumber() );
     const int numberOfVariables = getNumberOfVariables();
+    double* minLeft  = DataHeap::getInstance().getData( pLeft.getSolutionMin()  ).data()  + faceIndexLeft  * numberOfVariables;
+    double* minRight = DataHeap::getInstance().getData( pRight.getSolutionMin()  ).data() + faceIndexRight * numberOfVariables;
+    double* maxLeft  = DataHeap::getInstance().getData( pLeft.getSolutionMax()  ).data()  + faceIndexLeft  * numberOfVariables;
+    double* maxRight = DataHeap::getInstance().getData( pRight.getSolutionMax()  ).data() + faceIndexRight * numberOfVariables;
 
     for (int i=0; i<numberOfVariables; i++) {
-      double min = std::min(
-          DataHeap::getInstance().getData( pLeft.getSolutionMin()  )[i+faceIndexLeft *numberOfVariables],
-          DataHeap::getInstance().getData( pRight.getSolutionMin() )[i+faceIndexRight*numberOfVariables]
+      const double min = std::min(
+          *(minLeft+i),
+          *(minRight+i)
       );
-      double max = std::max(
-          DataHeap::getInstance().getData( pLeft.getSolutionMax()  )[i+faceIndexLeft *numberOfVariables],
-          DataHeap::getInstance().getData( pRight.getSolutionMax() )[i+faceIndexRight*numberOfVariables]
+      const double max = std::max(
+          *(maxLeft+i),
+          *(maxRight+i)
       );
 
-      DataHeap::getInstance().getData( pLeft.getSolutionMin()  )[i+faceIndexLeft *numberOfVariables] = min;
-      DataHeap::getInstance().getData( pRight.getSolutionMin() )[i+faceIndexRight*numberOfVariables] = min;
+      *(minLeft+i)  = min;
+      *(minRight+i) = min;
 
-      DataHeap::getInstance().getData( pLeft.getSolutionMax()  )[i+faceIndexLeft *numberOfVariables] = max;
-      DataHeap::getInstance().getData( pRight.getSolutionMax() )[i+faceIndexRight*numberOfVariables] = max;
+      *(maxLeft+i)  = max;
+      *(maxRight+i) = max;
     }
   } // else do nothing
 }
@@ -1761,7 +1765,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourMetadata(
     case CellDescription::EmptyDescendant:
       // TODO(Dominic): Add to docu what we do here.
       if (type==CellDescription::Cell) {
-        p.setARemoteBoundaryNeighbourIsOfTypeCell(true);
+        p.setOneRemoteBoundaryNeighbourIsOfTypeCell(true);
       }
 
       // 2. Request further augmentation if necessary (this might get reset if the traversal
@@ -1776,7 +1780,7 @@ void exahype::solvers::ADERDGSolver::mergeWithNeighbourMetadata(
     case CellDescription::EmptyAncestor:
       // TODO(Dominic): Add to docu what we do here.
       if (type==CellDescription::Cell) {
-        p.setARemoteBoundaryNeighbourIsOfTypeCell(true);
+        p.setOneRemoteBoundaryNeighbourIsOfTypeCell(true);
       }
       break;
     default:
