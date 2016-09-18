@@ -204,7 +204,7 @@ void exahype::mappings::Merging::mergeWithNeighbour(
     const tarch::la::Vector<DIMENSIONS, double>& fineGridH, int level) {
 
   if (_localState.getMergeMode()==exahype::records::State::MergeFaceData ||
-      _localState.getMergeMode()==exahype::records::State::MergeTimeStepAndFaceData) {
+      _localState.getMergeMode()==exahype::records::State::MergeTimeStepDataAndFaceData) {
     #if !defined(PeriodicBC)
       if (vertex.isBoundary()) return; // TODO(Dominic): Discussion necessary
     #endif
@@ -325,7 +325,8 @@ void exahype::mappings::Merging::receiveDataFromMaster(
     const peano::grid::VertexEnumerator& workersCoarseGridVerticesEnumerator,
     exahype::Cell& workersCoarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  if (_localState.getMergeMode()==) {
+  if (_localState.getMergeMode()==exahype::records::State::MergeMode::MergeTimeStepData ||
+      _localState.getMergeMode()==exahype::records::State::MergeMode::MergeTimeStepDataAndFaceData) {
     for (auto& solver : exahype::solvers::RegisteredSolvers) {
       solver->mergeWithMasterData(
           tarch::parallel::NodePool::getInstance().getMasterRank(),
@@ -392,6 +393,39 @@ void exahype::mappings::Merging::mergeWithWorker(
   // TODO(Dominic): 1. Copy the received data to the local cell (Maybe just "swap" the indices and delete previous local cell data).
 }
 
+void exahype::mappings::Merging::mergeWithRemoteDataDueToForkOrJoin(
+    exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
+    int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // do nothing
+}
+
+void exahype::mappings::Merging::mergeWithRemoteDataDueToForkOrJoin(
+    exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
+    int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
+    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
+  // do nothing
+}
+
+void exahype::mappings::Merging::mergeWithWorker(
+    exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
+    const tarch::la::Vector<DIMENSIONS, double>& x,
+    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
+  // do nothing
+}
+
+bool exahype::mappings::Merging::prepareSendToWorker(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker) {
+  // do nothing
+  return false;
+}
+
 void exahype::mappings::Merging::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
@@ -438,26 +472,6 @@ void exahype::mappings::Merging::prepareCopyToRemoteNode(
   // do nothing
 }
 
-void exahype::mappings::Merging::mergeWithRemoteDataDueToForkOrJoin(
-    exahype::Vertex& localVertex, const exahype::Vertex& masterOrWorkerVertex,
-    int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
-    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // do nothing
-}
-
-void exahype::mappings::Merging::mergeWithRemoteDataDueToForkOrJoin(
-    exahype::Cell& localCell, const exahype::Cell& masterOrWorkerCell,
-    int fromRank, const tarch::la::Vector<DIMENSIONS, double>& cellCentre,
-    const tarch::la::Vector<DIMENSIONS, double>& cellSize, int level) {
-  // do nothing
-}
-
-void exahype::mappings::Merging::mergeWithWorker(
-    exahype::Vertex& localVertex, const exahype::Vertex& receivedMasterVertex,
-    const tarch::la::Vector<DIMENSIONS, double>& x,
-    const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
-  // do nothing
-}
 #endif
 
 exahype::mappings::Merging::Merging() {
