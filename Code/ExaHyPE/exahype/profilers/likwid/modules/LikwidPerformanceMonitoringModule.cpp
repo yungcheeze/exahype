@@ -1325,7 +1325,8 @@ static const std::function<double(int, const std::vector<uint64_t>&,
           // PMC0/(PMC0+PMC1+PMC2+PMC3+PMC4+PMC5+PMC6+PMC7)
           return static_cast<double>(counter_values[3 + 0]) /
                  static_cast<double>(std::accumulate(counter_values.begin() + 3,
-                                                     counter_values.end(), 0));
+                                                     counter_values.end(),
+                                                     static_cast<uint64_t>(0)));
         },
         // Port1 usage ratio
         [](int group_id, const std::vector<uint64_t>& counter_values,
@@ -1333,7 +1334,8 @@ static const std::function<double(int, const std::vector<uint64_t>&,
           // PMC1/(PMC0+PMC1+PMC2+PMC3+PMC4+PMC5+PMC6+PMC7)
           return static_cast<double>(counter_values[3 + 1]) /
                  static_cast<double>(std::accumulate(counter_values.begin() + 3,
-                                                     counter_values.end(), 0));
+                                                     counter_values.end(),
+                                                     static_cast<uint64_t>(0)));
         },
         // Port2 usage ratio
         [](int group_id, const std::vector<uint64_t>& counter_values,
@@ -1341,7 +1343,8 @@ static const std::function<double(int, const std::vector<uint64_t>&,
           // PMC2/(PMC0+PMC1+PMC2+PMC3+PMC4+PMC5+PMC6+PMC7)
           return static_cast<double>(counter_values[3 + 2]) /
                  static_cast<double>(std::accumulate(counter_values.begin() + 3,
-                                                     counter_values.end(), 0));
+                                                     counter_values.end(),
+                                                     static_cast<uint64_t>(0)));
         },
         // Port3 usage ratio
         [](int group_id, const std::vector<uint64_t>& counter_values,
@@ -1349,7 +1352,8 @@ static const std::function<double(int, const std::vector<uint64_t>&,
           // PMC3/(PMC0+PMC1+PMC2+PMC3+PMC4+PMC5+PMC6+PMC7)
           return static_cast<double>(counter_values[3 + 3]) /
                  static_cast<double>(std::accumulate(counter_values.begin() + 3,
-                                                     counter_values.end(), 0));
+                                                     counter_values.end(),
+                                                     static_cast<uint64_t>(0)));
         },
         // Port4 usage ratio
         [](int group_id, const std::vector<uint64_t>& counter_values,
@@ -1357,7 +1361,8 @@ static const std::function<double(int, const std::vector<uint64_t>&,
           // PMC4/(PMC0+PMC1+PMC2+PMC3+PMC4+PMC5+PMC6+PMC7)
           return static_cast<double>(counter_values[3 + 4]) /
                  static_cast<double>(std::accumulate(counter_values.begin() + 3,
-                                                     counter_values.end(), 0));
+                                                     counter_values.end(),
+                                                     static_cast<uint64_t>(0)));
         },
         // Port5 usage ratio
         [](int group_id, const std::vector<uint64_t>& counter_values,
@@ -1365,7 +1370,8 @@ static const std::function<double(int, const std::vector<uint64_t>&,
           // PMC5/(PMC0+PMC1+PMC2+PMC3+PMC4+PMC5+PMC6+PMC7)
           return static_cast<double>(counter_values[3 + 5]) /
                  static_cast<double>(std::accumulate(counter_values.begin() + 3,
-                                                     counter_values.end(), 0));
+                                                     counter_values.end(),
+                                                     static_cast<uint64_t>(0)));
         },
         // Port6 usage ratio
         [](int group_id, const std::vector<uint64_t>& counter_values,
@@ -1373,7 +1379,8 @@ static const std::function<double(int, const std::vector<uint64_t>&,
           // PMC6/(PMC0+PMC1+PMC2+PMC3+PMC4+PMC5+PMC6+PMC7)
           return static_cast<double>(counter_values[3 + 6]) /
                  static_cast<double>(std::accumulate(counter_values.begin() + 3,
-                                                     counter_values.end(), 0));
+                                                     counter_values.end(),
+                                                     static_cast<uint64_t>(0)));
         },
         // Port7 usage ratio
         [](int group_id, const std::vector<uint64_t>& counter_values,
@@ -1381,7 +1388,8 @@ static const std::function<double(int, const std::vector<uint64_t>&,
           // PMC7/(PMC0+PMC1+PMC2+PMC3+PMC4+PMC5+PMC6+PMC7)
           return static_cast<double>(counter_values[3 + 7]) /
                  static_cast<double>(std::accumulate(counter_values.begin() + 3,
-                                                     counter_values.end(), 0));
+                                                     counter_values.end(),
+                                                     static_cast<uint64_t>(0)));
         },
 };
 
