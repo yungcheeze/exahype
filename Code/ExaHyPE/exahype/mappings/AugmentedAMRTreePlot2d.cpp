@@ -29,8 +29,8 @@
 tarch::logging::Log exahype::mappings::AugmentedAMRTreePlot2d::_log(
     "exahype::mappings::AugmentedAMRTreePlot2d");
 
-int exahype::mappings::AugmentedAMRTreePlot2d::_snapshotCounter = 0;
-double exahype::mappings::AugmentedAMRTreePlot2d::SqueezeZAxis = 4.0;
+int exahype::mappings::AugmentedAMRTreePlot2d::_snapshotCounter        = 0;
+double exahype::mappings::AugmentedAMRTreePlot2d::SqueezeZAxis         = 4.0;
 double exahype::mappings::AugmentedAMRTreePlot2d::TreeConnectionsValue = -100.0;
 
 peano::CommunicationSpecification
@@ -422,10 +422,12 @@ void exahype::mappings::AugmentedAMRTreePlot2d::beginIteration(
   _cellDescriptionIndexWriter =
       _vtkWriter->createCellDataWriter("NoPatch=-1,ValidPatch>=0", 1);
   _cellRefinementEventWriter = _vtkWriter->createCellDataWriter(
-      "NoPatch=-1,None=0,ErasingRequested=1,Restricting=2,Erasing=3,AllocatingMemory=4,"
-      "ErasingChildren=5,RefiningRequested=6,Refining=7,Prolongating=8,"
-      "DeaugmentingRequested=9,AugmentingRequested=10,Augmenting=11)",
-      1);
+      "refinement-event(NoPatch=-1,None=0,ErasingChildrenReq=1,"
+      "ErasingChildren=2,ChangeToDescendantsReq=3,"
+      "ChangeToDescendants=4,RefReq=5,Ref=6,"
+      "DeaugChildrenReq=7,DeaugChildren=8,"
+      "AugReq=9,Aug=10)"
+      ,1);
   _cellDataWriter = _vtkWriter->createCellDataWriter(
       "None=0,OnlyFaceData=1,VolumeAndFaceData=3)", 1);
 }
