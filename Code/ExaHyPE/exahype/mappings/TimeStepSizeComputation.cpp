@@ -29,11 +29,6 @@
 
 #include <limits>
 
-
-bool exahype::mappings::TimeStepSizeComputation::SkipReductionInBatchedTimeSteps = false;
-
-
-
 peano::CommunicationSpecification
 exahype::mappings::TimeStepSizeComputation::communicationSpecification() {
   return peano::CommunicationSpecification(
@@ -84,9 +79,6 @@ exahype::mappings::TimeStepSizeComputation::descendSpecification() {
 
 tarch::logging::Log exahype::mappings::TimeStepSizeComputation::_log(
     "exahype::mappings::TimeStepSizeComputation");
-int exahype::mappings::TimeStepSizeComputation::_mpiTag =
-    tarch::parallel::Node::reserveFreeTag(
-        "exahype::mappings::TimeStepSizeComputation");
 
 void exahype::mappings::TimeStepSizeComputation::
     prepareEmptyLocalTimeStepData() {
@@ -117,7 +109,8 @@ void exahype::mappings::TimeStepSizeComputation::mergeWithWorkerThread(
 static double startNewTimeStepFV(
     const int cellDescriptionsIndex,
     const int element,
-    const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices) {
+    exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator) {
   exahype::solvers::FiniteVolumesSolver::CellDescription& p =
       exahype::solvers::FiniteVolumesSolver::Heap::getInstance().getData(cellDescriptionsIndex)[element];
   exahype::solvers::FiniteVolumesSolver* solver = static_cast<exahype::solvers::FiniteVolumesSolver*>(
@@ -125,8 +118,11 @@ static double startNewTimeStepFV(
 
   if (p.getType()==exahype::records::FiniteVolumesCellDescription::Cell) {
 //         assertion1(p.getRefinementEvent()==exahype::records::FiniteVolumesCellDescription::None,p.toString()); // todo refine
+    const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices = multiscalelinkedcell::getIndicesAroundCell(
+                    exahype::VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices));
     assertion1(multiscalelinkedcell::HangingVertexBookkeeper::allAdjacencyInformationIsAvailable(
-        VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices)),fineGridVerticesEnumerator.toString());
+        exahype::VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices)),
+               fineGridVerticesEnumerator.toString());
 
     double* finiteVolumesSolutions[THREE_POWER_D];
     for (int nScalar=0; nScalar<THREE_POWER_D; ++nScalar) {
@@ -186,11 +182,10 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
         // function should be split in startNewTimeStep and updateSolution
         // solver functionality.
         if (solver->getType()==exahype::solvers::Solver::Type::FiniteVolumes) {
-          const tarch::la::Vector<THREE_POWER_D, int> neighbourCellDescriptionsIndices = multiscalelinkedcell::getIndicesAroundCell(
-                VertexOperations::readCellDescriptionsIndex(fineGridVerticesEnumerator, fineGridVertices));
-
           admissibleTimeStepSize =
-              startNewTimeStepFV(fineGridCell.getCellDescriptionsIndex(),element,neighbourCellDescriptionsIndices);
+              startNewTimeStepFV(fineGridCell.getCellDescriptionsIndex(),element,
+                                 fineGridVertices,
+                                 fineGridVerticesEnumerator);
         }
         _minTimeStepSizes[solverNumber] = std::min(
             admissibleTimeStepSize, _minTimeStepSizes[solverNumber]); // todo MPI
@@ -204,33 +199,28 @@ void exahype::mappings::TimeStepSizeComputation::enterCell(
 void exahype::mappings::TimeStepSizeComputation::beginIteration(
     exahype::State& solverState) {
   prepareEmptyLocalTimeStepData();
-
-  #ifdef Parallel
-  DataHeap::getInstance().finishedToSendSynchronousData(); // See method documentation.
-  DataHeap::getInstance().startToSendSynchronousData(); // See method documentation.
-  #endif
 }
 
 void exahype::mappings::TimeStepSizeComputation::endIteration(
     exahype::State& solverState) {
-  for (int i = 0; i < static_cast<int>(exahype::solvers::RegisteredSolvers.size()); i++) {
-    exahype::solvers::Solver* solver = exahype::solvers::RegisteredSolvers[i];
 
+  int solverNumber=0;
+  for (auto& solver : exahype::solvers::RegisteredSolvers) {
     logDebug("mergeLocalTimeStepDataIntoSolvers()",
-             "solver " << i << " is updated with time step size "
-                       << _minTimeStepSizes[i]);
-    // TODO(Dominic): Fix bug:
-    // This is buggy: The local solver already gets his
-    // time step updated with an partially reduced time step size.
-    // nextTimeStepSize must must be transferred to the solver before
-    // we call startNewTimeStep() on the solver.
-    solver->updateNextTimeStepSize(_minTimeStepSizes[i]);
+             "solver " << solverNumber << " is updated with time step size "
+                       << _minTimeStepSizes[solverNumber]);
+    // Here we follow again the start new time step "in the small"
+    // and overwrite it later on again if a synchronisation is applied.
+    assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
+    solver->updateNextTimeStepSize(_minTimeStepSizes[solverNumber]);
     solver->startNewTimeStep();
+
+    ++solverNumber;
   }
 }
 
 #ifdef Parallel
-// Worker-master comm. Send to master.
+
 void exahype::mappings::TimeStepSizeComputation::prepareSendToMaster(
     exahype::Cell& localCell, exahype::Vertex* vertices,
     const peano::grid::VertexEnumerator& verticesEnumerator,
@@ -238,21 +228,20 @@ void exahype::mappings::TimeStepSizeComputation::prepareSendToMaster(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     const exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-  // TODO(Dominic): Merge with other Master-Worker exchanges: FaceUnknownsProjection
-
-  for (auto dt : _minTimeStepSizes) {
-    assertion1(dt>0,dt);
-  }
-
-  DataHeap::getInstance().sendData(
-      _minTimeStepSizes.data(),_minTimeStepSizes.size(),
-      tarch::parallel::NodePool::getInstance().getMasterRank(),
-      verticesEnumerator.getCellCenter(),
-      verticesEnumerator.getLevel(),
-      peano::heap::MessageType::MasterWorkerCommunication);
+//  TODO(Dominic): Old code; remove when not needed anymore
+//
+//  for (auto dt : _minTimeStepSizes) {
+//    assertion1(dt>0,dt);
+//  }
+//
+//  DataHeap::getInstance().sendData(
+//      _minTimeStepSizes.data(),_minTimeStepSizes.size(),
+//      tarch::parallel::NodePool::getInstance().getMasterRank(),
+//      verticesEnumerator.getCellCenter(),
+//      verticesEnumerator.getLevel(),
+//      peano::heap::MessageType::MasterWorkerCommunication);
 }
 
-// Worker-master comm. Receive from worker.
 void exahype::mappings::TimeStepSizeComputation::mergeWithMaster(
     const exahype::Cell& workerGridCell,
     exahype::Vertex* const workerGridVertices,
@@ -265,31 +254,31 @@ void exahype::mappings::TimeStepSizeComputation::mergeWithMaster(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker, const exahype::State& workerState,
     exahype::State& masterState) {
-  for (auto dt : _minTimeStepSizes) {
-    assertion1(dt>0.0,dt);
-  } // Dead code elimination will get rid of this loop if Debug/Asserts flag is not set.
-
-  std::vector<double> receivedMinTimeStepSizes(_minTimeStepSizes.size());
-  DataHeap::getInstance().receiveData(
-      receivedMinTimeStepSizes.data(),receivedMinTimeStepSizes.size(),
-      worker,
-      fineGridVerticesEnumerator.getCellCenter(),
-      fineGridVerticesEnumerator.getLevel(),
-      peano::heap::MessageType::MasterWorkerCommunication);
-
-  for (int i = 0; i < static_cast<int>(_minTimeStepSizes.size()); i++) {
-    _minTimeStepSizes[i] =
-        std::min(_minTimeStepSizes[i], receivedMinTimeStepSizes[i]);
-  }
-
-  for (auto dt : receivedMinTimeStepSizes) {
-    assertion1(dt>0.0,dt);
-  } // Dead code elimination will get rid of this.
-  for (auto dt : _minTimeStepSizes) {
-    assertion1(dt>0.0,dt);
-  } // Dead code elimination will get rid of this loop if Debug/Asserts flag is not set.
+//  TODO(Dominic): Old code; remove when not needed anymore
+//  for (auto dt : _minTimeStepSizes) {
+//    assertion1(dt>0.0,dt);
+//  } // Dead code elimination will get rid of this loop if Debug/Asserts flag is not set.
+//
+//  std::vector<double> receivedMinTimeStepSizes(_minTimeStepSizes.size());
+//  DataHeap::getInstance().receiveData(
+//      receivedMinTimeStepSizes.data(),receivedMinTimeStepSizes.size(),
+//      worker,
+//      fineGridVerticesEnumerator.getCellCenter(),
+//      fineGridVerticesEnumerator.getLevel(),
+//      peano::heap::MessageType::MasterWorkerCommunication);
+//
+//  for (int i = 0; i < static_cast<int>(_minTimeStepSizes.size()); i++) {
+//    _minTimeStepSizes[i] =
+//        std::min(_minTimeStepSizes[i], receivedMinTimeStepSizes[i]);
+//  }
+//
+//  for (auto dt : receivedMinTimeStepSizes) {
+//    assertion1(dt>0.0,dt);
+//  } // Dead code elimination will get rid of this.
+//  for (auto dt : _minTimeStepSizes) {
+//    assertion1(dt>0.0,dt);
+//  } // Dead code elimination will get rid of this loop if Debug/Asserts flag is not set.
 }
-
 
 bool exahype::mappings::TimeStepSizeComputation::prepareSendToWorker(
     exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
@@ -299,14 +288,14 @@ bool exahype::mappings::TimeStepSizeComputation::prepareSendToWorker(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker) {
-  if (
-    !peano::parallel::loadbalancing::Oracle::getInstance().isLoadBalancingActivated()
-    &&
-    SkipReductionInBatchedTimeSteps
-  ) {
-    return false;
-  }
-  else return true;
+//  if ( // move this in sending
+//    !peano::parallel::loadbalancing::Oracle::getInstance().isLoadBalancingActivated()
+//    &&
+//    SkipReductionInBatchedTimeSteps
+//  ) {
+//    return false;
+//  }
+//  else return true;
 }
 
 

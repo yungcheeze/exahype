@@ -59,19 +59,11 @@ namespace exahype {
  * @author Dominic Charrier, Tobias Weinzierl
  */
 class exahype::mappings::TimeStepSizeComputation {
- public:
-   static bool SkipReductionInBatchedTimeSteps;
-
  private:
   /**
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
-
-  /**
-   * Tag that is used to exchange all the solver instances in MPI
-   */
-  static int _mpiTag;
 
   /**
    * A minimum solver time step size for each thread in a multicore run.
