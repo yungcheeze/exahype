@@ -206,7 +206,7 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
   solverState.setStabilityConditionOfOneSolverWasViolated(false);
 
   int solverNumber=0;
-  for (auto& solver : exahype::solvers::RegisteredSolvers) {
+  for (auto solver : exahype::solvers::RegisteredSolvers) {
     assertion1(std::isfinite(_minTimeStepSizes[solverNumber]),_minTimeStepSizes[solverNumber]);
     assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
 
@@ -219,11 +219,10 @@ void exahype::mappings::TimeStepSizeComputation::endIteration(
         #endif
     ) {
       auto aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
-
       const double stableTimeStepSize = aderdgSolver->getMinNextPredictorTimeStepSize();
-      const double usedTimeStepSize   = aderdgSolver->getMinNextPredictorTimeStepSize();
+      const double usedTimeStepSize   = aderdgSolver->getMinPredictorTimeStepSize();
       bool solverTimeStepSizeIsInstable =
-          aderdgSolver->getMinPredictorTimeStepSize() > stableTimeStepSize;
+          usedTimeStepSize > stableTimeStepSize;
 
       if (solverTimeStepSizeIsInstable) {
         solverState.setStabilityConditionOfOneSolverWasViolated(true);

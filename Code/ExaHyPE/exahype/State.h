@@ -177,6 +177,7 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   }
 
   void switchToADERDGTimeStepContext() {
+    _stateData.setFuseADERDGPhases(true);
     _stateData.setMergeMode(records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData);
     _stateData.setSendMode (records::State::ReduceAndMergeTimeStepDataAndSendFaceData);
   }
@@ -191,11 +192,13 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
   }
 
   void switchToSolutionUpdateAndTimeStepSizeComputationContext() {
+    _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::MergeNothing);
     _stateData.setSendMode (records::State::ReduceAndMergeTimeStepData);
   }
 
   void switchToPredictionContext() {
+    _stateData.setFuseADERDGPhases(false);
     _stateData.setMergeMode(records::State::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendFaceData);
   }

@@ -395,14 +395,10 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    */
   initSolverTimeStamps();
 
+  repository.getState().setFuseADERDGPhases(false);
   repository.getState().switchToInitialConditionAndTimeStepSizeComputationContext();
   repository.switchToInitialConditionAndTimeStepSizeComputation();
   repository.iterate();
-
-//  #if defined(Dim2) && defined(Asserts)
-//  repository.switchToPlotAugmentedAMRGrid();
-//  repository.iterate();
-//  #endif // TODO(Dominic): Move into first plot mapping.
 
   /*
    * Set the time stamps of the solvers to the initial value again.
@@ -421,6 +417,7 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    * Set current time step size as old time step size of next iteration.
    * Compute the current time step size of the next iteration.
    */
+  repository.getState().setFuseADERDGPhases(false);
   repository.getState().switchToPredictionAndTimeStepSizeComputationContext();
   bool plot = exahype::plotters::isAPlotterActive(
       solvers::Solver::getMinSolverTimeStampOfAllSolvers());
@@ -465,7 +462,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
         solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
     if (_parser.getFuseAlgorithmicSteps()) {
-      repository.getState().setFuseADERDGPhases(true);
       repository.getState().setTimeStepSizeWeightForPredictionRerun(
           _parser.getFuseAlgorithmicStepsFactor());
 
@@ -494,8 +490,6 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
       recomputePredictorIfNecessary(repository);
       printTimeStepInfo(numberOfStepsToRun);
     } else {
-      repository.getState().setFuseADERDGPhases(false);
-
       runOneTimeStampWithThreeSeparateAlgorithmicSteps(repository, plot);
       printTimeStepInfo(1);
     }
