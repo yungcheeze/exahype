@@ -859,10 +859,8 @@ public:
 
   double getMinPredictorTimeStamp() const;
 
-  // @todo 25/02/16:Dominic Etienne Charrier
-  // @Tobias: The time step size getters are only used for
-  // debugging/assertion purposes at the moment and will
-  // be removed if the time stepping works robust again.
+  void setMinCorrectorTimeStepSize(double minCorrectorTimeStepSize);
+
   double getMinCorrectorTimeStepSize() const;
 
   void setMinPredictorTimeStepSize(double minPredictorTimeStepSize);

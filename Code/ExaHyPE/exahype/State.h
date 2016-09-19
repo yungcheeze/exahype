@@ -168,17 +168,17 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
    * See both mappings for more details.
    */
   void switchToInitialConditionAndTimeStepSizeComputationContext() {
-    switchToSolutionUpdateAndTimeStepSizeComputationContex();
+    switchToSolutionUpdateAndTimeStepSizeComputationContext();
   }
 
   void switchToPredictionAndTimeStepSizeComputationContext() {
-    _stateData.setMergeMode(records::State::MergeTimeStepData);
-    _stateData.setSendMode (records::State::SendTimeStepDataAndFaceData);
+    _stateData.setMergeMode(records::State::BroadcastAndMergeTimeStepData);
+    _stateData.setSendMode (records::State::ReduceAndMergeTimeStepDataAndSendFaceData);
   }
 
   void switchToADERDGTimeStepContext() {
-    _stateData.setMergeMode(records::State::MergeTimeStepDataAndFaceData);
-    _stateData.setSendMode (records::State::SendTimeStepDataAndFaceData);
+    _stateData.setMergeMode(records::State::BroadcastAndMergeTimeStepDataAndMergeFaceData);
+    _stateData.setSendMode (records::State::ReduceAndMergeTimeStepDataAndSendFaceData);
   }
 
   void switchToPredictionRerunContext() {
@@ -190,14 +190,38 @@ class exahype::State : public peano::grid::State<exahype::records::State> {
     _stateData.setSendMode (records::State::SendNothing);
   }
 
-  void switchToSolutionUpdateAndTimeStepSizeComputationContex() {
+  void switchToSolutionUpdateAndTimeStepSizeComputationContext() {
     _stateData.setMergeMode(records::State::MergeNothing);
-    _stateData.setSendMode (records::State::SendTimeStepData);
+    _stateData.setSendMode (records::State::ReduceAndMergeTimeStepData);
   }
 
   void switchToPredictionContext() {
-    _stateData.setMergeMode(records::State::MergeTimeStepData);
+    _stateData.setMergeMode(records::State::BroadcastAndMergeTimeStepData);
     _stateData.setSendMode (records::State::SendFaceData);
+  }
+
+  void setStabilityConditionOfOneSolverWasViolated(bool state) {
+    _stateData.setStabilityConditionOfOneSolverWasViolated(state);
+  }
+
+  bool stabilityConditionOfOneSolverWasViolated() {
+    return _stateData.getStabilityConditionOfOneSolverWasViolated();
+  }
+
+  void setFuseADERDGPhases(bool state) {
+    _stateData.setFuseADERDGPhases(state);
+  }
+
+  bool fuseADERDGPhases() {
+    return _stateData.getFuseADERDGPhases();
+  }
+
+  void setTimeStepSizeWeightForPredictionRerun(double value) {
+    _stateData.setTimeStepSizeWeightForPredictionRerun(value);
+  }
+
+  double getTimeStepSizeWeightForPredictionRerun() {
+    return _stateData.getTimeStepSizeWeightForPredictionRerun();
   }
 };
 

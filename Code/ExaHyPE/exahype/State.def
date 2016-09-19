@@ -143,7 +143,9 @@ class exahype::dastgen::State {
    * This flag indicates if at least one solver
    * has performed a time step with an 
    * instable (too large) time step size and
-   * thus needs to be recomputed. 
+   * thus needs to be recomputed.
+   * This can happen when we run the fused ADER-DG
+   * variant. 
    * 
    * Needs to be reset after the affected
    * solvers have been rerun with a
@@ -151,9 +153,27 @@ class exahype::dastgen::State {
    * 
    * <h2>MPI</h2>
    * This flag does not need to be parallelised since
-   * we merge the next time step sizes.
-   * Thus we can re-evaluate the stability criterion
-   * for all solvers again on every master.
+   * we use it only for the global master rank.
    */
   persistent bool stabilityConditionOfOneSolverWasViolated;
+  
+  /**
+   * Flag indicating if we run the fused ADER-DG time
+   * stepping variant.
+   * 
+   * <h2>MPI</h2>
+   * This flag does not need to be parallelised since
+   * we use it only for the global master rank.
+   */
+  persistent bool fuseADERDGPhases;
+  
+  /**
+   * A factor in the range (0,1] that
+   * is used for reseting the time step sizes
+   * of an ADER-DG solver.
+   * 
+   * The reset corrector and predictor time step sizes
+   * are reset to a stable time step size times this factor. 
+   */
+  persistent double timeStepSizeWeightForPredictionRerun;
 };

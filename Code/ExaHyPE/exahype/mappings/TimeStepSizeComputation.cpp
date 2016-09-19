@@ -203,21 +203,52 @@ void exahype::mappings::TimeStepSizeComputation::beginIteration(
 
 void exahype::mappings::TimeStepSizeComputation::endIteration(
     exahype::State& solverState) {
+  solverState.setStabilityConditionOfOneSolverWasViolated(false);
 
   int solverNumber=0;
   for (auto& solver : exahype::solvers::RegisteredSolvers) {
-    logDebug("mergeLocalTimeStepDataIntoSolvers()",
-             "solver " << solverNumber << " is updated with time step size "
-                       << _minTimeStepSizes[solverNumber]);
-    // Here we follow again the start new time step "in the small"
-    // and overwrite it later on again if a synchronisation is applied.
+    assertion1(std::isfinite(_minTimeStepSizes[solverNumber]),_minTimeStepSizes[solverNumber]);
     assertion1(_minTimeStepSizes[solverNumber]>0.0,_minTimeStepSizes[solverNumber]);
+
     solver->updateNextTimeStepSize(_minTimeStepSizes[solverNumber]);
+    if (
+        solver->getType()==exahype::solvers::Solver::Type::ADER_DG &&
+        solverState.fuseADERDGPhases()
+        #ifdef Parallel
+        && tarch::parallel::Node::getInstance().getRank()==tarch::parallel::Node::getInstance().getGlobalMasterRank()
+        #endif
+    ) {
+      auto aderdgSolver = static_cast<exahype::solvers::ADERDGSolver*>(solver);
+
+      const double stableTimeStepSize = aderdgSolver->getMinNextPredictorTimeStepSize();
+      const double usedTimeStepSize   = aderdgSolver->getMinNextPredictorTimeStepSize();
+      bool solverTimeStepSizeIsInstable =
+          aderdgSolver->getMinPredictorTimeStepSize() > stableTimeStepSize;
+
+      if (solverTimeStepSizeIsInstable) {
+        solverState.setStabilityConditionOfOneSolverWasViolated(true);
+
+        const double timeStepSizeWeight = solverState.getTimeStepSizeWeightForPredictionRerun();
+        aderdgSolver->updateMinNextPredictorTimeStepSize(
+            timeStepSizeWeight * stableTimeStepSize);
+        aderdgSolver->setMinPredictorTimeStepSize(
+            timeStepSizeWeight * stableTimeStepSize);
+      } else {
+        aderdgSolver->updateMinNextPredictorTimeStepSize(
+            0.5 * (stableTimeStepSize + usedTimeStepSize));
+      }
+    }
     solver->startNewTimeStep();
 
     ++solverNumber;
   }
 }
+
+
+//
+// All methods below are nop.
+//
+//=====================================
 
 #ifdef Parallel
 
@@ -228,18 +259,7 @@ void exahype::mappings::TimeStepSizeComputation::prepareSendToMaster(
     const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
     const exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {
-//  TODO(Dominic): Old code; remove when not needed anymore
-//
-//  for (auto dt : _minTimeStepSizes) {
-//    assertion1(dt>0,dt);
-//  }
-//
-//  DataHeap::getInstance().sendData(
-//      _minTimeStepSizes.data(),_minTimeStepSizes.size(),
-//      tarch::parallel::NodePool::getInstance().getMasterRank(),
-//      verticesEnumerator.getCellCenter(),
-//      verticesEnumerator.getLevel(),
-//      peano::heap::MessageType::MasterWorkerCommunication);
+  // do nothing
 }
 
 void exahype::mappings::TimeStepSizeComputation::mergeWithMaster(
@@ -254,30 +274,7 @@ void exahype::mappings::TimeStepSizeComputation::mergeWithMaster(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker, const exahype::State& workerState,
     exahype::State& masterState) {
-//  TODO(Dominic): Old code; remove when not needed anymore
-//  for (auto dt : _minTimeStepSizes) {
-//    assertion1(dt>0.0,dt);
-//  } // Dead code elimination will get rid of this loop if Debug/Asserts flag is not set.
-//
-//  std::vector<double> receivedMinTimeStepSizes(_minTimeStepSizes.size());
-//  DataHeap::getInstance().receiveData(
-//      receivedMinTimeStepSizes.data(),receivedMinTimeStepSizes.size(),
-//      worker,
-//      fineGridVerticesEnumerator.getCellCenter(),
-//      fineGridVerticesEnumerator.getLevel(),
-//      peano::heap::MessageType::MasterWorkerCommunication);
-//
-//  for (int i = 0; i < static_cast<int>(_minTimeStepSizes.size()); i++) {
-//    _minTimeStepSizes[i] =
-//        std::min(_minTimeStepSizes[i], receivedMinTimeStepSizes[i]);
-//  }
-//
-//  for (auto dt : receivedMinTimeStepSizes) {
-//    assertion1(dt>0.0,dt);
-//  } // Dead code elimination will get rid of this.
-//  for (auto dt : _minTimeStepSizes) {
-//    assertion1(dt>0.0,dt);
-//  } // Dead code elimination will get rid of this loop if Debug/Asserts flag is not set.
+  // do nothing
 }
 
 bool exahype::mappings::TimeStepSizeComputation::prepareSendToWorker(
@@ -288,14 +285,8 @@ bool exahype::mappings::TimeStepSizeComputation::prepareSendToWorker(
     exahype::Cell& coarseGridCell,
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
     int worker) {
-//  if ( // move this in sending
-//    !peano::parallel::loadbalancing::Oracle::getInstance().isLoadBalancingActivated()
-//    &&
-//    SkipReductionInBatchedTimeSteps
-//  ) {
-//    return false;
-//  }
-//  else return true;
+  // do nothing
+  return false;
 }
 
 

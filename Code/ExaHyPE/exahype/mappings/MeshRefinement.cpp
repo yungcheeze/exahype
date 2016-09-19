@@ -305,16 +305,6 @@ void exahype::mappings::MeshRefinement::mergeWithNeighbour(
 
   // TODO(Dominic): Add to docu why we invert the order:
   // MPI message order: Stack principle.
-
-  // TODO(Dominic): remove
-  //  return;
-
-  // TODO(Dominic): AMR + MPI
-  // 1. Get metadata,
-  // 2. Set AugmentationRequest if neighbour is of type Ancestor
-  // 3. Change cell type of local cell description if neighbour is of type Cell.
-  //    (New) Change it to RemoteBoundaryAncestor/RemoteBoundaryDescendant; remove the flag
-  // 4. Delete metadata.
 #if !defined(PeriodicBC)
   if (vertex.isBoundary()) return;
 #endif
@@ -530,6 +520,18 @@ bool exahype::mappings::MeshRefinement::geometryInfoDoesMatch(
   return true;
 }
 
+bool exahype::mappings::MeshRefinement::prepareSendToWorker(
+    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
+    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
+    exahype::Vertex* const coarseGridVertices,
+    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
+    exahype::Cell& coarseGridCell,
+    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
+    int worker) {
+  // do nothing
+  return true;
+}
+
 //
 // All methods below are nop,
 //
@@ -547,18 +549,6 @@ void exahype::mappings::MeshRefinement::mergeWithRemoteDataDueToForkOrJoin(
     int fromRank, const tarch::la::Vector<DIMENSIONS, double>& x,
     const tarch::la::Vector<DIMENSIONS, double>& h, int level) {
   // do nothing
-}
-
-bool exahype::mappings::MeshRefinement::prepareSendToWorker(
-    exahype::Cell& fineGridCell, exahype::Vertex* const fineGridVertices,
-    const peano::grid::VertexEnumerator& fineGridVerticesEnumerator,
-    exahype::Vertex* const coarseGridVertices,
-    const peano::grid::VertexEnumerator& coarseGridVerticesEnumerator,
-    exahype::Cell& coarseGridCell,
-    const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell,
-    int worker) {
-  // do nothing
-  return false;
 }
 
 void exahype::mappings::MeshRefinement::prepareSendToMaster(

@@ -395,15 +395,14 @@ int exahype::runners::Runner::runAsMaster(exahype::repositories::Repository& rep
    */
   initSolverTimeStamps();
 
-  // Move down again
-#if defined(Dim2) && defined(Asserts)
-repository.switchToPlotAugmentedAMRGrid();
-repository.iterate();
-#endif
-
   repository.getState().switchToInitialConditionAndTimeStepSizeComputationContext();
   repository.switchToInitialConditionAndTimeStepSizeComputation();
   repository.iterate();
+
+//  #if defined(Dim2) && defined(Asserts)
+//  repository.switchToPlotAugmentedAMRGrid();
+//  repository.iterate();
+//  #endif // TODO(Dominic): Move into first plot mapping.
 
   /*
    * Set the time stamps of the solvers to the initial value again.
@@ -426,7 +425,11 @@ repository.iterate();
   bool plot = exahype::plotters::isAPlotterActive(
       solvers::Solver::getMinSolverTimeStampOfAllSolvers());
   if (plot) {
+    #if DIMENSIONS==2
+    repository.switchToPredictionAndPlotAndTimeStepSizeComputation2d();
+    #else
     repository.switchToPredictionAndPlotAndTimeStepSizeComputation();
+    #endif
   }
   else {
     repository.switchToPredictionAndTimeStepSizeComputation();
@@ -462,6 +465,10 @@ repository.iterate();
         solvers::Solver::getMinSolverTimeStampOfAllSolvers());
 
     if (_parser.getFuseAlgorithmicSteps()) {
+      repository.getState().setFuseADERDGPhases(true);
+      repository.getState().setTimeStepSizeWeightForPredictionRerun(
+          _parser.getFuseAlgorithmicStepsFactor());
+
       int numberOfStepsToRun = 1;
       if (plot) {
         numberOfStepsToRun = 0;
@@ -484,9 +491,11 @@ repository.iterate();
         numberOfStepsToRun,
         _parser.getExchangeBoundaryDataInBatchedTimeSteps() && repository.getState().isGridStationary()
       );
-      recomputePredictorIfNecessary(repository,_parser.getFuseAlgorithmicStepsFactor());
+      recomputePredictorIfNecessary(repository);
       printTimeStepInfo(numberOfStepsToRun);
     } else {
+      repository.getState().setFuseADERDGPhases(false);
+
       runOneTimeStampWithThreeSeparateAlgorithmicSteps(repository, plot);
       printTimeStepInfo(1);
     }
@@ -540,16 +549,16 @@ void exahype::runners::Runner::printTimeStepInfo(int numberOfStepsRanSinceLastCa
   }
 
   logInfo("startNewTimeStep(...)",
-      "step " << n << "\t t_min          =" << currentMinTimeStamp);
+      "step " << n << "\tt_min          =" << currentMinTimeStamp);
 
   logInfo("startNewTimeStep(...)",
-      "\t\t dt_min         =" << currentMinTimeStepSize);
+      "\tdt_min         =" << currentMinTimeStepSize);
 
   logDebug("startNewTimeStep(...)",
-      "\t\t memoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB"); 
+      "\tmemoryUsage    =" << peano::utils::UserInterface::getMemoryUsageMB() << " MB");
 
   logDebug("startNewTimeStep(...)",
-      "\t\t next dt_min    =" << nextMinTimeStepSize); // Only interesting for ADER-DG. Prints MAX_DOUBLE for finite volumes.
+      "\tnext dt_min    =" << nextMinTimeStepSize); // Only interesting for ADER-DG. Prints MAX_DOUBLE for finite volumes.
 #if defined(Debug) || defined(Asserts)
   tarch::logging::CommandLineLogger::getInstance().closeOutputStreamAndReopenNewOne();
 #endif
@@ -584,43 +593,14 @@ void exahype::runners::Runner::runOneTimeStampWithFusedAlgorithmicSteps(
   // reduction/broadcast barrier
 }
 
-
-bool exahype::runners::Runner::setStableTimeStepSizesIfStabilityConditionWasHarmed(double factor) {
-  assertion1(tarch::la::smallerEquals(factor,1.) && tarch::la::greater(factor,0.),"Factor must be smaller or equal to 1.");
-  bool cflConditionWasViolated = false;
-
-  for (const auto& p : exahype::solvers::RegisteredSolvers) {
-    if (p->getType()==exahype::solvers::Solver::Type::ADER_DG) {
-      bool solverTimeStepSizeIsInstable =
-          static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinPredictorTimeStepSize()   >
-          static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinNextPredictorTimeStepSize();
-
-      if (solverTimeStepSizeIsInstable) {
-        static_cast<exahype::solvers::ADERDGSolver*>(p)->updateMinNextPredictorTimeStepSize(
-            factor * static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinNextPredictorTimeStepSize());
-        static_cast<exahype::solvers::ADERDGSolver*>(p)->setMinPredictorTimeStepSize(
-            factor * static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinPredictorTimeStepSize());
-      } else {
-        static_cast<exahype::solvers::ADERDGSolver*>(p)->updateMinNextPredictorTimeStepSize(
-            .5 * (static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinPredictorTimeStepSize() +
-                static_cast<exahype::solvers::ADERDGSolver*>(p)->getMinNextPredictorTimeStepSize()));
-      }
-
-      cflConditionWasViolated = cflConditionWasViolated | solverTimeStepSizeIsInstable;
-    }
-  }
-
-  return cflConditionWasViolated;
-}
-
 void exahype::runners::Runner::recomputePredictorIfNecessary(
-    exahype::repositories::Repository& repository,double factor) {
+    exahype::repositories::Repository& repository) {
   // Must be evaluated before we start a new time step
-  bool stabilityConditionWasHarmed = setStableTimeStepSizesIfStabilityConditionWasHarmed(factor);
+  //  bool stabilityConditionWasHarmed = setStableTimeStepSizesIfStabilityConditionWasHarmed(factor);
   // Note that it is important to switch the time step sizes, i.e,
   // start a new time step, before we recompute the predictor.
 
-  if (stabilityConditionWasHarmed) {
+  if (repository.getState().stabilityConditionOfOneSolverWasViolated()) {
     logInfo("startNewTimeStep(...)",
         "\t\t Space-time predictor must be recomputed.");
 
@@ -637,7 +617,7 @@ void exahype::runners::Runner::runOneTimeStampWithThreeSeparateAlgorithmicSteps(
   repository.switchToNeighbourDataMerging();  // Riemann -> face2face
   repository.iterate();
 
-  repository.getState().switchToSolutionUpdateAndTimeStepSizeComputationContex();
+  repository.getState().switchToSolutionUpdateAndTimeStepSizeComputationContext();
   if (plot) {
     repository.switchToSolutionUpdateAndPlotAndTimeStepSizeComputation();  // Face to cell + Inside cell
   } else {

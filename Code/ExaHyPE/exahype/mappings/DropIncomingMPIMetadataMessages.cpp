@@ -93,6 +93,11 @@ void exahype::mappings::DropIncomingMPIMetadataMessages::beginIteration(exahype:
   exahype::solvers::FiniteVolumesSolver::Heap::getInstance().finishedToSendSynchronousData();
   DataHeap::getInstance().finishedToSendSynchronousData();
   MetadataHeap::getInstance().finishedToSendSynchronousData();
+
+  exahype::solvers::ADERDGSolver::Heap::getInstance().startToSendSynchronousData();
+  exahype::solvers::FiniteVolumesSolver::Heap::getInstance().startToSendSynchronousData();
+  DataHeap::getInstance().startToSendSynchronousData();
+  MetadataHeap::getInstance().startToSendSynchronousData();
   #endif
 
   logTraceOutWith1Argument("beginIteration(State)", solverState);
