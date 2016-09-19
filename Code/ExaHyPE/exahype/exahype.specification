@@ -31,15 +31,12 @@ event-mapping: // -DEC: consider to move the computation of boundary extrapolate
 
 event-mapping: 
   name: LoadBalancing
-
-event-mapping:
-  name: RiemannSolver
  
 event-mapping:
-  name: Synchronisation
+  name: Merging
 
 event-mapping:
-  name: Reduction
+  name: Sending
  
 event-mapping:
   name: Plot
@@ -64,7 +61,7 @@ event-mapping:
 adapter:
   name: MeshRefinement
   merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
-  // Initial Condition comes after RegularMesh since we refine here in a fast manner down to the 
+  // Initial Condition comes after MeshRefinement since we refine here in a fast manner down to the 
   // first layer of cells we initialise. Afterwards refinement is done per iteration.
   merge-with-user-defined-mapping: InitialCondition        // (enterCell,runconcurrently);
   merge-with-user-defined-mapping: LoadBalancing
@@ -78,30 +75,40 @@ adapter:
 // Adapters for initialisation of time stepping
 adapter:
   name: InitialConditionAndTimeStepSizeComputation
-  merge-with-user-defined-mapping: Synchronisation
   merge-with-user-defined-mapping: DropIncomingMPIMetadataMessages
   merge-with-user-defined-mapping: InitialCondition
   // needs current time step size
   merge-with-user-defined-mapping: TimeStepSizeComputation
+  merge-with-user-defined-mapping: Sending
 
 adapter:
   name: PredictionAndPlotAndTimeStepSizeComputation
-  merge-with-user-defined-mapping: Synchronisation
+  merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: TimeStepSizeComputation
+  merge-with-user-defined-mapping: Sending
+
+adapter:
+  name: PredictionAndPlotAndTimeStepSizeComputation2d
+  merge-with-user-defined-mapping: Merging
+  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
+  merge-with-user-defined-mapping: Plot
+  merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
+  merge-with-user-defined-mapping: TimeStepSizeComputation
+  merge-with-user-defined-mapping: Sending
+
 
 adapter:
   name: PredictionAndTimeStepSizeComputation
-  merge-with-user-defined-mapping: Synchronisation
+  merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: Reduction
+  merge-with-user-defined-mapping: Sending
 
 // Adapters for clean up (to be extended)
 adapter:
   name: GridErasing
-  merge-with-user-defined-mapping: Synchronisation
   merge-with-user-defined-mapping: DropIncomingMPIMessages
   merge-with-user-defined-mapping: GridErasing
 
@@ -109,27 +116,24 @@ adapter:
 adapter: 
   name: ADERDGTimeStep
   // needs corrector time step size
-  merge-with-user-defined-mapping: Synchronisation
-  merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
+  merge-with-user-defined-mapping: Merging  // Merging must start new time step in touchVertexFirstTime
   merge-with-user-defined-mapping: SolutionUpdate
   // needs predictor time step size
   merge-with-user-defined-mapping: Prediction  // DEC: after predictor we can start the face data exchange
   merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: LoadBalancing
-  merge-with-user-defined-mapping: Reduction
- 
+  merge-with-user-defined-mapping: Sending
  
 adapter: 
   name: ADERDGTimeStepAndPlot
   // needs corrector time step size
-  merge-with-user-defined-mapping: Synchronisation
-  merge-with-user-defined-mapping: RiemannSolver     // RiemannSolver must start new time step in touchVertexFirstTime
+  merge-with-user-defined-mapping: Merging // Merging must start new time step in touchVertexFirstTime
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: Plot
   // needs predictor time step size
   merge-with-user-defined-mapping: Prediction  // DEC: after predictor we can start the face data exchange 
   merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: Reduction
+  merge-with-user-defined-mapping: Sending
  
 /**
  * In a serial version, running the predictor is the same for optimistic time 
@@ -139,33 +143,35 @@ adapter:
  */
 adapter:
   name: PredictionRerun
-  merge-with-user-defined-mapping: DropIncomingMPIMessages
-  merge-with-user-defined-mapping: Synchronisation
+  merge-with-user-defined-mapping: DropIncomingMPIMessages // drop face data
+  merge-with-user-defined-mapping: Merging
   merge-with-user-defined-mapping: Prediction 
+  merge-with-user-defined-mapping: Sending
  
 // Additional adapters for 4 phase time stepping
 adapter: 
-  name: RiemannSolver
-  merge-with-user-defined-mapping: Synchronisation
-  merge-with-user-defined-mapping: RiemannSolver
+  name: NeighbourDataMerging
+  merge-with-user-defined-mapping: Merging
 
 adapter:
   name: Prediction
-  merge-with-user-defined-mapping: Prediction 
+  merge-with-user-defined-mapping: Merging
+  merge-with-user-defined-mapping: Prediction
+  merge-with-user-defined-mapping: Sending
 
 adapter:
-  name: Correction
+  name: SolutionUpdateAndTimeStepSizeComputation
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: LoadBalancing
-  merge-with-user-defined-mapping: Reduction
+  merge-with-user-defined-mapping: Sending
 
 adapter:
-  name: CorrectionAndPlot
+  name: SolutionUpdateAndPlotAndTimeStepSizeComputation
   merge-with-user-defined-mapping: SolutionUpdate
   merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: TimeStepSizeComputation
-  merge-with-user-defined-mapping: Reduction
+  merge-with-user-defined-mapping: Sending
 
 adapter:
   name: Plot

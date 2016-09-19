@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_CorrectionAndPlot_H_
-#define EXAHYPE_ADAPTERS_CorrectionAndPlot_H_
+#ifndef EXAHYPE_ADAPTERS_SolutionUpdateAndTimeStepSizeComputation_H_
+#define EXAHYPE_ADAPTERS_SolutionUpdateAndTimeStepSizeComputation_H_
 
 
 #include "tarch/logging/Log.h"
@@ -19,15 +19,15 @@
 
 
  #include "exahype/mappings/SolutionUpdate.h"
- #include "exahype/mappings/Plot.h"
  #include "exahype/mappings/TimeStepSizeComputation.h"
- #include "exahype/mappings/Reduction.h"
+ #include "exahype/mappings/LoadBalancing.h"
+ #include "exahype/mappings/Sending.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class CorrectionAndPlot;
+        class SolutionUpdateAndTimeStepSizeComputation;
       } 
 }
 
@@ -39,17 +39,17 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::CorrectionAndPlot {
+class exahype::adapters::SolutionUpdateAndTimeStepSizeComputation {
   private:
     typedef mappings::SolutionUpdate Mapping0;
-    typedef mappings::Plot Mapping1;
-    typedef mappings::TimeStepSizeComputation Mapping2;
-    typedef mappings::Reduction Mapping3;
+    typedef mappings::TimeStepSizeComputation Mapping1;
+    typedef mappings::LoadBalancing Mapping2;
+    typedef mappings::Sending Mapping3;
 
      Mapping0  _map2SolutionUpdate;
-     Mapping1  _map2Plot;
-     Mapping2  _map2TimeStepSizeComputation;
-     Mapping3  _map2Reduction;
+     Mapping1  _map2TimeStepSizeComputation;
+     Mapping2  _map2LoadBalancing;
+     Mapping3  _map2Sending;
 
 
   public:
@@ -61,16 +61,16 @@ class exahype::adapters::CorrectionAndPlot {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    CorrectionAndPlot();
+    SolutionUpdateAndTimeStepSizeComputation();
 
     #if defined(SharedMemoryParallelisation)
-    CorrectionAndPlot(const CorrectionAndPlot& masterThread);
+    SolutionUpdateAndTimeStepSizeComputation(const SolutionUpdateAndTimeStepSizeComputation& masterThread);
     #endif
 
-    virtual ~CorrectionAndPlot();
+    virtual ~SolutionUpdateAndTimeStepSizeComputation();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const CorrectionAndPlot& workerThread);
+    void mergeWithWorkerThread(const SolutionUpdateAndTimeStepSizeComputation& workerThread);
     #endif
 
     void createInnerVertex(

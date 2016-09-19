@@ -31,7 +31,7 @@ namespace exahype {
  *
  * 		   build date: 09-02-2014 14:40
  *
- * @date   13/09/2016 11:16
+ * @date   19/09/2016 21:16
  */
 class exahype::records::RepositoryState { 
    
@@ -40,7 +40,7 @@ class exahype::records::RepositoryState {
       typedef exahype::records::RepositoryStatePacked Packed;
       
       enum Action {
-         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterMeshRefinement = 4, UseAdapterPlotAugmentedAMRGrid = 5, UseAdapterInitialConditionAndTimeStepSizeComputation = 6, UseAdapterPredictionAndPlotAndTimeStepSizeComputation = 7, UseAdapterPredictionAndTimeStepSizeComputation = 8, UseAdapterGridErasing = 9, UseAdapterADERDGTimeStep = 10, UseAdapterADERDGTimeStepAndPlot = 11, UseAdapterPredictionRerun = 12, UseAdapterRiemannSolver = 13, UseAdapterPrediction = 14, UseAdapterCorrection = 15, UseAdapterCorrectionAndPlot = 16, UseAdapterPlot = 17, NumberOfAdapters = 18
+         WriteCheckpoint = 0, ReadCheckpoint = 1, Terminate = 2, RunOnAllNodes = 3, UseAdapterMeshRefinement = 4, UseAdapterPlotAugmentedAMRGrid = 5, UseAdapterInitialConditionAndTimeStepSizeComputation = 6, UseAdapterPredictionAndPlotAndTimeStepSizeComputation = 7, UseAdapterPredictionAndPlotAndTimeStepSizeComputation2d = 8, UseAdapterPredictionAndTimeStepSizeComputation = 9, UseAdapterGridErasing = 10, UseAdapterADERDGTimeStep = 11, UseAdapterADERDGTimeStepAndPlot = 12, UseAdapterPredictionRerun = 13, UseAdapterNeighbourDataMerging = 14, UseAdapterPrediction = 15, UseAdapterSolutionUpdateAndTimeStepSizeComputation = 16, UseAdapterSolutionUpdateAndPlotAndTimeStepSizeComputation = 17, UseAdapterPlot = 18, NumberOfAdapters = 19
       };
       
       struct PersistentRecords {
@@ -291,7 +291,7 @@ class exahype::records::RepositoryState {
     *
     * 		   build date: 09-02-2014 14:40
     *
-    * @date   13/09/2016 11:16
+    * @date   19/09/2016 21:16
     */
    class exahype::records::RepositoryStatePacked { 
       

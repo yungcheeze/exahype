@@ -18,13 +18,12 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/Synchronisation.h"
- #include "exahype/mappings/RiemannSolver.h"
+ #include "exahype/mappings/Merging.h"
  #include "exahype/mappings/SolutionUpdate.h"
  #include "exahype/mappings/Prediction.h"
  #include "exahype/mappings/TimeStepSizeComputation.h"
  #include "exahype/mappings/LoadBalancing.h"
- #include "exahype/mappings/Reduction.h"
+ #include "exahype/mappings/Sending.h"
 
 
 
@@ -44,21 +43,19 @@ namespace exahype {
  */
 class exahype::adapters::ADERDGTimeStep {
   private:
-    typedef mappings::Synchronisation Mapping0;
-    typedef mappings::RiemannSolver Mapping1;
-    typedef mappings::SolutionUpdate Mapping2;
-    typedef mappings::Prediction Mapping3;
-    typedef mappings::TimeStepSizeComputation Mapping4;
-    typedef mappings::LoadBalancing Mapping5;
-    typedef mappings::Reduction Mapping6;
+    typedef mappings::Merging Mapping0;
+    typedef mappings::SolutionUpdate Mapping1;
+    typedef mappings::Prediction Mapping2;
+    typedef mappings::TimeStepSizeComputation Mapping3;
+    typedef mappings::LoadBalancing Mapping4;
+    typedef mappings::Sending Mapping5;
 
-     Mapping0  _map2Synchronisation;
-     Mapping1  _map2RiemannSolver;
-     Mapping2  _map2SolutionUpdate;
-     Mapping3  _map2Prediction;
-     Mapping4  _map2TimeStepSizeComputation;
-     Mapping5  _map2LoadBalancing;
-     Mapping6  _map2Reduction;
+     Mapping0  _map2Merging;
+     Mapping1  _map2SolutionUpdate;
+     Mapping2  _map2Prediction;
+     Mapping3  _map2TimeStepSizeComputation;
+     Mapping4  _map2LoadBalancing;
+     Mapping5  _map2Sending;
 
 
   public:

@@ -59,19 +59,11 @@ namespace exahype {
  * @author Dominic Charrier, Tobias Weinzierl
  */
 class exahype::mappings::TimeStepSizeComputation {
- public:
-   static bool SkipReductionInBatchedTimeSteps;
-
  private:
   /**
    * Logging device for the trace macros.
    */
   static tarch::logging::Log _log;
-
-  /**
-   * Tag that is used to exchange all the solver instances in MPI
-   */
-  static int _mpiTag;
 
   /**
    * A minimum solver time step size for each thread in a multicore run.
@@ -150,11 +142,34 @@ class exahype::mappings::TimeStepSizeComputation {
    * reduced minimum time step sizes. Then updates the minimum time stamp
    * of the solvers.
    *
-   * TODO(Dominic): Finite volumes solver might need special treatment
-   * since we only have one warm up run instead of the two
-   * needed for the ADER-DG solvers.
+   * Iterate over the solvers and start a new time step
+   * on every solver.
    *
-   * \note Is called once per rank.
+   * <h2>Fused ADER-DG time stepping</h2>
+   * If we use the fused ADER-DG time stepping algorithm,
+   * The solver or (the solver belonging to the global master in the MPI context)
+   * is not allowed to perform the time step update
+   * directly. It first has to check if the previously used
+   * min predictor time step size was stable one.
+   * Otherwise, we would corrupt the corrector time stamp
+   * with an invalid value.
+   *
+   * <h2>MPI</h2>
+   * Here we start again a new time step "in the small" on the
+   * worker rank and overwrite it later on again if a synchronisation is applied
+   * by the master rank.
+   *
+   * It is important to keep in mind that endIteration() on a worker
+   * is called before the prepareSendToMaster routine.
+   * We thus send out the current time step size from
+   * the worker to the master.
+   *
+   * On the master, the mergeWithMaster routine is however called
+   * before endIteration.
+   * We thus merge the received time step size with the next
+   * time step size on the master.
+   *
+   * \see exahype::mappings::Sending,exahype::mappings::Merging
    */
   void endIteration(exahype::State& solverState);
 #ifdef Parallel

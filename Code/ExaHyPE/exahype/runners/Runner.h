@@ -112,34 +112,15 @@ class exahype::runners::Runner {
   void runOneTimeStampWithFusedAlgorithmicSteps(exahype::repositories::Repository& repository, int numberOfStepsToRun, bool exchangeBoundaryData);
 
   /**
-   * Resets the corrector and predictor time step sizes of an ADER-DG solver
-   * to the same CFL stable time step size weighted by a nonzero \p factor
-   * smaller than one or equal to one.
+   * If the repository state indicates that a time update did
+   * harm an ADER-DG solver's stability condition, we rerun the
+   * prediction phase (for all ADER-DG solvers for now).
    *
    * \note Currently this function only makes sense for single
-   * ADERDG solvers and global time stepping.
-   *
-   * @developers:
-   * TODO(Dominic): This should move into solver class, or not?
-   * The function does only make sense for the fused algorithmic steps optimisation.
-   */
-  bool setStableTimeStepSizesIfStabilityConditionWasHarmed(double factor);
-
-  /**
-   * Resets the corrector and predictor time step sizes of an ADER-DG solver
-   *
-   *
-   * \param factor
-   *
-   * \note Currently this function only makes sense for single
-   * ADERDG solvers and global time stepping.
-   *
-   * @developers:
-   * TODO(Dominic): This should move into solver class, or not?
-   * The function does only make sense for the fused algorithmic steps optimisation.
+   * ADER-DG solvers and global time stepping.
    */
   void recomputePredictorIfNecessary(
-      exahype::repositories::Repository& repository,double factor);
+      exahype::repositories::Repository& repository);
 
   /**
    * Do one time step but actually use a couple of iterations to do so.

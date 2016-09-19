@@ -91,84 +91,23 @@ void exahype::mappings::InitialCondition::enterCell(
 
   if (fineGridCell.isInitialised()) {
     // ADER-DG
-    const int numberOfADERDGCellDescriptions = fineGridCell.getNumberOfADERDGCellDescriptions();
-
+    const int numberOfSolvers = exahype::solvers::RegisteredSolvers.size();
     // please use a different UserDefined per mapping/event
-    peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined11;
-    int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfADERDGCellDescriptions, methodTrace);
-    // clang-format off
-    pfor(i, 0, numberOfADERDGCellDescriptions, grainSize)
-      auto& pFine  = fineGridCell.getADERDGCellDescription(i);
-      exahype::solvers::ADERDGSolver* solver = static_cast<exahype::solvers::ADERDGSolver*>(
-          exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()]);
-      assertion2(solver->getType()==exahype::solvers::Solver::Type::ADER_DG,pFine.toString(),solver->toString());
+    peano::datatraversal::autotuning::MethodTrace methodTrace = peano::datatraversal::autotuning::UserDefined6;
+    int grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfSolvers, methodTrace);
 
-      solver->synchroniseTimeStepping(pFine);
-      // Unlike the other ADERDG mappings, this mapping is used
-      // in the adaptive mesh refinement routine.
-      // We thus make sure here that only cells with stable
-      // refinement status are updated.
-      if (
-          pFine.getType()==exahype::records::ADERDGCellDescription::Cell
-          &&
-          pFine.getRefinementEvent()==exahype::records::ADERDGCellDescription::None
-      ) {
-        double* luh = exahype::DataHeap::getInstance().getData(pFine.getSolution()).data();
+    pfor(i, 0, numberOfSolvers, grainSize)
+      exahype::solvers::Solver* solver =
+          exahype::solvers::RegisteredSolvers[i];
+      int element = exahype::solvers::RegisteredSolvers[i]->tryGetElement(
+          fineGridCell.getCellDescriptionsIndex(),i);
 
-        assertionEquals(luh[0],luh[0]); // assert no nan
-        if (solver->hasToAdjustSolution(
-            fineGridVerticesEnumerator.getCellCenter(),
-            fineGridVerticesEnumerator.getCellSize(),
-            pFine.getCorrectorTimeStamp())) {
-          solver->solutionAdjustment(
-              luh, fineGridVerticesEnumerator.getCellCenter(),
-              fineGridVerticesEnumerator.getCellSize(),
-              pFine.getCorrectorTimeStamp(), pFine.getCorrectorTimeStepSize());
-        }
-
-        assertion(!std::isnan(luh[0])); // assert no nan
+      if (element!=exahype::solvers::Solver::NotFound) {
+        solver->setInitialConditions(
+            fineGridCell.getCellDescriptionsIndex(),element,
+            fineGridVertices,fineGridVerticesEnumerator);
       }
-    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-        .parallelSectionHasTerminated(methodTrace);
-
-    // FINITE VOLUMES
-    const int numberOfFiniteVolumesCellDescriptions = fineGridCell.getNumberOfFiniteVolumeCellDescriptions();
-
-    // please use a different UserDefined per mapping/event
-    methodTrace = peano::datatraversal::autotuning::UserDefined11; // todo introduce more user defined method traces
-    grainSize = peano::datatraversal::autotuning::Oracle::getInstance().parallelise(numberOfFiniteVolumesCellDescriptions, methodTrace);
-    // clang-format off
-    pfor(i, 0, numberOfFiniteVolumesCellDescriptions, grainSize)
-      auto& pFine = fineGridCell.getFiniteVolumesCellDescription(i);
-
-      auto* solver = exahype::solvers::RegisteredSolvers[pFine.getSolverNumber()];
-
-      // Unlike the other FiniteVolumes mappings, this mapping is used
-      // in the adaptive mesh refinement routine.
-      // We thus make sure here that only cells with stable
-      // refinement status are updated.
-      if (
-          pFine.getType()==exahype::records::FiniteVolumesCellDescription::Cell
-  //        &&
-  //        pFine.getRefinementEvent()==exahype::records::FiniteVolumesCellDescription::None // todo do we have refinement events ??
-      ) {
-        double* luh = DataHeap::getInstance().getData(pFine.getSolution()).data();
-
-        assertionEquals(luh[0],luh[0]); // assert no nan
-        if (solver->hasToAdjustSolution(
-            fineGridVerticesEnumerator.getCellCenter(),
-            fineGridVerticesEnumerator.getCellSize(),
-            pFine.getTimeStamp())) {
-          solver->solutionAdjustment(
-              luh, fineGridVerticesEnumerator.getCellCenter(),
-              fineGridVerticesEnumerator.getCellSize(),
-              pFine.getTimeStamp(),pFine.getTimeStepSize());
-        }
-
-        assertion(!std::isnan(luh[0])); // assert no nan
-      }
-    endpfor peano::datatraversal::autotuning::Oracle::getInstance()
-    .parallelSectionHasTerminated(methodTrace);
+    endpfor peano::datatraversal::autotuning::Oracle::getInstance().parallelSectionHasTerminated(methodTrace);
   }
   logTraceOutWith1Argument("enterCell(...)", fineGridCell);
 }

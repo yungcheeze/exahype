@@ -1,7 +1,7 @@
 // This file is part of the Peano project. For conditions of distribution and 
 // use, please see the copyright notice at www.peano-framework.org
-#ifndef EXAHYPE_ADAPTERS_RiemannSolver_H_
-#define EXAHYPE_ADAPTERS_RiemannSolver_H_
+#ifndef EXAHYPE_ADAPTERS_NeighbourDataMerging_H_
+#define EXAHYPE_ADAPTERS_NeighbourDataMerging_H_
 
 
 #include "tarch/logging/Log.h"
@@ -18,14 +18,13 @@
 #include "exahype/State.h"
 
 
- #include "exahype/mappings/Synchronisation.h"
- #include "exahype/mappings/RiemannSolver.h"
+ #include "exahype/mappings/Merging.h"
 
 
 
 namespace exahype {
       namespace adapters {
-        class RiemannSolver;
+        class NeighbourDataMerging;
       } 
 }
 
@@ -37,13 +36,11 @@ namespace exahype {
  * @author Peano Development Toolkit (PDT) by  Tobias Weinzierl
  * @version $Revision: 1.10 $
  */
-class exahype::adapters::RiemannSolver {
+class exahype::adapters::NeighbourDataMerging {
   private:
-    typedef mappings::Synchronisation Mapping0;
-    typedef mappings::RiemannSolver Mapping1;
+    typedef mappings::Merging Mapping0;
 
-     Mapping0  _map2Synchronisation;
-     Mapping1  _map2RiemannSolver;
+     Mapping0  _map2Merging;
 
 
   public:
@@ -55,16 +52,16 @@ class exahype::adapters::RiemannSolver {
     static peano::MappingSpecification         descendSpecification();
     static peano::CommunicationSpecification   communicationSpecification();
 
-    RiemannSolver();
+    NeighbourDataMerging();
 
     #if defined(SharedMemoryParallelisation)
-    RiemannSolver(const RiemannSolver& masterThread);
+    NeighbourDataMerging(const NeighbourDataMerging& masterThread);
     #endif
 
-    virtual ~RiemannSolver();
+    virtual ~NeighbourDataMerging();
   
     #if defined(SharedMemoryParallelisation)
-    void mergeWithWorkerThread(const RiemannSolver& workerThread);
+    void mergeWithWorkerThread(const NeighbourDataMerging& workerThread);
     #endif
 
     void createInnerVertex(

@@ -17,8 +17,6 @@
 
 #include "exahype/solvers/Solver.h"
 
-#include "exahype/mappings/RiemannSolver.h"
-
 peano::CommunicationSpecification
 exahype::mappings::DropIncomingMPIMessages::communicationSpecification() {
   return peano::CommunicationSpecification(
@@ -354,7 +352,18 @@ void exahype::mappings::DropIncomingMPIMessages::leaveCell(
     const tarch::la::Vector<DIMENSIONS, int>& fineGridPositionOfCell) {}
 
 void exahype::mappings::DropIncomingMPIMessages::beginIteration(
-    exahype::State& solverState) {}
+    exahype::State& solverState) {
+  logTraceInWith1Argument("beginIteration(State)", solverState);
+
+  #ifdef Parallel
+  exahype::solvers::ADERDGSolver::Heap::getInstance().finishedToSendSynchronousData();
+  exahype::solvers::FiniteVolumesSolver::Heap::getInstance().finishedToSendSynchronousData();
+  DataHeap::getInstance().finishedToSendSynchronousData();
+  MetadataHeap::getInstance().finishedToSendSynchronousData();
+  #endif
+
+  logTraceOutWith1Argument("beginIteration(State)", solverState);
+}
 
 void exahype::mappings::DropIncomingMPIMessages::endIteration(
     exahype::State& solverState) {}
