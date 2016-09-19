@@ -20,6 +20,7 @@
  #include "exahype/adapters/PlotAugmentedAMRGrid.h" 
  #include "exahype/adapters/InitialConditionAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/PredictionAndPlotAndTimeStepSizeComputation.h" 
+ #include "exahype/adapters/PredictionAndPlotAndTimeStepSizeComputation2d.h" 
  #include "exahype/adapters/PredictionAndTimeStepSizeComputation.h" 
  #include "exahype/adapters/GridErasing.h" 
  #include "exahype/adapters/ADERDGTimeStep.h" 
@@ -59,6 +60,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PlotAugmentedAMRGrid> _gridWithPlotAugmentedAMRGrid;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::InitialConditionAndTimeStepSizeComputation> _gridWithInitialConditionAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation> _gridWithPredictionAndPlotAndTimeStepSizeComputation;
+    peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndPlotAndTimeStepSizeComputation2d> _gridWithPredictionAndPlotAndTimeStepSizeComputation2d;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::PredictionAndTimeStepSizeComputation> _gridWithPredictionAndTimeStepSizeComputation;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::GridErasing> _gridWithGridErasing;
     peano::grid::Grid<exahype::Vertex,exahype::Cell,exahype::State,VertexStack,CellStack,exahype::adapters::ADERDGTimeStep> _gridWithADERDGTimeStep;
@@ -77,6 +79,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCPUTime;
     tarch::timing::Measurement _measureInitialConditionAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measurePredictionAndPlotAndTimeStepSizeComputationCPUTime;
+    tarch::timing::Measurement _measurePredictionAndPlotAndTimeStepSizeComputation2dCPUTime;
     tarch::timing::Measurement _measurePredictionAndTimeStepSizeComputationCPUTime;
     tarch::timing::Measurement _measureGridErasingCPUTime;
     tarch::timing::Measurement _measureADERDGTimeStepCPUTime;
@@ -92,6 +95,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     tarch::timing::Measurement _measurePlotAugmentedAMRGridCalendarTime;
     tarch::timing::Measurement _measureInitialConditionAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measurePredictionAndPlotAndTimeStepSizeComputationCalendarTime;
+    tarch::timing::Measurement _measurePredictionAndPlotAndTimeStepSizeComputation2dCalendarTime;
     tarch::timing::Measurement _measurePredictionAndTimeStepSizeComputationCalendarTime;
     tarch::timing::Measurement _measureGridErasingCalendarTime;
     tarch::timing::Measurement _measureADERDGTimeStepCalendarTime;
@@ -145,6 +149,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual void switchToPlotAugmentedAMRGrid();    
     virtual void switchToInitialConditionAndTimeStepSizeComputation();    
     virtual void switchToPredictionAndPlotAndTimeStepSizeComputation();    
+    virtual void switchToPredictionAndPlotAndTimeStepSizeComputation2d();    
     virtual void switchToPredictionAndTimeStepSizeComputation();    
     virtual void switchToGridErasing();    
     virtual void switchToADERDGTimeStep();    
@@ -160,6 +165,7 @@ class exahype::repositories::RepositorySTDStack: public exahype::repositories::R
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const;
     virtual bool isActiveAdapterInitialConditionAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterPredictionAndPlotAndTimeStepSizeComputation() const;
+    virtual bool isActiveAdapterPredictionAndPlotAndTimeStepSizeComputation2d() const;
     virtual bool isActiveAdapterPredictionAndTimeStepSizeComputation() const;
     virtual bool isActiveAdapterGridErasing() const;
     virtual bool isActiveAdapterADERDGTimeStep() const;

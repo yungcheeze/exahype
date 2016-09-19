@@ -43,7 +43,7 @@ class exahype::dastgen::State {
      * Time step data exchange is
      * a reduction-broadcast operation.
      */
-    MergeTimeStepData,
+    BroadcastAndMergeTimeStepData,
     /**
      * This is one of the modes
      * for the standard time stepping
@@ -68,7 +68,7 @@ class exahype::dastgen::State {
      * time step as well as
      * face data.
      */
-    MergeTimeStepDataAndFaceData
+    BroadcastAndMergeTimeStepDataAndMergeFaceData
   };
 
   parallelise persistent MergeMode mergeMode;
@@ -107,7 +107,7 @@ class exahype::dastgen::State {
      * Time step data exchange is
      * a reduction-broadcast operation.
      */
-    SendTimeStepData,
+    ReduceAndMergeTimeStepData,
     /**
      * This is one of the modes
      * for the standard time stepping
@@ -135,7 +135,25 @@ class exahype::dastgen::State {
      * the master-worker and
      * worker-master communication.
      */
-    SendTimeStepDataAndFaceData
+    ReduceAndMergeTimeStepDataAndSendFaceData
   };
   parallelise persistent SendMode sendMode;
+  
+  /**
+   * This flag indicates if at least one solver
+   * has performed a time step with an 
+   * instable (too large) time step size and
+   * thus needs to be recomputed. 
+   * 
+   * Needs to be reset after the affected
+   * solvers have been rerun with a
+   * stable time step size.
+   * 
+   * <h2>MPI</h2>
+   * This flag does not need to be parallelised since
+   * we merge the next time step sizes.
+   * Thus we can re-evaluate the stability criterion
+   * for all solvers again on every master.
+   */
+  persistent bool stabilityConditionOfOneSolverWasViolated;
 };

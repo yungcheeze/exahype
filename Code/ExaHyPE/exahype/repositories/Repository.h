@@ -66,6 +66,7 @@ class exahype::repositories::Repository {
     virtual void switchToPlotAugmentedAMRGrid() = 0;    
     virtual void switchToInitialConditionAndTimeStepSizeComputation() = 0;    
     virtual void switchToPredictionAndPlotAndTimeStepSizeComputation() = 0;    
+    virtual void switchToPredictionAndPlotAndTimeStepSizeComputation2d() = 0;    
     virtual void switchToPredictionAndTimeStepSizeComputation() = 0;    
     virtual void switchToGridErasing() = 0;    
     virtual void switchToADERDGTimeStep() = 0;    
@@ -81,6 +82,7 @@ class exahype::repositories::Repository {
     virtual bool isActiveAdapterPlotAugmentedAMRGrid() const = 0;
     virtual bool isActiveAdapterInitialConditionAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterPredictionAndPlotAndTimeStepSizeComputation() const = 0;
+    virtual bool isActiveAdapterPredictionAndPlotAndTimeStepSizeComputation2d() const = 0;
     virtual bool isActiveAdapterPredictionAndTimeStepSizeComputation() const = 0;
     virtual bool isActiveAdapterGridErasing() const = 0;
     virtual bool isActiveAdapterADERDGTimeStep() const = 0;

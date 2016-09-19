@@ -61,7 +61,7 @@ event-mapping:
 adapter:
   name: MeshRefinement
   merge-with-user-defined-mapping: MeshRefinement          // (createInner/BoundaryVertex,enterCell,serial)
-  // Initial Condition comes after RegularMesh since we refine here in a fast manner down to the 
+  // Initial Condition comes after MeshRefinement since we refine here in a fast manner down to the 
   // first layer of cells we initialise. Afterwards refinement is done per iteration.
   merge-with-user-defined-mapping: InitialCondition        // (enterCell,runconcurrently);
   merge-with-user-defined-mapping: LoadBalancing
@@ -88,6 +88,16 @@ adapter:
   merge-with-user-defined-mapping: Plot
   merge-with-user-defined-mapping: TimeStepSizeComputation
   merge-with-user-defined-mapping: Sending
+
+adapter:
+  name: PredictionAndPlotAndTimeStepSizeComputation2d
+  merge-with-user-defined-mapping: Merging
+  merge-with-user-defined-mapping: Prediction // DEC: after predictor we can start the face data exchange
+  merge-with-user-defined-mapping: Plot
+  merge-with-user-defined-mapping: AugmentedAMRTreePlot2d
+  merge-with-user-defined-mapping: TimeStepSizeComputation
+  merge-with-user-defined-mapping: Sending
+
 
 adapter:
   name: PredictionAndTimeStepSizeComputation

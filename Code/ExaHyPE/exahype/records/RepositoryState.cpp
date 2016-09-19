@@ -41,6 +41,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
       case UseAdapterPlotAugmentedAMRGrid: return "UseAdapterPlotAugmentedAMRGrid";
       case UseAdapterInitialConditionAndTimeStepSizeComputation: return "UseAdapterInitialConditionAndTimeStepSizeComputation";
       case UseAdapterPredictionAndPlotAndTimeStepSizeComputation: return "UseAdapterPredictionAndPlotAndTimeStepSizeComputation";
+      case UseAdapterPredictionAndPlotAndTimeStepSizeComputation2d: return "UseAdapterPredictionAndPlotAndTimeStepSizeComputation2d";
       case UseAdapterPredictionAndTimeStepSizeComputation: return "UseAdapterPredictionAndTimeStepSizeComputation";
       case UseAdapterGridErasing: return "UseAdapterGridErasing";
       case UseAdapterADERDGTimeStep: return "UseAdapterADERDGTimeStep";
@@ -57,7 +58,7 @@ std::string exahype::records::RepositoryState::toString(const Action& param) {
 }
 
 std::string exahype::records::RepositoryState::getActionMapping() {
-   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterMeshRefinement=4,UseAdapterPlotAugmentedAMRGrid=5,UseAdapterInitialConditionAndTimeStepSizeComputation=6,UseAdapterPredictionAndPlotAndTimeStepSizeComputation=7,UseAdapterPredictionAndTimeStepSizeComputation=8,UseAdapterGridErasing=9,UseAdapterADERDGTimeStep=10,UseAdapterADERDGTimeStepAndPlot=11,UseAdapterPredictionRerun=12,UseAdapterNeighbourDataMerging=13,UseAdapterPrediction=14,UseAdapterSolutionUpdateAndTimeStepSizeComputation=15,UseAdapterSolutionUpdateAndPlotAndTimeStepSizeComputation=16,UseAdapterPlot=17,NumberOfAdapters=18)";
+   return "Action(WriteCheckpoint=0,ReadCheckpoint=1,Terminate=2,RunOnAllNodes=3,UseAdapterMeshRefinement=4,UseAdapterPlotAugmentedAMRGrid=5,UseAdapterInitialConditionAndTimeStepSizeComputation=6,UseAdapterPredictionAndPlotAndTimeStepSizeComputation=7,UseAdapterPredictionAndPlotAndTimeStepSizeComputation2d=8,UseAdapterPredictionAndTimeStepSizeComputation=9,UseAdapterGridErasing=10,UseAdapterADERDGTimeStep=11,UseAdapterADERDGTimeStepAndPlot=12,UseAdapterPredictionRerun=13,UseAdapterNeighbourDataMerging=14,UseAdapterPrediction=15,UseAdapterSolutionUpdateAndTimeStepSizeComputation=16,UseAdapterSolutionUpdateAndPlotAndTimeStepSizeComputation=17,UseAdapterPlot=18,NumberOfAdapters=19)";
 }
 
 
