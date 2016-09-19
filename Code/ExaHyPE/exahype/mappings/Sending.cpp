@@ -99,7 +99,7 @@ void exahype::mappings::Sending::beginIteration(
 
 #if defined(SharedMemoryParallelisation)
 exahype::mappings::Sending::Sending(const Sending& masterThread) :
-  _localState(_localState) {}
+  _localState(masterThread._localState) {}
 
 void exahype::mappings::Sending::mergeWithWorkerThread(
     const Sending& workerThread) {
