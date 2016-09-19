@@ -50,6 +50,9 @@ class LikwidPerformanceMonitoringModule : public LikwidModule {
 
   // Stores values of perf counters + counter for calls to stop(tag)
   std::unordered_map<std::string, std::vector<uint64_t>> counter_values_;
+
+  // Print information about measurement overhead
+  void overhead();
 };
 
 }  // namespace likwid

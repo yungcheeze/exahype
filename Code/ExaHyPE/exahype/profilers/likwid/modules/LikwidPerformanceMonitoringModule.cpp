@@ -34,15 +34,15 @@
 namespace {
 using namespace exahype::profilers::likwid;
 
-constexpr const int kNumberOfGroups = 19;
+constexpr const int kNumberOfGroups = 20;
 constexpr const char* groups[kNumberOfGroups] = {
     "BRANCH",   "CLOCK",     "DATA",       "ENERGY",         "ICACHE",
     "L2",       "L2CACHE",   "L3",         "L3CACHE",        "MEM",
     "TLB_DATA", "TLB_INSTR", "FLOPS_AVX",  "CYCLE_ACTIVITY", "PORT_USAGE",
-    "UOPS",     "UOPS_EXEC", "UOPS_ISSUE", "UOPS_RETIRE"};
+    "UOPS",     "UOPS_EXEC", "UOPS_ISSUE", "UOPS_RETIRE",    "CACHES"};
 
 constexpr const int kNrOfCounters[kNumberOfGroups] = {
-    5, 4, 6, 7, 7, 6, 5, 5, 6, 19, 7, 5, 4, 7, 11, 7, 7, 7, 7};
+    5, 4, 6, 7, 7, 6, 5, 5, 6, 19, 7, 5, 4, 7, 11, 7, 7, 7, 7, 55};
 
 constexpr const char* BRANCH_CTR[kNrOfCounters[0]] = {
     "INSTR_RETIRED_ANY:FIXC0", "CPU_CLK_UNHALTED_CORE:FIXC1",
@@ -173,20 +173,77 @@ constexpr const char* UOPS_RETIRE_CTR[kNrOfCounters[18]] = {
     "CPU_CLOCK_UNHALTED_TOTAL_CYCLES:PMC2",
     "UOPS_RETIRED_STALL_CYCLES:PMC3:EDGEDETECT"};
 
+constexpr const char* CACHES_CTR[kNrOfCounters[19]] = {
+    "INSTR_RETIRED_ANY:FIXC0",
+    "CPU_CLK_UNHALTED_CORE:FIXC1",
+    "CPU_CLK_UNHALTED_REF:FIXC2",
+    "L1D_REPLACEMENT:PMC0",
+    "L1D_M_EVICT:PMC1",
+    "L2_LINES_IN_ALL:PMC2",
+    "L2_TRANS_L2_WB:PMC3",
+    "LLC_LOOKUP_DATA_READ:CBOX0C0",
+    "LLC_LOOKUP_DATA_READ:CBOX1C0",
+    "LLC_LOOKUP_DATA_READ:CBOX2C0",
+    "LLC_LOOKUP_DATA_READ:CBOX3C0",
+    "LLC_LOOKUP_DATA_READ:CBOX4C0",
+    "LLC_LOOKUP_DATA_READ:CBOX5C0",
+    "LLC_LOOKUP_DATA_READ:CBOX6C0",
+    "LLC_LOOKUP_DATA_READ:CBOX7C0",
+    "LLC_LOOKUP_DATA_READ:CBOX8C0",
+    "LLC_LOOKUP_DATA_READ:CBOX9C0",
+    "LLC_LOOKUP_DATA_READ:CBOX10C0",
+    "LLC_LOOKUP_DATA_READ:CBOX11C0",
+    "LLC_LOOKUP_DATA_READ:CBOX12C0",
+    "LLC_LOOKUP_DATA_READ:CBOX13C0",
+    "LLC_LOOKUP_DATA_READ:CBOX14C0",
+    "LLC_LOOKUP_DATA_READ:CBOX15C0",
+    "LLC_LOOKUP_DATA_READ:CBOX16C0",
+    "LLC_LOOKUP_DATA_READ:CBOX17C0",
+    "LLC_VICTIMS_M:CBOX0C1",
+    "LLC_VICTIMS_M:CBOX1C1",
+    "LLC_VICTIMS_M:CBOX2C1",
+    "LLC_VICTIMS_M:CBOX3C1",
+    "LLC_VICTIMS_M:CBOX4C1",
+    "LLC_VICTIMS_M:CBOX5C1",
+    "LLC_VICTIMS_M:CBOX6C1",
+    "LLC_VICTIMS_M:CBOX7C1",
+    "LLC_VICTIMS_M:CBOX8C1",
+    "LLC_VICTIMS_M:CBOX9C1",
+    "LLC_VICTIMS_M:CBOX10C1",
+    "LLC_VICTIMS_M:CBOX11C1",
+    "LLC_VICTIMS_M:CBOX12C1",
+    "LLC_VICTIMS_M:CBOX13C1",
+    "CAS_COUNT_RD:MBOX0C0",
+    "CAS_COUNT_WR:MBOX0C1",
+    "CAS_COUNT_RD:MBOX1C0",
+    "CAS_COUNT_WR:MBOX1C1",
+    "CAS_COUNT_RD:MBOX2C0",
+    "CAS_COUNT_WR:MBOX2C1",
+    "CAS_COUNT_RD:MBOX3C0",
+    "CAS_COUNT_WR:MBOX3C1",
+    "CAS_COUNT_RD:MBOX4C0",
+    "CAS_COUNT_WR:MBOX4C1",
+    "CAS_COUNT_RD:MBOX5C0",
+    "CAS_COUNT_WR:MBOX5C1",
+    "CAS_COUNT_RD:MBOX6C0",
+    "CAS_COUNT_WR:MBOX6C1",
+    "CAS_COUNT_RD:MBOX7C0",
+    "CAS_COUNT_WR:MBOX7C1"};
+
 constexpr std::array<const char* const*, kNumberOfGroups> eventsets = {
-    BRANCH_CTR,     CLOCK_CTR,
-    DATA_CTR,       ENERGY_CTR,
-    ICACHE_CTR,     L2_CTR,
-    L2CACHE_CTR,    L3_CTR,
-    L3CACHE_CTR,    MEM_CTR,
-    TLB_DATA_CTR,   TLB_INSTR_CTR,
-    FLOPS_AVX_CTR,  CYCLE_ACTIVITY_CTR,
-    PORT_USAGE_CTR, UOPS_CTR,
-    UOPS_EXEC_CTR,  UOPS_ISSUE_CTR,
-    UOPS_RETIRE_CTR};
+    BRANCH_CTR,      CLOCK_CTR,
+    DATA_CTR,        ENERGY_CTR,
+    ICACHE_CTR,      L2_CTR,
+    L2CACHE_CTR,     L3_CTR,
+    L3CACHE_CTR,     MEM_CTR,
+    TLB_DATA_CTR,    TLB_INSTR_CTR,
+    FLOPS_AVX_CTR,   CYCLE_ACTIVITY_CTR,
+    PORT_USAGE_CTR,  UOPS_CTR,
+    UOPS_EXEC_CTR,   UOPS_ISSUE_CTR,
+    UOPS_RETIRE_CTR, CACHES_CTR};
 
 constexpr const int kNrOfMetrics[kNumberOfGroups] = {
-    8, 6, 5, 11, 11, 10, 7, 10, 7, 10, 10, 7, 6, 8, 12, 8, 7, 7, 7};
+    8, 6, 5, 11, 11, 10, 7, 10, 7, 10, 10, 7, 6, 8, 12, 8, 7, 7, 7, 28};
 
 constexpr const char* BRANCH_METRIC_NAMES[kNrOfMetrics[0]] = {
     "Runtime (RDTSC) [s]",
@@ -321,7 +378,7 @@ constexpr const char* UOPS_METRIC_NAMES[kNrOfMetrics[15]] = {
     "Issued UOPs",         "Merged UOPs",
     "Executed UOPs",       "Retired UOPs"};
 
-constexpr const char* UOPS_EXEC_METRIC_NAMES[kNrOfMetrics[15]] = {
+constexpr const char* UOPS_EXEC_METRIC_NAMES[kNrOfMetrics[16]] = {
     "Runtime (RDTSC) [s]",
     "Runtime unhalted [s]",
     "Clock [MHz]",
@@ -330,7 +387,7 @@ constexpr const char* UOPS_EXEC_METRIC_NAMES[kNrOfMetrics[15]] = {
     "Unused cycles ratio [%]",
     "Avg stall duration [cycles]"};
 
-constexpr const char* UOPS_ISSUE_METRIC_NAMES[kNrOfMetrics[15]] = {
+constexpr const char* UOPS_ISSUE_METRIC_NAMES[kNrOfMetrics[17]] = {
     "Runtime (RDTSC) [s]",
     "Runtime unhalted [s]",
     "Clock [MHz]",
@@ -339,7 +396,7 @@ constexpr const char* UOPS_ISSUE_METRIC_NAMES[kNrOfMetrics[15]] = {
     "Unused cycles ratio [%]",
     "Avg stall duration [cycles]"};
 
-constexpr const char* UOPS_RETIRE_METRIC_NAMES[kNrOfMetrics[15]] = {
+constexpr const char* UOPS_RETIRE_METRIC_NAMES[kNrOfMetrics[18]] = {
     "Runtime (RDTSC) [s]",
     "Runtime unhalted [s]",
     "Clock [MHz]",
@@ -347,18 +404,48 @@ constexpr const char* UOPS_RETIRE_METRIC_NAMES[kNrOfMetrics[15]] = {
     "Used cycles ratio [%]",
     "Unused cycles ratio [%]",
     "Avg stall duration [cycles]"};
+
+constexpr const char* CACHES_METRIC_NAMES[kNrOfMetrics[19]] = {
+    "Runtime (RDTSC) [s]",
+    "Runtime unhalted [s]",
+    "Clock [MHz]",
+    "CPI",
+    "L2 to L1 load bandwidth [MBytes/s]",
+    "L2 to L1 load data volume [GBytes]",
+    "L1 to L2 evict bandwidth [MBytes/s]",
+    "L1 to L2 evict data volume [GBytes]",
+    "L1 to/from L2 bandwidth [MBytes/s]",
+    "L1 to/from L2 data volume [GBytes]",
+    "L3 to L2 load bandwidth [MBytes/s]",
+    "L3 to L2 load data volume [GBytes]",
+    "L2 to L3 evict bandwidth [MBytes/s]",
+    "L2 to L3 evict data volume [GBytes]",
+    "L2 to/from L3 bandwidth [MBytes/s]",
+    "L2 to/from L3 data volume [GBytes]",
+    "System to L3 bandwidth [MBytes/s]",
+    "System to L3 data volume [GBytes]",
+    "L3 to system bandwidth [MBytes/s]",
+    "L3 to system data volume [GBytes]",
+    "L3 to/from system bandwidth [MBytes/s]",
+    "L3 to/from system data volume [GBytes]",
+    "Memory read bandwidth [MBytes/s]",
+    "Memory read data volume [GBytes]",
+    "Memory write bandwidth [MBytes/s]",
+    "Memory write data volume [GBytes]",
+    "Memory bandwidth [MBytes/s]",
+    "Memory data volume [GBytes]"};
 
 constexpr std::array<const char* const*, kNumberOfGroups> metric_names = {
-    BRANCH_METRIC_NAMES,     CLOCK_METRIC_NAMES,
-    DATA_METRIC_NAMES,       ENERGY_METRIC_NAMES,
-    ICACHE_METRIC_NAMES,     L2_METRIC_NAMES,
-    L2CACHE_METRIC_NAMES,    L3_METRIC_NAMES,
-    L3CACHE_METRIC_NAMES,    MEM_METRIC_NAMES,
-    TLB_DATA_METRIC_NAMES,   TLB_INSTR_METRIC_NAMES,
-    FLOPS_AVX_METRIC_NAMES,  CYCLE_ACTIVITY_METRIC_NAMES,
-    PORT_USAGE_METRIC_NAMES, UOPS_METRIC_NAMES,
-    UOPS_EXEC_METRIC_NAMES,  UOPS_ISSUE_METRIC_NAMES,
-    UOPS_RETIRE_METRIC_NAMES};
+    BRANCH_METRIC_NAMES,      CLOCK_METRIC_NAMES,
+    DATA_METRIC_NAMES,        ENERGY_METRIC_NAMES,
+    ICACHE_METRIC_NAMES,      L2_METRIC_NAMES,
+    L2CACHE_METRIC_NAMES,     L3_METRIC_NAMES,
+    L3CACHE_METRIC_NAMES,     MEM_METRIC_NAMES,
+    TLB_DATA_METRIC_NAMES,    TLB_INSTR_METRIC_NAMES,
+    FLOPS_AVX_METRIC_NAMES,   CYCLE_ACTIVITY_METRIC_NAMES,
+    PORT_USAGE_METRIC_NAMES,  UOPS_METRIC_NAMES,
+    UOPS_EXEC_METRIC_NAMES,   UOPS_ISSUE_METRIC_NAMES,
+    UOPS_RETIRE_METRIC_NAMES, CACHES_METRIC_NAMES};
 
 static const std::function<double(int, const std::vector<uint64_t>&,
                                   const LikwidProfilerState&)>
@@ -1451,7 +1538,7 @@ static const std::function<double(int, const std::vector<uint64_t>&,
 
 static const std::function<double(int, const std::vector<uint64_t>&,
                                   const LikwidProfilerState&)>
-    UOPS_EXEC_METRIC_FUNS[kNrOfMetrics[15]] = {
+    UOPS_EXEC_METRIC_FUNS[kNrOfMetrics[16]] = {
         // Runtime (RDTSC) [s]
         [](int group_id, const std::vector<uint64_t>& counter_values,
            const LikwidProfilerState& state) {
@@ -1504,7 +1591,7 @@ static const std::function<double(int, const std::vector<uint64_t>&,
 
 static const std::function<double(int, const std::vector<uint64_t>&,
                                   const LikwidProfilerState&)>
-    UOPS_ISSUE_METRIC_FUNS[kNrOfMetrics[15]] = {
+    UOPS_ISSUE_METRIC_FUNS[kNrOfMetrics[17]] = {
         // Runtime (RDTSC) [s]
         [](int group_id, const std::vector<uint64_t>& counter_values,
            const LikwidProfilerState& state) {
@@ -1556,7 +1643,7 @@ static const std::function<double(int, const std::vector<uint64_t>&,
 
 static const std::function<double(int, const std::vector<uint64_t>&,
                                   const LikwidProfilerState&)>
-    UOPS_RETIRE_METRIC_FUNS[kNrOfMetrics[15]] = {
+    UOPS_RETIRE_METRIC_FUNS[kNrOfMetrics[18]] = {
         // Runtime (RDTSC) [s]
         [](int group_id, const std::vector<uint64_t>& counter_values,
            const LikwidProfilerState& state) {
@@ -1606,20 +1693,387 @@ static const std::function<double(int, const std::vector<uint64_t>&,
                  static_cast<double>(counter_values[6]);
         }};
 
+static const std::function<double(int, const std::vector<uint64_t>&,
+                                  const LikwidProfilerState&)>
+    CACHES_FUNS[kNrOfMetrics[19]] = {
+        // Runtime (RDTSC) [s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // time
+          return perfmon_getTimeOfGroup(group_id);
+        },
+        // Runtime unhalted [s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // FIXC1*inverseClock
+          return static_cast<double>(counter_values[1]) /
+                 state.cpu_info_->clock;
+        },
+        // Clock [MHz]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.E-06*(FIXC1/FIXC2)/inverseClock
+          return 1e-6 * (static_cast<double>(counter_values[1]) /
+                         static_cast<double>(counter_values[2])) *
+                 state.cpu_info_->clock;
+        },
+        // CPI
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // FIXC1/FIXC0
+          return static_cast<double>(counter_values[1]) /
+                 static_cast<double>(counter_values[0]);
+        },
+        // L2 to L1 load bandwidth [MBytes/s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-06*PMC0*64.0/time
+          return 1.0E-06 * static_cast<double>(counter_values[3]) * 64.0 /
+                 perfmon_getTimeOfGroup(group_id);
+        },
+        // L2 to L1 load data volume [GBytes]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-09*PMC0*64.0
+          return 1.0E-09 * static_cast<double>(counter_values[3]) * 64.0;
+        },
+        // L1 to L2 evict bandwidth [MBytes/s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-06*PMC1*64.0/time
+          return 1.0E-06 * static_cast<double>(counter_values[4]) * 64.0 /
+                 perfmon_getTimeOfGroup(group_id);
+        },
+        // L1 to L2 evict data volume [GBytes]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-09*PMC1*64.0
+          return 1.0E-09 * static_cast<double>(counter_values[4]) * 64.0;
+        },
+        // L1 to/from L2 bandwidth [MBytes/s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-06*(PMC0+PMC1)*64.0/time
+          return 1.0E-06 * (static_cast<double>(counter_values[3]) +
+                            static_cast<double>(counter_values[4])) *
+                 64.0 / perfmon_getTimeOfGroup(group_id);
+        },
+        // L1 to/from L2 data volume [GBytes]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-09*(PMC0+PMC1)*64.0
+          return 1.0E-09 * (static_cast<double>(counter_values[3]) +
+                            static_cast<double>(counter_values[4])) *
+                 64.0;
+        },
+        // L3 to L2 load bandwidth [MBytes/s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-06*PMC2*64.0/time
+          return 1.0E-06 * static_cast<double>(counter_values[5]) * 64.0 /
+                 perfmon_getTimeOfGroup(group_id);
+        },
+        // L3 to L2 load data volume [GBytes]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-09*PMC2*64.0
+          return 1.0E-09 * static_cast<double>(counter_values[5]) * 64.0;
+        },
+        // L2 to L3 evict bandwidth [MBytes/s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-06*PMC3*64.0/time
+          return 1.0E-06 * static_cast<double>(counter_values[6]) * 64.0 /
+                 perfmon_getTimeOfGroup(group_id);
+        },
+        // L2 to L3 evict data volume [GBytes]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-06*PMC3*64.0
+          return 1.0E-06 * static_cast<double>(counter_values[6]) * 64.0;
+        },
+        // L2 to/from L3 bandwidth [MBytes/s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-06*(PMC2+PMC3)*64.0/time
+          return 1.0E-06 * (static_cast<double>(counter_values[5]) +
+                            static_cast<double>(counter_values[6])) *
+                 64.0 / perfmon_getTimeOfGroup(group_id);
+        },
+        // L2 to/from L3 data volume [GBytes]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-09*(PMC2+PMC3)*64.0
+          return 1.0E-09 * (static_cast<double>(counter_values[5]) +
+                            static_cast<double>(counter_values[6])) *
+                 64.0;
+        },
+        // System to L3 bandwidth [MBytes/s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-06*(CBOX0C0+CBOX1C0+CBOX2C0+CBOX3C0+CBOX4C0+CBOX5C0+CBOX6C0+CBOX7C0+CBOX8C0+CBOX9C0+CBOX10C0+CBOX11C0+CBOX12C0+CBOX13C0)*64.0/time
+          return 1.0E-06 * (static_cast<double>(counter_values[7]) +
+                            static_cast<double>(counter_values[8]) +
+                            static_cast<double>(counter_values[9]) +
+                            static_cast<double>(counter_values[10]) +
+                            static_cast<double>(counter_values[11]) +
+                            static_cast<double>(counter_values[12]) +
+                            static_cast<double>(counter_values[13]) +
+                            static_cast<double>(counter_values[14]) +
+                            static_cast<double>(counter_values[15]) +
+                            static_cast<double>(counter_values[16]) +
+                            static_cast<double>(counter_values[17]) +
+                            static_cast<double>(counter_values[18]) +
+                            static_cast<double>(counter_values[19]) +
+                            static_cast<double>(counter_values[20])) *
+                 64.0 / perfmon_getTimeOfGroup(group_id);
+        },
+        // System to L3 data volume [GBytes]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-09*(CBOX0C0+CBOX1C0+CBOX2C0+CBOX3C0+CBOX4C0+CBOX5C0+CBOX6C0+CBOX7C0+CBOX8C0+CBOX9C0+CBOX10C0+CBOX11C0+CBOX12C0+CBOX13C0)*64.0
+          return 1.0E-09 * (static_cast<double>(counter_values[7]) +
+                            static_cast<double>(counter_values[8]) +
+                            static_cast<double>(counter_values[9]) +
+                            static_cast<double>(counter_values[10]) +
+                            static_cast<double>(counter_values[11]) +
+                            static_cast<double>(counter_values[12]) +
+                            static_cast<double>(counter_values[13]) +
+                            static_cast<double>(counter_values[14]) +
+                            static_cast<double>(counter_values[15]) +
+                            static_cast<double>(counter_values[16]) +
+                            static_cast<double>(counter_values[17]) +
+                            static_cast<double>(counter_values[18]) +
+                            static_cast<double>(counter_values[19]) +
+                            static_cast<double>(counter_values[20])) *
+                 64.0;
+        },
+        // L3 to system bandwidth [MBytes/s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-06*(CBOX0C1+CBOX1C1+CBOX2C1+CBOX3C1+CBOX4C1+CBOX5C1+CBOX6C1+CBOX7C1+CBOX8C1+CBOX9C1+CBOX10C1+CBOX11C1+CBOX12C1+CBOX13C1)*64/time
+          return 1.0E-06 * (static_cast<double>(counter_values[25]) +
+                            static_cast<double>(counter_values[26]) +
+                            static_cast<double>(counter_values[27]) +
+                            static_cast<double>(counter_values[28]) +
+                            static_cast<double>(counter_values[29]) +
+                            static_cast<double>(counter_values[30]) +
+                            static_cast<double>(counter_values[31]) +
+                            static_cast<double>(counter_values[32]) +
+                            static_cast<double>(counter_values[33]) +
+                            static_cast<double>(counter_values[34]) +
+                            static_cast<double>(counter_values[35]) +
+                            static_cast<double>(counter_values[36]) +
+                            static_cast<double>(counter_values[37]) +
+                            static_cast<double>(counter_values[38])) *
+                 64 / perfmon_getTimeOfGroup(group_id);
+        },
+        // L3 to system data volume [GBytes]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-09*(CBOX0C1+CBOX1C1+CBOX2C1+CBOX3C1+CBOX4C1+CBOX5C1+CBOX6C1+CBOX7C1+CBOX8C1+CBOX9C1+CBOX10C1+CBOX11C1+CBOX12C1+CBOX13C1)*64
+          return 1.0E-09 * (static_cast<double>(counter_values[25]) +
+                            static_cast<double>(counter_values[26]) +
+                            static_cast<double>(counter_values[27]) +
+                            static_cast<double>(counter_values[28]) +
+                            static_cast<double>(counter_values[29]) +
+                            static_cast<double>(counter_values[30]) +
+                            static_cast<double>(counter_values[31]) +
+                            static_cast<double>(counter_values[32]) +
+                            static_cast<double>(counter_values[33]) +
+                            static_cast<double>(counter_values[34]) +
+                            static_cast<double>(counter_values[35]) +
+                            static_cast<double>(counter_values[36]) +
+                            static_cast<double>(counter_values[37]) +
+                            static_cast<double>(counter_values[38])) *
+                 64;
+        },
+        // L3 to/from system bandwidth [MBytes/s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-06*(CBOX0C0+CBOX1C0+CBOX2C0+CBOX3C0+CBOX4C0+CBOX5C0+CBOX6C0+CBOX7C0+CBOX8C0+CBOX9C0+CBOX10C0+CBOX11C0+CBOX12C0+CBOX13C0+CBOX0C1+CBOX1C1+CBOX2C1+CBOX3C1+CBOX4C1+CBOX5C1+CBOX6C1+CBOX7C1+CBOX8C1+CBOX9C1+CBOX10C1+CBOX11C1+CBOX12C1+CBOX13C1)*64.0/time
+          return 1.0E-06 * (static_cast<double>(counter_values[7]) +
+                            static_cast<double>(counter_values[8]) +
+                            static_cast<double>(counter_values[9]) +
+                            static_cast<double>(counter_values[10]) +
+                            static_cast<double>(counter_values[11]) +
+                            static_cast<double>(counter_values[12]) +
+                            static_cast<double>(counter_values[13]) +
+                            static_cast<double>(counter_values[14]) +
+                            static_cast<double>(counter_values[15]) +
+                            static_cast<double>(counter_values[16]) +
+                            static_cast<double>(counter_values[17]) +
+                            static_cast<double>(counter_values[18]) +
+                            static_cast<double>(counter_values[19]) +
+                            static_cast<double>(counter_values[20]) +
+                            static_cast<double>(counter_values[25]) +
+                            static_cast<double>(counter_values[26]) +
+                            static_cast<double>(counter_values[27]) +
+                            static_cast<double>(counter_values[28]) +
+                            static_cast<double>(counter_values[29]) +
+                            static_cast<double>(counter_values[30]) +
+                            static_cast<double>(counter_values[31]) +
+                            static_cast<double>(counter_values[32]) +
+                            static_cast<double>(counter_values[33]) +
+                            static_cast<double>(counter_values[34]) +
+                            static_cast<double>(counter_values[35]) +
+                            static_cast<double>(counter_values[36]) +
+                            static_cast<double>(counter_values[37]) +
+                            static_cast<double>(counter_values[38])) *
+                 64.0 / perfmon_getTimeOfGroup(group_id);
+        },
+        // L3 to/from system data volume [GBytes]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-09*(CBOX0C0+CBOX1C0+CBOX2C0+CBOX3C0+CBOX4C0+CBOX5C0+CBOX6C0+CBOX7C0+CBOX8C0+CBOX9C0+CBOX10C0+CBOX11C0+CBOX12C0+CBOX13C0+CBOX0C1+CBOX1C1+CBOX2C1+CBOX3C1+CBOX4C1+CBOX5C1+CBOX6C1+CBOX7C1+CBOX8C1+CBOX9C1+CBOX10C1+CBOX11C1+CBOX12C1+CBOX13C1)*64.0
+          return 1.0E-09 * (static_cast<double>(counter_values[7]) +
+                            static_cast<double>(counter_values[8]) +
+                            static_cast<double>(counter_values[9]) +
+                            static_cast<double>(counter_values[10]) +
+                            static_cast<double>(counter_values[11]) +
+                            static_cast<double>(counter_values[12]) +
+                            static_cast<double>(counter_values[13]) +
+                            static_cast<double>(counter_values[14]) +
+                            static_cast<double>(counter_values[15]) +
+                            static_cast<double>(counter_values[16]) +
+                            static_cast<double>(counter_values[17]) +
+                            static_cast<double>(counter_values[18]) +
+                            static_cast<double>(counter_values[19]) +
+                            static_cast<double>(counter_values[20]) +
+                            static_cast<double>(counter_values[25]) +
+                            static_cast<double>(counter_values[26]) +
+                            static_cast<double>(counter_values[27]) +
+                            static_cast<double>(counter_values[28]) +
+                            static_cast<double>(counter_values[29]) +
+                            static_cast<double>(counter_values[30]) +
+                            static_cast<double>(counter_values[31]) +
+                            static_cast<double>(counter_values[32]) +
+                            static_cast<double>(counter_values[33]) +
+                            static_cast<double>(counter_values[34]) +
+                            static_cast<double>(counter_values[35]) +
+                            static_cast<double>(counter_values[36]) +
+                            static_cast<double>(counter_values[37]) +
+                            static_cast<double>(counter_values[38])) *
+                 64.0;
+        },
+        // Memory read bandwidth [MBytes/s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-06*(MBOX0C0+MBOX1C0+MBOX2C0+MBOX3C0+MBOX4C0+MBOX5C0+MBOX6C0+MBOX7C0)*64.0/time
+          return 1.0E-06 * (static_cast<double>(counter_values[39]) +
+                            static_cast<double>(counter_values[41]) +
+                            static_cast<double>(counter_values[43]) +
+                            static_cast<double>(counter_values[45]) +
+                            static_cast<double>(counter_values[47]) +
+                            static_cast<double>(counter_values[49]) +
+                            static_cast<double>(counter_values[51]) +
+                            static_cast<double>(counter_values[53])) *
+                 64.0 / perfmon_getTimeOfGroup(group_id);
+        },
+        // Memory read data volume [GBytes]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-09*(MBOX0C0+MBOX1C0+MBOX2C0+MBOX3C0+MBOX4C0+MBOX5C0+MBOX6C0+MBOX7C0)*64.0
+          return 1.0E-09 * (static_cast<double>(counter_values[39]) +
+                            static_cast<double>(counter_values[41]) +
+                            static_cast<double>(counter_values[43]) +
+                            static_cast<double>(counter_values[45]) +
+                            static_cast<double>(counter_values[47]) +
+                            static_cast<double>(counter_values[49]) +
+                            static_cast<double>(counter_values[51]) +
+                            static_cast<double>(counter_values[53])) *
+                 64.0;
+        },
+        // Memory write bandwidth [MBytes/s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-06*(MBOX0C1+MBOX1C1+MBOX2C1+MBOX3C1+MBOX4C1+MBOX5C1+MBOX6C1+MBOX7C1)*64.0/time
+          return 1.0E-06 * (static_cast<double>(counter_values[40]) +
+                            static_cast<double>(counter_values[42]) +
+                            static_cast<double>(counter_values[44]) +
+                            static_cast<double>(counter_values[46]) +
+                            static_cast<double>(counter_values[48]) +
+                            static_cast<double>(counter_values[50]) +
+                            static_cast<double>(counter_values[52]) +
+                            static_cast<double>(counter_values[54])) *
+                 64.0 / perfmon_getTimeOfGroup(group_id);
+        },
+        // Memory write data volume [GBytes]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-09*(MBOX0C1+MBOX1C1+MBOX2C1+MBOX3C1+MBOX4C1+MBOX5C1+MBOX6C1+MBOX7C1)*64.0
+          return 1.0E-09 * (static_cast<double>(counter_values[40]) +
+                            static_cast<double>(counter_values[42]) +
+                            static_cast<double>(counter_values[44]) +
+                            static_cast<double>(counter_values[46]) +
+                            static_cast<double>(counter_values[48]) +
+                            static_cast<double>(counter_values[50]) +
+                            static_cast<double>(counter_values[52]) +
+                            static_cast<double>(counter_values[54])) *
+                 64.0;
+        },
+        // Memory bandwidth [MBytes/s]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-06*(MBOX0C0+MBOX1C0+MBOX2C0+MBOX3C0+MBOX4C0+MBOX5C0+MBOX6C0+MBOX7C0+MBOX0C1+MBOX1C1+MBOX2C1+MBOX3C1+MBOX4C1+MBOX5C1+MBOX6C1+MBOX7C1)*64.0/time
+          return 1.0E-06 * (static_cast<double>(counter_values[39]) +
+                            static_cast<double>(counter_values[41]) +
+                            static_cast<double>(counter_values[43]) +
+                            static_cast<double>(counter_values[45]) +
+                            static_cast<double>(counter_values[47]) +
+                            static_cast<double>(counter_values[49]) +
+                            static_cast<double>(counter_values[51]) +
+                            static_cast<double>(counter_values[53]) +
+                            static_cast<double>(counter_values[40]) +
+                            static_cast<double>(counter_values[42]) +
+                            static_cast<double>(counter_values[44]) +
+                            static_cast<double>(counter_values[46]) +
+                            static_cast<double>(counter_values[48]) +
+                            static_cast<double>(counter_values[50]) +
+                            static_cast<double>(counter_values[52]) +
+                            static_cast<double>(counter_values[54])) *
+                 64.0 / perfmon_getTimeOfGroup(group_id);
+        },
+        // Memory data volume [GBytes]
+        [](int group_id, const std::vector<uint64_t>& counter_values,
+           const LikwidProfilerState& state) {
+          // 1.0E-09*(MBOX0C0+MBOX1C0+MBOX2C0+MBOX3C0+MBOX4C0+MBOX5C0+MBOX6C0+MBOX7C0+MBOX0C1+MBOX1C1+MBOX2C1+MBOX3C1+MBOX4C1+MBOX5C1+MBOX6C1+MBOX7C1)*64.0
+          return 1.0E-09 * (static_cast<double>(counter_values[39]) +
+                            static_cast<double>(counter_values[41]) +
+                            static_cast<double>(counter_values[43]) +
+                            static_cast<double>(counter_values[45]) +
+                            static_cast<double>(counter_values[47]) +
+                            static_cast<double>(counter_values[49]) +
+                            static_cast<double>(counter_values[51]) +
+                            static_cast<double>(counter_values[53]) +
+                            static_cast<double>(counter_values[40]) +
+                            static_cast<double>(counter_values[42]) +
+                            static_cast<double>(counter_values[44]) +
+                            static_cast<double>(counter_values[46]) +
+                            static_cast<double>(counter_values[48]) +
+                            static_cast<double>(counter_values[50]) +
+                            static_cast<double>(counter_values[52]) +
+                            static_cast<double>(counter_values[54])) *
+                 64.0;
+        },
+};
+
 static const std::array<
     const std::function<double(int, const std::vector<uint64_t>&,
                                const LikwidProfilerState&)>*,
     kNumberOfGroups>
-    metric_functions = {BRANCH_METRIC_FUNS,     CLOCK_METRIC_FUNS,
-                        DATA_METRIC_FUNS,       ENERGY_METRIC_FUNS,
-                        ICACHE_METRIC_FUNS,     L2_METRIC_FUNS,
-                        L2CACHE_METRIC_FUNS,    L3_METRIC_FUNS,
-                        L3CACHE_METRIC_FUNS,    MEM_METRIC_FUNS,
-                        TLB_DATA_METRIC_FUNS,   TLB_INSTR_METRIC_FUNS,
-                        FLOPS_AVX_METRIC_FUNS,  CYCLE_ACTIVE_METRIC_FUNS,
-                        PORT_USAGE_METRIC_FUNS, UOPS_METRIC_FUNS,
-                        UOPS_EXEC_METRIC_FUNS,  UOPS_ISSUE_METRIC_FUNS,
-                        UOPS_RETIRE_METRIC_FUNS};
+    metric_functions = {BRANCH_METRIC_FUNS,      CLOCK_METRIC_FUNS,
+                        DATA_METRIC_FUNS,        ENERGY_METRIC_FUNS,
+                        ICACHE_METRIC_FUNS,      L2_METRIC_FUNS,
+                        L2CACHE_METRIC_FUNS,     L3_METRIC_FUNS,
+                        L3CACHE_METRIC_FUNS,     MEM_METRIC_FUNS,
+                        TLB_DATA_METRIC_FUNS,    TLB_INSTR_METRIC_FUNS,
+                        FLOPS_AVX_METRIC_FUNS,   CYCLE_ACTIVE_METRIC_FUNS,
+                        PORT_USAGE_METRIC_FUNS,  UOPS_METRIC_FUNS,
+                        UOPS_EXEC_METRIC_FUNS,   UOPS_ISSUE_METRIC_FUNS,
+                        UOPS_RETIRE_METRIC_FUNS, CACHES_FUNS};
+
+static const int kNumberOfSamples = 100000;
 
 }  // namespace
 
@@ -1652,6 +2106,8 @@ LikwidPerformanceMonitoringModule::LikwidPerformanceMonitoringModule(
               << group_name_ << " not found." << std::endl;
     std::exit(EXIT_FAILURE);
   }
+
+  // overhead();
 }
 
 LikwidPerformanceMonitoringModule::~LikwidPerformanceMonitoringModule() {
@@ -1745,6 +2201,41 @@ void LikwidPerformanceMonitoringModule::writeToOstream(std::ostream* os) const {
                              [i](group_handles_.at(tag), counter_values, state_)
           << std::endl;
     }
+  }
+}
+
+void LikwidPerformanceMonitoringModule::overhead() {
+  // MEM
+  {
+    // Concatenate event string
+    std::stringstream eventstring;
+    for (int i = 0; i < kNrOfCounters[9 /* group_index_ */] - 1; i++) {
+      eventstring << eventsets[9 /* group_index_ */][i] << ",";
+    }
+    // Skip comma for last counter
+    eventstring << eventsets[9 /* group_index_ */]
+                            [kNrOfCounters[9 /* group_index_ */] - 1];
+
+    // Register event set for tag
+    int handle = perfmon_addEventSet(
+        const_cast<char*>(eventstring.str().c_str()));  // TODO: remove
+                                                        // const_cast once my PR
+                                                        // has made it to LRZ
+
+    uint64_t total_cycles = 0;
+    for (int i = 0; i < kNumberOfSamples; i++) {
+      perfmon_setupCounters(handle);
+      perfmon_startCounters();
+      perfmon_stopCounters();
+      total_cycles +=
+          static_cast<uint64_t>(perfmon_getResult(handle, 1, state_.cpu_));
+    }
+
+    std::cout << "LikwidPerformanceMonitoringModule: MEM overhead s = "
+              << perfmon_getTimeOfGroup(handle) / kNumberOfSamples << std::endl;
+    std::cout << "LikwidPerformanceMonitoringModule: MEM overhead cycles = "
+              << static_cast<double>(total_cycles) / kNumberOfSamples
+              << std::endl;
   }
 }
 
